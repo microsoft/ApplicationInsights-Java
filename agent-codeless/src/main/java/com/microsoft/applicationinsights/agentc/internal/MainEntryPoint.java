@@ -30,14 +30,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.jar.JarFile;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agentc.internal.Configuration.FixedRateSampling;
@@ -153,9 +150,8 @@ public class MainEntryPoint {
 
         ApplicationInsightsXmlConfiguration xmlConfiguration = new ApplicationInsightsXmlConfiguration();
 
-        Connection connection = parseConnectionString(config.connectionString);
-        if (connection.ingestionEndpoint != null) {
-            xmlConfiguration.getChannel().setEndpointAddress(connection.ingestionEndpoint + "v2/track");
+        if (!Strings.isNullOrEmpty(config.connectionString)) {
+            xmlConfiguration.setConnectionString(config.connectionString);
         }
         if (!Strings.isNullOrEmpty(config.roleName)) {
             xmlConfiguration.setRoleName(config.roleName);
@@ -316,31 +312,6 @@ public class MainEntryPoint {
         }
         configuration.getTelemetryProcessors()
                 .add(new FixedRateSamplingTelemetryProcessor(samplingPercentage, samplingPercentages));
-    }
-
-    private static Connection parseConnectionString(@Nullable String connectionString) {
-        Connection connection = new Connection();
-        if (connectionString != null) {
-            List<String> parts = Splitter.on(';').splitToList(connectionString);
-            Map<String, String> map = Maps.newHashMap();
-            for (String part : parts) {
-                int index = part.indexOf('=');
-                map.put(part.substring(0, index).toLowerCase(Locale.ENGLISH), part.substring(index + 1));
-            }
-            String instrumentationKey = map.get("instrumentationkey");
-            if (!Strings.isNullOrEmpty(instrumentationKey)) {
-                connection.instrumentationKey = instrumentationKey;
-            }
-            String ingestionEndpoint = map.get("ingestionendpoint");
-            if (!Strings.isNullOrEmpty(ingestionEndpoint)) {
-                if (!ingestionEndpoint.endsWith("/")) {
-                    // TODO check with Mikhail if this leniency is needed
-                    ingestionEndpoint += "/";
-                }
-                connection.ingestionEndpoint = ingestionEndpoint;
-            }
-        }
-        return connection;
     }
 
     private static class Connection {
