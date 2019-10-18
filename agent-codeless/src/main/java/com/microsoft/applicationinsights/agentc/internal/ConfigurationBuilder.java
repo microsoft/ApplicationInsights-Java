@@ -21,21 +21,21 @@
 
 package com.microsoft.applicationinsights.agentc.internal;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Charsets;
 import com.google.common.base.Converter;
 import com.google.common.base.Strings;
-import com.google.gson.Gson;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 import okio.Okio;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -44,6 +44,13 @@ import org.slf4j.LoggerFactory;
 class ConfigurationBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationBuilder.class);
+
+    private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
+    private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
+    private static final String APPLICATIONINSIGHTS_TELEMETRY_CONTEXT = "APPLICATIONINSIGHTS_TELEMETRY_CONTEXT";
+
+    private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
+    private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
 
     private static final Converter<String, String> envVarNameConverter =
             CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_UNDERSCORE);
@@ -56,6 +63,10 @@ class ConfigurationBuilder {
         if (connectionString != null) {
             config.connectionString = connectionString;
         }
+        config.roleName = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.roleName);
+        config.roleInstance =
+                overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.roleInstance);
+        config.telemetryContext = overlayWithEnvVar(APPLICATIONINSIGHTS_TELEMETRY_CONTEXT, config.telemetryContext);
 
         return config;
     }
@@ -98,6 +109,33 @@ class ConfigurationBuilder {
             return propertyValue.trim();
         }
         return null;
+    }
+
+    private static String overlayWithEnvVar(String name1, String name2, String defaultValue) {
+        String value = System.getenv(name1);
+        if (!Strings.isNullOrEmpty(value)) {
+            return value;
+        }
+        value = System.getenv(name2);
+        if (!Strings.isNullOrEmpty(value)) {
+            return value;
+        }
+        return defaultValue;
+    }
+
+    private static Map<String, String> overlayWithEnvVar(String name, Map<String, String> defaultValue) {
+        String value = System.getenv(name);
+        if (!Strings.isNullOrEmpty(value)) {
+            Moshi moshi = new Moshi.Builder().build();
+            Type type = Types.newParameterizedType(Map.class, String.class, String.class);
+            JsonAdapter<Map<String, String>> adapter = moshi.adapter(type);
+            try {
+                return adapter.fromJson(value);
+            } catch (Exception e) {
+                logger.warn("could not parse environment variable {} as json: {}", name, value);
+            }
+        }
+        return defaultValue;
     }
 
     @VisibleForTesting

@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agentc.internal;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,9 +56,6 @@ import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
-import okio.Okio;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptors;
@@ -71,14 +67,6 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 public class MainEntryPoint {
-
-    private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
-    private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
-    private static final String APPLICATIONINSIGHTS_TELEMETRY_CONTEXT = "APPLICATIONINSIGHTS_TELEMETRY_CONTEXT";
-
-    private static final String APPINSIGHTS_INSTRUMENTATIONKEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
-    private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
-    private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
 
     private static @Nullable Logger startupLogger;
 
@@ -166,21 +154,14 @@ public class MainEntryPoint {
         ApplicationInsightsXmlConfiguration xmlConfiguration = new ApplicationInsightsXmlConfiguration();
 
         Connection connection = parseConnectionString(config.connectionString);
-        String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY, connection.instrumentationKey);
-        if (!Strings.isNullOrEmpty(instrumentationKey)) {
-            xmlConfiguration.setInstrumentationKey(instrumentationKey);
-        }
         if (connection.ingestionEndpoint != null) {
             xmlConfiguration.getChannel().setEndpointAddress(connection.ingestionEndpoint + "v2/track");
         }
-        String roleName = getEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.roleName);
-        if (!Strings.isNullOrEmpty(roleName)) {
-            xmlConfiguration.setRoleName(roleName);
+        if (!Strings.isNullOrEmpty(config.roleName)) {
+            xmlConfiguration.setRoleName(config.roleName);
         }
-        String roleInstance =
-                getEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.roleInstance);
-        if (!Strings.isNullOrEmpty(roleInstance)) {
-            xmlConfiguration.setRoleInstance(roleInstance);
+        if (!Strings.isNullOrEmpty(config.roleInstance)) {
+            xmlConfiguration.setRoleInstance(config.roleInstance);
         }
         if (!config.liveMetrics.enabled) {
             xmlConfiguration.getQuickPulse().setEnabled(false);
@@ -233,10 +214,8 @@ public class MainEntryPoint {
             addFixedRateSampling(fixedRateSampling, configuration);
         }
         TelemetryClient telemetryClient = new TelemetryClient();
-        Map<String, String> telemetryContext =
-                getEnvVarAsMap(APPLICATIONINSIGHTS_TELEMETRY_CONTEXT, config.telemetryContext);
-        if (!telemetryContext.isEmpty()) {
-            telemetryClient.getContext().getProperties().putAll(telemetryContext);
+        if (!config.telemetryContext.isEmpty()) {
+            telemetryClient.getContext().getProperties().putAll(config.telemetryContext);
         }
         Global.setTelemetryClient(telemetryClient);
     }
@@ -362,40 +341,6 @@ public class MainEntryPoint {
             }
         }
         return connection;
-    }
-
-    private static String getEnvVar(String name, String defaultValue) {
-        String value = System.getenv(name);
-        if (!Strings.isNullOrEmpty(value)) {
-            return value;
-        }
-        return defaultValue;
-    }
-
-    private static String getEnvVar(String name1, String name2, String defaultValue) {
-        String value = System.getenv(name1);
-        if (!Strings.isNullOrEmpty(value)) {
-            return value;
-        }
-        value = System.getenv(name2);
-        if (!Strings.isNullOrEmpty(value)) {
-            return value;
-        }
-        return defaultValue;
-    }
-
-    private static Map<String, String> getEnvVarAsMap(String name, Map<String, String> defaultValue) {
-        String value = System.getenv(name);
-        if (!Strings.isNullOrEmpty(value)) {
-            Moshi moshi = new Moshi.Builder().build();
-            JsonAdapter<Map> jsonAdapter = moshi.adapter(Map.class);
-            try {
-                return jsonAdapter.fromJson(value);
-            } catch (Exception e) {
-                startupLogger.warn("could not parse environment variable {} as json: {}", name, value);
-            }
-        }
-        return defaultValue;
     }
 
     private static class Connection {
