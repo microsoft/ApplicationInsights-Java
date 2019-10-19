@@ -39,6 +39,9 @@ public class ApplicationInsightsXmlConfiguration {
     @XStreamAlias("RoleName")
     private String roleName;
 
+    @XStreamAlias("RoleInstance")
+    private String roleInstance;
+
     @XStreamAlias("DisableTelemetry")
     public boolean disableTelemetry;
 
@@ -94,6 +97,14 @@ public class ApplicationInsightsXmlConfiguration {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public String getRoleInstance() {
+        return roleInstance;
+    }
+
+    public void setRoleInstance(String roleInstance) {
+        this.roleInstance = roleInstance;
     }
 
     public String getSchemaVersion() {

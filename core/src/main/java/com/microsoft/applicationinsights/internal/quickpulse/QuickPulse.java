@@ -88,7 +88,10 @@ public enum QuickPulse implements Stoppable {
 
                     quickPulseDataSender = new DefaultQuickPulseDataSender(apacheSender, sendQueue);
 
-                    String instanceName = DeviceInfo.getHostName();
+                    String instanceName = configuration.getRoleInstance();
+                    if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
+                        instanceName = DeviceInfo.getHostName();
+                    }
                     if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
                         instanceName = "Unknown host";
                     }
