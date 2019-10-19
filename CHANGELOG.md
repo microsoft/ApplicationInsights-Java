@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# Version 2.5.1-BETA.2
+* Fixed regression from 2.5.1-BETA ([#1089](https://github.com/microsoft/ApplicationInsights-Java/issues/1089))
+* Fixed async thread tracking ([#1100](https://github.com/microsoft/ApplicationInsights-Java/pull/1100))
+
 # Version 2.5.1-BETA
 * Fixed exception thrown by agent when using Apache HttpClient ResponseHandler methods
   ([#1067](https://github.com/microsoft/ApplicationInsights-Java/issues/1067))

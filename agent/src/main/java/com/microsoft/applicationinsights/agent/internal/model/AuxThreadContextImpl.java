@@ -53,7 +53,11 @@ class AuxThreadContextImpl<T> implements AuxThreadContext {
     private Span start(boolean completeAsyncTransaction) {
         ThreadContextThreadLocal.Holder threadContextHolder = Global.getThreadContextHolder();
         ThreadContextPlus threadContext = threadContextHolder.get();
-        if (threadContext != null) {
+        // TODO once local spans are supported, only return NOP if parent spans are the same
+        // Checking if in same request is needed in case the existing thread context is from a prior request
+        // (e.g. this can happen if the thread activity was captured via Thread constructor, but the thread was
+        // really then used in a thread pool)
+        if (threadContext != null && threadContext.getServletRequestInfo() == servletRequestInfo) {
             if (completeAsyncTransaction) {
                 threadContext.setTransactionAsyncComplete();
             }
