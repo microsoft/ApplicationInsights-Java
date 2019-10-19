@@ -58,6 +58,7 @@ public class IncomingSpanImpl implements Span {
 
     private static final Splitter cookieSplitter = Splitter.on('|');
 
+    private final String transactionType;
     private final MessageSupplier messageSupplier;
     private final ThreadContextThreadLocal.Holder threadContextHolder;
     private final long startTimeMillis;
@@ -72,9 +73,10 @@ public class IncomingSpanImpl implements Span {
 
     private final DistributedTraceContext distributedTraceContext;
 
-    public IncomingSpanImpl(MessageSupplier messageSupplier, ThreadContextThreadLocal.Holder threadContextHolder,
-                            long startTimeMillis, RequestTelemetry requestTelemetry,
-                            DistributedTraceContext distributedTraceContext) {
+    public IncomingSpanImpl(String transactionType, MessageSupplier messageSupplier,
+                            ThreadContextThreadLocal.Holder threadContextHolder, long startTimeMillis,
+                            RequestTelemetry requestTelemetry, DistributedTraceContext distributedTraceContext) {
+        this.transactionType = transactionType;
         this.messageSupplier = messageSupplier;
         this.threadContextHolder = threadContextHolder;
         this.startTimeMillis = startTimeMillis;
@@ -186,17 +188,18 @@ public class IncomingSpanImpl implements Span {
             exceptionTelemetry.getContext().getOperation().setParentId(getOperationParentId());
             exceptionTelemetry.setTimestamp(new Date(endTimeMillis));
             telemetryClient.track(exceptionTelemetry);
+            requestTelemetry.setSuccess(false);
         }
-        finishBuildingTelemetry(endTimeMillis);
+        requestTelemetry.setDuration(new Duration(endTimeMillis - startTimeMillis));
+        if (transactionType.equals("Web")) {
+            finishBuildingWebTelemetry(endTimeMillis);
+        }
         telemetryClient.track(requestTelemetry);
     }
 
-    private void finishBuildingTelemetry(long endTimeMillis) {
-
+    private void finishBuildingWebTelemetry(long endTimeMillis) {
         ReadableMessage message = (ReadableMessage) messageSupplier.get();
         Map<String, ?> detail = message.getDetail();
-
-        requestTelemetry.setDuration(new Duration(endTimeMillis - startTimeMillis));
 
         String scheme = (String) detail.get("Request scheme");
         if (scheme == null) {
@@ -225,7 +228,7 @@ public class IncomingSpanImpl implements Span {
         Integer responseCode = (Integer) detail.get("Response code");
         if (responseCode != null) {
             requestTelemetry.setResponseCode(Integer.toString(responseCode));
-            // TODO base this on exception presence?
+            // TODO base this only on exception presence?
             requestTelemetry.setSuccess(responseCode < 400);
         }
 
