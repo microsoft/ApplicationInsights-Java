@@ -45,8 +45,8 @@ public class Configuration {
 
     public static class DistributedTracing {
 
-        public boolean w3cEnabled;
-        public boolean w3cBackCompatEnabled = true;
+        public boolean outboundEnabled = true; // this can be disabled if downstream services reject extra headers
+        public boolean requestIdCompatEnabled = true;
     }
 
     public static class LiveMetrics {

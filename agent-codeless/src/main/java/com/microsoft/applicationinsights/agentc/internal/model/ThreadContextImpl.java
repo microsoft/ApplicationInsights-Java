@@ -23,8 +23,6 @@ package com.microsoft.applicationinsights.agentc.internal.model;
 
 import java.util.concurrent.TimeUnit;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.AsyncQuerySpan;
 import org.glowroot.instrumentation.api.AsyncSpan;
@@ -257,14 +255,15 @@ public class ThreadContextImpl implements ThreadContextPlus {
         }
     }
 
+    @Nullable
     private <C> String propagate(Setter<C> setter, C carrier) {
-        DistributedTraceContext distributedTraceContext = incomingSpan.getDistributedTraceContext();
-        if (Global.isOutboundW3CEnabled()) {
+        if (Global.isDistributedTracingOutboundEnabled()) {
+            DistributedTraceContext distributedTraceContext = incomingSpan.getDistributedTraceContext();
             String traceparent = distributedTraceContext.generateChildDependencyTraceparent();
             String tracestate = distributedTraceContext.retrieveTracestate();
             String outgoingSpanId = createChildIdFromTraceparentString(traceparent);
             setter.put(carrier, "traceparent", traceparent);
-            if (Global.isOutboundW3CBackCompatEnabled()) {
+            if (Global.isDistributedTracingRequestIdCompatEnabled()) {
                 setter.put(carrier, "Request-Id", outgoingSpanId);
             }
             if (tracestate != null) {
@@ -272,13 +271,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
             }
             return outgoingSpanId;
         } else {
-            String outgoingSpanId = distributedTraceContext.generateChildDependencyId();
-            String correlationContext = distributedTraceContext.retrieveCorrelationContext();
-            String appCorrelationId = retrieveApplicationCorrelationId();
-            setter.put(carrier, "Request-Id", outgoingSpanId);
-            setter.put(carrier, "Correlation-Context", correlationContext);
-            setter.put(carrier, "Request-Context", appCorrelationId);
-            return outgoingSpanId;
+            return null;
         }
     }
 
@@ -286,20 +279,5 @@ public class ThreadContextImpl implements ThreadContextPlus {
     private static String createChildIdFromTraceparentString(String traceparent) {
         String[] traceparentArr = traceparent.split("-");
         return "|" + traceparentArr[1] + "." + traceparentArr[2] + ".";
-    }
-
-    // see TelemetryCorrelationUtils.retrieveApplicationCorrelationId()
-    private static String retrieveApplicationCorrelationId() {
-
-        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey);
-
-        if (appId == null) {
-            // async task is still pending or has failed, return and let the next request resolve the ikey
-            logger.trace("Application correlation Id could not be retrieved (e.g. task may be pending or failed)");
-            return "";
-        }
-
-        return REQUEST_CONTEXT_HEADER_APPID_KEY + "=" + appId;
     }
 }

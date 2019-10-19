@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agentc.internal.model;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.AsyncSpan;
 import org.glowroot.instrumentation.api.MessageSupplier;
 import org.glowroot.instrumentation.api.Timer;
@@ -28,8 +29,8 @@ import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 
 class AsyncOutgoingSpanImpl extends OutgoingSpanImpl implements AsyncSpan {
 
-    public AsyncOutgoingSpanImpl(String operationParentId, String operationId, String outgoingSpanId, String type,
-                                 String text, long startTimeMillis, MessageSupplier messageSupplier) {
+    public AsyncOutgoingSpanImpl(String operationParentId, String operationId, @Nullable String outgoingSpanId,
+                                 String type, String text, long startTimeMillis, MessageSupplier messageSupplier) {
         super(operationId, operationParentId, outgoingSpanId, type, text, startTimeMillis, messageSupplier);
     }
 

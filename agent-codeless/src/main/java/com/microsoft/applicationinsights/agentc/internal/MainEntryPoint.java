@@ -52,7 +52,6 @@ import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptors;
@@ -142,11 +141,8 @@ public class MainEntryPoint {
 
         Configuration config = ConfigurationBuilder.create(agentJarPath);
 
-        Global.setOutboundW3CEnabled(config.distributedTracing.w3cEnabled);
-        Global.setInboundW3CEnabled(config.distributedTracing.w3cEnabled);
-
-        Global.setOutboundW3CBackCompatEnabled(config.distributedTracing.w3cBackCompatEnabled);
-        TraceContextCorrelationCore.setIsW3CBackCompatEnabled(config.distributedTracing.w3cBackCompatEnabled);
+        Global.setDistributedTracingOutboundEnabled(config.distributedTracing.outboundEnabled);
+        Global.setDistributedTracingRequestIdCompatEnabled(config.distributedTracing.requestIdCompatEnabled);
 
         ApplicationInsightsXmlConfiguration xmlConfiguration = new ApplicationInsightsXmlConfiguration();
 

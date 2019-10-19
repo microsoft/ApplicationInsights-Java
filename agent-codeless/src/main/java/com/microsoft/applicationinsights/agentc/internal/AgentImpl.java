@@ -23,13 +23,11 @@ package com.microsoft.applicationinsights.agentc.internal;
 
 import java.util.Date;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agentc.internal.model.DistributedTraceContext;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
 import com.microsoft.applicationinsights.agentc.internal.model.IncomingSpanImpl;
 import com.microsoft.applicationinsights.agentc.internal.model.NopThreadSpan;
-import com.microsoft.applicationinsights.agentc.internal.model.TelemetryCorrelationUtilsCore;
 import com.microsoft.applicationinsights.agentc.internal.model.ThreadContextImpl;
 import com.microsoft.applicationinsights.agentc.internal.model.TraceContextCorrelationCore;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
@@ -71,16 +69,9 @@ class AgentImpl implements AgentSPI {
         requestTelemetry.getContext().getUser().setUserAgent(userAgent);
 
         String instrumentationKey = telemetryClient.getContext().getInstrumentationKey();
-        DistributedTraceContext distributedTraceContext;
-        if (Global.isOutboundW3CEnabled()) {
-            distributedTraceContext =
-                    TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, getter, requestTelemetry);
-            TraceContextCorrelationCore.resolveRequestSource(carrier, getter, requestTelemetry, instrumentationKey);
-        } else {
-            distributedTraceContext =
-                    TelemetryCorrelationUtilsCore.resolveCorrelationForRequest(carrier, getter, requestTelemetry);
-            TelemetryCorrelationUtilsCore.resolveRequestSource(carrier, getter, requestTelemetry, instrumentationKey);
-        }
+        DistributedTraceContext distributedTraceContext =
+                TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, getter, requestTelemetry);
+        TraceContextCorrelationCore.resolveRequestSource(carrier, getter, requestTelemetry, instrumentationKey);
         if (requestTelemetry.getContext().getOperation().getParentId() == null) {
             requestTelemetry.getContext().getOperation().setParentId(requestTelemetry.getId());
         }

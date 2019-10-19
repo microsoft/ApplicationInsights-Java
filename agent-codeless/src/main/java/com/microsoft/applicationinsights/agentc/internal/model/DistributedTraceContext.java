@@ -70,9 +70,9 @@ public class DistributedTraceContext {
     }
 
     // w3c format
+    @Nullable
     String retrieveTracestate() {
-        Preconditions.checkNotNull(tracestate);
-        return tracestate.toString();
+        return tracestate == null ? null : tracestate.toString();
     }
 
     // ApplicationInsights format

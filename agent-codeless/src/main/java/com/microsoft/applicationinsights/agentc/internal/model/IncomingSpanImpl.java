@@ -157,13 +157,8 @@ public class IncomingSpanImpl implements Span {
     @Override
     @Deprecated
     public <R> void propagateToResponse(R response, Setter<R> setter) {
-        if (Global.isInboundW3CEnabled()) {
-            // TODO eliminate wrapper object instantiation
-            TraceContextCorrelationCore.resolveCorrelationForResponse(response, setter);
-        } else {
-            // TODO eliminate wrapper object instantiation
-            TelemetryCorrelationUtilsCore.resolveCorrelationForResponse(response, setter);
-        }
+        // TODO eliminate wrapper object instantiation
+        TraceContextCorrelationCore.resolveCorrelationForResponse(response, setter);
     }
 
     @Override

@@ -27,8 +27,8 @@ public class ConfigurationTest {
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
         assertEquals("Something Good", configuration.roleName);
         assertEquals("xyz123", configuration.roleInstance);
-        assertEquals(true, configuration.distributedTracing.w3cEnabled);
-        assertEquals(false, configuration.distributedTracing.w3cBackCompatEnabled);
+        assertEquals(false, configuration.distributedTracing.outboundEnabled);
+        assertEquals(false, configuration.distributedTracing.requestIdCompatEnabled);
         assertEquals(false, configuration.liveMetrics.enabled);
         assertEquals(ImmutableMap.of("k8s.pod.name", "amazing-product", "k8s.pod.namespace", "product-ns"),
                 configuration.telemetryContext);
@@ -53,8 +53,7 @@ public class ConfigurationTest {
         assertEquals(null, configuration.connectionString);
         assertEquals(null, configuration.roleName);
         assertEquals(null, configuration.roleInstance);
-        assertEquals(false, configuration.distributedTracing.w3cEnabled);
-        assertEquals(true, configuration.distributedTracing.w3cBackCompatEnabled);
+        assertEquals(true, configuration.distributedTracing.requestIdCompatEnabled);
         assertEquals(true, configuration.liveMetrics.enabled);
         assertEquals(0, configuration.telemetryContext.size());
         assertEquals(0, configuration.jmxMetrics.size());
