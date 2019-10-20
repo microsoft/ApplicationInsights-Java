@@ -42,7 +42,7 @@ public class Tracestate {
     /**
      * String representation of the tracestate
      */
-    private String internalString = null;
+    private volatile String internalString;
 
     /**
      * Ctor that creates tracestate object from given value
@@ -69,7 +69,6 @@ public class Tracestate {
         if (internalList.size() > MAX_KEY_VALUE_PAIRS) {
             throw new IllegalArgumentException(String.format("cannot have more than %d key-value pairs", MAX_KEY_VALUE_PAIRS));
         }
-        internalString = toInternalString();
     }
 
     /**
@@ -96,7 +95,6 @@ public class Tracestate {
             }
             internalList.put(key, value);
         }
-        internalString = toInternalString();
     }
 
     public String get(String key) {
@@ -110,6 +108,9 @@ public class Tracestate {
      */
     @Override
     public String toString() {
+        if (internalString == null) {
+            internalString = toInternalString();
+        }
         return internalString;
     }
 
