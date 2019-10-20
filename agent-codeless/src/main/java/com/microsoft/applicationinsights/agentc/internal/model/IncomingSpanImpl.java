@@ -211,7 +211,7 @@ public class IncomingSpanImpl implements Span {
                 logger.debug(e.getMessage(), e);
             }
         } else {
-            String url = removeSessionIdFromUri(getUrl(detail));
+            String url = removeSessionIdFromUri(getUrl(scheme, detail));
             try {
                 requestTelemetry.setUrl(url);
             } catch (MalformedURLException e) {
@@ -270,14 +270,29 @@ public class IncomingSpanImpl implements Span {
         requestTelemetry.getContext().getSession().setId(sessionId);
     }
 
-    private static String getUrl(Map<String, ?> detail) {
-        String scheme = (String) detail.get("Request scheme");
+    private static String getUrl(String scheme, Map<String, ?> detail) {
         String host = (String) detail.get("Request server hostname");
+        if (host == null) {
+            host = "???";
+        }
         Integer port = (Integer) detail.get("Request server port");
         String uri = (String) detail.get("Request uri");
+        if (uri == null) {
+            uri = "???";
+        }
         String query = (String) detail.get("Request query string");
 
-        StringBuilder sb = new StringBuilder();
+        int length = scheme.length() + 3 + host.length();
+        if (port != null) {
+            length += 5;
+        }
+        length += uri.length();
+        if (query != null) {
+            length += 1;
+            length += query.length();
+        }
+
+        StringBuilder sb = new StringBuilder(length);
         sb.append(scheme);
         sb.append("://");
         sb.append(host);
