@@ -14,6 +14,8 @@ import org.apache.http.annotation.Experimental;
 @Experimental
 public class Traceparent {
 
+    private static final char[] hexDigits = "0123456789abcdef".toCharArray();
+
     /**
      * Version number between range [0,255] inclusive
      */
@@ -117,9 +119,10 @@ public class Traceparent {
     static String randomHex(int n) {
         byte[] bytes = new byte[n];
         ThreadLocalRandom.current().nextBytes(bytes);
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(2 * n);
         for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
+            // this logic copied from com.google.common.hash.HashCode.toString()
+            sb.append(hexDigits[(b >> 4) & 0xf]).append(hexDigits[b & 0xf]);
         }
         return sb.toString();
     }
