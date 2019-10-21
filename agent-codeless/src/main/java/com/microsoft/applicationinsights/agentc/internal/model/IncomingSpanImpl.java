@@ -204,20 +204,10 @@ public class IncomingSpanImpl implements Span {
                 text = text.substring(index + 1);
             }
             String url = removeSessionIdFromUri(text);
-            try {
-                requestTelemetry.setUrl(url);
-            } catch (MalformedURLException e) {
-                logger.error("{}: {}", e.getMessage(), url);
-                logger.debug(e.getMessage(), e);
-            }
+            requestTelemetry.setUrl(url);
         } else {
             String url = removeSessionIdFromUri(getUrl(scheme, detail));
-            try {
-                requestTelemetry.setUrl(url);
-            } catch (MalformedURLException e) {
-                logger.error("{}: {}", e.getMessage(), url);
-                logger.debug(e.getMessage(), e);
-            }
+            requestTelemetry.setUrl(url);
         }
 
         Integer responseCode = (Integer) detail.get("Response code");
