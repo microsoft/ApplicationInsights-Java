@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-class LoggerSpans {
+public class LoggerSpans {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggerSpans.class);
 
