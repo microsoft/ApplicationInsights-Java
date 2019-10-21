@@ -12,10 +12,9 @@ import com.microsoft.applicationinsights.agentc.internal.diagnostics.SdkVersionF
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.SiteNameFinder;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import com.squareup.moshi.Moshi.Builder;
+import com.squareup.moshi.Moshi;
 import okio.BufferedSink;
 import okio.Okio;
-import okio.Sink;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.concurrent.GuardedBy;
@@ -54,10 +53,12 @@ public class StatusFile {
     @VisibleForTesting
     static String directory;
 
-    @GuardedBy("StatusFile.class")
+    private static final Object lock = new Object();
+
+    @GuardedBy("lock")
     private static String uniqueId;
 
-    @GuardedBy("StatusFile.class")
+    @GuardedBy("lock")
     private static BufferedSink buffer;
 
     private static final ThreadPoolExecutor WRITER_THREAD = new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), ThreadPoolUtils.createNamedDaemonThreadFactory("StatusFileWriter"));
@@ -98,7 +99,7 @@ public class StatusFile {
 
                 String fileName = constructFileName(map);
 
-                synchronized (StatusFile.class) { // the executor should prevent more than one thread from executing this block. this is just a safeguard
+                synchronized (lock) { // the executor should prevent more than one thread from executing this block. this is just a safeguard
                     final File file = new File(directory, fileName);
                     boolean dirsWereCreated = file.getParentFile().mkdirs();
                     if (dirsWereCreated || file.getParentFile().exists()) {
@@ -125,12 +126,14 @@ public class StatusFile {
         }, "StatusFileJsonWrite");
     }
 
-    private static synchronized BufferedSink getBuffer(File file) throws IOException {
-        if (buffer != null) {
-            buffer.close();
+    private static BufferedSink getBuffer(File file) throws IOException {
+        synchronized (lock) {
+            if (buffer != null) {
+                buffer.close();
+            }
+            buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
+            return buffer;
         }
-        buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
-        return buffer;
     }
 
     @VisibleForTesting
@@ -169,23 +172,25 @@ public class StatusFile {
      * @param pid The process' id.
      * @return A unique id for the current process.
      */
-    private static synchronized String getUniqueId(Object pid) {
-        if (uniqueId != null) {
+    private static String getUniqueId(Object pid) {
+        synchronized (lock) {
+            if (uniqueId != null) {
+                return uniqueId;
+            }
+
+            if (pid != null) {
+                uniqueId = pid.toString();
+            } else {
+                final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+                if (runtimeMXBean != null) {
+                    uniqueId = String.valueOf(Math.abs(runtimeMXBean.getStartTime()));
+                } else {
+                    uniqueId = UUID.randomUUID().toString().replace("-", "");
+                }
+            }
+
             return uniqueId;
         }
-
-        if (pid != null) {
-            uniqueId = pid.toString();
-        } else {
-            final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-            if (runtimeMXBean != null) {
-                uniqueId = String.valueOf(Math.abs(runtimeMXBean.getStartTime()));
-            } else {
-                uniqueId = UUID.randomUUID().toString().replace("-", "");
-            }
-        }
-
-        return uniqueId;
     }
 
     private static String capitalize(String input) {
