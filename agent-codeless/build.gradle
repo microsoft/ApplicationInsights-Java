@@ -172,6 +172,7 @@ dependencies {
     runtime "org.glowroot.instrumentation:instrumentation-http-url-connection:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-log4j:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-logback:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-java-util-logging:$instrumentationVersion"
 
     compile(project(path: ':core', configuration: 'shadow'))
 
