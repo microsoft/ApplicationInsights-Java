@@ -41,7 +41,7 @@ public class CommonUtils {
   public static String getHostName() {
     try {
       InetAddress addr = InetAddress.getLocalHost();
-      return addr.getCanonicalHostName();
+      return addr.getHostName();
     } catch (UnknownHostException ex) {
       InternalLogger.INSTANCE.warn("Error resolving hostname:%n%s", ExceptionUtils.getStackTrace(ex));
       return null;
