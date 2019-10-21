@@ -90,7 +90,7 @@ public class MainEntryPoint {
             t.printStackTrace();
         } finally {
             try {
-                StatusFile.putValueAndWrite("RegisteredClassFileTransformers", success);
+                StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success);
             } catch (Exception e) {
                 startupLogger.error("Error writing status.json", e);
             }
