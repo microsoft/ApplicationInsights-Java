@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agentc.internal.model;
 
-import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
@@ -204,20 +203,10 @@ public class IncomingSpanImpl implements Span {
                 text = text.substring(index + 1);
             }
             String url = removeSessionIdFromUri(text);
-            try {
-                requestTelemetry.setUrl(url);
-            } catch (MalformedURLException e) {
-                logger.error("{}: {}", e.getMessage(), url);
-                logger.debug(e.getMessage(), e);
-            }
+            requestTelemetry.setUrl(url);
         } else {
             String url = removeSessionIdFromUri(getUrl(detail));
-            try {
-                requestTelemetry.setUrl(url);
-            } catch (MalformedURLException e) {
-                logger.error("{}: {}", e.getMessage(), url);
-                logger.debug(e.getMessage(), e);
-            }
+            requestTelemetry.setUrl(url);
         }
 
         Integer responseCode = (Integer) detail.get("Response code");

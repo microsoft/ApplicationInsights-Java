@@ -260,11 +260,9 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     /**
      * Sets request url.
      * @param url The url to store
-     * @throws MalformedURLException If the url is malformed
      */
-    public void setUrl(String url) throws MalformedURLException {
-        URL u = new URL(url); // to validate and normalize
-        data.setUrl(u.toString());
+    public void setUrl(String url) {
+        data.setUrl(url);
     }
 
     /**
