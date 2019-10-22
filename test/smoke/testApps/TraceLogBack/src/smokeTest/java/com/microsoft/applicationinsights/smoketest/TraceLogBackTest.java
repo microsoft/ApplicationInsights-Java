@@ -30,7 +30,7 @@ public class TraceLogBackTest extends AiSmokeTest {
     @TargetUri("/traceLogBack")
     public void testTraceLogBack() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForItems("MessageData", 2);
+        List<Envelope> mdList = mockedIngestion.waitForItemsInRequest("MessageData", 2);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope1 = mdList.get(0);
@@ -64,7 +64,7 @@ public class TraceLogBackTest extends AiSmokeTest {
     @TargetUri("traceLogBackWithException")
     public void testTraceLogBackWithExeption() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> edList = mockedIngestion.waitForItems("ExceptionData", 1);
+        List<Envelope> edList = mockedIngestion.waitForItemsInRequest("ExceptionData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope edEnvelope = edList.get(0);

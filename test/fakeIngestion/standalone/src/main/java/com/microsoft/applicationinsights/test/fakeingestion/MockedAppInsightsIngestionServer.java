@@ -107,9 +107,19 @@ public class MockedAppInsightsIngestionServer {
     }
 
     public List<Envelope> waitForItems(final String type, final int numItems) throws Exception {
+        return waitForItems(type, numItems, false);
+    }
+
+    // this is important for Message and Exception types which can also be captured outside of requests
+    public List<Envelope> waitForItemsInRequest(final String type, final int numItems) throws Exception {
+        return waitForItems(type, numItems, true);
+    }
+
+    public List<Envelope> waitForItems(final String type, final int numItems, final boolean inRequestOnly) throws Exception {
         List<Envelope> items = waitForItems(new Predicate<Envelope>() {
             @Override public boolean apply(Envelope input) {
-                return input.getData().getBaseType().equals(type);
+                return input.getData().getBaseType().equals(type)
+                        && (!inRequestOnly || input.getTags().containsKey("ai.operation.id"));
             }
         }, numItems, 10, TimeUnit.SECONDS);
         if (items.size() > numItems) {

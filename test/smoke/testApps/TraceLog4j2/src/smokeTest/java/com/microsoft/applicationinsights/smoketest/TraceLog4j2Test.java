@@ -22,7 +22,7 @@ public class TraceLog4j2Test extends AiSmokeTest {
     @TargetUri("/traceLog4j2")
     public void testTraceLog4j2() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForItems("MessageData", 3);
+        List<Envelope> mdList = mockedIngestion.waitForItemsInRequest("MessageData", 3);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope1 = mdList.get(0);
@@ -64,7 +64,7 @@ public class TraceLog4j2Test extends AiSmokeTest {
     @TargetUri("/traceLog4j2WithException")
     public void testTraceLog4j2WithException() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> edList = mockedIngestion.waitForItems("ExceptionData", 1);
+        List<Envelope> edList = mockedIngestion.waitForItemsInRequest("ExceptionData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope edEnvelope = edList.get(0);
