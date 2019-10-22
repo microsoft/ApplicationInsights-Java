@@ -34,7 +34,7 @@ public class FixedRateSamplingTest extends AiSmokeTest {
     @TargetUri("/fixedRateSampling")
     public void testFixedRateSamplingNotInExcludedTypes() throws Exception {
         mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForItems("MessageData", 1);
+        List<Envelope> mdList = mockedIngestion.waitForItemsInRequest("MessageData", 1);
         Envelope md = mdList.get(0);
         assertEquals(100.0, md.getSampleRate(), Math.ulp(50.0));
     }

@@ -21,13 +21,13 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
     @TargetUri("/traceJavaUtilLogging")
     public void testTraceJavaUtilLogging() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForItems("MessageData", 2);
+        List<Envelope> mdList = mockedIngestion.waitForItemsInRequest("MessageData", 2);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
 
-        List<MessageData> logs = mockedIngestion.getTelemetryDataByType("MessageData");
+        List<MessageData> logs = mockedIngestion.getTelemetryDataByTypeInRequest("MessageData");
         logs.sort(new Comparator<MessageData>() {
             @Override
             public int compare(MessageData o1, MessageData o2) {
@@ -55,7 +55,7 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
     @TargetUri("traceJavaUtilLoggingWithException")
     public void testTraceJavaUtilLoggingWithExeption() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> edList = mockedIngestion.waitForItems("ExceptionData", 1);
+        List<Envelope> edList = mockedIngestion.waitForItemsInRequest("ExceptionData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope edEnvelope = edList.get(0);

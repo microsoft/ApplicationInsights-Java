@@ -32,10 +32,10 @@ public class SpringbootSmokeTest extends AiSmokeTest {
     @TargetUri("/basic/trackEvent")
     public void trackEvent() throws Exception {
         mockedIngestion.waitForItems("RequestData", 1);
-        mockedIngestion.waitForItems("EventData", 2);
+        mockedIngestion.waitForItemsInRequest("EventData", 2);
 
         // TODO get event data envelope and verify value
-        final List<EventData> data = mockedIngestion.getTelemetryDataByType("EventData");
+        final List<EventData> data = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
         assertThat(data, hasItem(new TypeSafeMatcher<EventData>() {
             final String name = "EventDataTest";
             Matcher<String> nameMatcher = Matchers.equalTo(name);
@@ -78,7 +78,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
     @TargetUri("/throwsException")
     public void testResultCodeWhenRestControllerThrows() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> edList = mockedIngestion.waitForItems("ExceptionData", 1);
+        List<Envelope> edList = mockedIngestion.waitForItemsInRequest("ExceptionData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope edEnvelope = edList.get(0);
@@ -104,7 +104,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
 
     private static void commonValidation() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);

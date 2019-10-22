@@ -78,12 +78,22 @@ public class MockedAppInsightsIngestionServer {
     }
 
     public <T extends Domain> List<T> getTelemetryDataByType(String type) {
+        return getTelemetryDataByType(type, false);
+    }
+
+    public <T extends Domain> List<T> getTelemetryDataByTypeInRequest(String type) {
+        return getTelemetryDataByType(type, true);
+    }
+
+    private <T extends Domain> List<T> getTelemetryDataByType(String type, boolean inRequestOnly) {
         Preconditions.checkNotNull(type, "type");
         List<Envelope> items = getItemsEnvelopeDataType(type);
         List<T> dataItems = new ArrayList<T>();
         for (Envelope e : items) {
-            Data<T> dt = (Data<T>) e.getData();
-            dataItems.add(dt.getBaseData());
+            if (!inRequestOnly || e.getTags().containsKey("ai.operation.id")) {
+                Data<T> dt = (Data<T>) e.getData();
+                dataItems.add(dt.getBaseData());
+            }
         }
         return dataItems;
     }
@@ -107,9 +117,19 @@ public class MockedAppInsightsIngestionServer {
     }
 
     public List<Envelope> waitForItems(final String type, final int numItems) throws Exception {
+        return waitForItems(type, numItems, false);
+    }
+
+    // this is important for Message and Exception types which can also be captured outside of requests
+    public List<Envelope> waitForItemsInRequest(final String type, final int numItems) throws Exception {
+        return waitForItems(type, numItems, true);
+    }
+
+    public List<Envelope> waitForItems(final String type, final int numItems, final boolean inRequestOnly) throws Exception {
         List<Envelope> items = waitForItems(new Predicate<Envelope>() {
             @Override public boolean apply(Envelope input) {
-                return input.getData().getBaseType().equals(type);
+                return input.getData().getBaseType().equals(type)
+                        && (!inRequestOnly || input.getTags().containsKey("ai.operation.id"));
             }
         }, numItems, 10, TimeUnit.SECONDS);
         if (items.size() > numItems) {
