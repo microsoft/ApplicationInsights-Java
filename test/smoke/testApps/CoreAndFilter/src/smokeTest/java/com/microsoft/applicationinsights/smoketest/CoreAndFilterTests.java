@@ -78,7 +78,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope edEnvelope1 = edList.get(0);
         Envelope edEnvelope2 = edList.get(1);
 
-        List<EventData> events = mockedIngestion.getTelemetryDataByType("EventData");
+        List<EventData> events = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
         events.sort(new Comparator<EventData>() {
             @Override
             public int compare(EventData o1, EventData o2) {
@@ -115,7 +115,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         final String expectedProperties = "value";
         final Double expectedMetrice = 1d;
 
-        final List<ExceptionData> exceptions = mockedIngestion.getTelemetryDataByType("ExceptionData");
+        final List<ExceptionData> exceptions = mockedIngestion.getTelemetryDataByTypeInRequest("ExceptionData");
         assertThat(exceptions, hasItem(hasException(withMessage(expectedName))));
         assertThat(exceptions, hasItem(allOf(
                 hasException(withMessage(expectedName)),
@@ -215,7 +215,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope mdEnvelope2 = mdList.get(1);
         Envelope mdEnvelope3 = mdList.get(2);
 
-        final List<MessageData> messages = mockedIngestion.getTelemetryDataByType("MessageData");
+        final List<MessageData> messages = mockedIngestion.getTelemetryDataByTypeInRequest("MessageData");
         assertThat(messages, hasItem(
                 TraceDataMatchers.hasMessage("This is first trace message.")
         ));
@@ -246,7 +246,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope pvdEnvelope1 = pvdList.get(0);
         Envelope pvdEnvelope2 = pvdList.get(1);
 
-        final List<Domain> pageViews = mockedIngestion.getTelemetryDataByType("PageViewData");
+        final List<Domain> pageViews = mockedIngestion.getTelemetryDataByTypeInRequest("PageViewData");
         assertThat(pageViews, hasItem(allOf(
                 PageViewDataMatchers.hasName("test-page"),
                 PageViewDataMatchers.hasDuration(new Duration(0))

@@ -28,7 +28,7 @@ public class TraceLog4j1_2Test extends AiSmokeTest {
         Envelope mdEnvelope2 = mdList.get(1);
         Envelope mdEnvelope3 = mdList.get(2);
 
-        List<MessageData> logs = mockedIngestion.getTelemetryDataByType("MessageData");
+        List<MessageData> logs = mockedIngestion.getTelemetryDataByTypeInRequest("MessageData");
         logs.sort(new Comparator<MessageData>() {
             @Override
             public int compare(MessageData o1, MessageData o2) {

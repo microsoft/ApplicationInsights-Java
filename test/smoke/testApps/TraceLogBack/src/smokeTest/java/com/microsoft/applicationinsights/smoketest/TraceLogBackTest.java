@@ -36,7 +36,7 @@ public class TraceLogBackTest extends AiSmokeTest {
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
 
-        List<MessageData> logs = mockedIngestion.getTelemetryDataByType("MessageData");
+        List<MessageData> logs = mockedIngestion.getTelemetryDataByTypeInRequest("MessageData");
         logs.sort(new Comparator<MessageData>() {
             @Override
             public int compare(MessageData o1, MessageData o2) {

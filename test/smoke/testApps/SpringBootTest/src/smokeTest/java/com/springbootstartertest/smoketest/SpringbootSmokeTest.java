@@ -35,7 +35,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         mockedIngestion.waitForItemsInRequest("EventData", 2);
 
         // TODO get event data envelope and verify value
-        final List<EventData> data = mockedIngestion.getTelemetryDataByType("EventData");
+        final List<EventData> data = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
         assertThat(data, hasItem(new TypeSafeMatcher<EventData>() {
             final String name = "EventDataTest";
             Matcher<String> nameMatcher = Matchers.equalTo(name);
