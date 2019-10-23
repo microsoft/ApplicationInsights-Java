@@ -120,7 +120,12 @@ public final class GzipTelemetrySerializerTest {
         }
 
         @Override
-        public void reset() {
+        public boolean previouslyUsed() {
+            return false;
+        }
+
+        @Override
+        public void markUsed() {
         }
     }
 
@@ -133,7 +138,7 @@ public final class GzipTelemetrySerializerTest {
     @Test(expected = IllegalArgumentException.class)
     public void testNoData() throws Exception {
         GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
-        tested.serialize(new ArrayList<String>());
+        tested.serialize(new ArrayList<Telemetry>());
     }
 
     @Test
@@ -176,7 +181,7 @@ public final class GzipTelemetrySerializerTest {
             expected.put(stubTelemetry.getTelemetryName(), stubTelemetry);
         }
 
-        Optional<Transmission> result = tested.serialize(telemetriesSerialized);
+        Optional<Transmission> result = tested.serializeFromStrings(telemetriesSerialized);
 
         assertNotNull(result);
 

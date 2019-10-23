@@ -25,6 +25,7 @@ import java.util.Collection;
 
 import com.google.common.base.Optional;
 import com.microsoft.applicationinsights.internal.channel.common.Transmission;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 /**
  * Created by gupele on 12/17/2014.
@@ -39,5 +40,5 @@ public interface TelemetrySerializer {
      * @param telemetries A collection of Telemetry instances
      * @return byte array that is a compressed version of the input
      */
-    Optional<Transmission> serialize(Collection<String> telemetries);
+    Optional<Transmission> serialize(Collection<Telemetry> telemetries);
 }

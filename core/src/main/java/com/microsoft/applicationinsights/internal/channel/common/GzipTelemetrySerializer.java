@@ -23,10 +23,11 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
+import java.io.OutputStreamWriter;
 import java.util.Collection;
 import java.util.zip.GZIPOutputStream;
 
+import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -34,6 +35,7 @@ import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * The class is an implementation of the {@link TelemetrySerializer}
@@ -45,6 +47,14 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
     private final static String GZIP_WEB_CONTENT_TYPE = "application/x-json-stream";
     private final static String GZIP_WEB_ENCODING_TYPE = "gzip";
 
+    private final ThreadLocal<ByteArrayOutputStream> byteStreams =
+            new ThreadLocal<ByteArrayOutputStream>() {
+                @Override
+                protected ByteArrayOutputStream initialValue() {
+                    return new ByteArrayOutputStream(1024 * 8);
+                }
+            };
+
     private final byte[] newlineString;
 
     public GzipTelemetrySerializer() {
@@ -52,14 +62,15 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
     }
 
     @Override
-    public Optional<Transmission> serialize(Collection<String> telemetries) {
+    public Optional<Transmission> serialize(Collection<Telemetry> telemetries) {
         Preconditions.checkNotNull(telemetries, "telemetries must be non-null value");
         Preconditions.checkArgument(!telemetries.isEmpty(), "telemetries: One or more telemetry item is expected");
 
         Transmission result = null;
         boolean succeeded = false;
         try {
-            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            ByteArrayOutputStream byteStream = byteStreams.get();
+            byteStream.reset();
 
             try {
                 GZIPOutputStream zipStream = new GZIPOutputStream(byteStream);
@@ -86,6 +97,10 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 // The creation of the result must be done after the 'zipStream' is closed
                 if (succeeded) {
                     result = new Transmission(byteStream.toByteArray(), GZIP_WEB_CONTENT_TYPE, GZIP_WEB_ENCODING_TYPE);
+                    if (byteStream.size() > 1024 * 1024) {
+                        // in case it gets unexpectedly large
+                        byteStreams.remove();
+                    }
                 }
             }
         } catch(Exception e) {
@@ -95,7 +110,83 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
         return Optional.fromNullable(result);
     }
 
-    private boolean compress(GZIPOutputStream zipStream, Collection<String> telemetries) throws IOException {
+    public Optional<Transmission> serializeFromStrings(Collection<String> telemetries) {
+        Preconditions.checkNotNull(telemetries, "telemetries must be non-null value");
+        Preconditions.checkArgument(!telemetries.isEmpty(), "telemetries: One or more telemetry item is expected");
+
+        Transmission result = null;
+        boolean succeeded = false;
+        try {
+            ByteArrayOutputStream byteStream = byteStreams.get();
+            byteStream.reset();
+
+            try {
+                GZIPOutputStream zipStream = new GZIPOutputStream(byteStream);
+
+                try {
+                    succeeded = compressFromStrings(zipStream, telemetries);
+                } catch (Exception e) {
+                    InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t) {
+                    try {
+                        InternalLogger.INSTANCE.error("Failed to serialize, unknown exception: %s", t.toString());                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t2) {
+                        // chomp
+                    }
+                } finally {
+                    zipStream.close();
+                }
+            } finally {
+                byteStream.close();
+
+                // The creation of the result must be done after the 'zipStream' is closed
+                if (succeeded) {
+                    result = new Transmission(byteStream.toByteArray(), GZIP_WEB_CONTENT_TYPE, GZIP_WEB_ENCODING_TYPE);
+                    if (byteStream.size() > 1024 * 1024) {
+                        // in case it gets unexpectedly large
+                        byteStreams.remove();
+                    }
+                }
+            }
+        } catch(Exception e) {
+            InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
+        }
+
+        return Optional.fromNullable(result);
+    }
+
+    private boolean compress(GZIPOutputStream zipStream, Collection<Telemetry> telemetries) throws IOException {
+        int counter = 0;
+
+        // The format is:
+        // 1. Separate each Telemetry by newline
+        // 2. Compress the entire data by using Gzip
+        for (Telemetry telemetry : telemetries) {
+
+            if (counter != 0) {
+                zipStream.write(newlineString);
+            }
+
+            try {
+                JsonTelemetryDataSerializer jsonWriter =
+                        new JsonTelemetryDataSerializer(new OutputStreamWriter(zipStream, Charsets.UTF_8));
+                telemetry.serialize(jsonWriter);
+                jsonWriter.close();
+                telemetry.markUsed();
+                ++counter;
+            } catch (IOException e) {
+                InternalLogger.INSTANCE.error("Failed to serialize Telemetry");
+                InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
+            }
+        }
+
+        return counter > 0;
+    }
+
+    private boolean compressFromStrings(GZIPOutputStream zipStream, Collection<String> telemetries) throws IOException {
         int counter = 0;
 
         // The format is:
