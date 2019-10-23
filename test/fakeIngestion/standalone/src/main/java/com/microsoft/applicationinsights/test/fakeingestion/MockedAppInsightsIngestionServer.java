@@ -6,6 +6,7 @@ import com.google.common.base.Predicates;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -85,6 +86,19 @@ public class MockedAppInsightsIngestionServer {
         return getTelemetryDataByType(type, true);
     }
 
+    public <T extends Domain> List<T> getMessageDataInRequest() {
+        List<Envelope> items = getItemsEnvelopeDataType("MessageData");
+        List<T> dataItems = new ArrayList<T>();
+        for (Envelope e : items) {
+            String message = ((MessageData) ((Data) e.getData()).getBaseData()).getMessage();
+            if (e.getTags().containsKey("ai.operation.id") && !ignoreMessageData(message)) {
+                Data<T> dt = (Data<T>) e.getData();
+                dataItems.add(dt.getBaseData());
+            }
+        }
+        return dataItems;
+    }
+
     private <T extends Domain> List<T> getTelemetryDataByType(String type, boolean inRequestOnly) {
         Preconditions.checkNotNull(type, "type");
         List<Envelope> items = getItemsEnvelopeDataType(type);
@@ -125,6 +139,24 @@ public class MockedAppInsightsIngestionServer {
         return waitForItems(type, numItems, true);
     }
 
+    // this is used to filter out some sporadic messages that are captured via java.util.logging instrumentation
+    public List<Envelope> waitForMessageItemsInRequest(final int numItems) throws Exception {
+        List<Envelope> items = waitForItems(new Predicate<Envelope>() {
+            @Override public boolean apply(Envelope input) {
+                if (!input.getData().getBaseType().equals("MessageData")
+                        || !input.getTags().containsKey("ai.operation.id")) {
+                    return false;
+                }
+                String message = ((MessageData) ((Data) input.getData()).getBaseData()).getMessage();
+                return !ignoreMessageData(message);
+            }
+        }, numItems, 10, TimeUnit.SECONDS);
+        if (items.size() > numItems) {
+            throw new AssertionError("Expecting " + numItems + " of type MessageData, but received " + items.size());
+        }
+        return items;
+    }
+
     public List<Envelope> waitForItems(final String type, final int numItems, final boolean inRequestOnly) throws Exception {
         List<Envelope> items = waitForItems(new Predicate<Envelope>() {
             @Override public boolean apply(Envelope input) {
@@ -154,6 +186,10 @@ public class MockedAppInsightsIngestionServer {
         return this.servlet.waitForItems(condition, numItems, timeout, timeUnit);
     }
 
+    private static boolean ignoreMessageData(String message) {
+        return message.contains("The profile fetch task will not execute for next")
+                || message.contains("pending resolution of instrumentation key");
+    }
 
     public static void main(String args[]) throws Exception {
         final MockedAppInsightsIngestionServer i = new MockedAppInsightsIngestionServer();
