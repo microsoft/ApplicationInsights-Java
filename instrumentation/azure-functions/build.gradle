@@ -26,12 +26,7 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
-repositories {
-    // this is only needed while using instrumentation SNAPSHOTS
-    mavenLocal()
-}
-
-def instrumentationVersion = '0.14.7'
+def instrumentationVersion = '0.14.8'
 
 compileJava {
     sourceCompatibility = 1.7
