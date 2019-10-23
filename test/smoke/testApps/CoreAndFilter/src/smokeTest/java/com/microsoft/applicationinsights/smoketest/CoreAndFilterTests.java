@@ -208,14 +208,14 @@ public class CoreAndFilterTests extends AiSmokeTest {
     @TargetUri("/trackTrace")
     public void testTrackTrace() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForItemsInRequest("MessageData", 3);
+        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
         Envelope mdEnvelope3 = mdList.get(2);
 
-        final List<MessageData> messages = mockedIngestion.getTelemetryDataByTypeInRequest("MessageData");
+        final List<MessageData> messages = mockedIngestion.getMessageDataInRequest();
         assertThat(messages, hasItem(
                 TraceDataMatchers.hasMessage("This is first trace message.")
         ));

@@ -22,14 +22,14 @@ public class TraceLog4j2Test extends AiSmokeTest {
     @TargetUri("/traceLog4j2")
     public void testTraceLog4j2() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForItemsInRequest("MessageData", 3);
+        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
         Envelope mdEnvelope3 = mdList.get(2);
 
-        List<MessageData> logs = mockedIngestion.getTelemetryDataByTypeInRequest("MessageData");
+        List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
         logs.sort(new Comparator<MessageData>() {
             @Override
             public int compare(MessageData o1, MessageData o2) {
