@@ -43,7 +43,6 @@ public class DockerContextPoller extends Thread {
     public DockerContextPoller(String contextFileDirectory) {
         this(new File(contextFileDirectory + "/" + CONTEXT_FILE_NAME), new DockerContextFactory());
         this.setDaemon(true);
-        this.setPriority(Thread.MIN_PRIORITY);
         this.setName(DockerContextPoller.class.getSimpleName());
     }
 

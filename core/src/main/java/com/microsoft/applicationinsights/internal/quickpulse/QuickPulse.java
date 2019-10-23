@@ -110,12 +110,10 @@ public enum QuickPulse implements Stoppable {
 
                     senderThread = new Thread(quickPulseDataSender, QuickPulseDataSender.class.getSimpleName());
                     senderThread.setDaemon(true);
-                    senderThread.setPriority(Thread.MIN_PRIORITY);
                     senderThread.start();
 
                     thread = new Thread(coordinator, DefaultQuickPulseCoordinator.class.getSimpleName());
                     thread.setDaemon(true);
-                    thread.setPriority(Thread.MIN_PRIORITY);
                     thread.start();
 
                     SDKShutdownActivity.INSTANCE.register(this);
