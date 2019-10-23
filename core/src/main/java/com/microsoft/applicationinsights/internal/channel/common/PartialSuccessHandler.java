@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpStatus;
 
@@ -85,7 +86,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
                             break;
                         }
                     }
-                    return sendNewTransmission(args, newTransmission);
+                    return sendNewTransmissionFromStrings(args, newTransmission);
                 }
                 InternalLogger.INSTANCE
                         .trace("Skipping partial content handler due to itemsAccepted and itemsReceived being equal.");
@@ -164,10 +165,20 @@ public class PartialSuccessHandler implements TransmissionHandler {
      *            The {@link List} of items to resent
      * @return A pass/fail response
      */
-    boolean sendNewTransmission(TransmissionHandlerArgs args, List<String> newTransmission) {
+    boolean sendNewTransmission(TransmissionHandlerArgs args, List<Telemetry> newTransmission) {
         if (!newTransmission.isEmpty()) {
             GzipTelemetrySerializer serializer = new GzipTelemetrySerializer();
             Optional<Transmission> newT = serializer.serialize(newTransmission);
+            args.getTransmissionDispatcher().dispatch(newT.get());
+            return true;
+        }
+        return false;
+    }
+
+    boolean sendNewTransmissionFromStrings(TransmissionHandlerArgs args, List<String> newTransmission) {
+        if (!newTransmission.isEmpty()) {
+            GzipTelemetrySerializer serializer = new GzipTelemetrySerializer();
+            Optional<Transmission> newT = serializer.serializeFromStrings(newTransmission);
             args.getTransmissionDispatcher().dispatch(newT.get());
             return true;
         }

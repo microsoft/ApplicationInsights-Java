@@ -67,7 +67,8 @@ public final class JsonTelemetryDataSerializer {
 
     public void close() throws IOException {
         out.write(JSON_CLOSE_OBJECT);
-        out.close();
+        out.flush();
+        // do not close the underlying writer (e.g. in case writing multiple telemetry to gzip output stream)
     }
 
     public void write(String name, Duration value) throws IOException {

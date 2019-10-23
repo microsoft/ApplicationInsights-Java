@@ -45,6 +45,9 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private Date timestamp;
     private String sequence;
 
+    // this is temporary until we are convinced that telemetry are never re-used by codeless agent
+    private volatile boolean used;
+
     public static final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
 
     private static final ThreadLocal<DateFormat> dateFormat = new ThreadLocal<DateFormat>() {
@@ -192,8 +195,15 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
         }
     }
 
+    // this is temporary until we are convinced that telemetry are never re-used by codeless agent
+    public boolean previouslyUsed() {
+        return used;
+    }
+
     @Override
-    public void reset() {
+    // this is temporary until we are convinced that telemetry are never re-used by codeless agent
+    public void markUsed() {
+        used = true;
     }
 
     /**
