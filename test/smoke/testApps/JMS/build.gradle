@@ -16,6 +16,4 @@ dependencies {
 
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-activemq', version: '2.1.7.RELEASE'
-    compile group: 'org.apache.activemq', name: 'activemq-broker', version: '2.1.7.RELEASE'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.1.7.RELEASE'
 }
