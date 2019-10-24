@@ -53,16 +53,19 @@ public class ApplicationInsightsJsonLayoutTests {
     @Test
     public void topLevelIncludesRequiredFields() {
         final Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry(TIMESTAMP_PROP_NAME, String.valueOf(TIMESTAMP_VALUE))); // there is no timestamp format specified, so it just uses the raw long value.
+        assertThat(jsonMap, Matchers.<String, Object>hasEntry(TIMESTAMP_PROP_NAME, String.valueOf(
+                TIMESTAMP_VALUE))); // there is no timestamp format specified, so it just uses the raw long value.
         assertThat(jsonMap, Matchers.<String, Object>hasEntry(CATEGORY_PROP_NAME, ourLayout.getCategory()));
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry(OPERATION_NAME_PROP_NAME, ourLayout.getOperationName(logEvent)));
+        assertThat(jsonMap,
+                Matchers.<String, Object>hasEntry(OPERATION_NAME_PROP_NAME, ourLayout.getOperationName(logEvent)));
         assertThat(jsonMap, Matchers.<String, Object>hasEntry(RESOURCE_ID_PROP_NAME, ourLayout.getResourceId()));
         assertThat(jsonMap, hasEntry(is(CUSTOM_FIELDS_PROP_NAME), instanceOf(Map.class)));
     }
 
     @Test
     public void customPropsHasRelevantLoggerFieldsAndMetadata() {
-        final Map<String, Object> propMap = (Map<String, Object>) ourLayout.toJsonMap(logEvent).get(CUSTOM_FIELDS_PROP_NAME);
+        final Map<String, Object> propMap =
+                (Map<String, Object>) ourLayout.toJsonMap(logEvent).get(CUSTOM_FIELDS_PROP_NAME);
         assertThat(propMap, Matchers.<String, Object>hasEntry(LOGGER_ATTR_NAME, LOGGER_NAME));
         assertThat(propMap, Matchers.<String, Object>hasEntry(FORMATTED_MESSAGE_ATTR_NAME, LOG_MESSAGE));
     }
@@ -81,7 +84,8 @@ public class ApplicationInsightsJsonLayoutTests {
 
         verify(mockFinder, atLeastOnce()).getName();
         verify(mockFinder, atLeastOnce()).getValue();
-        assertThat((Map<String, Object>)jsonMap.get(CUSTOM_FIELDS_PROP_NAME), Matchers.<String, Object>hasEntry(key, value));
+        assertThat((Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME),
+                Matchers.<String, Object>hasEntry(key, value));
     }
 
     @Test

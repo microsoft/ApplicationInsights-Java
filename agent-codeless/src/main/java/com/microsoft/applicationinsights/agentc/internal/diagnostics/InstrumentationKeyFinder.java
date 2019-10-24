@@ -31,7 +31,8 @@ public class InstrumentationKeyFinder implements DiagnosticsValueFinder {
         if (!Strings.isNullOrEmpty(connStr)) {
             try {
                 // see ConnectionString.parseInto
-                Map<String, String> kvps = new HashMap<>(Splitter.on(';').trimResults().omitEmptyStrings().withKeyValueSeparator('=').split(connStr));
+                Map<String, String> kvps = new HashMap<>(
+                        Splitter.on(';').trimResults().omitEmptyStrings().withKeyValueSeparator('=').split(connStr));
                 return kvps.get(Keywords.INSTRUMENTATION_KEY);
             } catch (Exception e) {
                 return null;

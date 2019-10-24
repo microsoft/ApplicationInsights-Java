@@ -49,7 +49,7 @@ public class ConfigurationTest {
 
         Moshi moshi = new Moshi.Builder().build();
         JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
-        Configuration configuration =  jsonAdapter.fromJson("{}");
+        Configuration configuration = jsonAdapter.fromJson("{}");
 
         assertEquals(null, configuration.connectionString);
         assertEquals(null, configuration.roleName);

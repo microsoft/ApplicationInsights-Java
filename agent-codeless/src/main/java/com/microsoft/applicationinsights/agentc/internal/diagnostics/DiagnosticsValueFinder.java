@@ -5,5 +5,6 @@ import javax.annotation.Nullable;
 
 public interface DiagnosticsValueFinder {
     @Nonnull String getName();
+
     @Nullable String getValue();
 }

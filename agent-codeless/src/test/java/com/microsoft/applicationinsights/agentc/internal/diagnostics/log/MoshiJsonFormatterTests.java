@@ -36,8 +36,7 @@ public class MoshiJsonFormatterTests {
         m.put("s1", "v1");
         m.put("int1", 123);
         formatter.setPrettyPrint(true);
-        assertEquals(
-                "{\n" +
+        assertEquals("{\n" +
                 "  \"int1\": 123,\n" +
                 "  \"s1\": \"v1\"\n" +
                 "}", formatter.toJsonString(m));
