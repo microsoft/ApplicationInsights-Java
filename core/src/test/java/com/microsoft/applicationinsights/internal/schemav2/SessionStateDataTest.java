@@ -21,9 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
+import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.SessionState;
 import com.microsoft.applicationinsights.telemetry.SessionStateTelemetry;
+import com.squareup.moshi.JsonWriter;
+import okio.Buffer;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -58,13 +61,17 @@ public final class SessionStateDataTest {
         tmp.setBaseType((new SessionStateTelemetry()).getBaseTypeName());
         envelope.setData(tmp);
 
-        StringWriter writer = new StringWriter();
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         envelope.serialize(jsonWriter);
         jsonWriter.close();
-        String asJson = writer.toString();
+        writer.close();
+        String asJson = new String(buffer.readByteArray(), Charsets.UTF_8);
         String expectedDataAsString = String.format("\"data\":{\"baseType\":\"SessionStateData\",\"baseData\":{\"ver\":2,\"state\":\"%s\"}}", expectedState.toString());
         int index = asJson.indexOf(expectedDataAsString);
+        System.out.println(expectedDataAsString);
+        System.out.println(asJson);
         assertTrue(index != -1);
         index = asJson.indexOf("\"name\":\"SessionState\"");
         assertTrue(index != -1);

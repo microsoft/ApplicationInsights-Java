@@ -22,15 +22,17 @@
 package com.microsoft.applicationinsights.internal.channel.stdout;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Charsets;
+import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.squareup.moshi.JsonWriter;
+import okio.Buffer;
 
 /**
  * A telemetry channel routing information to stdout.
@@ -57,9 +59,14 @@ public class StdOutChannel implements TelemetryChannel
     @Override
     public void send(Telemetry item) {
         try {
-            StringWriter writer = new StringWriter();
-            item.serialize(new JsonTelemetryDataSerializer(writer));
-            InternalLogger.INSTANCE.trace("StdOutChannel, TELEMETRY: %s", writer.toString());
+            Buffer buffer = new Buffer();
+            JsonWriter writer = JsonWriter.of(buffer);
+            JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
+            item.serialize(jsonWriter);
+            jsonWriter.close();
+            writer.close();
+            String asJson = new String(buffer.readByteArray(), Charsets.UTF_8);
+            InternalLogger.INSTANCE.trace("StdOutChannel, TELEMETRY: %s",asJson);
         } catch (IOException ioe) {
         }
     }

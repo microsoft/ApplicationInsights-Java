@@ -21,23 +21,22 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
-
-import org.junit.Test;
-
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
+import com.google.common.base.Charsets;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+import com.squareup.moshi.JsonWriter;
+import okio.Buffer;
+import org.junit.*;
+
+import static org.junit.Assert.*;
 
 public class JsonTelemetryDataSerializerTest {
         private final static class TestClassWithStrings implements JsonSerializable, Serializable {
@@ -234,11 +233,14 @@ public class JsonTelemetryDataSerializerTest {
         testClassWithStrings.setS1("s1");
         testClassWithStrings.setS2("s2");
 
-        StringWriter stringWriter = new StringWriter();
-        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
+        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(writer);
         testClassWithStrings.serialize(tested);
         tested.close();
-        String str = stringWriter.toString();
+        writer.close();
+        String str = new String(buffer.readByteArray(), Charsets.UTF_8);
+
         TestClassWithStrings bac = new Gson().fromJson(str, TestClassWithStrings.class);
         assertEquals(bac, testClassWithStrings);
     }
@@ -250,11 +252,13 @@ public class JsonTelemetryDataSerializerTest {
             String s1 = TelemetryTestsUtils.createString(110);
             testClassWithStrings.setS1(s1);
             testClassWithStrings.setS2("abc");
-            StringWriter stringWriter = new StringWriter();
-            JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+            Buffer buffer = new Buffer();
+            JsonWriter writer = JsonWriter.of(buffer);
+            JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(writer);
             testClassWithStrings.serialize(tested);
             tested.close();
-            String str = stringWriter.toString();
+            writer.close();
+            String str = new String(buffer.readByteArray(), Charsets.UTF_8);
             TestClassWithStrings bac = new Gson().fromJson(str, TestClassWithStrings.class);
             Map<String, String> recoveryMap = new Gson().fromJson(str, new TypeToken<HashMap<String, String>>() {}.getType());
             assertNotEquals((recoveryMap.get("s1")).length(), s1.length());
@@ -269,11 +273,13 @@ public class JsonTelemetryDataSerializerTest {
         String s2 = "0x0021\t";
         testClassWithStrings.setS1(s1);
         testClassWithStrings.setS2(s2);
-        StringWriter stringWriter = new StringWriter();
-        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
+        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(writer);
         testClassWithStrings.serialize(tested);
         tested.close();
-        String str = stringWriter.toString();
+        writer.close();
+        String str = new String(buffer.readByteArray(), Charsets.UTF_8);
         Map<String, String> recoveryMap = new Gson().fromJson(str, new TypeToken<HashMap<String, String>>() {}.getType());
         assertEquals("\\'\\f\\b\\f\\n\\r\\t/\\", recoveryMap.get("s1"));
         assertEquals("0x0021\t", recoveryMap.get("s2"));
@@ -283,11 +289,13 @@ public class JsonTelemetryDataSerializerTest {
     public void testEmptyAndDefaultSanitization() throws IOException {
         TestClassWithStrings testClassWithStrings = new TestClassWithStrings();
         testClassWithStrings.setS1("");
-        StringWriter stringWriter = new StringWriter();
-        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
+        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(writer);
         testClassWithStrings.serialize(tested);
         tested.close();
-        String str = stringWriter.toString();
+        writer.close();
+        String str = new String(buffer.readByteArray(), Charsets.UTF_8);
         Map<String, String> recoveryMap = new Gson().fromJson(str, new TypeToken<HashMap<String, String>>() {}.getType());
         assertEquals("DEFAULT s1", recoveryMap.get("s1"));
         assertEquals(null, recoveryMap.get("s2"));
@@ -297,11 +305,13 @@ public class JsonTelemetryDataSerializerTest {
     public void testWriteNotRequiredMethodWithEmptyValue() throws IOException {
         TestClassWithStrings testClassWithStrings = new TestClassWithStrings();
         testClassWithStrings.setS2("");
-        StringWriter stringWriter = new StringWriter();
-        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
+        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(writer);
         testClassWithStrings.serialize(tested);
         tested.close();
-        String str = stringWriter.toString();
+        writer.close();
+        String str = new String(buffer.readByteArray(), Charsets.UTF_8);
         Map<String, String> recoveryMap = new Gson().fromJson(str, new TypeToken<HashMap<String, String>>() {}.getType());
         assertEquals("DEFAULT s1", recoveryMap.get("s1"));
         assertNull(recoveryMap.get("s2"));
@@ -327,11 +337,13 @@ public class JsonTelemetryDataSerializerTest {
         stubClass.setD1(7.0);
         stubClass.setD2(8.0);
 
-        StringWriter stringWriter = new StringWriter();
-        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
+        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(writer);
         stubClass.serialize(tested);
         tested.close();
-        String str = stringWriter.toString();
+        writer.close();
+        String str = new String(buffer.readByteArray(), Charsets.UTF_8);
 
         System.out.println("[test] Serialized StubClass: " + str);
 
@@ -364,11 +376,13 @@ public class JsonTelemetryDataSerializerTest {
         stubClass.setD1(Double.NaN);
         stubClass.setD2(Double.NaN);
 
-        StringWriter stringWriter = new StringWriter();
-        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
+        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(writer);
         stubClass.serialize(tested);
         tested.close();
-        String str = stringWriter.toString();
+        writer.close();
+        String str = new String(buffer.readByteArray(), Charsets.UTF_8);
 
         System.out.println("[testFloatingPointNaNs] Serialized StubClass: " + str);
 
@@ -389,11 +403,13 @@ public class JsonTelemetryDataSerializerTest {
         stubClass.setD1(Double.POSITIVE_INFINITY);
         stubClass.setD2(Double.POSITIVE_INFINITY);
 
-        StringWriter stringWriter = new StringWriter();
-        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(stringWriter);
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
+        JsonTelemetryDataSerializer tested = new JsonTelemetryDataSerializer(writer);
         stubClass.serialize(tested);
         tested.close();
-        String str = stringWriter.toString();
+        writer.close();
+        String str = new String(buffer.readByteArray(), Charsets.UTF_8);
 
         System.out.println("[testFloatingPointInfinity] Serialized StubClass: " + str);
 
