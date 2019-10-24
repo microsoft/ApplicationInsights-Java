@@ -139,16 +139,6 @@ public final class Duration {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(24); // length optimized for duration < 1 min
-        try {
-            toString(sb);
-        } catch (IOException e) {
-            // this should not happen, since StringBuilder doesn't throw IOException
-            return e.getMessage();
-        }
-        return sb.toString();
-    }
-
-    public void toString(Appendable sb) throws IOException {
         if (days != 0) {
             appendTwoDigits(sb, days);
             sb.append('.');
@@ -163,9 +153,10 @@ public final class Duration {
             appendThreeDigits(sb, milliseconds);
             sb.append("0000");
         }
+        return sb.toString();
     }
 
-    private static void appendTwoDigits(Appendable sb, long value) throws IOException {
+    private static void appendTwoDigits(StringBuilder sb, long value) {
         if (value < 0) {
             sb.append('-');
             value = -value;
@@ -173,10 +164,10 @@ public final class Duration {
         if (value < 10) {
             sb.append('0');
         }
-        sb.append(Long.toString(value));
+        sb.append(value);
     }
 
-    private static void appendTwoDigits(Appendable sb, int value) throws IOException {
+    private static void appendTwoDigits(StringBuilder sb, int value) {
         if (value < 0) {
             sb.append('-');
             value = -value;
@@ -184,10 +175,10 @@ public final class Duration {
         if (value < 10) {
             sb.append('0');
         }
-        sb.append(Integer.toString(value));
+        sb.append(value);
     }
 
-    private static void appendThreeDigits(Appendable sb, int value) throws IOException {
+    private static void appendThreeDigits(StringBuilder sb, int value) {
         if (value < 0) {
             sb.append('-');
             value = -value;
@@ -197,7 +188,7 @@ public final class Duration {
         } else if (value < 100) {
             sb.append('0');
         }
-        sb.append(Integer.toString(value));
+        sb.append(value);
     }
 
     @Override

@@ -22,10 +22,14 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Optional;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
@@ -33,13 +37,13 @@ import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import org.junit.Test;
+import com.squareup.moshi.JsonWriter;
+import okio.Buffer;
+import org.junit.*;
 import org.mockito.Mockito;
 
-import com.google.common.base.Optional;
-
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 
 public final class TransmitterImplTest {
     private final static String MOCK_WEB_CONTENT_TYPE = "MWCT";
@@ -305,16 +309,16 @@ public final class TransmitterImplTest {
     }
 
     private static ArrayList<String> toJson(List<Telemetry> telemetries) throws IOException {
-        StringWriter writer = new StringWriter();
-        JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         ArrayList<String> asJsons = new ArrayList<String>();
         for (Telemetry telemetry : telemetries) {
+
+            Buffer buffer = new Buffer();
+            JsonWriter writer = JsonWriter.of(buffer);
+            JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
             telemetry.serialize(jsonWriter);
             jsonWriter.close();
-            String asJson = writer.toString();
-            asJsons.add(asJson);
-            writer.getBuffer().setLength(0);
-            jsonWriter.reset(writer);
+            writer.close();
+            asJsons.add(new String(buffer.readByteArray(), Charsets.UTF_8));
         }
 
         return asJsons;

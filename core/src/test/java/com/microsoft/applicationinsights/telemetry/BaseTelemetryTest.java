@@ -21,23 +21,17 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.Domain;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.SessionStateData;
-
-import org.junit.Test;
-
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import com.google.common.base.Charsets;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
+import com.squareup.moshi.JsonWriter;
+import okio.Buffer;
+import org.junit.*;
+
+import static org.junit.Assert.*;
 
 public final class BaseTelemetryTest {
     private static class StubDomainData extends Domain {
@@ -137,11 +131,13 @@ public final class BaseTelemetryTest {
         telemetry.getContext().setInstrumentationKey("AIF-00000000-1111-2222-3333-000000000000");
         telemetry.setTimestamp(new Date());
 
-        StringWriter writer = new StringWriter();
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         telemetry.serialize(jsonWriter);
         jsonWriter.close();
-        String asJson = writer.toString();
+        writer.close();
+        String asJson = new String(buffer.readByteArray(), Charsets.UTF_8);
 
         int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.aif00000000111122223333000000000000.Stub\"");
         assertTrue(index != -1);
@@ -153,11 +149,13 @@ public final class BaseTelemetryTest {
         telemetry.getContext().setInstrumentationKey("--. .--");
         telemetry.setTimestamp(new Date());
 
-        StringWriter writer = new StringWriter();
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         telemetry.serialize(jsonWriter);
         jsonWriter.close();
-        String asJson = writer.toString();
+        writer.close();
+        String asJson = new String(buffer.readByteArray(), Charsets.UTF_8);
 
         int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.Stub\"");
         assertTrue(index != -1);
@@ -168,11 +166,13 @@ public final class BaseTelemetryTest {
         StubTelemetry telemetry = new StubTelemetry("Test Base Telemetry");
         telemetry.setTimestamp(new Date());
 
-        StringWriter writer = new StringWriter();
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
         JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         telemetry.serialize(jsonWriter);
         jsonWriter.close();
-        String asJson = writer.toString();
+        writer.close();
+        String asJson = new String(buffer.readByteArray(), Charsets.UTF_8);
 
         int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.Stub\"");
         assertTrue(index != -1);

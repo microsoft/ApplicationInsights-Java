@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import com.google.common.base.Charsets;
+import com.squareup.moshi.JsonWriter;
+import okio.Buffer;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -113,12 +116,13 @@ public final class PerformanceCounterTelemetryTest {
             String expectedInstance,
             double expectedValue) throws IOException {
         telemetry.setTimestamp(new Date());
-        StringWriter writer = new StringWriter();
-        JsonTelemetryDataSerializer jsonWriter = null;
-        jsonWriter = new JsonTelemetryDataSerializer(writer);
+        Buffer buffer = new Buffer();
+        JsonWriter writer = JsonWriter.of(buffer);
+        JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         telemetry.serialize(jsonWriter);
         jsonWriter.close();
-        String asJson = writer.toString();
+        writer.close();
+        String asJson = new String(buffer.readByteArray(), Charsets.UTF_8);
         String expectedPerformanceDataPartFormat = "\"baseData\":{\"ver\":2,\"categoryName\":\"%s\",\"counterName\":\"%s\",\"instanceName\":\"%s\",\"value\":%.1f}}}";
         String expected = String.format(expectedPerformanceDataPartFormat, expectedCategory, expectedCounter, expectedInstance, expectedValue);
         assertTrue(asJson.indexOf(expected) != -1);
