@@ -191,12 +191,12 @@ public class IncomingSpanImpl implements Span {
         }
         requestTelemetry.setDuration(new Duration(endTimeMillis - startTimeMillis));
         if (transactionType.equals("Web")) {
-            finishBuildingWebTelemetry(endTimeMillis);
+            finishBuildingWebTelemetry();
         }
         telemetryClient.track(requestTelemetry);
     }
 
-    private void finishBuildingWebTelemetry(long endTimeMillis) {
+    private void finishBuildingWebTelemetry() {
         ReadableMessage message = (ReadableMessage) messageSupplier.get();
         Map<String, ?> detail = message.getDetail();
 
