@@ -1,9 +1,9 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics.log;
 
-import org.junit.*;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.*;
 
 import static org.junit.Assert.*;
 

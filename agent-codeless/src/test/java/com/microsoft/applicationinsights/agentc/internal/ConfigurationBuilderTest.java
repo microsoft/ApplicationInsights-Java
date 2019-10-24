@@ -2,13 +2,10 @@ package com.microsoft.applicationinsights.agentc.internal;
 
 import java.util.Collections;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.junit.*;
+import org.junit.contrib.java.lang.system.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ConfigurationBuilderTest {
 

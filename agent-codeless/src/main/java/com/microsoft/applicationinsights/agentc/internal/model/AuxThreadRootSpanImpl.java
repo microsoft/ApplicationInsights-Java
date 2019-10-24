@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agentc.internal.model;
 
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.Getter;
 import org.glowroot.instrumentation.api.Setter;

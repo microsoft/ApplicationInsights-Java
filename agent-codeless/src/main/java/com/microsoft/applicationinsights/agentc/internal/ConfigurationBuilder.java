@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agentc.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -36,7 +35,6 @@ import com.google.common.base.Converter;
 import com.google.common.base.Strings;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Types;
 import okio.Okio;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;

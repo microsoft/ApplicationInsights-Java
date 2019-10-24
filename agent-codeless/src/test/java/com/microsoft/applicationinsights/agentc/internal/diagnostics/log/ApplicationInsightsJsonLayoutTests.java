@@ -1,5 +1,8 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics.log;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
@@ -7,10 +10,14 @@ import com.microsoft.applicationinsights.agentc.internal.diagnostics.Diagnostics
 import org.hamcrest.Matchers;
 import org.junit.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout.*;
+import static com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout.CATEGORY_PROP_NAME;
+import static com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout.CUSTOM_FIELDS_PROP_NAME;
+import static com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout.FORMATTED_MESSAGE_ATTR_NAME;
+import static com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout.LOGGER_ATTR_NAME;
+import static com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout.OPERATION_NAME_PROP_NAME;
+import static com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout.RESOURCE_ID_PROP_NAME;
+import static com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout.TIMESTAMP_PROP_NAME;
+import static com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout.UNKNOWN_VALUE;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;

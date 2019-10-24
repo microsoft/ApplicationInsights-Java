@@ -1,11 +1,11 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 
 public class ResourceIdFinder extends CachedDiagnosticsValueFinder {
     @VisibleForTesting
