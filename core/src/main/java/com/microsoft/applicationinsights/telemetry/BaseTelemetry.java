@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,6 +46,12 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private String sequence;
 
     public static final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
+
+    private static final ThreadLocal<DateFormat> dateFormat = new ThreadLocal<DateFormat>() {
+        protected DateFormat initialValue() {
+            return LocalStringsUtils.getDateFormatter();
+        }
+    };
 
     protected BaseTelemetry() {
     }
@@ -147,7 +154,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
 
-        String telemetryName = getTelemetryName(normalizeInstrumentationKey(context.getInstrumentationKey()), this.getEnvelopName());
+        String telemetryName = getTelemetryName(context.getNormalizedInstrumentationKey(), this.getEnvelopName());
 
         Envelope envelope = new Envelope();
         envelope.setName(telemetryName);
@@ -159,7 +166,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
         tmp.setBaseData(getData());
         tmp.setBaseType(this.getBaseTypeName());
         envelope.setData(tmp);
-        if (getTimestamp() != null) envelope.setTime(LocalStringsUtils.getDateFormatter().format(getTimestamp()));
+        if (getTimestamp() != null) envelope.setTime(dateFormat.get().format(getTimestamp()));
         envelope.setTags(context.getTags());
 
         envelope.serialize(writer);
@@ -224,12 +231,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     }
 
     public static String getTelemetryName(String normalizedInstrumentationKey, String envelopType){
-        return String.format(
-                "%s%s%s",
-                TELEMETRY_NAME_PREFIX,
-                normalizedInstrumentationKey,
-                envelopType
-                );
+        return TELEMETRY_NAME_PREFIX + normalizedInstrumentationKey + envelopType;
     }
 
 }

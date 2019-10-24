@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import java.io.IOException;
+
 import com.google.common.base.Preconditions;
 
 /**
@@ -30,6 +32,7 @@ import com.google.common.base.Preconditions;
  * It has various constructors to let the user easily define an interval of time.
  */
 public final class Duration {
+
     private final static String DAYS_FORMAT = "%02d.";
     private final static String HH_MM_SS_FORMAT = "%02d:%02d:%02d";
     private final static String MILLISECONDS_FORMAT = ".%03d0000";
@@ -135,16 +138,66 @@ public final class Duration {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        if (days != 0) {
-            sb.append(String.format(DAYS_FORMAT, days));
+        StringBuilder sb = new StringBuilder(24); // length optimized for duration < 1 min
+        try {
+            toString(sb);
+        } catch (IOException e) {
+            // this should not happen, since StringBuilder doesn't throw IOException
+            return e.getMessage();
         }
-        sb.append(String.format(HH_MM_SS_FORMAT, hours, minutes, seconds));
-        if (milliseconds > 0) {
-            sb.append(String.format(MILLISECONDS_FORMAT, milliseconds));
-        }
-
         return sb.toString();
+    }
+
+    public void toString(Appendable sb) throws IOException {
+        if (days != 0) {
+            appendTwoDigits(sb, days);
+            sb.append('.');
+        }
+        appendTwoDigits(sb, hours);
+        sb.append(':');
+        appendTwoDigits(sb, minutes);
+        sb.append(':');
+        appendTwoDigits(sb, seconds);
+        if (milliseconds != 0) {
+            sb.append('.');
+            appendThreeDigits(sb, milliseconds);
+            sb.append("0000");
+        }
+    }
+
+    private static void appendTwoDigits(Appendable sb, long value) throws IOException {
+        if (value < 0) {
+            sb.append('-');
+            value = -value;
+        }
+        if (value < 10) {
+            sb.append('0');
+        }
+        sb.append(Long.toString(value));
+    }
+
+    private static void appendTwoDigits(Appendable sb, int value) throws IOException {
+        if (value < 0) {
+            sb.append('-');
+            value = -value;
+        }
+        if (value < 10) {
+            sb.append('0');
+        }
+        sb.append(Integer.toString(value));
+    }
+
+    private static void appendThreeDigits(Appendable sb, int value) throws IOException {
+        if (value < 0) {
+            sb.append('-');
+            value = -value;
+        }
+        if (value < 10) {
+            sb.append("00");
+        } else if (value < 100) {
+            sb.append('0');
+        }
+        sb.append(Integer.toString(value));
     }
 
     @Override

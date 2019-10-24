@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
+import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -50,6 +51,7 @@ public final class TelemetryConfiguration {
     private static volatile TelemetryConfiguration active;
 
     private String instrumentationKey;
+    private String normalizedInstrumentationKey;
     private String connectionString;
     private String roleName;
     private String roleInstance;
@@ -200,6 +202,10 @@ public final class TelemetryConfiguration {
         return instrumentationKey;
     }
 
+    public String getNormalizedInstrumentationKey() {
+        return normalizedInstrumentationKey;
+    }
+
     /**
      * Gets or sets the default instrumentation key for the application.
      *
@@ -217,6 +223,7 @@ public final class TelemetryConfiguration {
         }
 
         instrumentationKey = key;
+        normalizedInstrumentationKey = BaseTelemetry.normalizeInstrumentationKey(key);
     }
 
     public String getRoleName() {
