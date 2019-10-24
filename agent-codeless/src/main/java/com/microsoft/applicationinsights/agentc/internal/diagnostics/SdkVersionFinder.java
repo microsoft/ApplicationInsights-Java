@@ -1,9 +1,9 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
-import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 
 public class SdkVersionFinder implements DiagnosticsValueFinder {
     @Nonnull

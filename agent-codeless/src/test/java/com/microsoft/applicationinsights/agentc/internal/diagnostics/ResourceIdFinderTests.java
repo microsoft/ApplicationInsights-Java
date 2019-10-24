@@ -1,15 +1,14 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayoutTests;
-import org.junit.*;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.junit.rules.TemporaryFolder;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import org.junit.*;
+import org.junit.contrib.java.lang.system.*;
+import org.junit.rules.*;
 
 import static org.junit.Assert.*;
 

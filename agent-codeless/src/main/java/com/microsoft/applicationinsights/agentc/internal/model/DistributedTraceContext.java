@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agentc.internal.model;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.correlation.CorrelationContext;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;

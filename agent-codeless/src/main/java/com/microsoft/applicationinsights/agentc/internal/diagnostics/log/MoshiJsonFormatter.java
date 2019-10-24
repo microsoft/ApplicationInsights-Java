@@ -1,11 +1,11 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics.log;
 
+import java.util.Map;
+
 import ch.qos.logback.contrib.json.JsonFormatter;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Moshi.Builder;
-
-import java.util.Map;
 
 public class MoshiJsonFormatter implements JsonFormatter {
     /**

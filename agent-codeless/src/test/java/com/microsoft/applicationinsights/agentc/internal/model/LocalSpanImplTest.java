@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.agentc.internal.model;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 
 public class LocalSpanImplTest {
 

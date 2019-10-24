@@ -1,11 +1,11 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 
 public class ResourceIdFinder extends CachedDiagnosticsValueFinder {
     @VisibleForTesting
@@ -28,7 +28,9 @@ public class ResourceIdFinder extends CachedDiagnosticsValueFinder {
 
         if (!Strings.isNullOrEmpty(diagLogMountPath)) {
             try {
-                String resId = new String(Files.readAllBytes(Paths.get(diagLogMountPath, ResourceIdFinder.RESOURCE_ID_FILE_NAME)), StandardCharsets.UTF_8);
+                String resId = new String(
+                        Files.readAllBytes(Paths.get(diagLogMountPath, ResourceIdFinder.RESOURCE_ID_FILE_NAME)),
+                        StandardCharsets.UTF_8);
                 if (!resId.isEmpty()) {
                     return resId;
                 }
@@ -37,7 +39,8 @@ public class ResourceIdFinder extends CachedDiagnosticsValueFinder {
             }
         }
 
-        // FUTURE: WEBSITE_HOSTNAME is known to be inaccurate due to the need to not recycle an app after a swap is done.
+        // FUTURE: WEBSITE_HOSTNAME is known to be inaccurate due to the need to not recycle an app after a swap is
+        // done.
         return System.getenv(ResourceIdFinder.WEBSITE_HOSTNAME_ENV_VAR);
     }
 }

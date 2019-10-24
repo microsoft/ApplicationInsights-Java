@@ -220,7 +220,8 @@ public class TraceContextCorrelationCore {
     public static String getAppId() {
 
         String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey,  TelemetryConfiguration.getActive());
+        String appId = InstrumentationKeyResolver.INSTANCE
+                .resolveInstrumentationKey(instrumentationKey, TelemetryConfiguration.getActive());
 
         // it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just
         // return and let the next request resolve the ikey.
@@ -327,7 +328,8 @@ public class TraceContextCorrelationCore {
      */
     private static String generateSourceTargetCorrelation(String instrumentationKey, String appId) {
 
-        String myAppId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey, TelemetryConfiguration.getActive());
+        String myAppId = InstrumentationKeyResolver.INSTANCE
+                .resolveInstrumentationKey(instrumentationKey, TelemetryConfiguration.getActive());
 
         return resolve(appId, myAppId);
     }

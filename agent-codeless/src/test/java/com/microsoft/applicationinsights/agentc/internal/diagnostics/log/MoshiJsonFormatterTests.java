@@ -1,9 +1,9 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics.log;
 
-import org.junit.*;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.*;
 
 import static org.junit.Assert.*;
 
@@ -36,8 +36,7 @@ public class MoshiJsonFormatterTests {
         m.put("s1", "v1");
         m.put("int1", 123);
         formatter.setPrettyPrint(true);
-        assertEquals(
-                "{\n" +
+        assertEquals("{\n" +
                 "  \"int1\": 123,\n" +
                 "  \"s1\": \"v1\"\n" +
                 "}", formatter.toJsonString(m));

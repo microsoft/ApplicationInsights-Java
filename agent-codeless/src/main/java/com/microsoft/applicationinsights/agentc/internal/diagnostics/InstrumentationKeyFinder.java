@@ -1,16 +1,16 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Keywords;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
 
 public class InstrumentationKeyFinder implements DiagnosticsValueFinder {
     @Nonnull
@@ -31,7 +31,8 @@ public class InstrumentationKeyFinder implements DiagnosticsValueFinder {
         if (!Strings.isNullOrEmpty(connStr)) {
             try {
                 // see ConnectionString.parseInto
-                Map<String, String> kvps = new HashMap<>(Splitter.on(';').trimResults().omitEmptyStrings().withKeyValueSeparator('=').split(connStr));
+                Map<String, String> kvps = new HashMap<>(
+                        Splitter.on(';').trimResults().omitEmptyStrings().withKeyValueSeparator('=').split(connStr));
                 return kvps.get(Keywords.INSTRUMENTATION_KEY);
             } catch (Exception e) {
                 return null;
