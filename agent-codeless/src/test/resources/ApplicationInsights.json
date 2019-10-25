@@ -2,40 +2,6 @@
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
   "roleName": "Something Good",
   "roleInstance": "xyz123",
-  "sampling": {
-    "fixedRate": {
-      "default": 9,
-      "requests": 8,
-      "dependencies": 7,
-      "exceptions": 6,
-      "traces": 5,
-      "customEvents": 4,
-      "pageViews": 3
-    },
-    "adaptiveRate": {
-      "default": {
-        "initialRate": 10,
-        "maxPerInterval": 50,
-        "intervalInSeconds": 1
-      },
-      "requests": {
-        "initialRate": 10,
-        "maxPerInterval": 50,
-        "intervalInSeconds": 1
-      }
-    }
-  },
-  "distributedTracing": {
-    "outboundEnabled": false,
-    "requestIdCompatEnabled": false
-  },
-  "liveMetrics": {
-    "enabled": false
-  },
-  "telemetryContext": {
-    "k8s.pod.name": "amazing-product",
-    "k8s.pod.namespace": "product-ns"
-  },
   "jmxMetrics": [
     {
       "objectName": "java.lang:type=Threading",
@@ -53,26 +19,62 @@
       "display": "Current Class Loaded Count"
     }
   ],
-  "instrumentation": {
-    "jdbc": {
-      "__comment": [
-        "this sets the explain plan threshold ...",
-        "this is a multi-line comment"
-      ],
-      "explainPlanThresholdInMS": 20000
+  "experimental": {
+    "sampling": {
+      "fixedRate": {
+        "default": 9,
+        "requests": 8,
+        "dependencies": 7,
+        "exceptions": 6,
+        "traces": 5,
+        "customEvents": 4,
+        "pageViews": 3
+      },
+      "adaptiveRate": {
+        "default": {
+          "initialRate": 10,
+          "maxPerInterval": 50,
+          "intervalInSeconds": 1
+        },
+        "requests": {
+          "initialRate": 10,
+          "maxPerInterval": 50,
+          "intervalInSeconds": 1
+        }
+      }
     },
-    "logging": {
+    "distributedTracing": {
+      "outboundEnabled": false,
+      "requestIdCompatEnabled": false
+    },
+    "liveMetrics": {
       "enabled": false
-    }
-  },
-  "customInstrumentation": [
-    {
-      "className": "com.example.MyObject",
-      "methodName": "doSomething"
     },
-    {
-      "className": "com.example.MyObject",
-      "methodName": "doMoreSomething"
-    }
-  ]
+    "telemetryContext": {
+      "k8s.pod.name": "amazing-product",
+      "k8s.pod.namespace": "product-ns"
+    },
+    "instrumentation": {
+      "jdbc": {
+        "__comment": [
+          "this sets the explain plan threshold ...",
+          "this is a multi-line comment"
+        ],
+        "explainPlanThresholdInMS": 20000
+      },
+      "logging": {
+        "enabled": false
+      }
+    },
+    "customInstrumentation": [
+      {
+        "className": "com.example.MyObject",
+        "methodName": "doSomething"
+      },
+      {
+        "className": "com.example.MyObject",
+        "methodName": "doMoreSomething"
+      }
+    ]
+  }
 }

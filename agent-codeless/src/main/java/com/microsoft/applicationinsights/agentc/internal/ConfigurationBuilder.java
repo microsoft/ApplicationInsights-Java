@@ -61,7 +61,8 @@ class ConfigurationBuilder {
         config.roleName = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.roleName);
         config.roleInstance =
                 overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.roleInstance);
-        config.telemetryContext = overlayWithEnvVar(APPLICATIONINSIGHTS_TELEMETRY_CONTEXT, config.telemetryContext);
+        config.experimental.telemetryContext = overlayWithEnvVar(APPLICATIONINSIGHTS_TELEMETRY_CONTEXT,
+                config.experimental.telemetryContext);
 
         return config;
     }

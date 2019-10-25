@@ -41,11 +41,11 @@ class CustomInstrumentationBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomInstrumentationBuilder.class);
 
-    static InstrumentationDescriptor buildCustomInstrumentation(Configuration config) {
+    static InstrumentationDescriptor build(Configuration config) {
 
         List<AdviceConfig> adviceConfigs = new ArrayList<>();
 
-        for (CustomInstrumentation customInstrumentation : config.customInstrumentation) {
+        for (CustomInstrumentation customInstrumentation : config.experimental.customInstrumentation) {
 
             String className = customInstrumentation.className;
             if (className == null || !validJavaFqcn(className)) {
@@ -125,5 +125,4 @@ class CustomInstrumentationBuilder {
         }
         return true;
     }
-
 }
