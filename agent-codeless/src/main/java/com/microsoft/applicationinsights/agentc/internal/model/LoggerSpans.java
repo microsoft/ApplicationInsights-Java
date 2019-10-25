@@ -45,6 +45,11 @@ public class LoggerSpans {
     public static void track(String operationId, String operationParentId, MessageSupplier messageSupplier,
                              @Nullable Throwable throwable, long timeMillis) {
 
+        TelemetryClient telemetryClient = Global.getTelemetryClient();
+        if (telemetryClient == null) {
+            return;
+        }
+
         ReadableMessage message = (ReadableMessage) messageSupplier.get();
         String formattedMessage = message.getText();
         Map<String, ?> detail = message.getDetail();
@@ -52,9 +57,6 @@ public class LoggerSpans {
         SeverityLevel severityLevel = level == null ? null : toSeverityLevel(level);
 
         String loggerName = (String) detail.get("Logger name");
-
-        // telemetry client is not null because it was checked when transaction started in AgentImpl.startIncomingSpan()
-        TelemetryClient telemetryClient = checkNotNull(Global.getTelemetryClient());
 
         if (throwable == null) {
             TraceTelemetry telemetry = new TraceTelemetry(formattedMessage);
