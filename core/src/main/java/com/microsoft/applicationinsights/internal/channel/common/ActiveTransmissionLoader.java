@@ -129,7 +129,6 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                 }
             }, String.format(threadNameFmt, i));
             threads[i].setDaemon(true);
-            threads[i].setPriority(Thread.MIN_PRIORITY);
         }}
 
     @Override

@@ -101,7 +101,6 @@ public final class ThreadPoolUtils {
                 Thread thread = new Thread(r);
                 thread.setName(String.format("%s-%d", poolName, threadId.getAndIncrement()));
                 thread.setDaemon(true);
-                thread.setPriority(Thread.MIN_PRIORITY);
                 return thread;
             }
         };
