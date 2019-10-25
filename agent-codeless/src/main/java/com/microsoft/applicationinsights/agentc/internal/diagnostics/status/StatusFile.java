@@ -81,7 +81,7 @@ public class StatusFile {
     }
 
     public static <T> void putValueAndWrite(String key, T value) {
-        if (shouldNotWrite()) {
+        if (!DiagnosticsHelper.shouldOutputDiagnostics()) {
             return;
         }
         CONSTANT_VALUES.put(key, value);
@@ -89,7 +89,7 @@ public class StatusFile {
     }
 
     public static void write() {
-        if (shouldNotWrite()) {
+        if (!DiagnosticsHelper.shouldOutputDiagnostics()) {
             return;
         }
         WRITER_THREAD.submit(new Runnable() {
@@ -146,10 +146,6 @@ public class StatusFile {
             }
         }
         return map;
-    }
-
-    private static boolean shouldNotWrite() {
-        return !DiagnosticsHelper.isAppServiceCodeless();
     }
 
     /**

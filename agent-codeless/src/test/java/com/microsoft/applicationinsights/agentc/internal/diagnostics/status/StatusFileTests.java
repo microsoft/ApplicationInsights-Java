@@ -36,6 +36,11 @@ public class StatusFileTests {
         envVars.set(AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE, fakeVersion);
     }
 
+    @After
+    public void resetStaticVariables() {
+        DiagnosticsTestHelper.reset();
+    }
+
     @Test
     public void mapHasExpectedValues() {
         final Map<String, Object> jsonMap = StatusFile.getJsonMap();
@@ -74,26 +79,44 @@ public class StatusFileTests {
     }
 
     @Test
-    public void writesCorrectFile() throws Exception {
-        try {
-            DiagnosticsTestHelper.setIsAppServiceCodeless(true);
+    public void doesNotWriteIfEnabledEnvVarIsFalse() throws Exception {
+        envVars.set(DiagnosticsTestHelper.ENABLED_ENV_VAR, "false");
+        runWriteFileTest(false);
+    }
 
-            final File tempFolder = this.tempFolder.newFolder();
-            StatusFile.directory = tempFolder.getAbsolutePath();
-            assertTrue(tempFolder.isDirectory());
-            assertThat(tempFolder.list(), emptyArray());
-            StatusFile.write();
-            pauseForFileWrite();
+    @Test
+    public void ifEnabledVarHasInvalidValueThenItIsEnabled() throws Exception {
+        envVars.set(DiagnosticsTestHelper.ENABLED_ENV_VAR, "42");
+        DiagnosticsTestHelper.setIsAppServiceCodeless(true);
+        runWriteFileTest(true);
+    }
+
+    @Test
+    public void writesCorrectFile() throws Exception {
+        DiagnosticsTestHelper.setIsAppServiceCodeless(true);
+        runWriteFileTest(true);
+    }
+
+    private void runWriteFileTest(boolean enabled) throws Exception {
+        final File tempFolder = this.tempFolder.newFolder();
+        assertTrue("Verify temp folder is directory", tempFolder.isDirectory());
+        assertThat("Verify temp folder is empty", tempFolder.list(), emptyArray());
+
+        StatusFile.directory = tempFolder.getAbsolutePath();
+        StatusFile.write();
+        pauseForFileWrite();
+
+        if (enabled) {
             assertThat(tempFolder.list(), arrayWithSize(1));
             final Map map = parseJsonFile(tempFolder);
             assertMapHasExpectedInformation(map);
-        } finally {
-            DiagnosticsTestHelper.setIsAppServiceCodeless(false);
+        } else {
+            assertThat(tempFolder.list(), emptyArray());
         }
     }
 
     private void pauseForFileWrite() throws InterruptedException {
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.SECONDS.sleep(5);
     }
 
     Map parseJsonFile(File tempFolder) throws java.io.IOException {
@@ -106,22 +129,18 @@ public class StatusFileTests {
 
     @Test
     public void doesNotWriteIfNotAppService() throws Exception {
-        try {
-            DiagnosticsTestHelper.setIsAppServiceCodeless(false); // just to be sure
+        DiagnosticsTestHelper.setIsAppServiceCodeless(false); // just to be sure
 
-            final File tempFolder = this.tempFolder.newFolder();
-            StatusFile.directory = tempFolder.getAbsolutePath();
-            assertTrue(tempFolder.isDirectory());
-            assertThat("Before write()", tempFolder.list(), emptyArray());
-            StatusFile.write();
-            pauseForFileWrite();
-            assertThat("After write()", tempFolder.list(), emptyArray());
-            StatusFile.putValueAndWrite("shouldNot", "write");
-            pauseForFileWrite();
-            assertThat("After write()", tempFolder.list(), emptyArray());
-        } finally {
-            // nop
-        }
+        final File tempFolder = this.tempFolder.newFolder();
+        StatusFile.directory = tempFolder.getAbsolutePath();
+        assertTrue(tempFolder.isDirectory());
+        assertThat("Before write()", tempFolder.list(), emptyArray());
+        StatusFile.write();
+        pauseForFileWrite();
+        assertThat("After write()", tempFolder.list(), emptyArray());
+        StatusFile.putValueAndWrite("shouldNot", "write");
+        pauseForFileWrite();
+        assertThat("After write()", tempFolder.list(), emptyArray());
     }
 
     @Test
