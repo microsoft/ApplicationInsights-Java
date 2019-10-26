@@ -33,16 +33,29 @@ public class Configuration {
     public @Nullable String connectionString;
     public @Nullable String roleName;
     public @Nullable String roleInstance;
-    public Sampling sampling = new Sampling();
-    public DistributedTracing distributedTracing = new DistributedTracing();
-    public LiveMetrics liveMetrics = new LiveMetrics();
-    public Map<String, String> telemetryContext = Collections.emptyMap();
     public List<JmxMetric> jmxMetrics = Collections.emptyList();
-    public Map<String, Map<String, Object>> instrumentation = Collections.emptyMap();
-    public List<CustomInstrumentation> customInstrumentation = Collections.emptyList();
 
-    public boolean debug;
-    public boolean developerMode;
+    public ExperimentalConfiguration experimental = new ExperimentalConfiguration();
+
+    public static class JmxMetric {
+
+        public @Nullable String objectName;
+        public @Nullable String attribute;
+        public @Nullable String display;
+    }
+
+    public static class ExperimentalConfiguration {
+
+        public Sampling sampling = new Sampling();
+        public DistributedTracing distributedTracing = new DistributedTracing();
+        public LiveMetrics liveMetrics = new LiveMetrics();
+        public Map<String, String> telemetryContext = Collections.emptyMap();
+        public Map<String, Map<String, Object>> instrumentation = Collections.emptyMap();
+        public List<CustomInstrumentation> customInstrumentation = Collections.emptyList();
+
+        public boolean debug;
+        public boolean developerMode;
+    }
 
     public static class Sampling {
 
@@ -53,6 +66,7 @@ public class Configuration {
 
         @Json(name = "default")
         public @Nullable Double default_;
+
         public @Nullable Double requests;
         public @Nullable Double dependencies;
         public @Nullable Double exceptions;
@@ -70,13 +84,6 @@ public class Configuration {
     public static class LiveMetrics {
 
         public boolean enabled = true;
-    }
-
-    public static class JmxMetric {
-
-        public @Nullable String objectName;
-        public @Nullable String attribute;
-        public @Nullable String display;
     }
 
     public static class CustomInstrumentation {

@@ -26,7 +26,6 @@ import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -141,8 +140,41 @@ public class MainEntryPoint {
 
         Configuration config = ConfigurationBuilder.create(agentJarPath);
 
-        Global.setDistributedTracingOutboundEnabled(config.distributedTracing.outboundEnabled);
-        Global.setDistributedTracingRequestIdCompatEnabled(config.distributedTracing.requestIdCompatEnabled);
+        List<InstrumentationDescriptor> instrumentationDescriptors = InstrumentationDescriptors.read();
+        InstrumentationDescriptor customInstrumentationDescriptor =
+                CustomInstrumentationBuilder.build(config);
+        if (customInstrumentationDescriptor != null) {
+            instrumentationDescriptors = new ArrayList<>(instrumentationDescriptors);
+            instrumentationDescriptors.add(customInstrumentationDescriptor);
+        }
+
+        ConfigServiceFactory configServiceFactory =
+                new SimpleConfigServiceFactory(instrumentationDescriptors, InstrumentationConfigBuilder.build(config));
+
+        // need to add instrumentation transformers before initializing telemetry configuration below, since that starts
+        // some threads and loads some classes that the instrumentation wants to weave
+        EngineModule.createWithSomeDefaults(instrumentation, tmpDir, Global.getThreadContextThreadLocal(),
+                instrumentationDescriptors, configServiceFactory, new AgentImpl(), false,
+                Collections.singletonList("com.microsoft.applicationinsights.agentc."),
+                Collections.singletonList("com.microsoft.applicationinsights.agentc."), agentJarFile);
+
+        TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
+        TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
+        FixedRateSampling fixedRateSampling = config.experimental.sampling.fixedRate;
+        if (fixedRateSampling != null) {
+            addFixedRateSampling(fixedRateSampling, configuration);
+        }
+        TelemetryClient telemetryClient = new TelemetryClient();
+        if (!config.experimental.telemetryContext.isEmpty()) {
+            telemetryClient.getContext().getProperties().putAll(config.experimental.telemetryContext);
+        }
+        Global.setDistributedTracingOutboundEnabled(config.experimental.distributedTracing.outboundEnabled);
+        Global.setDistributedTracingRequestIdCompatEnabled(
+                config.experimental.distributedTracing.requestIdCompatEnabled);
+        Global.setTelemetryClient(telemetryClient);
+    }
+
+    private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(Configuration config) {
 
         ApplicationInsightsXmlConfiguration xmlConfiguration = new ApplicationInsightsXmlConfiguration();
 
@@ -155,7 +187,7 @@ public class MainEntryPoint {
         if (!Strings.isNullOrEmpty(config.roleInstance)) {
             xmlConfiguration.setRoleInstance(config.roleInstance);
         }
-        if (!config.liveMetrics.enabled) {
+        if (!config.experimental.liveMetrics.enabled) {
             xmlConfiguration.getQuickPulse().setEnabled(false);
         }
         ArrayList<JmxXmlElement> jmxXmls = new ArrayList<>();
@@ -171,149 +203,16 @@ public class MainEntryPoint {
         }
         xmlConfiguration.getPerformance().setJmxXmlElements(jmxXmls);
 
-        if (config.debug) {
+        if (config.experimental.debug) {
             SDKLoggerXmlElement sdkLogger = new SDKLoggerXmlElement();
             sdkLogger.setType("CONSOLE");
             sdkLogger.setLevel("TRACE");
             xmlConfiguration.setSdkLogger(sdkLogger);
         }
-        if (config.developerMode) {
+        if (config.experimental.developerMode) {
             xmlConfiguration.getChannel().setDeveloperMode(true);
         }
-
-        List<InstrumentationDescriptor> instrumentationDescriptors = InstrumentationDescriptors.read();
-        InstrumentationDescriptor customInstrumentationDescriptor =
-                CustomInstrumentationBuilder.buildCustomInstrumentation(config);
-        if (customInstrumentationDescriptor != null) {
-            instrumentationDescriptors = new ArrayList<>(instrumentationDescriptors);
-            instrumentationDescriptors.add(customInstrumentationDescriptor);
-        }
-
-        ConfigServiceFactory configServiceFactory =
-                new SimpleConfigServiceFactory(instrumentationDescriptors, getInstrumentationConfig(config));
-
-        // need to add instrumentation transformers before initializing telemetry configuration below, since that starts
-        // some threads and loads some classes that the instrumentation wants to weave
-        EngineModule.createWithSomeDefaults(instrumentation, tmpDir, Global.getThreadContextThreadLocal(),
-                instrumentationDescriptors, configServiceFactory, new AgentImpl(), false,
-                Collections.singletonList("com.microsoft.applicationinsights.agentc."),
-                Collections.singletonList("com.microsoft.applicationinsights.agentc."), agentJarFile);
-
-        TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
-        TelemetryConfigurationFactory.INSTANCE.initialize(configuration, xmlConfiguration);
-        FixedRateSampling fixedRateSampling = config.sampling.fixedRate;
-        if (fixedRateSampling != null) {
-            addFixedRateSampling(fixedRateSampling, configuration);
-        }
-        TelemetryClient telemetryClient = new TelemetryClient();
-        if (!config.telemetryContext.isEmpty()) {
-            telemetryClient.getContext().getProperties().putAll(config.telemetryContext);
-        }
-        Global.setTelemetryClient(telemetryClient);
-    }
-
-    private static Map<String, Map<String, Object>> getInstrumentationConfig(Configuration configuration) {
-
-        Map<String, Map<String, Object>> instrumentationConfig = new HashMap<>();
-
-        Map<String, Object> servletConfig = new HashMap<>();
-        servletConfig.put("captureRequestServerHostname", true);
-        servletConfig.put("captureRequestServerPort", true);
-        servletConfig.put("captureRequestScheme", true);
-        servletConfig.put("captureRequestCookies", Arrays.asList("ai_user", "ai_session"));
-
-        Map<String, Object> jdbcConfig = new HashMap<>();
-        jdbcConfig.put("captureBindParametersIncludes", Collections.emptyList());
-        jdbcConfig.put("captureResultSetNavigate", false);
-        jdbcConfig.put("captureGetConnection", false);
-
-        Number explainPlanThresholdInMS = getExplainPlanThresholdInMS(configuration);
-        if (explainPlanThresholdInMS == null) {
-            jdbcConfig.put("explainPlanThresholdMillis", 10000);
-        } else {
-            jdbcConfig.put("explainPlanThresholdMillis", explainPlanThresholdInMS);
-        }
-
-        Map<String, Object> log4jConfig = new HashMap<>();
-        Map<String, Object> logbackConfig = new HashMap<>();
-        Map<String, Object> julConfig = new HashMap<>();
-
-        LoggingThreshold threshold = getLoggingThreshold(configuration);
-        if (threshold == null) {
-            log4jConfig.put("threshold", "warn");
-            logbackConfig.put("threshold", "warn");
-            julConfig.put("threshold", "warning");
-        } else {
-            log4jConfig.put("threshold", threshold.log4jThreshold);
-            logbackConfig.put("threshold", threshold.logbackThreshold);
-            julConfig.put("threshold", threshold.julThreshold);
-        }
-        instrumentationConfig.put("servlet", servletConfig);
-        instrumentationConfig.put("jdbc", jdbcConfig);
-        instrumentationConfig.put("log4j", log4jConfig);
-        instrumentationConfig.put("logback", logbackConfig);
-        instrumentationConfig.put("java-util-logging", julConfig);
-
-        return instrumentationConfig;
-    }
-
-    private static @Nullable Number getExplainPlanThresholdInMS(Configuration configuration) {
-        Map<String, Object> jdbc = configuration.instrumentation.get("jdbc");
-        if (jdbc == null) {
-            return null;
-        }
-        Object explainPlanThresholdInMS = jdbc.get("explainPlanThresholdInMS");
-        if (explainPlanThresholdInMS == null) {
-            return null;
-        }
-        if (!(explainPlanThresholdInMS instanceof Number)) {
-            startupLogger.warn("jdbc explainPlanThresholdMillis must be a number, but found: {}",
-                    explainPlanThresholdInMS.getClass());
-            return null;
-        }
-        return (Number) explainPlanThresholdInMS;
-    }
-
-    private static @Nullable LoggingThreshold getLoggingThreshold(Configuration configuration) {
-        Map<String, Object> logging = configuration.instrumentation.get("logging");
-        if (logging == null) {
-            return null;
-        }
-        Object thresholdObj = logging.get("threshold");
-        if (thresholdObj == null) {
-            return null;
-        }
-        if (!(thresholdObj instanceof String)) {
-            startupLogger.warn("logging threshold must be a string, but found: {}", thresholdObj.getClass());
-            return null;
-        }
-        String threshold = (String) thresholdObj;
-        if (threshold.isEmpty()) {
-            return null;
-        }
-        switch (threshold) {
-            case "fatal":
-                return new LoggingThreshold("fatal", "error", "severe");
-            case "error":
-            case "severe":
-                return new LoggingThreshold("error", "error", "severe");
-            case "warn":
-            case "warning":
-                return new LoggingThreshold("warn", "warn", "warning");
-            case "info":
-                return new LoggingThreshold("info", "info", "info");
-            case "debug":
-            case "config":
-            case "fine":
-            case "finer":
-                return new LoggingThreshold("debug", "debug", threshold);
-            case "trace":
-            case "finest":
-                return new LoggingThreshold("trace", "trace", "finest");
-            default:
-                startupLogger.warn("invalid logging threshold: {}", threshold);
-                return null;
-        }
+        return xmlConfiguration;
     }
 
     private static void addFixedRateSampling(FixedRateSampling fixedRateSampling,
@@ -341,26 +240,5 @@ public class MainEntryPoint {
         }
         configuration.getTelemetryProcessors()
                 .add(new FixedRateSamplingTelemetryProcessor(samplingRate, samplingPercentages));
-    }
-
-    private static class Connection {
-        // this is never an empty string (empty string is normalized to null)
-        private @Nullable String instrumentationKey;
-        private String ingestionEndpoint = "https://dc.services.visualstudio.com/";
-    }
-
-    private static class LoggingThreshold {
-
-        private static final LoggingThreshold DEFAULT = new LoggingThreshold("warn", "warn", "warning");
-
-        private final String log4jThreshold;
-        private final String logbackThreshold;
-        private final String julThreshold;
-
-        private LoggingThreshold(String log4jThreshold, String logbackThreshold, String julThreshold) {
-            this.log4jThreshold = log4jThreshold;
-            this.logbackThreshold = logbackThreshold;
-            this.julThreshold = julThreshold;
-        }
     }
 }
