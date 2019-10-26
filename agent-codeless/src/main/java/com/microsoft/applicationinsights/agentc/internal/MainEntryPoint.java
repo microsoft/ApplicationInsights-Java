@@ -201,7 +201,7 @@ public class MainEntryPoint {
 
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, xmlConfiguration);
-        FixedRateSampling fixedRateSampling = config.fixedRateSampling;
+        FixedRateSampling fixedRateSampling = config.sampling.fixedRate;
         if (fixedRateSampling != null) {
             addFixedRateSampling(fixedRateSampling, configuration);
         }
@@ -319,29 +319,28 @@ public class MainEntryPoint {
     private static void addFixedRateSampling(FixedRateSampling fixedRateSampling,
                                              TelemetryConfiguration configuration) {
 
-        Map<String, Class<?>> mapping = new HashMap<>();
-        mapping.put("Dependency", RemoteDependencyTelemetry.class);
-        mapping.put("Event", EventTelemetry.class);
-        mapping.put("Exception", ExceptionTelemetry.class);
-        mapping.put("PageView", PageViewTelemetry.class);
-        mapping.put("Request", RequestTelemetry.class);
-        mapping.put("Trace", TraceTelemetry.class);
-
-        double samplingPercentage = MoreObjects.firstNonNull(fixedRateSampling.samplingPercentage, 100.0);
+        double samplingRate = MoreObjects.firstNonNull(fixedRateSampling.default_, 100.0);
         Map<Class<?>, Double> samplingPercentages = new HashMap<>();
-
-        for (Map.Entry<String, Double> entry : fixedRateSampling.samplingPercentages.entrySet()) {
-            String telemetryType = entry.getKey();
-            Class clazz = mapping.get(telemetryType);
-            if (clazz == null) {
-                startupLogger.warn("FixedRateSampling configuration does not support telemetry type: {}",
-                        telemetryType);
-            } else {
-                samplingPercentages.put(clazz, entry.getValue());
-            }
+        if (fixedRateSampling.requests != null) {
+            samplingPercentages.put(RequestTelemetry.class, fixedRateSampling.requests);
+        }
+        if (fixedRateSampling.dependencies != null) {
+            samplingPercentages.put(RemoteDependencyTelemetry.class, fixedRateSampling.dependencies);
+        }
+        if (fixedRateSampling.exceptions != null) {
+            samplingPercentages.put(ExceptionTelemetry.class, fixedRateSampling.exceptions);
+        }
+        if (fixedRateSampling.traces != null) {
+            samplingPercentages.put(TraceTelemetry.class, fixedRateSampling.traces);
+        }
+        if (fixedRateSampling.customEvents != null) {
+            samplingPercentages.put(EventTelemetry.class, fixedRateSampling.customEvents);
+        }
+        if (fixedRateSampling.pageViews != null) {
+            samplingPercentages.put(PageViewTelemetry.class, fixedRateSampling.pageViews);
         }
         configuration.getTelemetryProcessors()
-                .add(new FixedRateSamplingTelemetryProcessor(samplingPercentage, samplingPercentages));
+                .add(new FixedRateSamplingTelemetryProcessor(samplingRate, samplingPercentages));
     }
 
     private static class Connection {

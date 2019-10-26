@@ -26,6 +26,13 @@ public class ConfigurationTest {
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
         assertEquals("Something Good", configuration.roleName);
         assertEquals("xyz123", configuration.roleInstance);
+        assertEquals((Double) 9.0, configuration.sampling.fixedRate.default_);
+        assertEquals((Double) 8.0, configuration.sampling.fixedRate.requests);
+        assertEquals((Double) 7.0, configuration.sampling.fixedRate.dependencies);
+        assertEquals((Double) 6.0, configuration.sampling.fixedRate.exceptions);
+        assertEquals((Double) 5.0, configuration.sampling.fixedRate.traces);
+        assertEquals((Double) 4.0, configuration.sampling.fixedRate.customEvents);
+        assertEquals((Double) 3.0, configuration.sampling.fixedRate.pageViews);
         assertEquals(false, configuration.distributedTracing.outboundEnabled);
         assertEquals(false, configuration.distributedTracing.requestIdCompatEnabled);
         assertEquals(false, configuration.liveMetrics.enabled);

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.squareup.moshi.Json;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Configuration {
@@ -32,16 +33,33 @@ public class Configuration {
     public @Nullable String connectionString;
     public @Nullable String roleName;
     public @Nullable String roleInstance;
+    public Sampling sampling = new Sampling();
     public DistributedTracing distributedTracing = new DistributedTracing();
     public LiveMetrics liveMetrics = new LiveMetrics();
     public Map<String, String> telemetryContext = Collections.emptyMap();
     public List<JmxMetric> jmxMetrics = Collections.emptyList();
     public Map<String, Map<String, Object>> instrumentation = Collections.emptyMap();
     public List<CustomInstrumentation> customInstrumentation = Collections.emptyList();
-    public @Nullable FixedRateSampling fixedRateSampling;
 
     public boolean debug;
     public boolean developerMode;
+
+    public static class Sampling {
+
+        public @Nullable FixedRateSampling fixedRate;
+    }
+
+    public static class FixedRateSampling {
+
+        @Json(name = "default")
+        public @Nullable Double default_;
+        public @Nullable Double requests;
+        public @Nullable Double dependencies;
+        public @Nullable Double exceptions;
+        public @Nullable Double traces;
+        public @Nullable Double customEvents;
+        public @Nullable Double pageViews;
+    }
 
     public static class DistributedTracing {
 
@@ -66,11 +84,5 @@ public class Configuration {
         public @Nullable String className;
         public @Nullable String methodName;
         public @Nullable String signature;
-    }
-
-    public static class FixedRateSampling {
-
-        public @Nullable Double samplingPercentage;
-        public Map<String, Double> samplingPercentages = Collections.emptyMap();
     }
 }
