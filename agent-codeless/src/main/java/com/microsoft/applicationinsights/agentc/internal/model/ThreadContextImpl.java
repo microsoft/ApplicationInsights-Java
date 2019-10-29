@@ -87,6 +87,10 @@ public class ThreadContextImpl implements ThreadContextPlus {
         if (text.startsWith(LocalSpanImpl.PREFIX)) {
             return new LocalSpanImpl(incomingSpan.getOperationId(), incomingSpan.getOperationParentId(), text,
                     System.currentTimeMillis(), messageSupplier);
+        } else if (text.startsWith("jms send message: ")) {
+            text = "JMS Send: " + text.substring("jms send message: ".length());
+            return new OutgoingSpanImpl(incomingSpan.getOperationId(), incomingSpan.getOperationParentId(), null, "JMS",
+                    text, System.currentTimeMillis(), messageSupplier);
         } else {
             return NopTransactionService.LOCAL_SPAN;
         }

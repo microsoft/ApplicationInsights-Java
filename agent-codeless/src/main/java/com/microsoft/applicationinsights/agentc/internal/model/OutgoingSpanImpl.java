@@ -116,7 +116,7 @@ public class OutgoingSpanImpl implements Span {
         RemoteDependencyTelemetry telemetry = null;
         if (type.equals("HTTP")) {
             telemetry = toHttpTelemetry(endTimeMillis);
-        } else if (type.equals("Redis")) {
+        } else if (type.equals("Redis") || type.equals("JMS")) {
             telemetry = new RemoteDependencyTelemetry();
             telemetry.getContext().getOperation().setId(operationId);
             telemetry.getContext().getOperation().setParentId(operationParentId);
