@@ -23,8 +23,6 @@ package com.microsoft.applicationinsights.agentc.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,6 +36,8 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agentc.internal.Configuration.FixedRateSampling;
 import com.microsoft.applicationinsights.agentc.internal.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
@@ -69,7 +69,9 @@ public class MainEntryPoint {
     }
 
     public static void premain(Instrumentation instrumentation, File agentJarFile) {
+        boolean success = false;
         try {
+            DiagnosticsHelper.setAgentJarFile(agentJarFile);
             startupLogger = initLogging(instrumentation, agentJarFile);
             MDC.put("microsoft.ai.operationName", "Startup");
             addLibJars(instrumentation, agentJarFile);
@@ -79,12 +81,18 @@ public class MainEntryPoint {
             instrumentation.addTransformer(new LegacyTelemetryClientClassFileTransformer());
             instrumentation.addTransformer(new LegacyDependencyTelemetryClassFileTransformer());
             instrumentation.addTransformer(new LegacyPerformanceCounterClassFileTransformer());
+            success = true;
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             startupLogger.error("Agent failed to start.", t);
             t.printStackTrace();
         } finally {
+            try {
+                StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success);
+            } catch (Exception e) {
+                startupLogger.error("Error writing status.json", e);
+            }
             MDC.clear();
         }
     }
@@ -119,9 +127,7 @@ public class MainEntryPoint {
 
     private static void start(Instrumentation instrumentation, File agentJarFile) throws Exception {
 
-        Path agentJarPath = agentJarFile.toPath();
-        Path sdkNamePrefixPath = agentJarPath.resolveSibling("appsvc.codeless");
-        if (Files.exists(sdkNamePrefixPath)) {
+        if (DiagnosticsHelper.isAppServiceCodeless()) {
             if (SystemInformation.INSTANCE.isWindows()) {
                 PropertyHelper.setSdkNamePrefix("awr_");
             } else if (SystemInformation.INSTANCE.isUnix()) {
@@ -138,7 +144,7 @@ public class MainEntryPoint {
             throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
         }
 
-        Configuration config = ConfigurationBuilder.create(agentJarPath);
+        Configuration config = ConfigurationBuilder.create(agentJarFile.toPath());
 
         List<InstrumentationDescriptor> instrumentationDescriptors = InstrumentationDescriptors.read();
         InstrumentationDescriptor customInstrumentationDescriptor =
