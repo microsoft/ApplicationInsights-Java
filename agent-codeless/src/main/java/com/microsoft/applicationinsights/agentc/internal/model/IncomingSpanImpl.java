@@ -36,6 +36,7 @@ import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore.ResponseHeaderSetter;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.glowroot.instrumentation.api.Getter;
 import org.glowroot.instrumentation.api.MessageSupplier;
 import org.glowroot.instrumentation.api.Setter;
@@ -57,7 +58,7 @@ public class IncomingSpanImpl implements Span {
 
     private static final Splitter cookieSplitter = Splitter.on('|');
 
-    private final String transactionType;
+    private final @Nullable String transactionType; // null is for invisible incoming spans (e.g. Azure Functions)
     private final MessageSupplier messageSupplier;
     private final ThreadContextThreadLocal.Holder threadContextHolder;
     private final long startTimeMillis;
@@ -72,7 +73,7 @@ public class IncomingSpanImpl implements Span {
 
     private final DistributedTraceContext distributedTraceContext;
 
-    public IncomingSpanImpl(String transactionType, MessageSupplier messageSupplier,
+    public IncomingSpanImpl(@Nullable String transactionType, MessageSupplier messageSupplier,
                             ThreadContextThreadLocal.Holder threadContextHolder, long startTimeMillis,
                             RequestTelemetry requestTelemetry, DistributedTraceContext distributedTraceContext) {
         this.transactionType = transactionType;
@@ -173,6 +174,10 @@ public class IncomingSpanImpl implements Span {
     }
 
     private void send() {
+        if (transactionType == null) {
+            // this is an invisible incoming span (e.g. Azure Functions)
+            return;
+        }
         long endTimeMillis = System.currentTimeMillis();
         // telemetry client is not null because it was checked when transaction started in AgentImpl.startIncomingSpan()
         TelemetryClient telemetryClient = checkNotNull(Global.getTelemetryClient());
@@ -186,12 +191,12 @@ public class IncomingSpanImpl implements Span {
         }
         requestTelemetry.setDuration(new Duration(endTimeMillis - startTimeMillis));
         if (transactionType.equals("Web")) {
-            finishBuildingWebTelemetry(endTimeMillis);
+            finishBuildingWebTelemetry();
         }
         telemetryClient.track(requestTelemetry);
     }
 
-    private void finishBuildingWebTelemetry(long endTimeMillis) {
+    private void finishBuildingWebTelemetry() {
         ReadableMessage message = (ReadableMessage) messageSupplier.get();
         Map<String, ?> detail = message.getDetail();
 

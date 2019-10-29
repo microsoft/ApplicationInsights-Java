@@ -22,7 +22,10 @@
 package com.microsoft.applicationinsights.agentc.internal;
 
 import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agentc.internal.model.DistributedTraceContext;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
@@ -37,9 +40,12 @@ import org.glowroot.instrumentation.api.MessageSupplier;
 import org.glowroot.instrumentation.api.Span;
 import org.glowroot.instrumentation.api.TimerName;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
+import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal.Holder;
 import org.glowroot.instrumentation.engine.spi.AgentSPI;
 
 class AgentImpl implements AgentSPI {
+
+    private static final MessageSupplier NOP_MESSAGE_SUPPLIER = MessageSupplier.create("");
 
     @Override
     public <C> Span startIncomingSpan(String transactionType, String transactionName, Getter<C> getter, C carrier,
@@ -48,8 +54,15 @@ class AgentImpl implements AgentSPI {
                                       int rootSuppressionKeyId) {
 
         TelemetryClient telemetryClient = Global.getTelemetryClient();
-        if (telemetryClient == null
-                || !transactionType.equals("Web") && !transactionType.equals("Background")) {
+        if (telemetryClient == null) {
+            return null;
+        }
+        if (transactionType.equals("ai.internal:AZUREFN")) {
+            // invisible incoming spans are only used by Azure Functions
+            return startAzureFnSpan(getter, carrier, threadContextHolder, rootNestingGroupId, rootSuppressionKeyId);
+        }
+
+        if (!transactionType.equals("Web") && !transactionType.equals("Background")) {
             return null;
         }
 
@@ -73,6 +86,26 @@ class AgentImpl implements AgentSPI {
         }
 
         IncomingSpanImpl incomingSpan = new IncomingSpanImpl(transactionType, messageSupplier, threadContextHolder,
+                startTimeMillis, requestTelemetry, distributedTraceContext);
+
+        ThreadContextImpl mainThreadContext =
+                new ThreadContextImpl(incomingSpan, rootNestingGroupId, rootSuppressionKeyId, false);
+        threadContextHolder.set(mainThreadContext);
+
+        return incomingSpan;
+    }
+
+    private static <C> Span startAzureFnSpan(Getter<C> getter, C carrier, Holder threadContextHolder,
+                                             int rootNestingGroupId, int rootSuppressionKeyId) {
+
+        long startTimeMillis = System.currentTimeMillis();
+
+        RequestTelemetry requestTelemetry = new RequestTelemetry();
+
+        DistributedTraceContext distributedTraceContext = TraceContextCorrelationCore
+                .resolveCorrelationForInvisibleRequest(carrier, getter, requestTelemetry);
+
+        IncomingSpanImpl incomingSpan = new IncomingSpanImpl(null, NOP_MESSAGE_SUPPLIER, threadContextHolder,
                 startTimeMillis, requestTelemetry, distributedTraceContext);
 
         ThreadContextImpl mainThreadContext =
