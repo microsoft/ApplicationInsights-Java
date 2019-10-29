@@ -37,6 +37,7 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -50,7 +51,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmitterImpl implements TelemetriesTransmitter<String> {
+public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> {
     private static abstract class SendHandler {
         protected final TransmissionDispatcher transmissionDispatcher;
 
@@ -64,7 +65,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
             this.serializer = serializer;
         }
 
-        protected void dispatch(Collection<String> telemetries) {
+        protected void dispatch(Collection<Telemetry> telemetries) {
             if (telemetries.isEmpty()) {
                 return;
             }
@@ -79,9 +80,9 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
     }
 
     private static final class ScheduledSendHandler extends SendHandler implements Runnable {
-        private final TelemetriesFetcher<String> telemetriesFetcher;
+        private final TelemetriesFetcher<Telemetry> telemetriesFetcher;
 
-        public ScheduledSendHandler(TransmissionDispatcher transmissionDispatcher, TelemetriesFetcher<String> telemetriesFetcher, TelemetrySerializer serializer) {
+        public ScheduledSendHandler(TransmissionDispatcher transmissionDispatcher, TelemetriesFetcher<Telemetry> telemetriesFetcher, TelemetrySerializer serializer) {
             super(transmissionDispatcher,  serializer);
 
             Preconditions.checkNotNull(telemetriesFetcher, "telemetriesFetcher should be a non-null value");
@@ -91,15 +92,15 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
 
         @Override
         public void run() {
-            Collection<String> telemetriesToSend = telemetriesFetcher.fetch();
+            Collection<Telemetry> telemetriesToSend = telemetriesFetcher.fetch();
             dispatch(telemetriesToSend);
         }
     }
 
     private static final class SendNowHandler extends SendHandler implements Runnable {
-        private final Collection<String> telemetries;
+        private final Collection<Telemetry> telemetries;
 
-        public SendNowHandler(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, Collection<String> telemetries) {
+        public SendNowHandler(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, Collection<Telemetry> telemetries) {
             super(transmissionDispatcher,  serializer);
 
             Preconditions.checkNotNull(telemetries, "telemetries should be non-null value");
@@ -194,7 +195,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
     }
 
     @Override
-    public boolean sendNow(Collection<String> telemetries) {
+    public boolean sendNow(Collection<Telemetry> telemetries) {
         Preconditions.checkNotNull(telemetries, "telemetries should be non-null value");
 
         if (!semaphore.tryAcquire()) {

@@ -24,28 +24,24 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-import org.junit.Test;
-
-import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-
+import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.gson.Gson;
+import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import com.squareup.moshi.JsonWriter;
+import okio.Buffer;
+import org.junit.*;
 
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public final class GzipTelemetrySerializerTest {
     private static class StubTelemetry implements Telemetry {
@@ -120,7 +116,12 @@ public final class GzipTelemetrySerializerTest {
         }
 
         @Override
-        public void reset() {
+        public boolean previouslyUsed() {
+            return false;
+        }
+
+        @Override
+        public void markUsed() {
         }
     }
 
@@ -133,7 +134,7 @@ public final class GzipTelemetrySerializerTest {
     @Test(expected = IllegalArgumentException.class)
     public void testNoData() throws Exception {
         GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
-        tested.serialize(new ArrayList<String>());
+        tested.serialize(new ArrayList<Telemetry>());
     }
 
     @Test
@@ -159,24 +160,24 @@ public final class GzipTelemetrySerializerTest {
 
         HashMap<String, StubTelemetry> expected = new HashMap<String, StubTelemetry>();
 
-        StringWriter writer = new StringWriter();
-        JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         for (int i = 0; i < amount; ++i) {
+
+            Buffer buffer = new Buffer();
+            JsonWriter writer = JsonWriter.of(buffer);
+            JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
+
             StubTelemetry stubTelemetry = createStubTelemetry(String.valueOf(i));
             telemetries.add(stubTelemetry);
 
             stubTelemetry.serialize(jsonWriter);
             jsonWriter.close();
-            String asJson = writer.toString();
-
-            telemetriesSerialized.add(asJson);
-            writer.getBuffer().setLength(0);
-            jsonWriter.reset(writer);
+            writer.close();
+            telemetriesSerialized.add(new String(buffer.readByteArray(), Charsets.UTF_8));
 
             expected.put(stubTelemetry.getTelemetryName(), stubTelemetry);
         }
 
-        Optional<Transmission> result = tested.serialize(telemetriesSerialized);
+        Optional<Transmission> result = tested.serializeFromStrings(telemetriesSerialized);
 
         assertNotNull(result);
 

@@ -21,20 +21,21 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.Domain;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
-
 import java.io.IOException;
-import java.io.StringWriter;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.google.common.base.Charsets;
+import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import com.squareup.moshi.JsonWriter;
+import okio.Buffer;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -44,6 +45,9 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private TelemetryContext context;
     private Date timestamp;
     private String sequence;
+
+    // this is temporary until we are convinced that telemetry are never re-used by codeless agent
+    private volatile boolean used;
 
     public static final String TELEMETRY_NAME_PREFIX = "Microsoft.ApplicationInsights.";
 
@@ -180,20 +184,29 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      */
     @Override
     public String toString() {
-        StringWriter sw = new StringWriter();
+        Buffer buffer = new Buffer();
         try {
-            JsonTelemetryDataSerializer jtds = new JsonTelemetryDataSerializer(sw);
+            JsonWriter jw = JsonWriter.of(buffer);
+            JsonTelemetryDataSerializer jtds = new JsonTelemetryDataSerializer(jw);
             this.serialize(jtds);
             jtds.close();
-            return sw.toString();
+            jw.close();
+            return new String(buffer.readByteArray(), Charsets.UTF_8);
         } catch (IOException e) {
             // shouldn't happen with a string writer
             throw new RuntimeException("Error serializing "+this.getClass().getSimpleName()+" toString", e);
         }
     }
 
+    // this is temporary until we are convinced that telemetry are never re-used by codeless agent
+    public boolean previouslyUsed() {
+        return used;
+    }
+
     @Override
-    public void reset() {
+    // this is temporary until we are convinced that telemetry are never re-used by codeless agent
+    public void markUsed() {
+        used = true;
     }
 
     /**

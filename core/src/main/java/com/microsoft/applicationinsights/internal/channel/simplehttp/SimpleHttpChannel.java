@@ -22,16 +22,17 @@
 package com.microsoft.applicationinsights.internal.channel.simplehttp;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-
+import com.squareup.moshi.JsonWriter;
+import okio.Buffer;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -68,13 +69,16 @@ final class SimpleHttpChannel implements TelemetryChannel
         try
         {
             // Establish the payload.
-            StringWriter writer = new StringWriter();
-//            item.serialize(new JsonWriter(writer));
-            item.serialize(new JsonTelemetryDataSerializer(writer));
+            Buffer buffer = new Buffer();
+            JsonWriter writer = JsonWriter.of(buffer);
+            JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
+            item.serialize(jsonWriter);
+            jsonWriter.close();
+            writer.close();
 
             // Send it.
 
-            String payload = writer.toString();
+            String payload = new String(buffer.readByteArray(), Charsets.UTF_8);
 
             if (developerMode) {
                 InternalLogger.INSTANCE.trace("SimpleHttpChannel, payload: %s", payload);

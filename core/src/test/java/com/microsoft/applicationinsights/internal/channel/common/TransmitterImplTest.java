@@ -22,10 +22,14 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Optional;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
@@ -33,13 +37,13 @@ import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import org.junit.Test;
+import com.squareup.moshi.JsonWriter;
+import okio.Buffer;
+import org.junit.*;
 import org.mockito.Mockito;
 
-import com.google.common.base.Optional;
-
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 
 public final class TransmitterImplTest {
     private final static String MOCK_WEB_CONTENT_TYPE = "MWCT";
@@ -167,31 +171,34 @@ public final class TransmitterImplTest {
                     }
 
                     @Override
-                    public void reset() {
+                    public boolean previouslyUsed() {
+                        return false;
+                    }
+
+                    @Override
+                    public void markUsed() {
 
                     }
                 });
             }
-            ArrayList<String> asJsons = toJson(telemetries);
-
             Transmission mockTransmission = new Transmission(new byte[1], MOCK_WEB_CONTENT_TYPE, MOCK_CONTENT_ENCODING_TYPE);
             Optional<Transmission> mockSerialize = Optional.absent();
             if (serializeOk) {
                 mockSerialize = Optional.of(mockTransmission);
             }
             TelemetrySerializer mockSerializer = Mockito.mock(TelemetrySerializer.class);
-            Mockito.doReturn(mockSerialize).when(mockSerializer).serialize(asJsons);
+            Mockito.doReturn(mockSerialize).when(mockSerializer).serialize(telemetries);
 
             transmitter = new TransmitterImpl(mockDispatcher, mockSerializer, mockLoader);
 
-            transmitter.sendNow(asJsons);
+            transmitter.sendNow(telemetries);
             Thread.sleep(100);
 
             if (numberOfTransmissions == 0) {
-                Mockito.verify(mockSerializer, Mockito.never()).serialize(asJsons);
+                Mockito.verify(mockSerializer, Mockito.never()).serialize(telemetries);
                 Mockito.verify(mockDispatcher, Mockito.never()).dispatch(any(Transmission.class));
             } else {
-                Mockito.verify(mockSerializer, Mockito.times(1)).serialize(asJsons);
+                Mockito.verify(mockSerializer, Mockito.times(1)).serialize(telemetries);
                 if (serializeOk) {
                     Mockito.verify(mockDispatcher, Mockito.times(1)).dispatch(any(Transmission.class));
                 } else {
@@ -254,12 +261,16 @@ public final class TransmitterImplTest {
                     }
 
                     @Override
-                    public void reset() {
+                    public boolean previouslyUsed() {
+                        return false;
+                    }
+
+                    @Override
+                    public void markUsed() {
 
                     }
                 });
             }
-            Collection<String> asJsons = toJson(telemetries);
 
             Transmission mockTransmission = new Transmission(new byte[1], MOCK_WEB_CONTENT_TYPE, MOCK_CONTENT_ENCODING_TYPE);
             Optional<Transmission> mockSerialize = Optional.absent();
@@ -267,10 +278,10 @@ public final class TransmitterImplTest {
                 mockSerialize = Optional.of(mockTransmission);
             }
             TelemetrySerializer mockSerializer = Mockito.mock(TelemetrySerializer.class);
-            Mockito.doReturn(mockSerialize).when(mockSerializer).serialize(asJsons);
+            Mockito.doReturn(mockSerialize).when(mockSerializer).serialize(telemetries);
 
             TelemetriesTransmitter.TelemetriesFetcher mockFetcher = Mockito.mock(TelemetriesTransmitter.TelemetriesFetcher.class);
-            Mockito.doReturn(asJsons).when(mockFetcher).fetch();
+            Mockito.doReturn(telemetries).when(mockFetcher).fetch();
 
             transmitter = new TransmitterImpl(mockDispatcher, mockSerializer, mockLoader);
 
@@ -279,10 +290,10 @@ public final class TransmitterImplTest {
 
             Mockito.verify(mockFetcher, Mockito.times(1)).fetch();
             if (numberOfTransmissions == 0) {
-                Mockito.verify(mockSerializer, Mockito.never()).serialize(asJsons);
+                Mockito.verify(mockSerializer, Mockito.never()).serialize(telemetries);
                 Mockito.verify(mockDispatcher, Mockito.never()).dispatch(any(Transmission.class));
             } else {
-                Mockito.verify(mockSerializer, Mockito.times(1)).serialize(asJsons);
+                Mockito.verify(mockSerializer, Mockito.times(1)).serialize(telemetries);
                 if (serializeOk) {
                     Mockito.verify(mockDispatcher, Mockito.times(1)).dispatch(any(Transmission.class));
                 } else {
@@ -290,8 +301,6 @@ public final class TransmitterImplTest {
                 }
             }
         } catch (InterruptedException e) {
-        } catch (IOException e) {
-            e.printStackTrace();
         } finally {
             if (transmitter != null) {
                 transmitter.stop(1L, TimeUnit.SECONDS);
@@ -300,16 +309,16 @@ public final class TransmitterImplTest {
     }
 
     private static ArrayList<String> toJson(List<Telemetry> telemetries) throws IOException {
-        StringWriter writer = new StringWriter();
-        JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
         ArrayList<String> asJsons = new ArrayList<String>();
         for (Telemetry telemetry : telemetries) {
+
+            Buffer buffer = new Buffer();
+            JsonWriter writer = JsonWriter.of(buffer);
+            JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
             telemetry.serialize(jsonWriter);
             jsonWriter.close();
-            String asJson = writer.toString();
-            asJsons.add(asJson);
-            writer.getBuffer().setLength(0);
-            jsonWriter.reset(writer);
+            writer.close();
+            asJsons.add(new String(buffer.readByteArray(), Charsets.UTF_8));
         }
 
         return asJsons;
