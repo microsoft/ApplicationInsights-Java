@@ -116,6 +116,7 @@ public class StatusFile {
                             b = getBuffer(file);
                             new Moshi.Builder().build().adapter(Map.class).indent(" ").nullSafe().toJson(b, map);
                             b.flush();
+                            logger.info("Wrote status to file: {}", file.getAbsolutePath());
                         } catch (Exception e) {
                             logger.error("Error writing {}", file.getAbsolutePath(), e);
                             if (b != null) {
