@@ -30,18 +30,24 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Configuration {
 
-    public @Nullable String connectionString;
-    public @Nullable String roleName;
-    public @Nullable String roleInstance;
+    @Nullable
+    public String connectionString;
+    @Nullable
+    public String roleName;
+    @Nullable
+    public String roleInstance;
     public List<JmxMetric> jmxMetrics = Collections.emptyList();
 
     public ExperimentalConfiguration experimental = new ExperimentalConfiguration();
 
     public static class JmxMetric {
 
-        public @Nullable String objectName;
-        public @Nullable String attribute;
-        public @Nullable String display;
+        @Nullable
+        public String objectName;
+        @Nullable
+        public String attribute;
+        @Nullable
+        public String display;
     }
 
     public static class ExperimentalConfiguration {
@@ -59,20 +65,27 @@ public class Configuration {
 
     public static class Sampling {
 
-        public @Nullable FixedRateSampling fixedRate;
+        @Nullable
+        public FixedRateSampling fixedRate;
     }
 
     public static class FixedRateSampling {
 
+        @Nullable
         @Json(name = "default")
-        public @Nullable Double default_;
-
-        public @Nullable Double requests;
-        public @Nullable Double dependencies;
-        public @Nullable Double exceptions;
-        public @Nullable Double traces;
-        public @Nullable Double customEvents;
-        public @Nullable Double pageViews;
+        public Double default_;
+        @Nullable
+        public Double requests;
+        @Nullable
+        public Double dependencies;
+        @Nullable
+        public Double exceptions;
+        @Nullable
+        public Double traces;
+        @Nullable
+        public Double customEvents;
+        @Nullable
+        public Double pageViews;
     }
 
     public static class DistributedTracing {
@@ -88,8 +101,11 @@ public class Configuration {
 
     public static class CustomInstrumentation {
 
-        public @Nullable String className;
-        public @Nullable String methodName;
-        public @Nullable String signature;
+        @Nullable
+        public String className;
+        @Nullable
+        public String methodName;
+        @Nullable
+        public String signature;
     }
 }
