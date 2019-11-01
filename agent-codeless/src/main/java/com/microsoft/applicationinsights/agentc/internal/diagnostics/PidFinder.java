@@ -1,10 +1,10 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class PidFinder extends CachedDiagnosticsValueFinder {
     public static final String PROPERTY_NAME = "PID";

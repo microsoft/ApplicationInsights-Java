@@ -1,5 +1,11 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics.status;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.AgentExtensionVersionFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsTestHelper;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
@@ -7,14 +13,8 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi.Builder;
 import org.hamcrest.Matchers;
 import org.junit.*;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import org.junit.contrib.java.lang.system.*;
+import org.junit.rules.*;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;

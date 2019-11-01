@@ -1,5 +1,21 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics.status;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.concurrent.GuardedBy;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.AgentExtensionVersionFinder;
@@ -16,22 +32,6 @@ import com.squareup.moshi.Moshi;
 import okio.BufferedSink;
 import okio.Okio;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.concurrent.GuardedBy;
-import java.io.File;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class StatusFile {
 

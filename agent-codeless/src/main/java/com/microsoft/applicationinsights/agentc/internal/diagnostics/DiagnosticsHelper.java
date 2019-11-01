@@ -1,9 +1,9 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.io.File;
 import java.nio.file.Files;
+
+import com.google.common.annotations.VisibleForTesting;
 
 public class DiagnosticsHelper {
     private DiagnosticsHelper() {}
