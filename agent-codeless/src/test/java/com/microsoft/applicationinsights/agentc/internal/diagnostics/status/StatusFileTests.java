@@ -72,7 +72,7 @@ public class StatusFileTests {
     public void connectionStringWorksToo() {
         String ikey = "a-different-ikey-456789";
         envVars.clear("APPINSIGHTS_INSTRUMENTATIONKEY");
-        envVars.set(TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME, "InstrumentationKey="+ikey);
+        envVars.set(TelemetryConfigurationFactory.CONNECTION_STRING_ENV_VAR_NAME, "InstrumentationKey=" + ikey);
         final Map<String, Object> jsonMap = StatusFile.getJsonMap();
         System.out.println("Map contents: " + Arrays.toString(jsonMap.entrySet().toArray()));
         assertThat(jsonMap, Matchers.<String, Object>hasEntry("Ikey", ikey));
@@ -123,7 +123,7 @@ public class StatusFileTests {
         final JsonAdapter<Map> adapter = new Builder().build().adapter(Map.class);
         final String fileName = StatusFile.constructFileName(StatusFile.getJsonMap());
         final String contents = new String(Files.readAllBytes(new File(tempFolder, fileName).toPath()));
-        System.out.println("file contents ("+fileName+"): "+contents);
+        System.out.println("file contents (" + fileName + "): " + contents);
         return adapter.fromJson(contents);
     }
 

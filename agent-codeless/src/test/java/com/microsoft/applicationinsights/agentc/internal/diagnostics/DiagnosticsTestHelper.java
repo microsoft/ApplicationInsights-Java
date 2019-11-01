@@ -1,8 +1,11 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
 public class DiagnosticsTestHelper {
-    private DiagnosticsTestHelper(){}
+    private DiagnosticsTestHelper() {
+    }
+
     public static final String ENABLED_ENV_VAR = DiagnosticsHelper.DIAGNOSTICS_OUTPUT_ENABLED_ENV_VAR_NAME;
+
     public static void setIsAppServiceCodeless(boolean appServiceCodeless) {
         DiagnosticsHelper.appServiceCodeless = appServiceCodeless;
     }

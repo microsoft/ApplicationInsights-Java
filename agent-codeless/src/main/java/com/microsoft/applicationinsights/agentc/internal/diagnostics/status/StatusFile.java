@@ -31,11 +31,12 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.squareup.moshi.Moshi;
 import okio.BufferedSink;
 import okio.Okio;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StatusFile {
 
-    private StatusFile() {}
+    private static final Logger logger = LoggerFactory.getLogger(StatusFile.class);
 
     private static final List<DiagnosticsValueFinder> VALUE_FINDERS = new ArrayList<>();
 
@@ -61,7 +62,9 @@ public class StatusFile {
     @GuardedBy("lock")
     private static BufferedSink buffer;
 
-    private static final ThreadPoolExecutor WRITER_THREAD = new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), ThreadPoolUtils.createNamedDaemonThreadFactory("StatusFileWriter"));
+    private static final ThreadPoolExecutor WRITER_THREAD =
+            new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
+                    ThreadPoolUtils.createNamedDaemonThreadFactory("StatusFileWriter"));
 
     static {
         WRITER_THREAD.allowCoreThreadTimeOut(true);
@@ -78,6 +81,9 @@ public class StatusFile {
         } else {
             directory = DEFAULT_STATUS_FILE_DIRECTORY;
         }
+    }
+
+    private StatusFile() {
     }
 
     public static <T> void putValueAndWrite(String key, T value) {
@@ -99,7 +105,9 @@ public class StatusFile {
 
                 String fileName = constructFileName(map);
 
-                synchronized (lock) { // the executor should prevent more than one thread from executing this block. this is just a safeguard
+                // the executor should prevent more than one thread from executing this block.
+                // this is just a safeguard
+                synchronized (lock) {
                     final File file = new File(directory, fileName);
                     boolean dirsWereCreated = file.getParentFile().mkdirs();
                     if (dirsWereCreated || file.getParentFile().exists()) {
@@ -109,7 +117,7 @@ public class StatusFile {
                             new Moshi.Builder().build().adapter(Map.class).indent(" ").nullSafe().toJson(b, map);
                             b.flush();
                         } catch (Exception e) {
-                            LoggerFactory.getLogger(StatusFile.class).error("Error writing {}", file.getAbsolutePath(), e);
+                            logger.error("Error writing {}", file.getAbsolutePath(), e);
                             if (b != null) {
                                 try {
                                     b.close();
@@ -119,7 +127,8 @@ public class StatusFile {
                             }
                         }
                     } else {
-                        LoggerFactory.getLogger(StatusFile.class).error("Parent directories for status file could not be created: {}", file.getAbsolutePath());
+                        logger.error("Parent directories for status file could not be created: {}",
+                                file.getAbsolutePath());
                     }
                 }
             }
@@ -131,7 +140,8 @@ public class StatusFile {
             if (buffer != null) {
                 buffer.close();
             }
-            buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
+            buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE,
+                    StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
             return buffer;
         }
     }
@@ -150,6 +160,7 @@ public class StatusFile {
 
     /**
      * This MUST return the same filename each time. This should be unique for each process.
+     *
      * @param map Json map to be written (contains some values incorporated into the filename)
      * @return The filename
      */
@@ -165,6 +176,7 @@ public class StatusFile {
 
     /**
      * If pid is available, use pid. Otherwise, use process start time. If neither are available, use a random guid.
+     *
      * @param pid The process' id.
      * @return A unique id for the current process.
      */
@@ -193,6 +205,6 @@ public class StatusFile {
         if (input == null) {
             return null;
         }
-        return input.substring(0,1).toUpperCase() + input.substring(1);
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 }
