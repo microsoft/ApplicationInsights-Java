@@ -113,7 +113,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertEquals("GET /", rdd.getName());
-        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertEquals("www.bing.com", rdd.getTarget());
 
         assertTrue(rdd.getId().contains(d.getId()));
         assertSameOperationId(rdEnvelope, rddEnvelope);
