@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal;
 
 import com.microsoft.applicationinsights.agent.internal.model.NopThreadSpan;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.Getter;
 import org.glowroot.instrumentation.api.MessageSupplier;
 import org.glowroot.instrumentation.api.Span;
@@ -43,5 +44,9 @@ class AgentImpl implements AgentSPI {
         NopThreadSpan nopThreadSpan = new NopThreadSpan(threadContextHolder);
         threadContextHolder.set(new NopThreadContext(rootNestingGroupId, rootSuppressionKeyId));
         return nopThreadSpan;
+    }
+
+    @Override
+    public void captureLoggerSpan(MessageSupplier messageSupplier, @Nullable Throwable throwable) {
     }
 }
