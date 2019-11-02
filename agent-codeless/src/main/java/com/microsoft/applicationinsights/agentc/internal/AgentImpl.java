@@ -22,10 +22,7 @@
 package com.microsoft.applicationinsights.agentc.internal;
 
 import java.util.Date;
-import java.util.Locale;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agentc.internal.model.DistributedTraceContext;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;

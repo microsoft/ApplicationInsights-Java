@@ -1,12 +1,13 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.io.File;
 import java.nio.file.Files;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class DiagnosticsHelper {
-    private DiagnosticsHelper() {}
+    private DiagnosticsHelper() {
+    }
 
     private static File agentJarFile;
 
@@ -24,9 +25,11 @@ public class DiagnosticsHelper {
         try {
             final String envValue = System.getenv(DIAGNOSTICS_OUTPUT_ENABLED_ENV_VAR_NAME);
             if (envValue != null) {
-                result = !envValue.equalsIgnoreCase("false"); // Boolean.parseBoolean will be false if string is not "true"; if var is garbage, assume enabled
+                // Boolean.parseBoolean will be false if string is not "true"; if var is garbage, assume enabled
+                result = !envValue.equalsIgnoreCase("false");
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         enabled = result;
     }
 
