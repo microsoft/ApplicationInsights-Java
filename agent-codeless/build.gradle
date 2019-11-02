@@ -66,8 +66,6 @@ shadowJar() {
     relocate 'com.microsoft.applicationinsights.TelemetryClient', "${shadowPrefix}.ai.TelemetryClient"
     relocate 'com.microsoft.applicationinsights.TelemetryConfiguration', "${shadowPrefix}.ai.TelemetryConfiguration"
 
-    relocate 'com.microsoft.localforwarder', "${shadowPrefix}.ai.localforwarder"
-
     relocate('logback.configurationFile', 'ai.logback.configurationFile')
     relocate('logback.xml', 'ai.logback.xml')
     relocate('logback.groovy', 'ai.logback.groovy') // to prevent accidentally picking up from user's class path
@@ -79,8 +77,6 @@ shadowJar() {
     exclude 'com/microsoft/applicationinsights/core/dependencies/apachecommons/logging/**'
     relocate('org.apache.commons.logging', "${shadowPrefix}.ai.core.dependencies.apachecommons.logging")
 
-    exclude 'META-INF/io.netty.versions.properties' // this exclusion may not be needed once local forwarder is removed
-    exclude 'META-INF/native/**' // this exclusion will not be needed once local forwarder is removed
     exclude 'META-INF/maven/**'
     exclude 'META-INF/LICENSE*'
     exclude 'META-INF/DEPENDENCIES'
