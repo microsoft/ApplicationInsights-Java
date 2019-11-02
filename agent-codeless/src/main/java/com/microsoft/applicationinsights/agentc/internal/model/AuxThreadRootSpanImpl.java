@@ -61,7 +61,8 @@ class AuxThreadRootSpanImpl implements Span {
     }
 
     @Override
-    public @Nullable Object getMessageSupplier() {
+    @Nullable
+    public Object getMessageSupplier() {
         return null;
     }
 

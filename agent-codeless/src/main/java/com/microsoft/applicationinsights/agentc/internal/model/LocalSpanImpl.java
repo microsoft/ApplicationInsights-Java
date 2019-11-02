@@ -54,7 +54,8 @@ public class LocalSpanImpl implements Span {
     private final long startTimeMillis;
     private final MessageSupplier messageSupplier;
 
-    private volatile @MonotonicNonNull Throwable exception;
+    @MonotonicNonNull
+    private volatile Throwable exception;
 
     LocalSpanImpl(String operationId, String operationParentId, String text, long startTimeMillis,
                   MessageSupplier messageSupplier) {
@@ -129,7 +130,8 @@ public class LocalSpanImpl implements Span {
     }
 
     @VisibleForTesting
-    static @Nullable String getTelemetryName(String text) {
+    @Nullable
+    static String getTelemetryName(String text) {
 
         int startIndex = PREFIX.length();
         int index = text.indexOf(',', startIndex);

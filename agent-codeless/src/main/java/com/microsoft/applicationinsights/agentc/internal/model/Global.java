@@ -32,7 +32,8 @@ public class Global {
     private static boolean distributedTracingOutboundEnabled;
     private static boolean distributedTracingRequestIdCompatEnabled;
 
-    private static volatile @Nullable TelemetryClient telemetryClient;
+    @Nullable
+    private static volatile TelemetryClient telemetryClient;
 
     private static final ThreadContextThreadLocal TCTL = new ThreadContextThreadLocal();
 
@@ -56,7 +57,8 @@ public class Global {
     }
 
     // this can be null if agent failed during startup
-    public static @Nullable TelemetryClient getTelemetryClient() {
+    @Nullable
+    public static TelemetryClient getTelemetryClient() {
         return telemetryClient;
     }
 

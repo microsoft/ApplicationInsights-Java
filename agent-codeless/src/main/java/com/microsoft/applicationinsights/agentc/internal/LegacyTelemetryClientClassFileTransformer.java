@@ -523,7 +523,8 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             LegacySDK.trackPageView(t.getName(), t.getUri(), t.getDuration(), t.getProperties(), t.getMetrics());
         }
 
-        private @Nullable Long agent$toMillis(Duration duration) {
+        @Nullable
+        private Long agent$toMillis(Duration duration) {
             if (duration == null) {
                 return null;
             }

@@ -218,7 +218,8 @@ public class TraceContextCorrelationCore {
         }
     }
 
-    private static @Nullable Tracestate getDefaultTracestate(@Nullable String appId) {
+    @Nullable
+    private static Tracestate getDefaultTracestate(@Nullable String appId) {
         if (appId == null) {
             return null;
         }

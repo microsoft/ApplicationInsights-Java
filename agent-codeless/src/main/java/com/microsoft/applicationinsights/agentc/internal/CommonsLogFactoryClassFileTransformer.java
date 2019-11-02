@@ -43,10 +43,11 @@ class CommonsLogFactoryClassFileTransformer implements ClassFileTransformer {
     // IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER MAY INLINE IT, WHICH WOULD PREVENT IT FROM BEING SHADED
     public static String SERVICE_ID = "org.apache.commons.logging.LogFactory";
 
-    @Override public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
-                                                    @Nullable Class<?> classBeingRedefined,
-                                                    @Nullable ProtectionDomain protectionDomain,
-                                                    byte[] classfileBuffer) {
+    @Override
+    public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
+                                          @Nullable Class<?> classBeingRedefined,
+                                          @Nullable ProtectionDomain protectionDomain,
+                                          byte[] classfileBuffer) {
 
         if (!"org/apache/commons/logging/LogFactory".equals(className)) {
             return null;

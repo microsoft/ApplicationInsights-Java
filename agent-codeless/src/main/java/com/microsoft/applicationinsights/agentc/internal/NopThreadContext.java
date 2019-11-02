@@ -158,7 +158,8 @@ public class NopThreadContext implements ThreadContextPlus {
     }
 
     @Override
-    public @Nullable ServletRequestInfo getServletRequestInfo() {
+    @Nullable
+    public ServletRequestInfo getServletRequestInfo() {
         return null;
     }
 

@@ -57,16 +57,20 @@ public class IncomingSpanImpl implements Span {
 
     private static final Splitter cookieSplitter = Splitter.on('|');
 
-    private final @Nullable String transactionType; // null is for invisible incoming spans (e.g. Azure Functions)
+    @Nullable
+    private final String transactionType; // null is for invisible incoming spans (e.g. Azure Functions)
     private final MessageSupplier messageSupplier;
     private final ThreadContextThreadLocal.Holder threadContextHolder;
     private final long startTimeMillis;
 
-    private volatile @MonotonicNonNull ServletRequestInfo servletRequestInfo;
+    @MonotonicNonNull
+    private volatile ServletRequestInfo servletRequestInfo;
 
-    private volatile @MonotonicNonNull Throwable exception;
+    @MonotonicNonNull
+    private volatile Throwable exception;
 
-    private volatile @MonotonicNonNull TwoPartCompletion asyncCompletion;
+    @MonotonicNonNull
+    private volatile TwoPartCompletion asyncCompletion;
 
     private final RequestTelemetry requestTelemetry;
 

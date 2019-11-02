@@ -63,7 +63,8 @@ import org.slf4j.MDC;
 
 public class MainEntryPoint {
 
-    private static @Nullable Logger startupLogger;
+    @Nullable
+    private static Logger startupLogger;
 
     private MainEntryPoint() {
     }

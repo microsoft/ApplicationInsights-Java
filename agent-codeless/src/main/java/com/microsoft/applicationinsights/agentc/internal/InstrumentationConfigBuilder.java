@@ -79,7 +79,8 @@ public class InstrumentationConfigBuilder {
         return instrumentationConfig;
     }
 
-    private static @Nullable Number getExplainPlanThresholdInMS(Configuration configuration) {
+    @Nullable
+    private static Number getExplainPlanThresholdInMS(Configuration configuration) {
         Map<String, Object> jdbc = configuration.experimental.instrumentation.get("jdbc");
         if (jdbc == null) {
             return null;
@@ -96,7 +97,8 @@ public class InstrumentationConfigBuilder {
         return (Number) explainPlanThresholdInMS;
     }
 
-    private static @Nullable LoggingThreshold getLoggingThreshold(Configuration configuration) {
+    @Nullable
+    private static LoggingThreshold getLoggingThreshold(Configuration configuration) {
         Map<String, Object> logging = configuration.experimental.instrumentation.get("logging");
         if (logging == null) {
             return null;

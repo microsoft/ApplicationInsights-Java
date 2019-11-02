@@ -49,7 +49,8 @@ public class QuerySpanImpl implements QuerySpan {
     private final QueryMessageSupplier messageSupplier;
     private final long startTimeMillis;
 
-    private volatile @MonotonicNonNull Throwable exception;
+    @MonotonicNonNull
+    private volatile Throwable exception;
 
     private volatile long endTimeMillis = -1;
 
