@@ -22,6 +22,8 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -44,7 +46,9 @@ import org.apache.http.ssl.SSLContexts;
 /**
  * Created by gupele on 6/4/2015.
  */
-final class ApacheSender43 implements ApacheSender {
+public final class ApacheSender43 implements ApacheSender {
+
+    public static volatile CountDownLatch safeToInitLatch;
 
     private final Object lock = new Object();
 
@@ -57,7 +61,8 @@ final class ApacheSender43 implements ApacheSender {
         return new ApacheSender43();
     }
 
-    private ApacheSender43() {}
+    private ApacheSender43() {
+    }
 
     @Override
     public HttpResponse sendPostRequest(HttpPost post) throws IOException {
@@ -114,6 +119,20 @@ final class ApacheSender43 implements ApacheSender {
     }
 
     private static CloseableHttpClient init() {
+        if (safeToInitLatch != null) {
+            try {
+                // this is used to delay SSL initialization because SSL initialization triggers loading of
+                // java.util.logging (starting with Java 8u231)
+                // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
+                //
+                // limit wait time to 2 minutes in case agent incorrectly anticipated needing to delay JUL
+                // initialization in an environment that never loads JUL
+                safeToInitLatch.await(2, TimeUnit.MINUTES);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        }
         final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
         final PoolingHttpClientConnectionManager cm =
                 new PoolingHttpClientConnectionManager(RegistryBuilder.<ConnectionSocketFactory>create()
