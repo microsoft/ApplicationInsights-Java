@@ -44,5 +44,4 @@ shadowJar {
 
 dependencies {
     compile project(':core')
-    compile project(':web')
 }
