@@ -41,9 +41,6 @@ if (System.properties.AI_SAMPLES) {
     include ':test:webapps:PerfTestApp'
     include ':test:webapps:PerfTestAppSpringBoot'
     include ':test:webapps:bookstore-spring'
-
-    //  TODO rewrite samples; these are not representative of "real-world" usage
-    include 'samples'
 }
 
 // Projects for smokeTests
