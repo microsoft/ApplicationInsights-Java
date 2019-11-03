@@ -1,20 +1,16 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
-import com.microsoft.applicationinsights.web.internal.ThreadContext;
-import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore.RequestHeaderGetter;
-import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore.ResponseHeaderSetter;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.glowroot.instrumentation.api.Getter;
+import org.glowroot.instrumentation.api.Setter;
 
 /**
  * A class that is responsible for performing correlation based on W3C protocol.
@@ -49,23 +45,28 @@ public class TraceContextCorrelationCore {
      * @param request
      * @param requestTelemetry
      */
-    public static <Req, Res> void resolveCorrelationForRequest(Req request,
-                                                               RequestHeaderGetter<Req> requestHeaderGetter,
-                                                               RequestTelemetry requestTelemetry) {
-
+    public static <Req> DistributedTraceContext resolveCorrelationForRequest(Req request,
+                                                                             Getter<Req> requestHeaderGetter,
+                                                                             RequestTelemetry requestTelemetry,
+                                                                             boolean azureFnRequest) {
         try {
             if (request == null) {
                 InternalLogger.INSTANCE.error("Failed to resolve correlation. request is null.");
-                return;
+                return null;
             }
 
             if (requestTelemetry == null) {
                 InternalLogger.INSTANCE.error("Failed to resolve correlation. requestTelemetry is null.");
-                return;
+                return null;
             }
 
             Traceparent incomingTraceparent = extractIncomingTraceparent(request, requestHeaderGetter);
-            Traceparent processedTraceParent = processIncomingTraceparent(incomingTraceparent, request, requestHeaderGetter);
+            Traceparent processedTraceParent;
+            if (azureFnRequest) {
+                processedTraceParent = incomingTraceparent;
+            } else {
+                processedTraceParent = processIncomingTraceparent(incomingTraceparent, request, requestHeaderGetter, requestTelemetry);
+            }
 
             // represents the id of the current request.
             requestTelemetry.setId("|" + processedTraceParent.getTraceId() + "." + processedTraceParent.getSpanId()
@@ -85,24 +86,22 @@ public class TraceContextCorrelationCore {
                 }
             }
 
-            // Propagate trace-flags
-            ThreadContext.getRequestTelemetryContext().setTraceflag(processedTraceParent.getTraceFlags());
-
             String appId = getAppId();
 
             // Get Tracestate header
             Tracestate tracestate = getTracestate(request, requestHeaderGetter, incomingTraceparent, appId);
+            int traceflag = processedTraceParent.getTraceFlags();
 
-            // add tracestate to threadlocal
-            ThreadContext.getRequestTelemetryContext().setTracestate(tracestate);
+            return new DistributedTraceContext(requestTelemetry, tracestate, traceflag);
 
         } catch (java.lang.Exception e) {
             InternalLogger.INSTANCE.error("unable to perform correlation :%s", ExceptionUtils.
                 getStackTrace(e));
+            return null;
         }
     }
 
-    public static <Req, Res> void resolveCorrelationForResponse(Res response, ResponseHeaderSetter<Res> responseHeaderSetter) {
+    public static <Res> void resolveCorrelationForResponse(Res response, Setter<Res> responseHeaderSetter) {
 
         try {
             if (response == null) {
@@ -124,19 +123,17 @@ public class TraceContextCorrelationCore {
      * @param request
      * @return Incoming Traceparent
      */
-    private static <Req> Traceparent extractIncomingTraceparent(Req request, RequestHeaderGetter<Req> requestHeaderGetter) {
+    private static <Req> Traceparent extractIncomingTraceparent(Req request, Getter<Req> requestHeaderGetter) {
         Traceparent incomingTraceparent = null;
 
-        Enumeration<String> traceparents = requestHeaderGetter.getAll(request, TRACEPARENT_HEADER_NAME);
-        List<String> traceparentList = getEnumerationAsCollection(traceparents);
+        String traceparentHeader = requestHeaderGetter.get(request, TRACEPARENT_HEADER_NAME);
 
-        // W3C spec mandates a request should exactly have 1 Traceparent header
-        if (traceparentList.size() != 1) {
+        if (Strings.isNullOrEmpty(traceparentHeader)) {
             return null;
         }
 
         try {
-            incomingTraceparent = Traceparent.fromString(traceparentList.get(0));
+            incomingTraceparent =  Traceparent.fromString(traceparentHeader);
         } catch (Exception e) {
             InternalLogger.INSTANCE.error(String.format("Received invalid traceparent header with exception %s, "
                 + "distributed trace might be broken", ExceptionUtils.getStackTrace(e)));
@@ -150,8 +147,8 @@ public class TraceContextCorrelationCore {
      * @return
      */
     private static <Req> Traceparent processIncomingTraceparent(Traceparent incomingTraceparent,
-                                                                Req request, RequestHeaderGetter<Req> requestHeaderGetter) {
-
+                                                                Req request, Getter<Req> requestHeaderGetter,
+                                                                RequestTelemetry requestTelemetry) {
         Traceparent processedTraceparent = null;
 
         // If incoming traceparent is null create a new Traceparent
@@ -159,7 +156,7 @@ public class TraceContextCorrelationCore {
 
             // If BackCompt mode is enabled, read the Request-Id Header
             if (isW3CBackCompatEnabled) {
-                processedTraceparent = processLegacyCorrelation(request, requestHeaderGetter);
+                processedTraceparent = processLegacyCorrelation(request, requestHeaderGetter, requestTelemetry);
             }
 
             if (processedTraceparent == null){
@@ -179,14 +176,14 @@ public class TraceContextCorrelationCore {
      * @param request
      * @return
      */
-    private static <Req> Traceparent processLegacyCorrelation(Req request, RequestHeaderGetter<Req> requestHeaderGetter) {
+    private static <Req> Traceparent processLegacyCorrelation(Req request, Getter<Req> requestHeaderGetter,
+                                                              RequestTelemetry requestTelemetry) {
 
-        String requestId = requestHeaderGetter.getFirst(request, TelemetryCorrelationUtilsCore.CORRELATION_HEADER_NAME);
+        String requestId = requestHeaderGetter.get(request, TelemetryCorrelationUtilsCore.CORRELATION_HEADER_NAME);
 
         try {
             if (requestId != null && !requestId.isEmpty()) {
                 String legacyOperationId = TelemetryCorrelationUtilsCore.extractRootId(requestId);
-                RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
                 requestTelemetry.getContext().getProperties().putIfAbsent("ai_legacyRootID", legacyOperationId);
                 requestTelemetry.getContext().getOperation().setParentId(requestId);
                 return new Traceparent(0, legacyOperationId, null, 0);
@@ -207,17 +204,16 @@ public class TraceContextCorrelationCore {
      * @param appId
      * @return Tracestate
      */
-    private static <Req> Tracestate getTracestate(Req request, RequestHeaderGetter<Req> requestHeaderGetter, 
+    private static <Req> Tracestate getTracestate(Req request, Getter<Req> requestHeaderGetter,
                                                   Traceparent incomingTraceparent, String appId) {
 
         Tracestate tracestate= null;
 
         if (incomingTraceparent != null) {
-            Enumeration<String> tracestates = requestHeaderGetter.getAll(request, TRACESTATE_HEADER_NAME);
-            List<String> tracestateList = getEnumerationAsCollection(tracestates);
+            String tracestateHeader = requestHeaderGetter.get(request, TRACESTATE_HEADER_NAME);
             try {
                 //create tracestate from incoming header
-                tracestate = Tracestate.fromString(StringUtils.join(tracestateList, ","));
+                tracestate = Tracestate.fromString(tracestateHeader);
                 // add appId to it if it's resolved
                 if (appId != null && !appId.isEmpty()) {
                     tracestate = new Tracestate(tracestate, AZURE_TRACEPARENT_COMPONENT_INITIAL,
@@ -252,28 +248,10 @@ public class TraceContextCorrelationCore {
     }
 
     /**
-     * Returns collection from Enumeration
-     * @param e
-     * @return List of headers
-     */
-    private static List<String> getEnumerationAsCollection(Enumeration<String> e) {
-
-        List<String> list = new ArrayList<>();
-        while (e.hasMoreElements()) {
-            list.add(e.nextElement());
-        }
-        return list;
-    }
-
-    /**
      * This adds the Request-Context in response header so that the Callee can know what is the caller's AppId.
      * @param response HttpResponse object
      */
-    private static <Res> void addTargetAppIdInResponseHeaderViaRequestContext(Res response, ResponseHeaderSetter<Res> responseHeaderSetter) {
-
-        if (responseHeaderSetter.containsHeader(response, REQUEST_CONTEXT_HEADER_NAME)) {
-            return;
-        }
+    private static <Res> void addTargetAppIdInResponseHeaderViaRequestContext(Res response, Setter<Res> responseHeaderSetter) {
 
         String appId = getAppId();
         if (appId.isEmpty()) {
@@ -282,7 +260,7 @@ public class TraceContextCorrelationCore {
 
         // W3C protocol doesn't define any behavior for response headers.
         // This is purely AI concept and hence we use RequestContextHeader here.
-        responseHeaderSetter.addHeader(response, REQUEST_CONTEXT_HEADER_NAME,
+        responseHeaderSetter.put(response, REQUEST_CONTEXT_HEADER_NAME,
                 REQUEST_CONTEXT_HEADER_APPID_KEY + "=" + appId);
     }
 
@@ -311,7 +289,7 @@ public class TraceContextCorrelationCore {
      * @param requestTelemetry The request telemetry in which source will be populated.
      * @param instrumentationKey The instrumentation key for the current component.
      */
-    public static <Req> void resolveRequestSource(Req request, RequestHeaderGetter<Req> requestHeaderGetter,
+    public static <Req> void resolveRequestSource(Req request, Getter<Req> requestHeaderGetter,
                                                   RequestTelemetry requestTelemetry, String instrumentationKey) {
 
         try {
@@ -336,11 +314,11 @@ public class TraceContextCorrelationCore {
                 return;
             }
 
-            String tracestate = requestHeaderGetter.getFirst(request, TRACESTATE_HEADER_NAME);
+            String tracestate = requestHeaderGetter.get(request, TRACESTATE_HEADER_NAME);
             if (tracestate == null || tracestate.isEmpty()) {
 
                 if (isW3CBackCompatEnabled &&
-                        requestHeaderGetter.getFirst(request, TelemetryCorrelationUtilsCore.REQUEST_CONTEXT_HEADER_NAME) != null) {
+                        requestHeaderGetter.get(request, TelemetryCorrelationUtilsCore.REQUEST_CONTEXT_HEADER_NAME) != null) {
                     InternalLogger.INSTANCE.trace("Tracestate absent, In backward compatibility mode, will try to resolve "
                         + "request-context");
                     TelemetryCorrelationUtilsCore.resolveRequestSource(request, requestHeaderGetter, requestTelemetry, instrumentationKey);
@@ -442,77 +420,5 @@ public class TraceContextCorrelationCore {
         }
 
         return result;
-    }
-
-    /**
-     * Helper method to retrieve Tracestate from ThreadLocal
-     * @return
-     */
-    public static String retriveTracestate() {
-        //check if context is null - no correlation will happen
-        if (ThreadContext.getRequestTelemetryContext() == null || ThreadContext.getRequestTelemetryContext().
-                getTracestate() == null) {
-            InternalLogger.INSTANCE.warn("No correlation wil happen, Thread context is null");
-            return null;
-        }
-
-        Tracestate tracestate = ThreadContext.getRequestTelemetryContext().getTracestate();
-        return tracestate.toString();
-    }
-
-    /**
-     * Generates child TraceParent by retrieving values from ThreadLocal.
-     * @return Outbound Traceparent
-     */
-    public static String generateChildDependencyTraceparent() {
-        try {
-
-            RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
-
-            //check if context is null, no incoming request is present.
-            // This is likely worker role scenario, where a worker is trying
-            // to create a new outbound call, so generate a new traceparent.
-            if (context == null) {
-               return new Traceparent().toString();
-            }
-
-            RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
-            String traceId = requestTelemetry.getContext().getOperation().getId();
-
-            Traceparent tp = new Traceparent(0, traceId, null, context.getTraceflag());
-
-            // We need to propagate full blown traceparent header.
-            return tp.toString();
-        }
-        catch (Exception ex) {
-            InternalLogger.INSTANCE.error("Failed to generate child ID. Exception information: %s", ex.toString());
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(ex));
-        }
-
-        return null;
-    }
-
-    /**
-     * This is helper method to convert traceparent (W3C) format to AI legacy format for supportability
-     * @param traceparent
-     * @return legacy format traceparent
-     */
-    public static String createChildIdFromTraceparentString(String traceparent) {
-        if (traceparent == null) {
-            throw new NullPointerException("traceparent cannot be null");
-        }
-
-        String[] traceparentArr = traceparent.split("-");
-        if (traceparentArr.length != 4) {
-            throw new IllegalArgumentException("Invalid traceparent");
-        }
-
-        return "|" + traceparentArr[1] + "." + traceparentArr[2] + ".";
-    }
-
-    public static void setIsRequestIdCompatEnabled(boolean isW3CBackCompatEnabled) {
-        TraceContextCorrelationCore.isW3CBackCompatEnabled = isW3CBackCompatEnabled;
-        InternalLogger.INSTANCE.trace(String.format("W3C Backport mode enabled on Incoming side %s",
-            isW3CBackCompatEnabled));
     }
 }

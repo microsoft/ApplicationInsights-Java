@@ -24,13 +24,13 @@ package com.microsoft.applicationinsights.agentc.internal;
 import java.util.Date;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.agentc.internal.model.DistributedTraceContext;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
 import com.microsoft.applicationinsights.agentc.internal.model.IncomingSpanImpl;
 import com.microsoft.applicationinsights.agentc.internal.model.LoggerSpans;
 import com.microsoft.applicationinsights.agentc.internal.model.ThreadContextImpl;
-import com.microsoft.applicationinsights.agentc.internal.model.TraceContextCorrelationCore;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.web.internal.correlation.DistributedTraceContext;
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.Getter;
 import org.glowroot.instrumentation.api.MessageSupplier;
@@ -76,7 +76,7 @@ class AgentImpl implements AgentSPI {
 
         String instrumentationKey = telemetryClient.getContext().getInstrumentationKey();
         DistributedTraceContext distributedTraceContext =
-                TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, getter, requestTelemetry);
+                TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, getter, requestTelemetry, false);
         TraceContextCorrelationCore.resolveRequestSource(carrier, getter, requestTelemetry, instrumentationKey);
         if (requestTelemetry.getContext().getOperation().getParentId() == null) {
             requestTelemetry.getContext().getOperation().setParentId(requestTelemetry.getId());
@@ -100,7 +100,7 @@ class AgentImpl implements AgentSPI {
         RequestTelemetry requestTelemetry = new RequestTelemetry();
 
         DistributedTraceContext distributedTraceContext = TraceContextCorrelationCore
-                .resolveCorrelationForInvisibleRequest(carrier, getter, requestTelemetry);
+                .resolveCorrelationForRequest(carrier, getter, requestTelemetry, true);
 
         IncomingSpanImpl incomingSpan = new IncomingSpanImpl(null, NOP_MESSAGE_SUPPLIER, threadContextHolder,
                 startTimeMillis, requestTelemetry, distributedTraceContext);

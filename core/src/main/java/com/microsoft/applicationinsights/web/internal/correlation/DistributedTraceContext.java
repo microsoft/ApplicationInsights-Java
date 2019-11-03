@@ -19,19 +19,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agentc.internal.model;
+package com.microsoft.applicationinsights.web.internal.correlation;
 
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class DistributedTraceContext {
 
     private final RequestTelemetry requestTelemetry;
 
     // w3c format
-    @Nullable
     private final Tracestate tracestate;
     private final int traceflag;
 
@@ -43,7 +41,7 @@ public class DistributedTraceContext {
     }
 
     // w3c format
-    String generateChildDependencyTraceparent() {
+    public String generateChildDependencyTraceparent() {
 
         String traceId = requestTelemetry.getContext().getOperation().getId();
         Traceparent tp = new Traceparent(0, traceId, null, traceflag);
@@ -52,8 +50,7 @@ public class DistributedTraceContext {
     }
 
     // w3c format
-    @Nullable
-    String retrieveTracestate() {
+    public String retrieveTracestate() {
         return tracestate == null ? null : tracestate.toString();
     }
 }
