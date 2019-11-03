@@ -26,7 +26,6 @@ include 'instrumentation:azure-functions'
 include 'agent-codeless'
 include 'core'
 include 'web'
-include 'web-auto'
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }
