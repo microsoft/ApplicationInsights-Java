@@ -21,10 +21,7 @@
 
 package com.microsoft.applicationinsights.agentc.internal.model;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.web.internal.correlation.CorrelationContext;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -38,28 +35,11 @@ public class DistributedTraceContext {
     private final Tracestate tracestate;
     private final int traceflag;
 
-    // ApplicationInsights format
-    @Nullable
-    private final CorrelationContext correlationContext;
-    @Nullable
-    private final AtomicInteger currentChildId;
-
     // w3c format
     public DistributedTraceContext(RequestTelemetry requestTelemetry, Tracestate tracestate, int traceflag) {
         this.requestTelemetry = requestTelemetry;
         this.tracestate = tracestate;
         this.traceflag = traceflag;
-        correlationContext = null;
-        currentChildId = null;
-    }
-
-    // ApplicationInsights format
-    public DistributedTraceContext(RequestTelemetry requestTelemetry, CorrelationContext correlationContext) {
-        this.requestTelemetry = requestTelemetry;
-        this.correlationContext = correlationContext;
-        currentChildId = new AtomicInteger();
-        tracestate = null;
-        traceflag = 0;
     }
 
     // w3c format
@@ -75,23 +55,5 @@ public class DistributedTraceContext {
     @Nullable
     String retrieveTracestate() {
         return tracestate == null ? null : tracestate.toString();
-    }
-
-    // ApplicationInsights format
-    String generateChildDependencyId() {
-
-        String parentId = requestTelemetry.getContext().getOperation().getParentId();
-
-        if (parentId != null && parentId.length() > 0 && parentId.charAt(0) != '|') {
-            // incoming requestId does not follow hierarchical convention, so do not modify the child IDs
-            return requestTelemetry.getContext().getOperation().getParentId();
-        } else {
-            return requestTelemetry.getId() + currentChildId.incrementAndGet() + ".";
-        }
-    }
-
-    // ApplicationInsights format
-    String retrieveCorrelationContext() {
-        return correlationContext.toString();
     }
 }
