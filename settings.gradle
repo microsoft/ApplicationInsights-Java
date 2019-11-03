@@ -28,8 +28,6 @@ if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }
 
-//include 'distributions'
-
 
 // Projects for smokeTests
 include ':test:smoke'
