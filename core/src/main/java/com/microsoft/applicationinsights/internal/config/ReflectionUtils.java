@@ -54,8 +54,6 @@ public final class ReflectionUtils {
         addClass(com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer.class);
         addClass(com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer.class);
 
-        addClass(com.microsoft.applicationinsights.extensibility.initializer.TimestampPropertyInitializer.class);
-        addClass(com.microsoft.applicationinsights.extensibility.initializer.SequencePropertyInitializer.class);
         addClass(com.microsoft.applicationinsights.extensibility.initializer.docker.DockerContextInitializer.class);
 
         addClass(com.microsoft.applicationinsights.internal.processor.MetricTelemetryFilter.class);
