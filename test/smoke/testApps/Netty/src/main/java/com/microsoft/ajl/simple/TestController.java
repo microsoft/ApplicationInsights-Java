@@ -16,10 +16,8 @@ public class TestController {
         return "OK";
     }
 
-
     @GetMapping("/test")
     public Mono<String> test() {
-        System.out.println("HI THIS IS A TEST!");
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
@@ -29,6 +27,27 @@ public class TestController {
                 } catch (InterruptedException e) {
                 }
                 completableFuture.complete("hello");
+            }
+        });
+        return Mono.fromFuture(completableFuture);
+    }
+
+    @GetMapping("/exception")
+    public Mono<String> exception() {
+        throw new RuntimeException("oops!");
+    }
+
+    @GetMapping("/futureException")
+    public Mono<String> futureException() {
+        CompletableFuture<String> completableFuture = new CompletableFuture<>();
+        Executors.newSingleThreadExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                }
+                completableFuture.completeExceptionally(new RuntimeException("oops!"));
             }
         });
         return Mono.fromFuture(completableFuture);
