@@ -39,7 +39,6 @@ if (System.env.'COLLECTD_HOME') {
 
 
 if (System.properties.AI_SAMPLES) {
-    include 'springbootsample'
     include ':test:webapps:PerfTestApp'
     include ':test:webapps:PerfTestAppSpringBoot'
     include ':test:webapps:bookstore-spring'
