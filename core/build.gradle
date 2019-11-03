@@ -80,7 +80,6 @@ import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 archivesBaseName = 'applicationinsights-core'
 
 dependencies {
-    compileOnly (project(':agent')) { transitive = false }
     compileOnly ([group: 'org.glowroot.instrumentation', name: 'instrumentation-api', version: '0.14.8']) { transitive = false }
     compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
