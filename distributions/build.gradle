@@ -45,7 +45,4 @@ shadowJar {
 dependencies {
     compile project(':core')
     compile project(':web')
-    compile project(':logging:log4j1_2')
-    compile project(':logging:log4j2')
-    compile project(':logging:logback')
 }
