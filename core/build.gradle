@@ -19,10 +19,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    id 'com.github.johnrengelman.shadow'
-}
-
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
@@ -98,27 +94,6 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
     testCompile group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0'
-}
-
-ext.dependenciesPrefix = 'com.microsoft.applicationinsights.core.dependencies'
-shadowJar {
-    archiveClassifier=''
-    mergeServiceFiles()
-    relocate 'org.apache.http', "${dependenciesPrefix}.http"
-    relocate 'eu.infomas.annotation', "${dependenciesPrefix}.annotation"
-    relocate 'org.apache.commons', "${dependenciesPrefix}.apachecommons"
-    relocate 'javax.annotation', "${dependenciesPrefix}.javaxannotation"
-    relocate 'com.google', "${dependenciesPrefix}.google"
-    relocate 'org.codehaus', "${dependenciesPrefix}.codehaus"
-    relocate 'org.checkerframework', "${dependenciesPrefix}.checkerframework"
-
-    relocate 'com.thoughtworks.xstream', "${dependenciesPrefix}.xstream"
-    relocate 'org.xmlpull', "${dependenciesPrefix}.xmlpull"
-}
-
-jar {
-    dependsOn shadowJar
-    enabled = false
 }
 
 task generateVersionProperties(type: PropsFileGen) {

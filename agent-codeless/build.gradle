@@ -57,7 +57,13 @@ shadowJar() {
     // early (e.g. in the case of jboss which wants to do some setup before jul is initialized)
     relocate('java.util.logging', 'org.glowroot.instrumentation.engine.jul')
 
-    // TODO consolidate duplicate dependencies between core and agent
+    // shade extra stuff from core
+    relocate 'org.apache.http', "${shadowPrefix}.org.apache.http"
+    relocate 'eu.infomas.annotation', "${shadowPrefix}.eu.infomas.annotation"
+    relocate 'org.apache.commons', "${shadowPrefix}.org.apache.commons"
+    relocate 'com.thoughtworks.xstream', "${shadowPrefix}.com.thoughtworks.xstream"
+    relocate 'org.xmlpull', "${shadowPrefix}.org.xmlpull"
+
     relocate 'com.microsoft.applicationinsights.core', "${shadowPrefix}.ai.core"
     relocate 'com.microsoft.applicationinsights.internal', "${shadowPrefix}.ai.internal"
     relocate 'com.microsoft.applicationinsights.channel', "${shadowPrefix}.ai.channel"
@@ -175,7 +181,7 @@ dependencies {
     runtime "org.glowroot.instrumentation:instrumentation-java-util-logging:$instrumentationVersion"
     runtime(project(path: ':instrumentation:azure-functions'))
 
-    compile(project(path: ':core', configuration: 'shadow'))
+    compile(project(path: ':core'))
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-core:1.3'
