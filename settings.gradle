@@ -37,12 +37,6 @@ if (System.env.'COLLECTD_HOME') {
 //include 'distributions'
 
 
-if (System.properties.AI_SAMPLES) {
-    include ':test:webapps:PerfTestApp'
-    include ':test:webapps:PerfTestAppSpringBoot'
-    include ':test:webapps:bookstore-spring'
-}
-
 // Projects for smokeTests
 include ':test:smoke'
 include ':test:smoke:appServers'
