@@ -3,8 +3,9 @@ apply plugin: 'war'
 dependencies {
     compileOnly aiAgentJar // this is just to force building the agent first
 
-    compile aiCoreJar
     compile aiWebJar
+
+    compile group: 'org.apache.httpcomponents', name:'httpclient', version: '4.5.7'
 
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 }

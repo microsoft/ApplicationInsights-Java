@@ -1,4 +1,4 @@
-package com;
+package com.springbootstartertest.controller;
 
 import java.util.concurrent.Executor;
 import org.springframework.boot.SpringApplication;

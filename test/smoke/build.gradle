@@ -18,13 +18,13 @@ subprojects {
                 aiCoreJar = files('c:\\core_jar_from_previous_build\\applicationinsights-core-vSomething.jar')
         */
         aiAgentJar = project(':agent-codeless')
-        aiCoreJar = project(':core')
-        aiWebJar =  project(':web')
-        aiWebAutoJar = project(':web-auto')
-        aiLog4j1_2Jar = project(':logging:log4j1_2')
-        aiLog4j2Jar = project(':logging:log4j2')
-        aiLogbackJar = project(':logging:logback')
-        springBootStarterJar = project(':azure-application-insights-spring-boot-starter')
+        aiCoreJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '2.5.0')
+        aiWebJar =  dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web', version: '2.5.0')
+        aiWebAutoJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web-auto', version: '2.5.0')
+        aiLog4j1_2Jar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-logging-log4j1_2', version: '2.5.0')
+        aiLog4j2Jar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-logging-log4j2', version: '2.5.0')
+        aiLogbackJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.5.0')
+        springBootStarterJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.5.0')
     }
 }
 
