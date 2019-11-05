@@ -389,7 +389,12 @@ public abstract class AiSmokeTest {
         }
 
         Stopwatch receivedTelemetryTimer = Stopwatch.createStarted();
-        final int requestTelemetryFromHealthCheckTimeout = TELEMETRY_RECEIVE_TIMEOUT_SECONDS;
+        final int requestTelemetryFromHealthCheckTimeout;
+        if (currentImageName.startsWith("javase_")) {
+            requestTelemetryFromHealthCheckTimeout = APPLICATION_READY_TIMEOUT_SECONDS;
+        } else {
+            requestTelemetryFromHealthCheckTimeout = TELEMETRY_RECEIVE_TIMEOUT_SECONDS;
+        }
         try {
             mockedIngestion.waitForItem(new Predicate<Envelope>() {
                 @Override
@@ -538,24 +543,19 @@ public abstract class AiSmokeTest {
             return;
         }
 
+        Map<String, String> hostnameEnvVars = new HashMap<>();
         for (DependencyContainer dc : dependencyImages) {
             String imageName = Strings.isNullOrEmpty(dc.imageName()) ? dc.value() : dc.imageName();
             System.out.printf("Starting container: %s%n", imageName);
-            final String containerId = docker.startDependencyContainer(imageName, dc.environmentVariables(), dc.portMapping(), networkId,
-                    "dependency" + Math.abs(new Random().nextLong()));
+            String containerName = "dependency" + Math.abs(new Random().nextLong());
+            String[] envVars = substitue(dc.environmentVariables(), hostnameEnvVars, containerName);
+            final String containerId = docker.startDependencyContainer(imageName, envVars, dc.portMapping(),
+                    networkId, containerName);
             assertFalse("'containerId' was null/empty attempting to start container: "+imageName, Strings.isNullOrEmpty(containerId));
             System.out.printf("Dependency container started: %s (%s)%n", imageName, containerId);
 
-            String containerName = docker.getRunningContainerName(containerId);
-            if (containerName == null) {
-                String message = String.format("Could not get container name for id=%s. ", containerId);
-                if (docker.isContainerRunning(containerId)) {
-                    message += "It appears to be running.";
-                } else {
-                    message += "It appears to have stopped.";
-                }
-                System.err.println(message);
-                throw new SmokeTestException("Couldn't get container name for image="+imageName);
+            if (!dc.hostnameEnvironmentVariable().isEmpty()) {
+                hostnameEnvVars.put(dc.hostnameEnvironmentVariable(), containerName);
             }
             ContainerInfo depConInfo = new ContainerInfo(containerId, containerName);
             depConInfo.setContainerName(containerName);
@@ -564,6 +564,25 @@ public abstract class AiSmokeTest {
             allContainers.push(depConInfo);
             TimeUnit.MILLISECONDS.sleep(500); // wait a bit after starting a server.
         }
+    }
+
+    private static String[] substitue(String[] environmentVariables, Map<String, String> hostnameEnvVars,
+                                      String containerName) {
+        String[] envVars = new String[environmentVariables.length];
+        for (int i = 0; i < environmentVariables.length; i++) {
+            envVars[i] = substitute(environmentVariables[i], hostnameEnvVars, containerName);
+        }
+        return envVars;
+    }
+
+    private static String substitute(String environmentVariable, Map<String, String> hostnameEnvVars,
+                                     String containerName) {
+        String envVar = environmentVariable;
+        for (Map.Entry<String, String> entry : hostnameEnvVars.entrySet()) {
+            envVar = envVar.replace("${" + entry.getKey() + "}", entry.getValue());
+        }
+        envVar = envVar.replace("${CONTAINERNAME}", containerName);
+        return envVar;
     }
 
     private static void startTestApplicationContainer() throws Exception {

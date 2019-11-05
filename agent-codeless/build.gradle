@@ -26,7 +26,7 @@ plugins {
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
-def instrumentationVersion = '0.14.7'
+def instrumentationVersion = '0.14.8'
 
 def shadowPrefix = 'com.microsoft.applicationinsights.agentc.shadow'
 
@@ -161,6 +161,7 @@ dependencies {
     runtime "org.glowroot.instrumentation:instrumentation-servlet:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-netty:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-jms:$instrumentationVersion"
+    runtime "org.glowroot.instrumentation:instrumentation-kafka:$instrumentationVersion"
     runtime "org.glowroot.instrumentation:instrumentation-spring:$instrumentationVersion" // need for operation name
     runtime "org.glowroot.instrumentation:instrumentation-jaxrs:$instrumentationVersion" // need for operation name
     runtime "org.glowroot.instrumentation:instrumentation-struts:$instrumentationVersion" // need for operation name
