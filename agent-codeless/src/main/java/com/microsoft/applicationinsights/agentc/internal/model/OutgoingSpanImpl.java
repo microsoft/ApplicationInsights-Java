@@ -51,16 +51,19 @@ public class OutgoingSpanImpl implements Span {
 
     private final String operationId;
     private final String operationParentId;
-    private final @Nullable String outgoingSpanId; // null when distributed tracing is disabled
+    @Nullable
+    private final String outgoingSpanId; // null when distributed tracing is disabled
 
     private final String type;
     private final String text;
     private final long startTimeMillis;
     private final MessageSupplier messageSupplier;
 
-    private volatile @MonotonicNonNull String requestContext; // only used for HTTP
+    @MonotonicNonNull
+    private volatile String requestContext; // only used for HTTP
 
-    private volatile @MonotonicNonNull Throwable exception;
+    @MonotonicNonNull
+    private volatile Throwable exception;
 
     public OutgoingSpanImpl(String operationId, String operationParentId, @Nullable String outgoingSpanId, String type,
                             String text, long startTimeMillis, MessageSupplier messageSupplier) {
@@ -144,7 +147,8 @@ public class OutgoingSpanImpl implements Span {
         }
     }
 
-    private @Nullable RemoteDependencyTelemetry toHttpTelemetry(long endTimeMillis) {
+    @Nullable
+    private RemoteDependencyTelemetry toHttpTelemetry(long endTimeMillis) {
 
         ReadableMessage message = (ReadableMessage) messageSupplier.get();
         Map<String, ?> detail = message.getDetail();

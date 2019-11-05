@@ -48,7 +48,8 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     @VisibleForTesting
     static final String UNKNOWN_VALUE = "unknown";
 
-    @VisibleForTesting final List<DiagnosticsValueFinder> valueFinders = new ArrayList<>();
+    @VisibleForTesting
+    final List<DiagnosticsValueFinder> valueFinders = new ArrayList<>();
 
     private DiagnosticsValueFinder resourceIdValue = new ResourceIdFinder();
 

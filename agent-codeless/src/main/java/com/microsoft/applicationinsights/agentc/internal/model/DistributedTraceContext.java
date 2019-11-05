@@ -34,12 +34,15 @@ public class DistributedTraceContext {
     private final RequestTelemetry requestTelemetry;
 
     // w3c format
-    private final @Nullable Tracestate tracestate;
+    @Nullable
+    private final Tracestate tracestate;
     private final int traceflag;
 
     // ApplicationInsights format
-    private final @Nullable CorrelationContext correlationContext;
-    private final @Nullable AtomicInteger currentChildId;
+    @Nullable
+    private final CorrelationContext correlationContext;
+    @Nullable
+    private final AtomicInteger currentChildId;
 
     // w3c format
     public DistributedTraceContext(RequestTelemetry requestTelemetry, Tracestate tracestate, int traceflag) {

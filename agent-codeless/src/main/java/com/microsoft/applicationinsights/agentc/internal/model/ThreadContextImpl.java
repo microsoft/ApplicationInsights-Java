@@ -54,7 +54,8 @@ public class ThreadContextImpl implements ThreadContextPlus {
     private int currentNestingGroupId;
     private int currentSuppressionKeyId;
 
-    private final @Nullable TwoPartCompletion auxThreadAsyncCompletion;
+    @Nullable
+    private final TwoPartCompletion auxThreadAsyncCompletion;
 
     public ThreadContextImpl(IncomingSpanImpl incomingSpan, int rootNestingGroupId, int rootSuppressionKeyId,
                              boolean auxThread) {
@@ -219,7 +220,8 @@ public class ThreadContextImpl implements ThreadContextPlus {
     }
 
     @Override
-    public @Nullable ServletRequestInfo getServletRequestInfo() {
+    @Nullable
+    public ServletRequestInfo getServletRequestInfo() {
         return incomingSpan.getServletRequestInfo();
     }
 

@@ -96,7 +96,8 @@ class ConfigurationBuilder {
     }
 
     // never returns empty string (empty string is normalized to null)
-    private static @Nullable String getStringProperty(String propertyName) {
+    @Nullable
+    private static String getStringProperty(String propertyName) {
         String propertyValue = System.getenv("APPLICATIONINSIGHTS_" + getEnvVarName(propertyName));
         if (!isNullOrEmpty(propertyValue)) {
             return propertyValue.trim();
