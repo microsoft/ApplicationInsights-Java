@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agentc.internal.model;
 
 import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.web.internal.correlation.DistributedTraceContext;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.AsyncQuerySpan;
 import org.glowroot.instrumentation.api.AsyncSpan;

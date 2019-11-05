@@ -257,9 +257,6 @@ public final class TelemetryConfigurationFactoryTest {
 
         TelemetryInitializersXmlElement telemetryInitializersXmlElement = new TelemetryInitializersXmlElement();
         ArrayList<AddTypeXmlElement> contexts = new ArrayList<AddTypeXmlElement>();
-        AddTypeXmlElement addXmlElement = new AddTypeXmlElement();
-        addXmlElement.setType("com.microsoft.applicationinsights.extensibility.initializer.TimestampPropertyInitializer");
-        contexts.add(addXmlElement);
         telemetryInitializersXmlElement.setAdds(contexts);
         appConf.setTelemetryInitializers(telemetryInitializersXmlElement);
 
@@ -270,7 +267,6 @@ public final class TelemetryConfigurationFactoryTest {
         assertEquals(false, mockConfiguration.isTrackingDisabled());
         assertEquals(MOCK_IKEY, mockConfiguration.getInstrumentationKey());
         assertThat(mockConfiguration.getContextInitializers(), hasSize(3));
-        assertThat(mockConfiguration.getTelemetryInitializers(), hasSize(1));
         assertThat(mockConfiguration.getTelemetryProcessors(), empty());
         assertThat(mockConfiguration.getChannel(), instanceOf(StdOutChannel.class));
     }

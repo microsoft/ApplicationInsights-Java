@@ -21,32 +21,13 @@
 
 include 'ApplicationInsightsInternalLogger'
 
-include 'agent'
 include 'instrumentation:azure-functions'
 include 'agent-codeless'
 include 'core'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'web-auto'
-include 'azure-application-insights-spring-boot-starter'
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }
 
-//include 'distributions'
-
-
-if (System.properties.AI_SAMPLES) {
-    include 'springbootsample'
-    include ':test:webapps:PerfTestApp'
-    include ':test:webapps:PerfTestAppSpringBoot'
-    include ':test:webapps:bookstore-spring'
-
-    //  TODO rewrite samples; these are not representative of "real-world" usage
-    include 'samples'
-}
 
 // Projects for smokeTests
 include ':test:smoke'

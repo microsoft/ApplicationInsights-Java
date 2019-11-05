@@ -33,7 +33,8 @@ import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore.ResponseHeaderSetter;
+import com.microsoft.applicationinsights.web.internal.correlation.DistributedTraceContext;
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.api.Getter;
@@ -160,7 +161,6 @@ public class IncomingSpanImpl implements Span {
     @Override
     @Deprecated
     public <R> void propagateToResponse(R response, Setter<R> setter) {
-        // TODO eliminate wrapper object instantiation
         TraceContextCorrelationCore.resolveCorrelationForResponse(response, setter);
     }
 
@@ -311,24 +311,5 @@ public class IncomingSpanImpl implements Span {
             return uri.substring(0, separatorIndex);
         }
         return uri;
-    }
-
-    private static class ResponseHeaderSetterImpl<Res> implements ResponseHeaderSetter<Res> {
-
-        private final Setter<Res> setter;
-
-        private ResponseHeaderSetterImpl(Setter<Res> setter) {
-            this.setter = setter;
-        }
-
-        @Override
-        public boolean containsHeader(Res response, String name) {
-            return false;
-        }
-
-        @Override
-        public void addHeader(Res response, String name, String value) {
-            setter.put(response, name, value);
-        }
     }
 }
