@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.jar.JarFile;
 
 import com.google.common.base.MoreObjects;
@@ -39,6 +40,7 @@ import com.microsoft.applicationinsights.agentc.internal.Configuration.JmxMetric
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
+import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
 import com.microsoft.applicationinsights.internal.config.SDKLoggerXmlElement;
@@ -163,6 +165,15 @@ public class MainEntryPoint {
                 instrumentationDescriptors, configServiceFactory, new AgentImpl(), false,
                 Collections.singletonList("com.microsoft.applicationinsights.agentc."),
                 Collections.singletonList("com.microsoft.applicationinsights.agentc."), agentJarFile);
+
+        String jbossHome = System.getenv("JBOSS_HOME");
+        if (!Strings.isNullOrEmpty(jbossHome)) {
+            // this is used to delay SSL initialization because SSL initialization triggers loading of
+            // java.util.logging (starting with Java 8u231)
+            // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
+            ApacheSender43.safeToInitLatch = new CountDownLatch(1);
+            instrumentation.addTransformer(new JulListeningClassFileTransformer(ApacheSender43.safeToInitLatch));
+        }
 
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
