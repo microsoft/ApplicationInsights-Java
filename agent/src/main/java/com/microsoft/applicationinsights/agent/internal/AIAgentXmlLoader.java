@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,8 +35,8 @@ import com.microsoft.applicationinsights.agent.internal.config.BuiltInInstrument
 import com.microsoft.applicationinsights.agent.internal.config.ClassInstrumentationData;
 import com.microsoft.applicationinsights.agent.internal.config.MethodInfo;
 import com.microsoft.applicationinsights.agent.internal.config.builder.XmlAgentConfigurationBuilder;
+import org.glowroot.instrumentation.api.Descriptor.CaptureKind;
 import org.glowroot.instrumentation.engine.config.AdviceConfig;
-import org.glowroot.instrumentation.engine.config.AdviceConfig.CaptureKind;
 import org.glowroot.instrumentation.engine.config.ImmutableAdviceConfig;
 import org.glowroot.instrumentation.engine.config.ImmutableInstrumentationDescriptor;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
@@ -56,7 +55,7 @@ class AIAgentXmlLoader {
     }
 
     static List<InstrumentationDescriptor> getInstrumentationDescriptors(AgentConfiguration agentConfiguration)
-            throws IOException {
+            throws Exception {
 
         BuiltInInstrumentation builtInConfiguration = agentConfiguration.getBuiltInInstrumentation();
         boolean httpEnabled = builtInConfiguration.isHttpEnabled();
