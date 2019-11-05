@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import java.io.InputStream;
@@ -161,11 +160,6 @@ public enum TelemetryConfigurationFactory {
         setTelemetryProcessors(applicationInsightsConfig, configuration);
 
         TelemetryChannel channel = configuration.getChannel();
-        if (channel instanceof LocalForwarderTelemetryChannel
-                && isQuickPulseEnabledInConfiguration(applicationInsightsConfig)) {
-            InternalLogger.INSTANCE.info("LocalForwarder will handle QuickPulse communication. Disabling SDK QuickPulse thread.");
-            applicationInsightsConfig.getQuickPulse().setEnabled(false);
-        }
         setQuickPulse(applicationInsightsConfig, configuration);
 
         initializeComponents(configuration);
