@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agentc.internal.model;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelationCore;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextThreadLocal;
 
@@ -54,6 +55,7 @@ public class Global {
 
     public static void setDistributedTracingRequestIdCompatEnabled(boolean distributedTracingRequestIdCompatEnabled) {
         Global.distributedTracingRequestIdCompatEnabled = distributedTracingRequestIdCompatEnabled;
+        TraceContextCorrelationCore.setIsRequestIdCompatEnabled(distributedTracingRequestIdCompatEnabled);
     }
 
     // this can be null if agent failed during startup
