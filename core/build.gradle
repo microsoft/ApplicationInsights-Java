@@ -150,6 +150,13 @@ shadowJar {
     relocate 'org.xmlpull', "${dependenciesPrefix}.xmlpull"
 
     exclude '**/*.proto'
+
+    // these files are compiled with Java 8, which can cause issues for applications that perform jar file scanning with
+    // old version of ASM that doesn't support Java 8 yet
+    exclude 'com/thoughtworks/xstream/converters/time/*.class'
+    exclude 'com/thoughtworks/xstream/converters/reflection/LambdaConverter.class'
+    exclude 'com/thoughtworks/xstream/mapper/LambdaMapper.class'
+    exclude 'com/thoughtworks/xstream/core/util/ISO8601JavaTimeConverter.class'
 }
 
 jar {
