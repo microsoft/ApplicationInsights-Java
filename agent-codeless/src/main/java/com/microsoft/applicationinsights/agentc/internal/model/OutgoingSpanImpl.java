@@ -188,21 +188,19 @@ public class OutgoingSpanImpl implements Span {
             }
             try {
                 URI uriObject = new URI(uri);
-                String target;
-                if (requestContext == null) {
-                    target = uriObject.getHost();
-                } else {
-                    target = TraceContextCorrelationCore.generateChildDependencyTarget(requestContext);
+                String target = createTarget(uriObject);
+                if (requestContext != null) {
+                    String incomingTarget = TraceContextCorrelationCore.generateChildDependencyTarget(requestContext);
+                    if (incomingTarget != null && !incomingTarget.isEmpty()) {
+                        target += " | " + incomingTarget;
+                    }
                 }
+                telemetry.setTarget(target);
                 String path = uriObject.getPath();
                 if (Strings.isNullOrEmpty(path)) {
                     telemetry.setName(method + " /");
                 } else {
                     telemetry.setName(method + " " + path);
-                }
-                if (target != null && !target.isEmpty()) {
-                    // AI correlation expects target to be of this format.
-                    telemetry.setTarget(createTarget(uriObject, target));
                 }
             } catch (URISyntaxException e) {
                 logger.error(e.getMessage());
@@ -221,12 +219,11 @@ public class OutgoingSpanImpl implements Span {
     }
 
     // from CoreAgentNotificationsHandler:
-    private static String createTarget(URI uriObject, String incomingTarget) {
+    private static String createTarget(URI uriObject) {
         String target = uriObject.getHost();
-        if (uriObject.getPort() != 80 && uriObject.getPort() != 443) {
+        if (uriObject.getPort() != 80 && uriObject.getPort() != 443 && uriObject.getPort() != -1) {
             target += ":" + uriObject.getPort();
         }
-        target += " | " + incomingTarget;
         return target;
     }
 }
