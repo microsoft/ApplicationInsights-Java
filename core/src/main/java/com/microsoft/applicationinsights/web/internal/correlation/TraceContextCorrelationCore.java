@@ -421,4 +421,10 @@ public class TraceContextCorrelationCore {
 
         return result;
     }
+
+    public static void setIsRequestIdCompatEnabled(boolean isW3CBackCompatEnabled) {
+        TraceContextCorrelationCore.isW3CBackCompatEnabled = isW3CBackCompatEnabled;
+        InternalLogger.INSTANCE.trace(String.format("W3C Backport mode enabled on Incoming side %s",
+                isW3CBackCompatEnabled));
+    }
 }
