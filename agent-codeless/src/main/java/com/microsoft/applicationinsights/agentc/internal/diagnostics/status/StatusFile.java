@@ -141,8 +141,13 @@ public class StatusFile {
             if (buffer != null) {
                 buffer.close();
             }
-            buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE,
-                    StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
+            if (SystemInformation.INSTANCE.isWindows()) {
+                buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE,
+                        StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
+            } else {
+                buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
+                file.deleteOnExit();
+            }
             return buffer;
         }
     }
