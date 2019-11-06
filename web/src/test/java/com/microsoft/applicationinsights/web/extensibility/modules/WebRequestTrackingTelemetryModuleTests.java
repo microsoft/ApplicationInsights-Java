@@ -185,6 +185,9 @@ public class WebRequestTrackingTelemetryModuleTests {
     @Test
     public void testCrossComponentCorrelationHeadersAreCaptured() throws Exception {
 
+        // Turn W3C off
+        defaultModule.isW3CEnabled = false;
+
         //setup: initialize a request telemetry context
         RequestTelemetryContext context = new RequestTelemetryContext(DateTimeUtils.getDateTimeNow().getTime());
         ThreadContext.setRequestTelemetryContext(context);
@@ -536,11 +539,8 @@ public class WebRequestTrackingTelemetryModuleTests {
         //mock a servlet request with cross-component correlation headers
         Map<String, String> headers = new HashMap<String, String>();
 
-        String incomingId = "|guid.bcec871c_1.";
+        String incomingId = "|01234567012345670123456701234567.bcec871c_1.";
         headers.put(TelemetryCorrelationUtils.CORRELATION_HEADER_NAME, incomingId);
-
-        String correlationContext = "key1=value1, key2=value2";
-        headers.put(TelemetryCorrelationUtils.CORRELATION_CONTEXT_HEADER_NAME, correlationContext);
 
         HttpServletRequest request = ServletUtils.createServletRequestWithHeaders(headers, 1);
         HttpServletResponse response = (HttpServletResponse)ServletUtils.generateDummyServletResponse();
@@ -559,11 +559,8 @@ public class WebRequestTrackingTelemetryModuleTests {
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
 
         //validate manually tracked telemetry is a child of the request telemetry
-        assertEquals("guid", exceptionTelemetry.getContext().getOperation().getId());
+        assertEquals("01234567012345670123456701234567", exceptionTelemetry.getContext().getOperation().getId());
         assertEquals(requestTelemetry.getId(), exceptionTelemetry.getContext().getOperation().getParentId());
-        assertEquals(2, exceptionTelemetry.getProperties().size());
-        assertEquals("value1", exceptionTelemetry.getProperties().get("key1"));
-        assertEquals("value2", exceptionTelemetry.getProperties().get("key2"));
     }
 
     @Test

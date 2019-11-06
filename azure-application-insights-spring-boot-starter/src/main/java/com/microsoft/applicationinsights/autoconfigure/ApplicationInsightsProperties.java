@@ -416,9 +416,9 @@ public class ApplicationInsightsProperties {
     private boolean enabled = true;
 
     /**
-     * Flag to enable/disable enableW3C headers. It is disabled by default.
+     * Flag to enable/disable enableW3C headers. It is enabled by default.
      */
-    private boolean enableW3C = false;
+    private boolean enableW3C = true;
 
     /**
      * Flag to enable backward compatibility mode for W3C. By default this is

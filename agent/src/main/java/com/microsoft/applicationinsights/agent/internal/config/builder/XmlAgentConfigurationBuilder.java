@@ -166,7 +166,7 @@ public class XmlAgentConfigurationBuilder {
 
         nodes = builtInElement.getElementsByTagName(HTTP_TAG);
         Element httpElement = XmlParserUtils.getFirst(nodes);
-        boolean w3cEnabled = XmlParserUtils.w3cEnabled(httpElement, W3C_ENABLED, false);
+        boolean w3cEnabled = XmlParserUtils.w3cEnabled(httpElement, W3C_ENABLED, true);
         boolean w3cBackCompatEnabled = XmlParserUtils.w3cEnabled(httpElement, W3C_BACK_COMPAT_ENABLED, true);
         builtInConfigurationBuilder.setHttpEnabled(XmlParserUtils.getEnabled(httpElement, HTTP_TAG), w3cEnabled,
                 w3cBackCompatEnabled);
