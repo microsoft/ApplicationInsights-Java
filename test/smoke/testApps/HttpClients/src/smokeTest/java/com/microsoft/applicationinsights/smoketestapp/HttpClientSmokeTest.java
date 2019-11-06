@@ -33,7 +33,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
-        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -51,7 +51,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
-        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -69,7 +69,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
-        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -87,7 +87,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
-        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -105,7 +105,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
-        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -123,7 +123,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("GET /", rdd.getName());
-        assertEquals("www.bing.com:-1 | www.bing.com", rdd.getTarget());
+        assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
