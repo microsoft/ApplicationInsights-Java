@@ -39,6 +39,9 @@ import com.microsoft.applicationinsights.agentc.internal.Configuration.FixedRate
 import com.microsoft.applicationinsights.agentc.internal.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile;
+import com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
+import com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.PerformanceCounterClassFileTransformer;
+import com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
@@ -80,10 +83,10 @@ public class MainEntryPoint {
             addLibJars(instrumentation, agentJarFile);
             instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
             start(instrumentation, agentJarFile);
-            // add legacy class file transformers after ensuring Global.getTelemetryClient() will not return null
-            instrumentation.addTransformer(new LegacyTelemetryClientClassFileTransformer());
-            instrumentation.addTransformer(new LegacyDependencyTelemetryClassFileTransformer());
-            instrumentation.addTransformer(new LegacyPerformanceCounterClassFileTransformer());
+            // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
+            instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
+            instrumentation.addTransformer(new DependencyTelemetryClassFileTransformer());
+            instrumentation.addTransformer(new PerformanceCounterClassFileTransformer());
             success = true;
         } catch (ThreadDeath td) {
             throw td;

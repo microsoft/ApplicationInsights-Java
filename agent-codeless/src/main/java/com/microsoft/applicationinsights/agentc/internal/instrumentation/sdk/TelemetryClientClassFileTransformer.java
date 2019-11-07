@@ -18,7 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.agentc.internal;
+package com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -28,7 +28,6 @@ import java.security.ProtectionDomain;
 import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile;
-import com.microsoft.applicationinsights.agentc.internal.model.LegacySDK;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
@@ -67,9 +66,12 @@ import static org.objectweb.asm.Opcodes.IRETURN;
 import static org.objectweb.asm.Opcodes.NEW;
 import static org.objectweb.asm.Opcodes.RETURN;
 
-class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer {
+public class TelemetryClientClassFileTransformer implements ClassFileTransformer {
 
-    private static final Logger logger = LoggerFactory.getLogger(LegacyTelemetryClientClassFileTransformer.class);
+    private static final Logger logger = LoggerFactory.getLogger(TelemetryClientClassFileTransformer.class);
+
+    private static final String BYTECODE_UTIL_INTERNAL_NAME =
+            "com/microsoft/applicationinsights/agentc/internal/instrumentation/sdk/BytecodeUtil";
 
     // using constant here so that it will NOT get shaded
     // IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER COULD INLINE IT BELOW AND APPLY .substring(1)
@@ -168,8 +170,8 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getMetrics",
                     "()Ljava/util/concurrent/ConcurrentMap;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "trackEvent", "(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackEvent",
+                    "(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V", false);
             mv.visitInsn(RETURN);
             mv.visitMaxs(3, 2);
             mv.visitEnd();
@@ -199,8 +201,7 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getProperties",
                     "()Ljava/util/Map;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "trackMetric",
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackMetric",
                     "(Ljava/lang/String;DLjava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;" +
                             "Ljava/util/Map;)V",
                     false);
@@ -246,8 +247,7 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getMetrics",
                     "()Ljava/util/Map;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "trackDependency",
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackDependency",
                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;" +
                             "Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V",
                     false);
@@ -275,8 +275,8 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getMetrics",
                     "()Ljava/util/concurrent/ConcurrentMap;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "trackPageView", "(Ljava/lang/String;Ljava/net/URI;JLjava/util/Map;Ljava/util/Map;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackPageView",
+                    "(Ljava/lang/String;Ljava/net/URI;JLjava/util/Map;Ljava/util/Map;)V", false);
             mv.visitInsn(RETURN);
             mv.visitMaxs(6, 2);
             mv.visitEnd();
@@ -303,8 +303,7 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getSeconds", "()I", false);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getMilliseconds", "()I", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "getTotalMilliseconds", "(JIIII)J", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "getTotalMilliseconds", "(JIIII)J", false);
             mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
             mv.visitInsn(ARETURN);
             mv.visitMaxs(6, 2);
@@ -385,8 +384,8 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[]{"java/lang/Throwable"});
             mv.visitVarInsn(ASTORE, 2);
             mv.visitVarInsn(ALOAD, 2);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "logErrorOnce", "(Ljava/lang/Throwable;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "logErrorOnce", "(Ljava/lang/Throwable;)V",
+                    false);
             mv.visitLabel(l6);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitInsn(RETURN);
@@ -460,9 +459,8 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
         String content = new String(baos.toByteArray(), Charsets.UTF_8);
         content = content.replace("\"com/microsoft/applicationinsights/telemetry", "unshadedPrefix + \"/telemetry");
         content = content.replace("com/microsoft/applicationinsights/telemetry", "\" + unshadedPrefix + \"/telemetry");
-        content = content.replace(
-                "\"com/microsoft/applicationinsights/agentc/internal/LegacyTelemetryClientClassFileTransformer$TC",
-                "unshadedPrefix + \"/TelemetryClient");
+        content = content.replace("\"com/microsoft/applicationinsights/agentc/internal/instrumentation/sdk" +
+                "/TelemetryClientClassFileTransformer$TC", "unshadedPrefix + \"/TelemetryClient");
         System.out.println(content);
     }
 
@@ -501,26 +499,26 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
                     agent$trackPageViewTelemetry((PageViewTelemetry) telemetry);
                 }
             } catch (Throwable t) {
-                LegacySDK.logErrorOnce(t);
+                BytecodeUtil.logErrorOnce(t);
             }
         }
 
         private void agent$trackEventTelemetry(EventTelemetry t) {
-            LegacySDK.trackEvent(t.getName(), t.getProperties(), t.getMetrics());
+            BytecodeUtil.trackEvent(t.getName(), t.getProperties(), t.getMetrics());
         }
 
         private void agent$trackMetricTelemetry(MetricTelemetry t) {
-            LegacySDK.trackMetric(t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
+            BytecodeUtil.trackMetric(t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
                     t.getStandardDeviation(), t.getProperties());
         }
 
         private void agent$trackRemoteDependencyTelemetry(RemoteDependencyTelemetry t) {
-            LegacySDK.trackDependency(t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
+            BytecodeUtil.trackDependency(t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
                     t.getSuccess(), t.getCommandName(), t.getType(), t.getTarget(), t.getProperties(), t.getMetrics());
         }
 
         private void agent$trackPageViewTelemetry(PageViewTelemetry t) {
-            LegacySDK.trackPageView(t.getName(), t.getUri(), t.getDuration(), t.getProperties(), t.getMetrics());
+            BytecodeUtil.trackPageView(t.getName(), t.getUri(), t.getDuration(), t.getProperties(), t.getMetrics());
         }
 
         @Nullable
@@ -530,7 +528,7 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             }
             // not calling duration.getTotalMilliseconds() since trackDependency was introduced in 0.9.3 but
             // getTotalMilliseconds() was not introduced until 0.9.4
-            return LegacySDK.getTotalMilliseconds(
+            return BytecodeUtil.getTotalMilliseconds(
                     duration.getDays(),
                     duration.getHours(),
                     duration.getMinutes(),
