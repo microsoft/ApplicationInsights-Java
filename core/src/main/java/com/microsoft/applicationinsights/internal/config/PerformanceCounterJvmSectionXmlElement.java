@@ -23,21 +23,14 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * Created by gupele on 8/8/2016.
  */
 public class PerformanceCounterJvmSectionXmlElement {
 
-    @XStreamImplicit(itemFieldName = "JvmPC")
     private ArrayList<JvmXmlElement> jvmXmlElements;
 
-    @XStreamAsAttribute
     private boolean enabled = true;
 
     public ArrayList<JvmXmlElement> getJvmXmlElements() {

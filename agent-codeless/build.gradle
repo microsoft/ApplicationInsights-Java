@@ -61,8 +61,6 @@ shadowJar() {
     relocate 'org.apache.http', "${shadowPrefix}.org.apache.http"
     relocate 'eu.infomas.annotation', "${shadowPrefix}.eu.infomas.annotation"
     relocate 'org.apache.commons', "${shadowPrefix}.org.apache.commons"
-    relocate 'com.thoughtworks.xstream', "${shadowPrefix}.com.thoughtworks.xstream"
-    relocate 'org.xmlpull', "${shadowPrefix}.org.xmlpull"
 
     relocate 'com.microsoft.applicationinsights.core', "${shadowPrefix}.ai.core"
     relocate 'com.microsoft.applicationinsights.internal', "${shadowPrefix}.ai.internal"
@@ -93,8 +91,7 @@ shadowJar() {
     exclude 'META-INF/proguard/**'
     exclude 'mozilla/**'
     exclude 'commons-logging.properties'
-    exclude 'XMLPULL_*_VERSION'
-    exclude 'XPP3_*_MIN_VERSION'
+    exclude 'module-info.class'
 
     // prevent duplicate files
     exclude 'LICENSE'

@@ -21,17 +21,13 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-
 /**
  * Created by gupele on 8/8/2016.
  */
 public class JvmXmlElement {
 
-    @XStreamAsAttribute
     private String name;
 
-    @XStreamAsAttribute
     private boolean enabled = true;
 
     public String getName() {

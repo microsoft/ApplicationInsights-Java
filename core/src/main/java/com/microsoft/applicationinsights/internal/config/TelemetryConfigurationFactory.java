@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.internal.config;
 import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
-import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.List;
@@ -57,7 +56,6 @@ import com.microsoft.applicationinsights.internal.processor.TelemetryEventFilter
 import com.microsoft.applicationinsights.internal.processor.TraceTelemetryFilter;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Initializer class for configuration instances.
@@ -88,9 +86,6 @@ public enum TelemetryConfigurationFactory {
     static final String EXTERNAL_PROPERTY_IKEY_NAME = "APPLICATION_INSIGHTS_IKEY";
     static final String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
-    @VisibleForTesting
-    AppInsightsConfigurationBuilder builder = new JaxbAppInsightsConfigurationBuilder();
-
     private static final Set<String> defaultPerformaceModuleClassNames = new HashSet<>();
 
     static {
@@ -117,24 +112,7 @@ public enum TelemetryConfigurationFactory {
      * @param configuration The configuration that will be populated
      */
     public final void initialize(TelemetryConfiguration configuration) {
-        try (InputStream configurationFile = new ConfigurationFileLocator(CONFIG_FILE_NAME).getConfigurationFile()) {
-
-            if (configurationFile == null) {
-                setMinimumConfiguration(null, configuration);
-                return;
-            }
-
-            ApplicationInsightsXmlConfiguration applicationInsightsConfig = builder.build(configurationFile);
-            if (applicationInsightsConfig == null) {
-                InternalLogger.INSTANCE.error("Failed to read configuration file. Application Insights XML file is null...setting default configuration");
-                setMinimumConfiguration(null, configuration);
-                return;
-            }
-
-            initialize(configuration, applicationInsightsConfig);
-        } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to initialize configuration, exception: %s", ExceptionUtils.getStackTrace(e));
-        }
+        setMinimumConfiguration(null, configuration);
     }
 
     public void initialize(TelemetryConfiguration configuration,

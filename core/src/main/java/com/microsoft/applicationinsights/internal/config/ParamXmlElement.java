@@ -21,17 +21,13 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-
 /**
  * Created by yonisha on 3/16/2015.
  */
 public class ParamXmlElement {
 
-    @XStreamAsAttribute
     private String name;
 
-    @XStreamAsAttribute
     private String value;
 
     public String getName() {

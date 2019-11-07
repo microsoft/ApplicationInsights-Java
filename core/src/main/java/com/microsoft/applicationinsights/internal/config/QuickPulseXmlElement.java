@@ -21,14 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-
 /**
  * Created by gupele on 12/13/2016.
  */
 public class QuickPulseXmlElement {
 
-    @XStreamAsAttribute
     private boolean enabled = true;
 
     public void setEnabled(boolean enabled) {

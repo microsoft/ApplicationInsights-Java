@@ -21,17 +21,13 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
 /**
  * Created by gupele on 11/2/2016.
  */
 public class SamplerXmlElement {
 
-    @XStreamAlias("Fixed")
     private FixedSamplerXmlElement fixedSamplerXmlElement;
 
-    @XStreamAlias("Adaptive")
     private AdaptiveSamplerXmlElement adaptiveSamplerXmlElement;
 
     public FixedSamplerXmlElement getFixedSamplerXmlElement() {

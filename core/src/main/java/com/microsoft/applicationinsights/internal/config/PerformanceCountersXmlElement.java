@@ -23,31 +23,21 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.util.ArrayList;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
-
 /**
  * Created by gupele on 3/15/2015.
  */
 public class PerformanceCountersXmlElement {
 
-    @XStreamAlias("UseBuiltIn")
     private boolean useBuiltIn = true;
 
-    @XStreamAsAttribute
     private long collectionFrequencyInSec = 60;
 
-    @XStreamAlias("Jvm")
     private PerformanceCounterJvmSectionXmlElement jvmSection;
 
-    @XStreamAlias("Plugin")
     private String plugin;
 
-    @XStreamAlias("Jmx")
     private JmxWrapperXmlElement jmxWrapper = new JmxWrapperXmlElement();
 
-    @XStreamAlias("Windows")
     private WindowsPCWrapperXmlElement windowsPCWrapper = new WindowsPCWrapperXmlElement();
 
     public ArrayList<JmxXmlElement> getJmxXmlElements() {
@@ -100,13 +90,11 @@ public class PerformanceCountersXmlElement {
 
     public static class JmxWrapperXmlElement {
 
-        @XStreamImplicit(itemFieldName = "Add")
         private ArrayList<JmxXmlElement> jmxXmlElements;
     }
 
     public static class WindowsPCWrapperXmlElement {
 
-        @XStreamImplicit(itemFieldName = "Add")
         private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
     }
 }
