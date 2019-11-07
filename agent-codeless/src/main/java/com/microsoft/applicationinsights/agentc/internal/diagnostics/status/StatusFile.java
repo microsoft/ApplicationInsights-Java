@@ -144,7 +144,7 @@ public class StatusFile {
             if (SystemInformation.INSTANCE.isWindows()) {
                 buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE,
                         StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
-            } else {
+            } else { // on linux, the file is deleted/unlinked immediately using DELETE_ON_CLOSE making it unavailable to other processes. Using shutdown hook instead.
                 buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
                 file.deleteOnExit();
             }
