@@ -8,8 +8,11 @@ import org.objectweb.asm.Opcodes;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +30,9 @@ public class TestController {
     @GetMapping("/verifyJava7")
     public String verifyJava7() throws IOException {
 
-        URL url = TelemetryClient.class.getProtectionDomain().getCodeSource().getLocation();
+        File agentJarFile = getAgentJarFile();
 
-        InputStream in = url.openStream();
+        InputStream in = new FileInputStream(agentJarFile);
         JarInputStream jarIn = new JarInputStream(in);
 
         List<String> java8Classnames = new ArrayList<>();
@@ -60,6 +63,16 @@ public class TestController {
             throw new AssertionError("Found Java 8+ classes: " + Joiner.on(", ").join(java8Classnames));
         }
         return "OK";
+    }
+
+    private static File getAgentJarFile() {
+        List<String> jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments();
+        for (String jvmArg : jvmArgs) {
+            if (jvmArg.startsWith("-javaagent:") && jvmArg.contains("applicationinsights-agent-codeless")) {
+                return new File(jvmArg.substring("-javaagent:".length()));
+            }
+        }
+        throw new AssertionError("Agent jar not found on command line: " + Joiner.on(' ').join(jvmArgs));
     }
 
     static class VersionCapturingClassVisitor extends ClassVisitor {

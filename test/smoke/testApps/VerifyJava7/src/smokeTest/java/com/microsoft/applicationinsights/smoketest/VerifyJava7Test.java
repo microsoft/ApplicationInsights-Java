@@ -9,6 +9,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
+@UseAgent
 public class VerifyJava7Test extends AiSmokeTest {
 
     @Test

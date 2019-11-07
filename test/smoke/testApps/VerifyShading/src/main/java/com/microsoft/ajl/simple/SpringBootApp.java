@@ -9,7 +9,6 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 public class SpringBootApp {
 
     public static void main(String[] args) {
-
         SpringApplication.run(SpringBootApp.class, args);
     }
 }
