@@ -116,6 +116,7 @@ public class StatusFile {
                             b = getBuffer(file);
                             new Moshi.Builder().build().adapter(Map.class).indent(" ").nullSafe().toJson(b, map);
                             b.flush();
+                            logger.info("Wrote status to file: {}", file.getAbsolutePath());
                         } catch (Exception e) {
                             logger.error("Error writing {}", file.getAbsolutePath(), e);
                             if (b != null) {
@@ -140,8 +141,13 @@ public class StatusFile {
             if (buffer != null) {
                 buffer.close();
             }
-            buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE,
-                    StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
+            if (SystemInformation.INSTANCE.isWindows()) {
+                buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE,
+                        StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
+            } else { // on linux, the file is deleted/unlinked immediately using DELETE_ON_CLOSE making it unavailable to other processes. Using shutdown hook instead.
+                buffer = Okio.buffer(Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
+                file.deleteOnExit();
+            }
             return buffer;
         }
     }
