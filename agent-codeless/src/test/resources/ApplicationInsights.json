@@ -50,10 +50,6 @@
     "liveMetrics": {
       "enabled": false
     },
-    "telemetryContext": {
-      "k8s.pod.name": "amazing-product",
-      "k8s.pod.namespace": "product-ns"
-    },
     "instrumentation": {
       "jdbc": {
         "__comment": [

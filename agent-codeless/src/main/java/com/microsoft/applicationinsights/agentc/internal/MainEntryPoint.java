@@ -183,9 +183,6 @@ public class MainEntryPoint {
             addFixedRateSampling(fixedRateSampling, configuration);
         }
         TelemetryClient telemetryClient = new TelemetryClient();
-        if (!config.experimental.telemetryContext.isEmpty()) {
-            telemetryClient.getContext().getProperties().putAll(config.experimental.telemetryContext);
-        }
         Global.setDistributedTracingOutboundEnabled(config.experimental.distributedTracing.outboundEnabled);
         Global.setDistributedTracingRequestIdCompatEnabled(
                 config.experimental.distributedTracing.requestIdCompatEnabled);

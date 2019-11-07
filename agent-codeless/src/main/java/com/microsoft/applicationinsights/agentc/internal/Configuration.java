@@ -55,7 +55,6 @@ public class Configuration {
         public Sampling sampling = new Sampling();
         public DistributedTracing distributedTracing = new DistributedTracing();
         public LiveMetrics liveMetrics = new LiveMetrics();
-        public Map<String, String> telemetryContext = Collections.emptyMap();
         public Map<String, Map<String, Object>> instrumentation = Collections.emptyMap();
         public List<CustomInstrumentation> customInstrumentation = Collections.emptyList();
 

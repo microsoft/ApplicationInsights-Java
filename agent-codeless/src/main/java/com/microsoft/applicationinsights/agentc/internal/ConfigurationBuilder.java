@@ -47,7 +47,6 @@ class ConfigurationBuilder {
 
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
-    private static final String APPLICATIONINSIGHTS_TELEMETRY_CONTEXT = "APPLICATIONINSIGHTS_TELEMETRY_CONTEXT";
 
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
@@ -62,8 +61,6 @@ class ConfigurationBuilder {
         config.roleName = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.roleName);
         config.roleInstance =
                 overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.roleInstance);
-        config.experimental.telemetryContext = overlayWithEnvVar(APPLICATIONINSIGHTS_TELEMETRY_CONTEXT,
-                config.experimental.telemetryContext);
 
         return config;
     }
