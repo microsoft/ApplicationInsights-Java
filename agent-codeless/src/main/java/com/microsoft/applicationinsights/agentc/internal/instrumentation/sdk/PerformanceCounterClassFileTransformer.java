@@ -64,7 +64,7 @@ public class PerformanceCounterClassFileTransformer implements ClassFileTransfor
         }
         try {
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-            ClassVisitor cv = new PerformanceCounterClassVisitor(cw, unshadedPrefix);
+            ClassVisitor cv = new PerformanceCounterClassVisitor(cw);
             ClassReader cr = new ClassReader(classfileBuffer);
             cr.accept(cv, 0);
             return cw.toByteArray();
@@ -76,40 +76,29 @@ public class PerformanceCounterClassFileTransformer implements ClassFileTransfor
 
     private static class PerformanceCounterClassVisitor extends ClassVisitor {
 
-        private final ClassWriter cw;
-        private final String unshadedPrefix;
+        private final String unshadedPrefix = UnshadedSdkPackageName.get();
 
-        private PerformanceCounterClassVisitor(ClassWriter cw, String unshadedPrefix) {
+        private final ClassWriter cw;
+
+        private PerformanceCounterClassVisitor(ClassWriter cw) {
             super(ASM7, cw);
             this.cw = cw;
-            this.unshadedPrefix = unshadedPrefix;
         }
 
         @Override
         public MethodVisitor visitMethod(int access, String name, String descriptor, @Nullable String signature,
                                          String /*@Nullable*/[] exceptions) {
             MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
-            if (name.equals("report") && descriptor.equals("(L" + unshadedPrefix + "/TelemetryClient)V")) {
-                return new ReportMethodVisitor(mv);
+            if (name.equals("report") && descriptor.equals("(L" + unshadedPrefix + "/TelemetryClient;)V")) {
+                // no-op the report() method
+                mv.visitCode();
+                mv.visitInsn(RETURN);
+                mv.visitMaxs(0, 1);
+                mv.visitEnd();
+                return null;
             } else {
                 return mv;
             }
-        }
-    }
-
-    // no-op the report() method
-    private static class ReportMethodVisitor extends MethodVisitor {
-
-        private ReportMethodVisitor(MethodVisitor mv) {
-            super(ASM7, mv);
-        }
-
-        @Override
-        public void visitCode() {
-            mv.visitCode();
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(0, 1);
-            mv.visitEnd();
         }
     }
 }
