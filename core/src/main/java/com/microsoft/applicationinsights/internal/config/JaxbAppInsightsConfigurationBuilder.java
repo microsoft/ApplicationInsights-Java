@@ -27,7 +27,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -49,11 +48,11 @@ class JaxbAppInsightsConfigurationBuilder implements AppInsightsConfigurationBui
         }
 
         try {
-            XStream xstream = new XStream(new PureJavaReflectionProvider(), new Xpp3Driver());
+            Java7SaferXStream xstream = new Java7SaferXStream(new PureJavaReflectionProvider(), new Xpp3Driver());
 
             xstream.ignoreUnknownElements(); // backwards compatible with jaxb behavior
 
-            XStream.setupDefaultSecurity(xstream);
+            Java7SaferXStream.setupDefaultSecurity(xstream);
             xstream.allowTypesByWildcard(new String[] {
                     "com.microsoft.applicationinsights.internal.config.*"
             });

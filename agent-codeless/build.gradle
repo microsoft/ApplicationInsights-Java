@@ -96,6 +96,13 @@ shadowJar() {
     exclude 'XMLPULL_*_VERSION'
     exclude 'XPP3_*_MIN_VERSION'
 
+    // these files are compiled with Java 8, which can cause issues for applications that perform jar file scanning with
+    // old version of ASM that doesn't support Java 8 yet
+    exclude 'com/thoughtworks/xstream/converters/time/*.class'
+    exclude 'com/thoughtworks/xstream/converters/reflection/LambdaConverter.class'
+    exclude 'com/thoughtworks/xstream/mapper/LambdaMapper.class'
+    exclude 'com/thoughtworks/xstream/core/util/ISO8601JavaTimeConverter.class'
+
     // prevent duplicate files
     exclude 'LICENSE'
     exclude 'NOTICE'
