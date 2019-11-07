@@ -91,6 +91,7 @@ shadowJar() {
     exclude 'META-INF/proguard/**'
     exclude 'mozilla/**'
     exclude 'commons-logging.properties'
+    exclude 'module-info.class'
 
     // prevent duplicate files
     exclude 'LICENSE'

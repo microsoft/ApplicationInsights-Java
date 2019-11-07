@@ -43,9 +43,6 @@ public class TestController {
             if (name.endsWith(".class")) {
                 VersionCapturingClassVisitor cv = new VersionCapturingClassVisitor();
                 new ClassReader(jarIn).accept(cv, 0);
-                if (name.equals("module-info.class")) {
-                    continue;
-                }
                 if (cv.version > 51) {
                     java8Classnames.add(name.replace('/', '.'));
                 }

@@ -58,7 +58,6 @@ public class TestController {
         expectedEntries.add("NOTICE");
         expectedEntries.add("ai.logback.xml");
         expectedEntries.add("sdk-version.properties");
-        expectedEntries.add("module-info.class");
         JarFile jarFile = new JarFile(agentJarFile);
         List<String> unexpected = new ArrayList<>();
         for (Enumeration<JarEntry> e = jarFile.entries(); e.hasMoreElements(); ) {
