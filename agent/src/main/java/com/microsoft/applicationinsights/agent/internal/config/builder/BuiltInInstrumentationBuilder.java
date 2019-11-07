@@ -32,7 +32,7 @@ public class BuiltInInstrumentationBuilder {
     private boolean enabled;
 
     private boolean httpEnabled;
-    private boolean w3cEnabled;
+    private boolean w3cEnabled = true;
     private boolean w3cBackCompatEnabled = true;
 
     private boolean jdbcEnabled;

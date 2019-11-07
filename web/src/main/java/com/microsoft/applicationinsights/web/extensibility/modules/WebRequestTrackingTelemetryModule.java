@@ -46,7 +46,7 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
     private TelemetryClient telemetryClient;
     private boolean isInitialized = false;
 
-    public boolean isW3CEnabled = false;
+    public boolean isW3CEnabled = true;
 
     /**
      * Tag to indicate if W3C tracing protocol is enabled.
