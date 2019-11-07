@@ -81,5 +81,6 @@ include ':test:smoke:testApps:CustomInstrumentation'
 include ':test:smoke:testApps:WebAuto'
 include ':test:smoke:testApps:SpringBoot1_3Auto'
 include ':test:smoke:testApps:SpringBootAuto'
+include ':test:smoke:testApps:VerifyJava7'
 
 
