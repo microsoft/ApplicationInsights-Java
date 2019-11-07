@@ -21,41 +21,29 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
 /**
  * Created by gupele on 11/14/2016.
  */
 public class AdaptiveSamplerXmlElement {
 
-    @XStreamAlias("IncludeTypes")
     private String includeTypes;
 
-    @XStreamAlias("ExcludeTypes")
     private String excludeTypes;
 
-    @XStreamAlias("MaxTelemetryItemsPerSecond")
     private String maxTelemetryItemsPerSecond;
 
-    @XStreamAlias("EvaluationIntervalInSec")
     private String evaluationInterval;
 
-    @XStreamAlias("SamplingPercentageDecreaseTimeoutInSec")
     private String samplingPercentageDecreaseTimeout;
 
-    @XStreamAlias("SamplingPercentageIncreaseTimeoutInSec")
     private String samplingPercentageIncreaseTimeout;
 
-    @XStreamAlias("MinSamplingPercentage")
     private String minSamplingPercentage;
 
-    @XStreamAlias("MaxSamplingPercentage")
     private String maxSamplingPercentage;
 
-    @XStreamAlias("InitialSamplingPercentage")
     private String initialSamplingPercentage;
 
-    @XStreamAlias("MovingAverageRatio")
     private String movingAverageRatio;
 
     public void setMaxTelemetryItemsPerSecond(String maxTelemetryItemsPerSecond) {

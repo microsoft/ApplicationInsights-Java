@@ -21,20 +21,15 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
 /**
  * Created by gupele on 11/14/2016.
  */
 public class FixedSamplerXmlElement {
 
-    @XStreamAlias("IncludeTypes")
     private String includeTypes;
 
-    @XStreamAlias("ExcludeTypes")
     private String excludeTypes;
 
-    @XStreamAlias("SamplingPercentage")
     private String samplingPercentage;
 
     public String getSamplingPercentage() {

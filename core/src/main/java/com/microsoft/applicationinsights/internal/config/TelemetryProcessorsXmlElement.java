@@ -23,18 +23,13 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.util.ArrayList;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
-
 /**
  * Created by gupele on 7/26/2016.
  */
 public class TelemetryProcessorsXmlElement {
 
-    @XStreamAlias("CustomProcessors")
     private TelemetryProcessorWrapperXmlElement customWrapper = new TelemetryProcessorWrapperXmlElement();
 
-    @XStreamAlias("BuiltInProcessors")
     private TelemetryProcessorWrapperXmlElement builtInWrapper = new TelemetryProcessorWrapperXmlElement();
 
     public ArrayList<TelemetryProcessorXmlElement> getBuiltInTelemetryProcessors() {
@@ -55,7 +50,6 @@ public class TelemetryProcessorsXmlElement {
 
     public static class TelemetryProcessorWrapperXmlElement {
 
-        @XStreamImplicit(itemFieldName = "Processor")
         private ArrayList<TelemetryProcessorXmlElement> processors = new ArrayList<>();
     }
 }

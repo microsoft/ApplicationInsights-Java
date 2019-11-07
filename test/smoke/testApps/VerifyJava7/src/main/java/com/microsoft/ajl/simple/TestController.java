@@ -46,10 +46,6 @@ public class TestController {
                 if (name.equals("module-info.class")) {
                     continue;
                 }
-                if (name.equals("com/microsoft/applicationinsights/agentc/shadow/org/xmlpull/mxp1/MXParser.class") && cv.version == 196653) {
-                    // strange..
-                    continue;
-                }
                 if (cv.version > 51) {
                     java8Classnames.add(name.replace('/', '.'));
                 }

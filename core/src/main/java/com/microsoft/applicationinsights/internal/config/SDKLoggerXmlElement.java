@@ -24,30 +24,21 @@ package com.microsoft.applicationinsights.internal.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-
 /**
  * Created by gupele on 3/15/2015.
  */
 public class SDKLoggerXmlElement {
 
-    @XStreamAsAttribute
     private String type = "CONSOLE";
 
-    @XStreamAlias("Level")
     private String level;
 
-    @XStreamAlias("UniquePrefix")
     private String uniquePrefix;
 
-    @XStreamAlias("BaseFolderPath")
     private String baseFolderPath;
 
-    @XStreamAlias("NumberOfFiles")
     private String numberOfFiles;
 
-    @XStreamAlias("NumberOfTotalSizeInMB")
     private String numberOfTotalSizeInMB;
 
     public String getType() {

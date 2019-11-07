@@ -21,58 +21,39 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-
 /**
  * Created by gupele on 3/13/2015.
  */
-@XStreamAlias("ApplicationInsights")
 public class ApplicationInsightsXmlConfiguration {
 
-    @XStreamAlias("InstrumentationKey")
     private String instrumentationKey;
 
-    @XStreamAlias("ConnectionString")
     private String connectionString;
 
-    @XStreamAlias("RoleName")
     private String roleName;
 
-    @XStreamAlias("RoleInstance")
     private String roleInstance;
 
-    @XStreamAlias("DisableTelemetry")
     public boolean disableTelemetry;
 
-    @XStreamAlias("TelemetryInitializers")
     private TelemetryInitializersXmlElement telemetryInitializers;
 
-    @XStreamAlias("TelemetryProcessors")
     private TelemetryProcessorsXmlElement telemetryProcessors;
 
-    @XStreamAlias("ContextInitializers")
     private ContextInitializersXmlElement contextInitializers;
 
-    @XStreamAlias("Channel")
     private ChannelXmlElement channel = new ChannelXmlElement();
 
-    @XStreamAlias("TelemetryModules")
     private TelemetryModulesXmlElement modules;
 
-    @XStreamAlias("PerformanceCounters")
     private PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
 
-    @XStreamAlias("SDKLogger")
     private SDKLoggerXmlElement sdkLogger;
 
-    @XStreamAlias("Sampling")
     private SamplerXmlElement sampler;
 
-    @XStreamAlias("QuickPulse")
     private QuickPulseXmlElement quickPulse;
 
-    @XStreamAsAttribute
     private String schemaVersion;
 
     public String getInstrumentationKey() {

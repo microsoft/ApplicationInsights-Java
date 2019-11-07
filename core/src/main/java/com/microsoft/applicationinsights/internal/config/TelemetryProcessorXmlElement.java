@@ -23,25 +23,17 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.util.ArrayList;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
-
 /**
  * Created by gupele on 7/26/2016.
  */
 public class TelemetryProcessorXmlElement {
 
-    @XStreamAsAttribute
     private String type;
 
-    @XStreamImplicit(itemFieldName = "Add")
     private ArrayList<ParamXmlElement> adds = new ArrayList<>();
 
-    @XStreamAlias("ExcludedTypes")
     private ParamExcludedTypeXmlElement excludedTypes;
 
-    @XStreamAlias("IncludedTypes")
     private ParamIncludedTypeXmlElement includedTypes;
 
     public ParamExcludedTypeXmlElement getExcludedTypes() {
