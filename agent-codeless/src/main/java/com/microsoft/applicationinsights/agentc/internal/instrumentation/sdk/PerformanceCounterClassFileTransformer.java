@@ -40,12 +40,7 @@ public class PerformanceCounterClassFileTransformer implements ClassFileTransfor
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceCounterClassFileTransformer.class);
 
-    // using constant here so that it will NOT get shaded
-    // IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER COULD INLINE IT BELOW AND APPLY .substring(1)
-    // and then it WOULD be shaded
-    public static String UNSHADED_PREFIX = "!com/microsoft/applicationinsights";
-
-    private final String unshadedPrefix = UNSHADED_PREFIX.substring(1) + "/internal/perfcounter";
+    private final String unshadedPrefix = UnshadedSdkPackageName.get() + "/internal/perfcounter";
 
     private final Set<String> classNames = ImmutableSet.of(
             unshadedPrefix + "/ProcessCpuPerformanceCounter",

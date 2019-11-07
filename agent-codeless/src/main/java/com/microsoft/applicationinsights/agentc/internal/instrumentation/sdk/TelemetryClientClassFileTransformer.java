@@ -73,14 +73,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
     private static final String BYTECODE_UTIL_INTERNAL_NAME =
             "com/microsoft/applicationinsights/agentc/internal/instrumentation/sdk/BytecodeUtil";
 
-    // using constant here so that it will NOT get shaded
-    // IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER COULD INLINE IT BELOW AND APPLY .substring(1)
-    // and then it WOULD be shaded
-    public static String UNSHADED_PREFIX = "!com/microsoft/applicationinsights";
-
-    private final String unshadedPrefix = UNSHADED_PREFIX.substring(1);
-
-    private final String unshadedClassName = unshadedPrefix + "/TelemetryClient";
+    private final String unshadedClassName = UnshadedSdkPackageName.get() + "/TelemetryClient";
 
     @Override
     public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
@@ -93,7 +86,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         StatusFile.putValueAndWrite("SDKPresent", true);
         try {
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-            TelemetryClientClassVisitor cv = new TelemetryClientClassVisitor(cw, unshadedPrefix);
+            TelemetryClientClassVisitor cv = new TelemetryClientClassVisitor(cw);
             ClassReader cr = new ClassReader(classfileBuffer);
             cr.accept(cv, 0);
             if (!cv.foundConfigurationField) {
@@ -113,16 +106,16 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
 
     private static class TelemetryClientClassVisitor extends ClassVisitor {
 
+        private final String unshadedPrefix = UnshadedSdkPackageName.get();
+
         private final ClassWriter cw;
-        private final String unshadedPrefix;
 
         private boolean foundConfigurationField;
         private boolean foundIsDisabledMethod;
 
-        private TelemetryClientClassVisitor(ClassWriter cw, String unshadedPrefix) {
+        private TelemetryClientClassVisitor(ClassWriter cw) {
             super(ASM7, cw);
             this.cw = cw;
-            this.unshadedPrefix = unshadedPrefix;
         }
 
         public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {

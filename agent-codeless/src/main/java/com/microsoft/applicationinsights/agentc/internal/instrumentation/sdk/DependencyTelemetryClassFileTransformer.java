@@ -45,12 +45,7 @@ public class DependencyTelemetryClassFileTransformer implements ClassFileTransfo
 
     private static final Logger logger = LoggerFactory.getLogger(DependencyTelemetryClassFileTransformer.class);
 
-    // using constant here so that it will NOT get shaded
-    // IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER COULD INLINE IT BELOW AND APPLY .substring(1)
-    // and then it WOULD be shaded
-    public static String UNSHADED_PREFIX = "!com/microsoft/applicationinsights";
-
-    private final String unshadedClassName = UNSHADED_PREFIX.substring(1) + "/telemetry/RemoteDependencyTelemetry";
+    private final String unshadedClassName = UnshadedSdkPackageName.get() + "/telemetry/RemoteDependencyTelemetry";
 
     @Override
     public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
