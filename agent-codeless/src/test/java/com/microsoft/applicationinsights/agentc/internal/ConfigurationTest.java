@@ -36,8 +36,6 @@ public class ConfigurationTest {
         assertEquals(false, configuration.experimental.distributedTracing.outboundEnabled);
         assertEquals(false, configuration.experimental.distributedTracing.requestIdCompatEnabled);
         assertEquals(false, configuration.experimental.liveMetrics.enabled);
-        assertEquals(ImmutableMap.of("k8s.pod.name", "amazing-product", "k8s.pod.namespace", "product-ns"),
-                configuration.experimental.telemetryContext);
         assertEquals(3, configuration.jmxMetrics.size());
         assertEquals("java.lang:type=Threading", configuration.jmxMetrics.get(0).objectName);
         assertEquals("ThreadCount", configuration.jmxMetrics.get(0).attribute);
@@ -63,7 +61,6 @@ public class ConfigurationTest {
         assertEquals(null, configuration.roleInstance);
         assertEquals(true, configuration.experimental.distributedTracing.requestIdCompatEnabled);
         assertEquals(true, configuration.experimental.liveMetrics.enabled);
-        assertEquals(0, configuration.experimental.telemetryContext.size());
         assertEquals(0, configuration.jmxMetrics.size());
         assertEquals(0, configuration.experimental.instrumentation.size());
         assertEquals(0, configuration.experimental.customInstrumentation.size());
