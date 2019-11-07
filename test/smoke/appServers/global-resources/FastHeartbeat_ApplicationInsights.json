@@ -1,11 +1,8 @@
 {
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
   "experimental": {
-    "sampling": {
-      "fixedRate": {
-        "default": 100,
-        "customEvents": 50
-      }
+    "heartbeat": {
+      "intervalSeconds": 30
     }
   }
 }
