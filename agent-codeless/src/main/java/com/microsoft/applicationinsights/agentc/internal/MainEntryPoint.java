@@ -40,7 +40,7 @@ import com.microsoft.applicationinsights.agentc.internal.Configuration.JmxMetric
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
-import com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.PerformanceCounterClassFileTransformer;
+import com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
 import com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
@@ -87,7 +87,7 @@ public class MainEntryPoint {
             // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
             instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
             instrumentation.addTransformer(new DependencyTelemetryClassFileTransformer());
-            instrumentation.addTransformer(new PerformanceCounterClassFileTransformer());
+            instrumentation.addTransformer(new PerformanceCounterModuleClassFileTransformer());
             instrumentation.addTransformer(new QuickPulseClassFileTransformer());
             success = true;
         } catch (ThreadDeath td) {

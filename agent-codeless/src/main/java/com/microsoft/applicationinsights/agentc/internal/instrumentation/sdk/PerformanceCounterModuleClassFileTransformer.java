@@ -22,9 +22,7 @@ package com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
-import java.util.Set;
 
-import com.google.common.collect.ImmutableSet;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -36,22 +34,12 @@ import org.slf4j.LoggerFactory;
 import static org.objectweb.asm.Opcodes.ASM7;
 import static org.objectweb.asm.Opcodes.RETURN;
 
-public class PerformanceCounterClassFileTransformer implements ClassFileTransformer {
+public class PerformanceCounterModuleClassFileTransformer implements ClassFileTransformer {
 
-    private static final Logger logger = LoggerFactory.getLogger(PerformanceCounterClassFileTransformer.class);
+    private static final Logger logger = LoggerFactory.getLogger(PerformanceCounterModuleClassFileTransformer.class);
 
-    private final String unshadedPrefix = UnshadedSdkPackageName.get() + "/internal/perfcounter";
-
-    private final Set<String> classNames = ImmutableSet.of(
-            unshadedPrefix + "/ProcessCpuPerformanceCounter",
-            unshadedPrefix + "/ProcessMemoryPerformanceCounter",
-            unshadedPrefix + "/UnixProcessIOPerformanceCounter",
-            unshadedPrefix + "/UnixTotalCpuPerformanceCounter",
-            unshadedPrefix + "/UnixTotalMemoryPerformanceCounter",
-            unshadedPrefix + "/jvm/DeadLockDetectorPerformanceCounter",
-            unshadedPrefix + "/jvm/GCPerformanceCounter",
-            unshadedPrefix + "/jvm/JvmHeapMemoryUsedPerformanceCounter"
-    );
+    private final String unshadedClassName =
+            UnshadedSdkPackageName.get() + "/internal/perfcounter/AbstractPerformanceCounterModule";
 
     @Override
     public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
@@ -59,12 +47,12 @@ public class PerformanceCounterClassFileTransformer implements ClassFileTransfor
                                           @Nullable ProtectionDomain protectionDomain,
                                           byte[] classfileBuffer) {
 
-        if (!classNames.contains(className)) {
+        if (!unshadedClassName.equals(className)) {
             return null;
         }
         try {
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-            ClassVisitor cv = new PerformanceCounterClassVisitor(cw);
+            ClassVisitor cv = new PerformanceCounterModuleClassVisitor(cw);
             ClassReader cr = new ClassReader(classfileBuffer);
             cr.accept(cv, 0);
             return cw.toByteArray();
@@ -74,13 +62,13 @@ public class PerformanceCounterClassFileTransformer implements ClassFileTransfor
         }
     }
 
-    private static class PerformanceCounterClassVisitor extends ClassVisitor {
+    private static class PerformanceCounterModuleClassVisitor extends ClassVisitor {
 
         private final String unshadedPrefix = UnshadedSdkPackageName.get();
 
         private final ClassWriter cw;
 
-        private PerformanceCounterClassVisitor(ClassWriter cw) {
+        private PerformanceCounterModuleClassVisitor(ClassWriter cw) {
             super(ASM7, cw);
             this.cw = cw;
         }
@@ -89,7 +77,7 @@ public class PerformanceCounterClassFileTransformer implements ClassFileTransfor
         public MethodVisitor visitMethod(int access, String name, String descriptor, @Nullable String signature,
                                          String /*@Nullable*/[] exceptions) {
             MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
-            if (name.equals("report") && descriptor.equals("(L" + unshadedPrefix + "/TelemetryClient;)V")) {
+            if (name.equals("initialize") && descriptor.equals("(L" + unshadedPrefix + "/TelemetryConfiguration;)V")) {
                 // no-op the report() method
                 mv.visitCode();
                 mv.visitInsn(RETURN);
