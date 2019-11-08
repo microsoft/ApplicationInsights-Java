@@ -77,7 +77,7 @@ public class HeartBeatModuleClassFileTransformer implements ClassFileTransformer
                                          String /*@Nullable*/[] exceptions) {
             MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
             if (name.equals("initialize") && descriptor.equals("(L" + unshadedPrefix + "/TelemetryConfiguration;)V")) {
-                // no-op the report() method
+                // no-op the initialize() method
                 mv.visitCode();
                 mv.visitInsn(RETURN);
                 mv.visitMaxs(0, 1);
