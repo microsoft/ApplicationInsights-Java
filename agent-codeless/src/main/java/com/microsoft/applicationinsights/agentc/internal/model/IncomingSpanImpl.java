@@ -97,11 +97,11 @@ public class IncomingSpanImpl implements Span {
         return distributedTraceContext;
     }
 
-    String getOperationId() {
+    public String getOperationId() {
         return requestTelemetry.getContext().getOperation().getId();
     }
 
-    String getOperationParentId() {
+    public String getOperationParentId() {
         return requestTelemetry.getId();
     }
 

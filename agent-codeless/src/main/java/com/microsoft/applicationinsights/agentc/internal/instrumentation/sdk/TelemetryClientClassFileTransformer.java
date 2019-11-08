@@ -18,7 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.agentc.internal;
+package com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -28,7 +28,6 @@ import java.security.ProtectionDomain;
 import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile;
-import com.microsoft.applicationinsights.agentc.internal.model.LegacySDK;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
@@ -67,18 +66,14 @@ import static org.objectweb.asm.Opcodes.IRETURN;
 import static org.objectweb.asm.Opcodes.NEW;
 import static org.objectweb.asm.Opcodes.RETURN;
 
-class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer {
+public class TelemetryClientClassFileTransformer implements ClassFileTransformer {
 
-    private static final Logger logger = LoggerFactory.getLogger(LegacyTelemetryClientClassFileTransformer.class);
+    private static final Logger logger = LoggerFactory.getLogger(TelemetryClientClassFileTransformer.class);
 
-    // using constant here so that it will NOT get shaded
-    // IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER COULD INLINE IT BELOW AND APPLY .substring(1)
-    // and then it WOULD be shaded
-    public static String UNSHADED_PREFIX = "!com/microsoft/applicationinsights";
+    private static final String BYTECODE_UTIL_INTERNAL_NAME =
+            "com/microsoft/applicationinsights/agentc/internal/instrumentation/sdk/BytecodeUtil";
 
-    private final String unshadedPrefix = UNSHADED_PREFIX.substring(1);
-
-    private final String unshadedClassName = unshadedPrefix + "/TelemetryClient";
+    private final String unshadedClassName = UnshadedSdkPackageName.get() + "/TelemetryClient";
 
     @Override
     public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
@@ -91,7 +86,7 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
         StatusFile.putValueAndWrite("SDKPresent", true);
         try {
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-            TelemetryClientClassVisitor cv = new TelemetryClientClassVisitor(cw, unshadedPrefix);
+            TelemetryClientClassVisitor cv = new TelemetryClientClassVisitor(cw);
             ClassReader cr = new ClassReader(classfileBuffer);
             cr.accept(cv, 0);
             if (!cv.foundConfigurationField) {
@@ -111,16 +106,16 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
 
     private static class TelemetryClientClassVisitor extends ClassVisitor {
 
+        private final String unshadedPrefix = UnshadedSdkPackageName.get();
+
         private final ClassWriter cw;
-        private final String unshadedPrefix;
 
         private boolean foundConfigurationField;
         private boolean foundIsDisabledMethod;
 
-        private TelemetryClientClassVisitor(ClassWriter cw, String unshadedPrefix) {
+        private TelemetryClientClassVisitor(ClassWriter cw) {
             super(ASM7, cw);
             this.cw = cw;
-            this.unshadedPrefix = unshadedPrefix;
         }
 
         public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
@@ -136,17 +131,21 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
             if (name.equals("track")
                     && descriptor.equals("(L" + unshadedPrefix + "/telemetry/Telemetry;)V")) {
-                return new TrackMethodVisitor(mv, unshadedPrefix);
+                overwriteTrackMethod(mv);
+                return null;
             } else if (name.equals("trackMetric") && descriptor.equals("(Ljava/lang/String;D)V")) {
-                return new TrackMetricMethodVisitor(mv, unshadedPrefix);
+                overwriteTrackMetricMethod(mv);
+                return null;
             } else if (name.equals("isDisabled") && descriptor.equals("()Z")) {
                 foundIsDisabledMethod = true;
-                return new IsDisabledMethodVisitor(mv, unshadedPrefix);
+                overwriteIsDisabledMethod(mv);
+                return null;
             } else {
                 return mv;
             }
         }
 
+        @Override
         public void visitEnd() {
             writeAgentTrackEventTelemetryMethod();
             writeAgentTrackMetricTelemetryMethod();
@@ -155,176 +154,7 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             writeAgentToMillisMethod();
         }
 
-        private void writeAgentTrackEventTelemetryMethod() {
-            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackEventTelemetry",
-                    "(L" + unshadedPrefix + "/telemetry/EventTelemetry;)V", null, null);
-            mv.visitCode();
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getName",
-                    "()Ljava/lang/String;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getProperties",
-                    "()Ljava/util/Map;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getMetrics",
-                    "()Ljava/util/concurrent/ConcurrentMap;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "trackEvent", "(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V", false);
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(3, 2);
-            mv.visitEnd();
-        }
-
-        private void writeAgentTrackMetricTelemetryMethod() {
-            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackMetricTelemetry",
-                    "(L" + unshadedPrefix + "/telemetry/MetricTelemetry;)V", null, null);
-            mv.visitCode();
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getName",
-                    "()Ljava/lang/String;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getValue", "()D", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getCount",
-                    "()Ljava/lang/Integer;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getMin",
-                    "()Ljava/lang/Double;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getMax",
-                    "()Ljava/lang/Double;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getStandardDeviation",
-                    "()Ljava/lang/Double;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getProperties",
-                    "()Ljava/util/Map;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "trackMetric",
-                    "(Ljava/lang/String;DLjava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;" +
-                            "Ljava/util/Map;)V",
-                    false);
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(8, 2);
-            mv.visitEnd();
-        }
-
-        private void writeAgentTrackRemoteDependencyTelemetryMethod() {
-            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackRemoteDependencyTelemetry",
-                    "(L" + unshadedPrefix + "/telemetry/RemoteDependencyTelemetry;)V", null, null);
-            mv.visitCode();
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getName",
-                    "()Ljava/lang/String;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getId",
-                    "()Ljava/lang/String;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry",
-                    "getResultCode", "()Ljava/lang/String;", false);
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getDuration",
-                    "()L" + unshadedPrefix + "/telemetry/Duration;", false);
-            mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$toMillis",
-                    "(L" + unshadedPrefix + "/telemetry/Duration;)Ljava/lang/Long;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getSuccess",
-                    "()Z", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getCommandName",
-                    "()Ljava/lang/String;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getType",
-                    "()Ljava/lang/String;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getTarget",
-                    "()Ljava/lang/String;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getProperties",
-                    "()Ljava/util/Map;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getMetrics",
-                    "()Ljava/util/Map;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "trackDependency",
-                    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;" +
-                            "Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V",
-                    false);
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(10, 2);
-            mv.visitEnd();
-        }
-
-        private void writeAgentTrackPageViewTelemetryMethod() {
-            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackPageViewTelemetry",
-                    "(L" + unshadedPrefix + "/telemetry/PageViewTelemetry;)V", null, null);
-            mv.visitCode();
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getName",
-                    "()Ljava/lang/String;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getUri",
-                    "()Ljava/net/URI;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getDuration", "()J",
-                    false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getProperties",
-                    "()Ljava/util/Map;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getMetrics",
-                    "()Ljava/util/concurrent/ConcurrentMap;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "trackPageView", "(Ljava/lang/String;Ljava/net/URI;JLjava/util/Map;Ljava/util/Map;)V", false);
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(6, 2);
-            mv.visitEnd();
-        }
-
-        private void writeAgentToMillisMethod() {
-            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$toMillis",
-                    "(L" + unshadedPrefix + "/telemetry/Duration;)Ljava/lang/Long;", null, null);
-            mv.visitCode();
-            mv.visitVarInsn(ALOAD, 1);
-            Label l0 = new Label();
-            mv.visitJumpInsn(IFNONNULL, l0);
-            mv.visitInsn(ACONST_NULL);
-            mv.visitInsn(ARETURN);
-            mv.visitLabel(l0);
-            mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getDays", "()J", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getHours", "()I", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getMinutes", "()I", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getSeconds", "()I", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getMilliseconds", "()I", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "getTotalMilliseconds", "(JIIII)J", false);
-            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
-            mv.visitInsn(ARETURN);
-            mv.visitMaxs(6, 2);
-            mv.visitEnd();
-        }
-    }
-
-    private static class TrackMethodVisitor extends MethodVisitor {
-
-        private final MethodVisitor mv;
-        private final String unshadedPrefix;
-
-        private TrackMethodVisitor(MethodVisitor mv, String unshadedPrefix) {
-            super(ASM7); // not passing mv to super constructor since overwriting existing method body
-            this.mv = mv;
-            this.unshadedPrefix = unshadedPrefix;
-        }
-
-        @Override
-        public void visitCode() {
+        private void overwriteTrackMethod(MethodVisitor mv) {
             mv.visitCode();
             Label l0 = new Label();
             Label l1 = new Label();
@@ -385,29 +215,16 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[]{"java/lang/Throwable"});
             mv.visitVarInsn(ASTORE, 2);
             mv.visitVarInsn(ALOAD, 2);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agentc/internal/model/LegacySDK",
-                    "logErrorOnce", "(Ljava/lang/Throwable;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "logErrorOnce", "(Ljava/lang/Throwable;)V",
+                    false);
             mv.visitLabel(l6);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitInsn(RETURN);
             mv.visitMaxs(2, 3);
             mv.visitEnd();
         }
-    }
 
-    private static class TrackMetricMethodVisitor extends MethodVisitor {
-
-        private final MethodVisitor mv;
-        private final String unshadedPrefix;
-
-        private TrackMetricMethodVisitor(MethodVisitor mv, String unshadedPrefix) {
-            super(ASM7); // not passing mv to super constructor since overwriting existing method body
-            this.mv = mv;
-            this.unshadedPrefix = unshadedPrefix;
-        }
-
-        @Override
-        public void visitCode() {
+        private void overwriteTrackMetricMethod(MethodVisitor mv) {
             mv.visitCode();
             mv.visitVarInsn(ALOAD, 0);
             mv.visitTypeInsn(NEW, unshadedPrefix + "/telemetry/MetricTelemetry");
@@ -422,21 +239,8 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             mv.visitMaxs(6, 4);
             mv.visitEnd();
         }
-    }
 
-    private static class IsDisabledMethodVisitor extends MethodVisitor {
-
-        private final MethodVisitor mv;
-        private final String unshadedPrefix;
-
-        private IsDisabledMethodVisitor(MethodVisitor mv, String unshadedPrefix) {
-            super(ASM7); // not passing mv to super constructor since overwriting existing method body
-            this.mv = mv;
-            this.unshadedPrefix = unshadedPrefix;
-        }
-
-        @Override
-        public void visitCode() {
+        private void overwriteIsDisabledMethod(MethodVisitor mv) {
             mv.visitCode();
             mv.visitVarInsn(ALOAD, 0);
             mv.visitFieldInsn(GETFIELD, unshadedPrefix + "/TelemetryClient", "configuration",
@@ -445,6 +249,159 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
                     "isTrackingDisabled", "()Z", false);
             mv.visitInsn(IRETURN);
             mv.visitMaxs(1, 1);
+            mv.visitEnd();
+        }
+
+        private void writeAgentTrackEventTelemetryMethod() {
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackEventTelemetry",
+                    "(L" + unshadedPrefix + "/telemetry/EventTelemetry;)V", null, null);
+            mv.visitCode();
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getName",
+                    "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getProperties",
+                    "()Ljava/util/Map;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getMetrics",
+                    "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackEvent",
+                    "(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V", false);
+            mv.visitInsn(RETURN);
+            mv.visitMaxs(3, 2);
+            mv.visitEnd();
+        }
+
+        private void writeAgentTrackMetricTelemetryMethod() {
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackMetricTelemetry",
+                    "(L" + unshadedPrefix + "/telemetry/MetricTelemetry;)V", null, null);
+            mv.visitCode();
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getName",
+                    "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getValue", "()D", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getCount",
+                    "()Ljava/lang/Integer;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getMin",
+                    "()Ljava/lang/Double;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getMax",
+                    "()Ljava/lang/Double;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getStandardDeviation",
+                    "()Ljava/lang/Double;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getProperties",
+                    "()Ljava/util/Map;", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackMetric",
+                    "(Ljava/lang/String;DLjava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;" +
+                            "Ljava/util/Map;)V",
+                    false);
+            mv.visitInsn(RETURN);
+            mv.visitMaxs(8, 2);
+            mv.visitEnd();
+        }
+
+        private void writeAgentTrackRemoteDependencyTelemetryMethod() {
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackRemoteDependencyTelemetry",
+                    "(L" + unshadedPrefix + "/telemetry/RemoteDependencyTelemetry;)V", null, null);
+            mv.visitCode();
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getName",
+                    "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getId",
+                    "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry",
+                    "getResultCode", "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getDuration",
+                    "()L" + unshadedPrefix + "/telemetry/Duration;", false);
+            mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$toMillis",
+                    "(L" + unshadedPrefix + "/telemetry/Duration;)Ljava/lang/Long;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getSuccess",
+                    "()Z", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getCommandName",
+                    "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getType",
+                    "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getTarget",
+                    "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getProperties",
+                    "()Ljava/util/Map;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getMetrics",
+                    "()Ljava/util/Map;", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackDependency",
+                    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;" +
+                            "Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V",
+                    false);
+            mv.visitInsn(RETURN);
+            mv.visitMaxs(10, 2);
+            mv.visitEnd();
+        }
+
+        private void writeAgentTrackPageViewTelemetryMethod() {
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackPageViewTelemetry",
+                    "(L" + unshadedPrefix + "/telemetry/PageViewTelemetry;)V", null, null);
+            mv.visitCode();
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getName",
+                    "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getUri",
+                    "()Ljava/net/URI;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getDuration", "()J",
+                    false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getProperties",
+                    "()Ljava/util/Map;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getMetrics",
+                    "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackPageView",
+                    "(Ljava/lang/String;Ljava/net/URI;JLjava/util/Map;Ljava/util/Map;)V", false);
+            mv.visitInsn(RETURN);
+            mv.visitMaxs(6, 2);
+            mv.visitEnd();
+        }
+
+        private void writeAgentToMillisMethod() {
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$toMillis",
+                    "(L" + unshadedPrefix + "/telemetry/Duration;)Ljava/lang/Long;", null, null);
+            mv.visitCode();
+            mv.visitVarInsn(ALOAD, 1);
+            Label l0 = new Label();
+            mv.visitJumpInsn(IFNONNULL, l0);
+            mv.visitInsn(ACONST_NULL);
+            mv.visitInsn(ARETURN);
+            mv.visitLabel(l0);
+            mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getDays", "()J", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getHours", "()I", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getMinutes", "()I", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getSeconds", "()I", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/Duration", "getMilliseconds", "()I", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "getTotalMilliseconds", "(JIIII)J", false);
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
+            mv.visitInsn(ARETURN);
+            mv.visitMaxs(6, 2);
             mv.visitEnd();
         }
     }
@@ -460,9 +417,8 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
         String content = new String(baos.toByteArray(), Charsets.UTF_8);
         content = content.replace("\"com/microsoft/applicationinsights/telemetry", "unshadedPrefix + \"/telemetry");
         content = content.replace("com/microsoft/applicationinsights/telemetry", "\" + unshadedPrefix + \"/telemetry");
-        content = content.replace(
-                "\"com/microsoft/applicationinsights/agentc/internal/LegacyTelemetryClientClassFileTransformer$TC",
-                "unshadedPrefix + \"/TelemetryClient");
+        content = content.replace("\"com/microsoft/applicationinsights/agentc/internal/instrumentation/sdk" +
+                "/TelemetryClientClassFileTransformer$TC", "unshadedPrefix + \"/TelemetryClient");
         System.out.println(content);
     }
 
@@ -501,26 +457,26 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
                     agent$trackPageViewTelemetry((PageViewTelemetry) telemetry);
                 }
             } catch (Throwable t) {
-                LegacySDK.logErrorOnce(t);
+                BytecodeUtil.logErrorOnce(t);
             }
         }
 
         private void agent$trackEventTelemetry(EventTelemetry t) {
-            LegacySDK.trackEvent(t.getName(), t.getProperties(), t.getMetrics());
+            BytecodeUtil.trackEvent(t.getName(), t.getProperties(), t.getMetrics());
         }
 
         private void agent$trackMetricTelemetry(MetricTelemetry t) {
-            LegacySDK.trackMetric(t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
+            BytecodeUtil.trackMetric(t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
                     t.getStandardDeviation(), t.getProperties());
         }
 
         private void agent$trackRemoteDependencyTelemetry(RemoteDependencyTelemetry t) {
-            LegacySDK.trackDependency(t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
+            BytecodeUtil.trackDependency(t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
                     t.getSuccess(), t.getCommandName(), t.getType(), t.getTarget(), t.getProperties(), t.getMetrics());
         }
 
         private void agent$trackPageViewTelemetry(PageViewTelemetry t) {
-            LegacySDK.trackPageView(t.getName(), t.getUri(), t.getDuration(), t.getProperties(), t.getMetrics());
+            BytecodeUtil.trackPageView(t.getName(), t.getUri(), t.getDuration(), t.getProperties(), t.getMetrics());
         }
 
         @Nullable
@@ -530,7 +486,7 @@ class LegacyTelemetryClientClassFileTransformer implements ClassFileTransformer 
             }
             // not calling duration.getTotalMilliseconds() since trackDependency was introduced in 0.9.3 but
             // getTotalMilliseconds() was not introduced until 0.9.4
-            return LegacySDK.getTotalMilliseconds(
+            return BytecodeUtil.getTotalMilliseconds(
                     duration.getDays(),
                     duration.getHours(),
                     duration.getMinutes(),

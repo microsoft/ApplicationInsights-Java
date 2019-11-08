@@ -18,13 +18,8 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.agentc.internal;
+package com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.security.ProtectionDomain;
-import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -33,30 +28,17 @@ import org.objectweb.asm.MethodVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.instrument.ClassFileTransformer;
+import java.security.ProtectionDomain;
+
 import static org.objectweb.asm.Opcodes.ASM7;
 import static org.objectweb.asm.Opcodes.RETURN;
 
-class LegacyPerformanceCounterClassFileTransformer implements ClassFileTransformer {
+public class HeartBeatModuleClassFileTransformer implements ClassFileTransformer {
 
-    private static final Logger logger = LoggerFactory.getLogger(LegacyPerformanceCounterClassFileTransformer.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeartBeatModuleClassFileTransformer.class);
 
-    // using constant here so that it will NOT get shaded
-    // IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER COULD INLINE IT BELOW AND APPLY .substring(1)
-    // and then it WOULD be shaded
-    public static String UNSHADED_PREFIX = "!com/microsoft/applicationinsights";
-
-    private final String unshadedPrefix = UNSHADED_PREFIX.substring(1) + "/internal/perfcounter";
-
-    private final Set<String> classNames = ImmutableSet.of(
-            unshadedPrefix + "/ProcessCpuPerformanceCounter",
-            unshadedPrefix + "/ProcessMemoryPerformanceCounter",
-            unshadedPrefix + "/UnixProcessIOPerformanceCounter",
-            unshadedPrefix + "/UnixTotalCpuPerformanceCounter",
-            unshadedPrefix + "/UnixTotalMemoryPerformanceCounter",
-            unshadedPrefix + "/jvm/DeadLockDetectorPerformanceCounter",
-            unshadedPrefix + "/jvm/GCPerformanceCounter",
-            unshadedPrefix + "/jvm/JvmHeapMemoryUsedPerformanceCounter"
-    );
+    private final String unshadedClassName = UnshadedSdkPackageName.get() + "/internal/heartbeat/HeartBeatModule";
 
     @Override
     public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
@@ -64,12 +46,12 @@ class LegacyPerformanceCounterClassFileTransformer implements ClassFileTransform
                                           @Nullable ProtectionDomain protectionDomain,
                                           byte[] classfileBuffer) {
 
-        if (!classNames.contains(className)) {
+        if (!unshadedClassName.equals(className)) {
             return null;
         }
         try {
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-            ClassVisitor cv = new PerformanceCounterClassVisitor(cw, unshadedPrefix);
+            ClassVisitor cv = new HeartBeatModuleClassVisitor(cw);
             ClassReader cr = new ClassReader(classfileBuffer);
             cr.accept(cv, 0);
             return cw.toByteArray();
@@ -79,42 +61,31 @@ class LegacyPerformanceCounterClassFileTransformer implements ClassFileTransform
         }
     }
 
-    private static class PerformanceCounterClassVisitor extends ClassVisitor {
+    private static class HeartBeatModuleClassVisitor extends ClassVisitor {
+
+        private final String unshadedPrefix = UnshadedSdkPackageName.get();
 
         private final ClassWriter cw;
-        private final String unshadedPrefix;
 
-        private PerformanceCounterClassVisitor(ClassWriter cw, String unshadedPrefix) {
+        private HeartBeatModuleClassVisitor(ClassWriter cw) {
             super(ASM7, cw);
             this.cw = cw;
-            this.unshadedPrefix = unshadedPrefix;
         }
 
         @Override
         public MethodVisitor visitMethod(int access, String name, String descriptor, @Nullable String signature,
                                          String /*@Nullable*/[] exceptions) {
             MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
-            if (name.equals("report") && descriptor.equals("(L" + unshadedPrefix + "/TelemetryClient)V")) {
-                return new ReportMethodVisitor(mv);
+            if (name.equals("initialize") && descriptor.equals("(L" + unshadedPrefix + "/TelemetryConfiguration;)V")) {
+                // no-op the initialize() method
+                mv.visitCode();
+                mv.visitInsn(RETURN);
+                mv.visitMaxs(0, 1);
+                mv.visitEnd();
+                return null;
             } else {
                 return mv;
             }
-        }
-    }
-
-    // no-op the report() method
-    private static class ReportMethodVisitor extends MethodVisitor {
-
-        private ReportMethodVisitor(MethodVisitor mv) {
-            super(ASM7, mv);
-        }
-
-        @Override
-        public void visitCode() {
-            mv.visitCode();
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(0, 1);
-            mv.visitEnd();
         }
     }
 }

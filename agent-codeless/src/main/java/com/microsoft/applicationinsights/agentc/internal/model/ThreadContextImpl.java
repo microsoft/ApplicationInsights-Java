@@ -66,7 +66,7 @@ public class ThreadContextImpl implements ThreadContextPlus {
         auxThreadAsyncCompletion = auxThread ? new TwoPartCompletion() : null;
     }
 
-    IncomingSpanImpl getIncomingSpan() {
+    public IncomingSpanImpl getIncomingSpan() {
         return incomingSpan;
     }
 

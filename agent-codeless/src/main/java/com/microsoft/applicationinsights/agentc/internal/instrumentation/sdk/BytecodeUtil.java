@@ -18,35 +18,30 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.agentc.internal.model;
-
-import java.net.URI;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+package com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.agentc.internal.model.Global;
+import com.microsoft.applicationinsights.agentc.internal.model.IncomingSpanImpl;
+import com.microsoft.applicationinsights.agentc.internal.model.ThreadContextImpl;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
-import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
-import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.*;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextPlus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.concurrent.TimeUnit.DAYS;
-import static java.util.concurrent.TimeUnit.HOURS;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.*;
 
 // supporting all properties of event, metric, remove dependency and page view telemetry
-public class LegacySDK {
+public class BytecodeUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(LegacySDK.class);
+    private static final Logger logger = LoggerFactory.getLogger(BytecodeUtil.class);
 
     private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
 
@@ -142,7 +137,7 @@ public class LegacySDK {
             telemetry.getContext().getOperation().setId(incomingSpan.getOperationId());
             telemetry.getContext().getOperation().setParentId(incomingSpan.getOperationParentId());
         }
-        // this is not null because legacy instrumentation is not added until it is set
+        // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
         checkNotNull(Global.getTelemetryClient()).track(telemetry);
     }
 }

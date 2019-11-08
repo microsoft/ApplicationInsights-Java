@@ -18,7 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.agentc.internal;
+package com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
@@ -41,16 +41,11 @@ import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
 // this is used to supplement old versions of RemoteDependencyTelemetry with getters from the latest version of
 // RemoteDependencyTelemetry
-class LegacyDependencyTelemetryClassFileTransformer implements ClassFileTransformer {
+public class DependencyTelemetryClassFileTransformer implements ClassFileTransformer {
 
-    private static final Logger logger = LoggerFactory.getLogger(LegacyDependencyTelemetryClassFileTransformer.class);
+    private static final Logger logger = LoggerFactory.getLogger(DependencyTelemetryClassFileTransformer.class);
 
-    // using constant here so that it will NOT get shaded
-    // IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER COULD INLINE IT BELOW AND APPLY .substring(1)
-    // and then it WOULD be shaded
-    public static String UNSHADED_PREFIX = "!com/microsoft/applicationinsights";
-
-    private final String unshadedClassName = UNSHADED_PREFIX.substring(1) + "/telemetry/RemoteDependencyTelemetry";
+    private final String unshadedClassName = UnshadedSdkPackageName.get() + "/telemetry/RemoteDependencyTelemetry";
 
     @Override
     public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
