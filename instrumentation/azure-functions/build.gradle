@@ -26,7 +26,7 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
-def instrumentationVersion = '0.14.8'
+def instrumentationVersion = '0.14.9'
 
 compileJava {
     sourceCompatibility = 1.7
