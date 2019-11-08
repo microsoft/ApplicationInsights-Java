@@ -174,6 +174,10 @@ class ConfigurationBuilder {
 
     static class ConfigurationException extends RuntimeException {
 
+        ConfigurationException(String message) {
+            super(message);
+        }
+
         ConfigurationException(String message, Exception e) {
             super(message, e);
         }

@@ -37,6 +37,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agentc.internal.Configuration.FixedRateSampling;
 import com.microsoft.applicationinsights.agentc.internal.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agentc.internal.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
@@ -151,6 +152,9 @@ public class MainEntryPoint {
         }
 
         Configuration config = ConfigurationBuilder.create(agentJarFile.toPath());
+        if (!hasConnectionStringOrInstrumentationKey(config)) {
+            throw new ConfigurationException("No connection string or instrumentation key provided");
+        }
 
         List<InstrumentationDescriptor> instrumentationDescriptors = InstrumentationDescriptors.read();
         InstrumentationDescriptor customInstrumentationDescriptor =
@@ -190,6 +194,13 @@ public class MainEntryPoint {
         Global.setDistributedTracingRequestIdCompatEnabled(
                 config.experimental.distributedTracing.requestIdCompatEnabled);
         Global.setTelemetryClient(telemetryClient);
+    }
+
+    private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
+        return !Strings.isNullOrEmpty(config.connectionString)
+                || !Strings.isNullOrEmpty(config.instrumentationKey)
+                || !Strings.isNullOrEmpty(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
+                || !Strings.isNullOrEmpty(System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
     }
 
     private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(Configuration config) {
