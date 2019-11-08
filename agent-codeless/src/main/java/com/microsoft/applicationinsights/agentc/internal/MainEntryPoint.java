@@ -37,6 +37,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agentc.internal.Configuration.FixedRateSampling;
 import com.microsoft.applicationinsights.agentc.internal.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agentc.internal.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
@@ -98,8 +99,11 @@ public class MainEntryPoint {
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
-            startupLogger.error("Agent failed to start.", t);
-            t.printStackTrace();
+            if (startupLogger != null) {
+                startupLogger.error("Agent failed to start.", t);
+            } else {
+                t.printStackTrace();
+            }
         } finally {
             try {
                 StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success);
@@ -158,6 +162,9 @@ public class MainEntryPoint {
         }
 
         Configuration config = ConfigurationBuilder.create(agentJarFile.toPath());
+        if (!hasConnectionStringOrInstrumentationKey(config)) {
+            throw new ConfigurationException("No connection string or instrumentation key provided");
+        }
 
         List<InstrumentationDescriptor> instrumentationDescriptors = InstrumentationDescriptors.read();
         InstrumentationDescriptor customInstrumentationDescriptor =
@@ -199,12 +206,22 @@ public class MainEntryPoint {
         Global.setTelemetryClient(telemetryClient);
     }
 
+    private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
+        return !Strings.isNullOrEmpty(config.connectionString)
+                || !Strings.isNullOrEmpty(config.instrumentationKey)
+                || !Strings.isNullOrEmpty(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
+                || !Strings.isNullOrEmpty(System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
+    }
+
     private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(Configuration config) {
 
         ApplicationInsightsXmlConfiguration xmlConfiguration = new ApplicationInsightsXmlConfiguration();
 
         if (!Strings.isNullOrEmpty(config.connectionString)) {
             xmlConfiguration.setConnectionString(config.connectionString);
+        }
+        if (!Strings.isNullOrEmpty(config.instrumentationKey)) {
+            xmlConfiguration.setInstrumentationKey(config.instrumentationKey);
         }
         if (!Strings.isNullOrEmpty(config.roleName)) {
             xmlConfiguration.setRoleName(config.roleName);

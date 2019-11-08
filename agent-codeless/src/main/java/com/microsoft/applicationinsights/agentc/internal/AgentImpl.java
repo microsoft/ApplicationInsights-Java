@@ -77,6 +77,10 @@ class AgentImpl implements AgentSPI {
         String instrumentationKey = telemetryClient.getContext().getInstrumentationKey();
         DistributedTraceContext distributedTraceContext =
                 TraceContextCorrelationCore.resolveCorrelationForRequest(carrier, getter, requestTelemetry, false);
+        if (distributedTraceContext == null) {
+            // error already logged during call to resolveCorrelationForRequest()
+            return null;
+        }
         TraceContextCorrelationCore.resolveRequestSource(carrier, getter, requestTelemetry, instrumentationKey);
         if (requestTelemetry.getContext().getOperation().getParentId() == null) {
             requestTelemetry.getContext().getOperation().setParentId(requestTelemetry.getId());
@@ -101,6 +105,10 @@ class AgentImpl implements AgentSPI {
 
         DistributedTraceContext distributedTraceContext = TraceContextCorrelationCore
                 .resolveCorrelationForRequest(carrier, getter, requestTelemetry, true);
+        if (distributedTraceContext == null) {
+            // error already logged during call to resolveCorrelationForRequest()
+            return null;
+        }
 
         IncomingSpanImpl incomingSpan = new IncomingSpanImpl(null, NOP_MESSAGE_SUPPLIER, threadContextHolder,
                 startTimeMillis, requestTelemetry, distributedTraceContext);

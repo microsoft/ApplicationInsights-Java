@@ -82,7 +82,12 @@ class ConfigurationBuilder {
             try (InputStream in = Files.newInputStream(configPath)) {
                 Moshi moshi = new Moshi.Builder().build();
                 JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
-                return jsonAdapter.fromJson(Okio.buffer(Okio.source(in)));
+                try {
+                    return jsonAdapter.fromJson(Okio.buffer(Okio.source(in)));
+                } catch (Exception e) {
+                    throw new ConfigurationException(
+                            "Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
+                }
             }
         } else {
             if (warnIfMissing) {
@@ -165,5 +170,16 @@ class ConfigurationBuilder {
     @VisibleForTesting
     static boolean isNullOrEmpty(String str) {
         return Strings.isNullOrEmpty(str) || CharMatcher.is(' ').matchesAllOf(str);
+    }
+
+    static class ConfigurationException extends RuntimeException {
+
+        ConfigurationException(String message) {
+            super(message);
+        }
+
+        ConfigurationException(String message, Exception e) {
+            super(message, e);
+        }
     }
 }
