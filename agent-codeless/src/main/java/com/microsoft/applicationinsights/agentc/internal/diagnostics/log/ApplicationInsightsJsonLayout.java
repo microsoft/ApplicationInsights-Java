@@ -35,6 +35,7 @@ import com.microsoft.applicationinsights.agentc.internal.diagnostics.Instrumenta
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.ResourceIdFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.SiteNameFinder;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.SubscriptionIdFinder;
 
 public class ApplicationInsightsJsonLayout extends JsonLayout {
 
@@ -61,6 +62,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
         valueFinders.add(new InstrumentationKeyFinder());
         valueFinders.add(new AgentExtensionVersionFinder());
         valueFinders.add(new SdkVersionFinder());
+        valueFinders.add(new SubscriptionIdFinder());
     }
 
     @Override
