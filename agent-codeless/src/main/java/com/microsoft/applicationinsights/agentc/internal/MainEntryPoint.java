@@ -45,10 +45,13 @@ import com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.Qui
 import com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agentc.internal.model.Global;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
+import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
+import com.microsoft.applicationinsights.internal.config.ParamXmlElement;
 import com.microsoft.applicationinsights.internal.config.SDKLoggerXmlElement;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
+import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
@@ -210,6 +213,21 @@ public class MainEntryPoint {
         if (!config.experimental.liveMetrics.enabled) {
             xmlConfiguration.getQuickPulse().setEnabled(false);
         }
+
+        // configure heartbeat module
+        AddTypeXmlElement heartbeatModule = new AddTypeXmlElement();
+        heartbeatModule.setType("com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule");
+        heartbeatModule.getParameters().add(newParamXml("isHeartBeatEnabled",
+                Boolean.toString(config.experimental.heartbeat.enabled)));
+        heartbeatModule.getParameters().add(newParamXml("HeartBeatInterval",
+                Long.toString(config.experimental.heartbeat.intervalSeconds)));
+        ArrayList<AddTypeXmlElement> modules = new ArrayList<>();
+        modules.add(heartbeatModule);
+        TelemetryModulesXmlElement modulesXml = new TelemetryModulesXmlElement();
+        modulesXml.setAdds(modules);
+        xmlConfiguration.setModules(modulesXml);
+
+        // configure custom jmx metrics
         ArrayList<JmxXmlElement> jmxXmls = new ArrayList<>();
         for (JmxMetric jmxMetric : config.jmxMetrics) {
             JmxXmlElement jmxXml = new JmxXmlElement();
@@ -233,6 +251,13 @@ public class MainEntryPoint {
             xmlConfiguration.getChannel().setDeveloperMode(true);
         }
         return xmlConfiguration;
+    }
+
+    private static ParamXmlElement newParamXml(String name, String value) {
+        ParamXmlElement paramXml = new ParamXmlElement();
+        paramXml.setName(name);
+        paramXml.setValue(value);
+        return paramXml;
     }
 
     private static void addFixedRateSampling(FixedRateSampling fixedRateSampling,

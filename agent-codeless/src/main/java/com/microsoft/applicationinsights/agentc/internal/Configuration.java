@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface;
 import com.squareup.moshi.Json;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -55,6 +56,7 @@ public class Configuration {
         public Sampling sampling = new Sampling();
         public DistributedTracing distributedTracing = new DistributedTracing();
         public LiveMetrics liveMetrics = new LiveMetrics();
+        public Heartbeat heartbeat = new Heartbeat();
         public Map<String, Map<String, Object>> instrumentation = Collections.emptyMap();
         public List<CustomInstrumentation> customInstrumentation = Collections.emptyList();
 
@@ -96,6 +98,12 @@ public class Configuration {
     public static class LiveMetrics {
 
         public boolean enabled = true;
+    }
+
+    public static class Heartbeat {
+
+        public boolean enabled = true;
+        public long intervalSeconds = HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL;
     }
 
     public static class CustomInstrumentation {
