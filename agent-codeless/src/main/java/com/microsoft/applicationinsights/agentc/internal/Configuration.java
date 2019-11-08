@@ -33,6 +33,8 @@ public class Configuration {
     @Nullable
     public String connectionString;
     @Nullable
+    public String instrumentationKey;
+    @Nullable
     public String roleName;
     @Nullable
     public String roleInstance;

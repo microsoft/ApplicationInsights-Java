@@ -199,6 +199,9 @@ public class MainEntryPoint {
         if (!Strings.isNullOrEmpty(config.connectionString)) {
             xmlConfiguration.setConnectionString(config.connectionString);
         }
+        if (!Strings.isNullOrEmpty(config.instrumentationKey)) {
+            xmlConfiguration.setInstrumentationKey(config.instrumentationKey);
+        }
         if (!Strings.isNullOrEmpty(config.roleName)) {
             xmlConfiguration.setRoleName(config.roleName);
         }
