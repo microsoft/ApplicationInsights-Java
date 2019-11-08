@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
+<!--<configuration debug="${APPLICATIONINSIGHTS_DIAGNOSTICS_LOGGING_DEBUG:-false}">-->
+<configuration debug="true">
+    <appender name="CONSOLE" class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSSX} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- site.logdir output -->
+    <appender name="LOGDIR" class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter"/>
+        <file>${site.logdir:-/home/LogFiles}/ApplicationInsights/application-insights-extension-error.log</file>
+        <rollingPolicy class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>application-insights-extension-error-%d{yyyy-MM-dd}.log.old</fileNamePattern><!-- TODO: do we need path here? -->
+            <maxHistory>2</maxHistory>
+            <totalSizeCap>5MB</totalSizeCap><!-- TODO: appropriate size cap -->
+        </rollingPolicy>
+        <encoder class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout">
+                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSX</timestampFormat>
+                <timestampFormatTimezoneId>Etc/UTC</timestampFormatTimezoneId>
+                <appendLineSeparator>true</appendLineSeparator>
+                <operationNamePrefix>Microsoft.Web/sites/extensions/ApplicationMonitoringAgent</operationNamePrefix>
+                <jsonFormatter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.MoshiJsonFormatter">
+                    <prettyPrint>false</prettyPrint>
+                </jsonFormatter>
+            </layout>
+        </encoder>
+    </appender>
+
+    <!-- troubleshooting logs -->
+    <appender name="APPSVCTBS" class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter"/>
+        <!-- TODO location TBD -->
+        <file>${site.logdir:-/home/LogFiles}/ApplicationInsights/application-insights-extension.log</file>
+        <rollingPolicy class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>application-insights-extension-error-%d{yyyy-MM-dd}.log.old</fileNamePattern>
+            <maxHistory>1</maxHistory>
+            <totalSizeCap>5MB</totalSizeCap><!-- TODO: appropriate size cap -->
+        </rollingPolicy>
+        <encoder class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout">
+                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSX</timestampFormat>
+                <timestampFormatTimezoneId>Etc/UTC</timestampFormatTimezoneId>
+                <appendLineSeparator>true</appendLineSeparator>
+                <operationNamePrefix>Microsoft.Web/sites/extensions/ApplicationMonitoringAgent</operationNamePrefix>
+                <jsonFormatter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.MoshiJsonFormatter">
+                    <prettyPrint>false</prettyPrint>
+                </jsonFormatter>
+            </layout>
+        </encoder>
+    </appender>
+
+    <root level="${applicationInsights.agent.logging.level:-error}">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="LOGDIR"/>
+        <appender-ref ref="APPSVCTBS"/>
+    </root>
+
+    <logger name="applicationinsights.diagnostics" level="INFO">
+        <appender-ref ref="APPSVCTBS"/>
+    </logger>
+</configuration>
