@@ -88,8 +88,11 @@ public class MainEntryPoint {
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
-            startupLogger.error("Agent failed to start.", t);
-            t.printStackTrace();
+            if (startupLogger != null) {
+                startupLogger.error("Agent failed to start.", t);
+            } else {
+                t.printStackTrace();
+            }
         } finally {
             try {
                 StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success);
