@@ -54,6 +54,8 @@ public class TestController {
         expectedEntries.add("META-INF/services/com\\.microsoft\\.applicationinsights\\.agentc\\..*");
         expectedEntries.add("META-INF/instrumentation.list");
         expectedEntries.add("META-INF/MANIFEST\\.MF");
+        expectedEntries.add("applicationinsights-core-native-win32.dll");
+        expectedEntries.add("applicationinsights-core-native-win64.dll");
         expectedEntries.add("LICENSE");
         expectedEntries.add("NOTICE");
         expectedEntries.add("ai.logback.xml");
