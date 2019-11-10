@@ -1,5 +1,5 @@
-jbosseap6
-jbosseap7
+wildfly8
+wildfly14
 tomcat7
 tomcat85
 jetty9

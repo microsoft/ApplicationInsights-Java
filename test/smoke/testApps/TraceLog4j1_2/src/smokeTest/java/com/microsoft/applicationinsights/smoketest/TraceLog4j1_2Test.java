@@ -10,7 +10,6 @@ import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 
-import org.junit.Assume;
 import org.junit.Test;
 
 @RequestCapturing(enabled = false)
@@ -19,8 +18,6 @@ public class TraceLog4j1_2Test extends AiSmokeTest {
     @Test
     @TargetUri("/traceLog4j1_2")
     public void testTraceLog4j1_2() throws Exception {
-        // FIXME this doesn't work with jbosseap6; under investigation
-        Assume.assumeFalse(currentImageName.contains("jbosseap6"));
 
         mockedIngestion.waitForItems("MessageData", 6);
 

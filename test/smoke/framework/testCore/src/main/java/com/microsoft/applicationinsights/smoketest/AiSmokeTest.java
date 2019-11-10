@@ -377,7 +377,12 @@ public abstract class AiSmokeTest {
                         return false;
                     }
                     RequestData data = (RequestData) ((Data) input.getData()).getBaseData();
-                    return contextRootUrl.equals(data.getUrl()) && "200".equals(data.getResponseCode());
+                    if (!"200".equals(data.getResponseCode())) {
+                        return false;
+                    }
+                    // Wildfly 8 internally redirects context root to welcome file where present
+                    // (and several test apps have index.jsp welcome file)
+                    return contextRootUrl.equals(data.getUrl()) || (contextRootUrl + "index.jsp").equals(data.getUrl());
                 }
             }, requestTelemetryFromHealthCheckTimeout, TimeUnit.SECONDS);
             System.out.printf("Received request telemetry after %.3f seconds...%n", receivedTelemetryTimer.elapsed(TimeUnit.MILLISECONDS) / 1000.0);

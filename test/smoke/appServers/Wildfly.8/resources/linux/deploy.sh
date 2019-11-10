@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ -z "$JBOSS_HOME" ]; then
-    echo "\$JBOSS_HOME not set" >&2
+if [ -z "$WILDFLY_HOME" ]; then
+    echo "\$WILDFLY_HOME not set" >&2
     exit 1
 fi
 
@@ -18,4 +18,4 @@ fi
 WARFILE=`readlink -f $1`
 BASEPATH=`basename $WARFILE .war`
 
-cp $WARFILE $JBOSS_HOME/standalone/deployments/
+cp $WARFILE $WILDFLY_HOME/standalone/deployments/
