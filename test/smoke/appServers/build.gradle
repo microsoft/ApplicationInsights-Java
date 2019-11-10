@@ -6,7 +6,6 @@ apply plugin: 'base'
 ext {
     partialDockerfileExt = '.partial.dockerfile'
     jreMasterList = file('jre.master.txt')
-    dockerCliExe = findDockerCliExe()
     globalResourcesDir = "$projectDir/global-resources"
     agentLibsDir = file("${project(':agent').buildDir}/libs") // is there a better way to get this?
     agentJarName = project(':agent').jar.archiveFileName.get()
@@ -131,10 +130,6 @@ task buildDockerImage {
     dependsOn project.subprojects.collect { it.getTasksByName('buildDockerImage', false) }
 
     outputs.upToDateWhen { false }
-    doFirst {
-        // TODO should be configurable
-        // switchDockerDaemon("linux")
-    }
 
     doLast {
         project.subprojects.each { sp ->
@@ -143,43 +138,6 @@ task buildDockerImage {
                 into sharedResourcesDir
                 include '**/*.*'
             }
-        }
-    }
-}
-
-task resetDockerEnv {
-    group 'Smoke Test'
-    description 'Stops all containers, prunes containers, prunes networks, prunes images'
-    doLast {
-        def os = new ByteArrayOutputStream()
-        exec {
-            executable dockerExe
-            args 'ps', '-q'
-            standardOutput = os
-        }
-        def dockerPs = os.toString().split('\\s+')
-        if (dockerPs.length > 0) {
-            exec {
-                executable dockerExe
-                ['stop', *dockerPs].each {
-                    args it
-                }
-            }
-        }
-        logger.info "Pruning containers..."
-        exec {
-            executable dockerExe
-            args 'container', 'prune', '-f'
-        }
-        logger.info "Pruning networks..."
-        exec {
-            executable dockerExe
-            args 'network', 'prune', '-f'
-        }
-        logger.info "Pruning images..."
-        exec {
-            executable dockerExe
-            args 'image', 'prune', '-f'
         }
     }
 }
@@ -222,50 +180,4 @@ def getConfigSet(File universeFile, File includesFile, File excludesFile) {
 
     def resultantSet = includeSet.intersect(universalSet.minus(excludeSet)).plus(uniqueIncludes)
     return resultantSet
-}
-
-def findDockerCliExe() {
-    if (!System.env.DOCKER_CLI_EXE) {
-        logger.info 'DOCKER_CLI_EXE not set'
-    }
-    return System.env.DOCKER_CLI_EXE
-}
-
-def verifyDockerInstallation() {
-    exec {
-        executable dockerExe
-        args 'version'
-    }
-}
-
-def getCurrentDockerServerArch() {
-    verifyDockerInstallation()
-    def dockerVersionOutput = new ByteArrayOutputStream()
-    exec {
-        executable dockerExe
-        args 'version'
-        standardOutput = dockerVersionOutput
-        errorOutput = new ByteArrayOutputStream()
-    }.assertNormalExitValue()
-    String strOut = dockerVersionOutput.toString().trim()
-    def m = strOut =~ /(?ism).+?Server:.+?OS\/Arch:\s+(\w+?)\//
-    return m[0][1];
-}
-
-def switchDockerDaemon(targetMode = null) {
-    verifyDockerInstallation()
-    logger.lifecycle "Switching docker mode. Current mode = "+getCurrentDockerServerArch()
-    if (targetMode != null) {
-        assert targetMode == "linux" || targetMode == "windows"
-        def currentMode = getCurrentDockerServerArch()
-        if (targetMode == currentMode) {
-            logger.lifecycle "Docker is already in $targetMode mode"
-            return;
-        }
-    }
-    exec {
-        executable dockerCliExe
-        args '-SwitchDaemon'
-    }.assertNormalExitValue()
-    logger.lifecycle "Mode switched. Current mode = "+getCurrentDockerServerArch()
 }
