@@ -85,11 +85,6 @@ subprojects {
 
         outputs.upToDateWhen { false } // let docker determine if something needs to be built
 
-        doFirst {
-            if (!dockerExe) {
-                throw new GradleException("Please set environment variable DOCKER_EXE to the absolute path of the docker executable")
-            }
-        }
         doLast {
             copy {
                 from "$projectDir/resources/linux"
@@ -114,7 +109,7 @@ subprojects {
                 def tag = df.name.minus('.dockerfile').replace('.', '_')
                 exec {
                     workingDir df.getParentFile().absolutePath
-                    executable dockerExe
+                    executable 'docker'
                     args 'build', '--pull', '-f', df.name, '-t', tag, '.'
                 }
             }

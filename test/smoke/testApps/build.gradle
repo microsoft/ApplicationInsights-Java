@@ -49,7 +49,7 @@ subprojects {
             dependencyContainers.each { dc ->
                 logger.info "Pulling $dc..."
                 exec {
-                    executable dockerExe
+                    executable 'docker'
                     args 'pull', "$dc"
                 }
             }
