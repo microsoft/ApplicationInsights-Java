@@ -34,6 +34,7 @@ import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Converter;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import okio.Okio;
@@ -75,6 +76,11 @@ class ConfigurationBuilder {
             Moshi moshi = new Moshi.Builder().build();
             JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
             return jsonAdapter.fromJson(configurationContent);
+        }
+
+        if (DiagnosticsHelper.isAnyCodelessAttach()) {
+            // codeless attach only supports configuration via environment variables (for now at least)
+            return new Configuration();
         }
 
         Path configPath;
