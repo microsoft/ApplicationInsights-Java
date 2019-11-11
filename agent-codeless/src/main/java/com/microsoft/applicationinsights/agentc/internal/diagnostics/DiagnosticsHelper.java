@@ -9,8 +9,6 @@ public class DiagnosticsHelper {
     private DiagnosticsHelper() {
     }
 
-    private static File agentJarFile;
-
     @VisibleForTesting
     static volatile boolean appServiceCodeless;
 
@@ -34,7 +32,6 @@ public class DiagnosticsHelper {
     }
 
     public static synchronized void setAgentJarFile(File agentJarFile) {
-        DiagnosticsHelper.agentJarFile = agentJarFile;
         appServiceCodeless = Files.exists(agentJarFile.toPath().resolveSibling("appsvc.codeless"));
     }
 
