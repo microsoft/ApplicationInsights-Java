@@ -49,11 +49,15 @@ if (System.properties.AI_SAMPLES) {
 // Projects for smokeTests
 include ':test:smoke'
 include ':test:smoke:appServers'
-include ':test:smoke:appServers:Tomcat.7'
-include ':test:smoke:appServers:Tomcat.8.5'
-include ':test:smoke:appServers:Wildfly.8'
-include ':test:smoke:appServers:Wildfly.14'
-include ':test:smoke:appServers:Jetty.9'
+if (System.env.SMOKE_APP_SERVER) {
+    include ":test:smoke:appServers:$System.env.SMOKE_APP_SERVER"
+} else {
+    include ':test:smoke:appServers:Tomcat.7'
+    include ':test:smoke:appServers:Tomcat.8.5'
+    include ':test:smoke:appServers:Wildfly.8'
+    include ':test:smoke:appServers:Wildfly.14'
+    include ':test:smoke:appServers:Jetty.9'
+}
 include ':test:smoke:testApps'
 
 include ':test:smoke:framework:testCore'

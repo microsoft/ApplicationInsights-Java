@@ -74,6 +74,8 @@ public class AiDockerClient {
         Preconditions.checkNotNull(image, "image");
         Preconditions.checkNotNull(portMapping, "portMapping");
 
+        buildProcess(Arrays.asList("docker", "pull", image)).start().waitFor(30, TimeUnit.SECONDS);
+
         String localIp = InetAddress.getLocalHost().getHostAddress();
         List<String> cmd = new ArrayList<>();
         cmd.addAll(Arrays.asList("docker", "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));

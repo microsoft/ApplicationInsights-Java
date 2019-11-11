@@ -1,0 +1,296 @@
+trigger:
+- master
+
+pool:
+  # need to run on linux pool in order to run docker linux containers
+  vmImage: 'ubuntu-latest'
+
+variables:
+  # smoke tests are run inside of docker linux containers so don't use windows performance counters anyways
+  GradleParams: --info -DskipWinNative=true
+  isRelease: false
+
+jobs:
+- job: smoke
+  strategy:
+    matrix:
+      AutoPerfCounters_Tomcat7:
+        smoke_app:          AutoPerfCounters
+        smoke_app_server:   Tomcat.7
+      AutoPerfCounters_Tomcat85:
+        smoke_app:          AutoPerfCounters
+        smoke_app_server:   Tomcat.8.5
+      AutoPerfCounters_Wildfly8:
+        smoke_app:          AutoPerfCounters
+        smoke_app_server:   Wildfly.8
+      AutoPerfCounters_Wildfly14:
+        smoke_app:          AutoPerfCounters
+        smoke_app_server:   Wildfly.14
+      AutoPerfCounters_Jetty9:
+        smoke_app:          AutoPerfCounters
+        smoke_app_server:   Jetty.9
+      CachingCalculator_Tomcat7:
+        smoke_app:          CachingCalculator
+        smoke_app_server:   Tomcat.7
+      CachingCalculator_Tomcat85:
+        smoke_app:          CachingCalculator
+        smoke_app_server:   Tomcat.8.5
+      CachingCalculator_Wildfly8:
+        smoke_app:          CachingCalculator
+        smoke_app_server:   Wildfly.8
+      CachingCalculator_Wildfly14:
+        smoke_app:          CachingCalculator
+        smoke_app_server:   Wildfly.14
+      CachingCalculator_Jetty9:
+        smoke_app:          CachingCalculator
+        smoke_app_server:   Jetty.9
+      CoreAndFilter_Tomcat7:
+        smoke_app:          CoreAndFilter
+        smoke_app_server:   Tomcat.7
+      CoreAndFilter_Tomcat85:
+        smoke_app:          CoreAndFilter
+        smoke_app_server:   Tomcat.8.5
+      CoreAndFilter_Wildfly8:
+        smoke_app:          CoreAndFilter
+        smoke_app_server:   Wildfly.8
+      CoreAndFilter_Wildfly14:
+        smoke_app:          CoreAndFilter
+        smoke_app_server:   Wildfly.14
+      CoreAndFilter_Jetty9:
+        smoke_app:          CoreAndFilter
+        smoke_app_server:   Jetty.9
+      CustomInstrumentation_Tomcat7:
+        smoke_app:          CustomInstrumentation
+        smoke_app_server:   Tomcat.7
+      CustomInstrumentation_Tomcat85:
+        smoke_app:          CustomInstrumentation
+        smoke_app_server:   Tomcat.8.5
+      CustomInstrumentation_Wildfly8:
+        smoke_app:          CustomInstrumentation
+        smoke_app_server:   Wildfly.8
+      CustomInstrumentation_Wildfly14:
+        smoke_app:          CustomInstrumentation
+        smoke_app_server:   Wildfly.14
+      CustomInstrumentation_Jetty9:
+        smoke_app:          CustomInstrumentation
+        smoke_app_server:   Jetty.9
+      FixedRateSampling_Tomcat7:
+        smoke_app:          FixedRateSampling
+        smoke_app_server:   Tomcat.7
+      FixedRateSampling_Tomcat85:
+        smoke_app:          FixedRateSampling
+        smoke_app_server:   Tomcat.8.5
+      FixedRateSampling_Wildfly8:
+        smoke_app:          FixedRateSampling
+        smoke_app_server:   Wildfly.8
+      FixedRateSampling_Wildfly14:
+        smoke_app:          FixedRateSampling
+        smoke_app_server:   Wildfly.14
+      FixedRateSampling_Jetty9:
+        smoke_app:          FixedRateSampling
+        smoke_app_server:   Jetty.9
+      HeartBeat_Tomcat7:
+        smoke_app:          HeartBeat
+        smoke_app_server:   Tomcat.7
+      HeartBeat_Tomcat85:
+        smoke_app:          HeartBeat
+        smoke_app_server:   Tomcat.8.5
+      HeartBeat_Wildfly8:
+        smoke_app:          HeartBeat
+        smoke_app_server:   Wildfly.8
+      HeartBeat_Wildfly14:
+        smoke_app:          HeartBeat
+        smoke_app_server:   Wildfly.14
+      HeartBeat_Jetty9:
+        smoke_app:          HeartBeat
+        smoke_app_server:   Jetty.9
+      HttpClients_Tomcat7:
+        smoke_app:          HttpClients
+        smoke_app_server:   Tomcat.7
+      HttpClients_Tomcat85:
+        smoke_app:          HttpClients
+        smoke_app_server:   Tomcat.8.5
+      HttpClients_Wildfly8:
+        smoke_app:          HttpClients
+        smoke_app_server:   Wildfly.8
+      HttpClients_Wildfly14:
+        smoke_app:          HttpClients
+        smoke_app_server:   Wildfly.14
+      HttpClients_Jetty9:
+        smoke_app:          HttpClients
+        smoke_app_server:   Jetty.9
+      Jdbc_Tomcat7:
+        smoke_app:          Jdbc
+        smoke_app_server:   Tomcat.7
+      Jdbc_Tomcat85:
+        smoke_app:          Jdbc
+        smoke_app_server:   Tomcat.8.5
+      Jdbc_Wildfly8:
+        smoke_app:          Jdbc
+        smoke_app_server:   Wildfly.8
+      Jdbc_Wildfly14:
+        smoke_app:          Jdbc
+        smoke_app_server:   Wildfly.14
+      Jdbc_Jetty9:
+        smoke_app:          Jdbc
+        smoke_app_server:   Jetty.9
+      MongoDB_Tomcat7:
+        smoke_app:          MongoDB
+        smoke_app_server:   Tomcat.7
+      MongoDB_Tomcat85:
+        smoke_app:          MongoDB
+        smoke_app_server:   Tomcat.8.5
+      MongoDB_Wildfly8:
+        smoke_app:          MongoDB
+        smoke_app_server:   Wildfly.8
+      MongoDB_Wildfly14:
+        smoke_app:          MongoDB
+        smoke_app_server:   Wildfly.14
+      MongoDB_Jetty9:
+        smoke_app:          MongoDB
+        smoke_app_server:   Jetty.9
+      SpringBoot1_3Auto_Tomcat7:
+        smoke_app:          SpringBoot1_3Auto
+        smoke_app_server:   Tomcat.7
+      SpringBoot1_3Auto_Tomcat85:
+        smoke_app:          SpringBoot1_3Auto
+        smoke_app_server:   Tomcat.8.5
+      SpringBoot1_3Auto_Wildfly8:
+        smoke_app:          SpringBoot1_3Auto
+        smoke_app_server:   Wildfly.8
+      SpringBoot1_3Auto_Wildfly14:
+        smoke_app:          SpringBoot1_3Auto
+        smoke_app_server:   Wildfly.14
+      SpringBoot1_3Auto_Jetty9:
+        smoke_app:          SpringBoot1_3Auto
+        smoke_app_server:   Jetty.9
+      # SpringBootTest uses SpringBoot 2 which does not support Tomcat 7
+      # (see https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.0.0-M1-Release-Notes#tomcat)
+      # Wildfly 8 has problem with the SpringBootAuto app because of jackson conflict
+      SpringBootAuto_Tomcat85:
+        smoke_app:          SpringBootAuto
+        smoke_app_server:   Tomcat.8.5
+      SpringBootAuto_Wildfly14:
+        smoke_app:          SpringBootAuto
+        smoke_app_server:   Wildfly.14
+      SpringBootAuto_Jetty9:
+        smoke_app:          SpringBootAuto
+        smoke_app_server:   Jetty.9
+      # SpringBootTest uses SpringBoot 2 which does not support Tomcat 7
+      # (see https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.0.0-M1-Release-Notes#tomcat)
+      # Wildfly 8 has problem with the SpringBootTest app because of jackson conflict
+      SpringBootTest_Tomcat85:
+        smoke_app:          SpringBootTest
+        smoke_app_server:   Tomcat.8.5
+      SpringBootTest_Wildfly14:
+        smoke_app:          SpringBootTest
+        smoke_app_server:   Wildfly.14
+      SpringBootTest_Jetty9:
+        smoke_app:          SpringBootTest
+        smoke_app_server:   Jetty.9
+      # TODO investigate why TraceLog4j1_2 smoke test doesn't work with Wildfly 8
+      TraceLog4j1_2_Tomcat7:
+        smoke_app:          TraceLog4j1_2
+        smoke_app_server:   Tomcat.7
+      TraceLog4j1_2_Tomcat85:
+        smoke_app:          TraceLog4j1_2
+        smoke_app_server:   Tomcat.8.5
+      TraceLog4j1_2_Wildfly14:
+        smoke_app:          TraceLog4j1_2
+        smoke_app_server:   Wildfly.14
+      TraceLog4j1_2_Jetty9:
+        smoke_app:          TraceLog4j1_2
+        smoke_app_server:   Jetty.9
+      TraceLog4j1_2UsingAgent_Tomcat7:
+        smoke_app:          TraceLog4j1_2UsingAgent
+        smoke_app_server:   Tomcat.7
+      TraceLog4j1_2UsingAgent_Tomcat85:
+        smoke_app:          TraceLog4j1_2UsingAgent
+        smoke_app_server:   Tomcat.8.5
+      TraceLog4j1_2UsingAgent_Wildfly8:
+        smoke_app:          TraceLog4j1_2UsingAgent
+        smoke_app_server:   Wildfly.8
+      TraceLog4j1_2UsingAgent_Wildfly14:
+        smoke_app:          TraceLog4j1_2UsingAgent
+        smoke_app_server:   Wildfly.14
+      TraceLog4j1_2UsingAgent_Jetty9:
+        smoke_app:          TraceLog4j1_2UsingAgent
+        smoke_app_server:   Jetty.9
+      TraceLog4j2_Tomcat7:
+        smoke_app:          TraceLog4j2
+        smoke_app_server:   Tomcat.7
+      TraceLog4j2_Tomcat85:
+        smoke_app:          TraceLog4j2
+        smoke_app_server:   Tomcat.8.5
+      TraceLog4j2_Wildfly8:
+        smoke_app:          TraceLog4j2
+        smoke_app_server:   Wildfly.8
+      TraceLog4j2_Wildfly14:
+        smoke_app:          TraceLog4j2
+        smoke_app_server:   Wildfly.14
+      TraceLog4j2_Jetty9:
+        smoke_app:          TraceLog4j2
+        smoke_app_server:   Jetty.9
+      TraceLog4j2UsingAgent_Tomcat7:
+        smoke_app:          TraceLog4j2UsingAgent
+        smoke_app_server:   Tomcat.7
+      TraceLog4j2UsingAgent_Tomcat85:
+        smoke_app:          TraceLog4j2UsingAgent
+        smoke_app_server:   Tomcat.8.5
+      TraceLog4j2UsingAgent_Wildfly8:
+        smoke_app:          TraceLog4j2UsingAgent
+        smoke_app_server:   Wildfly.8
+      TraceLog4j2UsingAgent_Wildfly14:
+        smoke_app:          TraceLog4j2UsingAgent
+        smoke_app_server:   Wildfly.14
+      TraceLog4j2UsingAgent_Jetty9:
+        smoke_app:          TraceLog4j2UsingAgent
+        smoke_app_server:   Jetty.9
+      # TODO investigate why TraceLogBack smoke test doesn't work with Wildfly 8 or 14
+      TraceLogBack_Tomcat7:
+        smoke_app:          TraceLogBack
+        smoke_app_server:   Tomcat.7
+      TraceLogBack_Tomcat85:
+        smoke_app:          TraceLogBack
+        smoke_app_server:   Tomcat.8.5
+      TraceLogBack_Jetty9:
+        smoke_app:          TraceLogBack
+        smoke_app_server:   Jetty.9
+      # TODO investigate why TraceLogBackUsingAgent_Tomcat7 smoke test doesn't work with Wildfly 8 or 14
+      TraceLogBackUsingAgent_Tomcat7:
+        smoke_app:          TraceLogBackUsingAgent
+        smoke_app_server:   Tomcat.7
+      TraceLogBackUsingAgent_Tomcat85:
+        smoke_app:          TraceLogBackUsingAgent
+        smoke_app_server:   Tomcat.8.5
+      TraceLogBackUsingAgent_Jetty9:
+        smoke_app:          TraceLogBackUsingAgent
+        smoke_app_server:   Jetty.9
+      WebAuto_Tomcat7:
+        smoke_app:          WebAuto
+        smoke_app_server:   Tomcat.7
+      WebAuto_Tomcat85:
+        smoke_app:          WebAuto
+        smoke_app_server:   Tomcat.8.5
+      WebAuto_Wildfly8:
+        smoke_app:          WebAuto
+        smoke_app_server:   Wildfly.8
+      WebAuto_Wildfly14:
+        smoke_app:          WebAuto
+        smoke_app_server:   Wildfly.14
+      WebAuto_Jetty9:
+        smoke_app:          WebAuto
+        smoke_app_server:   Jetty.9
+      VerifyJava7:                       # VerifyJava7 doesn't need to run across matrix
+        smoke_app:          VerifyJava7
+        smoke_app_server:   Tomcat.8.5
+  steps:
+  - task: Gradle@2
+    displayName: 'Build testApps, app server images and run smoke tests'
+    inputs:
+      options: '$(GradleParams) -DisBuildServer=true -DisRelease=$(isRelease) --no-daemon --stacktrace --warning-mode all'
+      tasks: 'clean :test:smoke:testApps:$(smoke_app):smokeTest'
+      testResultsFiles: '**/build/test-results/**/TEST-*.xml'
+      testRunTitle: 'Java SDK Smoke Tests'
+      gradleOptions: '-Xmx1536m -Dorg.gradle.daemon=false'
+  

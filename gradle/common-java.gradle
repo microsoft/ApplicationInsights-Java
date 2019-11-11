@@ -126,7 +126,7 @@ if (java7JreDir) {
 } else {
     def msg = "IMPORTANT: Environment variable 'JAVA_JRE_7' is not defined - Install JRE 7 and set 'JAVA_JRE_7' to prevent runtime compatibility issues!"
     if (!isJava7) {
-        if (isBuildServer || isRelease) {
+        if ((isBuildServer && !System.env.SMOKE_APP) || isRelease) {
             logger.error msg
             throw new GradleException("JAVA_JRE_7 must be set")
         } else {

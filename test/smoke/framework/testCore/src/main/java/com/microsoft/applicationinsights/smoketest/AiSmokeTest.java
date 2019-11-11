@@ -46,9 +46,11 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -69,7 +71,13 @@ public abstract class AiSmokeTest {
     //region: parameterization
     @Parameters(name = "{index}: {0}, {1}, {2}")
     public static Collection<Object[]> parameterGenerator() throws IOException {
-        List<String> appServers = Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
+        String appServerFromEnv = System.getenv("SMOKE_APP_SERVER");
+        List<String> appServers;
+        if (!Strings.isNullOrEmpty(appServerFromEnv)) {
+            appServers = Arrays.asList(appServerFromEnv.replace(".", "").toLowerCase(Locale.ENGLISH));
+        } else {
+            appServers = Resources.readLines(Resources.getResource("appServers.txt"), Charsets.UTF_8);
+        }
         System.out.println("Target appservers="+Arrays.toString(appServers.toArray()));
         String os = System.getProperty("applicationinsights.smoketest.os", "linux");
         URL jreExcludesURL = Thread.currentThread().getContextClassLoader().getResource("jre.excludes.txt");
