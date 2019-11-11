@@ -67,7 +67,7 @@ subprojects {
                     into dockerfileOutputDir
                     include "*$partialDockerfileExt"
                     filter(ReplaceTokens, tokens: tokenMap)
-                    def sanitizedJreVersion = jreVersion.replace(':','_').replace('/','_')
+                    def sanitizedJreVersion = jreVersion.replace(':','_').replace('/','_').replace('-','_')
                     rename(/(.+\.)(partial)(\.dockerfile)/, "\$1$sanitizedJreVersion\$3")
                 }
                 jresFile << "$jreVersion\n"

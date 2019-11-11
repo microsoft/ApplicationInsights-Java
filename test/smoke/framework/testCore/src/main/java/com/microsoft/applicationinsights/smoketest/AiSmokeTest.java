@@ -106,7 +106,7 @@ public abstract class AiSmokeTest {
         List<String> jres = new ArrayList<>();
         for (String jre : Resources.readLines(Resources.getResource(appServer+".jre.txt"), Charsets.UTF_8)) {
             if (!jreExcludes.contains(jre)) {
-                jres.add(jre.replaceAll("[:/]", "_"));
+                jres.add(jre.replaceAll("[:/-]", "_"));
             }
         }
         return jres;
