@@ -31,11 +31,11 @@ public class DiagnosticsHelper {
         enabled = result;
     }
 
-    public static synchronized void setAgentJarFile(File agentJarFile) {
+    public static void setAgentJarFile(File agentJarFile) {
         appServiceCodeless = Files.exists(agentJarFile.toPath().resolveSibling("appsvc.codeless"));
     }
 
-    public static synchronized boolean isAppServiceCodeless() {
+    public static boolean isAppServiceCodeless() {
         return appServiceCodeless;
     }
 
