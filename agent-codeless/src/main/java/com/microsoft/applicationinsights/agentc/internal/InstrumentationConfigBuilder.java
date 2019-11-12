@@ -21,18 +21,41 @@
 
 package com.microsoft.applicationinsights.agentc.internal;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
+import org.glowroot.instrumentation.engine.config.InstrumentationDescriptors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class InstrumentationConfigBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomInstrumentationBuilder.class);
+
+    static List<InstrumentationDescriptor> buildDescriptors(Configuration configuration) throws IOException,
+            ClassNotFoundException {
+
+        List<InstrumentationDescriptor> instrumentationDescriptors = new ArrayList<>();
+        Map<String, Map<String, Object>> instrumentationMapMap = configuration.experimental.instrumentation;
+        for (InstrumentationDescriptor instrumentationDescriptor : InstrumentationDescriptors.read()) {
+            if (isEnabled(instrumentationMapMap, instrumentationDescriptor.id())) {
+                instrumentationDescriptors.add(instrumentationDescriptor);
+            }
+        }
+        InstrumentationDescriptor customInstrumentationDescriptor = CustomInstrumentationBuilder.build(configuration);
+        if (customInstrumentationDescriptor != null) {
+            instrumentationDescriptors = new ArrayList<>(instrumentationDescriptors);
+            instrumentationDescriptors.add(customInstrumentationDescriptor);
+        }
+        return instrumentationDescriptors;
+    }
 
     static Map<String, Map<String, Object>> build(Configuration configuration) {
 
@@ -77,6 +100,23 @@ public class InstrumentationConfigBuilder {
         instrumentationConfig.put("java-util-logging", julConfig);
 
         return instrumentationConfig;
+    }
+
+    private static boolean isEnabled(Map<String, Map<String, Object>> instrumentationMapMap, String instrumentationId) {
+        Map<String, Object> instrumentationMap = instrumentationMapMap.get(instrumentationId);
+        if (instrumentationMap == null) {
+            return true;
+        }
+        Object enabled = instrumentationMap.get("enabled");
+        if (enabled == null) {
+            return true;
+        }
+        if (enabled instanceof Boolean) {
+            return (boolean) enabled;
+        } else {
+            logger.warn("enabled must be a boolean, but found: {}", enabled.getClass());
+            return true;
+        }
     }
 
     @Nullable

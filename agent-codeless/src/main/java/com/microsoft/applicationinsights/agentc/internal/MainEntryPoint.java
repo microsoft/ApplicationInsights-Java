@@ -160,13 +160,8 @@ public class MainEntryPoint {
             throw new ConfigurationException("No connection string or instrumentation key provided");
         }
 
-        List<InstrumentationDescriptor> instrumentationDescriptors = InstrumentationDescriptors.read();
-        InstrumentationDescriptor customInstrumentationDescriptor =
-                CustomInstrumentationBuilder.build(config);
-        if (customInstrumentationDescriptor != null) {
-            instrumentationDescriptors = new ArrayList<>(instrumentationDescriptors);
-            instrumentationDescriptors.add(customInstrumentationDescriptor);
-        }
+        List<InstrumentationDescriptor> instrumentationDescriptors =
+                InstrumentationConfigBuilder.buildDescriptors(config);
 
         ConfigServiceFactory configServiceFactory =
                 new SimpleConfigServiceFactory(instrumentationDescriptors, InstrumentationConfigBuilder.build(config));

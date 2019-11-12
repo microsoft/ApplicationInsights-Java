@@ -59,6 +59,10 @@ public class DiagnosticsHelper {
         return functionsCodeless;
     }
 
+    public static boolean isAnyCodelessAttach() {
+        return appServiceCodeless || aksCodeless || functionsCodeless;
+    }
+
     public static boolean shouldOutputDiagnostics() {
         return enabled && isAppServiceCodeless();
     }

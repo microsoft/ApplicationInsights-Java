@@ -34,6 +34,7 @@ import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Converter;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import okio.Okio;
@@ -44,6 +45,8 @@ import org.slf4j.LoggerFactory;
 class ConfigurationBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationBuilder.class);
+
+    private static final String APPLICATIONINSIGHTS_CONFIGURATION_CONTENT = "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT";
 
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
@@ -66,6 +69,19 @@ class ConfigurationBuilder {
     }
 
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
+
+        String configurationContent = System.getenv(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
+        if (!Strings.isNullOrEmpty(configurationContent)) {
+            logger.debug("reading configuration from env var");
+            Moshi moshi = new Moshi.Builder().build();
+            JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+            return jsonAdapter.fromJson(configurationContent);
+        }
+
+        if (DiagnosticsHelper.isAnyCodelessAttach()) {
+            // codeless attach only supports configuration via environment variables (for now at least)
+            return new Configuration();
+        }
 
         Path configPath;
         boolean warnIfMissing;
