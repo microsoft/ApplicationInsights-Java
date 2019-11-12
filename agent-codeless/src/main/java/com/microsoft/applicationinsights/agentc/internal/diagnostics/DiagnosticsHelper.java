@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -9,10 +10,12 @@ public class DiagnosticsHelper {
     private DiagnosticsHelper() {
     }
 
-    private static File agentJarFile;
-
     @VisibleForTesting
     static volatile boolean appServiceCodeless;
+
+    private static volatile boolean aksCodeless;
+
+    private static volatile boolean functionsCodeless;
 
     @VisibleForTesting
     static boolean enabled;
@@ -33,13 +36,27 @@ public class DiagnosticsHelper {
         enabled = result;
     }
 
-    public static synchronized void setAgentJarFile(File agentJarFile) {
-        DiagnosticsHelper.agentJarFile = agentJarFile;
-        appServiceCodeless = Files.exists(agentJarFile.toPath().resolveSibling("appsvc.codeless"));
+    public static void setAgentJarFile(File agentJarFile) {
+        Path agentPath = agentJarFile.toPath();
+        if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
+            appServiceCodeless = true;
+        } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
+            aksCodeless = true;
+        } else if (Files.exists(agentPath.resolveSibling("functions.codeless"))) {
+            functionsCodeless = true;
+        }
     }
 
-    public static synchronized boolean isAppServiceCodeless() {
+    public static boolean isAppServiceCodeless() {
         return appServiceCodeless;
+    }
+
+    public static boolean isAksCodeless() {
+        return aksCodeless;
+    }
+
+    public static boolean isFunctionsCodeless() {
+        return functionsCodeless;
     }
 
     public static boolean shouldOutputDiagnostics() {

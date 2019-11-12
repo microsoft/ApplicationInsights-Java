@@ -144,15 +144,9 @@ public class MainEntryPoint {
 
     private static void start(Instrumentation instrumentation, File agentJarFile) throws Exception {
 
-        if (DiagnosticsHelper.isAppServiceCodeless()) {
-            if (SystemInformation.INSTANCE.isWindows()) {
-                PropertyHelper.setSdkNamePrefix("awr_");
-            } else if (SystemInformation.INSTANCE.isUnix()) {
-                PropertyHelper.setSdkNamePrefix("alr_");
-            } else {
-                startupLogger.warn("could not detect os: {}", System.getProperty("os.name"));
-                PropertyHelper.setSdkNamePrefix("aur_");
-            }
+        String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
+        if (codelessSdkNamePrefix != null) {
+            PropertyHelper.setSdkNamePrefix(codelessSdkNamePrefix);
         }
 
         File javaTmpDir = new File(System.getProperty("java.io.tmpdir"));
@@ -204,6 +198,30 @@ public class MainEntryPoint {
         Global.setDistributedTracingRequestIdCompatEnabled(
                 config.experimental.distributedTracing.requestIdCompatEnabled);
         Global.setTelemetryClient(telemetryClient);
+    }
+
+    @Nullable
+    private static String getCodelessSdkNamePrefix() {
+        StringBuilder sdkNamePrefix = new StringBuilder(4);
+        if (DiagnosticsHelper.isAppServiceCodeless()) {
+            sdkNamePrefix.append("a");
+        } else if (DiagnosticsHelper.isAksCodeless()) {
+            sdkNamePrefix.append("k");
+        } else if (DiagnosticsHelper.isFunctionsCodeless()) {
+            sdkNamePrefix.append("f");
+        } else {
+            return null;
+        }
+        if (SystemInformation.INSTANCE.isWindows()) {
+            sdkNamePrefix.append("w");
+        } else if (SystemInformation.INSTANCE.isUnix()) {
+            sdkNamePrefix.append("l");
+        } else {
+            startupLogger.warn("could not detect os: {}", System.getProperty("os.name"));
+            sdkNamePrefix.append("u");
+        }
+        sdkNamePrefix.append("r_"); // "r" is for "recommended"
+        return sdkNamePrefix.toString();
     }
 
     private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
