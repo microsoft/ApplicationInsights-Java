@@ -99,7 +99,7 @@ public class MainEntryPoint {
             instrumentation.addTransformer(new QuickPulseClassFileTransformer());
             instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
             success = true;
-            LoggerFactory.getLogger("applicationinsights.diagnostics").info("Application Insights Codeless Agent Attach Successful");
+            LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME).info("Application Insights Codeless Agent Attach Successful");
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
