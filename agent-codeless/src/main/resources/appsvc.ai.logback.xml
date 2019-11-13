@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE configuration>
-<!--<configuration debug="${APPLICATIONINSIGHTS_DIAGNOSTICS_LOGGING_DEBUG:-false}">-->
-<configuration debug="true">
+<configuration>
     <appender name="CONSOLE" class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSSX} %-5level %logger{36} - %msg%n</pattern>
@@ -10,11 +9,10 @@
 
     <!-- site.logdir output -->
     <appender name="LOGDIR" class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter"/>
-        <file>${site.logdir:-/home/LogFiles}/ApplicationInsights/application-insights-extension-error.log</file>
+        <file>${site.logdir:-/home/LogFiles}/ApplicationInsights/application-insights-extension.log</file>
         <rollingPolicy class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>application-insights-extension-error-%d{yyyy-MM-dd}.log.old</fileNamePattern>
-            <maxHistory>1</maxHistory>
+            <fileNamePattern>application-insights-extension-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
             <totalSizeCap>5MB</totalSizeCap>
         </rollingPolicy>
         <encoder class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.encoder.LayoutWrappingEncoder">
@@ -33,7 +31,7 @@
     <!-- troubleshooting logs -->
     <appender name="APPSVCTBS" class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter"/>
-        <file>/var/log/appinsights/application-insights-extension.log</file>
+        <file>/var/log/applicationinsights/application-insights-extension.log</file>
         <rollingPolicy class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>application-insights-extension-%d{yyyy-MM-dd}.log.old</fileNamePattern>
             <maxHistory>1</maxHistory>
