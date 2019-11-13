@@ -54,7 +54,5 @@
         <appender-ref ref="APPSVCTBS"/>
     </root>
 
-    <logger name="applicationinsights.diagnostics" level="info">
-        <appender-ref ref="APPSVCTBS"/>
-    </logger>
+    <logger name="applicationinsights.diagnostics" level="info" />
 </configuration>
