@@ -13,9 +13,9 @@
         <filter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter"/>
         <file>${site.logdir:-/home/LogFiles}/ApplicationInsights/application-insights-extension-error.log</file>
         <rollingPolicy class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>application-insights-extension-error-%d{yyyy-MM-dd}.log.old</fileNamePattern><!-- TODO: do we need path here? -->
-            <maxHistory>2</maxHistory>
-            <totalSizeCap>5MB</totalSizeCap><!-- TODO: appropriate size cap -->
+            <fileNamePattern>application-insights-extension-error-%d{yyyy-MM-dd}.log.old</fileNamePattern>
+            <maxHistory>1</maxHistory>
+            <totalSizeCap>5MB</totalSizeCap>
         </rollingPolicy>
         <encoder class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout">
@@ -33,12 +33,11 @@
     <!-- troubleshooting logs -->
     <appender name="APPSVCTBS" class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter"/>
-        <!-- TODO location TBD -->
-        <file>${site.logdir:-/home/LogFiles}/ApplicationInsights/application-insights-extension.log</file>
+        <file>/var/log/appinsights/application-insights-extension.log</file>
         <rollingPolicy class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>application-insights-extension-error-%d{yyyy-MM-dd}.log.old</fileNamePattern>
+            <fileNamePattern>application-insights-extension-%d{yyyy-MM-dd}.log.old</fileNamePattern>
             <maxHistory>1</maxHistory>
-            <totalSizeCap>5MB</totalSizeCap><!-- TODO: appropriate size cap -->
+            <totalSizeCap>10MB</totalSizeCap>
         </rollingPolicy>
         <encoder class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout">
@@ -59,7 +58,7 @@
         <appender-ref ref="APPSVCTBS"/>
     </root>
 
-    <logger name="applicationinsights.diagnostics" level="INFO">
+    <logger name="applicationinsights.diagnostics" level="info">
         <appender-ref ref="APPSVCTBS"/>
     </logger>
 </configuration>
