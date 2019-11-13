@@ -20,7 +20,6 @@
                 <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSX</timestampFormat>
                 <timestampFormatTimezoneId>Etc/UTC</timestampFormatTimezoneId>
                 <appendLineSeparator>true</appendLineSeparator>
-                <operationNamePrefix>Microsoft.Web/sites/extensions/ApplicationMonitoringAgent</operationNamePrefix>
                 <jsonFormatter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.MoshiJsonFormatter">
                     <prettyPrint>false</prettyPrint>
                 </jsonFormatter>
@@ -42,7 +41,6 @@
                 <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSX</timestampFormat>
                 <timestampFormatTimezoneId>Etc/UTC</timestampFormatTimezoneId>
                 <appendLineSeparator>true</appendLineSeparator>
-                <operationNamePrefix>Microsoft.Web/sites/extensions/ApplicationMonitoringAgent</operationNamePrefix>
                 <jsonFormatter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.MoshiJsonFormatter">
                     <prettyPrint>false</prettyPrint>
                 </jsonFormatter>

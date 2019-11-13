@@ -32,7 +32,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.AgentExtensionVersionFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsValueFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.InstrumentationKeyFinder;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.ResourceIdFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.SiteNameFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.SubscriptionIdFinder;
@@ -40,22 +39,14 @@ import com.microsoft.applicationinsights.agentc.internal.diagnostics.Subscriptio
 public class ApplicationInsightsJsonLayout extends JsonLayout {
 
     public static String TIMESTAMP_PROP_NAME = "time";
-    public static String RESOURCE_ID_PROP_NAME = "resourceId";
-    public static String OPERATION_NAME_PROP_NAME = "operationName";
-    public static String CATEGORY_PROP_NAME = "category";
+    public static String OPERATION_NAME_PROP_NAME = "operation";
     public static String CUSTOM_FIELDS_PROP_NAME = "properties";
-
 
     @VisibleForTesting
     static final String UNKNOWN_VALUE = "unknown";
 
     @VisibleForTesting
     final List<DiagnosticsValueFinder> valueFinders = new ArrayList<>();
-
-    private DiagnosticsValueFinder resourceIdValue = new ResourceIdFinder();
-
-    private String category = "Execution";
-    private String operationNamePrefix = "n/a";
 
     public ApplicationInsightsJsonLayout() {
         valueFinders.add(new SiteNameFinder());
@@ -69,19 +60,17 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     protected Map toJsonMap(ILoggingEvent event) {
         Map<String, Object> jsonMap = new LinkedHashMap<>();
         addTimestamp(TIMESTAMP_PROP_NAME, true, event.getTimeStamp(), jsonMap);
-        add(RESOURCE_ID_PROP_NAME, true, getResourceId(), jsonMap);
-        add(OPERATION_NAME_PROP_NAME, true, getOperationName(event), jsonMap);
-        add(CATEGORY_PROP_NAME, true, getCategory(), jsonMap);
         add(LEVEL_ATTR_NAME, true, String.valueOf(event.getLevel()), jsonMap);
+        add(LOGGER_ATTR_NAME, true, event.getLoggerName(), jsonMap);
+        add(FORMATTED_MESSAGE_ATTR_NAME, true, event.getFormattedMessage(), jsonMap);
+        addThrowableInfo(EXCEPTION_ATTR_NAME, true, event, jsonMap);
         addMap(CUSTOM_FIELDS_PROP_NAME, true, getPropertiesMap(event), jsonMap);
         return jsonMap;
     }
 
     private Map<String, Object> getPropertiesMap(ILoggingEvent event) {
         Map<String, Object> jsonMap = new LinkedHashMap<>();
-        add(FORMATTED_MESSAGE_ATTR_NAME, true, event.getFormattedMessage(), jsonMap);
-        add(LOGGER_ATTR_NAME, true, event.getLoggerName(), jsonMap);
-        addThrowableInfo(EXCEPTION_ATTR_NAME, true, event, jsonMap);
+        add(OPERATION_NAME_PROP_NAME, true, getOperationName(event), jsonMap);
         for (DiagnosticsValueFinder finder : valueFinders) {
             String value = finder.getValue();
             add(finder.getName(), true, Strings.isNullOrEmpty(value) ? UNKNOWN_VALUE : value, jsonMap);
@@ -90,33 +79,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     }
 
     public String getOperationName(ILoggingEvent event) {
-        final Map<String, String> map = event.getMDCPropertyMap();
-        if (map.containsKey("microsoft.ai.operationName")) {
-            return operationNamePrefix + "/" + map.get("microsoft.ai.operationName");
-        } else {
-            return operationNamePrefix;
-        }
+        return event.getMDCPropertyMap().get("microsoft.ai.operationName");
     }
 
-    @VisibleForTesting
-    String getResourceId() {
-        final String value = resourceIdValue.getValue();
-        return Strings.isNullOrEmpty(value) ? UNKNOWN_VALUE.toUpperCase() : value.toUpperCase();
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getOperationNamePrefix() {
-        return operationNamePrefix;
-    }
-
-    public void setOperationNamePrefix(String operationNamePrefix) {
-        this.operationNamePrefix = operationNamePrefix;
-    }
 }
