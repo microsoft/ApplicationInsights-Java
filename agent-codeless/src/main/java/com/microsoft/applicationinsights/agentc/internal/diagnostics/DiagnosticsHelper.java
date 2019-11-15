@@ -23,6 +23,8 @@ public class DiagnosticsHelper {
     @VisibleForTesting
     static final String DIAGNOSTICS_OUTPUT_ENABLED_ENV_VAR_NAME = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_ENABLED";
 
+    public static final String DIAGNOSTICS_LOGGER_NAME = "applicationinsights.diagnostics";
+
     static {
         boolean result = true;
         try {

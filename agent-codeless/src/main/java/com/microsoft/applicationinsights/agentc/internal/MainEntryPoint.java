@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.agentc.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,6 +72,7 @@ import org.glowroot.instrumentation.engine.impl.SimpleConfigServiceFactory;
 import org.glowroot.instrumentation.engine.init.EngineModule;
 import org.glowroot.instrumentation.engine.init.MainEntryPointUtil;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 public class MainEntryPoint {
@@ -96,6 +99,7 @@ public class MainEntryPoint {
             instrumentation.addTransformer(new QuickPulseClassFileTransformer());
             instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
             success = true;
+            LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME).info("Application Insights Codeless Agent Attach Successful");
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
@@ -115,10 +119,26 @@ public class MainEntryPoint {
     }
 
     public static Logger initLogging(Instrumentation instrumentation, File agentJarFile) {
-        File logbackXmlOverride = new File(agentJarFile.getParentFile(), "ai.logback.xml");
-        if (logbackXmlOverride.exists()) {
-            System.setProperty("ai.logback.configurationFile", logbackXmlOverride.getAbsolutePath());
+        if (DiagnosticsHelper.isAppServiceCodeless()) {
+            try {
+                ClassLoader cl = MainEntryPoint.class.getClassLoader();
+                if (cl == null) {
+                    cl = ClassLoader.getSystemClassLoader();
+                }
+                final URL appsvcConfig = cl.getResource("appsvc.ai.logback.xml");
+                System.setProperty("ai.logback.configurationFile", appsvcConfig.toString());
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                startupLogger.error("Could not load appsvc logging config", t);
+            }
+        } else {
+            File logbackXmlOverride = new File(agentJarFile.getParentFile(), "ai.logback.xml");
+            if (logbackXmlOverride.exists()) {
+                System.setProperty("ai.logback.configurationFile", logbackXmlOverride.getAbsolutePath());
+            }
         }
+
         try {
             return MainEntryPointUtil.initLogging("com.microsoft.applicationinsights", instrumentation);
         } finally {

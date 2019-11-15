@@ -14,4 +14,8 @@ public class DiagnosticsTestHelper {
         DiagnosticsHelper.enabled = true;
         setIsAppServiceCodeless(false);
     }
+
+    public static void setEnabled(boolean enabled) {
+        DiagnosticsHelper.enabled = enabled;
+    }
 }
