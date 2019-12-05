@@ -115,8 +115,12 @@ public class MyApplication {
 
 #### Configure more parameters using `application.properties`
 ```properties
-# Instrumentation key from the Azure Portal. Required.
+# Either InstrumentationKey or ConnectionString is required
+# Instrumentation key from the Azure Portal.
 azure.application-insights.instrumentation-key=00000000-0000-0000-0000-000000000000
+
+# Connection String from the Azure Portal.
+azure.application-insights.connection-string=InstrumentationKey=00000000-0000-0000-0000-000000000000
 
 # Enable/Disable tracking. Default value: true.
 azure.application-insights.enabled=true
