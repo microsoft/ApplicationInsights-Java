@@ -47,8 +47,7 @@ sourceSets {
 
 def springBootVersion = '1.5.21.RELEASE'
 dependencies {
-    compile(project(path: ':core', configuration: 'shadow'))
-    compile(project(path: ':web', configuration: 'shadow'))
+    compile(project(path: ':web', configuration: 'shadow')) // web includes core
     compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
 
@@ -69,7 +68,6 @@ dependencies {
 ext.dependenciesPrefix = 'com.microsoft.applicationinsights.boot.dependencies'
 shadowJar {
     dependencies {
-        exclude(project(':core'))
         exclude(project(':web'))
         exclude(project(':ApplicationInsightsInternalLogger'))
     }
