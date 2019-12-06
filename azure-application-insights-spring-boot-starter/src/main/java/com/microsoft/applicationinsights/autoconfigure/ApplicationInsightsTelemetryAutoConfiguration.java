@@ -26,11 +26,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsProperties.Channel.InProcess;
-import com.microsoft.applicationinsights.autoconfigure.ApplicationInsightsProperties.Channel.LocalForwarder;
 import com.microsoft.applicationinsights.autoconfigure.conditionals.InstrumentationKeyCondition;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
-import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryChannel;
 import com.microsoft.applicationinsights.exceptions.IllegalConfigurationException;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
@@ -178,22 +176,6 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public TelemetryChannel telemetryChannel(TelemetryConfiguration configuration) {
-        boolean hasLfEndpoint = StringUtils.isNotBlank(environment.getProperty("azure.application-insights.channel.local-forwarder.endpoint-address"));
-        boolean hasInprocEndpoint = StringUtils.isNotBlank(environment.getProperty("azure.application-insights.channel.in-process.endpoint-address"));
-        if (hasLfEndpoint && hasInprocEndpoint) {
-            throw new IllegalConfigurationException("SDK cannot have two channels, please either remove Local Forwarder Endpoint, or In Process Endpoint");
-        }
-
-        // If local forwarder endpoint is present configure local forwarder channel
-        if (hasLfEndpoint) {
-            LocalForwarder lf = applicationInsightsProperties.getChannel().getLocalForwarder();
-
-            // TODO use config
-            final LocalForwarderTelemetryChannel channel = new LocalForwarderTelemetryChannel(lf.getEndpointAddress(), false, lf.getMaxTelemetryBufferCapacity(), lf.getFlushIntervalInSeconds());
-            configuration.setChannel(channel);
-            return channel;
-        }
-
         InProcess inProcess = applicationInsightsProperties.getChannel().getInProcess();
         final InProcessTelemetryChannel channel;
         if (StringUtils.isNotEmpty(inProcess.getEndpointAddress())) {
@@ -210,15 +192,10 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         return channel;
     }
 
-    // If local forwarder channel is present quick pulse would not be initialized.
     @Bean
     @ConditionalOnProperty(value = "azure.application-insights.quick-pulse.enabled", havingValue = "true", matchIfMissing = true)
     @DependsOn("telemetryConfiguration")
     public QuickPulse quickPulse(TelemetryConfiguration configuration) {
-        String inProcessEndPoint = environment.getProperty("azure.application-insights.channel.local-forwarder.endpoint-address");
-        if (StringUtils.isNotBlank(inProcessEndPoint)) {
-          return QuickPulse.INSTANCE;
-        }
         QuickPulse.INSTANCE.initialize(configuration);
         return QuickPulse.INSTANCE;
     }
