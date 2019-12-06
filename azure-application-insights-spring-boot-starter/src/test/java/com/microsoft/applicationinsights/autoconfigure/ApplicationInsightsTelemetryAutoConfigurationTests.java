@@ -38,7 +38,6 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
-import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -185,7 +184,7 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
         assertThat(channel).extracting("telemetryBuffer").extracting("transmitBufferTimeoutInSeconds").contains(123);
         assertThat(channel).extracting("telemetryBuffer").extracting("maxTelemetriesInBatch").contains(10);
     }
-
+    
     @Test
     public void shouldBeAbleToConfigureSamplingTelemetryProcessor() {
         EnvironmentTestUtils.addEnvironment(context,
@@ -377,15 +376,5 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
         Field f1 = InternalLogger.INSTANCE.getClass().getDeclaredField("initialized");
         f1.setAccessible(true);
         f1.set(InternalLogger.INSTANCE, false);
-    }
-
-    /**
-     * Resets quickpulse
-     * @throws Exception
-     */
-    private void resetQuickPulse() throws Exception {
-        Field f1 = QuickPulse.INSTANCE.getClass().getDeclaredField("initialized");
-        f1.setAccessible(true);
-        f1.set(QuickPulse.INSTANCE, false);
     }
 }
