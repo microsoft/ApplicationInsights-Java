@@ -247,7 +247,7 @@ public final class TelemetryConfigurationFactoryTest {
         assertThat(mockConfiguration.getTelemetryProcessors(), Matchers.<TelemetryProcessor>hasItem(instanceOf(RequestTelemetryFilter.class)));
         assertThat(mockConfiguration.getTelemetryProcessors(), Matchers.<TelemetryProcessor>hasItem(instanceOf(ValidProcessorsWithSetters.class)));
         assertThat(mockConfiguration.getTelemetryProcessors(), Matchers.<TelemetryProcessor>hasItem(instanceOf(TestProcessorWithoutSetters.class)));
-            }
+    }
 
     @Test
     public void testTelemetryContextInitializers() {
