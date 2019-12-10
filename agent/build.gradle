@@ -68,6 +68,8 @@ shadowJar() {
     exclude 'META-INF/NOTICE*'
     exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
 
+    exclude 'module-info.class'
+
     // prevent duplicate files
     exclude 'LICENSE'
     exclude 'NOTICE'
