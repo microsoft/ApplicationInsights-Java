@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.internal.shutdown;
 import java.io.Closeable;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -214,15 +213,17 @@ public enum SDKShutdownActivity {
 
     private SDKShutdownAction getShutdownAction() {
         if (shutdownAction == null) {
-            synchronized (this) {
+            synchronized (INSTANCE) {
                 if (shutdownAction == null) {
                     try {
-                        shutdownAction = new SDKShutdownAction();
-                        Thread t = new Thread(shutdownAction, SDKShutdownActivity.class.getSimpleName()+"-ShutdownHook");
+                        SDKShutdownAction action = new SDKShutdownAction();
+                        Thread t = new Thread(action, SDKShutdownActivity.class.getSimpleName()+"-ShutdownHook");
                         Runtime.getRuntime().addShutdownHook(t);
+                        shutdownAction = action;
                     } catch (Exception e) {
-                        InternalLogger.INSTANCE.error("Error while adding shutdown hook in getShutDownThread call");
-                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                        if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                            InternalLogger.INSTANCE.error("Error while adding shutdown hook in getShutDownThread call: %s", ExceptionUtils.getStackTrace(e));
+                        }
                     }
                 }
             }
