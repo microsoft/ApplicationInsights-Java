@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# Version 2.6.0-BETA.2
+* Removed Local Forwarder Channel. Local Forwarder is now a deprecated solution.
+The classes and configuration elements which supported this solution have been removed.
+
 # Version 2.6.0-BETA
 * W3C tracing with back-compat is now enabled by default
   ([#1141](https://github.com/microsoft/ApplicationInsights-Java/issues/1141))
