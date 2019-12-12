@@ -27,7 +27,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
-import com.microsoft.applicationinsights.channel.concrete.localforwarder.LocalForwarderTelemetryChannel;
 import com.microsoft.applicationinsights.exceptions.IllegalConfigurationException;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
@@ -39,7 +38,6 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
-import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -186,35 +184,7 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
         assertThat(channel).extracting("telemetryBuffer").extracting("transmitBufferTimeoutInSeconds").contains(123);
         assertThat(channel).extracting("telemetryBuffer").extracting("maxTelemetriesInBatch").contains(10);
     }
-
-    @Test
-    public void shouldBeAbleToConfigureLocalForwarderTelemetryChannel() throws IllegalConfigurationException {
-        EnvironmentTestUtils.addEnvironment(context,
-            "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
-            "azure.application-insights.channel.local-forwarder.endpoint-address=localhost:8080");
-        context.register(PropertyPlaceholderAutoConfiguration.class,
-            ApplicationInsightsTelemetryAutoConfiguration.class);
-        context.refresh();
-
-        TelemetryConfiguration telemetryConfiguration = context.getBean(TelemetryConfiguration.class);
-        TelemetryChannel channel = telemetryConfiguration.getChannel();
-
-        assertThat(channel).isInstanceOf(LocalForwarderTelemetryChannel.class);
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenChannelsMisconfigured() {
-
-        EnvironmentTestUtils.addEnvironment(context,
-            "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
-            "azure.application-insights.channel.local-forwarder.endpoint-address=localhost:8080",
-            "azure.application-insights.channel.in-process.endpoint-address=https://dc.services.visualstudio.com/v2/track");
-        context.register(PropertyPlaceholderAutoConfiguration.class, ApplicationInsightsTelemetryAutoConfiguration.class);
-        thrown.expect(BeanCreationException.class);
-        context.refresh();
-    }
-
-
+    
     @Test
     public void shouldBeAbleToConfigureSamplingTelemetryProcessor() {
         EnvironmentTestUtils.addEnvironment(context,
@@ -248,8 +218,7 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
     }
 
     @Test
-    public void internalLoggerShouldBeInitializedBeforeTelemetryConfiguration() throws Exception {
-        resetInternalLogger();
+    public void internalLoggerShouldBeInitializedBeforeTelemetryConfiguration() {
         EnvironmentTestUtils.addEnvironment(context,
             "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
             "azure.application-insights.logger.level=INFO"
@@ -336,22 +305,6 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
         assertThat(context.getBeansOfType(HeartBeatModule.class)).isNotEmpty();
     }
 
-    @Test
-    public void shouldNotHaveQuickPulseChannelIfLFPresent() throws Exception {
-            resetQuickPulse();
-            EnvironmentTestUtils.addEnvironment(context,
-                "azure.application-insights.instrumentation-key: 00000000-0000-0000-0000-000000000000",
-                "azure.application-insights.channel.local-forwarder.endpoint-address=localhost:8080");
-
-            context.register(PropertyPlaceholderAutoConfiguration.class,
-                ApplicationInsightsTelemetryAutoConfiguration.class);
-            context.refresh();
-
-            QuickPulse instance = context.getBean(QuickPulse.class);
-            assertThat(instance).extracting("initialized").contains(false);
-
-    }
-
     private void testIkeySystemProperty(String propertyName) {
         System.setProperty(propertyName, "00000000-0000-0000-0000-000000000001");
         context.register(PropertyPlaceholderAutoConfiguration.class,
@@ -423,15 +376,5 @@ public final class ApplicationInsightsTelemetryAutoConfigurationTests {
         Field f1 = InternalLogger.INSTANCE.getClass().getDeclaredField("initialized");
         f1.setAccessible(true);
         f1.set(InternalLogger.INSTANCE, false);
-    }
-
-    /**
-     * Resets quickpulse
-     * @throws Exception
-     */
-    private void resetQuickPulse() throws Exception {
-        Field f1 = QuickPulse.INSTANCE.getClass().getDeclaredField("initialized");
-        f1.setAccessible(true);
-        f1.set(QuickPulse.INSTANCE, false);
     }
 }
