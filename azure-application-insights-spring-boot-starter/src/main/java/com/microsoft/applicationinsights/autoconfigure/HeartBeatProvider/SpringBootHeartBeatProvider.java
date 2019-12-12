@@ -88,8 +88,9 @@ public class SpringBootHeartBeatProvider implements HeartBeatPayloadProviderInte
             }
           }
           catch (Exception e) {
-            InternalLogger.INSTANCE.warn("Failed to obtain heartbeat property, stack trace"
-                + "is: %s", ExceptionUtils.getStackTrace(e));
+            if (InternalLogger.INSTANCE.isWarnEnabled()) {
+              InternalLogger.INSTANCE.warn("Failed to obtain heartbeat property: %s", ExceptionUtils.getStackTrace(e));
+            }
           }
         }
         return hasSetValues;
