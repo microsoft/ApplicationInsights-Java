@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<FindBugsFilter
+        xmlns="https://github.com/spotbugs/filter/3.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd https://github.com/spotbugs/filter/3.0.0 ">
+    <Match>
+        <Bug pattern="PREDICTABLE_RANDOM" />
+        <!-- These random numbers are not used for cryptography. Predictable pseudorandom is sufficient. -->
+        <Or>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.channel.sampling.SamplingScoreGenerator" />
+                <Method name="&lt;clinit&gt;" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.channel.samplingV2.SamplingScoreGeneratorV2" />
+                <Method name="&lt;clinit&gt;" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.util.LocalStringsUtils" />
+                <Method name="generateRandomIntegerId" />
+            </And>
+        </Or>
+    </Match>
+</FindBugsFilter>
