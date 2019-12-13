@@ -239,20 +239,22 @@ public class XmlAgentConfigurationBuilder {
 
     private Element getTopTag(File configurationFile) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilder builder = createDocumentBuilder();
-        Document doc = builder.parse(new FileInputStream(configurationFile));
-        doc.getDocumentElement().normalize();
+        try (final FileInputStream fis = new FileInputStream(configurationFile)) {
+            Document doc = builder.parse(fis);
+            doc.getDocumentElement().normalize();
 
-        NodeList topTags = doc.getElementsByTagName(MAIN_TAG);
-        if (topTags == null || topTags.getLength() == 0) {
-            return null;
+            NodeList topTags = doc.getElementsByTagName(MAIN_TAG);
+            if (topTags == null || topTags.getLength() == 0) {
+                return null;
+            }
+
+            Node topNodeTag = topTags.item(0);
+            if (topNodeTag.getNodeType() != Node.ELEMENT_NODE) {
+                return null;
+            }
+
+            return (Element) topNodeTag;
         }
-
-        Node topNodeTag = topTags.item(0);
-        if (topNodeTag.getNodeType() != Node.ELEMENT_NODE) {
-            return null;
-        }
-
-        return (Element) topNodeTag;
     }
 
     private DocumentBuilder createDocumentBuilder() throws ParserConfigurationException {

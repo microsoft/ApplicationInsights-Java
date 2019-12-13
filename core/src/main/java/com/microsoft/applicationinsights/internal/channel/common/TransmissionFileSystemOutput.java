@@ -109,7 +109,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
                                                                         DEFAULT_CAPACITY_MEGABYTES,
                                                                         MAX_TRANSMISSION_STORAGE_CAPACITY_NAME,
                                                                         maxTransmissionStorageCapacity);
-        capacityInBytes = capacityEnforcer.getCurrentValue() * 1024 * 1024;
+        capacityInBytes = capacityEnforcer.getCurrentValue() * 1024L * 1024L;
 
         folder = new File(folderPath);
 
@@ -212,7 +212,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     }
 
     public void setCapacity(int suggestedCapacity) {
-        this.capacityInBytes = capacityEnforcer.normalizeValue(suggestedCapacity) * 1024 * 1024;
+        this.capacityInBytes = capacityEnforcer.normalizeValue(suggestedCapacity) * 1024L * 1024L;
     }
 
     private List<File> sortOldestLastAndTrim(Collection<File> transmissions, int limit) {

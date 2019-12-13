@@ -53,9 +53,9 @@ final class SenderThreadLocalBackOffData {
      * @param addMilliseconds The amount of seconds that will be added to the 'large' intervals to distinct between sender threads.
      */
     public SenderThreadLocalBackOffData(long[] backOffTimeoutsInMillis, long addMilliseconds) {
-        Preconditions.checkNotNull(backOffTimeoutsInMillis, "backOffTimeoutsInSeconds must be not null");
-        Preconditions.checkArgument(backOffTimeoutsInMillis.length > 0, "backOffTimeoutsInSeconds must not be empty");
-        Preconditions.checkArgument(addMilliseconds >= 0, "addSeconds must not be >= 0");
+        Preconditions.checkNotNull(backOffTimeoutsInMillis, "backOffTimeoutsInMillis must be not null");
+        Preconditions.checkArgument(backOffTimeoutsInMillis.length > 0, "backOffTimeoutsInMillis must not be empty");
+        Preconditions.checkArgument(addMilliseconds >= 0, "addMilliseconds must not be >= 0");
 
         currentBackOffIndex = -1;
         instanceIsActive = true;
