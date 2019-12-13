@@ -184,4 +184,12 @@
             </And>
         </Or>
     </Match>
+    <Match>
+        <!-- These rules are fine to skip. -->
+        <Or>
+            <Bug pattern="UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD" />
+            <Bug pattern="SF_SWITCH_NO_DEFAULT" />
+            <Bug pattern="NM_METHOD_NAMING_CONVENTION" />
+        </Or>
+    </Match>
 </FindBugsFilter>
