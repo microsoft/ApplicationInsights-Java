@@ -92,7 +92,7 @@ public final class PageViewTelemetryFilter implements TelemetryProcessor {
 
     public void setDurationThresholdInMS(String durationThresholdInMS) throws NumberFormatException {
         try {
-            this.durationThresholdInMS = Long.valueOf(durationThresholdInMS);
+            this.durationThresholdInMS = Long.parseLong(durationThresholdInMS);
             InternalLogger.INSTANCE.trace("PageViewTelemetryFilter: successfully set DurationThresholdInMS to %s", durationThresholdInMS);
         } catch (NumberFormatException e) {
             InternalLogger.INSTANCE.error("PageViewTelemetryFilter: failed to set DurationThresholdInMS:%s Exception : %s ",

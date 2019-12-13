@@ -237,7 +237,7 @@ public final class AdaptiveTelemetrySampler implements Stoppable, TelemetrySampl
     private int getIntValueOrDefault(String name, String valueAsString, int defaultValue, int minValue, int maxValue) {
         int result = defaultValue;
         try {
-            int value = Integer.valueOf(valueAsString);
+            int value = Integer.parseInt(valueAsString);
             if (value > 0) {
                 result = value;
             }

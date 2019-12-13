@@ -57,7 +57,7 @@ public class HeartBeatModule implements TelemetryModule {
         switch (entry.getKey()) {
           case "HeartBeatInterval":
             try {
-              setHeartBeatInterval(Long.valueOf(entry.getValue()));
+              setHeartBeatInterval(Long.parseLong(entry.getValue()));
               break;
             } catch (Exception e) {
               InternalLogger.INSTANCE.trace("Exception while adding Heartbeat interval,"
