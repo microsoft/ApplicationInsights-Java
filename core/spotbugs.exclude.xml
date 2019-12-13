@@ -21,4 +21,13 @@
             </And>
         </Or>
     </Match>
+    <Match>
+        <Bug pattern="JLM_JSR166_UTILCONCURRENT_MONITORENTER" />
+        <!-- False Positive. Using wait/notify. -->
+        <Or>
+            <Class name="com.microsoft.applicationinsights.internal.channel.common.ApacheSender43" />
+            <Class name="com.microsoft.applicationinsights.internal.channel.common.ApacheSender43$1" />
+        </Or>
+        <Field name="httpClientRef" />
+    </Match>
 </FindBugsFilter>
