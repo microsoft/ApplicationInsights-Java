@@ -94,4 +94,18 @@
             </And>
         </Or>
     </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP" /><!-- internal references out -->
+        <Or>
+            <And>
+                <!-- Not exposed to public API. -->
+                <Class name="com.microsoft.applicationinsights.internal.channel.common.Transmission" />
+                <Field name="content" />
+            </And>
+            <And><!-- this use is acceptable -->
+                <Class name="com.microsoft.applicationinsights.telemetry.BaseTelemetry" />
+                <Field name="timestamp" />
+            </And>
+        </Or>
+    </Match>
 </FindBugsFilter>
