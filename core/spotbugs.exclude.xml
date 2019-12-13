@@ -30,4 +30,10 @@
         </Or>
         <Field name="httpClientRef" />
     </Match>
+    <Match>
+        <Bug pattern="NP_BOOLEAN_RETURN_NULL" />
+        <!-- The method name is pretty clear -->
+        <Class name="com.microsoft.applicationinsights.internal.util.MapUtil" />
+        <Method name="getBoolValueOrNull" />
+    </Match>
 </FindBugsFilter>
