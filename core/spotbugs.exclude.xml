@@ -76,4 +76,22 @@
             </And>
         </Or>
     </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2" /> <!-- external references in -->
+        <!-- The external references is disposed after passed to object. -->
+        <Or>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.channel.common.NonBlockingDispatcher" />
+                <Method name="&lt;init&gt;" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.channel.common.Transmission" />
+                <Method name="&lt;init&gt;" />
+            </And>
+            <And><!-- this use is acceptable -->
+                <Class name="com.microsoft.applicationinsights.telemetry.BaseTelemetry" />
+                <Field name="timestamp" />
+            </And>
+        </Or>
+    </Match>
 </FindBugsFilter>
