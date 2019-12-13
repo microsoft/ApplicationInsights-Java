@@ -18,25 +18,26 @@ public class SamplingScoreGeneratorV2 {
      * This method takes the telemetry and returns the hash of the operation id if it is present already
      * or uses the random number generator to generate the sampling score.
      * @param telemetry
-     * @return
+     * @return [0.0, 1.0)
      */
     public static double getSamplingScore(Telemetry telemetry) {
 
-        double samplingScore = 0.0;
+        double samplingScore;
 
         if (!StringUtils.isEmpty(telemetry.getContext().getOperation().getId())) {
             samplingScore =  ((double) getSamplingHashCode(telemetry.getContext().getOperation().getId()) / Integer.MAX_VALUE);
+        } else {
+            samplingScore =  random.nextDouble(); // [0,1)
         }
 
-        else {
-            long val = Math.abs(random.nextLong());
-            samplingScore =  ((double)Math.abs(val)/ Long.MAX_VALUE);
-        }
-
-        return samplingScore * 100;
+        return samplingScore * 100.0; // always < 100.0
     }
 
-     static int getSamplingHashCode(String input) {
+    /**
+     * @param input
+     * @return [0, Integer.MAX_VALUE)
+     */
+    static int getSamplingHashCode(String input) {
         if (StringUtils.isEmpty(input)) {
             return 0;
         }
@@ -52,6 +53,9 @@ public class SamplingScoreGeneratorV2 {
             hash = ((hash << 5) + hash) + (int) inputBuilder.charAt(i);
         }
 
-        return hash == Integer.MIN_VALUE ? Integer.MAX_VALUE : Math.abs(hash);
+        if (hash == Integer.MIN_VALUE || hash == Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE - 1;
+        }
+        return Math.abs(hash);
     }
 }
