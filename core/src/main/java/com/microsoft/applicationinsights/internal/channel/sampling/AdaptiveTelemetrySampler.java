@@ -88,7 +88,7 @@ public final class AdaptiveTelemetrySampler implements Stoppable, TelemetrySampl
                 suggestedSamplingPercentage = minSamplingPercentage;
             }
 
-            boolean samplingPercentageChangeNeeded = suggestedSamplingPercentage != currentSamplingPercentage;
+            boolean samplingPercentageChangeNeeded = Math.abs(suggestedSamplingPercentage - currentSamplingPercentage) > Math.ulp(suggestedSamplingPercentage); // suggestedSamplingPercentage != currentSamplingPercentage === abs(s - c) > epsilon
             if (samplingPercentageChangeNeeded) {
                 Date currentDate = new Date();
                 long duration = currentDate.getTime() - lastChangedDate.getTime();
