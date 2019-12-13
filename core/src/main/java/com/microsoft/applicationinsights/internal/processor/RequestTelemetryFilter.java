@@ -47,7 +47,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 @BuiltInProcessor("RequestTelemetryFilter")
 public final class RequestTelemetryFilter implements TelemetryProcessor {
-    private final class FromTo {
+    private static final class FromTo {
         public final int from;
         public final int to;
 
