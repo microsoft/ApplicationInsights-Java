@@ -49,7 +49,7 @@ public class DockerContextInitializer implements TelemetryInitializer {
 
     private FileFactory fileFactory;
     private DockerContextPoller dockerContextPoller;
-    private boolean sdkInfoFileWritten = false;
+    private volatile boolean sdkInfoFileWritten = false;
 
     protected DockerContextInitializer(FileFactory fileFactory, DockerContextPoller dockerContextPoller) {
         this.fileFactory = fileFactory;
