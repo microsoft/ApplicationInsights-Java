@@ -112,10 +112,6 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * @param defaultFields collection to hold default properties.
    */
   private void initializeDefaultFields(Set<String> defaultFields) {
-
-    if (defaultFields == null) {
-      defaultFields = new HashSet<>();
-    }
     defaultFields.add(JRE_VERSION);
     defaultFields.add(SDK_VERSION);
     defaultFields.add(OS_VERSION);

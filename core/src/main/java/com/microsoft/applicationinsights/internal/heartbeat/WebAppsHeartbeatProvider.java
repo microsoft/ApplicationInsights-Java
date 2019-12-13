@@ -122,10 +122,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
    * @param defaultFields
    */
   private void initializeDefaultFields(Set<String> defaultFields) {
-    if (defaultFields == null) {
-      defaultFields = new HashSet<>();
-    }
-
     defaultFields.add(WEBSITE_SITE_NAME);
     defaultFields.add(WEBSITE_HOSTNAME);
     defaultFields.add(WEBSITE_HOME_STAMPNAME);
