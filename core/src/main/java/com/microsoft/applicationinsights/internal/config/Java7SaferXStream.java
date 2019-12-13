@@ -31,6 +31,8 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -397,7 +399,15 @@ public class Java7SaferXStream {
      */
     public Java7SaferXStream(
             ReflectionProvider reflectionProvider, Mapper mapper, HierarchicalStreamDriver driver) {
-        this(reflectionProvider, driver, new CompositeClassLoader(), mapper);
+        this(reflectionProvider,
+                driver,
+                AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                    @Override
+                    public ClassLoader run() {
+                        return new CompositeClassLoader();
+                    }
+                }),
+                mapper);
     }
 
     /**
