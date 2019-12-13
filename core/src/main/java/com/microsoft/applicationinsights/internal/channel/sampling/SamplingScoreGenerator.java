@@ -25,6 +25,7 @@ import java.util.Random;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Created by gupele on 11/2/2016.
@@ -55,15 +56,21 @@ final class SamplingScoreGenerator {
     }
 
     private static int getSamplingHashCode(String input) {
-        if (input == null) {
+        if (StringUtils.isEmpty(input)) {
             return 0;
         }
 
-        while (input.length() < 8) {
-            input = input + input;
-        }
-
         int hash = 5381;
+
+        if (input.length() < 8) {
+            if (input.length() < 3) { // 1, 2 should repeat 8 or 4 times
+                input = StringUtils.repeat(input, 8/input.length());
+            } else if (input.length() == 3) {
+                input = StringUtils.repeat(input, 4);
+            } else {
+                input = StringUtils.repeat(input, 2);
+            }
+        }
 
         char[] asChars = input.toCharArray();
         for (int i = 0; i < asChars.length; i++) {
