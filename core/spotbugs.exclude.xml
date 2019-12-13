@@ -108,4 +108,12 @@
             </And>
         </Or>
     </Match>
+    <Match>
+        <Bug pattern="ME_ENUM_FIELD_SETTER" />
+        <!-- Singleton enum pattern. By design. -->
+        <Or>
+            <Class name="com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer" />
+            <Class name="com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector" />
+        </Or>
+    </Match>
 </FindBugsFilter>
