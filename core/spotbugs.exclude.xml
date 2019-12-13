@@ -36,4 +36,44 @@
         <Class name="com.microsoft.applicationinsights.internal.util.MapUtil" />
         <Method name="getBoolValueOrNull" />
     </Match>
+    <Match>
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+        <!-- The default encoding is suitable for these purposes. -->
+        <Or>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.channel.common.GzipTelemetrySerializer" />
+                <Method name="compress" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.channel.common.PartialSuccessHandler" />
+                <Method name="generateOriginalItems" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.perfcounter.UnixProcessIOPerformanceCounter" />
+                <Method name="getCurrentIOForCurrentProcess" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.perfcounter.UnixTotalCpuPerformanceCounter" />
+                <Method name="getLineOfData" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.perfcounter.UnixTotalMemoryPerformanceCounter" />
+                <Method name="getTotalAvailableMemory" />
+            </And>
+
+            <!-- the following instances could specify encoding if needed by the server -->
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.quickpulse.DefaultQuickPulsePingSender" />
+                <Method name="buildPingEntity" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.channel.common.GzipTelemetrySerializer" />
+                <Method name="&lt;init&gt;" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.quickpulse.DefaultQuickPulseDataFetcher" />
+                <Method name="buildPostEntity" />
+            </And>
+        </Or>
+    </Match>
 </FindBugsFilter>
