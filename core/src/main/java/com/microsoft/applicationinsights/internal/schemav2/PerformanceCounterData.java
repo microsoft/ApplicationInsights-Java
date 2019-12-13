@@ -44,7 +44,7 @@ public final class PerformanceCounterData extends Domain {
      */
     private static final String PERFORMANCE_COUNTER_BASE_TYPE = "PerformanceCounterData";
 
-    private final int ver = 2;
+    private static final int ver = 2;
     private String categoryName;
     private String counterName;
     private String instanceName;

@@ -37,15 +37,15 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
   /**
    * Name of this provider.
    */
-  private final String name = "Default";
+  private static final String name = "Default";
 
-  private final String JRE_VERSION = "jreVersion";
+  private static final String JRE_VERSION = "jreVersion";
 
-  private final String SDK_VERSION = "sdkVersion";
+  private static final String SDK_VERSION = "sdkVersion";
 
-  private final String OS_VERSION = "osVersion";
+  private static final String OS_VERSION = "osVersion";
 
-  private final String PROCESS_SESSION_ID = "processSessionId";
+  private static final String PROCESS_SESSION_ID = "processSessionId";
 
   public DefaultHeartBeatPropertyProvider() {
     defaultFields = new HashSet<>();

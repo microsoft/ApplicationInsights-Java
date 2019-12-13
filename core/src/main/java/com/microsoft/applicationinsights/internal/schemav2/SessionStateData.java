@@ -39,7 +39,7 @@ import java.io.IOException;
 @Deprecated
 public final class SessionStateData extends Domain {
 
-    private final int ver = 2;
+    private static final int ver = 2;
 
     private SessionState state;
 

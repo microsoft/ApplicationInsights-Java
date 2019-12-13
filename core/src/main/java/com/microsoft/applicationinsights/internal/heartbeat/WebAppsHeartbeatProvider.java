@@ -24,7 +24,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
   /**
    * Name of the provider
    */
-  private final String name = "webapps";
+  private static final String name = "webapps";
 
   /**
    * Collection holding default properties for this default provider.
@@ -36,11 +36,11 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
    */
   private Map<String, String> environmentMap;
 
-  private final String WEBSITE_SITE_NAME = "appSrv_SiteName";
+  private static final String WEBSITE_SITE_NAME = "appSrv_SiteName";
 
-  private final String WEBSITE_HOSTNAME = "appSrv_wsHost";
+  private static final String WEBSITE_HOSTNAME = "appSrv_wsHost";
 
-  private final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
+  private static final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
 
 
   /**
