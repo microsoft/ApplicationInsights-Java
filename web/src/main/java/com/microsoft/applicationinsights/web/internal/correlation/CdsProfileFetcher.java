@@ -133,7 +133,11 @@ public class CdsProfileFetcher implements AppProfileFetcher, ApplicationIdResolv
         // if no task currently exists for this ikey, then let's create one.
         if (currentTask == null) {
             currentTask = createFetchTask(instrumentationKey, configuration);
-            this.tasks.putIfAbsent(instrumentationKey, currentTask);
+            Future<HttpResponse> mapValue = this.tasks.putIfAbsent(instrumentationKey, currentTask);
+            // it's possible for another thread to create a fetch task
+            if (mapValue != null) { // if there is already a mapping, then let's discard the new one and check if the existing task has completed.
+                currentTask = mapValue;
+            }
         }
 
         // check if task is still pending
