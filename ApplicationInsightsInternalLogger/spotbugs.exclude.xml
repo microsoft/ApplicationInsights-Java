@@ -9,4 +9,23 @@
         <Class name="com.microsoft.applicationinsights.internal.logger.DefaultLogFileProxy" />
         <Method name="initialize" />
     </Match>
+    <Match>
+        <Bug pattern="PATH_TRAVERSAL_IN" />
+        <!-- All of these are related to the log file output. -->
+        <!-- Ignore. File path does not come from anonymous or untrusted sources. -->
+        <Or>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.logger.DefaultLogFileProxy" />
+                <Method name="&lt;init&gt;" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.logger.FileLoggerOutput" />
+                <Method name="initialize" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.logger.LocalFileSystemUtils" />
+                <Method name="getTempDir" />
+            </And>
+        </Or>
+    </Match>
 </FindBugsFilter>
