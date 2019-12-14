@@ -10,4 +10,11 @@
         <Method name="premain" />
         <Field name="startupLogger" />
     </Match>
+    <Match>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
+        <!-- Ignore. I wasn't able to confirm that this is not Nullable. -->
+        <Class name="com.microsoft.applicationinsights.agent.internal.config.builder.XmlAgentConfigurationBuilder" />
+        <Method name="parseConfigurationFile" />
+        <Local name="classTags" />
+    </Match>
 </FindBugsFilter>
