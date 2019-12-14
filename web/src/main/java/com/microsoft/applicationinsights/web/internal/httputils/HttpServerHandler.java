@@ -146,7 +146,9 @@ public final class HttpServerHandler {
                 telemetryClient.trackException(e);
             }
         } catch (Exception ex) {
-            // swallow AI Exception
+            if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                InternalLogger.INSTANCE.error("Error occurred tracking exception: " + ExceptionUtils.getStackTrace(ex));
+            }
         }
     }
 
