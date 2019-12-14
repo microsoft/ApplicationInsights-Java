@@ -17,4 +17,19 @@
         <Method name="parseConfigurationFile" />
         <Local name="classTags" />
     </Match>
+    <Match>
+        <Bug pattern="PATH_TRAVERSAL_IN" />
+        <Or>
+            <And>
+                <!-- False Positive. Path is not from an external source. -->
+                <Class name="com.microsoft.applicationinsights.agent.internal.Premain"/>
+                <Method name="getAgentJarFile"/>
+            </And>
+            <And>
+                <!-- False Positive. File name is hard coded and immutable -->
+                <Class name="com.microsoft.applicationinsights.agent.internal.config.builder.XmlAgentConfigurationBuilder"/>
+                <Method name="parseConfigurationFile"/>
+            </And>
+        </Or>
+    </Match>
 </FindBugsFilter>
