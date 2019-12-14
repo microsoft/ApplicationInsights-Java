@@ -116,4 +116,42 @@
             <Class name="com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector" />
         </Or>
     </Match>
+    <Match>
+        <Bug pattern="PATH_TRAVERSAL_IN" />
+        <Or>
+            <And>
+                <!-- This file path is not exposed or modifiable from external sources (transmission save files from failed sends). -->
+                <Class name="com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput"/>
+                <Or>
+                    <Method name="&lt;init&gt;"/>
+                    <Method name="createTemporaryFile"/>
+                </Or>
+            </And>
+            <And>
+                <!-- The configuration file path is only read from trusted sources. -->
+                <Class name="com.microsoft.applicationinsights.internal.config.ConfigurationFileLocator"/>
+                <Or>
+                    <Method name="getConfigurationAbsolutePath"/>
+                    <Method name="getConfigurationFile"/>
+                    <Method name="getConfigurationFromLibraryLocation"/> <!-- the jar file path; same reasoning -->
+                    <Method name="normalizeUrlToFile"/>
+                </Or>
+            </And>
+            <And>
+                <!-- This path is read from trusted sources (file containing *ix process stats). -->
+                <Class name="com.microsoft.applicationinsights.internal.perfcounter.AbstractUnixPerformanceCounter"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <!-- The DLL extraction path is read from trusted sources. -->
+                <Class name="com.microsoft.applicationinsights.internal.perfcounter.JniPCConnector"/>
+                <Method name="buildDllLocalPath"/>
+            </And>
+            <And>
+                <!-- The paths here are either immutable or read from trusted sources -->
+                <Class name="com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils" />
+                <Method name="getTempDir" />
+            </And>
+        </Or>
+    </Match>
 </FindBugsFilter>
