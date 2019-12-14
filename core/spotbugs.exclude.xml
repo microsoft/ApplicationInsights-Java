@@ -154,4 +154,34 @@
             </And>
         </Or>
     </Match>
+    <Match>
+        <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" />
+        <Or>
+            <And>
+                <!-- The return value of Condition.await is irrelevant in this instance. -->
+                <Class name="com.microsoft.applicationinsights.internal.channel.common.SenderThreadLocalBackOffData" />
+                <Method name="backOff" />
+            </And>
+            <And>
+                <!-- Return value is irrelevant; no plans to refactor to Runnable. -->
+                <Class name="com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProvider" />
+                <Method name="initialize" />
+            </And>
+            <And>
+                <!-- Return value of mkdir is not helpful here. The next conditional checks if the target folder exists and is accessible. -->
+                <Class name="com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput" />
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <!-- Return value of mkdirs is not helpful here. The next conditional checks if the target folder exists and is accessible. -->
+                <Class name="com.microsoft.applicationinsights.internal.perfcounter.JniPCConnector" />
+                <Method name="buildDllLocalPath" />
+            </And>
+            <And>
+                <!-- Callers are responsible for checking if this directory was created. -->
+                <Class name="com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils" />
+                <Method name="getTempDir" params="" returns="java.io.File" />
+            </And>
+        </Or>
+    </Match>
 </FindBugsFilter>
