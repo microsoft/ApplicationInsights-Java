@@ -32,4 +32,10 @@
             </And>
         </Or>
     </Match>
+    <Match>
+        <Bug pattern="XXE_DOCUMENT" />
+        <!-- False Positive. This feature is set in createDocumentBuidler() -->
+        <Class name="com.microsoft.applicationinsights.agent.internal.config.builder.XmlAgentConfigurationBuilder" />
+        <Method name="getTopTag" />
+    </Match>
 </FindBugsFilter>

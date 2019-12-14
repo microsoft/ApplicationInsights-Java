@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -238,8 +239,8 @@ public class XmlAgentConfigurationBuilder {
     }
 
     private Element getTopTag(File configurationFile) throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilder builder = createDocumentBuilder();
         try (final FileInputStream fis = new FileInputStream(configurationFile)) {
+            DocumentBuilder builder = createDocumentBuilder();
             Document doc = builder.parse(fis);
             doc.getDocumentElement().normalize();
 
@@ -261,6 +262,7 @@ public class XmlAgentConfigurationBuilder {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         // mitigates CWE-611: https://cwe.mitre.org/data/definitions/611.html
         dbFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         dbFactory.setXIncludeAware(false);
         dbFactory.setExpandEntityReferences(false);
         return dbFactory.newDocumentBuilder();
