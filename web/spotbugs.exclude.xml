@@ -32,4 +32,11 @@
         <Class name="com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher" />
         <Method name="createFetchTask" />
     </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <!-- This usage is sufficient for our purposes. Conversion to long would be cumbersome; it's in the request pipeline, so I'm hesitant to copy on read. -->
+        <Class name="com.microsoft.applicationinsights.web.internal.cookies.UserCookie" />
+        <Method name="getAcquisitionDate" />
+        <Field name="acquisitionDate" />
+    </Match>
 </FindBugsFilter>
