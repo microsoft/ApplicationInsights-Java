@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.web.internal.correlation.tracecontext;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -125,15 +126,15 @@ public class Tracestate {
     private String toInternalString() {
         boolean isFirst = true;
         StringBuilder stringBuilder = new StringBuilder(512);
-        for (String key : internalList.keySet()) {
+        for (Map.Entry<String, String> entry : internalList.entrySet()) {
             if (isFirst) {
                 isFirst = false;
             } else {
                 stringBuilder.append(",");
             }
-            stringBuilder.append(key);
+            stringBuilder.append(entry.getKey());
             stringBuilder.append("=");
-            stringBuilder.append(internalList.get(key));
+            stringBuilder.append(entry.getValue());
         }
         return stringBuilder.toString();
     }
