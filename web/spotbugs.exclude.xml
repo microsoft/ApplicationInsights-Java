@@ -26,4 +26,10 @@
             </And>
         </Or>
     </Match>
+    <Match>
+        <Bug pattern="HTTP_PARAMETER_POLLUTION" />
+        <!-- Input is from trusted sources and not used as parameter values -->
+        <Class name="com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher" />
+        <Method name="createFetchTask" />
+    </Match>
 </FindBugsFilter>
