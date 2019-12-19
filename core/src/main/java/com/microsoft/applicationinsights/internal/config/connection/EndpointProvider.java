@@ -2,11 +2,9 @@ package com.microsoft.applicationinsights.internal.config.connection;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
-import org.apache.http.client.utils.URIBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class EndpointProvider {
     @VisibleForTesting static final String INGESTION_URI_PATH = "v2/track";
@@ -33,23 +31,40 @@ public class EndpointProvider {
     }
 
     private URI buildIngestionUri(URI baseUri) throws URISyntaxException {
-        return new URIBuilder(baseUri).setPath(INGESTION_URI_PATH).build();
+        return buildUri(baseUri, INGESTION_URI_PATH);
     }
 
     private URI buildLiveUri(URI baseUri) throws URISyntaxException {
-        return new URIBuilder(baseUri).setPath(LIVE_URI_PATH).build();
+        return buildUri(baseUri, LIVE_URI_PATH);
     }
 
     public URI getIngestionEndpointURL() {
         return ingestionEndpointURL;
     }
 
-    public URI getAppIdEndpointURL(String instrumentationKey) {
+    public synchronized URI getAppIdEndpointURL(String instrumentationKey) {
+        return buildAppIdUri(instrumentationKey);
+    }
+
+    private URI buildAppIdUri(String instrumentationKey) {
         try {
-            return new URIBuilder(ingestionEndpoint).setPath(API_PROFILES_APP_ID_URI_PREFIX +instrumentationKey+ API_PROFILES_APP_ID_URI_SUFFIX).build();
+            return buildUri(ingestionEndpoint, API_PROFILES_APP_ID_URI_PREFIX +instrumentationKey+ API_PROFILES_APP_ID_URI_SUFFIX);
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Invalid instrumentationKey: "+instrumentationKey);
         }
+    }
+
+    URI buildUri(URI baseUri, String appendPath) throws URISyntaxException {
+        String uriString = baseUri.toString();
+        if (!uriString.endsWith("/")) {
+            uriString = uriString + "/";
+        }
+
+        if (appendPath.startsWith("/")) {
+            appendPath = appendPath.substring(1);
+        }
+
+        return new URI(uriString + appendPath);
     }
 
     public URI getIngestionEndpoint() {
