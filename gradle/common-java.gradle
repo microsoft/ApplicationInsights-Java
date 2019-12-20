@@ -33,6 +33,11 @@ apply plugin: 'org.owasp.dependencycheck'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
+configurations {
+    compileClasspath.resolutionStrategy.activateDependencyLocking()
+    runtimeClasspath.resolutionStrategy.activateDependencyLocking()
+}
+
 checkstyle {
     toolVersion = '8.22'
     configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
