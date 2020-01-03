@@ -93,6 +93,8 @@ shadowJar() {
     exclude 'commons-logging.properties'
     exclude 'module-info.class'
 
+    exclude 'module-info.class'
+
     // prevent duplicate files
     exclude 'LICENSE'
     exclude 'NOTICE'

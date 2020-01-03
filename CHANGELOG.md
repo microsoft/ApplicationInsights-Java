@@ -1,5 +1,21 @@
 # CHANGELOG
 
+# Version 2.6.0-BETA.2
+* Removed Local Forwarder Channel. Local Forwarder is now a deprecated solution.
+The classes and configuration elements which supported this solution have been removed.
+
+# Version 2.6.0-BETA
+* W3C tracing with back-compat is now enabled by default
+  ([#1141](https://github.com/microsoft/ApplicationInsights-Java/issues/1141))
+* Improved MongoDB instrumentation
+  ([#1132](https://github.com/microsoft/ApplicationInsights-Java/issues/1132))
+* Agent now supports Java 13
+  ([#1149](https://github.com/microsoft/ApplicationInsights-Java/issues/1149))
+* Older Jersey versions failing when scanning classes due to inclusion of a few Java 8 class files
+  ([#1142](https://github.com/microsoft/ApplicationInsights-Java/issues/1142))
+* Fix remote dependency target field format
+  ([#1138](https://github.com/microsoft/ApplicationInsights-Java/issues/1138))
+
 # Version 2.5.1
 * No changes since 2.5.1-BETA.2
 

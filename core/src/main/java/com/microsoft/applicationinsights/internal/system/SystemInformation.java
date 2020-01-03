@@ -36,10 +36,9 @@ public enum SystemInformation {
 
     private final static String DEFAULT_PROCESS_NAME = "Java_Process";
 
-    private String processId;
+    private final String processId = initializeProcessId();
 
     public String getProcessId() {
-        setProcessId();
         return processId;
     }
 
@@ -51,11 +50,7 @@ public enum SystemInformation {
         return SystemUtils.IS_OS_UNIX;
     }
 
-    private synchronized void setProcessId() {
-        if (!Strings.isNullOrEmpty(processId)) {
-            return;
-        }
-
+    private String initializeProcessId() {
         String rawName = ManagementFactory.getRuntimeMXBean().getName();
         if (!Strings.isNullOrEmpty(rawName)) {
             int i = rawName.indexOf("@");
@@ -63,8 +58,7 @@ public enum SystemInformation {
                 String processIdAsString = rawName.substring(0, i);
                 try {
                     Integer.parseInt(processIdAsString);
-                    processId = processIdAsString;
-                    return;
+                    return processIdAsString;
                 } catch (Exception e) {
                     InternalLogger.INSTANCE.error("Failed to fetch process id: '%s'", e.toString());
                 }
@@ -72,6 +66,6 @@ public enum SystemInformation {
         }
 
         // Default
-        processId = DEFAULT_PROCESS_NAME;
+        return DEFAULT_PROCESS_NAME;
     }
 }

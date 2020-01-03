@@ -29,11 +29,14 @@ public class JdbcTestServlet extends HttpServlet {
             if (!Strings.isNullOrEmpty(System.getenv("SQLSERVER"))) setupSqlServer();
             // setupOracle();
         } catch (Exception e) {
+            // surprisingly not all application servers seem to log init exceptions to stdout
+            e.printStackTrace();
             throw new ServletException(e);
         }
     }
 
-    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
         try {
             doGetInternal(req);
             resp.getWriter().println("ok");
@@ -188,81 +191,94 @@ public class JdbcTestServlet extends HttpServlet {
     }
 
     private static void setupHsqldb() throws Exception {
-        Connection connection = getHsqldbConnection();
+        Connection connection = getConnection(new Callable<Connection>() {
+            @Override
+            public Connection call() throws Exception {
+                return getHsqldbConnection();
+            }
+        });
         setup(connection);
         connection.close();
     }
 
     private static void setupMysql() throws Exception {
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connection = getMysqlConnection();
+        Connection connection = getConnection(new Callable<Connection>() {
+            @Override
+            public Connection call() throws Exception {
+                Connection connection = getMysqlConnection();
+                testConnection(connection, "select 1");
+                return connection;
+            }
+        });
         setup(connection);
         connection.close();
     }
 
     private static void setupPostgres() throws Exception {
         Class.forName("org.postgresql.Driver");
-        Connection connection = getPostgresConnection();
+        Connection connection = getConnection(new Callable<Connection>() {
+            @Override
+            public Connection call() throws Exception {
+                Connection connection = getPostgresConnection();
+                testConnection(connection, "select 1");
+                return connection;
+            }
+        });
         setup(connection);
         connection.close();
     }
 
     private static void setupSqlServer() throws Exception {
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        Connection connection = getSqlServerConnection();
+        Connection connection = getConnection(new Callable<Connection>() {
+            @Override
+            public Connection call() throws Exception {
+                Connection connection = getSqlServerConnection();
+                testConnection(connection, "select 1");
+                return connection;
+            }
+        });
         setup(connection);
         connection.close();
     }
 
     private static void setupOracle() throws Exception {
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        Connection connection = getOracleConnection();
+        Connection connection = getConnection(new Callable<Connection>() {
+            @Override
+            public Connection call() throws Exception {
+                Connection connection = getOracleConnection();
+                testConnection(connection, "select 1 from dual");
+                return connection;
+            }
+        });
         setup(connection);
         connection.close();
     }
 
     private static Connection getHsqldbConnection() throws Exception {
-        return getConnection(new Callable<Connection>() {
-            @Override public Connection call() throws Exception {
-                return JDBCDriver.getConnection("jdbc:hsqldb:mem:test", null);
-            }
-        });
+        return JDBCDriver.getConnection("jdbc:hsqldb:mem:test", null);
     }
 
     private static Connection getMysqlConnection() throws Exception {
-        return getConnection(new Callable<Connection>() {
-            @Override public Connection call() throws Exception {
-                String hostname = System.getenv("MYSQL");
-                return DriverManager.getConnection("jdbc:mysql://" + hostname + "/mysql", "root", "password");
-            }
-        });
+        String hostname = System.getenv("MYSQL");
+        return DriverManager.getConnection("jdbc:mysql://" + hostname + "/mysql", "root", "password");
     }
 
     private static Connection getPostgresConnection() throws Exception {
-        return getConnection(new Callable<Connection>() {
-            @Override public Connection call() throws Exception {
-                String hostname = System.getenv("POSTGRES");
-                return DriverManager.getConnection("jdbc:postgresql://" + hostname + "/postgres", "postgres", "");
-            }
-        });
+        String hostname = System.getenv("POSTGRES");
+        return DriverManager.getConnection("jdbc:postgresql://" + hostname + "/postgres", "postgres", "");
     }
 
     private static Connection getSqlServerConnection() throws Exception {
-        return getConnection(new Callable<Connection>() {
-            @Override public Connection call() throws Exception {
-                String hostname = System.getenv("SQLSERVER");
-                return DriverManager.getConnection("jdbc:sqlserver://" + hostname, "sa", "Password1");
-            }
-        });
+        String hostname = System.getenv("SQLSERVER");
+        return DriverManager.getConnection("jdbc:sqlserver://" + hostname, "sa", "Password1");
     }
 
     private static Connection getOracleConnection() throws Exception {
-        return getConnection(new Callable<Connection>() {
-            @Override public Connection call() throws Exception {
-                String hostname = System.getenv("ORACLE");
-                return DriverManager.getConnection("jdbc:oracle:thin:@" + hostname, "system", "password");
-            }
-        });
+        String hostname = System.getenv("ORACLE");
+        return DriverManager.getConnection("jdbc:oracle:thin:@" + hostname, "system", "password");
     }
 
     private static Connection getConnection(Callable<Connection> callable) throws Exception {
@@ -276,6 +292,15 @@ public class JdbcTestServlet extends HttpServlet {
             }
         } while (stopwatch.elapsed(TimeUnit.SECONDS) < 30);
         throw exception;
+    }
+
+    private static void testConnection(Connection connection, String sql) throws SQLException {
+        Statement statement = connection.createStatement();
+        try {
+            statement.execute(sql);
+        } finally {
+            statement.close();
+        }
     }
 
     private static void setup(Connection connection) throws SQLException {
