@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.shutdown;
 
 import java.io.Closeable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -53,7 +54,7 @@ public enum SDKShutdownActivity {
     private static class SDKShutdownAction implements Runnable {
         private boolean stopped = false;
 
-        private final Map<TelemetryChannel, Boolean> channels = new WeakHashMap<>();
+        private final Map<TelemetryChannel, Boolean> channels = new HashMap<>();
         @Deprecated
         private final List<ChannelFetcher> fetchers = new ArrayList<ChannelFetcher>();
         private final List<Stoppable> stoppables = new ArrayList<Stoppable>();
@@ -151,8 +152,9 @@ public enum SDKShutdownActivity {
                 throw td;
             } catch (Throwable t) {
                 try {
-                    InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.toString());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                        InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", ExceptionUtils.getStackTrace(t));
+                    }
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
