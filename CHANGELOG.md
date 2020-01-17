@@ -3,6 +3,12 @@
 # Version 2.6.0-BETA.2
 * Removed Local Forwarder Channel. Local Forwarder is now a deprecated solution.
 The classes and configuration elements which supported this solution have been removed.
+* Removed unused dependencies from azure-application-ingishts-spring-boot-starter (xmlpull, xstream).
+* Fixed `Unknown constant pool` issue with modeule-info.class when using older versions of ClassGraph.
+* Fixed potential issue with URI building in ConnectionString parsing.
+* Updated to the latest version of the struts API library (used by `com.microsoft.applicationinsights.web.struts.RequestNameInterceptor`).
+* Fixed memory leak with ChannelFetcher when TelemetryClient is instantiated in large numbers.
+* Various stability improvements ([#1177](https://github.com/microsoft/ApplicationInsights-Java/pull/1177))
 
 # Version 2.6.0-BETA
 * W3C tracing with back-compat is now enabled by default
