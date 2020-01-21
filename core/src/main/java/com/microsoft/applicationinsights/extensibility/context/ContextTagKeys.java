@@ -128,6 +128,8 @@ public class ContextTagKeys
     // 44: Optional string OperationRootId
     private String OperationRootId;
 
+    private String OperationCorrelationVector;
+
     // 51: Optional string SessionId
     private String SessionId;
 
@@ -811,6 +813,14 @@ public class ContextTagKeys
         return this.CloudRoleInstance;
     }
 
+    public final String getOperationCorrelationVector() {
+        return OperationCorrelationVector;
+    }
+
+    public final void setOperationCorrelationVector(String operationCorrelationVector) {
+        OperationCorrelationVector = operationCorrelationVector;
+    }
+
     public static ContextTagKeys getKeys()
     {
         return s_keys;
@@ -865,6 +875,7 @@ public class ContextTagKeys
         OperationId = "ai.operation.id";
         OperationParentId = "ai.operation.parentId";
         OperationRootId = "ai.operation.rootId";
+        OperationCorrelationVector = "ai.operation.correlationVector";
         SessionId = "ai.session.id";
         SessionIsFirst = "ai.session.isFirst";
         SessionIsNew = "ai.session.isNew";

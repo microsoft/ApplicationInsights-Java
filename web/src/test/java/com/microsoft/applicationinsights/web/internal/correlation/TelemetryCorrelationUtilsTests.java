@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.*;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
@@ -405,7 +406,7 @@ public class TelemetryCorrelationUtilsTests {
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
         assertEquals(rootId, operation.getId());
-        assertEquals(incomingId, operation.getParentId());
+        assertEquals(StringUtils.truncate(incomingId, 128), operation.getParentId());
     }
 
     @Test
@@ -446,8 +447,8 @@ public class TelemetryCorrelationUtilsTests {
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
-        assertEquals(incomingId, operation.getId());
-        assertEquals(incomingId, operation.getParentId());
+        assertEquals(StringUtils.truncate(incomingId, 128), operation.getId());
+        assertEquals(StringUtils.truncate(incomingId, 128), operation.getParentId());
     }
 
     @Test
