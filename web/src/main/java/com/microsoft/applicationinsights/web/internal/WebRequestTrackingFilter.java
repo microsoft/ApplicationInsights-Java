@@ -84,7 +84,6 @@ public final class WebRequestTrackingFilter implements Filter {
     private final List<ThreadLocalCleaner> cleaners = new LinkedList<ThreadLocalCleaner>();
     private String appName;
     private static final String AGENT_LOCATOR_INTERFACE_NAME = "com.microsoft.applicationinsights.agent.internal.coresync.AgentNotificationsHandler";
-    private String filterName = FILTER_NAME;
 
     /**
      * Constant for marking already processed request
@@ -203,9 +202,6 @@ public final class WebRequestTrackingFilter implements Filter {
             } else {
                 InternalLogger.INSTANCE.info("Agent is not running");
                 agentBridge = AgentBridgeFactory.create();
-            }
-            if (StringUtils.isNotEmpty(config.getFilterName())) {
-                this.filterName = config.getFilterName();
             }
             long end = System.currentTimeMillis();
             InternalLogger.INSTANCE.trace("Initialized Application Insights Filter in %.3fms", (end - start));

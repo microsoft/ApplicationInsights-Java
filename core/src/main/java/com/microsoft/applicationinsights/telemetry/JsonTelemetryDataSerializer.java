@@ -292,8 +292,6 @@ public final class JsonTelemetryDataSerializer {
 
     private <T> void write(T item) throws IOException {
         if (item instanceof JsonSerializable) {
-            StringWriter stringWriter = new StringWriter();
-
             String jsonStringToAppend = createJsonFor((JsonSerializable)item);
             if (Strings.isNullOrEmpty(jsonStringToAppend)) {
                 return;

@@ -140,13 +140,16 @@ public final class HttpServerHandler {
      */
     public void handleException(Exception e) {
         try {
-            InternalLogger.INSTANCE.trace("Unhandled exception while processing request: %s",
-                ExceptionUtils.getStackTrace(e));
+            if (InternalLogger.INSTANCE.isTraceEnabled()) {
+                InternalLogger.INSTANCE.trace("Unhandled exception while processing request: %s", ExceptionUtils.getStackTrace(e));
+            }
             if (telemetryClient != null) {
                 telemetryClient.trackException(e);
             }
         } catch (Exception ex) {
-            // swallow AI Exception
+            if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                InternalLogger.INSTANCE.error("Error occurred tracking exception: " + ExceptionUtils.getStackTrace(ex));
+            }
         }
     }
 

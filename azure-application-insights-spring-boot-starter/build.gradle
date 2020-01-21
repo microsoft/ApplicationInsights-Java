@@ -45,16 +45,18 @@ sourceSets {
     }
 }
 
+apply from: "$buildScriptsDir/provided-configuration.gradle"
+
 def springBootVersion = '1.5.21.RELEASE'
 dependencies {
     compile(project(path: ':web', configuration: 'shadow')) // web includes core
     compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
 
-    compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
-    compileOnly("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
-    compileOnly("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
-    compileOnly("org.springframework.boot:spring-boot-configuration-processor:$springBootVersion")
+    provided("org.springframework.boot:spring-boot:$springBootVersion")
+    provided("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
+    provided("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
+    provided("org.springframework.boot:spring-boot-configuration-processor:$springBootVersion")
 
     testCompile('junit:junit:4.12')
     testCompile("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
@@ -94,7 +96,7 @@ whenPomConfigured = { p ->
             !(dep.groupId in ['org.apache.http', 'eu.infomas', 'org.apache.commons', 'commons-io',
                               'com.google.guava', 'com.google.code.gson', 'org.apache.httpcomponents',
                               'io.grpc', 'com.google.protobuf'])}
-    p.dependencies += project.configurations.compileOnly.allDependencies
+    p.dependencies += project.configurations.provided.allDependencies
             .findAll { it.group != 'com.microsoft.azure' }
             .collect {
                 def d = p.dependencies[0].class.newInstance() // related to https://issues.gradle.org/browse/GRADLE-1497

@@ -25,15 +25,16 @@ plugins {
 
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
+apply from: "$buildScriptsDir/provided-configuration.gradle"
 
 archivesBaseName = 'applicationinsights-web-auto'
 
 dependencies {
     compile(project(':web')) { transitive = false }
-    compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
-    compileOnly group: 'org.springframework', name: 'spring-context', version: '4.3.24.RELEASE'
-    compileOnly group: 'org.springframework.boot', name: 'spring-boot', version: '1.4.0.RELEASE'
-    compileOnly group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '1.4.0.RELEASE'
+    provided group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
+    optional group: 'org.springframework', name: 'spring-context', version: '4.3.24.RELEASE'
+    optional group: 'org.springframework.boot', name: 'spring-boot', version: '1.4.0.RELEASE'
+    optional group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '1.4.0.RELEASE'
 }
 
 shadowJar {

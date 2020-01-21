@@ -82,7 +82,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
     }
 
     @Override
-    protected SenderThreadLocalBackOffData initialValue() {
+    protected synchronized SenderThreadLocalBackOffData initialValue() {
         senderThreadLocalData = new SenderThreadLocalBackOffData(backOffTimeoutsInMilliseconds, threadsSecondsDifference.incrementAndGet() * 1000L);
         registerSenderData(senderThreadLocalData);
         return senderThreadLocalData;

@@ -195,7 +195,7 @@ public enum QuickPulseDataCollector {
         }
     }
 
-    private String getInstrumentationKey() {
+    private synchronized String getInstrumentationKey() {
         if (config != null) {
             return config.getInstrumentationKey();
         } else {

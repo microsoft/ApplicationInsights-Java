@@ -12,7 +12,7 @@ class BackendResponse {
     int itemsAccepted;
     Error[] errors;
 
-    class Error {
+    static class Error {
         public int index;
         public int statusCode;
         public String message;
