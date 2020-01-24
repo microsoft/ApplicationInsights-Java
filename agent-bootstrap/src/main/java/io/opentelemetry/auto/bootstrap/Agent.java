@@ -150,8 +150,9 @@ public class Agent {
         Class<?> agentInstallerClass =
             agentClassLoader.loadClass("io.opentelemetry.auto.tooling.AgentInstaller");
         Method agentInstallerMethod =
-            agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
-        agentInstallerMethod.invoke(null, inst);
+            agentInstallerClass.getMethod(
+                "installBytebuddyAgent", Instrumentation.class, URL.class);
+        agentInstallerMethod.invoke(null, inst, bootstrapURL);
         AGENT_CLASSLOADER = agentClassLoader;
       } catch (final Throwable ex) {
         log.error("Throwable thrown while installing the agent", ex);
