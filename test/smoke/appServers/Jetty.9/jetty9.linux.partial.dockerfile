@@ -12,7 +12,7 @@ RUN if type "apt-get" > /dev/null; then \
 ENV JETTY_FULL_VERSION 9.4.17.v20190418
 
 # install jetty
-RUN wget https://central.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_FULL_VERSION/jetty-distribution-$JETTY_FULL_VERSION.tar.gz \
+RUN wget https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/$JETTY_FULL_VERSION/jetty-distribution-$JETTY_FULL_VERSION.tar.gz \
     && tar xzvf jetty-distribution-$JETTY_FULL_VERSION.tar.gz \
     && mv ./jetty-distribution-$JETTY_FULL_VERSION /opt/jetty-distribution-$JETTY_FULL_VERSION
 
