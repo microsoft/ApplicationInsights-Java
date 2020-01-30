@@ -22,8 +22,6 @@
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
-apply plugin: 'idea'
-
 def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"
 
 sourceSets {
