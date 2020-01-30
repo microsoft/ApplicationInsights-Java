@@ -6,7 +6,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.utils.URIBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -81,16 +80,17 @@ public class ConnectionString {
         if (!Strings.isNullOrEmpty(snapshotEndpoint)) {
             config.getEndpointProvider().setSnapshotEndpoint(toUriOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
         }
-
     }
+
 
     private static URI toUriOrThrow(String uri, String field) throws InvalidConnectionStringException {
         try {
-            final URIBuilder builder = new URIBuilder(uri);
-            if (Strings.isNullOrEmpty(builder.getScheme())) {
-                builder.setScheme("https");
+            URI result = new URI(uri);
+            final String scheme = result.getScheme();
+            if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+                throw new InvalidConnectionStringException(field+" must specify supported protocol, either 'http' or 'https': \""+uri+"\"");
             }
-            return builder.build();
+            return result;
         } catch (URISyntaxException e) {
             throw new InvalidConnectionStringException(field + " is invalid: \"" + uri + "\"", e);
         }

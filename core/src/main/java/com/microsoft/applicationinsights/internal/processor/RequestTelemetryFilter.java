@@ -47,7 +47,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 @BuiltInProcessor("RequestTelemetryFilter")
 public final class RequestTelemetryFilter implements TelemetryProcessor {
-    private final class FromTo {
+    private static final class FromTo {
         public final int from;
         public final int to;
 
@@ -83,7 +83,7 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
                 return false;
             }
 
-            int asInt = Integer.valueOf(responseCode);
+            int asInt = Integer.parseInt(responseCode);
             for (FromTo fromTo : ignoredResponseCodeRange) {
                 if (fromTo.from <= asInt && fromTo.to >= asInt) {
                     return false;
@@ -105,7 +105,7 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
 
     public void setMinimumDurationInMS(String minimumDurationInMS) throws Throwable {
         try {
-            this.minimumDurationInMS = Long.valueOf(minimumDurationInMS);
+            this.minimumDurationInMS = Long.parseLong(minimumDurationInMS);
             InternalLogger.INSTANCE.trace("RequestTelemetryFilter: successfully set MinimumDurationInMS = %d", this.minimumDurationInMS);
         } catch (ThreadDeath td) {
             throw td;
@@ -145,8 +145,8 @@ public final class RequestTelemetryFilter implements TelemetryProcessor {
                     if (LocalStringsUtils.isNullOrEmpty(fromTo.get(0)) || LocalStringsUtils.isNullOrEmpty(fromTo.get(1))) {
                         continue;
                     }
-                    int f = Integer.valueOf(fromTo.get(0));
-                    int t = Integer.valueOf(fromTo.get(1));
+                    int f = Integer.parseInt(fromTo.get(0));
+                    int t = Integer.parseInt(fromTo.get(1));
                     ignoredResponseCodeRange.add(new FromTo(f, t));
                 }
                 hasBlocked = !exactBadResponseCodes.isEmpty() || !ignoredResponseCodeRange.isEmpty();

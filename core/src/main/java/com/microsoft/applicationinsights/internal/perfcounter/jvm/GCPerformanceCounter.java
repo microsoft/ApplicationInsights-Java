@@ -52,7 +52,7 @@ public final class GCPerformanceCounter implements PerformanceCounter {
     public void report(TelemetryClient telemetryClient) {
         synchronized (this) {
             List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
-            if (gcs == null) {
+            if (gcs.isEmpty()) {
                 return;
             }
 

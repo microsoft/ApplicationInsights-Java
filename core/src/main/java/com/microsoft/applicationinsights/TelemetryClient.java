@@ -49,11 +49,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * General overview https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics
  */
 public class TelemetryClient {
-    private final class TelemetryClientChannelFetcher implements ChannelFetcher {
-        public TelemetryChannel fetch() {
-            return getChannel();
-        }
-    }
 
     private final TelemetryConfiguration configuration;
     private volatile TelemetryContext context;
@@ -73,7 +68,7 @@ public class TelemetryClient {
         }
 
         synchronized (TELEMETRY_STOP_HOOK_LOCK) {
-            SDKShutdownActivity.INSTANCE.register(new TelemetryClientChannelFetcher());
+            SDKShutdownActivity.INSTANCE.register(configuration.getChannel());
         }
 
         this.configuration = configuration;

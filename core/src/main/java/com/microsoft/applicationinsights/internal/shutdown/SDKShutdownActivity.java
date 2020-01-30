@@ -22,8 +22,11 @@
 package com.microsoft.applicationinsights.internal.shutdown;
 
 import java.io.Closeable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -51,9 +54,15 @@ public enum SDKShutdownActivity {
     private static class SDKShutdownAction implements Runnable {
         private boolean stopped = false;
 
+        private final Map<TelemetryChannel, Boolean> channels = new HashMap<>();
+        @Deprecated
         private final List<ChannelFetcher> fetchers = new ArrayList<ChannelFetcher>();
         private final List<Stoppable> stoppables = new ArrayList<Stoppable>();
         private final List<Closeable> closeables = new ArrayList<Closeable>();
+
+        public synchronized void register(TelemetryChannel channel) {
+            channels.put(channel, true);
+        }
 
         public synchronized void register(ChannelFetcher fetcher) {
             fetchers.add(fetcher);
@@ -126,23 +135,30 @@ public enum SDKShutdownActivity {
          * Make sure no exception is thrown!
          */
         private void stopChannels() {
+            for (TelemetryChannel channel : channels.keySet()) {
+                stopChannel(channel);
+            }
             for (ChannelFetcher fetcher : fetchers) {
+                stopChannel(fetcher.fetch());
+            }
+        }
+
+        private void stopChannel(TelemetryChannel channelToStop) {
+            try {
+                if (channelToStop != null) {
+                    channelToStop.stop(getPerThreadTimeout(), getPerThreadTimeUnit());
+                }
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
                 try {
-                    TelemetryChannel channelToStop = fetcher.fetch();
-                    if (channelToStop != null) {
-                        channelToStop.stop(getPerThreadTimeout(), getPerThreadTimeUnit());
+                    if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                        InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", ExceptionUtils.getStackTrace(t));
                     }
                 } catch (ThreadDeath td) {
                     throw td;
-                } catch (Throwable t) {
-                    try {
-                        InternalLogger.INSTANCE.error("Failed to stop channel: '%s'", t.toString());
-                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
-                    } catch (ThreadDeath td) {
-                        throw td;
-                    } catch (Throwable t2) {
-                        // chomp
-                    }
+                } catch (Throwable t2) {
+                    // chomp
                 }
             }
         }
@@ -189,6 +205,10 @@ public enum SDKShutdownActivity {
     }
 
     private static volatile SDKShutdownAction shutdownAction;
+
+    public void register(TelemetryChannel channel) {
+        getShutdownAction().register(channel);
+    }
 
     public void register(ChannelFetcher fetcher) {
         getShutdownAction().register(fetcher);

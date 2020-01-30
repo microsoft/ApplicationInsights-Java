@@ -57,41 +57,42 @@ public class HeartBeatModule implements TelemetryModule {
         switch (entry.getKey()) {
           case "HeartBeatInterval":
             try {
-              setHeartBeatInterval(Long.valueOf(entry.getValue()));
-              break;
+              setHeartBeatInterval(Long.parseLong(entry.getValue()));
             } catch (Exception e) {
-              InternalLogger.INSTANCE.trace("Exception while adding Heartbeat interval,"
-                  + " Stack trace is: %s", ExceptionUtils.getStackTrace(e));
+              if (InternalLogger.INSTANCE.isTraceEnabled()) {
+                InternalLogger.INSTANCE.trace("Exception while adding Heartbeat interval: %s", ExceptionUtils.getStackTrace(e));
+              }
             }
+            break;
           case "isHeartBeatEnabled":
             try {
               setHeartBeatEnabled(Boolean.parseBoolean(entry.getValue()));
-              break;
+            } catch (Exception e) {
+              if (InternalLogger.INSTANCE.isTraceEnabled()) {
+                InternalLogger.INSTANCE.trace("Exception while adding enabling/disabling heartbeat: %s", ExceptionUtils.getStackTrace(e));
+              }
             }
-            catch (Exception e) {
-              InternalLogger.INSTANCE.trace("Exception while adding enabling/disabling heartbeat,"
-                  + " Stack trace is: %s", ExceptionUtils.getStackTrace(e));
-            }
+            break;
           case "ExcludedHeartBeatPropertiesProvider":
             try {
               List<String> excludedHeartBeatPropertiesProviderList = parseStringToList(entry.getValue());
               setExcludedHeartBeatPropertiesProvider(excludedHeartBeatPropertiesProviderList);
-              break;
+            } catch (Exception e) {
+              if (InternalLogger.INSTANCE.isTraceEnabled()) {
+                InternalLogger.INSTANCE.trace("Exception while adding Excluded Heartbeat providers: %s", ExceptionUtils.getStackTrace(e));
+              }
             }
-            catch (Exception e) {
-              InternalLogger.INSTANCE.trace("Exception while adding Excluded Heartbeat providers,"
-                  + " Stack trace is: %s", ExceptionUtils.getStackTrace(e));
-            }
+            break;
           case "ExcludedHeartBeatProperties":
             try {
               List<String> excludedHeartBeatPropertiesList = parseStringToList(entry.getValue());
               setExcludedHeartBeatProperties(excludedHeartBeatPropertiesList);
-              break;
+            } catch (Exception e) {
+              if (InternalLogger.INSTANCE.isTraceEnabled()) {
+                InternalLogger.INSTANCE.trace("Exception while adding excluded heartbeat properties: %s", ExceptionUtils.getStackTrace(e));
+              }
             }
-            catch (Exception e) {
-              InternalLogger.INSTANCE.trace("Exception while adding excluded heartbeat properties,"
-                  + " Stack trace is: %s", ExceptionUtils.getStackTrace(e));
-            }
+            break;
           default:
             InternalLogger.INSTANCE.trace("Encountered unknown parameter, no action will be performed");
             break;
