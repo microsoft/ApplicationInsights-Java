@@ -38,9 +38,9 @@ import com.microsoft.applicationinsights.agentc.internal.diagnostics.Subscriptio
 
 public class ApplicationInsightsJsonLayout extends JsonLayout {
 
-    public static String TIMESTAMP_PROP_NAME = "time";
-    public static String OPERATION_NAME_PROP_NAME = "operation";
-    public static String CUSTOM_FIELDS_PROP_NAME = "properties";
+    public static final String TIMESTAMP_PROP_NAME = "time";
+    public static final String OPERATION_NAME_PROP_NAME = "operation";
+    public static final String CUSTOM_FIELDS_PROP_NAME = "properties";
 
     @VisibleForTesting
     static final String UNKNOWN_VALUE = "unknown";
