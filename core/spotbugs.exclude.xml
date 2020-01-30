@@ -19,6 +19,14 @@
                 <Class name="com.microsoft.applicationinsights.internal.util.LocalStringsUtils" />
                 <Method name="generateRandomIntegerId" />
             </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent" />
+                <Method name="randomHex" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtilsCore" />
+                <Method name="generateSuffix" />
+            </And>
         </Or>
     </Match>
     <Match>
@@ -42,7 +50,7 @@
         <Or>
             <And>
                 <Class name="com.microsoft.applicationinsights.internal.channel.common.GzipTelemetrySerializer" />
-                <Method name="compress" />
+                <Method name="compressFromStrings" />
             </And>
             <And>
                 <Class name="com.microsoft.applicationinsights.internal.channel.common.PartialSuccessHandler" />
@@ -183,6 +191,18 @@
                 <Method name="getTempDir" params="" returns="java.io.File" />
             </And>
         </Or>
+    </Match>
+    <Match>
+        <!-- False positive. Inputs are not exposed to user -->
+        <Bug pattern="HTTP_PARAMETER_POLLUTION" />
+        <Class name="com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher" />
+        <Method name="createFetchTask" />
+    </Match>
+    <Match>
+        <!-- False positive. There's a null check and it is initialized by MainEntryPoint as part of the startup procedures. -->
+        <Bug pattern="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD" />
+        <Class name="com.microsoft.applicationinsights.internal.channel.common.ApacheSender43" />
+        <Field name="safeToInitLatch" />
     </Match>
     <Match>
         <!-- These rules are fine to skip. -->
