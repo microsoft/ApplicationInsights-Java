@@ -52,6 +52,7 @@ spotbugs {
     ignoreFailures = false
     sourceSets = [sourceSets.main]
 }
+spotbugsMain.classpath = configurations.compileOnly + sourceSets.main.runtimeClasspath
 
 tasks.withType(JavaCompile) {
     dependencies {
