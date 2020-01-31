@@ -37,6 +37,7 @@ public class Premain {
     private Premain() {
     }
 
+    @SuppressWarnings("lgtm[java/input-resource-leak]") // JarFile doesn't need to be closed.
     public static void premain(@SuppressWarnings("unused") String agentArgs, Instrumentation instrumentation) {
         try {
             CodeSource codeSource = Premain.class.getProtectionDomain().getCodeSource();
