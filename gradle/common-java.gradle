@@ -29,15 +29,40 @@ apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'checkstyle'
 apply plugin: 'org.owasp.dependencycheck'
+apply plugin: 'com.github.spotbugs'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
+
+configurations {
+    compileClasspath.resolutionStrategy.activateDependencyLocking()
+    runtimeClasspath.resolutionStrategy.activateDependencyLocking()
+}
 
 checkstyle {
     toolVersion = '8.22'
     configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
     configProperties["rootDir"] = rootProject.projectDir
     showViolations = false
+}
+
+spotbugs {
+    effort = 'max'
+    reportLevel = 'medium'
+    ignoreFailures = false
+    sourceSets = [sourceSets.main]
+}
+spotbugsMain.classpath = configurations.compileOnly + sourceSets.main.runtimeClasspath
+
+tasks.withType(JavaCompile) {
+    dependencies {
+        // See https://find-sec-bugs.github.io/bugs.htm for bug pattern definitions
+        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
+    }
+    def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
+    if (spotbugsExcludeFile.exists()) {
+        spotbugs.excludeFilter = spotbugsExcludeFile
+    }
 }
 
 tasks.withType(Checkstyle) {

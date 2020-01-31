@@ -136,7 +136,6 @@ public enum TelemetryConfigurationFactory {
         setTelemetryModules(applicationInsightsConfig, configuration);
         setTelemetryProcessors(applicationInsightsConfig, configuration);
 
-        TelemetryChannel channel = configuration.getChannel();
         setQuickPulse(applicationInsightsConfig, configuration);
 
         initializeComponents(configuration);

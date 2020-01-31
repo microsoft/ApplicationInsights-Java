@@ -67,8 +67,7 @@ public class LocalFileSystemUtils {
             tempDirectory = candidate.getAbsolutePath();
         }
 
-        final File result = new File(tempDirectory);
-        return result;
+        return new File(tempDirectory);
     }
 
     /**

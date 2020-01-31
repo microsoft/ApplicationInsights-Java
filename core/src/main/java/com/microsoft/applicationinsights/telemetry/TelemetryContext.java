@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class TelemetryContext {
     private ConcurrentMap<String,String> properties;
-    private ConcurrentMap<String,String> tags;
+    private ContextTagsMap tags;
 
     private String instrumentationKey;
     private String normalizedInstrumentationKey = "";
@@ -62,7 +62,7 @@ public final class TelemetryContext {
      * Default Ctor
      */
     public TelemetryContext() {
-        this(new ConcurrentHashMap<String, String>(), new ConcurrentHashMap<String, String>());
+        this(new ConcurrentHashMap<String, String>(), new ContextTagsMap());
     }
 
     /**
@@ -223,7 +223,7 @@ public final class TelemetryContext {
         return internal;
     }
 
-    TelemetryContext(ConcurrentMap<String, String> properties, ConcurrentMap<String, String> tags) {
+    TelemetryContext(ConcurrentMap<String, String> properties, ContextTagsMap tags) {
         if (properties == null) {
             throw new IllegalArgumentException("properties cannot be null");
         }

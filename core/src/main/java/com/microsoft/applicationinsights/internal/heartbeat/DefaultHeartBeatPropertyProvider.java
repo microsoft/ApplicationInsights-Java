@@ -37,15 +37,15 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
   /**
    * Name of this provider.
    */
-  private final String name = "Default";
+  private static final String name = "Default";
 
-  private final String JRE_VERSION = "jreVersion";
+  private static final String JRE_VERSION = "jreVersion";
 
-  private final String SDK_VERSION = "sdkVersion";
+  private static final String SDK_VERSION = "sdkVersion";
 
-  private final String OS_VERSION = "osVersion";
+  private static final String OS_VERSION = "osVersion";
 
-  private final String PROCESS_SESSION_ID = "processSessionId";
+  private static final String PROCESS_SESSION_ID = "processSessionId";
 
   public DefaultHeartBeatPropertyProvider() {
     defaultFields = new HashSet<>();
@@ -97,8 +97,9 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
             }
           }
           catch (Exception e) {
-           InternalLogger.INSTANCE.warn("Failed to obtain heartbeat property, stack trace"
-               + "is: %s", ExceptionUtils.getStackTrace(e));
+            if (InternalLogger.INSTANCE.isWarnEnabled()) {
+              InternalLogger.INSTANCE.warn("Failed to obtain heartbeat property: %s", ExceptionUtils.getStackTrace(e));
+            }
           }
         }
         return hasSetValues;
@@ -111,10 +112,6 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * @param defaultFields collection to hold default properties.
    */
   private void initializeDefaultFields(Set<String> defaultFields) {
-
-    if (defaultFields == null) {
-      defaultFields = new HashSet<>();
-    }
     defaultFields.add(JRE_VERSION);
     defaultFields.add(SDK_VERSION);
     defaultFields.add(OS_VERSION);

@@ -23,6 +23,11 @@
         <level value="off" />
     </logger>
 
+    <!-- Java 8u232 introduces some SSL java.util.logging, and JBoss 6 sends java.util.logging to Log4j 1.2 -->
+    <logger name="jdk.event.security">
+        <level value="off" />
+    </logger>
+
     <root>
         <priority value ="trace" />
         <appender-ref ref="test" />

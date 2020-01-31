@@ -170,7 +170,7 @@ public final class FixedRateSamplingTelemetryProcessor implements TelemetryProce
 
                 if (SamplingScoreGeneratorV2.getSamplingScore(telemetry) >= sp) {
 
-                    InternalLogger.INSTANCE.info("Item %s sampled out", telemetry.getClass().getSimpleName());
+                    InternalLogger.INSTANCE.trace("Item %s sampled out", telemetry.getClass().getSimpleName());
                     return false;
                 }
 

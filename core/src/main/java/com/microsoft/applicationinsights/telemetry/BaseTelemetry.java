@@ -66,7 +66,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      * @param properties The context properties
      */
     protected void initialize(ConcurrentMap<String, String> properties) {
-        this.context = new TelemetryContext(properties, new ConcurrentHashMap<String, String>());
+        this.context = new TelemetryContext(properties, new ContextTagsMap());
     }
 
     public abstract int getVer();

@@ -22,27 +22,10 @@
 apply from: "$buildScriptsDir/common-java.gradle"
 apply from: "$buildScriptsDir/publishing.gradle"
 
-apply plugin: 'idea'
-
 def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"
-
-def generatedDir = 'generated'
-def generatedPath = "src/main/$generatedDir"
-
-idea {
-    module {
-        generatedSourceDirs = [ file(generatedPath) ]
-
-        sourceDirs += file('src/main/java')
-        sourceDirs += file(generatedPath)
-    }
-}
 
 sourceSets {
     main {
-        java {
-            srcDirs generatedPath
-        }
         resources {
             srcDir sdkVersionFileDir
         }
@@ -50,7 +33,6 @@ sourceSets {
 }
 
 clean {
-    delete 'src/main/generated'
     delete "${System.properties['java.io.tmpdir']}/AISDK/native" // see JniPCConnector.java for jni directory
 }
 
@@ -75,8 +57,10 @@ import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
 archivesBaseName = 'applicationinsights-core'
 
+apply from: "$buildScriptsDir/provided-configuration.gradle"
+
 dependencies {
-    compileOnly ([group: 'org.glowroot.instrumentation', name: 'instrumentation-api', version: '0.14.9']) { transitive = false }
+    optional ([group: 'org.glowroot.instrumentation', name: 'instrumentation-api', version: '0.14.9']) { transitive = false }
     compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
     compile ([group: 'commons-io', name: 'commons-io', version: '2.6' ])

@@ -73,7 +73,7 @@ public class MapUtil
     }
 
     public static Boolean getBoolValueOrNull(Map<String, String> map, String key) {
-        return map.containsKey(key) ? Boolean.parseBoolean(map.get(key)) : null;
+        return map.containsKey(key) ? Boolean.valueOf(map.get(key)) : null;
     }
 
     public static Date getDateValueOrNull(Map<String, String> map, String key) {

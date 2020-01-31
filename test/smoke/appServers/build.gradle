@@ -116,7 +116,7 @@ subprojects {
                 exec {
                     workingDir df.getParentFile().absolutePath
                     executable dockerExe
-                    args 'build', '-f', df.name, '-t', tag, '.'
+                    args 'build', '--pull', '-f', df.name, '-t', tag, '.'
                 }
             }
         }

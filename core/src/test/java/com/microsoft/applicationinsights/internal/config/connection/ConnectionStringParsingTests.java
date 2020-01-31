@@ -55,9 +55,53 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
+    public void appIdUrlWithPathKeepsIt() {
+        EndpointProvider ep = new EndpointProvider();
+        String ikey = "fake-ikey";
+        String url = "http://123.com/path/321";
+        ep.setIngestionEndpoint(URI.create(url));
+        assertEquals(URI.create(url+"/"+EndpointProvider.API_PROFILES_APP_ID_URI_PREFIX+ikey+EndpointProvider.API_PROFILES_APP_ID_URI_SUFFIX), ep.getAppIdEndpointURL(ikey));
+
+        ep.setIngestionEndpoint(URI.create(url+"/"));
+        assertEquals(URI.create(url+"/"+EndpointProvider.API_PROFILES_APP_ID_URI_PREFIX+ikey+EndpointProvider.API_PROFILES_APP_ID_URI_SUFFIX), ep.getAppIdEndpointURL(ikey));
+    }
+
+    @Test
     public void ikeyWithSuffix() throws Exception {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com";
+        final String cs = "InstrumentationKey="+ikey+";EndpointSuffix="+suffix;
+        final URI expectedIngestionEndpoint = URI.create("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
+        final URI expectedIngestionEndpointURL = URI.create("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.INGESTION_URI_PATH);
+        final URI expectedLiveEndpoint = URI.create("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URI_PATH);
+
+        ConnectionString.parseInto(cs, config);
+        assertEquals(ikey, config.getInstrumentationKey());
+        assertEquals(expectedIngestionEndpoint, config.getEndpointProvider().getIngestionEndpoint());
+        assertEquals(expectedIngestionEndpointURL, config.getEndpointProvider().getIngestionEndpointURL());
+        assertEquals(expectedLiveEndpoint, config.getEndpointProvider().getLiveEndpointURL());
+    }
+
+    @Test
+    public void suffixWithPathRetainsThePath() throws Exception {
+        final String ikey = "fake-ikey";
+        final String suffix = "ai.example.com/my-proxy-app/doProxy";
+        final String cs = "InstrumentationKey="+ikey+";EndpointSuffix="+suffix;
+        final URI expectedIngestionEndpoint = URI.create("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
+        final URI expectedIngestionEndpointURL = URI.create("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.INGESTION_URI_PATH);
+        final URI expectedLiveEndpoint = URI.create("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URI_PATH);
+
+        ConnectionString.parseInto(cs, config);
+        assertEquals(ikey, config.getInstrumentationKey());
+        assertEquals(expectedIngestionEndpoint, config.getEndpointProvider().getIngestionEndpoint());
+        assertEquals(expectedIngestionEndpointURL, config.getEndpointProvider().getIngestionEndpointURL());
+        assertEquals(expectedLiveEndpoint, config.getEndpointProvider().getLiveEndpointURL());
+    }
+
+    @Test
+    public void suffixSupportsPort() throws Exception {
+        final String ikey = "fake-ikey";
+        final String suffix = "ai.example.com:9999";
         final String cs = "InstrumentationKey="+ikey+";EndpointSuffix="+suffix;
         final URI expectedIngestionEndpoint = URI.create("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
         final URI expectedIngestionEndpointURL = URI.create("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.INGESTION_URI_PATH);
@@ -197,15 +241,30 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void endpointWithNoSchemeIsHttps() throws Exception {
+    public void endpointWithNoSchemeIsInvalid() throws Exception {
+        exception.expect(InvalidConnectionStringException.class);
+        exception.expectMessage(containsString("IngestionEndpoint"));
         ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com", config);
-        assertEquals("https", config.getEndpointProvider().getIngestionEndpoint().getScheme());
+    }
+
+    @Test
+    public void endpointWithPathMissingSchemeIsInvalid() throws Exception {
+        exception.expect(InvalidConnectionStringException.class);
+        exception.expectMessage(containsString("IngestionEndpoint"));
+        ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com/path/prefix", config);
+    }
+
+    @Test
+    public void endpointWithPortMissingSchemeIsInvalid() throws Exception {
+        exception.expect(InvalidConnectionStringException.class);
+        exception.expectMessage(containsString("IngestionEndpoint"));
+        ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com:9999", config);
     }
 
     @Test
     public void httpEndpointKeepsScheme() throws Exception {
         ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=http://my-ai.example.com", config);
-        assertEquals("http", config.getEndpointProvider().getIngestionEndpoint().getScheme());
+        assertEquals(URI.create("http://my-ai.example.com"), config.getEndpointProvider().getIngestionEndpoint());
     }
 
     @Test

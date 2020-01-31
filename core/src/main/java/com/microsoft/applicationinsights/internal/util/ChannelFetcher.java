@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 /**
  * Created by gupele on 2/2/2015.
  */
+@Deprecated
 public interface ChannelFetcher {
     TelemetryChannel fetch();
 }

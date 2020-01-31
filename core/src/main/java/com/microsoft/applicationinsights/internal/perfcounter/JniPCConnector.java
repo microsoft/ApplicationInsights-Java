@@ -209,12 +209,10 @@ public final class JniPCConnector {
 
             InternalLogger.INSTANCE.trace("Successfully extracted '%s' to local folder", libraryToLoad);
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    InternalLogger.INSTANCE.error("Failed to close input stream for dll extraction: %s", e.toString());
-                }
+            try {
+                in.close();
+            } catch (IOException e) {
+                InternalLogger.INSTANCE.error("Failed to close input stream for dll extraction: %s", e.toString());
             }
             if (out != null) {
                 try {

@@ -286,7 +286,7 @@ public class MainEntryPoint {
             jmxXml.setObjectName(jmxMetric.objectName);
             jmxXml.setAttribute(jmxMetric.attribute);
             jmxXml.setDisplayName(jmxMetric.display);
-            if (jmxMetric.attribute.indexOf('.') != -1) {
+            if (jmxMetric.attribute != null && jmxMetric.attribute.indexOf('.') != -1) {
                 jmxXml.setType("COMPOSITE");
             }
             jmxXmls.add(jmxXml);

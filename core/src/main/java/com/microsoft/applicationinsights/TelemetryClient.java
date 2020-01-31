@@ -49,11 +49,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * General overview https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics
  */
 public class TelemetryClient {
-    private final class TelemetryClientChannelFetcher implements ChannelFetcher {
-        public TelemetryChannel fetch() {
-            return getChannel();
-        }
-    }
 
     private final TelemetryConfiguration configuration;
     private volatile TelemetryContext context;
@@ -73,7 +68,7 @@ public class TelemetryClient {
         }
 
         synchronized (TELEMETRY_STOP_HOOK_LOCK) {
-            SDKShutdownActivity.INSTANCE.register(new TelemetryClientChannelFetcher());
+            SDKShutdownActivity.INSTANCE.register(configuration.getChannel());
         }
 
         this.configuration = configuration;
@@ -524,6 +519,11 @@ public class TelemetryClient {
             ctx.getCloud().setRoleInstance(roleInstance);
         }
         for (ContextInitializer init : configuration.getContextInitializers()) {
+            if (init == null) { // since collection reference is exposed, we need a null check here
+                InternalLogger.INSTANCE.warn("Found null ContextInitializer in configuration. Skipping...");
+                continue;
+            }
+
             try {
                 init.initialize(ctx);
             } catch (ThreadDeath td) {
@@ -531,9 +531,7 @@ public class TelemetryClient {
             } catch (Throwable t) {
                 try {
                     if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                        InternalLogger.INSTANCE.error("Exception in context initializer%s: %s",
-                                init == null ? " (context initializer is null)" : ", "+init.getClass().getSimpleName(),
-                                ExceptionUtils.getStackTrace(t));
+                        InternalLogger.INSTANCE.error("Exception in context initializer, %s: %s", init.getClass().getSimpleName(), ExceptionUtils.getStackTrace(t));
                     }
                 } catch (ThreadDeath td) {
                     throw td;

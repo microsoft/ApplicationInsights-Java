@@ -130,10 +130,10 @@ public final class Duration {
      * @return The total milliseconds of the duration.
      */
     public long getTotalMilliseconds() {
-        return  (days * SECONDS_IN_ONE_DAY * 1000) +
-                (hours * SECONDS_IN_ONE_HOUR * 1000) +
-                (minutes * SECONDS_IN_ONE_MINUTE * 1000) +
-                (seconds * 1000) + milliseconds;
+        return  (days * SECONDS_IN_ONE_DAY * 1000L) +
+                (hours * SECONDS_IN_ONE_HOUR * 1000L) +
+                (minutes * SECONDS_IN_ONE_MINUTE * 1000L) +
+                (seconds * 1000L) + milliseconds;
     }
 
     @Override

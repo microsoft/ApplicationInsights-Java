@@ -89,7 +89,7 @@ public final class FixedRateTelemetrySampler implements TelemetrySampler {
 
     @Override
     public boolean isSampledIn(Telemetry telemetry) {
-        Double currentSamplingPercentage = samplingPercentage.get();
+        double currentSamplingPercentage = samplingPercentage.get();
 
         if (currentSamplingPercentage < 100.0 - 1.0E-12) {
             if (telemetry instanceof SupportSampling) {
