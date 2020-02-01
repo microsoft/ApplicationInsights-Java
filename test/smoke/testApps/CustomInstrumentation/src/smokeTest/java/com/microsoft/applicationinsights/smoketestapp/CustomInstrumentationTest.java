@@ -13,9 +13,7 @@ import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @UseAgent("CustomInstrumentation")
 public class CustomInstrumentationTest extends AiSmokeTest {
@@ -37,7 +35,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -57,7 +55,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -84,8 +82,8 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(exceptions.size(), 1);
         assertEquals(exceptions.get(0).getMessage(), "Three");
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
-        assertSameOperationId(edEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, edEnvelope);
     }
 
     @Test
@@ -105,7 +103,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -150,25 +148,25 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(fiveRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.five");
         assertEquals(fiveRdd.getType(), "OTHER");
         assertEquals(fiveRdd.getSuccess(), true);
-        assertSameOperationId(rdEnvelope, fiveEnvelope);
+        assertParentChild(rd, rdEnvelope, fiveEnvelope);
 
         assertNotNull(sixRdd);
         assertEquals(sixRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.six");
         assertEquals(sixRdd.getType(), "OTHER");
         assertEquals(sixRdd.getSuccess(), true);
-        assertSameOperationId(rdEnvelope, sixEnvelope);
+        assertParentChild(rd, rdEnvelope, sixEnvelope);
 
         assertNotNull(oneRdd);
         assertEquals(oneRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.one");
         assertEquals(oneRdd.getType(), "OTHER");
         assertEquals(oneRdd.getSuccess(), true);
-        assertSameOperationId(rdEnvelope, oneEnvelope);
+        assertParentChild(rd, rdEnvelope, oneEnvelope);
 
         assertNotNull(twoRdd);
         assertEquals(twoRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.two");
         assertEquals(twoRdd.getType(), "OTHER");
         assertEquals(twoRdd.getSuccess(), true);
-        assertSameOperationId(rdEnvelope, twoEnvelope);
+        assertParentChild(rd, rdEnvelope, twoEnvelope);
     }
 
     @Test
@@ -187,7 +185,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.seven");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -209,12 +207,12 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd1.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.eight");
         assertEquals(rdd1.getType(), "OTHER");
         assertEquals(rdd1.getSuccess(), true);
-        assertSameOperationId(rdEnvelope, rddEnvelope1);
+        assertParentChild(rd, rdEnvelope, rddEnvelope1);
 
         assertEquals(rdd2.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.eight");
         assertEquals(rdd2.getType(), "OTHER");
         assertEquals(rdd2.getSuccess(), true);
-        assertSameOperationId(rdEnvelope, rddEnvelope2);
+        assertParentChild(rd, rdEnvelope, rddEnvelope2);
     }
 
     @Test
@@ -249,20 +247,20 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(nineRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.nine");
         assertEquals(nineRdd.getType(), "OTHER");
         assertEquals(nineRdd.getSuccess(), true);
-        assertSameOperationId(rdEnvelope, nineEnvelope);
+        assertParentChild(rd, rdEnvelope, nineEnvelope);
 
         assertNotNull(httpRdd);
-        assertSameOperationId(rdEnvelope, httpEnvelope);
+        assertParentChild(rd, rdEnvelope, httpEnvelope);
     }
 
-    private static void assertSameOperationId(Envelope rdEnvelope, Envelope rddEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
-
         assertNotNull(operationId);
-        assertNotNull(operationParentId);
+        assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
 
-        assertEquals(operationId, rddEnvelope.getTags().get("ai.operation.id"));
-        assertEquals(operationParentId, rddEnvelope.getTags().get("ai.operation.parentId"));
+        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
+        assertNull(operationParentId);
+
+        assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
     }
 }

@@ -53,6 +53,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         final String expectedName = "DependencyTest";
@@ -63,7 +64,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(expectedData, rdd.getData());
         assertEquals(expectedDuration, rdd.getDuration());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -75,6 +76,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope edEnvelope1 = edList.get(0);
         Envelope edEnvelope2 = edList.get(1);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
         List<EventData> events = mockedIngestion.getTelemetryDataByType("EventData");
         events.sort(new Comparator<EventData>() {
@@ -93,8 +96,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         assertEquals("EventDataTest", ed2.getName());
 
-        assertSameOperationId(rdEnvelope, edEnvelope1);
-        assertSameOperationId(rdEnvelope, edEnvelope2);
+        assertParentChild(rd, rdEnvelope, edEnvelope1);
+        assertParentChild(rd, rdEnvelope, edEnvelope2);
     }
 
     @Test
@@ -107,6 +110,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope edEnvelope1 = edList.get(0);
         Envelope edEnvelope2 = edList.get(1);
         Envelope edEnvelope3 = edList.get(2);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
         final String expectedName = "This is track exception.";
         final String expectedProperties = "value";
@@ -123,9 +128,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 hasSeverityLevel(SeverityLevel.Error)
         )));
 
-        assertSameOperationId(rdEnvelope, edEnvelope1);
-        assertSameOperationId(rdEnvelope, edEnvelope2);
-        assertSameOperationId(rdEnvelope, edEnvelope3);
+        assertParentChild(rd, rdEnvelope, edEnvelope1);
+        assertParentChild(rd, rdEnvelope, edEnvelope2);
+        assertParentChild(rd, rdEnvelope, edEnvelope3);
     }
 
     @Test
@@ -179,6 +184,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope = mdList.get(0);
 
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         MetricData md = (MetricData) ((Data) mdEnvelope.getData()).getBaseData();
 
         List<DataPoint> metrics = md.getMetrics();
@@ -196,7 +202,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertNull("getMax was non-null", dp.getMax());
         assertNull("getStdDev was non-null", dp.getStdDev());
 
-        assertSameOperationId(rdEnvelope, mdEnvelope);
+        assertParentChild(rd, rdEnvelope, mdEnvelope);
     }
 
     @Test
@@ -209,6 +215,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
         Envelope mdEnvelope3 = mdList.get(2);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
         final List<MessageData> messages = mockedIngestion.getTelemetryDataByType("MessageData");
         assertThat(messages, hasItem(
@@ -226,9 +234,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 TraceDataMatchers.hasProperty("key", "value")
         )));
 
-        assertSameOperationId(rdEnvelope, mdEnvelope1);
-        assertSameOperationId(rdEnvelope, mdEnvelope2);
-        assertSameOperationId(rdEnvelope, mdEnvelope3);
+        assertParentChild(rd, rdEnvelope, mdEnvelope1);
+        assertParentChild(rd, rdEnvelope, mdEnvelope2);
+        assertParentChild(rd, rdEnvelope, mdEnvelope3);
     }
 
     @Test
@@ -240,6 +248,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope pvdEnvelope1 = pvdList.get(0);
         Envelope pvdEnvelope2 = pvdList.get(1);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
         final List<Domain> pageViews = mockedIngestion.getTelemetryDataByType("PageViewData");
         assertThat(pageViews, hasItem(allOf(
@@ -253,8 +263,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 PageViewDataMatchers.hasProperty("key", "value")
         )));
 
-        assertSameOperationId(rdEnvelope, pvdEnvelope1);
-        assertSameOperationId(rdEnvelope, pvdEnvelope2);
+        assertParentChild(rd, rdEnvelope, pvdEnvelope1);
+        assertParentChild(rd, rdEnvelope, pvdEnvelope2);
     }
 
     @Test
@@ -266,11 +276,13 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope pvdEnvelope = pvdList.get(0);
 
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+
         PageViewData pv = (PageViewData) ((Data) pvdEnvelope.getData()).getBaseData();
         assertEquals("doPageView", pv.getName());
         assertEquals(new Duration(0), pv.getDuration());
 
-        assertSameOperationId(rdEnvelope, pvdEnvelope);
+        assertParentChild(rd, rdEnvelope, pvdEnvelope);
     }
 
     @Test
@@ -284,8 +296,6 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         assertEquals(false, rd.getSuccess());
         assertEquals("404", rd.getResponseCode());
-
-        assertSameOperationId(rdEnvelope, rdEnvelope);
     }
 
     @Test
@@ -346,18 +356,16 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         System.out.printf("Slow response time: expected=%d, actual=%d%n", expected, actual);
         assertThat(actual, both(greaterThanOrEqualTo(min)).and(lessThan(max)));
-
-        assertSameOperationId(rdEnvelope, rdEnvelope);
     }
 
-    private static void assertSameOperationId(Envelope rdEnvelope, Envelope otherEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
-
         assertNotNull(operationId);
-        assertNotNull(operationParentId);
+        assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
 
-        assertEquals(operationId, otherEnvelope.getTags().get("ai.operation.id"));
-        assertEquals(operationParentId, otherEnvelope.getTags().get("ai.operation.parentId"));
+        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
+        assertNull(operationParentId);
+
+        assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
     }
 }

@@ -63,7 +63,8 @@ public class WebOperationIdTelemetryInitializer extends WebTelemetryInitializerB
         }
 
         // set operation parentId to the request telemetry's ID
-        if (CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getParentId())) {
+        if (telemetry != requestTelemetry &&
+                CommonUtils.isNullOrEmpty(telemetry.getContext().getOperation().getParentId())) {
             telemetry.getContext().getOperation().setParentId(requestTelemetry.getId());
         }
 
