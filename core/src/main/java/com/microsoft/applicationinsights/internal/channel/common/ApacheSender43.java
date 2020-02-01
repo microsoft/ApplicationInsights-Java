@@ -29,6 +29,7 @@ import javax.annotation.concurrent.GuardedBy;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -39,6 +40,7 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
@@ -49,6 +51,7 @@ import org.apache.http.ssl.SSLContexts;
 public final class ApacheSender43 implements ApacheSender {
 
     public static volatile CountDownLatch safeToInitLatch;
+    public static volatile HttpHost proxy;
 
     private final Object lock = new Object();
 
@@ -143,9 +146,11 @@ public final class ApacheSender43 implements ApacheSender {
                         .build());
         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-        return HttpClients.custom()
-                .setConnectionManager(cm)
-                .useSystemProperties()
-                .build();
+        HttpClientBuilder builder = HttpClients.custom()
+                .setConnectionManager(cm);
+        if (proxy != null) {
+            builder.setProxy(proxy);
+        }
+        return builder.build();
     }
 }

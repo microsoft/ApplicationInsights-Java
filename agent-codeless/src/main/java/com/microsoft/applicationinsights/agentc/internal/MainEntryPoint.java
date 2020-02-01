@@ -64,6 +64,7 @@ import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptor;
 import org.glowroot.instrumentation.engine.config.InstrumentationDescriptors;
@@ -200,6 +201,10 @@ public class MainEntryPoint {
             // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
             ApacheSender43.safeToInitLatch = new CountDownLatch(1);
             instrumentation.addTransformer(new JulListeningClassFileTransformer(ApacheSender43.safeToInitLatch));
+        }
+
+        if (config.httpProxy != null) {
+            ApacheSender43.proxy = HttpHost.create(config.httpProxy);
         }
 
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();

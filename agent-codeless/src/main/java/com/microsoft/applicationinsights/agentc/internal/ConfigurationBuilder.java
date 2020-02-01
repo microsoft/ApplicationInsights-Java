@@ -51,6 +51,8 @@ class ConfigurationBuilder {
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
 
+    private static final String APPLICATIONINSIGHTS_HTTP_PROXY = "APPLICATIONINSIGHTS_HTTP_PROXY";
+
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
 
@@ -64,6 +66,8 @@ class ConfigurationBuilder {
         config.roleName = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.roleName);
         config.roleInstance =
                 overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.roleInstance);
+
+        config.httpProxy = overlayWithEnvVar(APPLICATIONINSIGHTS_HTTP_PROXY, config.httpProxy);
 
         return config;
     }
@@ -134,6 +138,14 @@ class ConfigurationBuilder {
             return value;
         }
         value = getEnv(name2);
+        if (!Strings.isNullOrEmpty(value)) {
+            return value;
+        }
+        return defaultValue;
+    }
+
+    static String overlayWithEnvVar(String name, String defaultValue) {
+        String value = getEnv(name);
         if (!Strings.isNullOrEmpty(value)) {
             return value;
         }

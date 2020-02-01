@@ -39,6 +39,8 @@ public class Configuration {
     public String roleName;
     @Nullable
     public String roleInstance;
+    @Nullable
+    public String httpProxy;
     public List<JmxMetric> jmxMetrics = Collections.emptyList();
 
     public ExperimentalConfiguration experimental = new ExperimentalConfiguration();
