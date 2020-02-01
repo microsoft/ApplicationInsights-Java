@@ -81,11 +81,6 @@ public class TraceContextCorrelation {
             // assign parent id
             if (incomingTraceparent != null) {
                 requestTelemetry.getContext().getOperation().setParentId(incomingTraceparent.getSpanId());
-            } else {
-                // set parentId only if not already set (legacy processing can set it)
-                if (requestTelemetry.getContext().getOperation().getParentId() == null) {
-                    requestTelemetry.getContext().getOperation().setParentId(null);
-                }
             }
 
             // Propagate trace-flags
