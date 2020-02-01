@@ -260,15 +260,13 @@ public class WebRequestTrackingTelemetryModuleTests {
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         assertNotNull(requestTelemetry.getId());
         // spanIds are different
-        String[] id = requestTelemetry.getId().split("[.]");
-        Assert.assertNotEquals(tp.getSpanId(), id[1]);
-        // traceIds are same
-        Assert.assertTrue(requestTelemetry.getId().startsWith(formatedID(tp.getTraceId())));
+        String spanId = requestTelemetry.getId();
+        Assert.assertNotEquals(tp.getSpanId(), spanId);
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
         assertEquals(tp.getTraceId(), operation.getId());
-        assertEquals(formatedID(tp.getTraceId() + "." + tp.getSpanId()), operation.getParentId());
+        assertEquals(tp.getSpanId(), operation.getParentId());
 
         //run onEnd
         defaultModule.onEndRequest(request, null);
@@ -309,8 +307,6 @@ public class WebRequestTrackingTelemetryModuleTests {
         // verify ID's are set as expected in request telemetry
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         assertNotNull(requestTelemetry.getId());
-
-        Assert.assertTrue(requestTelemetry.getId().startsWith("|"+tp.getTraceId()));
 
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
@@ -522,11 +518,6 @@ public class WebRequestTrackingTelemetryModuleTests {
         assertNull(requestTelemetry.getSource());
 
         Assert.assertFalse(requestTelemetry.getContext().getProperties().containsKey("ai_legacyRootID"));
-    }
-
-
-    private String formatedID(String id) {
-        return "|" + id + ".";
     }
 
     @Test

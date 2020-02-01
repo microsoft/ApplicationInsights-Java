@@ -73,16 +73,14 @@ public class TraceContextCorrelation {
             Traceparent processedTraceParent = processIncomingTraceparent(incomingTraceparent, request);
 
             // represents the id of the current request.
-            requestTelemetry.setId("|" + processedTraceParent.getTraceId() + "." + processedTraceParent.getSpanId()
-                + ".");
+            requestTelemetry.setId(processedTraceParent.getSpanId());
 
             // represents the trace-id of this distributed trace
             requestTelemetry.getContext().getOperation().setId(processedTraceParent.getTraceId());
 
             // assign parent id
             if (incomingTraceparent != null) {
-                requestTelemetry.getContext().getOperation().setParentId("|" + processedTraceParent.getTraceId() + "." +
-                    incomingTraceparent.getSpanId() + ".");
+                requestTelemetry.getContext().getOperation().setParentId(incomingTraceparent.getSpanId());
             } else {
                 // set parentId only if not already set (legacy processing can set it)
                 if (requestTelemetry.getContext().getOperation().getParentId() == null) {
@@ -453,6 +451,11 @@ public class TraceContextCorrelation {
      * @return Outbound Traceparent
      */
     public static String generateChildDependencyTraceparent() {
+        Traceparent tp = generateChildDependencyTraceparentObj();
+        return tp == null ? null : tp.toString();
+    }
+
+    public static Traceparent generateChildDependencyTraceparentObj() {
         try {
 
             RequestTelemetryContext context = ThreadContext.getRequestTelemetryContext();
@@ -461,7 +464,7 @@ public class TraceContextCorrelation {
             // This is likely worker role scenario, where a worker is trying
             // to create a new outbound call, so generate a new traceparent.
             if (context == null) {
-               return new Traceparent().toString();
+                return new Traceparent();
             }
 
             RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
@@ -470,7 +473,7 @@ public class TraceContextCorrelation {
             Traceparent tp = new Traceparent(0, traceId, null, context.getTraceflag());
 
             // We need to propagate full blown traceparent header.
-            return tp.toString();
+            return tp;
         }
         catch (Exception ex) {
             InternalLogger.INSTANCE.error("Failed to generate child ID. Exception information: %s", ex.toString());
@@ -485,6 +488,8 @@ public class TraceContextCorrelation {
      * @param traceparent
      * @return legacy format traceparent
      */
+    // no longer used, but not removing since public
+    @Deprecated
     public static String createChildIdFromTraceparentString(String traceparent) {
         if (traceparent == null) {
             throw new NullPointerException("traceparent cannot be null");

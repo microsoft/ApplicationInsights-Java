@@ -47,12 +47,10 @@ public class TraceContextCorrelationTests {
         //validate we have generated proper ID's
         assertNotNull(requestTelemetry.getId());
 
-        assertTrue(requestTelemetry.getId().startsWith(formatedID(t.getTraceId())));
-
         //validate operation context ID's
         OperationContext operation = requestTelemetry.getContext().getOperation();
         assertEquals(t.getTraceId(), operation.getId());
-        assertEquals(formatedID(t.getTraceId() + "." + t.getSpanId()), operation.getParentId());
+        assertEquals(t.getSpanId(), operation.getParentId());
     }
 
     @Test
@@ -73,9 +71,6 @@ public class TraceContextCorrelationTests {
         OperationContext operation = requestTelemetry.getContext().getOperation();
 
         assertNotNull(requestTelemetry.getId());
-
-        // First trace will have it's own spanId also.
-        assertTrue(requestTelemetry.getId().startsWith(formatedID(operation.getId())));
         assertNull(operation.getParentId());
     }
 
@@ -99,8 +94,6 @@ public class TraceContextCorrelationTests {
         OperationContext operation = requestTelemetry.getContext().getOperation();
 
         assertNotNull(requestTelemetry.getId());
-        // First trace will have it's own spanId also.
-        assertTrue(requestTelemetry.getId().startsWith("|" + operation.getId()));
         assertNull(operation.getParentId());
     }
 
@@ -228,9 +221,4 @@ public class TraceContextCorrelationTests {
 
         return String.format("cid-v1:%s", appId);
     }
-
-    private String formatedID(String id) {
-        return "|" + id + ".";
-    }
-
 }

@@ -22,7 +22,9 @@
 package com.microsoft.applicationinsights.web.extensibility.initializers;
 
 import org.junit.*;
+
 import java.util.List;
+
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.internal.util.DateTimeUtils;
@@ -80,11 +82,7 @@ public class WebOperationIdTelemetryInitializerTests {
         assertEquals(1, items.size());
         RequestTelemetry requestTelemetry = items.get(0);
 
-        // the WebRequestTrackingModule automatically creates a hierarchical ID for request telemetry of the
-        // following form: "|guid.spanid", where guid is the OperationId
-        String requestTelemetryId = requestTelemetry.getId();
-        requestTelemetryId = requestTelemetryId.substring(0, requestTelemetryId.indexOf('.') + 1);
-        Assert.assertEquals("Operation id not match", requestTelemetryId, "|" + requestTelemetry.getContext().getOperation().getId() + ".");
+        Assert.assertNotNull("Operation id not set", requestTelemetry.getContext().getOperation().getId());
     }
 
     @Test
@@ -94,7 +92,8 @@ public class WebOperationIdTelemetryInitializerTests {
 
         OperationContext operationContext = createAndInitializeTelemetry();
 
-        Assert.assertEquals("Operation ID hasn't been set.", context.getHttpRequestTelemetry().getId(), operationContext.getId());
+        Assert.assertEquals("Operation ID hasn't been set.", context.getHttpRequestTelemetry().getId(),
+                operationContext.getId());
     }
 
     @Test
