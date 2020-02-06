@@ -49,7 +49,7 @@ apply from: "$buildScriptsDir/provided-configuration.gradle"
 
 def springBootVersion = '1.5.21.RELEASE'
 dependencies {
-    compile(project(path: ':web', configuration: 'shadow')) // web includes core
+    compile(project(':web')) // web includes core
     compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
 
