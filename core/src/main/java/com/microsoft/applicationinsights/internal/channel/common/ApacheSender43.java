@@ -147,7 +147,8 @@ public final class ApacheSender43 implements ApacheSender {
         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
         HttpClientBuilder builder = HttpClients.custom()
-                .setConnectionManager(cm);
+                .setConnectionManager(cm)
+                .useSystemProperties();
         if (proxy != null) {
             builder.setProxy(proxy);
         }
