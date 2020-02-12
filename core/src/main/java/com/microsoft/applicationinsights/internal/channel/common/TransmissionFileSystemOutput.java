@@ -245,6 +245,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
         return asList;
     }
 
+    @SuppressWarnings("lgtm[java/input-resource-leak]") // All the streams close their delegates.
     private Optional<Transmission> loadTransmission(File file) {
         Transmission transmission = null;
 
@@ -293,6 +294,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
         return Optional.fromNullable(transmissionFile);
     }
 
+    @SuppressWarnings("lgtm[java/input-resource-leak]") // All the streams close their delegates.
     private boolean saveTransmission(File transmissionFile, Transmission transmission) {
         try (ObjectOutput output = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(transmissionFile)))) {
             output.writeObject(transmission);

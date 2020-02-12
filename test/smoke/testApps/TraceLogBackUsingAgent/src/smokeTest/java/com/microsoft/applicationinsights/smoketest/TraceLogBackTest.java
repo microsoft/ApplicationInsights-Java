@@ -1,8 +1,5 @@
 package com.microsoft.applicationinsights.smoketest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -11,10 +8,13 @@ import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
+import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 @UseAgent
 public class TraceLogBackTest extends AiSmokeTest {
@@ -36,6 +36,8 @@ public class TraceLogBackTest extends AiSmokeTest {
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
 
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+
         List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
         logs.sort(new Comparator<MessageData>() {
             @Override
@@ -51,13 +53,13 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
         assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
-        assertSameOperationId(mdEnvelope1, rdEnvelope);
+        assertParentChild(rd, rdEnvelope, mdEnvelope1);
 
         assertEquals("This is logback error.", md2.getMessage());
         assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
         assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
-        assertSameOperationId(mdEnvelope2, rdEnvelope);
+        assertParentChild(rd, rdEnvelope, mdEnvelope2);
     }
 
     @Test
@@ -69,6 +71,7 @@ public class TraceLogBackTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope edEnvelope = edList.get(0);
 
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         ExceptionData ed = (ExceptionData) ((Data) edEnvelope.getData()).getBaseData();
 
         List<ExceptionDetails> details = ed.getExceptions();
@@ -79,17 +82,17 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
         assertEquals("Logger", ed.getProperties().get("SourceType"));
         assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
-        assertSameOperationId(edEnvelope, rdEnvelope);
+        assertParentChild(rd, rdEnvelope, edEnvelope);
     }
 
-    private static void assertSameOperationId(Envelope rdEnvelope, Envelope rddEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
-
         assertNotNull(operationId);
-        assertNotNull(operationParentId);
+        assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
 
-        assertEquals(operationId, rddEnvelope.getTags().get("ai.operation.id"));
-        assertEquals(operationParentId, rddEnvelope.getTags().get("ai.operation.parentId"));
+        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
+        assertNull(operationParentId);
+
+        assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
     }
 }

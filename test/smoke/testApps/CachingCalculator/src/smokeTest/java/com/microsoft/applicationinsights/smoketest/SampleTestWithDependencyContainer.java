@@ -5,6 +5,7 @@ import java.util.List;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
+import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.*;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -26,22 +27,23 @@ public class SampleTestWithDependencyContainer extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertEquals("Redis", rdd.getType());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
-    private static void assertSameOperationId(Envelope rdEnvelope, Envelope rddEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
-
         assertNotNull(operationId);
-        assertNotNull(operationParentId);
+        assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
 
-        assertEquals(operationId, rddEnvelope.getTags().get("ai.operation.id"));
-        assertEquals(operationParentId, rddEnvelope.getTags().get("ai.operation.parentId"));
+        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
+        assertNull(operationParentId);
+
+        assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
     }
 }

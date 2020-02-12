@@ -41,12 +41,10 @@ public class DistributedTraceContext {
     }
 
     // w3c format
-    public String generateChildDependencyTraceparent() {
+    public Traceparent generateChildDependencyTraceparent() {
 
         String traceId = requestTelemetry.getContext().getOperation().getId();
-        Traceparent tp = new Traceparent(0, traceId, null, traceflag);
-
-        return tp.toString();
+        return new Traceparent(0, traceId, null, traceflag);
     }
 
     // w3c format
