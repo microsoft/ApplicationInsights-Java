@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.internal.agent.AbstractSdkBridge;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.correlation.TelemetryCorrelationUtils;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
+import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;
 
 class SdkBridgeImpl extends AbstractSdkBridge<RequestTelemetryContext> {
 
@@ -63,21 +64,20 @@ class SdkBridgeImpl extends AbstractSdkBridge<RequestTelemetryContext> {
     @Override
     public <C> String propagate(Setter<C> setter, C carrier, boolean w3c, boolean w3cBackCompat) {
         if (w3c) {
-            String traceparent = TraceContextCorrelation.generateChildDependencyTraceparent();
+            Traceparent traceparent = TraceContextCorrelation.generateChildDependencyTraceparentObj();
             if (traceparent == null) {
                 // this means an error occurred (and was logged) in above method, so just return a valid outgoingSpanId
-                return TelemetryCorrelationUtils.generateChildDependencyId();
+                return new Traceparent().getSpanId();
             }
-            String outgoingSpanId = TraceContextCorrelation.createChildIdFromTraceparentString(traceparent);
             String tracestate = TraceContextCorrelation.retriveTracestate();
-            setter.put(carrier, "traceparent", traceparent);
+            setter.put(carrier, "traceparent", traceparent.toString());
             if (w3cBackCompat) {
-                setter.put(carrier, "Request-Id", outgoingSpanId);
+                setter.put(carrier, "Request-Id", "|" + traceparent.getTraceId() + "." + traceparent.getSpanId() + ".");
             }
             if (tracestate != null) {
                 setter.put(carrier, "tracestate", tracestate);
             }
-            return outgoingSpanId;
+            return traceparent.getSpanId();
         } else {
             String outgoingSpanId = TelemetryCorrelationUtils.generateChildDependencyId();
             String correlationContext = TelemetryCorrelationUtils.retrieveCorrelationContext();

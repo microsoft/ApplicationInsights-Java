@@ -16,9 +16,7 @@ import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @UseAgent
 @WithDependencyContainers(
@@ -47,17 +45,17 @@ public class MongoSmokeTest extends AiSmokeTest {
         assertEquals("find testdb.test", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
-    private static void assertSameOperationId(Envelope rdEnvelope, Envelope rddEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
-
         assertNotNull(operationId);
-        assertNotNull(operationParentId);
+        assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
 
-        assertEquals(operationId, rddEnvelope.getTags().get("ai.operation.id"));
-        assertEquals(operationParentId, rddEnvelope.getTags().get("ai.operation.parentId"));
+        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
+        assertNull(operationParentId);
+
+        assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
     }
 }
