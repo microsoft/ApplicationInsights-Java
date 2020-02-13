@@ -95,7 +95,14 @@ whenPomConfigured = { p ->
             dep.artifactId != agentArtifactId && dep.artifactId != loggerArtifactId &&
             !(dep.groupId in ['org.apache.http', 'eu.infomas', 'org.apache.commons', 'commons-io',
                               'com.google.guava', 'com.google.code.gson', 'org.apache.httpcomponents',
-                              'io.grpc', 'com.google.protobuf'])}
+                              'io.grpc', 'com.google.protobuf'])
+    }
+    .collect { dep ->
+        if (dep.artifactId == 'applicationinsights-web') {
+            dep.classifier = null
+        }
+        dep
+    }
     p.dependencies += project.configurations.provided.allDependencies
             .findAll { it.group != 'com.microsoft.azure' }
             .collect {
