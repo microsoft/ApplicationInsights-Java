@@ -268,7 +268,7 @@ public class JdbcTestServlet extends HttpServlet {
 
     private static Connection getPostgresConnection() throws Exception {
         String hostname = System.getenv("POSTGRES");
-        return DriverManager.getConnection("jdbc:postgresql://" + hostname + "/postgres", "postgres", "");
+        return DriverManager.getConnection("jdbc:postgresql://" + hostname + "/postgres", "postgres", "passw0rd2");
     }
 
     private static Connection getSqlServerConnection() throws Exception {
