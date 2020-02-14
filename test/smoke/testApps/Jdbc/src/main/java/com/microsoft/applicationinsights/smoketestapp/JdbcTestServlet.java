@@ -263,7 +263,7 @@ public class JdbcTestServlet extends HttpServlet {
 
     private static Connection getMysqlConnection() throws Exception {
         String hostname = System.getenv("MYSQL");
-        return DriverManager.getConnection("jdbc:mysql://" + hostname + "/mysql", "root", "password");
+        return DriverManager.getConnection("jdbc:mysql://" + hostname + "/mysql?autoReconnect=true&useSSL=true&verifyServerCertificate=false", "root", "password");
     }
 
     private static Connection getPostgresConnection() throws Exception {
