@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.AgentExtensionVersionFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsTestHelper;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi.Builder;
 import org.hamcrest.Matchers;
@@ -27,6 +28,9 @@ public class StatusFileTests {
     @Rule
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
+    @Rule
+    public ClearSystemProperties clearProp = new ClearSystemProperties("site.logdir");
+
     private final String testIkey = "fake-ikey-123";
     private final String fakeVersion = "0.0.1-test";
 
@@ -34,11 +38,31 @@ public class StatusFileTests {
     public void setup() {
         envVars.set("APPINSIGHTS_INSTRUMENTATIONKEY", testIkey);
         envVars.set(AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE, fakeVersion);
+        StatusFile.init();
     }
 
     @After
     public void resetStaticVariables() {
         DiagnosticsTestHelper.reset();
+        StatusFile.init();
+    }
+
+    @Test
+    public void defaultDirectoryIsCorrect() {
+        String expected = "/home/LogFiles/ApplicationInsights/status";
+        if (SystemInformation.INSTANCE.isWindows()) {
+            expected = "D:" + expected;
+        }
+        assertEquals(expected, StatusFile.directory);
+    }
+
+    @Test
+    public void siteLogDirPropertyUpdatesParentDir() {
+        String parentDir = "/temp/test/prop";
+        System.setProperty("site.logdir", parentDir);
+        StatusFile.init();
+        String expected = parentDir + StatusFile.DEFAULT_APPLICATIONINSIGHTS_LOGDIR +  StatusFile.STATUS_FILE_DIRECTORY;
+        assertEquals(expected, StatusFile.directory);
     }
 
     @Test

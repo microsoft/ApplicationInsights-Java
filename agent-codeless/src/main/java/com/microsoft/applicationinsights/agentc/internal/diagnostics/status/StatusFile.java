@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.squareup.moshi.Moshi;
 import okio.BufferedSink;
 import okio.Okio;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,17 @@ public class StatusFile {
     @VisibleForTesting
     static final String FILE_EXTENSION = ".json";
 
-    private static final String DEFAULT_STATUS_FILE_DIRECTORY = "/home/LogFiles/ApplicationInsights/status";
+    @VisibleForTesting
+    static final String SITE_LOGDIR_PROPERTY = "site.logdir";
+
+    @VisibleForTesting
+    static final String DEFAULT_SITE_LOGDIR = "/home/LogFiles";
+
+    @VisibleForTesting
+    static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = "/ApplicationInsights";
+
+    @VisibleForTesting
+    static final String STATUS_FILE_DIRECTORY = "/status";
 
     @VisibleForTesting
     static String directory;
@@ -66,6 +77,7 @@ public class StatusFile {
             new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
                     ThreadPoolUtils.createNamedDaemonThreadFactory("StatusFileWriter"));
 
+
     static {
         WRITER_THREAD.allowCoreThreadTimeOut(true);
         CONSTANT_VALUES.put("AppType", "java");
@@ -76,11 +88,21 @@ public class StatusFile {
         VALUE_FINDERS.add(new InstrumentationKeyFinder());
         VALUE_FINDERS.add(new AgentExtensionVersionFinder());
 
+        init();
+    }
+
+    @VisibleForTesting
+    static void init() {
+        // if on windows, property should specify drive letter
+        directory = StringUtils.defaultIfEmpty(System.getProperty(SITE_LOGDIR_PROPERTY), driveLetter() + DEFAULT_SITE_LOGDIR)
+                + DEFAULT_APPLICATIONINSIGHTS_LOGDIR + STATUS_FILE_DIRECTORY;
+    }
+
+    private static String driveLetter() {
         if (SystemInformation.INSTANCE.isWindows()) {
-            directory = "D:" + DEFAULT_STATUS_FILE_DIRECTORY;
-        } else {
-            directory = DEFAULT_STATUS_FILE_DIRECTORY;
+            return "D:";
         }
+        return "";
     }
 
     private StatusFile() {
