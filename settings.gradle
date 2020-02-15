@@ -23,7 +23,7 @@ include 'ApplicationInsightsInternalLogger'
 
 include 'agent'
 include 'core'
-include ':logging:common'
+include 'logging:common'
 include 'logging:log4j1_2'
 include 'logging:log4j2'
 include 'logging:logback'
