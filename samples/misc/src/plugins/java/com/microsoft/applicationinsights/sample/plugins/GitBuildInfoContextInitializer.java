@@ -58,8 +58,7 @@ public final class GitBuildInfoContextInitializer implements ContextInitializer 
     private boolean hasBuildData;
 
     public GitBuildInfoContextInitializer() {
-        try {
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(BUILD_INFO_FILE_NAME);
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(BUILD_INFO_FILE_NAME)) {
             if (inputStream == null) {
                 hasBuildData = false;
                 return;
