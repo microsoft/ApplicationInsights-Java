@@ -28,6 +28,7 @@ import static org.junit.Assert.*;
         @DependencyContainer(
                 value = "postgres:11",
                 portMapping = "5432",
+                environmentVariables = {"POSTGRES_PASSWORD=passw0rd2"},
                 hostnameEnvironmentVariable = "POSTGRES"),
         @DependencyContainer(
                 value = "mcr.microsoft.com/mssql/server:2017-latest",
