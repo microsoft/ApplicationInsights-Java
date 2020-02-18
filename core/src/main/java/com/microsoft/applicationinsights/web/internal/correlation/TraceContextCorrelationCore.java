@@ -69,21 +69,14 @@ public class TraceContextCorrelationCore {
             }
 
             // represents the id of the current request.
-            requestTelemetry.setId("|" + processedTraceParent.getTraceId() + "." + processedTraceParent.getSpanId()
-                + ".");
+            requestTelemetry.setId(processedTraceParent.getSpanId());
 
             // represents the trace-id of this distributed trace
             requestTelemetry.getContext().getOperation().setId(processedTraceParent.getTraceId());
 
             // assign parent id
             if (incomingTraceparent != null) {
-                requestTelemetry.getContext().getOperation().setParentId("|" + processedTraceParent.getTraceId() + "." +
-                    incomingTraceparent.getSpanId() + ".");
-            } else {
-                // set parentId only if not already set (legacy processing can set it)
-                if (requestTelemetry.getContext().getOperation().getParentId() == null) {
-                    requestTelemetry.getContext().getOperation().setParentId(null);
-                }
+                requestTelemetry.getContext().getOperation().setParentId(incomingTraceparent.getSpanId());
             }
 
             String appId = getAppId();

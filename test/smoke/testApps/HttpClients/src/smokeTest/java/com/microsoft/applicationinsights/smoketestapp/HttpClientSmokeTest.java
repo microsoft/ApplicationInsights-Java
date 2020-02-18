@@ -124,12 +124,14 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
-    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope rddEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
-
         assertNotNull(operationId);
+        assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
 
-        assertEquals(operationId, rddEnvelope.getTags().get("ai.operation.id"));
-        assertEquals(rd.getId(), rddEnvelope.getTags().get("ai.operation.parentId"));
+        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
+        assertNull(operationParentId);
+
+        assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
     }
 }

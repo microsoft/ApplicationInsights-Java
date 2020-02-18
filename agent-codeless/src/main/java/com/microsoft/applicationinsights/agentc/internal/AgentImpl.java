@@ -82,9 +82,6 @@ class AgentImpl implements AgentSPI {
             return null;
         }
         TraceContextCorrelationCore.resolveRequestSource(carrier, getter, requestTelemetry, instrumentationKey);
-        if (requestTelemetry.getContext().getOperation().getParentId() == null) {
-            requestTelemetry.getContext().getOperation().setParentId(requestTelemetry.getId());
-        }
 
         IncomingSpanImpl incomingSpan = new IncomingSpanImpl(transactionType, messageSupplier, threadContextHolder,
                 startTimeMillis, requestTelemetry, distributedTraceContext);

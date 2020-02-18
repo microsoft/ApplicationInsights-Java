@@ -16,9 +16,7 @@ import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @UseAgent
 @WithDependencyContainers({
@@ -30,6 +28,7 @@ import static org.junit.Assert.assertTrue;
         @DependencyContainer(
                 value = "postgres:11",
                 portMapping = "5432",
+                environmentVariables = {"POSTGRES_PASSWORD=passw0rd2"},
                 hostnameEnvironmentVariable = "POSTGRES"),
         @DependencyContainer(
                 value = "mcr.microsoft.com/mssql/server:2017-latest",
@@ -57,7 +56,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -78,7 +77,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -100,7 +99,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals(" [Batch of 3]", rdd.getProperties().get("Args"));
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -123,7 +122,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals(" [Batch]", rdd.getProperties().get("Args"));
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -155,7 +154,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -186,7 +185,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -207,7 +206,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -228,7 +227,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -249,7 +248,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
@@ -270,7 +269,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Ignore("FIXME: need custom container with oracle db")
@@ -292,7 +291,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Ignore("FIXME: need custom container with oracle db")
@@ -314,17 +313,17 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertSameOperationId(rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
-    private static void assertSameOperationId(Envelope rdEnvelope, Envelope rddEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
-
         assertNotNull(operationId);
-        assertNotNull(operationParentId);
+        assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
 
-        assertEquals(operationId, rddEnvelope.getTags().get("ai.operation.id"));
-        assertEquals(operationParentId, rddEnvelope.getTags().get("ai.operation.parentId"));
+        String operationParentId = rdEnvelope.getTags().get("ai.operation.parentId");
+        assertNull(operationParentId);
+
+        assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
     }
 }

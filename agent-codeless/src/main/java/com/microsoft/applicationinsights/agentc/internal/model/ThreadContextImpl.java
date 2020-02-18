@@ -21,26 +21,17 @@
 
 package com.microsoft.applicationinsights.agentc.internal.model;
 
-import java.util.concurrent.TimeUnit;
-
 import com.microsoft.applicationinsights.web.internal.correlation.DistributedTraceContext;
+import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Traceparent;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.glowroot.instrumentation.api.AsyncQuerySpan;
-import org.glowroot.instrumentation.api.AsyncSpan;
-import org.glowroot.instrumentation.api.AuxThreadContext;
-import org.glowroot.instrumentation.api.Getter;
-import org.glowroot.instrumentation.api.MessageSupplier;
-import org.glowroot.instrumentation.api.QueryMessageSupplier;
-import org.glowroot.instrumentation.api.QuerySpan;
-import org.glowroot.instrumentation.api.Setter;
-import org.glowroot.instrumentation.api.Span;
-import org.glowroot.instrumentation.api.Timer;
-import org.glowroot.instrumentation.api.TimerName;
+import org.glowroot.instrumentation.api.*;
 import org.glowroot.instrumentation.api.internal.ReadableMessage;
 import org.glowroot.instrumentation.engine.bytecode.api.ThreadContextPlus;
 import org.glowroot.instrumentation.engine.impl.NopTransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -266,25 +257,18 @@ public class ThreadContextImpl implements ThreadContextPlus {
     private <C> String propagate(Setter<C> setter, C carrier) {
         if (Global.isDistributedTracingOutboundEnabled()) {
             DistributedTraceContext distributedTraceContext = incomingSpan.getDistributedTraceContext();
-            String traceparent = distributedTraceContext.generateChildDependencyTraceparent();
+            Traceparent traceparent = distributedTraceContext.generateChildDependencyTraceparent();
             String tracestate = distributedTraceContext.retrieveTracestate();
-            String outgoingSpanId = createChildIdFromTraceparentString(traceparent);
-            setter.put(carrier, "traceparent", traceparent);
+            setter.put(carrier, "traceparent", traceparent.toString());
             if (Global.isDistributedTracingRequestIdCompatEnabled()) {
-                setter.put(carrier, "Request-Id", outgoingSpanId);
+                setter.put(carrier, "Request-Id", "|" + traceparent.getTraceId() + "." + traceparent.getSpanId() + ".");
             }
             if (tracestate != null) {
                 setter.put(carrier, "tracestate", tracestate);
             }
-            return outgoingSpanId;
+            return traceparent.getSpanId();
         } else {
             return null;
         }
-    }
-
-    // see TraceContextCorrelation.createChildIdFromTraceparentString()
-    private static String createChildIdFromTraceparentString(String traceparent) {
-        String[] traceparentArr = traceparent.split("-");
-        return "|" + traceparentArr[1] + "." + traceparentArr[2] + ".";
     }
 }
