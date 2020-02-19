@@ -185,6 +185,11 @@
         </Or>
     </Match>
     <Match>
+        <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME" />
+        <Class name="com.microsoft.applicationinsights.extensibility.initializer.docker.DockerContextInitializer" />
+        <Method name="&lt;init&gt;" />
+    </Match>
+    <Match>
         <!-- These rules are fine to skip. -->
         <Or>
             <Bug pattern="UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD" />
