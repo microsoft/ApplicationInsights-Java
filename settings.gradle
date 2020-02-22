@@ -22,12 +22,16 @@
 include 'ApplicationInsightsInternalLogger'
 
 include 'instrumentation:azure-functions'
-include 'agent-codeless'
 include 'core'
 if (System.env.'COLLECTD_HOME') {
     include 'collectd'
 }
 
+include ':agent:agent-bootstrap'
+include ':agent:exporter'
+include ':agent:agent-tooling'
+include ':agent:instrumentation'
+include ':agent:agent'
 
 // Projects for smokeTests
 include ':test:smoke'
@@ -59,10 +63,11 @@ include ':test:smoke:testApps:TraceJavaUtilLoggingUsingAgent'
 include ':test:smoke:testApps:HeartBeat'
 include ':test:smoke:testApps:SpringBootTest'
 include ':test:smoke:testApps:FixedRateSampling'
+include ':test:smoke:testApps:gRPC'
 include ':test:smoke:testApps:Jdbc'
 include ':test:smoke:testApps:MongoDB'
 include ':test:smoke:testApps:HttpClients'
-include ':test:smoke:testApps:CustomInstrumentation'
+//include ':test:smoke:testApps:CustomInstrumentation'
 include ':test:smoke:testApps:WebAuto'
 include ':test:smoke:testApps:SpringBoot1_3Auto'
 include ':test:smoke:testApps:SpringBootAuto'

@@ -1,0 +1,15 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+apply from: "$buildScriptsDir/common-java.gradle"
+
+dependencies {
+    compile 'io.opentelemetry:opentelemetry-sdk:0.2.0'
+
+    compile 'org.slf4j:slf4j-api:1.7.26'
+
+    compile(project(path: ':core'))
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}

@@ -1,7 +1,6 @@
 package com.microsoft.ajl.simple;
 
 import com.google.common.base.Joiner;
-import com.microsoft.applicationinsights.TelemetryClient;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
@@ -13,7 +12,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -61,7 +59,7 @@ public class TestController {
     private static File getAgentJarFile() {
         List<String> jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments();
         for (String jvmArg : jvmArgs) {
-            if (jvmArg.startsWith("-javaagent:") && jvmArg.contains("applicationinsights-agent-codeless")) {
+            if (jvmArg.startsWith("-javaagent:") && jvmArg.contains("applicationinsights-agent")) {
                 return new File(jvmArg.substring("-javaagent:".length()));
             }
         }

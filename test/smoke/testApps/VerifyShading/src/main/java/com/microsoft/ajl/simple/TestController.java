@@ -44,23 +44,18 @@ public class TestController {
         expectedEntries.add("com/");
         expectedEntries.add("com/microsoft/");
         expectedEntries.add("com/microsoft/applicationinsights/");
-        expectedEntries.add("com/microsoft/applicationinsights/agentc/.*");
-        expectedEntries.add("com/microsoft/applicationinsights/instrumentation/.*");
-        expectedEntries.add("org/");
-        expectedEntries.add("org/glowroot/");
-        expectedEntries.add("org/glowroot/instrumentation/.*");
+        expectedEntries.add("com/microsoft/applicationinsights/agent/.*");
+        expectedEntries.add("io/");
+        expectedEntries.add("io/opentelemetry/");
+        expectedEntries.add("io/opentelemetry/auto/.*");
         expectedEntries.add("META-INF/");
-        expectedEntries.add("META-INF/services/");
-        expectedEntries.add("META-INF/services/com\\.microsoft\\.applicationinsights\\.agentc\\..*");
-        expectedEntries.add("META-INF/instrumentation.list");
         expectedEntries.add("META-INF/MANIFEST\\.MF");
-        expectedEntries.add("applicationinsights-core-native-win32.dll");
-        expectedEntries.add("applicationinsights-core-native-win64.dll");
         expectedEntries.add("LICENSE");
         expectedEntries.add("NOTICE");
         expectedEntries.add("ai.logback.xml");
         expectedEntries.add("appsvc.ai.logback.xml");
-        expectedEntries.add("sdk-version.properties");
+        expectedEntries.add("ai.sdk-version.properties");
+        expectedEntries.add("auto-tooling-and-instrumentation.isolated/.*");
         JarFile jarFile = new JarFile(agentJarFile);
         List<String> unexpected = new ArrayList<>();
         for (Enumeration<JarEntry> e = jarFile.entries(); e.hasMoreElements(); ) {
@@ -85,7 +80,7 @@ public class TestController {
     private static File getAgentJarFile() {
         List<String> jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments();
         for (String jvmArg : jvmArgs) {
-            if (jvmArg.startsWith("-javaagent:") && jvmArg.contains("applicationinsights-agent-codeless")) {
+            if (jvmArg.startsWith("-javaagent:") && jvmArg.contains("applicationinsights-agent")) {
                 return new File(jvmArg.substring("-javaagent:".length()));
             }
         }

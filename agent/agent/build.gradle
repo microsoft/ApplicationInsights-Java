@@ -1,0 +1,98 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+apply from: "$buildScriptsDir/common-java.gradle"
+apply from: "$buildScriptsDir/publishing.gradle"
+
+repositories {
+    mavenLocal()
+}
+
+configurations {
+    shadowInclude
+}
+
+processResources {
+
+    dependsOn ':agent:instrumentation:shadowJar'
+
+    from(zipTree(tasks.getByPath(':agent:instrumentation:shadowJar').archivePath)) {
+        into 'auto-tooling-and-instrumentation.isolated'
+        rename '(^.*)\\.class$', '$1.classdata'
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                "Main-Class": "io.opentelemetry.auto.bootstrap.AgentBootstrap",
+                "Agent-Class": "io.opentelemetry.auto.bootstrap.AgentBootstrap",
+                "Premain-Class": "io.opentelemetry.auto.bootstrap.AgentBootstrap",
+                "Can-Redefine-Classes": true,
+                "Can-Retransform-Classes": true,
+        )
+    }
+    dependsOn shadowJar
+    enabled = false
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowInclude]
+
+    archiveClassifier = ''
+
+    mergeServiceFiles()
+
+    exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
+    exclude 'META-INF/proguard/**'
+    //exclude 'module-info.class'
+
+    // Prevents conflict with other SLF4J instances. Important for premain.
+    relocate 'org.slf4j', 'io.opentelemetry.auto.slf4j'
+
+    def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
+
+    relocate 'ch.qos.logback', "${shadowPrefix}.ch.qos.logback"
+    relocate 'com.squareup.moshi', "${shadowPrefix}.com.squareup.moshi"
+    relocate 'okio', "${shadowPrefix}.okio"
+
+    // rewrite dependencies calling Logger.getLogger
+    // this shades internal use of java util logging which is needed to prevent java util logging from being initialized
+    // early (e.g. in the case of jboss which wants to do some setup before jul is initialized)
+    relocate 'java.util.logging.Logger', 'io.opentelemetry.auto.bootstrap.PatchLogger'
+
+    // relocate OpenTelemetry API
+    relocate "io.opentelemetry.OpenTelemetry", "io.opentelemetry.auto.shaded.io.opentelemetry.OpenTelemetry"
+    relocate "io.opentelemetry.context", "io.opentelemetry.auto.shaded.io.opentelemetry.context"
+    relocate "io.opentelemetry.distributedcontext", "io.opentelemetry.auto.shaded.io.opentelemetry.distributedcontext"
+    relocate "io.opentelemetry.internal", "io.opentelemetry.auto.shaded.io.opentelemetry.internal"
+    relocate "io.opentelemetry.metrics", "io.opentelemetry.auto.shaded.io.opentelemetry.metrics"
+    relocate "io.opentelemetry.trace", "io.opentelemetry.auto.shaded.io.opentelemetry.trace"
+
+    // relocate OpenTelemetry API dependency
+    relocate "io.grpc", "io.opentelemetry.auto.shaded.io.grpc"
+
+    relocate('logback.configurationFile', 'ai.logback.configurationFile')
+    relocate('logback.xml', 'ai.logback.xml')
+    relocate('logback.groovy', 'ai.logback.groovy') // to prevent accidentally picking up from user's class path
+    relocate('logback-test.xml', 'ai.logback-test.xml') // to prevent accidentally picking up from user's class path
+
+}
+
+archivesBaseName = 'applicationinsights-agent'
+
+dependencies {
+    shadowInclude project(path: ':agent:agent-bootstrap')
+}
+
+// region Publishing properties
+
+projectPomName = project.msftAppInsights + " Codeless Java Agent"
+projectPomDescription = "This is the Codeless Java agent of " + project.msftAppInsightsJavaSdk
+
+whenPomConfigured = { p ->
+    p.dependencies = []
+}
+
+// endregion Publishing properties

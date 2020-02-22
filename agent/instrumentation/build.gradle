@@ -1,0 +1,117 @@
+plugins {
+    id "com.github.johnrengelman.shadow"
+}
+
+apply from: "$buildScriptsDir/common-java.gradle"
+
+repositories {
+    mavenLocal()
+}
+
+def instrumentationVersion = '0.1.2-SNAPSHOT'
+
+dependencies {
+    compile project(':agent:agent-tooling')
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-apache-httpasyncclient-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-apache-httpclient-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-classloading', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-datastax-cassandra-3.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-grpc-1.5', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-http-url-connection', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-java-concurrent', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-java-util-logging-events', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-jdbc', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-jedis-1.4', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-jedis-3.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-jms-1.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-kafka-clients-0.11', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-lettuce-5.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-log4j-events-1.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-log4j-events-2.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-logback-events-1.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-driver-3.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-driver-3.7', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-driver-async-3.3', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-netty-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-netty-4.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-okhttp-3.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-opentelemetry-api-0.2', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-servlet-request-2.3', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-servlet-request-3.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-spring-scheduling-3.1', version: instrumentationVersion
+
+    // also: jaxrs, spring, struts
+
+    // also: azure functions
+
+}
+
+// need to perform shading in two steps in order to avoid shading java.util.logging.Logger
+// in the java-util-logging-events instrumentation since that instrumentation needs to
+// reference unshaded java.util.logging.Logger
+// (java.util.logging.Logger shading is not needed in any of the instrumentation modules,
+// but it is needed for the dependencies, e.g. guava, which use java.util.logging.Logger)
+task shadowJarStep1(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+
+    archiveClassifier = 'step1'
+    destinationDirectory = file("${project.buildDir}/step1")
+
+    configurations = [project.configurations.runtime]
+
+    dependencies {
+        exclude(dependency('io.opentelemetry.auto.instrumentation:instrumentation-java-util-logging-events'))
+
+        // exclude bootstrap dependencies from shadowJar
+        exclude(dependency('io.opentelemetry.auto:auto-bootstrap'))
+        exclude(dependency('io.opentelemetry:opentelemetry-api'))
+        exclude(dependency('org.slf4j:slf4j-api'))
+    }
+
+    // rewrite dependencies calling Logger.getLogger
+    relocate 'java.util.logging.Logger', 'io.opentelemetry.auto.bootstrap.PatchLogger'
+}
+
+
+shadowJar {
+
+    dependsOn shadowJarStep1
+
+    archiveClassifier = ''
+
+    from {
+        zipTree(shadowJarStep1.archiveFile)
+    }
+
+    dependencies {
+        // exclude bootstrap dependencies from shadowJar
+        exclude(dependency('io.opentelemetry.auto:auto-bootstrap'))
+        exclude(dependency('io.opentelemetry:opentelemetry-api'))
+        exclude(dependency('org.slf4j:slf4j-api'))
+    }
+
+    mergeServiceFiles()
+
+    exclude '**/module-info.class'
+
+    // Prevents conflict with other SLF4J instances. Important for premain.
+    relocate 'org.slf4j', 'io.opentelemetry.auto.slf4j'
+
+    // relocate OpenTelemetry API usage
+    relocate "io.opentelemetry.OpenTelemetry", "io.opentelemetry.auto.shaded.io.opentelemetry.OpenTelemetry"
+    relocate "io.opentelemetry.context", "io.opentelemetry.auto.shaded.io.opentelemetry.context"
+    relocate "io.opentelemetry.distributedcontext", "io.opentelemetry.auto.shaded.io.opentelemetry.distributedcontext"
+    relocate "io.opentelemetry.internal", "io.opentelemetry.auto.shaded.io.opentelemetry.internal"
+    relocate "io.opentelemetry.metrics", "io.opentelemetry.auto.shaded.io.opentelemetry.metrics"
+    relocate "io.opentelemetry.trace", "io.opentelemetry.auto.shaded.io.opentelemetry.trace"
+
+    // this is for instrumentation on opentelemetry-api itself
+    relocate "unshaded.io.opentelemetry", "io.opentelemetry"
+
+    // this is for instrumentation on logback
+    relocate "unshaded.ch.qos.logback", "ch.qos.logback"
+    relocate "unshaded.org.slf4j", "org.slf4j"
+}
+
+artifacts {
+    archives shadowJar
+}

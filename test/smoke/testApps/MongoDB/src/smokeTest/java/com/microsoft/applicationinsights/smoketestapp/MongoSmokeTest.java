@@ -42,7 +42,7 @@ public class MongoSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("MongoDB", rdd.getType());
         assertEquals("MongoDB", rdd.getName());
-        assertEquals("find testdb.test", rdd.getData());
+        assertEquals("{\"find\": \"test\", \"$db\": \"?\"}", rdd.getData());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope);
