@@ -195,7 +195,7 @@ public class Exporter implements SpanExporter {
             if (span.getAttributes().containsKey("http.method")) {
                 applyHttpRequestSpan(span, telemetry);
             } else if (span.getName().equals("database.query") || span.getName().equals("redis.query") ||
-                    span.getName().equals("mongo.query")) {
+                    span.getName().equals("mongo.query") || span.getName().equals("cassandra.query")) {
                 applyDatabaseQuerySpan(span, telemetry);
             } else if (span.getName().equals("EventHubs.send") && span.getKind() == Kind.PRODUCER) {
                 telemetry.setType("Microsoft.EventHub");
@@ -382,7 +382,7 @@ public class Exporter implements SpanExporter {
 
     private void applyDatabaseQuerySpan(SpanData span, RemoteDependencyTelemetry telemetry) {
         String dbType = getString(span, "db.type"); // e.g. "hsqldb"
-        String resourceName = getString(span, "resource.name"); // same as db.statement
+        String resourceName = getString(span, "db.statement");
         String spanType = getString(span, "span.type"); // "sql"
 
         if (dbType != null) {
@@ -401,6 +401,9 @@ public class Exporter implements SpanExporter {
             } else if (spanType.equals("mongodb")) {
                 telemetry.setType("MongoDB");
                 telemetry.setName("MongoDB");
+            } else if (spanType.equals("cassandra")) {
+                telemetry.setType("Cassandra");
+                telemetry.setName("Cassandra");
             } else {
                 telemetry.setType(spanType);
             }

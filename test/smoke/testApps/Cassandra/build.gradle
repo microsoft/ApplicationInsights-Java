@@ -6,7 +6,7 @@ dependencies {
     compile aiCoreJar
     compile aiWebJar
 
-    compile group: 'org.mongodb', name: 'mongodb-driver', version: '3.11.0'
+    compile group: 'com.datastax.cassandra', name: 'cassandra-driver-core', version: '3.8.0'
     compile group: 'com.google.guava', name: 'guava', version: '27.1-android'
 
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
@@ -19,4 +19,4 @@ compileSmokeTestJava.targetCompatibility = 1.8
 
 ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = war.archiveFileName.get()
-ext.dependencyContainers = ['mongo:4']
+ext.dependencyContainers = ['cassandra:3']
