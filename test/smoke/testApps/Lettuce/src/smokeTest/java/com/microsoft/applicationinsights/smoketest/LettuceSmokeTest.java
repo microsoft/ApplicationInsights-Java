@@ -13,11 +13,11 @@ import static org.junit.Assert.*;
 
 @UseAgent
 @WithDependencyContainers(@DependencyContainer(value="redis", portMapping="6379"))
-public class SampleTestWithDependencyContainer extends AiSmokeTest {
+public class LettuceSmokeTest extends AiSmokeTest {
 
     @Test
-    @TargetUri("/index.jsp")
-    public void doCalcSendsRequestDataAndMetricData() throws Exception {
+    @TargetUri("/lettuce")
+    public void lettuce() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
         List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
