@@ -27,12 +27,12 @@ public class DefaultExporterConfig implements ExporterConfig {
 
   @Override
   public String getString(String key, String defaultValue) {
-    return Config.getSettingFromEnvironment(prefix + "." + key, defaultValue);
+    return Config.get().getSettingFromEnvironment(prefix + "." + key, defaultValue);
   }
 
   @Override
   public int getInt(String key, int defaultValue) {
-    String s = Config.getSettingFromEnvironment(prefix + "." + key, null);
+    String s = Config.get().getSettingFromEnvironment(prefix + "." + key, null);
     if (s == null) {
       return defaultValue;
     }
@@ -41,7 +41,7 @@ public class DefaultExporterConfig implements ExporterConfig {
 
   @Override
   public long getLong(String key, long defaultValue) {
-    String s = Config.getSettingFromEnvironment(prefix + "." + key, null);
+    String s = Config.get().getSettingFromEnvironment(prefix + "." + key, null);
     if (s == null) {
       return defaultValue;
     }
@@ -50,7 +50,7 @@ public class DefaultExporterConfig implements ExporterConfig {
 
   @Override
   public boolean getBoolean(String key, boolean defaultValue) {
-    String s = Config.getSettingFromEnvironment(prefix + "." + key, null);
+    String s = Config.get().getSettingFromEnvironment(prefix + "." + key, null);
     if (s == null) {
       return defaultValue;
     }
@@ -59,7 +59,7 @@ public class DefaultExporterConfig implements ExporterConfig {
 
   @Override
   public double getDouble(String key, double defaultValue) {
-    String s = Config.getSettingFromEnvironment(prefix + "." + key, null);
+    String s = Config.get().getSettingFromEnvironment(prefix + "." + key, null);
     if (s == null) {
       return defaultValue;
     }
