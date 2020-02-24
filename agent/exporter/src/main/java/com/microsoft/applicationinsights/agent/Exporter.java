@@ -77,6 +77,10 @@ public class Exporter implements SpanExporter {
 
     private void export(SpanData span) {
         Kind kind = span.getKind();
+        if (span.getName().equals("jms.consume") && kind == Kind.CLIENT) {
+            // no need to capture these, at least is consistent with prior behavior
+            return;
+        }
         if (kind == Kind.INTERNAL) {
             if (span.getName().equals("servlet.dispatch")) {
                 // do not capture currently
@@ -91,11 +95,7 @@ public class Exporter implements SpanExporter {
                 exportRemoteDependency(span, true);
             }
         } else if (kind == Kind.CLIENT || kind == Kind.PRODUCER) {
-            if (span.getName().equals("jms.consume") && kind == Kind.CLIENT) {
-                // no need to capture these, at least is consistent with prior behavior
-            } else {
-                exportRemoteDependency(span, false);
-            }
+            exportRemoteDependency(span, false);
         } else if (kind == Kind.SERVER || kind == Kind.CONSUMER) {
             exportRequest(span);
         } else {
@@ -119,7 +119,12 @@ public class Exporter implements SpanExporter {
             telemetry.setUrl(httpUrl);
         }
 
-        telemetry.setName(span.getName());
+        String resourceName = getString(span, "resource.name");
+        if (resourceName != null) {
+            telemetry.setName(resourceName);
+        } else {
+            telemetry.setName(span.getName());
+        }
 
         if (span.getName().equals("EventHubs.process")) {
             // TODO let Azure SDK folks know this should be CONSUMER instead of SERVER
@@ -141,7 +146,6 @@ public class Exporter implements SpanExporter {
         }
 
         if (span.getName().equals("kafka.consume")) {
-            String resourceName = getString(span, "resource.name");
             if (resourceName != null && resourceName.startsWith("Consume Topic ")) {
                 telemetry.setName("Kafka consumer: " + resourceName.substring("Consume Topic ".length()));
             }
@@ -185,9 +189,15 @@ public class Exporter implements SpanExporter {
 
         addLinks(telemetry.getProperties(), span.getLinks());
 
+        String resourceName = getString(span, "resource.name");
+        if (resourceName != null) {
+            telemetry.setName(resourceName);
+        } else {
+            telemetry.setName(span.getName());
+        }
+
         if (inProc) {
             telemetry.setType("InProc");
-            telemetry.setName(span.getName());
         } else {
             // FIXME better to use component = "http" once that is set correctly in auto-instrumentation
             // http.method is required for http requests, see
@@ -203,13 +213,10 @@ public class Exporter implements SpanExporter {
                 String destination = getString(span, "message_bus.destination");
                 telemetry.setTarget(peerAddress + "/" + destination);
                 telemetry.setName(span.getName());
-            } else {
-                telemetry.setName(span.getName());
             }
         }
 
         if (span.getName().equals("jms.produce")) {
-            String resourceName = getString(span, "resource.name");
             if (resourceName != null && resourceName.startsWith("Produced for Queue ")) {
                 telemetry.setName("JMS Send: queue://" + resourceName.substring("Produced for Queue ".length()));
             }
@@ -217,7 +224,6 @@ public class Exporter implements SpanExporter {
 
         if (span.getName().equals("kafka.produce")) {
             telemetry.setType("Kafka");
-            String resourceName = getString(span, "resource.name");
             if (resourceName != null && resourceName.startsWith("Produce Topic ")) {
                 telemetry.setName(resourceName.substring("Produce Topic ".length()));
             }
@@ -256,7 +262,7 @@ public class Exporter implements SpanExporter {
             trackTrace(message, span.getStartEpochNanos(), level, loggerName, span.getTraceId(),
                     span.getParentSpanId());
         } else {
-            trackException(message, span.getStartEpochNanos(), level, loggerName, errorStack, span.getTraceId(),
+            trackTraceAsException(message, span.getStartEpochNanos(), level, loggerName, errorStack, span.getTraceId(),
                     span.getParentSpanId());
         }
     }
@@ -272,7 +278,7 @@ public class Exporter implements SpanExporter {
             if (errorStack == null) {
                 trackTrace(message, timeEpochNanos, level, loggerName, span.getTraceId(), span.getSpanId());
             } else {
-                trackException(message, timeEpochNanos, level, loggerName, errorStack, span.getTraceId(),
+                trackTraceAsException(message, timeEpochNanos, level, loggerName, errorStack, span.getTraceId(),
                         span.getSpanId());
             }
         }
@@ -292,8 +298,8 @@ public class Exporter implements SpanExporter {
         telemetryClient.trackTrace(telemetry);
     }
 
-    private void trackException(String message, long timeEpochNanos, String level, String loggerName, String errorStack,
-                                TraceId traceId, SpanId parentSpanId) {
+    private void trackTraceAsException(String message, long timeEpochNanos, String level, String loggerName,
+                                       String errorStack, TraceId traceId, SpanId parentSpanId) {
         ExceptionTelemetry telemetry = new ExceptionTelemetry();
 
         if (parentSpanId.isValid()) {
@@ -311,9 +317,9 @@ public class Exporter implements SpanExporter {
 
     private void setProperties(Map<String, String> properties, long timeEpochNanos, String level, String loggerName) {
 
-        properties.put("SourceType", "Logger");
         properties.put("TimeStamp", getFormattedDate(NANOSECONDS.toMillis(timeEpochNanos)));
         if (level != null) {
+            properties.put("SourceType", "Logger");
             properties.put("LoggingLevel", level);
         }
         if (loggerName != null) {
@@ -382,7 +388,7 @@ public class Exporter implements SpanExporter {
 
     private void applyDatabaseQuerySpan(SpanData span, RemoteDependencyTelemetry telemetry) {
         String dbType = getString(span, "db.type"); // e.g. "hsqldb"
-        String resourceName = getString(span, "db.statement");
+        String dbStatement = getString(span, "db.statement");
         String spanType = getString(span, "span.type"); // "sql"
 
         if (dbType != null) {
@@ -390,8 +396,8 @@ public class Exporter implements SpanExporter {
             telemetry.setName(dbType);
         }
 
-        if (resourceName != null) { // same as dbStatement (but more generally applicable?)
-            telemetry.setCommandName(resourceName);
+        if (dbStatement != null) {
+            telemetry.setCommandName(dbStatement);
         }
         if (spanType != null) {
             if (spanType.equals("sql")) {
@@ -504,6 +510,9 @@ public class Exporter implements SpanExporter {
     }
 
     private static SeverityLevel toSeverityLevel(String level) {
+        if (level == null) {
+            return null;
+        }
         switch (level) {
             case "FATAL":
                 return SeverityLevel.Critical;
