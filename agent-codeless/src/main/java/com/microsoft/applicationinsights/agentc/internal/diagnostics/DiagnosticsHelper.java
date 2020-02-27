@@ -7,8 +7,11 @@ import java.nio.file.Path;
 import com.google.common.annotations.VisibleForTesting;
 
 public class DiagnosticsHelper {
-    private DiagnosticsHelper() {
-    }
+    private DiagnosticsHelper() { }
+
+    public static final String IPA_LOG_FILE_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_LOG_FILE_ENABLED";
+
+    public static final String INTERNAL_LOG_OUTPUT_DIR_ENV_VAR = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
 
     @VisibleForTesting
     static volatile boolean appServiceCodeless;
@@ -17,26 +20,7 @@ public class DiagnosticsHelper {
 
     private static volatile boolean functionsCodeless;
 
-    @VisibleForTesting
-    static boolean enabled;
-
-    @VisibleForTesting
-    static final String DIAGNOSTICS_OUTPUT_ENABLED_ENV_VAR_NAME = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_ENABLED";
-
-    public static final String DIAGNOSTICS_LOGGER_NAME = "applicationinsights.diagnostics";
-
-    static {
-        boolean result = true;
-        try {
-            final String envValue = System.getenv(DIAGNOSTICS_OUTPUT_ENABLED_ENV_VAR_NAME);
-            if (envValue != null) {
-                // Boolean.parseBoolean will be false if string is not "true"; if var is garbage, assume enabled
-                result = !envValue.equalsIgnoreCase("false");
-            }
-        } catch (Exception e) {
-        }
-        enabled = result;
-    }
+    public static final String DIAGNOSTICS_LOGGER_NAME = "applicationinsights.extension.diagnostics";
 
     public static void setAgentJarFile(File agentJarFile) {
         Path agentPath = agentJarFile.toPath();
@@ -63,10 +47,6 @@ public class DiagnosticsHelper {
 
     public static boolean isAnyCodelessAttach() {
         return appServiceCodeless || aksCodeless || functionsCodeless;
-    }
-
-    public static boolean shouldOutputDiagnostics() {
-        return enabled && isAppServiceCodeless();
     }
 
 }

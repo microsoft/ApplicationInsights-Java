@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.AgentExtensionVersionFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsTestHelper;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi.Builder;
 import org.hamcrest.Matchers;
@@ -17,6 +16,9 @@ import org.junit.*;
 import org.junit.contrib.java.lang.system.*;
 import org.junit.rules.*;
 
+import static com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile.DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+import static com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile.DEFAULT_LOGDIR;
+import static com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile.STATUS_FILE_DIRECTORY;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -49,10 +51,7 @@ public class StatusFileTests {
 
     @Test
     public void defaultDirectoryIsCorrect() {
-        String expected = "/home/LogFiles/ApplicationInsights/status";
-        if (SystemInformation.INSTANCE.isWindows()) {
-            expected = "D:" + expected;
-        }
+        String expected = "./LogFiles/ApplicationInsights/status";
         assertEquals(expected, StatusFile.directory);
     }
 
@@ -61,7 +60,26 @@ public class StatusFileTests {
         String parentDir = "/temp/test/prop";
         System.setProperty("site.logdir", parentDir);
         StatusFile.init();
-        String expected = parentDir + StatusFile.DEFAULT_APPLICATIONINSIGHTS_LOGDIR +  StatusFile.STATUS_FILE_DIRECTORY;
+        String expected = parentDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR +  STATUS_FILE_DIRECTORY;
+        assertEquals(expected, StatusFile.directory);
+    }
+
+    @Test
+    public void homeEnvVarUpdatesBaseDir() {
+        String parentDir = "/temp/test";
+        envVars.set(StatusFile.HOME_ENV_VAR, parentDir);
+        StatusFile.init();
+        String expected = parentDir + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR + STATUS_FILE_DIRECTORY;
+        assertEquals(expected, StatusFile.directory);
+    }
+
+    @Test
+    public void siteLogDirHasPrecedenceOverHome() {
+        String homeDir = "/this/is/wrong";
+        String siteLogDir = "/the/correct/dir";
+        System.setProperty("site.logdir", siteLogDir);
+        StatusFile.init();
+        String expected = siteLogDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR + STATUS_FILE_DIRECTORY;
         assertEquals(expected, StatusFile.directory);
     }
 
@@ -104,13 +122,13 @@ public class StatusFileTests {
 
     @Test
     public void doesNotWriteIfEnabledEnvVarIsFalse() throws Exception {
-        envVars.set(DiagnosticsTestHelper.ENABLED_ENV_VAR, "false");
+        envVars.set(StatusFile.STATUS_FILE_ENABLED_ENV_VAR, "false");
         runWriteFileTest(false);
     }
 
     @Test
     public void ifEnabledVarHasInvalidValueThenItIsEnabled() throws Exception {
-        envVars.set(DiagnosticsTestHelper.ENABLED_ENV_VAR, "42");
+        envVars.set(StatusFile.STATUS_FILE_ENABLED_ENV_VAR, "42");
         DiagnosticsTestHelper.setIsAppServiceCodeless(true);
         runWriteFileTest(true);
     }

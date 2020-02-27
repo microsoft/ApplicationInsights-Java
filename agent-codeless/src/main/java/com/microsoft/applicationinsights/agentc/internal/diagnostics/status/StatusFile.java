@@ -54,13 +54,22 @@ public class StatusFile {
     static final String SITE_LOGDIR_PROPERTY = "site.logdir";
 
     @VisibleForTesting
-    static final String DEFAULT_SITE_LOGDIR = "/home/LogFiles";
+    static final String HOME_ENV_VAR = "HOME";
+
+    @VisibleForTesting
+    static final String DEFAULT_HOME_DIR = ".";
+
+    @VisibleForTesting
+    static final String DEFAULT_LOGDIR = "/LogFiles";
 
     @VisibleForTesting
     static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = "/ApplicationInsights";
 
     @VisibleForTesting
     static final String STATUS_FILE_DIRECTORY = "/status";
+
+    @VisibleForTesting
+    static final String STATUS_FILE_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_STATUS_FILE_ENABLED";
 
     @VisibleForTesting
     static String directory;
@@ -76,6 +85,8 @@ public class StatusFile {
     private static final ThreadPoolExecutor WRITER_THREAD =
             new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
                     ThreadPoolUtils.createNamedDaemonThreadFactory("StatusFileWriter"));
+
+    private static boolean enabled;
 
 
     static {
@@ -93,23 +104,22 @@ public class StatusFile {
 
     @VisibleForTesting
     static void init() {
-        // if on windows, property should specify drive letter
-        directory = StringUtils.defaultIfEmpty(System.getProperty(SITE_LOGDIR_PROPERTY), driveLetter() + DEFAULT_SITE_LOGDIR)
-                + DEFAULT_APPLICATIONINSIGHTS_LOGDIR + STATUS_FILE_DIRECTORY;
-    }
+        enabled = !"false".equalsIgnoreCase(System.getenv(STATUS_FILE_ENABLED_ENV_VAR));
 
-    private static String driveLetter() {
-        if (SystemInformation.INSTANCE.isWindows()) {
-            return "D:";
-        }
-        return "";
+        directory = StringUtils.defaultIfEmpty(System.getProperty(SITE_LOGDIR_PROPERTY), StringUtils.defaultIfEmpty(System.getenv(HOME_ENV_VAR), DEFAULT_HOME_DIR) + DEFAULT_LOGDIR)
+                + DEFAULT_APPLICATIONINSIGHTS_LOGDIR + STATUS_FILE_DIRECTORY;
     }
 
     private StatusFile() {
     }
 
+    @VisibleForTesting
+    static boolean shouldWrite() {
+        return enabled && DiagnosticsHelper.isAppServiceCodeless();
+    }
+
     public static <T> void putValueAndWrite(String key, T value) {
-        if (!DiagnosticsHelper.shouldOutputDiagnostics()) {
+        if (!shouldWrite()) {
             return;
         }
         CONSTANT_VALUES.put(key, value);
@@ -117,7 +127,7 @@ public class StatusFile {
     }
 
     public static void write() {
-        if (!DiagnosticsHelper.shouldOutputDiagnostics()) {
+        if (!shouldWrite()) {
             return;
         }
         WRITER_THREAD.submit(new Runnable() {
