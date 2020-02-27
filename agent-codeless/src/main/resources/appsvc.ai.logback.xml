@@ -19,5 +19,5 @@
         <appender-ref ref="DIAGNOSTICS_FILE" /><!-- optional; platform dependent -->
     </root>
 
-    <logger name="applicationinsights.extension.diagnostics" level="${applciationinsights.extension.diagnostics.level:-info}" />
+    <logger name="applicationinsights.extension.diagnostics" level="${applicationinsights.extension.diagnostics.level:-info}" />
 </configuration>
