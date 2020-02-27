@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <included>
-    <property scope="system" name="ai.logdir" value="${site.logdir:-${HOME:-.}/LogFiles}/ApplicationInsights" />
-    <property scope="system" name="ai.logfile.name" value="application-insights-extension" />
-    <property scope="system" name="ai.logfile.ext" value=".log" />
+    <property scope="local" name="ai.logdir" value="${site.logdir:-${HOME:-.}/LogFiles}/ApplicationInsights" />
+    <property scope="local" name="ai.logfile.name" value="application-insights-extension" />
+    <property scope="local" name="ai.logfile.ext" value=".log" />
 
     <!-- site.logdir output -->
     <appender name="USER_LOG_FILE" class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
