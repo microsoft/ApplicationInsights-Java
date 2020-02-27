@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+    <property scope="system" name="ai.appsvc.logfile.name" value="${ai.logfile.name:-application-insights-extension}" />
+    <property scope="system" name="ai.appsvc.logfile.ext" value="${ai.logfile.ext:-.log}" />
+    <property scope="system" name="ai.appsvc.logfile.old.ext" value="${ai.appsvc.logfile.ext:-.log}.old" />
+
+    <!-- internal troubleshooting/diagnostics logs -->
+    <appender name="DIAGNOSTICS_FILE" class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY}/${ai.appsvc.logfile.name}${ai.appsvc.logfile.ext}</file>
+        <rollingPolicy class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY}/${ai.appsvc.logfile.name}-%d{yyyy-MM-dd}.%i${ai.appsvc.logfile.old.ext}</fileNamePattern>
+            <maxHistory>1</maxHistory>
+            <totalSizeCap>10MB</totalSizeCap>
+            <maxFileSize>5MB</maxFileSize>
+        </rollingPolicy>
+        <encoder class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsJsonLayout">
+                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSX</timestampFormat>
+                <timestampFormatTimezoneId>Etc/UTC</timestampFormatTimezoneId>
+                <appendLineSeparator>true</appendLineSeparator>
+                <jsonFormatter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.MoshiJsonFormatter">
+                    <prettyPrint>false</prettyPrint>
+                </jsonFormatter>
+            </layout>
+        </encoder>
+        <!-- accepts logs only from applicationinsights.extension.diagnostics or errors -->
+        <filter class="com.microsoft.applicationinsights.agentc.internal.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter"/>
+    </appender>
+</included>
