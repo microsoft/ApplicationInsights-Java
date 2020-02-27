@@ -13,6 +13,7 @@ def instrumentationVersion = '0.1.2-SNAPSHOT'
 dependencies {
     compile project(':agent:agent-tooling')
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-apache-httpasyncclient-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-apache-httpclient-3.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-apache-httpclient-4.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-classloading', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-datastax-cassandra-3.0', version: instrumentationVersion
