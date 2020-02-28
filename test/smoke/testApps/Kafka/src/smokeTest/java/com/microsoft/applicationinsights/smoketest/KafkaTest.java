@@ -37,33 +37,40 @@ public class KafkaTest extends AiSmokeTest {
     @TargetUri("/sendMessage")
     public void doMostBasicTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
 
-        Envelope rdEnvelope1 = rdList.get(0);
-        Envelope rdEnvelope2 = rdList.get(1);
-        Envelope rddEnvelope = rddList.get(0);
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
+        Envelope rdEnvelope2 = getRequestEnvelope(rdList, "Kafka consumer: mytopic");
+        Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "mytopic");
+        Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "GET /");
 
         RequestData rd1 = (RequestData) ((Data) rdEnvelope1.getData()).getBaseData();
         RequestData rd2 = (RequestData) ((Data) rdEnvelope2.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
 
-        if (!rd1.getName().equals("GET /sendMessage")) {
-            // swap request and envelope 1 and 2
-            Envelope tmpEnvelope = rdEnvelope1;
-            rdEnvelope1 = rdEnvelope2;
-            rdEnvelope2 = tmpEnvelope;
-            RequestData tmp = rd1;
-            rd1 = rd2;
-            rd2 = tmp;
+        assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
+        assertParentChild(rdd1.getId(), rddEnvelope1, rdEnvelope2);
+        assertParentChild(rd2.getId(), rdEnvelope2, rddEnvelope2);
+    }
+
+    private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {
+        for (Envelope envelope : envelopes) {
+            RequestData rd = (RequestData) ((Data) envelope.getData()).getBaseData();
+            if (rd.getName().equals(name)) {
+                return envelope;
+            }
         }
+        throw new IllegalStateException("Could not find request with name: " + name);
+    }
 
-        assertEquals("GET /sendMessage", rd1.getName());
-        assertEquals("Kafka", rdd.getType());
-        assertEquals("mytopic", rdd.getName());
-        assertEquals("Kafka consumer: mytopic", rd2.getName());
-
-        assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope);
-        assertParentChild(rdd.getId(), rddEnvelope, rdEnvelope2);
+    private static Envelope getDependencyEnvelope(List<Envelope> envelopes, String name) {
+        for (Envelope envelope : envelopes) {
+            RemoteDependencyData rdd = (RemoteDependencyData) ((Data) envelope.getData()).getBaseData();
+            if (rdd.getName().equals(name)) {
+                return envelope;
+            }
+        }
+        throw new IllegalStateException("Could not find dependency with name: " + name);
     }
 
     private static void assertParentChild(String parentId, Envelope parentEnvelope, Envelope childEnvelope) {
