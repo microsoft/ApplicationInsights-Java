@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -93,6 +94,10 @@ public class Config {
 
   public static final String EXPERIMENTAL_LOG_CAPTURE_THRESHOLD =
       "experimental.log.capture.threshold";
+
+  // this is not exposed to end users
+  private static final String ADDITIONAL_BOOTSTRAP_PACKAGE_PREFIXES =
+      "additional.bootstrap.package.prefixes";
 
   private static final boolean DEFAULT_TRACE_ENABLED = true;
   public static final boolean DEFAULT_INTEGRATIONS_ENABLED = true;
@@ -166,6 +171,9 @@ public class Config {
 
   private final Map<String, String> endpointPeerServiceMapping;
 
+  // this is not exposed to end users
+  private final List<String> additionalBootstrapPackagePrefixes;
+
   // Values from an optionally provided properties file
   private final Properties propertiesFromConfigFile;
 
@@ -233,6 +241,9 @@ public class Config {
         getBooleanSettingFromEnvironment(HYSTRIX_TAGS_ENABLED, DEFAULT_HYSTRIX_TAGS_ENABLED);
 
     endpointPeerServiceMapping = getMapSettingFromEnvironment(ENDPOINT_PEER_SERVICE_MAPPING);
+
+    // this is not exposed to end users
+    additionalBootstrapPackagePrefixes = new ArrayList<>();
 
     log.debug("New instance: {}", this);
   }
@@ -303,6 +314,9 @@ public class Config {
     endpointPeerServiceMapping =
         getPropertyMapValue(
             properties, ENDPOINT_PEER_SERVICE_MAPPING, Collections.<String, String>emptyMap());
+
+    additionalBootstrapPackagePrefixes =
+        parseList(properties.getProperty(ADDITIONAL_BOOTSTRAP_PACKAGE_PREFIXES));
 
     log.debug("New instance: {}", this);
   }
@@ -669,6 +683,10 @@ public class Config {
 
   public Map<String, String> getEndpointPeerServiceMapping() {
     return endpointPeerServiceMapping;
+  }
+
+  public List<String> getAdditionalBootstrapPackagePrefixes() {
+    return additionalBootstrapPackagePrefixes;
   }
 
   @Override
