@@ -18,6 +18,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.instrumentation.api.internal.BootstrapPackagePrefixesHolder;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.tooling.Constants;
@@ -105,6 +106,16 @@ public final class ClassLoaderInstrumentation extends Instrumenter.Default {
         // stack on one of our bootstrap packages (since the call depth check would then suppress
         // the nested loadClass instrumentation)
         CallDepthThreadLocalMap.reset(ClassLoader.class);
+      }
+      // TODO replace with new SPI in 0.10.0
+      for (final String prefix :
+          Config.get().getListProperty("additional.bootstrap.package.prefixes")) {
+        if (name.startsWith(prefix)) {
+          try {
+            return Class.forName(name, false, null);
+          } catch (final ClassNotFoundException e) {
+          }
+        }
       }
       return null;
     }
