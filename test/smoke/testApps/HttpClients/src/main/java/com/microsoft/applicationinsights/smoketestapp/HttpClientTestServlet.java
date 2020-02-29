@@ -22,6 +22,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @WebServlet("/*")
 public class HttpClientTestServlet extends HttpServlet {
@@ -54,6 +55,8 @@ public class HttpClientTestServlet extends HttpServlet {
             return okHttp3();
         } else if (pathInfo.equals("/okHttp2")) {
             return okHttp2();
+        } else if (pathInfo.equals("/springWebClient")) {
+            return springWebClient();
         } else if (pathInfo.equals("/httpURLConnection")) {
             return httpURLConnection();
         } else {
@@ -109,6 +112,14 @@ public class HttpClientTestServlet extends HttpServlet {
         com.squareup.okhttp.Response response = client.newCall(request).execute();
         response.body().close();
         return response.code();
+    }
+
+    private int springWebClient() {
+        return WebClient.create().get()
+                .uri("https://www.bing.com")
+                .exchange()
+                .map(response -> response.statusCode())
+                .block().value();
     }
 
     private int httpURLConnection() throws IOException {
