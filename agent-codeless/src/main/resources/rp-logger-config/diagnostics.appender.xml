@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <included>
-    <property scope="local" name="ai.appsvc.logfile.name" value="${ai.logfile.name:-application-insights-extension}" />
-    <property scope="local" name="ai.appsvc.logfile.ext" value="${ai.logfile.ext:-.log}" />
-    <property scope="local" name="ai.appsvc.logfile.old.ext" value="${ai.appsvc.logfile.ext:-.log}.old" />
+    <property scope="local" name="ai.appsvc.logfile.name" value="application-insights-extension" />
+    <property scope="local" name="ai.appsvc.logfile.ext" value=".log" />
+    <property scope="local" name="ai.appsvc.logfile.old.ext" value="${ai.appsvc.logfile.ext}.old" />
 
     <!-- internal troubleshooting/diagnostics logs -->
     <appender name="DIAGNOSTICS_FILE" class="com.microsoft.applicationinsights.agentc.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
