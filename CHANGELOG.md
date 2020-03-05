@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# Version 2.6.0-BETA.3
+* Use newer id format when reporting request and dependency telemetry
+  ([#1149](https://github.com/microsoft/ApplicationInsights-Java/issues/1174))
+* Fixed pom file dependency in applicationinsights-spring-boot-starter
+  ([#1149](https://github.com/microsoft/ApplicationInsights-Java/issues/1197))
+
+
 # Version 2.6.0-BETA.2
 * Removed Local Forwarder Channel. Local Forwarder is now a deprecated solution.
 The classes and configuration elements which supported this solution have been removed.
