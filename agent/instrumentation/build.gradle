@@ -15,30 +15,30 @@ dependencies {
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-apache-httpasyncclient-4.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-apache-httpclient-3.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-apache-httpclient-4.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-classloading', version: instrumentationVersion
-    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-datastax-cassandra-3.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-cassandra-3.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-grpc-1.5', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-http-url-connection', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-java-class-loader', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-java-concurrent', version: instrumentationVersion
-    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-java-util-logging-events', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-java-util-logging', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-jdbc', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-jedis-1.4', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-jedis-3.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-jms-1.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-kafka-clients-0.11', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-lettuce-5.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-log4j-events-1.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-log4j-events-2.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-logback-events-1.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-driver-3.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-driver-3.7', version: instrumentationVersion
-    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-driver-async-3.3', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-log4j-1.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-log4j-2.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-logback-1.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-3.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-3.7', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-async-3.3', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-netty-4.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-netty-4.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-okhttp-3.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-opentelemetry-api-0.2', version: instrumentationVersion
-    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-servlet-request-2.3', version: instrumentationVersion
-    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-servlet-request-3.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-request-2.3', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-request-3.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-spring-scheduling-3.1', version: instrumentationVersion
 
     // also: jaxrs, spring, struts
@@ -60,7 +60,7 @@ task shadowJarStep1(type: com.github.jengelman.gradle.plugins.shadow.tasks.Shado
     configurations = [project.configurations.runtime]
 
     dependencies {
-        exclude(dependency('io.opentelemetry.auto.instrumentation:instrumentation-java-util-logging-events'))
+        exclude(dependency('io.opentelemetry.auto.instrumentation:instrumentation-java-util-logging'))
 
         // exclude bootstrap dependencies from shadowJar
         exclude(dependency('io.opentelemetry.auto:auto-bootstrap'))
