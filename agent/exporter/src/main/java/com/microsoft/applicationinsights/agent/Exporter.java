@@ -30,6 +30,7 @@ import java.util.Map;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
@@ -65,7 +66,7 @@ public class Exporter implements SpanExporter {
     public ResultCode export(List<SpanData> spans) {
         try {
             for (SpanData span : spans) {
-                // System.out.println("SPAN: " + span);
+                logger.debug("exporting span: {}", span);
                 export(span);
             }
             return ResultCode.SUCCESS;
