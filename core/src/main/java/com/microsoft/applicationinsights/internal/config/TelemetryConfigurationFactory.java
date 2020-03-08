@@ -467,7 +467,7 @@ public enum TelemetryConfigurationFactory {
                     continue;
                 }
 
-                collection.add(new JmxAttributeData(jmxElement.getDisplayName(), jmxElement.getAttribute(), jmxElement.getType()));
+                collection.add(new JmxAttributeData(jmxElement.getDisplayName(), jmxElement.getAttribute()));
             }
 
             // Register each entry in the performance container

@@ -32,8 +32,6 @@ public class JmxXmlElement {
 
     private String attribute;
 
-    private String type;
-
     public String getDisplayName() {
         return displayName;
     }
@@ -56,13 +54,5 @@ public class JmxXmlElement {
 
     public void setAttribute(String attribute) {
         this.attribute = attribute;
-    }
-
-    public String getType() {
-        return type == null ? null : type.toUpperCase();
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 }
