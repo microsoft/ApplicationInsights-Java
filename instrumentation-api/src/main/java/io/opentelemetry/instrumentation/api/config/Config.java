@@ -188,4 +188,8 @@ public abstract class Config {
   private String getRawProperty(String name, String defaultValue) {
     return getAllProperties().getOrDefault(NamingConvention.DOT.normalize(name), defaultValue);
   }
+
+  public void updateProperty(String key, String value) {
+    getAllProperties().put(key, value);
+  }
 }
