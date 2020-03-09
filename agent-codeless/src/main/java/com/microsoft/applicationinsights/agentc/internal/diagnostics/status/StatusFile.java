@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.squareup.moshi.Moshi;
 import okio.BufferedSink;
 import okio.Okio;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,26 @@ public class StatusFile {
     @VisibleForTesting
     static final String FILE_EXTENSION = ".json";
 
-    private static final String DEFAULT_STATUS_FILE_DIRECTORY = "/home/LogFiles/ApplicationInsights/status";
+    @VisibleForTesting
+    static final String SITE_LOGDIR_PROPERTY = "site.logdir";
+
+    @VisibleForTesting
+    static final String HOME_ENV_VAR = "HOME";
+
+    @VisibleForTesting
+    static final String DEFAULT_HOME_DIR = ".";
+
+    @VisibleForTesting
+    static final String DEFAULT_LOGDIR = "/LogFiles";
+
+    @VisibleForTesting
+    static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = "/ApplicationInsights";
+
+    @VisibleForTesting
+    static final String STATUS_FILE_DIRECTORY = "/status";
+
+    @VisibleForTesting
+    static final String STATUS_FILE_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_STATUS_FILE_ENABLED";
 
     @VisibleForTesting
     static String directory;
@@ -66,6 +86,9 @@ public class StatusFile {
             new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
                     ThreadPoolUtils.createNamedDaemonThreadFactory("StatusFileWriter"));
 
+    private static boolean enabled;
+
+
     static {
         WRITER_THREAD.allowCoreThreadTimeOut(true);
         CONSTANT_VALUES.put("AppType", "java");
@@ -76,18 +99,27 @@ public class StatusFile {
         VALUE_FINDERS.add(new InstrumentationKeyFinder());
         VALUE_FINDERS.add(new AgentExtensionVersionFinder());
 
-        if (SystemInformation.INSTANCE.isWindows()) {
-            directory = "D:" + DEFAULT_STATUS_FILE_DIRECTORY;
-        } else {
-            directory = DEFAULT_STATUS_FILE_DIRECTORY;
-        }
+        init();
+    }
+
+    @VisibleForTesting
+    static void init() {
+        enabled = !"false".equalsIgnoreCase(System.getenv(STATUS_FILE_ENABLED_ENV_VAR));
+
+        directory = StringUtils.defaultIfEmpty(System.getProperty(SITE_LOGDIR_PROPERTY), StringUtils.defaultIfEmpty(System.getenv(HOME_ENV_VAR), DEFAULT_HOME_DIR) + DEFAULT_LOGDIR)
+                + DEFAULT_APPLICATIONINSIGHTS_LOGDIR + STATUS_FILE_DIRECTORY;
     }
 
     private StatusFile() {
     }
 
+    @VisibleForTesting
+    static boolean shouldWrite() {
+        return enabled && DiagnosticsHelper.isAppServiceCodeless();
+    }
+
     public static <T> void putValueAndWrite(String key, T value) {
-        if (!DiagnosticsHelper.shouldOutputDiagnostics()) {
+        if (!shouldWrite()) {
             return;
         }
         CONSTANT_VALUES.put(key, value);
@@ -95,7 +127,7 @@ public class StatusFile {
     }
 
     public static void write() {
-        if (!DiagnosticsHelper.shouldOutputDiagnostics()) {
+        if (!shouldWrite()) {
             return;
         }
         WRITER_THREAD.submit(new Runnable() {

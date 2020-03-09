@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Microsoft.ApplicationInsights.JavaCodelessAgent</id>
-    <version>2.5.1</version>
+    <version>2.5.2</version>
     <title>Application Insights Java Codeless Agent Package</title>
     <authors>Microsoft</authors>
     <licenseUrl>http://go.microsoft.com/fwlink/?LinkID=391182</licenseUrl>
@@ -11,7 +11,13 @@
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>Application Insights Java Codeless Agent.</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-    <releaseNotes />
+    <releaseNotes>
+        * Fixed IPA log directory defaults for Windows.
+        * Introduced environment variable `APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY` for internal self-diagnostic logs.
+        * Updated Status File location to be relative to the log directory (controlled by same variables/properties).
+        * Added env var `APPLICATIONINSIGHTS_EXTENSION_LOG_FILE_ENABLED`. $HOME/LogFiles/ApplicationInsights/*.log is disabled when set to "false".
+        * Added env var `APPLICATIONINSIGHTS_EXTENSION_STATUS_FILE_ENABLED`. $HOME/LogFile/ApplicationInsights/status/status_*.json is disabled when set to "false".
+    </releaseNotes>
     <tags>Microsoft ApplicationInsights Java Codeless</tags>
   </metadata>
   <files>

@@ -60,6 +60,9 @@ public class TestController {
         expectedEntries.add("NOTICE");
         expectedEntries.add("ai.logback.xml");
         expectedEntries.add("appsvc.ai.logback.xml");
+        expectedEntries.add("rp-logger-config/");
+        expectedEntries.add("rp-logger-config/user-logfile.appender.xml");
+        expectedEntries.add("rp-logger-config/diagnostics.appender.xml");
         expectedEntries.add("sdk-version.properties");
         JarFile jarFile = new JarFile(agentJarFile);
         List<String> unexpected = new ArrayList<>();
