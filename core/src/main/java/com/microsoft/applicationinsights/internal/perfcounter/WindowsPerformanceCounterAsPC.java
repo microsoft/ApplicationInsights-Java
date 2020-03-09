@@ -55,7 +55,6 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
         Preconditions.checkState(SystemInformation.INSTANCE.isWindows(), "Must be used under Windows OS.");
 
         register(Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, Constants.INSTANCE_NAME_TOTAL);
-        register(Constants.TOTAL_MEMORY_PC_CATEGORY_NAME, Constants.TOTAL_MEMORY_PC_COUNTER_NAME, "");
         register(Constants.PROCESS_CATEGORY, Constants.PROCESS_IO_PC_COUNTER_NAME, JniPCConnector.translateInstanceName(JniPCConnector.PROCESS_SELF_INSTANCE_NAME));
 
         if (pcs.isEmpty()) {

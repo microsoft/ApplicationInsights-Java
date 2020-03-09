@@ -21,25 +21,26 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.lang.management.ManagementFactory;
+import javax.management.ObjectName;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * The class supplies the overall memory usage of the machine.
- *
- * Created by gupele on 3/9/2015.
+ * The class supplies the memory usage in Mega Bytes of the Java process the SDK is in.
+ * <p>
+ * Created by gupele on 3/3/2015.
  */
-final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCounter {
-    private final static String MEM_FILE = "/proc/meminfo";
-    private final static double KB = 1024.0;
+final class FreeMemoryPerformanceCounter extends AbstractPerformanceCounter {
 
-    public UnixTotalMemoryPerformanceCounter() {
-        super(MEM_FILE);
+    private ObjectName osBean;
+
+    public FreeMemoryPerformanceCounter() {
     }
 
     @Override
@@ -49,48 +50,30 @@ final class UnixTotalMemoryPerformanceCounter extends AbstractUnixPerformanceCou
 
     @Override
     public void report(TelemetryClient telemetryClient) {
-        Double totalAvailableMemory = getTotalAvailableMemory();
-        if (totalAvailableMemory == null) {
+        long freePhysicalMemorySize;
+        try {
+            freePhysicalMemorySize = getFreePhysicalMemorySize();
+        } catch (Exception e) {
+            InternalLogger.INSTANCE.error("Error getting FreePhysicalMemorySize");
+            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
             return;
         }
 
-        InternalLogger.INSTANCE.trace("Sending Performance Counter: %s %s: %s", Constants.TOTAL_MEMORY_PC_CATEGORY_NAME, Constants.TOTAL_MEMORY_PC_COUNTER_NAME, totalAvailableMemory);
+        InternalLogger.INSTANCE.trace("Performance Counter: %s %s: %s", Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
+                Constants.TOTAL_MEMORY_PC_COUNTER_NAME, freePhysicalMemorySize);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
                 Constants.TOTAL_MEMORY_PC_COUNTER_NAME,
                 "",
-                totalAvailableMemory);
+                freePhysicalMemorySize);
 
         telemetryClient.track(telemetry);
     }
 
-    private Double getTotalAvailableMemory() {
-        BufferedReader bufferedReader = null;
-
-        Double result = null;
-        UnixTotalMemInfoParser reader = new UnixTotalMemInfoParser();
-        try {
-            bufferedReader = new BufferedReader(new FileReader(getProcessFile()));
-            String line;
-            while (!reader.done() && (line = bufferedReader.readLine()) != null) {
-                reader.process(line);
-            }
-
-            // The value we get is in KB so we need to translate that to bytes.
-            result = reader.getValue() * KB;
-        } catch (Exception e) {
-            result = null;
-            logPerfCounterErrorError("Error while parsing file: '%s'", e.toString());
-        } finally {
-            if (bufferedReader != null ) {
-                try {
-                    bufferedReader.close();
-                } catch (Exception e) {
-                    logPerfCounterErrorError("Error while closing file : '%s'", e.toString());
-                }
-            }
+    private long getFreePhysicalMemorySize() throws Exception {
+        if (osBean == null) {
+            osBean = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
         }
-
-        return result;
+        return (Long) ManagementFactory.getPlatformMBeanServer().getAttribute(osBean, "FreePhysicalMemorySize");
     }
 }

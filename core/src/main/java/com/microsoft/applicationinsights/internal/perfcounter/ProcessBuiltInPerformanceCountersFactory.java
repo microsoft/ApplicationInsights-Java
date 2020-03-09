@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
  * Created by gupele on 3/3/2015.
  */
 final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCountersFactory, WindowsPerformanceCountersFactory {
+
     private Iterable<WindowsPerformanceCounterData> windowsPCsData;
 
     /**
@@ -74,8 +75,9 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
     private ArrayList<PerformanceCounter> getMutualPerformanceCounters() {
         ArrayList<PerformanceCounter> performanceCounters = new ArrayList<PerformanceCounter>();
 
-        performanceCounters.add(new ProcessMemoryPerformanceCounter());
         performanceCounters.add(new ProcessCpuPerformanceCounter());
+        performanceCounters.add(new ProcessMemoryPerformanceCounter());
+        performanceCounters.add(new FreeMemoryPerformanceCounter());
 
         return performanceCounters;
     }
@@ -88,7 +90,6 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
         ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
         performanceCounters.add(new UnixProcessIOPerformanceCounter());
         performanceCounters.add(new UnixTotalCpuPerformanceCounter());
-        performanceCounters.add(new UnixTotalMemoryPerformanceCounter());
 
         return performanceCounters;
     }
