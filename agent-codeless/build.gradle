@@ -198,4 +198,48 @@ whenPomConfigured = { p ->
     p.dependencies = []
 }
 
+task verifyAgentJarContents {
+    dependsOn jar
+    Set expectedEntries = []
+    // jar_contents.regex should have one pattern per line
+    file("$projectDir/jar_contents.regex").eachLine {
+        expectedEntries << it
+    }
+    doLast {
+        def file = tasks.jar.archiveFile.get().asFile
+        def extraEntries = []
+        Set foundEntries = []
+        def acceptableEntry = { entry ->
+            expectedEntries.each { pattern ->
+                def result = entry.name.matches(pattern)
+                if (result) {
+                    foundEntries << pattern
+                }
+                result
+            }
+        }
+
+        new java.util.jar.JarFile(file).withCloseable { jarfile ->
+            jarfile.entries().each {
+                if (!acceptableEntry(it)) {
+                    extraEntries << it.name
+                }
+            }
+        }
+        
+        def error = ""
+        Set missingEntries = expectedEntries - foundEntries
+        if (!missingEntries.empty) {
+            error += "  missing entries: $missingEntries\n"
+        }
+        if (!extraEntries.empty) {
+            error += "  unexpected entries: $extraEntries\n"
+        }
+        if (!error.empty) {
+            throw new RuntimeException("${file.name} has issues:\n$error")
+        }
+        logger.info "${file.name} verified successfully."
+    }
+}
+tasks.assemble.dependsOn verifyAgentJarContents
 // endregion Publishing properties
