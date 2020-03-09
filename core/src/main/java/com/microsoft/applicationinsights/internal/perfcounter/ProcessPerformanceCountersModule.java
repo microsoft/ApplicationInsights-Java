@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 
 import java.util.ArrayList;
 
-import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 import com.microsoft.applicationinsights.internal.config.PerformanceCountersXmlElement;
 import com.microsoft.applicationinsights.internal.config.WindowsPerformanceCounterXmlElement;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -34,7 +33,6 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
  *
  * Created by gupele on 3/3/2015.
  */
-@PerformanceModule("BuiltIn")
 public final class ProcessPerformanceCountersModule extends AbstractPerformanceCounterModule implements PerformanceCounterConfigurationAware {
     public ProcessPerformanceCountersModule() throws Exception {
         this(new ProcessBuiltInPerformanceCountersFactory());

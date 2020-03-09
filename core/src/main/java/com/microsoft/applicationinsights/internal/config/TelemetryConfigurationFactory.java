@@ -38,7 +38,6 @@ import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTel
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.annotation.AnnotationPackageScanner;
 import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
-import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -65,23 +64,9 @@ public enum TelemetryConfigurationFactory {
 
     // Default file name
     private static final String CONFIG_FILE_NAME = "ApplicationInsights.xml";
-    private static final String DEFAULT_PERFORMANCE_MODULES_PACKAGE = "com.microsoft.applicationinsights";
     private static final String BUILT_IN_NAME = "BuiltIn";
 
-    /**
-     * This enables scanning for classes annotated with {@link BuiltInProcessor}.
-     * If set "true" (case insensitive) scanning will be enabled. Otherwise (by default), it will be disabled.
-     */
-    public static final String BUILTIN_PROCESSORS_SCANNING_ENABLED_PROPERTY = "applicationinsights.processors.builtin.scanning.enabled";
-
-    /**
-     * This enables scanning for classes annotated with {@link PerformanceModule}.
-     * If set "true" (case insensitive) scanning will be enabled. Otherwise (by default), it will be disabled.
-     */
-    public static final String PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY = "applicationinsights.modules.performance.scanning.enabled";
     public static final String CONNECTION_STRING_ENV_VAR_NAME = "APPLICATIONINSIGHTS_CONNECTION_STRING";
-
-    private String performanceCountersSection = DEFAULT_PERFORMANCE_MODULES_PACKAGE;
 
     static final String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
@@ -225,11 +210,7 @@ public enum TelemetryConfigurationFactory {
             ArrayList<TelemetryProcessorXmlElement> b = configurationProcessors.getBuiltInTelemetryProcessors();
             if (!b.isEmpty()) {
                 List<String> processorsBuiltInNames = new ArrayList<>();
-                if (System.getProperty(BUILTIN_PROCESSORS_SCANNING_ENABLED_PROPERTY, "false").equalsIgnoreCase("true")) {
-                    processorsBuiltInNames = AnnotationPackageScanner.scanForClassAnnotations(new Class[]{BuiltInProcessor.class}, performanceCountersSection);
-                } else {
-                    addDefaultBuiltInProcessors(processorsBuiltInNames);
-                }
+                addDefaultBuiltInProcessors(processorsBuiltInNames);
                 final HashMap<String, String> builtInMap = new HashMap<String, String>();
                 for (String processorsBuiltInName : processorsBuiltInNames) {
                     builtInMap.put(processorsBuiltInName.substring(processorsBuiltInName.lastIndexOf(".") + 1), processorsBuiltInName);
@@ -378,10 +359,6 @@ public enum TelemetryConfigurationFactory {
         ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
 
         List<String> performanceModuleNames = new ArrayList<>();
-        if (System.getProperty(PERFORMANCE_MODULES_SCANNING_ENABLED_PROPERTY, "false").equalsIgnoreCase("true")) {
-            performanceModuleNames = AnnotationPackageScanner.scanForClassAnnotations(new Class[]{PerformanceModule.class}, performanceCountersSection);
-        }
-
         if (performanceModuleNames.size() == 0) {
             // Only a workaround for JBoss web servers.
             // Will be removed once the issue will be investigated and fixed.
@@ -392,10 +369,6 @@ public enum TelemetryConfigurationFactory {
         for (String performanceModuleName : performanceModuleNames) {
             TelemetryModule module = ReflectionUtils.createInstance(performanceModuleName, TelemetryModule.class);
             if (module != null) {
-                PerformanceModule pmAnnotation = module.getClass().getAnnotation(PerformanceModule.class);
-                if (!performanceConfigurationData.isUseBuiltIn() && BUILT_IN_NAME.equals(pmAnnotation.value())) {
-                    continue;
-                }
                 if (module instanceof PerformanceCounterConfigurationAware) {
                     PerformanceCounterConfigurationAware awareModule = (PerformanceCounterConfigurationAware)module;
                     try {
@@ -590,10 +563,5 @@ public enum TelemetryConfigurationFactory {
             if (mod instanceof HeartBeatModule) return true;
         }
         return false;
-    }
-
-    @VisibleForTesting
-    void setPerformanceCountersSection(String performanceCountersSection) {
-        this.performanceCountersSection = performanceCountersSection;
     }
 }
