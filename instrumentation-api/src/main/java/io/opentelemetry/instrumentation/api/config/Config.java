@@ -212,4 +212,8 @@ public abstract class Config {
   public boolean isAgentDebugEnabled() {
     return getBoolean("otel.javaagent.debug", false);
   }
+
+  public void updateProperty(String key, String value) {
+    getAllProperties().put(key, value);
+  }
 }
