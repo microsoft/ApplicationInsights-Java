@@ -59,10 +59,4 @@ public interface TelemetryChannel {
      * Flushes the data that the channel might have internally.
      */
     void flush();
-
-    /**
-     * Sets an optional Sampler that can sample out telemetries
-     * @param telemetrySampler - The sampler
-     */
-    void setSampler(TelemetrySampler telemetrySampler);
 }

@@ -1,41 +1,28 @@
 package com.microsoft.applicationinsights.smoketest;
 
-import java.util.List;
-
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import com.google.common.base.Stopwatch;
 import org.junit.*;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 @UseAgent("FixedRateSampling")
 public class FixedRateSamplingTest extends AiSmokeTest {
-    @Test
-    @TargetUri("/fixedRateSampling")
-    public void testFixedRateSamplingInExcludedTypes() throws Exception {
-        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        Envelope rd = rdList.get(0);
-        assertEquals(100.0, rd.getSampleRate(), Math.ulp(50.0));
-    }
 
     @Test
     @TargetUri(value = "/fixedRateSampling", callCount = 100)
     public void testFixedRateSamplingInIncludedTypes() throws Exception {
-        mockedIngestion.waitForItems("RequestData", 100);
-        List<Envelope> edList = mockedIngestion.getItemsEnvelopeDataType("EventData");
-        // super super low chance that number of events sampled is less than 10 or greater than 90
-        assertThat(edList.size(), both(greaterThanOrEqualTo(10)).and(lessThanOrEqualTo(90)));
-        Envelope ed = edList.get(0);
-        assertEquals(50.0, ed.getSampleRate(), Math.ulp(50.0));
-    }
-
-    @Ignore
-    @Test
-    @TargetUri("/fixedRateSampling")
-    public void testFixedRateSamplingNotInExcludedTypes() throws Exception {
-        mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(1);
-        Envelope md = mdList.get(0);
-        assertEquals(100.0, md.getSampleRate(), Math.ulp(50.0));
+        // super super low chance that number of sampled requests is less than 10
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        while (mockedIngestion.getCountForType("RequestData") < 10 && stopwatch.elapsed(SECONDS) < 10) {
+        }
+        // wait ten more seconds to before checking that we didn't receive too many
+        Thread.sleep(SECONDS.toMillis(10));
+        int requestCount = mockedIngestion.getCountForType("RequestData");
+        int eventCount = mockedIngestion.getCountForType("EventData");
+        // super super low chance that number of sampled requests/events is greater than 90
+        assertThat(requestCount, lessThanOrEqualTo(90));
+        assertThat(eventCount, lessThanOrEqualTo(90));
     }
 }

@@ -48,8 +48,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     private SDKLoggerXmlElement sdkLogger;
 
-    private SamplerXmlElement sampler;
-
     private QuickPulseXmlElement quickPulse;
 
     private String schemaVersion;
@@ -116,14 +114,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     public void setChannel(ChannelXmlElement channel) {
         this.channel = channel;
-    }
-
-    public SamplerXmlElement getSampler() {
-        return sampler;
-    }
-
-    public void setSampler(SamplerXmlElement sampler) {
-        this.sampler = sampler;
     }
 
     public QuickPulseXmlElement getQuickPulse() {

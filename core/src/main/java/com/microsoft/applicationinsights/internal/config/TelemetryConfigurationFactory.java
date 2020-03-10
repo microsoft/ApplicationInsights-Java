@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import java.util.HashSet;
 import java.util.Map;
@@ -36,7 +34,6 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.*;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
@@ -102,8 +99,7 @@ public enum TelemetryConfigurationFactory {
         setRoleName(applicationInsightsConfig, configuration);
         setRoleInstance(applicationInsightsConfig, configuration);
 
-        TelemetrySampler telemetrySampler = getSampler(applicationInsightsConfig.getSampler());
-        boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), telemetrySampler, configuration);
+        boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), configuration);
         if (!channelIsConfigured) {
             InternalLogger.INSTANCE.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
         }
@@ -188,7 +184,6 @@ public enum TelemetryConfigurationFactory {
             ArrayList<TelemetryProcessorXmlElement> b = configurationProcessors.getBuiltInTelemetryProcessors();
             if (!b.isEmpty()) {
                 List<String> processorsBuiltInNames = new ArrayList<>();
-                addDefaultBuiltInProcessors(processorsBuiltInNames);
                 final HashMap<String, String> builtInMap = new HashMap<String, String>();
                 for (String processorsBuiltInName : processorsBuiltInNames) {
                     builtInMap.put(processorsBuiltInName.substring(processorsBuiltInName.lastIndexOf(".") + 1), processorsBuiltInName);
@@ -209,11 +204,6 @@ public enum TelemetryConfigurationFactory {
             loadProcessorComponents(processors, customs);
         }
     }
-
-    private void addDefaultBuiltInProcessors(List<String> p) {
-        p.add(FixedRateSamplingTelemetryProcessor.class.getCanonicalName());
-    }
-
 
     /**
      * Setting an instrumentation key:
@@ -427,23 +417,17 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
-    private TelemetrySampler getSampler(SamplerXmlElement sampler) {
-        return new TelemetrySamplerInitializer().getSampler(sampler);
-    }
-
     /**
      * Setting the channel.
      * @param channelXmlElement The configuration element holding the channel data.
-     * @param telemetrySampler The sampler that should be injected into the channel
      * @param configuration The configuration class.
      * @return True on success.
      */
-    private boolean setChannel(ChannelXmlElement channelXmlElement, TelemetrySampler telemetrySampler, TelemetryConfiguration configuration) {
+    private boolean setChannel(ChannelXmlElement channelXmlElement, TelemetryConfiguration configuration) {
         String channelName = channelXmlElement.getType();
         if (channelName != null) {
             TelemetryChannel channel = createChannel(channelXmlElement, configuration);
             if (channel != null) {
-                channel.setSampler(telemetrySampler);
                 configuration.setChannel(channel);
                 return true;
             } else {
@@ -457,13 +441,11 @@ public enum TelemetryConfigurationFactory {
         try {
             // We will create the default channel and we assume that the data is relevant.
             TelemetryChannel channel = new InProcessTelemetryChannel(configuration, channelXmlElement.getData());
-            channel.setSampler(telemetrySampler);
             configuration.setChannel(channel);
             return true;
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to create InProcessTelemetryChannel, exception: %s, will create the default one with default arguments", e.toString());
             TelemetryChannel channel = new InProcessTelemetryChannel(configuration);
-            channel.setSampler(telemetrySampler);
             configuration.setChannel(channel);
             return true;
         }

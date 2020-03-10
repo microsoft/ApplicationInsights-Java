@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.TestFramework;
 
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 import java.util.concurrent.TimeUnit;
@@ -30,11 +29,6 @@ public class StubTelemetryChannel implements TelemetryChannel {
 
     @Override
     public void flush() {
-
-    }
-
-    @Override
-    public void setSampler(TelemetrySampler telemetrySampler) {
 
     }
 }

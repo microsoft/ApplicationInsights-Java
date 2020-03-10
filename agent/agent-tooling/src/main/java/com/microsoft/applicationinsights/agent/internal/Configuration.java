@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface;
-import com.squareup.moshi.Json;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Configuration {
@@ -75,20 +74,7 @@ public class Configuration {
     public static class FixedRateSampling {
 
         @Nullable
-        @Json(name = "default")
-        public Double default_;
-        @Nullable
-        public Double requests;
-        @Nullable
-        public Double dependencies;
-        @Nullable
-        public Double exceptions;
-        @Nullable
-        public Double traces;
-        @Nullable
-        public Double customEvents;
-        @Nullable
-        public Double pageViews;
+        public Double percentage;
     }
 
     public static class LiveMetrics {

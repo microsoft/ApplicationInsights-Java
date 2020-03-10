@@ -26,13 +26,7 @@ public class ConfigurationTest {
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
         assertEquals("Something Good", configuration.roleName);
         assertEquals("xyz123", configuration.roleInstance);
-        assertEquals((Double) 9.0, configuration.experimental.sampling.fixedRate.default_);
-        assertEquals((Double) 8.0, configuration.experimental.sampling.fixedRate.requests);
-        assertEquals((Double) 7.0, configuration.experimental.sampling.fixedRate.dependencies);
-        assertEquals((Double) 6.0, configuration.experimental.sampling.fixedRate.exceptions);
-        assertEquals((Double) 5.0, configuration.experimental.sampling.fixedRate.traces);
-        assertEquals((Double) 4.0, configuration.experimental.sampling.fixedRate.customEvents);
-        assertEquals((Double) 3.0, configuration.experimental.sampling.fixedRate.pageViews);
+        assertEquals((Double) 10.0, configuration.experimental.sampling.fixedRate.percentage);
         assertEquals(false, configuration.experimental.liveMetrics.enabled);
         assertEquals(3, configuration.jmxMetrics.size());
         assertEquals("java.lang:type=Threading", configuration.jmxMetrics.get(0).objectName);

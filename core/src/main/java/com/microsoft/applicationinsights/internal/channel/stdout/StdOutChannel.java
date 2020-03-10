@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -77,9 +76,5 @@ public class StdOutChannel implements TelemetryChannel
 
     @Override
     public void flush() {
-    }
-
-    @Override
-    public void setSampler(TelemetrySampler telemetrySampler) {
     }
 }

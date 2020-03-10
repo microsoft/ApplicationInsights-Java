@@ -53,8 +53,6 @@ public final class ReflectionUtils {
 
         addClass(com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer.class);
         addClass(com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer.class);
-
-        addClass(com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor.class);
     }
 
     static void addClass(Class<?> clazz) {

@@ -3,8 +3,7 @@
   "experimental": {
     "sampling": {
       "fixedRate": {
-        "default": 100,
-        "customEvents": 50
+        "percentage": 50
       }
     }
   }

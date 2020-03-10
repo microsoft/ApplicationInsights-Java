@@ -22,13 +22,7 @@
   "experimental": {
     "sampling": {
       "fixedRate": {
-        "default": 9,
-        "requests": 8,
-        "dependencies": 7,
-        "exceptions": 6,
-        "traces": 5,
-        "customEvents": 4,
-        "pageViews": 3
+        "percentage": 10
       },
       "adaptiveRate": {
         "default": {

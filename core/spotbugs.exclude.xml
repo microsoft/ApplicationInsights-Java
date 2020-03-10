@@ -8,14 +8,6 @@
         <!-- These random numbers are not used for cryptography. Predictable pseudorandom is sufficient. -->
         <Or>
             <And>
-                <Class name="com.microsoft.applicationinsights.internal.channel.sampling.SamplingScoreGenerator" />
-                <Method name="&lt;clinit&gt;" />
-            </And>
-            <And>
-                <Class name="com.microsoft.applicationinsights.internal.channel.samplingV2.SamplingScoreGeneratorV2" />
-                <Method name="&lt;clinit&gt;" />
-            </And>
-            <And>
                 <Class name="com.microsoft.applicationinsights.internal.util.LocalStringsUtils" />
                 <Method name="generateRandomIntegerId" />
             </And>

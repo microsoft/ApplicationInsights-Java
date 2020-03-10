@@ -26,7 +26,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
@@ -72,7 +71,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     protected boolean isInitailized = false;
 
     protected TelemetriesTransmitter<T> telemetriesTransmitter;
-    protected volatile TelemetrySampler telemetrySampler;
     protected TelemetryBuffer<T> telemetryBuffer;
 
     private boolean developerMode = false;
@@ -320,20 +318,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     }
 
     /**
-     * Sets an optional Sampler that can sample out telemetries Currently, we don't
-     * allow to replace a valid telemtry sampler.
-     *
-     * @param telemetrySampler
-     *            - The sampler
-     */
-    @Override
-    public void setSampler(TelemetrySampler telemetrySampler) {
-        if (this.telemetrySampler == null) {
-            this.telemetrySampler = telemetrySampler;
-        }
-    }
-
-    /**
      * Sends a Telemetry instance through the channel.
      */
     @Override
@@ -342,12 +326,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
 
         if (isDeveloperMode()) {
             telemetry.getContext().getProperties().put("DeveloperMode", "true");
-        }
-
-        if (telemetrySampler != null) {
-            if (!telemetrySampler.isSampledIn(telemetry)) {
-                return;
-            }
         }
 
         if (!doSend(telemetry)) {

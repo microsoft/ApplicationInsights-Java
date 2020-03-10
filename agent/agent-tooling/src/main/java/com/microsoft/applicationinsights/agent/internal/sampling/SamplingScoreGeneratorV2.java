@@ -1,8 +1,7 @@
-package com.microsoft.applicationinsights.internal.channel.samplingV2;
-
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import java.util.Random;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -17,15 +16,15 @@ public class SamplingScoreGeneratorV2 {
     /**
      * This method takes the telemetry and returns the hash of the operation id if it is present already
      * or uses the random number generator to generate the sampling score.
-     * @param telemetry
+     * @param operationId
      * @return [0.0, 1.0)
      */
-    public static double getSamplingScore(Telemetry telemetry) {
+    public static double getSamplingScore(String operationId) {
 
         double samplingScore;
 
-        if (!StringUtils.isEmpty(telemetry.getContext().getOperation().getId())) {
-            samplingScore =  ((double) getSamplingHashCode(telemetry.getContext().getOperation().getId()) / Integer.MAX_VALUE);
+        if (!StringUtils.isEmpty(operationId)) {
+            samplingScore =  ((double) getSamplingHashCode(operationId) / Integer.MAX_VALUE);
         } else {
             samplingScore =  random.nextDouble(); // [0,1)
         }
@@ -34,23 +33,29 @@ public class SamplingScoreGeneratorV2 {
     }
 
     /**
-     * @param input
+     * @param operationId
      * @return [0, Integer.MAX_VALUE)
      */
-    static int getSamplingHashCode(String input) {
-        if (StringUtils.isEmpty(input)) {
+    static int getSamplingHashCode(String operationId) {
+        if (StringUtils.isEmpty(operationId)) {
             return 0;
         }
 
-        StringBuilder inputBuilder = new StringBuilder(input);
-        while (inputBuilder.length() < 8) {
-            inputBuilder.append(input);
+        CharSequence opId;
+        if (operationId.length() < 8) {
+            StringBuilder opIdBuilder = new StringBuilder(operationId);
+            while (opIdBuilder.length() < 8) {
+                opIdBuilder.append(operationId);
+            }
+            opId = opIdBuilder;
+        } else {
+            opId = operationId;
         }
 
         int hash = 5381;
 
-        for (int i = 0; i < inputBuilder.length(); ++i) {
-            hash = ((hash << 5) + hash) + (int) inputBuilder.charAt(i);
+        for (int i = 0; i < opId.length(); ++i) {
+            hash = ((hash << 5) + hash) + (int) opId.charAt(i);
         }
 
         if (hash == Integer.MIN_VALUE || hash == Integer.MAX_VALUE) {

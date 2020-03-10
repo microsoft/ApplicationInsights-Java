@@ -24,12 +24,10 @@ package com.microsoft.applicationinsights.agent.internal;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -53,12 +51,6 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
-import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import io.opentelemetry.auto.config.Config;
 import io.opentelemetry.auto.config.ConfigOverride;
 import org.apache.http.HttpHost;
@@ -158,9 +150,10 @@ public class MainEntryPoint {
 
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
+
         FixedRateSampling fixedRateSampling = config.experimental.sampling.fixedRate;
-        if (fixedRateSampling != null) {
-            addFixedRateSampling(fixedRateSampling, configuration);
+        if (fixedRateSampling != null && fixedRateSampling.percentage != null) {
+            Global.setFixedRateSamplingPercentage(fixedRateSampling.percentage);
         }
         TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
@@ -278,32 +271,5 @@ public class MainEntryPoint {
         paramXml.setName(name);
         paramXml.setValue(value);
         return paramXml;
-    }
-
-    private static void addFixedRateSampling(FixedRateSampling fixedRateSampling,
-                                             TelemetryConfiguration configuration) {
-
-        double samplingRate = MoreObjects.firstNonNull(fixedRateSampling.default_, 100.0);
-        Map<Class<?>, Double> samplingPercentages = new HashMap<>();
-        if (fixedRateSampling.requests != null) {
-            samplingPercentages.put(RequestTelemetry.class, fixedRateSampling.requests);
-        }
-        if (fixedRateSampling.dependencies != null) {
-            samplingPercentages.put(RemoteDependencyTelemetry.class, fixedRateSampling.dependencies);
-        }
-        if (fixedRateSampling.exceptions != null) {
-            samplingPercentages.put(ExceptionTelemetry.class, fixedRateSampling.exceptions);
-        }
-        if (fixedRateSampling.traces != null) {
-            samplingPercentages.put(TraceTelemetry.class, fixedRateSampling.traces);
-        }
-        if (fixedRateSampling.customEvents != null) {
-            samplingPercentages.put(EventTelemetry.class, fixedRateSampling.customEvents);
-        }
-        if (fixedRateSampling.pageViews != null) {
-            samplingPercentages.put(PageViewTelemetry.class, fixedRateSampling.pageViews);
-        }
-        configuration.getTelemetryProcessors()
-                .add(new FixedRateSamplingTelemetryProcessor(samplingRate, samplingPercentages));
     }
 }

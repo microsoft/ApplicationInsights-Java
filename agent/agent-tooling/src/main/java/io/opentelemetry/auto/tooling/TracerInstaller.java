@@ -3,7 +3,9 @@ package io.opentelemetry.auto.tooling;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.internal.Global;
+import com.microsoft.applicationinsights.agent.internal.sampling.FixedRateSampler;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 
 public class TracerInstaller {
@@ -13,6 +15,13 @@ public class TracerInstaller {
         if (telemetryClient == null) {
             // agent failed during startup
             return;
+        }
+        double fixedRateSamplingPercentage = Global.getFixedRateSamplingPercentage();
+        if (fixedRateSamplingPercentage != 100) {
+            OpenTelemetrySdk.getTracerFactory().updateActiveTraceConfig(
+                    TraceConfig.getDefault().toBuilder()
+                            .setSampler(new FixedRateSampler(fixedRateSamplingPercentage))
+                            .build());
         }
         OpenTelemetrySdk.getTracerFactory()
                 .addSpanProcessor(SimpleSpansProcessor.newBuilder(new Exporter(telemetryClient)).build());

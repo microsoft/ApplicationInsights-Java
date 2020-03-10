@@ -30,12 +30,12 @@ import java.util.Map;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import io.opentelemetry.sdk.trace.SpanData;
@@ -177,11 +177,10 @@ public class Exporter implements SpanExporter {
             telemetry.getProperties().put("statusDescription", description);
         }
 
-        telemetryClient.track(telemetry);
-
-        trackExceptionIfNeeded(span, telemetry, telemetry.getId());
-
-        exportEvents(span);
+        Double samplingPercentage = getSamplingPercentage(span);
+        track(telemetry, samplingPercentage);
+        trackExceptionIfNeeded(span, telemetry, telemetry.getId(), samplingPercentage);
+        exportEvents(span, samplingPercentage);
     }
 
     private void exportRemoteDependency(SpanData span, boolean inProc) {
@@ -247,11 +246,10 @@ public class Exporter implements SpanExporter {
             telemetry.getProperties().put("statusDescription", description);
         }
 
-        telemetryClient.track(telemetry);
-
-        trackExceptionIfNeeded(span, telemetry, telemetry.getId());
-
-        exportEvents(span);
+        Double samplingPercentage = getSamplingPercentage(span);
+        track(telemetry, samplingPercentage);
+        trackExceptionIfNeeded(span, telemetry, telemetry.getId(), samplingPercentage);
+        exportEvents(span, samplingPercentage);
     }
 
     private void exportLogSpan(SpanData span) {
@@ -259,17 +257,18 @@ public class Exporter implements SpanExporter {
         String level = getString(span, "level");
         String loggerName = getString(span, "loggerName");
         String errorStack = getString(span, "error.stack");
+        Double samplingPercentage = getSamplingPercentage(span);
         if (errorStack == null) {
             trackTrace(message, span.getStartEpochNanos(), level, loggerName, span.getTraceId(),
-                    span.getParentSpanId());
+                    span.getParentSpanId(), samplingPercentage);
         } else {
             trackTraceAsException(message, span.getStartEpochNanos(), level, loggerName, errorStack, span.getTraceId(),
-                    span.getParentSpanId());
+                    span.getParentSpanId(), samplingPercentage);
         }
     }
 
     // currently only gRPC instrumentation creates events, which we export here as logs ("traces")
-    private void exportEvents(SpanData span) {
+    private void exportEvents(SpanData span, Double samplingPercentage) {
         for (TimedEvent event : span.getTimedEvents()) {
             String message = event.getName();
             long timeEpochNanos = event.getEpochNanos();
@@ -277,16 +276,17 @@ public class Exporter implements SpanExporter {
             String loggerName = getString(event, "loggerName");
             String errorStack = getString(event, "error.stack");
             if (errorStack == null) {
-                trackTrace(message, timeEpochNanos, level, loggerName, span.getTraceId(), span.getSpanId());
+                trackTrace(message, timeEpochNanos, level, loggerName, span.getTraceId(), span.getSpanId(),
+                        samplingPercentage);
             } else {
                 trackTraceAsException(message, timeEpochNanos, level, loggerName, errorStack, span.getTraceId(),
-                        span.getSpanId());
+                        span.getSpanId(), samplingPercentage);
             }
         }
     }
 
     private void trackTrace(String message, long timeEpochNanos, String level, String loggerName, TraceId traceId,
-                            SpanId parentSpanId) {
+                            SpanId parentSpanId, Double samplingPercentage) {
         TraceTelemetry telemetry = new TraceTelemetry(message, toSeverityLevel(level));
 
         if (parentSpanId.isValid()) {
@@ -296,11 +296,12 @@ public class Exporter implements SpanExporter {
         }
 
         setProperties(telemetry.getProperties(), timeEpochNanos, level, loggerName);
-        telemetryClient.trackTrace(telemetry);
+        track(telemetry, samplingPercentage);
     }
 
     private void trackTraceAsException(String message, long timeEpochNanos, String level, String loggerName,
-                                       String errorStack, TraceId traceId, SpanId parentSpanId) {
+                                       String errorStack, TraceId traceId, SpanId parentSpanId,
+                                       Double samplingPercentage) {
         ExceptionTelemetry telemetry = new ExceptionTelemetry();
 
         if (parentSpanId.isValid()) {
@@ -313,7 +314,7 @@ public class Exporter implements SpanExporter {
         telemetry.setSeverityLevel(toSeverityLevel(level));
         telemetry.getProperties().put("Logger Message", message);
         setProperties(telemetry.getProperties(), timeEpochNanos, level, loggerName);
-        telemetryClient.trackException(telemetry);
+        track(telemetry, samplingPercentage);
     }
 
     private void setProperties(Map<String, String> properties, long timeEpochNanos, String level, String loggerName) {
@@ -439,6 +440,10 @@ public class Exporter implements SpanExporter {
         properties.put("_MS.links", sb.toString());
     }
 
+    private Double getSamplingPercentage(SpanData span) {
+        return getDouble(span, "ai.sampling.percentage");
+    }
+
     private static String getString(SpanData span, String attributeName) {
         AttributeValue attributeValue = span.getAttributes().get(attributeName);
         if (attributeValue == null) {
@@ -450,6 +455,19 @@ public class Exporter implements SpanExporter {
             return null;
         }
     }
+
+    private static Double getDouble(SpanData span, String attributeName) {
+        AttributeValue attributeValue = span.getAttributes().get(attributeName);
+        if (attributeValue == null) {
+            return null;
+        } else if (attributeValue.getType() == AttributeValue.Type.DOUBLE) {
+            return attributeValue.getDoubleValue();
+        } else {
+            // TODO log debug warning
+            return null;
+        }
+    }
+
 
     private static String getString(TimedEvent event, String attributeName) {
         AttributeValue attributeValue = event.getAttributes().get(attributeName);
@@ -463,7 +481,7 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private void trackExceptionIfNeeded(SpanData span, Telemetry telemetry, String id) {
+    private void trackExceptionIfNeeded(SpanData span, Telemetry telemetry, String id, Double samplingPercentage) {
         String errorStack = getString(span, "error.stack");
         if (errorStack != null) {
             ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry();
@@ -471,8 +489,16 @@ public class Exporter implements SpanExporter {
             exceptionTelemetry.getContext().getOperation().setId(telemetry.getContext().getOperation().getId());
             exceptionTelemetry.getContext().getOperation().setParentId(id);
             exceptionTelemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getEndEpochNanos())));
-            telemetryClient.track(exceptionTelemetry);
+            track(exceptionTelemetry, samplingPercentage);
         }
+    }
+
+
+    private void track(Telemetry telemetry, Double samplingPercentage) {
+        if (telemetry instanceof SupportSampling) {
+            ((SupportSampling) telemetry).setSamplingPercentage(samplingPercentage);
+        }
+        telemetryClient.track(telemetry);
     }
 
     @Override

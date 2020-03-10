@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
+import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
@@ -52,6 +53,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
 
+    @Override
     public void trackEvent(String name, Map<String, String> properties, Map<String, Double> metrics) {
 
         if (Strings.isNullOrEmpty(name)) {
@@ -65,6 +67,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     // TODO do not track if perf counter (?)
+    @Override
     public void trackMetric(String name, double value, Integer count, Double min, Double max,
                             Double stdDev, Map<String, String> properties) {
 
@@ -83,6 +86,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         track(telemetry);
     }
 
+    @Override
     public void trackDependency(String name, String id, String resultCode, @Nullable Long totalMillis,
                                 boolean success, String commandName, String type, String target,
                                 Map<String, String> properties, Map<String, Double> metrics) {
@@ -107,6 +111,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         track(telemetry);
     }
 
+    @Override
     public void trackPageView(String name, URI uri, long totalMillis, Map<String, String> properties,
                               Map<String, Double> metrics) {
 
@@ -123,6 +128,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         track(telemetry);
     }
 
+    @Override
     public void logErrorOnce(Throwable t) {
         if (!alreadyLoggedError.getAndSet(true)) {
             logger.error(t.getMessage(), t);
@@ -137,7 +143,22 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             telemetry.getContext().getOperation().setId(traceId);
             telemetry.getContext().getOperation().setParentId("|" + traceId + "." + spanId + ".");
         }
-        // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
-        checkNotNull(Global.getTelemetryClient()).track(telemetry);
+        if (sample(telemetry)) {
+            // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
+            checkNotNull(Global.getTelemetryClient()).track(telemetry);
+        }
+    }
+
+    private static boolean sample(Telemetry telemetry) {
+        double fixedRateSamplingPercentage = Global.getFixedRateSamplingPercentage();
+        if (fixedRateSamplingPercentage == 100) {
+            return true;
+        }
+        if (SamplingScoreGeneratorV2.getSamplingScore(telemetry.getContext().getOperation().getId()) >=
+                fixedRateSamplingPercentage) {
+            logger.debug("Item {} sampled out", telemetry.getClass().getSimpleName());
+            return false;
+        }
+        return true;
     }
 }
