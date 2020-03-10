@@ -36,6 +36,7 @@ import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -45,7 +46,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public class CdsProfileFetcher implements AppProfileFetcher, ApplicationIdResolver {
+public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
 
     private CloseableHttpAsyncClient httpClient;
     private String endpointAddress = null;
@@ -92,15 +93,6 @@ public class CdsProfileFetcher implements AppProfileFetcher, ApplicationIdResolv
         this.httpClient.start();
 
         SDKShutdownActivity.INSTANCE.register(this);
-    }
-
-    /**
-     * @deprecated Use {@link #fetchApplicationId(String, TelemetryConfiguration)}. This still works for now by calling {@code fetchApplicationId(instrumentationKey, TelemetryConfiguration.getActive()}
-     */
-    @Override
-    @Deprecated
-    public ProfileFetcherResult fetchAppProfile(String instrumentationKey) throws InterruptedException, ExecutionException, IOException {
-        return internalFetchAppProfile(instrumentationKey, TelemetryConfiguration.getActive());
     }
 
     @Override

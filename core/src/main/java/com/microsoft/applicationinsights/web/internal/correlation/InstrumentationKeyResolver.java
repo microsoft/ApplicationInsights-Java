@@ -45,14 +45,6 @@ public enum InstrumentationKeyResolver {
         this.appIdCache.clear();
     }
 
-    /**
-     * @deprecated This method has no effect. {@link AppProfileFetcher is no longer used}. Replaced with {@link ApplicationIdResolver}
-     */
-    @Deprecated
-    public void setProfileFetcher(AppProfileFetcher profileFetcher) {
-        // nop
-    }
-
     /* @VisisbleForTesting */
     void setAppIdResolver(ApplicationIdResolver appIdResolver) {
         this.appIdResolver = appIdResolver;
