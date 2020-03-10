@@ -45,7 +45,6 @@ public final class ReflectionUtils {
 
     static {
         addClass(com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel.class);
-        addClass(com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel.class);
 
         addClass(com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule.class);
         addClass(com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule.class);
