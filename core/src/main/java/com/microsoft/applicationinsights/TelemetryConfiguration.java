@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.channel.concrete.nop.NopTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
@@ -118,9 +117,6 @@ public final class TelemetryConfiguration {
      * @return An instance of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
      */
     public synchronized TelemetryChannel getChannel() {
-        if (channel == null) {
-            return NopTelemetryChannel.instance();
-        }
         return channel;
     }
 
