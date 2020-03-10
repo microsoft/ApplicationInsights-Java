@@ -110,7 +110,6 @@ public enum TelemetryConfigurationFactory {
         configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
 
         setContextInitializers(applicationInsightsConfig.getContextInitializers(), configuration);
-        setTelemetryInitializers(applicationInsightsConfig.getTelemetryInitializers(), configuration);
         setTelemetryModules(applicationInsightsConfig, configuration);
         setTelemetryProcessors(applicationInsightsConfig, configuration);
 
@@ -135,20 +134,6 @@ public enum TelemetryConfigurationFactory {
         }
 
         InternalLogger.INSTANCE.initialize(sdkLogger.getType(), sdkLogger.getData());
-    }
-
-    /**
-     * Sets the configuration data of Telemetry Initializers in configuration class.
-     * @param telemetryInitializers The configuration data.
-     * @param configuration The configuration class.
-     */
-    private void setTelemetryInitializers(TelemetryInitializersXmlElement telemetryInitializers, TelemetryConfiguration configuration) {
-        if (telemetryInitializers == null) {
-            return;
-        }
-
-        List<TelemetryInitializer> initializerList = configuration.getTelemetryInitializers();
-        ReflectionUtils.loadComponents(TelemetryInitializer.class, initializerList, telemetryInitializers.getAdds());
     }
 
     /**

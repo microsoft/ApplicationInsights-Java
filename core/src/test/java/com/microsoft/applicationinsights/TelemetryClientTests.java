@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.telemetry.*;
 
@@ -208,8 +207,6 @@ public final class TelemetryClientTests {
     public void testTelemetryContextsAreCalled() {
         ContextInitializer mockContextInitializer = Mockito.mock(ContextInitializer.class);
         configuration.getContextInitializers().add(mockContextInitializer);
-        TelemetryInitializer mockTelemetryInitializer = Mockito.mock(TelemetryInitializer.class);
-        configuration.getTelemetryInitializers().add(mockTelemetryInitializer);
 
         TelemetryContext mockContext = new TelemetryContext();
         Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
@@ -217,7 +214,6 @@ public final class TelemetryClientTests {
         client.track(mockTelemetry);
 
         Mockito.verify(mockContextInitializer, Mockito.times(1)).initialize(any(TelemetryContext.class));
-        Mockito.verify(mockTelemetryInitializer, Mockito.times(1)).initialize(mockTelemetry);
     }
 
     @Test

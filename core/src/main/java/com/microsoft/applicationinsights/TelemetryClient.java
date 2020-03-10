@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
@@ -420,8 +419,6 @@ public class TelemetryClient {
             }
         }
 
-        activateInitializers(telemetry);
-
         if (Strings.isNullOrEmpty(telemetry.getContext().getInstrumentationKey())) {
             throw new IllegalArgumentException("Instrumentation key cannot be undefined.");
         }
@@ -447,23 +444,6 @@ public class TelemetryClient {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
-            }
-        }
-    }
-
-    private void activateInitializers(Telemetry telemetry) {
-        for (TelemetryInitializer initializer : this.configuration.getTelemetryInitializers()) {
-            try {
-                initializer.initialize(telemetry);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                try {
-                    InternalLogger.INSTANCE.error("Failed during telemetry initialization class '%s', exception: %s", initializer.getClass().getName(), e.toString());                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
             }
         }
     }

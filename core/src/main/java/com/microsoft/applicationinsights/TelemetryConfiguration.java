@@ -26,7 +26,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.channel.concrete.nop.NopTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
@@ -59,7 +58,6 @@ public final class TelemetryConfiguration {
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
     private final List<ContextInitializer> contextInitializers =  new  CopyOnWriteArrayList<ContextInitializer>();
-    private final List<TelemetryInitializer> telemetryInitializers = new CopyOnWriteArrayList<TelemetryInitializer>();
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<TelemetryModule>();
     private final List<TelemetryProcessor> telemetryProcessors = new CopyOnWriteArrayList<TelemetryProcessor>();
 
@@ -169,17 +167,6 @@ public final class TelemetryConfiguration {
      */
     public List<ContextInitializer> getContextInitializers() {
         return contextInitializers;
-    }
-
-    /**
-     * Gets the list of modules that automatically generate application telemetry.
-     *
-     * Telemetry modules automatically send telemetry describing the application to Application Insights. For example, a telemetry
-     * module can handle application exception events and automatically send
-     * @return List of Telemetry Initializers
-     */
-    public List<TelemetryInitializer> getTelemetryInitializers() {
-        return telemetryInitializers;
     }
 
     public List<TelemetryModule> getTelemetryModules() {
