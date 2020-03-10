@@ -34,8 +34,6 @@ public class PerformanceCountersXmlElement {
 
     private PerformanceCounterJvmSectionXmlElement jvmSection;
 
-    private String plugin;
-
     private JmxWrapperXmlElement jmxWrapper = new JmxWrapperXmlElement();
 
     private WindowsPCWrapperXmlElement windowsPCWrapper = new WindowsPCWrapperXmlElement();
@@ -78,14 +76,6 @@ public class PerformanceCountersXmlElement {
 
     public void setJvmSection(PerformanceCounterJvmSectionXmlElement jvmSection) {
         this.jvmSection = jvmSection;
-    }
-
-    public String getPlugin() {
-        return plugin;
-    }
-
-    public void setPlugin(String plugin) {
-        this.plugin = plugin;
     }
 
     public static class JmxWrapperXmlElement {

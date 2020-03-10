@@ -322,12 +322,6 @@ public enum TelemetryConfigurationFactory {
     @SuppressWarnings("unchecked")
     private List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceConfigurationData.getCollectionFrequencyInSec());
-        String pluginName = performanceConfigurationData.getPlugin();
-
-        if (!LocalStringsUtils.isNullOrEmpty(pluginName)) {
-            PerformanceCountersCollectionPlugin plugin = ReflectionUtils.createInstance(pluginName, PerformanceCountersCollectionPlugin.class);
-            PerformanceCounterContainer.INSTANCE.setPlugin(plugin);
-        }
 
         ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
 

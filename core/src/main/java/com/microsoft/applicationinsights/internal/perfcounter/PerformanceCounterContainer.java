@@ -30,7 +30,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.extensibility.PerformanceCountersCollectionPlugin;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
@@ -69,8 +68,6 @@ public enum PerformanceCounterContainer implements Stoppable {
     private final ConcurrentMap<String, PerformanceCounter> performanceCounters = new ConcurrentHashMap<String, PerformanceCounter>();
 
     private volatile boolean initialized = false;
-
-    private PerformanceCountersCollectionPlugin plugin;
 
     private long startCollectingDelayInMillis = START_COLLECTING_DELAY_IN_MILLIS;
     private long collectionFrequencyInMS = DEFAULT_COLLECTION_FREQUENCY_IN_SEC * 1000;
@@ -229,23 +226,6 @@ public enum PerformanceCounterContainer implements Stoppable {
                             telemetryClient = new TelemetryClient();
                         }
 
-                        if (plugin != null) {
-                            try {
-                                plugin.preCollection();
-                            } catch (ThreadDeath td) {
-                                throw td;
-                            } catch (Throwable t) {
-                                try {
-                                    InternalLogger.INSTANCE.error("Error in thread scheduled for PerformanceCounterContainer" +
-                                            " Exception : %s ", ExceptionUtils.getStackTrace(t));
-                                } catch (ThreadDeath td) {
-                                    throw td;
-                                } catch (Throwable t2) {
-                                    // chomp
-                                }
-                            }
-                        }
-
                         for (PerformanceCounter performanceCounter : performanceCounters.values()) {
                             try {
                                 performanceCounter.report(telemetryClient);
@@ -255,23 +235,6 @@ public enum PerformanceCounterContainer implements Stoppable {
                                 try {
                                     InternalLogger.INSTANCE.error("Exception while reporting performance counter '%s': " +
                                             " Exception : '%s'", performanceCounter.getId(), ExceptionUtils.getStackTrace(t));
-                                } catch (ThreadDeath td) {
-                                    throw td;
-                                } catch (Throwable t2) {
-                                    // chomp
-                                }
-                            }
-                        }
-
-                        if (plugin != null) {
-                            try {
-                                plugin.postCollection();
-                            } catch (ThreadDeath td) {
-                                throw td;
-                            } catch (Throwable t) {
-                                try {
-                                    InternalLogger.INSTANCE.error("Error while executing post collection, Exception : %s ",
-                                            ExceptionUtils.getStackTrace(t));
                                 } catch (ThreadDeath td) {
                                     throw td;
                                 } catch (Throwable t2) {
@@ -292,9 +255,5 @@ public enum PerformanceCounterContainer implements Stoppable {
     private void createThreadToCollect() {
         threads = new ScheduledThreadPoolExecutor(1);
         threads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(PerformanceCounterContainer.class));
-    }
-
-    public void setPlugin(PerformanceCountersCollectionPlugin plugin) {
-        this.plugin = plugin;
     }
 }
