@@ -36,8 +36,6 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.*;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.internal.annotation.AnnotationPackageScanner;
-import com.microsoft.applicationinsights.internal.annotation.BuiltInProcessor;
 import com.microsoft.applicationinsights.channel.TelemetrySampler;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -48,11 +46,6 @@ import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
-import com.microsoft.applicationinsights.internal.processor.PageViewTelemetryFilter;
-import com.microsoft.applicationinsights.internal.processor.RequestTelemetryFilter;
-import com.microsoft.applicationinsights.internal.processor.SyntheticSourceFilter;
-import com.microsoft.applicationinsights.internal.processor.TelemetryEventFilter;
-import com.microsoft.applicationinsights.internal.processor.TraceTelemetryFilter;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
@@ -234,11 +227,6 @@ public enum TelemetryConfigurationFactory {
 
     private void addDefaultBuiltInProcessors(List<String> p) {
         p.add(FixedRateSamplingTelemetryProcessor.class.getCanonicalName());
-        p.add(PageViewTelemetryFilter.class.getCanonicalName());
-        p.add(RequestTelemetryFilter.class.getCanonicalName());
-        p.add(SyntheticSourceFilter.class.getCanonicalName());
-        p.add(TelemetryEventFilter.class.getCanonicalName());
-        p.add(TraceTelemetryFilter.class.getCanonicalName());
     }
 
 
