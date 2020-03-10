@@ -6,7 +6,7 @@
     <Match>
         <Bug pattern="NP_NULL_ON_SOME_PATH" />
         <!-- Ignore. I see no reason to change this. It's odd this flagged the second dereference and not the first. -->
-        <Class name="com.microsoft.applicationinsights.agentc.internal.MainEntryPoint" />
+        <Class name="com.microsoft.applicationinsights.agent.internal.MainEntryPoint" />
         <Or>
             <Method name="premain" />
             <Method name="initLogging" />
@@ -17,43 +17,26 @@
     <Match>
         <!-- Thses are used for development. Ignore everything from here -->
         <Or>
-            <Class name="com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.TelemetryClientClassFileTransformer$TC" />
+            <Class name="com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer$TC" />
             <And>
-                <Class name="com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.TelemetryClientClassFileTransformer" />
+                <Class name="com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer" />
                 <Method name="main" />
             </And>
         </Or>
-    </Match>
-    <Match>
-        <!-- this is a fire and forget thread. we don't need to hold onto the Future return value -->
-        <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" />
-        <Class name="com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile" />
-        <Method name="write" />
     </Match>
     <Match>
         <Bug pattern="PATH_TRAVERSAL_IN" />
         <Or>
             <And>
                 <!-- False Positive. Path is not from an external source. -->
-                <Class name="com.microsoft.applicationinsights.agentc.internal.Premain"/>
-                <Method name="getAgentJarFile"/>
-            </And>
-            <And>
-                <!-- False Positive. Path is not from an external source. -->
-                <Class name="com.microsoft.applicationinsights.agentc.internal.diagnostics.status.StatusFile$1" />
-                <Method name="run" />
+                <Class name="io.opentelemetry.auto.tooling.BeforeAgentInstaller"/>
+                <Method name="beforeInstallBytebuddyAgent"/>
             </And>
         </Or>
     </Match>
     <Match>
         <Bug pattern="MS_SHOULD_BE_FINAL" />
-        <Class name="com.microsoft.applicationinsights.agentc.internal.instrumentation.sdk.UnshadedSdkPackageName" />
+        <Class name="com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.UnshadedSdkPackageName" />
         <Field name="ALMOST_PREFIX" />
-    </Match>
-    <Match>
-        <!-- The exception in question comes from Class.forName. It may throw with different versions of java. -->
-        <Bug pattern="REC_CATCH_EXCEPTION" />
-        <Class name="com.microsoft.applicationinsights.agentc.internal.diagnostics.PidFinder" />
-        <Method name="getPidUsingProcessHandle" />
     </Match>
 </FindBugsFilter>

@@ -69,7 +69,6 @@ import org.slf4j.MDC;
 
 public class MainEntryPoint {
 
-    @Nullable
     private static Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
     private MainEntryPoint() {

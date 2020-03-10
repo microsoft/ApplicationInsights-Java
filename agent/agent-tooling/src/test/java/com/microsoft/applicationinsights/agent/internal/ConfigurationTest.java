@@ -33,8 +33,6 @@ public class ConfigurationTest {
         assertEquals((Double) 5.0, configuration.experimental.sampling.fixedRate.traces);
         assertEquals((Double) 4.0, configuration.experimental.sampling.fixedRate.customEvents);
         assertEquals((Double) 3.0, configuration.experimental.sampling.fixedRate.pageViews);
-        assertEquals(false, configuration.experimental.distributedTracing.outboundEnabled);
-        assertEquals(false, configuration.experimental.distributedTracing.requestIdCompatEnabled);
         assertEquals(false, configuration.experimental.liveMetrics.enabled);
         assertEquals(3, configuration.jmxMetrics.size());
         assertEquals("java.lang:type=Threading", configuration.jmxMetrics.get(0).objectName);
@@ -44,9 +42,6 @@ public class ConfigurationTest {
                 Arrays.asList("this sets the explain plan threshold ...", "this is a multi-line comment"),
                 "explainPlanThresholdInMS", 20000.0), configuration.experimental.instrumentation.get("jdbc"));
         assertEquals(ImmutableMap.of("enabled", false), configuration.experimental.instrumentation.get("logging"));
-        assertEquals(2, configuration.experimental.customInstrumentation.size());
-        assertEquals("com.example.MyObject", configuration.experimental.customInstrumentation.get(0).className);
-        assertEquals("doSomething", configuration.experimental.customInstrumentation.get(0).methodName);
     }
 
     @Test
@@ -59,10 +54,8 @@ public class ConfigurationTest {
         assertEquals(null, configuration.connectionString);
         assertEquals(null, configuration.roleName);
         assertEquals(null, configuration.roleInstance);
-        assertEquals(true, configuration.experimental.distributedTracing.requestIdCompatEnabled);
         assertEquals(true, configuration.experimental.liveMetrics.enabled);
         assertEquals(0, configuration.jmxMetrics.size());
         assertEquals(0, configuration.experimental.instrumentation.size());
-        assertEquals(0, configuration.experimental.customInstrumentation.size());
     }
 }

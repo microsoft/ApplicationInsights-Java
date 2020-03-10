@@ -58,11 +58,9 @@ public class Configuration {
     public static class ExperimentalConfiguration {
 
         public Sampling sampling = new Sampling();
-        public DistributedTracing distributedTracing = new DistributedTracing(); // not supported yet
         public LiveMetrics liveMetrics = new LiveMetrics();
         public Heartbeat heartbeat = new Heartbeat();
         public Map<String, Map<String, Object>> instrumentation = Collections.emptyMap();
-        public List<CustomInstrumentation> customInstrumentation = Collections.emptyList(); // not supported yet
 
         public boolean debug;
         public boolean developerMode;
@@ -93,13 +91,6 @@ public class Configuration {
         public Double pageViews;
     }
 
-    public static class DistributedTracing {
-
-        // not supported yet
-        public boolean outboundEnabled = true; // this can be disabled if downstream services reject extra headers
-        public boolean requestIdCompatEnabled = true; // not supported yet
-    }
-
     public static class LiveMetrics {
 
         public boolean enabled = true;
@@ -109,16 +100,5 @@ public class Configuration {
 
         public boolean enabled = true;
         public long intervalSeconds = HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL;
-    }
-
-    // not supported yet
-    public static class CustomInstrumentation {
-
-        @Nullable
-        public String className;
-        @Nullable
-        public String methodName;
-        @Nullable
-        public String signature;
     }
 }
