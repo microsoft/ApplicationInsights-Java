@@ -29,7 +29,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
@@ -425,10 +424,6 @@ public class TelemetryClient {
             throw new IllegalArgumentException("Instrumentation key cannot be undefined.");
         }
 
-        if (!activateProcessors(telemetry)) {
-            return;
-        }
-
         try {
             QuickPulseDataCollector.INSTANCE.add(telemetry);
         } catch (ThreadDeath td) {
@@ -448,27 +443,6 @@ public class TelemetryClient {
                 // chomp
             }
         }
-    }
-
-    private boolean activateProcessors(Telemetry telemetry) {
-        for (TelemetryProcessor processor : configuration.getTelemetryProcessors()) {
-            try {
-                if (!processor.process(telemetry)) {
-                    return false;
-                }
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t) {
-                try {
-                    InternalLogger.INSTANCE.error("Exception while processing telemetry: '%s'",t.toString());                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            }
-        }
-
-        return true;
     }
 
     /**

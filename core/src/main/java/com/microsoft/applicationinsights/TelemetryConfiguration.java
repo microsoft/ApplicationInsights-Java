@@ -26,7 +26,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
@@ -58,7 +57,6 @@ public final class TelemetryConfiguration {
 
     private final List<ContextInitializer> contextInitializers =  new  CopyOnWriteArrayList<ContextInitializer>();
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<TelemetryModule>();
-    private final List<TelemetryProcessor> telemetryProcessors = new CopyOnWriteArrayList<TelemetryProcessor>();
 
     private TelemetryChannel channel;
 
@@ -167,10 +165,6 @@ public final class TelemetryConfiguration {
 
     public List<TelemetryModule> getTelemetryModules() {
         return telemetryModules;
-    }
-
-    public List<TelemetryProcessor> getTelemetryProcessors() {
-        return telemetryProcessors;
     }
 
     /**

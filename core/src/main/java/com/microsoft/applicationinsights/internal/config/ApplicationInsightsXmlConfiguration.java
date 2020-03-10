@@ -36,8 +36,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     public boolean disableTelemetry;
 
-    private TelemetryProcessorsXmlElement telemetryProcessors;
-
     private ContextInitializersXmlElement contextInitializers;
 
     private ChannelXmlElement channel = new ChannelXmlElement();
@@ -94,14 +92,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     public ContextInitializersXmlElement getContextInitializers() {
         return contextInitializers;
-    }
-
-    public void setTelemetryProcessors(TelemetryProcessorsXmlElement telemetryProcessors) {
-        this.telemetryProcessors = telemetryProcessors;
-    }
-
-    public TelemetryProcessorsXmlElement getTelemetryProcessors() {
-        return telemetryProcessors;
     }
 
     public void setContextInitializers(ContextInitializersXmlElement contextInitializers) {

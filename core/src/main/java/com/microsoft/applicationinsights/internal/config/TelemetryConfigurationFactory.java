@@ -107,7 +107,6 @@ public enum TelemetryConfigurationFactory {
 
         setContextInitializers(applicationInsightsConfig.getContextInitializers(), configuration);
         setTelemetryModules(applicationInsightsConfig, configuration);
-        setTelemetryProcessors(applicationInsightsConfig, configuration);
 
         setQuickPulse(applicationInsightsConfig, configuration);
 
@@ -174,35 +173,6 @@ public enum TelemetryConfigurationFactory {
         List<TelemetryModule> pcModules = getPerformanceModules(appConfiguration.getPerformance());
 
         modules.addAll(pcModules);
-    }
-
-    private void setTelemetryProcessors(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryConfiguration configuration) {
-        TelemetryProcessorsXmlElement configurationProcessors = appConfiguration.getTelemetryProcessors();
-        List<TelemetryProcessor> processors = configuration.getTelemetryProcessors();
-
-        if (configurationProcessors != null) {
-            ArrayList<TelemetryProcessorXmlElement> b = configurationProcessors.getBuiltInTelemetryProcessors();
-            if (!b.isEmpty()) {
-                List<String> processorsBuiltInNames = new ArrayList<>();
-                final HashMap<String, String> builtInMap = new HashMap<String, String>();
-                for (String processorsBuiltInName : processorsBuiltInNames) {
-                    builtInMap.put(processorsBuiltInName.substring(processorsBuiltInName.lastIndexOf(".") + 1), processorsBuiltInName);
-                }
-                ArrayList<TelemetryProcessorXmlElement> validProcessors = new ArrayList<TelemetryProcessorXmlElement>();
-                for (TelemetryProcessorXmlElement element : b) {
-                    String fullTypeName = builtInMap.get(element.getType());
-                    if (LocalStringsUtils.isNullOrEmpty(fullTypeName)) {
-                        InternalLogger.INSTANCE.error("Failed to find built in processor: '%s', ignored", element.getType());
-                        continue;
-                    }
-                    element.setType(fullTypeName);
-                    validProcessors.add(element);
-                }
-                loadProcessorComponents(processors, validProcessors);
-            }
-            ArrayList<TelemetryProcessorXmlElement> customs = configurationProcessors.getCustomTelemetryProcessors();
-            loadProcessorComponents(processors, customs);
-        }
     }
 
     /**
@@ -460,24 +430,6 @@ public enum TelemetryConfigurationFactory {
         }
 
         return channel;
-    }
-
-    private void loadProcessorComponents(List<TelemetryProcessor> list, Collection<TelemetryProcessorXmlElement> classesFromConfiguration) {
-        if (classesFromConfiguration == null) {
-            return;
-        }
-
-        TelemetryProcessorCreator creator = new TelemetryProcessorCreator();
-        for (TelemetryProcessorXmlElement classData : classesFromConfiguration) {
-            TelemetryProcessor processor = creator.Create(classData);
-            if (processor == null) {
-                InternalLogger.INSTANCE.error("Processor %s failure during initialization", classData.getType());
-                continue;
-            }
-
-            InternalLogger.INSTANCE.trace("Processor %s was added successfully", classData.getType());
-            list.add(processor);
-        }
     }
 
     private void initializeComponents(TelemetryConfiguration configuration) {
