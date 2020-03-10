@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -91,8 +90,6 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
 
         taskThreadPool.executePeriodicRunnableTask(cdsRetryClearTask);
         this.httpClient.start();
-
-        SDKShutdownActivity.INSTANCE.register(this);
     }
 
     @Override

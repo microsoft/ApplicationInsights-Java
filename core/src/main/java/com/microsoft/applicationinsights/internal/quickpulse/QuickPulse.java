@@ -35,7 +35,6 @@ import org.apache.http.client.methods.HttpPost;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSenderFactory;
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 
 /**
@@ -115,8 +114,6 @@ public enum QuickPulse implements Stoppable {
                     thread = new Thread(coordinator, DefaultQuickPulseCoordinator.class.getSimpleName());
                     thread.setDaemon(true);
                     thread.start();
-
-                    SDKShutdownActivity.INSTANCE.register(this);
 
                     QuickPulseDataCollector.INSTANCE.enable(configuration);
                 }

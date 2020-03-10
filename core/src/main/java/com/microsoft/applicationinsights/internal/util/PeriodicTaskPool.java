@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import org.apache.commons.lang3.StringUtils;
 

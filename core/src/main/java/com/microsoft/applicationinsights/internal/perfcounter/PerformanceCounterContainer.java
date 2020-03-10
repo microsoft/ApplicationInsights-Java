@@ -31,7 +31,6 @@ import com.google.common.base.Strings;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -201,7 +200,7 @@ public enum PerformanceCounterContainer implements Stoppable {
      * A private method that is called only when the container needs to start
      * collecting performance counters data. The method will schedule a callback
      * to be called, it will initialize a {@link com.microsoft.applicationinsights.TelemetryClient} that the Performance Counters
-     * will use to report their data, and it will also register itself a the {@link com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity}
+     * will use to report their data
      */
     private void initialize() {
         if (!initialized) {
@@ -247,9 +246,6 @@ public enum PerformanceCounterContainer implements Stoppable {
                 startCollectingDelayInMillis,
                 collectionFrequencyInMS,
                 TimeUnit.MILLISECONDS);
-
-        // Register the instance so the container is stopped when the application exits.
-        SDKShutdownActivity.INSTANCE.register(INSTANCE);
     }
 
     private void createThreadToCollect() {

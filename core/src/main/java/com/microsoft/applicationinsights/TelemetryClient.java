@@ -25,20 +25,27 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
-import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
-import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-import com.microsoft.applicationinsights.telemetry.*;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.SessionState;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -53,7 +60,6 @@ public class TelemetryClient {
     private volatile TelemetryContext context;
     private TelemetryChannel channel;
 
-    private static final Object TELEMETRY_STOP_HOOK_LOCK = new Object();
     private static final Object TELEMETRY_CONTEXT_LOCK = new Object();
 
     private static AtomicLong generateCounter = new AtomicLong(0);
@@ -64,10 +70,6 @@ public class TelemetryClient {
     public TelemetryClient(TelemetryConfiguration configuration) {
         if (configuration == null) {
             configuration = TelemetryConfiguration.getActive();
-        }
-
-        synchronized (TELEMETRY_STOP_HOOK_LOCK) {
-            SDKShutdownActivity.INSTANCE.register(configuration.getChannel());
         }
 
         this.configuration = configuration;

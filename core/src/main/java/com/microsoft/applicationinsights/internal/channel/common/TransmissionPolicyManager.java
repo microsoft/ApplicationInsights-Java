@@ -35,7 +35,6 @@ import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerObserver;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
@@ -218,8 +217,6 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 
         threads = new ScheduledThreadPoolExecutor(1);
         threads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(TransmissionPolicyManager.class, instanceId));
-
-        SDKShutdownActivity.INSTANCE.register(this);
     }
 
     @Override
