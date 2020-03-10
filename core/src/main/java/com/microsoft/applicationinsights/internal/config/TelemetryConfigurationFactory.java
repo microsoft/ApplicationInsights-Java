@@ -105,7 +105,6 @@ public enum TelemetryConfigurationFactory {
         }
         configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
 
-        setContextInitializers(applicationInsightsConfig.getContextInitializers(), configuration);
         setTelemetryModules(applicationInsightsConfig, configuration);
 
         setQuickPulse(applicationInsightsConfig, configuration);
@@ -119,7 +118,6 @@ public enum TelemetryConfigurationFactory {
         setRoleInstance(userConfiguration, configuration);
         configuration.setChannel(new InProcessTelemetryChannel(configuration));
         addHeartBeatModule(configuration);
-        setContextInitializers(null, configuration);
         initializeComponents(configuration);
     }
 
@@ -129,15 +127,6 @@ public enum TelemetryConfigurationFactory {
         }
 
         InternalLogger.INSTANCE.initialize(sdkLogger.getType(), sdkLogger.getData());
-    }
-
-    /**
-     * Sets the configuration data of Context Initializers in configuration class.
-     * @param contextInitializers The configuration data.
-     * @param configuration The configuration class.
-     */
-    private void setContextInitializers(ContextInitializersXmlElement contextInitializers, TelemetryConfiguration configuration) {
-        new ContextInitializersInitializer().initialize(contextInitializers, configuration);
     }
 
     private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryConfiguration configuration) {

@@ -41,6 +41,9 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Hear
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
+import com.microsoft.applicationinsights.extensibility.initializer.CloudInfoContextInitializer;
+import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
+import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
 import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
@@ -150,6 +153,9 @@ public class MainEntryPoint {
 
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
+        configuration.getContextInitializers().add(new SdkVersionContextInitializer());
+        configuration.getContextInitializers().add(new DeviceInfoContextInitializer());
+        configuration.getContextInitializers().add(new CloudInfoContextInitializer());
 
         FixedRateSampling fixedRateSampling = config.experimental.sampling.fixedRate;
         if (fixedRateSampling != null && fixedRateSampling.percentage != null) {

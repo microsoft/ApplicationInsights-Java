@@ -36,8 +36,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     public boolean disableTelemetry;
 
-    private ContextInitializersXmlElement contextInitializers;
-
     private ChannelXmlElement channel = new ChannelXmlElement();
 
     private TelemetryModulesXmlElement modules;
@@ -88,14 +86,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     public void setSchemaVersion(String schemaVersion) {
         this.schemaVersion = schemaVersion;
-    }
-
-    public ContextInitializersXmlElement getContextInitializers() {
-        return contextInitializers;
-    }
-
-    public void setContextInitializers(ContextInitializersXmlElement contextInitializers) {
-        this.contextInitializers = contextInitializers;
     }
 
     public ChannelXmlElement getChannel() {
