@@ -18,12 +18,12 @@ public class TracerInstaller {
         }
         double fixedRateSamplingPercentage = Global.getFixedRateSamplingPercentage();
         if (fixedRateSamplingPercentage != 100) {
-            OpenTelemetrySdk.getTracerFactory().updateActiveTraceConfig(
+            OpenTelemetrySdk.getTracerProvider().updateActiveTraceConfig(
                     TraceConfig.getDefault().toBuilder()
                             .setSampler(new FixedRateSampler(fixedRateSamplingPercentage))
                             .build());
         }
-        OpenTelemetrySdk.getTracerFactory()
+        OpenTelemetrySdk.getTracerProvider()
                 .addSpanProcessor(SimpleSpansProcessor.newBuilder(new Exporter(telemetryClient)).build());
     }
 

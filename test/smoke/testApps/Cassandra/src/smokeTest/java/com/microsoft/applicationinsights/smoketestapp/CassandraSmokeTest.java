@@ -40,9 +40,8 @@ public class CassandraSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("Cassandra", rdd.getType());
-        assertEquals("Cassandra", rdd.getName());
-        assertEquals("select * from test.test", rdd.getData());
+        assertEquals("cassandra", rdd.getType());
+        assertEquals("select * from test.test", rdd.getName());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope);

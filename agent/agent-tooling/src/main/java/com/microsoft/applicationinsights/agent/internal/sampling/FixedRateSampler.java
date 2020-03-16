@@ -7,8 +7,9 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.trace.Sampler;
-import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.trace.Link;
+import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
@@ -37,7 +38,7 @@ public final class FixedRateSampler implements Sampler {
 
     @Override
     public Decision shouldSample(@Nullable SpanContext parentContext, TraceId traceId, SpanId spanId, String name,
-                                 List<Link> parentLinks) {
+                                 Kind spanKind, Map<String, AttributeValue> attributes, List<Link> parentLinks) {
         if (SamplingScoreGeneratorV2.getSamplingScore(traceId.toLowerBase16()) >= samplingPercentage) {
             logger.debug("Item {} sampled out", name);
             return alwaysOffDecision;

@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -38,12 +40,12 @@ import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
+import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeValue.Type;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.AttributeValue.Type;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
@@ -55,6 +57,8 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 public class Exporter implements SpanExporter {
 
     private static final Logger logger = LoggerFactory.getLogger(Exporter.class);
+
+    private static final Pattern COMPONENT_PATTERN = Pattern.compile("io\\.opentelemetry\\.auto\\.(.*)(-[0-9.]*)");
 
     private final TelemetryClient telemetryClient;
 
@@ -78,14 +82,15 @@ public class Exporter implements SpanExporter {
 
     private void export(SpanData span) {
         Kind kind = span.getKind();
-        if (span.getName().equals("jms.consume") && kind == Kind.CLIENT) {
+        String instrumentationName = span.getInstrumentationLibraryInfo().getName();
+        Matcher matcher = COMPONENT_PATTERN.matcher(instrumentationName);
+        String component = matcher.matches() ? matcher.group(1) : instrumentationName;
+        if ("jms".equals(component) && span.getName().startsWith("jms.receive") && kind == Kind.CLIENT) {
             // no need to capture these, at least is consistent with prior behavior
             return;
         }
         if (kind == Kind.INTERNAL) {
-            if (span.getName().equals("servlet.dispatch")) {
-                // do not capture currently
-            } else if (span.getName().equals("log.message")) {
+            if (span.getName().equals("log.message")) {
                 exportLogSpan(span);
             } else if (!span.getParentSpanId().isValid()) {
                 // TODO revisit this decision
@@ -93,10 +98,10 @@ public class Exporter implements SpanExporter {
                 // otherwise this top-level span won't show up in Performance blade
                 exportRequest(span);
             } else {
-                exportRemoteDependency(span, true);
+                exportRemoteDependency(component, span, true);
             }
         } else if (kind == Kind.CLIENT || kind == Kind.PRODUCER) {
-            exportRemoteDependency(span, false);
+            exportRemoteDependency(component, span, false);
         } else if (kind == Kind.SERVER || kind == Kind.CONSUMER) {
             exportRequest(span);
         } else {
@@ -120,9 +125,10 @@ public class Exporter implements SpanExporter {
             telemetry.setUrl(httpUrl);
         }
 
-        String resourceName = getString(span, "resource.name");
-        if (resourceName != null) {
-            telemetry.setName(resourceName);
+        String httpMethod = getString(span, "http.method");
+        String name = span.getName();
+        if (httpMethod != null && name.startsWith("/")) {
+            telemetry.setName(httpMethod + " " + name);
         } else {
             telemetry.setName(span.getName());
         }
@@ -133,36 +139,6 @@ public class Exporter implements SpanExporter {
             String peerAddress = getString(span, "peer.address");
             String destination = getString(span, "message_bus.destination");
             telemetry.setSource(peerAddress + "/" + destination);
-        }
-
-        if (span.getName().equals("jms.onMessage")) {
-            String originType = getString(span, "span.origin.type");
-            if (originType != null) {
-                int index = originType.lastIndexOf('.');
-                if (index != -1) {
-                    originType = originType.substring(index + 1);
-                }
-                telemetry.setName("JMS Message: " + originType);
-            }
-        }
-
-        if (span.getName().equals("kafka.consume")) {
-            if (resourceName != null && resourceName.startsWith("Consume Topic ")) {
-                telemetry.setName("Kafka consumer: " + resourceName.substring("Consume Topic ".length()));
-            }
-        }
-
-        if (telemetry.getName().equals("servlet.request")) {
-            // no more specific name was provided (e.g. spring controllers will override this)
-            String httpMethod = getString(span, "http.method");
-            if (httpMethod != null) {
-                String servletPath = getString(span, "servlet.path");
-                // TODO handle if no servlet.path
-                if (servletPath != null) {
-                    // TODO is this right, overwriting name?
-                    telemetry.setName(httpMethod + " " + servletPath);
-                }
-            }
         }
 
         String id = setContext(span, telemetry);
@@ -183,29 +159,22 @@ public class Exporter implements SpanExporter {
         exportEvents(span, samplingPercentage);
     }
 
-    private void exportRemoteDependency(SpanData span, boolean inProc) {
+    private void exportRemoteDependency(String component, SpanData span, boolean inProc) {
 
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
 
         addLinks(telemetry.getProperties(), span.getLinks());
 
-        String resourceName = getString(span, "resource.name");
-        if (resourceName != null) {
-            telemetry.setName(resourceName);
-        } else {
-            telemetry.setName(span.getName());
-        }
+        telemetry.setName(span.getName());
+
+        span.getInstrumentationLibraryInfo().getName();
 
         if (inProc) {
             telemetry.setType("InProc");
         } else {
-            // FIXME better to use component = "http" once that is set correctly in auto-instrumentation
-            // http.method is required for http requests, see
-            // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-http.md
             if (span.getAttributes().containsKey("http.method")) {
                 applyHttpRequestSpan(span, telemetry);
-            } else if (span.getName().equals("database.query") || span.getName().equals("redis.query") ||
-                    span.getName().equals("mongo.query") || span.getName().equals("cassandra.query")) {
+            } else if (span.getAttributes().containsKey("db.type")) {
                 applyDatabaseQuerySpan(span, telemetry);
             } else if (span.getName().equals("EventHubs.send") && span.getKind() == Kind.PRODUCER) {
                 telemetry.setType("Microsoft.EventHub");
@@ -213,19 +182,9 @@ public class Exporter implements SpanExporter {
                 String destination = getString(span, "message_bus.destination");
                 telemetry.setTarget(peerAddress + "/" + destination);
                 telemetry.setName(span.getName());
-            }
-        }
-
-        if (span.getName().equals("jms.produce")) {
-            if (resourceName != null && resourceName.startsWith("Produced for Queue ")) {
-                telemetry.setName("JMS Send: queue://" + resourceName.substring("Produced for Queue ".length()));
-            }
-        }
-
-        if (span.getName().equals("kafka.produce")) {
-            telemetry.setType("Kafka");
-            if (resourceName != null && resourceName.startsWith("Produce Topic ")) {
-                telemetry.setName(resourceName.substring("Produce Topic ".length()));
+            } else if ("kafka-clients".equals(component)) {
+                // TODO is this needed?
+                telemetry.setType("kafka");
             }
         }
 
@@ -234,11 +193,6 @@ public class Exporter implements SpanExporter {
 
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
-
-        // TODO what is command name, why doesn't dot net exporter use it?
-        // https://raw.githubusercontent.com/open-telemetry/opentelemetry-dotnet/master/src/OpenTelemetry.Exporter
-        // .ApplicationInsights/ApplicationInsightsTraceExporter.cs
-        // telemetry.setCommandName(uri);
 
         telemetry.setSuccess(span.getStatus().isOk());
         String description = span.getStatus().getDescription();
@@ -336,41 +290,18 @@ public class Exporter implements SpanExporter {
         String method = getString(span, "http.method");
         String url = getString(span, "http.url");
 
-        String httpMethod = getString(span, "http.method");
-        if (httpMethod != null) {
-            String httpUrl = getString(span, "http.url");
-            // TODO handle if no http.url
-            if (httpUrl != null) {
-                // TODO is this right, overwriting name?
-                telemetry.setName(httpMethod + " " + httpUrl);
-            }
-        }
-
         AttributeValue httpStatusCode = span.getAttributes().get("http.status_code");
         if (httpStatusCode != null && httpStatusCode.getType() == Type.LONG) {
             long statusCode = httpStatusCode.getLongValue();
             telemetry.setResultCode(Long.toString(statusCode));
-            // success is handled more generally now
-            // telemetry.setSuccess(statusCode < 400);
         }
 
-        if (method != null) {
-            // FIXME can drop this now?
-            // for backward compatibility (same comment from CoreAgentNotificationsHandler)
-            telemetry.getProperties().put("Method", method);
-        }
         if (url != null) {
             try {
                 URI uriObject = new URI(url);
                 String target = createTarget(uriObject);
-                // TODO can drop this now?
-//                if (requestContext != null) {
-//                    String incomingTarget = TraceContextCorrelationCore.generateChildDependencyTarget(requestContext);
-//                    if (incomingTarget != null && !incomingTarget.isEmpty()) {
-//                        target += " | " + incomingTarget;
-//                    }
-//                }
                 telemetry.setTarget(target);
+                // TODO is this right, overwriting name to include the full path?
                 String path = uriObject.getPath();
                 if (Strings.isNullOrEmpty(path)) {
                     telemetry.setName(method + " /");
@@ -381,41 +312,14 @@ public class Exporter implements SpanExporter {
                 logger.error(e.getMessage());
                 logger.debug(e.getMessage(), e);
             }
-            telemetry.setCommandName(url);
-            // FIXME can drop this now?
-            // for backward compatibility (same comment from CoreAgentNotificationsHandler)
-            telemetry.getProperties().put("URI", url);
         }
     }
 
     private void applyDatabaseQuerySpan(SpanData span, RemoteDependencyTelemetry telemetry) {
-        String dbType = getString(span, "db.type"); // e.g. "hsqldb"
-        String dbStatement = getString(span, "db.statement");
-        String spanType = getString(span, "span.type"); // "sql"
-
-        if (dbType != null) {
-            // ???
-            telemetry.setName(dbType);
-        }
-
-        if (dbStatement != null) {
-            telemetry.setCommandName(dbStatement);
-        }
-        if (spanType != null) {
-            if (spanType.equals("sql")) {
-                telemetry.setType("SQL");
-            } else if (spanType.equals("redis")) {
-                telemetry.setType("Redis");
-            } else if (spanType.equals("mongodb")) {
-                telemetry.setType("MongoDB");
-                telemetry.setName("MongoDB");
-            } else if (spanType.equals("cassandra")) {
-                telemetry.setType("Cassandra");
-                telemetry.setName("Cassandra");
-            } else {
-                telemetry.setType(spanType);
-            }
-        }
+        telemetry.setType(getString(span, "db.type"));
+        telemetry.setCommandName(getString(span, "db.statement"));
+        telemetry.setTarget(getString(span, "db.url"));
+        // TODO put db.instance somewhere
     }
 
     private static void addLinks(Map<String, String> properties, List<Link> links) {

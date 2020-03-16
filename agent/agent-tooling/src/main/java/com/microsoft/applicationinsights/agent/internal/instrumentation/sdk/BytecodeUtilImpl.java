@@ -47,7 +47,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 // supporting all properties of event, metric, remove dependency and page view telemetry
 public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
-    private static final Tracer tracer = OpenTelemetry.getTracerFactory().get("");
+    private static final Tracer tracer = OpenTelemetry.getTracerProvider().get("");
 
     private static final Logger logger = LoggerFactory.getLogger(BytecodeUtilImpl.class);
 

@@ -40,7 +40,7 @@ public class KafkaTest extends AiSmokeTest {
         List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
 
         Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
-        Envelope rdEnvelope2 = getRequestEnvelope(rdList, "Kafka consumer: mytopic");
+        Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic");
         Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "mytopic");
         Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "GET /");
 

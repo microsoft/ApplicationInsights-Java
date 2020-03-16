@@ -124,6 +124,7 @@ public class MainEntryPoint {
         properties.put("additional.bootstrap.package.prefixes",
                 "com.microsoft.applicationinsights.agent.internal.bootstrap");
         properties.put("experimental.log.capture.threshold", getThreshold(config, "WARN"));
+        properties.put("experimental.controller-and-view.spans.enabled", "false");
         properties.put("http.server.error.statuses", "400-599");
         ConfigOverride.set(properties);
         if (Config.get().getAdditionalBootstrapPackagePrefixes().isEmpty()) {

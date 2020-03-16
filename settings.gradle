@@ -63,6 +63,7 @@ include ':test:smoke:testApps:TraceLog4j2UsingAgent'
 include ':test:smoke:testApps:TraceJavaUtilLoggingUsingAgent'
 include ':test:smoke:testApps:HeartBeat'
 include ':test:smoke:testApps:SpringBootTest'
+// IMPORTANT: when bringing back this test, be sure to re-add it to CI TestApp variable
 // this is broken because fixed rate sampling applies same percentage to all telemetry types now
 // and test infra was relying on request capture always being 100% (e.g. for checking application health)
 //include ':test:smoke:testApps:FixedRateSampling'
