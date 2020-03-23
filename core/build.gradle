@@ -60,7 +60,6 @@ archivesBaseName = 'applicationinsights-core'
 apply from: "$buildScriptsDir/provided-configuration.gradle"
 
 dependencies {
-    optional ([group: 'org.glowroot.instrumentation', name: 'instrumentation-api', version: '0.14.9']) { transitive = false }
     compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
     compile ([group: 'commons-io', name: 'commons-io', version: '2.6' ])

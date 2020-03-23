@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <suppress>
-        <notes>org.glowroot.instrumentation:instrumentation-netty should not be matched to netty</notes>
-        <packageUrl regex="true">^pkg:maven/org\.glowroot\.instrumentation/instrumentation\-netty@.*$</packageUrl>
-        <cpe>cpe:/a:netty:netty</cpe>
-    </suppress>
-    <suppress>
-        <notes>org.glowroot.instrumentation:instrumentation-logback should not be matched to logback</notes>
-        <packageUrl regex="true">^pkg:maven/org\.glowroot\.instrumentation/instrumentation\-logback@.*$</packageUrl>
-        <cpe>cpe:/a:logback:logback</cpe>
-    </suppress>
-    <suppress>
         <notes>ch.qos.logback.contrib:logback-json-classic should not be matched to logback</notes>
         <packageUrl regex="true">^pkg:maven/ch\.qos\.logback\.contrib/logback\-json\-classic@.*$</packageUrl>
         <cpe>cpe:/a:logback:logback</cpe>
