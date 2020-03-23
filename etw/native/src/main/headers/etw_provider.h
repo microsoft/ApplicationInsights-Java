@@ -30,13 +30,14 @@ TRACELOGGING_DECLARE_PROVIDER(provider_EtwHandle);
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 /*
  * Class:     com_microsoft_applicationinsights_internal_etw_EtwProvider
  * Method:    cppWriteEvent
- * Signature: (ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+ * Signature: (ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppWriteEvent
-  (JNIEnv *, jobject, jint, jstring, jint, jstring, jstring, jstring, jstring, jstring);
+  (JNIEnv *, jobject, jint, jstring, jint, jstring, jstring, jstring, jstring, jstring, jstring);
 
 /*
  * Class:     com_microsoft_applicationinsights_internal_etw_EtwProvider

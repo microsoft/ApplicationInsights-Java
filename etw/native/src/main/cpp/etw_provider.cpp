@@ -21,6 +21,9 @@
 
 #include "etw_provider.h"
 #include <VersionHelpers.h>
+#include <winmeta.h>
+#include <string>
+#include <errno.h>
 
 #ifndef NDEBUG
 #   include <stdio.h>
@@ -29,65 +32,145 @@
 #   define DBG(...) do { } while(0)
 #endif
 
-#define EVENT_KEYWORDS_ALL 0x0
+#define EVENT_KEYWORD_FILTER_ALL 0x0
+
+#define PROVIDER_HANDLE_VAR provider_EtwHandle
 
 TRACELOGGING_DEFINE_PROVIDER(
-    provider_EtwHandle,
+    PROVIDER_HANDLE_VAR,
     "Microsoft-ApplicationInsights-Java-IPA",
     // {1f0dc33f-30ae-5ff3-8b01-8ca9b8509233}
     (0x1f0dc33f,0x30ae,0x5ff3,0x8b,0x01,0x8c,0xa9,0xb8,0x50,0x92,0x33));
 
+#define WRITE_INFO_EVENT(...) TraceLoggingWrite(PROVIDER_HANDLE_VAR, "JavaIpaInfo", TraceLoggingLevel(WINEVENT_LEVEL_INFO), __VA_ARGS__)
+#define WRITE_ERROR_EVENT(...) TraceLoggingWrite(PROVIDER_HANDLE_VAR, "JavaIpaError", TraceLoggingLevel(WINEVENT_LEVEL_ERROR), __VA_ARGS__)
+#define WRITE_CRITICAL_EVENT(...) TraceLoggingWrite(PROVIDER_HANDLE_VAR, "JavaIpaCritical", TraceLoggingLevel(WINEVENT_LEVEL_CRITICAL), __VA_ARGS__)
+
 JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppWriteEvent(JNIEnv * env, jobject objJavaThis, 
-    jint jiEventId, jstring jstrEventName, jint jiLevel, jstring jstrExtensionVersion, jstring jstrSubscriptionId, jstring jstrAppName, jstring jstrLogger, jstring jstrMessage) {
+    jint jiEventId, jstring jstrEventName, jint jiLevel, jstring jstrExtensionVersion, jstring jstrSubscriptionId, jstring jstrAppName, jstring jstrResourceType, jstring jstrLogger, jstring jstrMessage) {
         // TODO is eventId needed?
         
         jboolean copy = JNI_FALSE;
         // convert all jstrings
-        const char* eventName = (*env)->GetStringUTFChars(jstrEventName, &copy);
-        const char* extensionVersion = (*env)->GetStringUTFChars(jstrExtensionVersion, &copy);
-        const char* subscriptionId = (*env)->GetStringUTFChars(jstrSubscriptionId, &copy);
-        const char* appName = (*env)->GetStringUTFChars(jstrAppName, &copy);
-        const char* logger = (*env)->GetStringUTFChars(jstrLogger, &copy);
-        const char* message = (*env)->GetStringUTFChars(jstrMessage, &copy);
 
-        // log debug message
-        DBG("WriteEvent, eventId=%d, eventName='%s', level=%u, extVer='%s', subId='%s', appName='%s', logger='%s', message='%s'", jiEventId, eventName, jiLevel, extensionVersion, subscriptionId, appName, logger, message);
+        // const char* extensionVersion = env->GetStringUTFChars(jstrExtensionVersion, &copy);
+        // const char* subscriptionId = env->GetStringUTFChars(jstrSubscriptionId, &copy);
+        // const char* appName = env->GetStringUTFChars(jstrAppName, &copy);
+        // const char* resourceType = env->GetStringUTFChars(jstrResourceType, &copy);
+        // const char* logger = env->GetStringUTFChars(jstrLogger, &copy);
 
-        // write message
-        if (IsWindows10OrGreater()) {
-            TraceLoggingWrite(
-                provider_EtwHandle,
-                eventName,
-                TraceLoggingChannel(WINEVENT_CHANNEL_TRACELOGGING),
-                TraceLoggingLevel(jiLevel),
-                TraceLoggingValue(message, "msg")
-                TraceLoggingValue(extensionVersion, "ExtVer"),
-                TraceLoggingValue(subscriptionId, "SubscriptionId"),
-                TraceLoggingValue(appName, "AppName"),
-                TraceLoggingValue(logger, "Logger")
-            );
-        } else {
-            TraceLoggingWrite(
-                provider_EtwHandle,
-                eventName,
-                TraceLoggingLevel(jiLevel),
-                TraceLoggingValue(message, "msg")
-                TraceLoggingValue(extensionVersion, "ExtVer"),
-                TraceLoggingValue(subscriptionId, "SubscriptionId"),
-                TraceLoggingValue(appName, "AppName"),
-                TraceLoggingValue(logger, "Logger")
-            );
+        // TODO macro/inline function the string handling code
+        const char* ccMessage = env->GetStringUTFChars(jstrMessage, &copy);
+        if (ccMessage == NULL) {
+            jthrowable ex = env->ExceptionOccurred();
+            if (ex) {
+                DBG("GetStringUTFChars(jstrMessage) failed with exception\n");
+                // let exception be thrown
+                goto jstrCleanUp;
+            } else {
+                // otherwise throw a new exception
+                jclass cls = env->FindClass("java/lang/IllegalStateException");
+                if (cls != NULL) {
+                    env->ThrowNew(cls, "Could not load message string.");
+                }
+                env->DeleteLocalRef(cls);
+                goto jstrCleanUp;
+            }
         }
 
+        int len_message = 1 + (env->GetStringUTFLength(jstrMessage));
+        char* message = new char[len_message];
+        errno_t cpyerr = strcpy_s(message, len_message, ccMessage);
+        if (cpyerr) {
+            std::string errmsg = "strcpy_s failed for message: err=" + std::to_string(cpyerr);
+            DBG("%s\n", errmsg.c_str());
+            jclass cls = env->FindClass("java/lang/IllegalStateException");
+            if (cls != NULL) {
+                env->ThrowNew(cls, errmsg.c_str());
+            } // else there's already an exception pending
+            env->DeleteLocalRef(cls);
+            delete[] message;
+            goto jstrCleanUp;
+        }
+        DBG("Read message: %s\n", message);
+        // write message
+        // if (IsWindows10OrGreater()) {
+        // switch(jiLevel) {
+        //     case WINEVENT_LEVEL_CRITICAL:
+        //         WRITE_CRITICAL_EVENT(
+        //             provider_EtwHandle,
+        //             eventName,
+        //             TraceLoggingValue(message, "msg")
+        //             TraceLoggingValue(extensionVersion, "ExtVer"),
+        //             TraceLoggingValue(subscriptionId, "SubscriptionId"),
+        //             TraceLoggingValue(appName, "AppName"),
+        //             TraceLoggingValue(resourceType, "ResourceType"),
+        //             TraceLoggingValue(logger, "Logger"));
+        //         break;
+        //     case WINEVENT_LEVEL_ERROR:
+        //         WRITE_ERROR_EVENT(
+        //             provider_EtwHandle,
+        //             eventName,
+        //             TraceLoggingValue(message, "msg")
+        //             TraceLoggingValue(extensionVersion, "ExtVer"),
+        //             TraceLoggingValue(subscriptionId, "SubscriptionId"),
+        //             TraceLoggingValue(appName, "AppName"),
+        //             TraceLoggingValue(resourceType, "ResourceType"),
+        //             TraceLoggingValue(logger, "Logger")
+        //             );
+        //         break;
+        //     case WINEVENT_LEVEL_INFO:
+        //         WRITE_INFO_EVENT(
+        //             provider_EtwHandle,
+        //             eventName,
+        //             TraceLoggingValue(message, "msg")
+        //             TraceLoggingValue(extensionVersion, "ExtVer"),
+        //             TraceLoggingValue(subscriptionId, "SubscriptionId"),
+        //             TraceLoggingValue(appName, "AppName"),
+        //             TraceLoggingValue(resourceType, "ResourceType"),
+        //             TraceLoggingValue(logger, "Logger")
+        //             );
+        //         break;
+        //     default:
+        //         // TODO throw exception; set error flag? still need to release strings
+        // }
+
+        // TraceLoggingWrite(provider_EtwHandle, eventName, 
+        //     // TraceLoggingLevel(WINEVENT_LEVEL_INFO), 
+        //     TraceLoggingString(message, "msg")
+        //     TraceLoggingString(extensionVersion, "ExtVer"),
+        //     TraceLoggingString(subscriptionId, "SubscriptionId"),
+        //     TraceLoggingString(appName, "AppName"),
+        //     TraceLoggingString(resourceType, "ResourceType"),
+        //     TraceLoggingString(logger, "Logger")
+        //     );
+
+        TraceLoggingRegister(PROVIDER_HANDLE_VAR);
+        WRITE_INFO_EVENT(TraceLoggingValue(message, "msg")
+            // ,
+            // TraceLoggingValue(extensionVersion, "ExtVer"),
+            // TraceLoggingValue(subscriptionId, "SubscriptionId"),
+            // TraceLoggingValue(appName, "AppName"),
+            // TraceLoggingValue(resourceType, "ResourceType"),
+            // TraceLoggingValue(logger, "Logger")
+            );
+        TraceLoggingUnregister(PROVIDER_HANDLE_VAR);
+        
+
+        delete[] message;
+
+jstrCleanUp:
         // release strings
-        (env*)->ReleaseStringUTFChars(jstrEventName, eventName);
-        (env*)->ReleaseStringUTFChars(jstrExtensionVersion, extensionVersion);
-        (env*)->ReleaseStringUTFChars(jstrSubscriptionId, subscriptionId);
-        (env*)->ReleaseStringUTFChars(jstrAppName, appName);
-        (env*)->ReleaseStringUTFChars(jstrLogger, logger);
-        (env*)->ReleaseStringUTFChars(jstrMessage, message);
+        // env->ReleaseStringUTFChars(jstrExtensionVersion, extensionVersion);
+        // env->ReleaseStringUTFChars(jstrSubscriptionId, subscriptionId);
+        // env->ReleaseStringUTFChars(jstrAppName, appName);
+        // env->ReleaseStringUTFChars(jstrResourceType, resourceType);
+        // env->ReleaseStringUTFChars(jstrLogger, logger);
+        env->ReleaseStringUTFChars(jstrMessage, ccMessage);
 }
 
+
+// TODO delete me
 JNIEXPORT jboolean JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppIsProviderEnabled(JNIEnv * env, jobject objJavaThis, 
     jint level) {
         // jint<signed 32 bits> -> UCHAR<unsigned char/8 bits>
