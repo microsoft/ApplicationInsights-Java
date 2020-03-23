@@ -36,7 +36,8 @@ import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A utility class that knows how to fetch JMX data.
@@ -44,6 +45,8 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  * Created by gupele on 3/15/2015.
  */
 public class JmxDataFetcher {
+
+    private static final Logger logger = LoggerFactory.getLogger(JmxDataFetcher.class);
 
     /**
      * Gets an object name and its attributes to fetch and will return the data.
@@ -70,7 +73,7 @@ public class JmxDataFetcher {
                 Collection<Object> resultForAttribute = fetch(server, objects, attribute.name);
                 result.put(attribute.displayName, resultForAttribute);
             } catch (Exception e) {
-                InternalLogger.INSTANCE
+                logger
                         .error("Failed to fetch JMX object '%s' with attribute '%s': '%s'", objectName, attribute.name,
                                 e.toString());
                 throw e;

@@ -25,11 +25,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class knows how to supply the io usage of the current process under the Unix OS.
@@ -41,6 +41,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 3/8/2015.
  */
 final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCounter {
+
+    private static final Logger logger = LoggerFactory.getLogger(UnixProcessIOPerformanceCounter.class);
+
     private final static double NANOS_IN_SECOND = 1000000000.0;
 
     private double prevProcessIO;
@@ -72,7 +75,7 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
             double value = (processIO - prevProcessIO) / timeElapsedInSeconds;
             prevProcessIO = processIO;
 
-            InternalLogger.INSTANCE.trace("Sending Performance Counter: %s %s: %s", getProcessCategoryName(), Constants.PROCESS_IO_PC_COUNTER_NAME, value);
+            logger.trace("Sending Performance Counter: {} {}: {}", getProcessCategoryName(), Constants.PROCESS_IO_PC_COUNTER_NAME, value);
             Telemetry telemetry = new PerformanceCounterTelemetry(
                     getProcessCategoryName(),
                     Constants.PROCESS_IO_PC_COUNTER_NAME,
@@ -106,14 +109,14 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
         } catch (Exception e) {
             result = null;
             logPerfCounterErrorError("Error while parsing file: '%s'", getId());
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            logPerfCounterErrorTrace("Error while parsing file: '%s'", getId(), e);
         } finally {
             if (bufferedReader != null ) {
                 try {
                     bufferedReader.close();
                 } catch (Exception e) {
                     logPerfCounterErrorError("Error while closing file : '%s'", e.toString());
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                    logPerfCounterErrorTrace("Error while closing file", e);
                 }
             }
         }

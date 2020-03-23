@@ -30,11 +30,11 @@ import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterF
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Map;
@@ -46,6 +46,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * @param <T> The type of the telemetry being stored in the buffer.
  */
 public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
+
+    private static final Logger logger = LoggerFactory.getLogger(TelemetryChannelBase.class);
+
     public static final int DEFAULT_MAX_INSTANT_RETRY = 3;
     public static final int DEFAULT_MAX_TELEMETRY_BUFFER_CAPACITY = 500;
     public static final int DEFAULT_FLUSH_BUFFER_TIMEOUT_IN_SECONDS = 5;
@@ -166,7 +169,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
                 }
 
             } catch (NumberFormatException e) {
-                InternalLogger.INSTANCE.error("Unable to parse configuration setting %s to integer value.%nStack Trace:%n%s", INSTANT_RETRY_NAME, ExceptionUtils.getStackTrace(e));
+                logger.error("Unable to parse configuration setting {} to integer value", INSTANT_RETRY_NAME, e);
             }
 
             if (!developerMode) {
@@ -273,8 +276,8 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Exception generated while stopping telemetry transmitter");
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                logger.error("Exception generated while stopping telemetry transmitter");
+                logger.trace("Exception generated while stopping telemetry transmitter", t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -333,7 +336,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         }
 
         if (itemsSent.incrementAndGet() % LOG_TELEMETRY_ITEMS_MODULUS == 0) {
-            InternalLogger.INSTANCE.info("items sent till now %d", itemsSent.get());
+            logger.info("items sent till now %d", itemsSent.get());
         }
 
         if (isDeveloperMode()) {
@@ -349,7 +352,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     protected abstract boolean doSend(Telemetry telemetry);
 
     private void writeTelemetryToDebugOutput(Telemetry telemetry) {
-        InternalLogger.INSTANCE.trace("%s sending telemetry: %s", this.getClass().getSimpleName(), telemetry.toString());
+        logger.trace("{} sending telemetry: {}", this.getClass().getSimpleName(), telemetry.toString());
     }
 
     protected abstract TransmitterFactory<T> createTransmitterFactory();
@@ -382,7 +385,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         URI uri = Sanitizer.sanitizeUri(endpointAddress);
         if (uri == null) {
             String errorMessage = String.format("Endpoint address %s is not a valid uri", endpointAddress);
-            InternalLogger.INSTANCE.error(errorMessage);
+            logger.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
     }

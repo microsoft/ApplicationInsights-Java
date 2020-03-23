@@ -63,7 +63,6 @@ public class ApplicationInsightsWriter implements
     private static final int INITIALIZATION_PHASE_ERROR_CODE = 2;
     private static final int WRITE_PHASE_ERROR_CODE = 3;
     private static final String PLUGIN_NAME = "ApplicationInsightsWriter";
-    private static final String DEFAULT_AI_LOGGER_OUTPUT = "CONSOLE";
 
     // endregion Consts
 
@@ -126,9 +125,6 @@ public class ApplicationInsightsWriter implements
         }
 
         this.telemetryConfiguration.setInstrumentationKey(writerConfiguration.getInstrumentationKey());
-        if (writerConfiguration.getIsLoggerEnabled()) {
-            InternalLogger.INSTANCE.initialize(DEFAULT_AI_LOGGER_OUTPUT, new HashMap<String, String>());
-        }
 
         this.excludedPluginsDictionary = writerConfiguration.getPluginExclusions();
         logger.logInfo("Configuration loaded successfully.");

@@ -25,11 +25,11 @@ import java.lang.management.ManagementFactory;
 import javax.management.ObjectName;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class supplies the memory usage in Mega Bytes of the Java process the SDK is in.
@@ -37,6 +37,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 3/3/2015.
  */
 final class FreeMemoryPerformanceCounter extends AbstractPerformanceCounter {
+
+    private static final Logger logger = LoggerFactory.getLogger(FreeMemoryPerformanceCounter.class);
 
     private ObjectName osBean;
 
@@ -54,12 +56,12 @@ final class FreeMemoryPerformanceCounter extends AbstractPerformanceCounter {
         try {
             freePhysicalMemorySize = getFreePhysicalMemorySize();
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Error getting FreePhysicalMemorySize");
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            logger.error("Error getting FreePhysicalMemorySize");
+            logger.trace("Error getting FreePhysicalMemorySize", e);
             return;
         }
 
-        InternalLogger.INSTANCE.trace("Performance Counter: %s %s: %s", Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
+        logger.trace("Performance Counter: {} {}: {}", Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,
                 Constants.TOTAL_MEMORY_PC_COUNTER_NAME, freePhysicalMemorySize);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 Constants.TOTAL_MEMORY_PC_CATEGORY_NAME,

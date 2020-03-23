@@ -21,16 +21,19 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 3/30/2015.
  */
 @SuppressWarnings("deprecation")
 public final class WindowsPerformanceCounterData {
+
+    private static final Logger logger = LoggerFactory.getLogger(WindowsPerformanceCounterData.class);
+
     // TODO v3 make fields private
     /**
      * @deprecated use {@link #getDisplayName()}
@@ -102,7 +105,7 @@ public final class WindowsPerformanceCounterData {
             translatedInstanceName = JniPCConnector.translateInstanceName(instanceName);
             this.instanceName = translatedInstanceName;
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("Failed to translate instance name '%s': '%s'", instanceName, e.toString());
+            logger.error("Failed to translate instance name '{}': '{}'", instanceName, e.toString());
             throw e;
         }
         return this;

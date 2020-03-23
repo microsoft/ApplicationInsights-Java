@@ -30,7 +30,6 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.telemetry.Duration;
@@ -47,6 +46,8 @@ import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // Created by gupele
 /**
@@ -54,6 +55,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * General overview https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics
  */
 public class TelemetryClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(TelemetryClient.class);
 
     private final TelemetryConfiguration configuration;
     private volatile TelemetryContext context;
@@ -386,7 +389,7 @@ public class TelemetryClient {
     public void track(Telemetry telemetry) {
 
         if (generateCounter.incrementAndGet() % 10000 == 0) {
-            InternalLogger.INSTANCE.info("Total events generated till now %d", generateCounter.get());
+            logger.info("Total events generated till now %d", generateCounter.get());
         }
 
         if (telemetry == null) {
@@ -413,7 +416,7 @@ public class TelemetryClient {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Exception while telemetry context's initialization: '%s'", t.toString());            } catch (ThreadDeath td) {
+                logger.error("Exception while telemetry context's initialization: '{}'", t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -437,7 +440,7 @@ public class TelemetryClient {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Exception while sending telemetry: '%s'",t.toString());            } catch (ThreadDeath td) {
+                logger.error("Exception while sending telemetry: '{}'",t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -476,7 +479,7 @@ public class TelemetryClient {
         }
         for (ContextInitializer init : configuration.getContextInitializers()) {
             if (init == null) { // since collection reference is exposed, we need a null check here
-                InternalLogger.INSTANCE.warn("Found null ContextInitializer in configuration. Skipping...");
+                logger.warn("Found null ContextInitializer in configuration. Skipping...");
                 continue;
             }
 
@@ -486,8 +489,8 @@ public class TelemetryClient {
                 throw td;
             } catch (Throwable t) {
                 try {
-                    if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                        InternalLogger.INSTANCE.error("Exception in context initializer, %s: %s", init.getClass().getSimpleName(), ExceptionUtils.getStackTrace(t));
+                    if (logger.isErrorEnabled()) {
+                        logger.error("Exception in context initializer, {}: {}", init.getClass().getSimpleName(), ExceptionUtils.getStackTrace(t));
                     }
                 } catch (ThreadDeath td) {
                     throw td;

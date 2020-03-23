@@ -24,9 +24,9 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
 import com.google.common.primitives.Longs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class is responsible for managing the back-offs of Sender Threads.
@@ -42,6 +42,9 @@ import com.google.common.primitives.Longs;
  * Created by gupele on 2/9/2015.
  */
 final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBackOffData> {
+
+    private static final Logger logger = LoggerFactory.getLogger(SenderThreadsBackOffManager.class);
+
     // The back-off timeouts that will be used by sender threads when need to back-off.
     private long[] backOffTimeoutsInMilliseconds = null;
 
@@ -108,7 +111,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
 
         if (container == null) {
             backOffTimeoutsInMilliseconds = new ExponentialBackOffTimesPolicy().getBackOffTimeoutsInMillis();
-            InternalLogger.INSTANCE.trace("No BackOffTimesContainer, using default values.");
+            logger.trace("No BackOffTimesContainer, using default values.");
             return;
         }
 
@@ -126,7 +129,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
 
         if (validBackOffTimeoutsInSeconds.isEmpty()) {
             backOffTimeoutsInMilliseconds = new ExponentialBackOffTimesPolicy().getBackOffTimeoutsInMillis();
-            InternalLogger.INSTANCE.trace("BackOff timeouts are not supplied or not valid, using default values.");
+            logger.trace("BackOff timeouts are not supplied or not valid, using default values.");
             return;
         }
 

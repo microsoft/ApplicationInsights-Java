@@ -21,8 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 6/4/2015.
@@ -30,10 +31,12 @@ import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 public enum ApacheSenderFactory {
     INSTANCE;
 
+    private static final Logger logger = LoggerFactory.getLogger(ApacheSenderFactory.class);
+
     private ApacheSender apacheSender = ApacheSender43.create();
 
     public synchronized ApacheSender create() {
-        InternalLogger.INSTANCE.trace("Using Http Client version 4.3+");
+        logger.trace("Using Http Client version 4.3+");
         return apacheSender;
     }
 }

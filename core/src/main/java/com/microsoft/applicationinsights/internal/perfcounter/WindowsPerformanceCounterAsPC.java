@@ -26,12 +26,12 @@ import java.util.Map;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 
 import com.google.common.base.Strings;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Built-in Windows performance counters that are sent as {@link com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry}
@@ -39,6 +39,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 3/30/2015.
  */
 public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerformanceCounter {
+
+    private static final Logger logger = LoggerFactory.getLogger(WindowsPerformanceCounterAsPC.class);
 
     private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "WindowsPerformanceCounterAsPC";
 
@@ -73,15 +75,15 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                 } else {
                     send(telemetryClient, value, entry.getValue());
                     WindowsPerformanceCounterData pcData = entry.getValue();
-                    InternalLogger.INSTANCE.trace("Sent performance counter for '%s'(%s, %s, %s): '%s'",
+                    logger.trace("Sent performance counter for '{}'({}, {}, {}): '{}'",
                             pcData.getDisplayName(), pcData.getCategoryName(), pcData.getCounterName(), pcData.getInstanceName(), value);
                 }
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable e) {
                 try {
-                    if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                        InternalLogger.INSTANCE.error("Failed to send performance counter for '%s': %s", entry.getValue().getDisplayName(), ExceptionUtils.getStackTrace(e));
+                    if (logger.isErrorEnabled()) {
+                        logger.error("Failed to send performance counter for '{}'", entry.getValue().getDisplayName(), e);
                     }
                 } catch (ThreadDeath td) {
                     throw td;
@@ -123,8 +125,8 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                 throw td;
             } catch (Throwable e) {
                 try {
-                    if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                        InternalLogger.INSTANCE.error("Exception while registering windows performance counter as PC: %s", ExceptionUtils.getStackTrace(e));
+                    if (logger.isErrorEnabled()) {
+                        logger.error("Exception while registering windows performance counter as PC", e);
                     }
                 } catch (ThreadDeath td) {
                     throw td;

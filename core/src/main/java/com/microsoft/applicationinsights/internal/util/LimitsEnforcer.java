@@ -2,13 +2,15 @@ package com.microsoft.applicationinsights.internal.util;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 5/10/2015.
  */
 public final class LimitsEnforcer {
+
+    private static final Logger logger = LoggerFactory.getLogger(LimitsEnforcer.class);
 
     enum Type {
         DEFAULT_ON_ERROR,
@@ -51,7 +53,7 @@ public final class LimitsEnforcer {
         switch (type) {
             case DEFAULT_ON_ERROR:
                 if (value == null || value < minimum || value > maximum) {
-                    InternalLogger.INSTANCE.warn("'%s': bad value is replaced by the default: '%d'", propertyName, defaultValue);
+                    logger.warn("'{}': bad value is replaced by the default: '%d'", propertyName, defaultValue);
                     currentValue = defaultValue;
                 } else {
                     currentValue = value;
@@ -61,13 +63,13 @@ public final class LimitsEnforcer {
             case CLOSEST_LIMIT_ON_ERROR:
                 if (value == null) {
                     currentValue = defaultValue;
-                    InternalLogger.INSTANCE.info("'%s': null value is replaced with '%d'", propertyName, defaultValue);
+                    logger.info("'{}': null value is replaced with '%d'", propertyName, defaultValue);
                 } else if (value < minimum) {
                     currentValue = minimum;
-                    InternalLogger.INSTANCE.warn("'%s': value is under the minimum, therefore is replaced with '%d'", propertyName, minimum);
+                    logger.warn("'{}': value is under the minimum, therefore is replaced with '%d'", propertyName, minimum);
                 } else if (value > maximum) {
                     currentValue = maximum;
-                    InternalLogger.INSTANCE.warn("'%s': value is above the maximum, therefore is replaced with '%d'", propertyName, maximum);
+                    logger.warn("'{}': value is above the maximum, therefore is replaced with '%d'", propertyName, maximum);
                 } else {
                     currentValue = value;
                 }
@@ -119,8 +121,8 @@ public final class LimitsEnforcer {
             try {
                 value = Integer.parseInt(valueAsString);
             } catch (NumberFormatException e) {
-                InternalLogger.INSTANCE.warn("'%s': bad format for value '%s'", propertyName, valueAsString);
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                logger.warn("'{}': bad format for value '{}'", propertyName, valueAsString);
+                logger.trace("'{}': bad format for value '{}'", propertyName, valueAsString, e);
             }
         }
 

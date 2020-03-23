@@ -29,9 +29,10 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class is responsible for getting instances of {@link com.microsoft.applicationinsights.telemetry.Telemetry}
@@ -46,6 +47,9 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  * Created by gupele on 12/17/2014.
  */
 public class TelemetryBuffer<T> {
+
+    private static final Logger logger = LoggerFactory.getLogger(TelemetryBuffer.class);
+
     /**
      * An inner helper class that will let the Sender class to fetch the relevant Telemetries.
      *
@@ -186,14 +190,14 @@ public class TelemetryBuffer<T> {
                 if (!sender.sendNow(prepareTelemetriesForSend())) {
                     // 'prepareTelemetriesForSend' already created a new container
                     // so basically we have nothing to do, the old container is lost
-                    InternalLogger.INSTANCE.error("Failed to send buffer data to network");
+                    logger.error("Failed to send buffer data to network");
                 }
             } else if (currentSize == 1) {
                 if (!sender.scheduleSend(new TelemetryBufferTelemetriesFetcher(generation), transmitBufferTimeoutInSeconds, TimeUnit.SECONDS)) {
                     // We cannot schedule send so we give up the Telemetry
                     // The reason for this is that in case the maximum buffer size is greater than 2
                     // than in case a new Telemetry arrives it won't trigger the schedule and might be lost too
-                    InternalLogger.INSTANCE.error("Failed to schedule send of the buffer to network");
+                    logger.error("Failed to schedule send of the buffer to network");
                     telemetries.clear();
                 }
             }
@@ -207,7 +211,7 @@ public class TelemetryBuffer<T> {
         synchronized (lock) {
             if (telemetries.size() != 0) {
                 if (!sender.sendNow(prepareTelemetriesForSend())) {
-                    InternalLogger.INSTANCE.error("Failed to flush buffer data to network");
+                    logger.error("Failed to flush buffer data to network");
                 }
             }
         }

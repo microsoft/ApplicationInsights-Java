@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import java.util.HashSet;
 import java.util.List;
@@ -8,7 +7,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <h1>Base Heartbeat Property Provider</h1>
@@ -21,6 +21,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * @author Dhaval Doshi
  */
 public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProviderInterface {
+
+  private static final Logger logger = LoggerFactory.getLogger(DefaultHeartBeatPropertyProvider.class);
 
   /**
    * Collection holding default properties for this default provider.
@@ -92,13 +94,13 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
                 break;
               default:
                 //We won't accept unknown properties in default providers.
-                InternalLogger.INSTANCE.trace("Encountered unknown default property");
+                logger.trace("Encountered unknown default property");
                 break;
             }
           }
           catch (Exception e) {
-            if (InternalLogger.INSTANCE.isWarnEnabled()) {
-              InternalLogger.INSTANCE.warn("Failed to obtain heartbeat property: %s", ExceptionUtils.getStackTrace(e));
+            if (logger.isWarnEnabled()) {
+              logger.warn("Failed to obtain heartbeat property", e);
             }
           }
         }

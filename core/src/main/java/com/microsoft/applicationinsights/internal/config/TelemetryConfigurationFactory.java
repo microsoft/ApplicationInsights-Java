@@ -35,7 +35,6 @@ import com.microsoft.applicationinsights.extensibility.*;
 import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
@@ -45,12 +44,16 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Initializer class for configuration instances.
  */
 public enum TelemetryConfigurationFactory {
     INSTANCE;
+
+    private static final Logger logger = LoggerFactory.getLogger(TelemetryConfigurationFactory.class);
 
     // Default file name
     private static final String CONFIG_FILE_NAME = "ApplicationInsights.xml";
@@ -92,8 +95,6 @@ public enum TelemetryConfigurationFactory {
     public void initialize(TelemetryConfiguration configuration,
                            ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
 
-        setInternalLogger(applicationInsightsConfig.getSdkLogger(), configuration);
-
         setInstrumentationKey(applicationInsightsConfig, configuration);
         setConnectionString(applicationInsightsConfig, configuration);
         setRoleName(applicationInsightsConfig, configuration);
@@ -101,7 +102,7 @@ public enum TelemetryConfigurationFactory {
 
         boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), configuration);
         if (!channelIsConfigured) {
-            InternalLogger.INSTANCE.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
+            logger.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
         }
         configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
 
@@ -121,17 +122,9 @@ public enum TelemetryConfigurationFactory {
         initializeComponents(configuration);
     }
 
-    private void setInternalLogger(SDKLoggerXmlElement sdkLogger, TelemetryConfiguration configuration) {
-        if (sdkLogger == null) {
-            return;
-        }
-
-        InternalLogger.INSTANCE.initialize(sdkLogger.getType(), sdkLogger.getData());
-    }
-
     private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryConfiguration configuration) {
         if (isQuickPulseEnabledInConfiguration(appConfiguration)) {
-            InternalLogger.INSTANCE.trace("Initializing QuickPulse...");
+            logger.trace("Initializing QuickPulse...");
             QuickPulse.INSTANCE.initialize(configuration);
         }
     }
@@ -196,7 +189,7 @@ public enum TelemetryConfigurationFactory {
                 configuration.setInstrumentationKey(ikey);
             }
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to set instrumentation key: '%s'", e.toString());
+            logger.error("Failed to set instrumentation key: '{}'", e.toString());
         }
     }
 
@@ -210,7 +203,7 @@ public enum TelemetryConfigurationFactory {
         String nextValue = System.getenv(CONNECTION_STRING_ENV_VAR_NAME);
         if (!Strings.isNullOrEmpty(nextValue)) {
             if (!Strings.isNullOrEmpty(connectionString)) {
-                InternalLogger.INSTANCE.warn("Environment variable %s is overriding connection string value from %s", CONNECTION_STRING_ENV_VAR_NAME, CONFIG_FILE_NAME);
+                logger.warn("Environment variable {} is overriding connection string value from {}", CONNECTION_STRING_ENV_VAR_NAME, CONFIG_FILE_NAME);
             }
             connectionString = nextValue;
         }
@@ -240,7 +233,7 @@ public enum TelemetryConfigurationFactory {
                 configuration.setRoleName(roleName);
             }
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to set role name: '%s'", e.toString());
+            logger.error("Failed to set role name: '{}'", e.toString());
         }
     }
 
@@ -264,7 +257,7 @@ public enum TelemetryConfigurationFactory {
                 configuration.setRoleInstance(roleInstance);
             }
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to set role instance: '%s'", e.toString());
+            logger.error("Failed to set role instance: '{}'", e.toString());
         }
     }
 
@@ -278,7 +271,7 @@ public enum TelemetryConfigurationFactory {
         if (performanceModuleNames.size() == 0) {
             // Only a workaround for JBoss web servers.
             // Will be removed once the issue will be investigated and fixed.
-            InternalLogger.INSTANCE.trace("Default performance counters will be automatically loaded.");
+            logger.trace("Default performance counters will be automatically loaded.");
             performanceModuleNames.addAll(getDefaultPerformanceModulesNames());
         }
 
@@ -290,12 +283,12 @@ public enum TelemetryConfigurationFactory {
                     try {
                         awareModule.addConfigurationData(performanceConfigurationData);
                     } catch (Exception e) {
-                        InternalLogger.INSTANCE.error("Failed to add configuration data to performance module: '%s'", e.toString());
+                        logger.error("Failed to add configuration data to performance module: '{}'", e.toString());
                     }
                 }
                 modules.add(module);
             } else {
-                InternalLogger.INSTANCE.error("Failed to create performance module: '%s'", performanceModuleName);
+                logger.error("Failed to create performance module: '{}'", performanceModuleName);
             }
         }
 
@@ -342,17 +335,17 @@ public enum TelemetryConfigurationFactory {
                 }
 
                 if (Strings.isNullOrEmpty(jmxElement.getObjectName())) {
-                    InternalLogger.INSTANCE.error("JMX object name is empty, will be ignored");
+                    logger.error("JMX object name is empty, will be ignored");
                     continue;
                 }
 
                 if (Strings.isNullOrEmpty(jmxElement.getAttribute())) {
-                    InternalLogger.INSTANCE.error("JMX attribute is empty for '%s', will be ignored", jmxElement.getObjectName());
+                    logger.error("JMX attribute is empty for '{}', will be ignored", jmxElement.getObjectName());
                     continue;
                 }
 
                 if (Strings.isNullOrEmpty(jmxElement.getDisplayName())) {
-                    InternalLogger.INSTANCE.error("JMX display name is empty for '%s', will be ignored", jmxElement.getObjectName());
+                    logger.error("JMX display name is empty for '{}', will be ignored", jmxElement.getObjectName());
                     continue;
                 }
 
@@ -363,16 +356,16 @@ public enum TelemetryConfigurationFactory {
             for (Map.Entry<String, Collection<JmxAttributeData>> entry : data.entrySet()) {
                 try {
                     if (PerformanceCounterContainer.INSTANCE.register(new JmxMetricPerformanceCounter(entry.getKey(), entry.getKey(), entry.getValue()))) {
-                        InternalLogger.INSTANCE.trace("Registered JMX performance counter '%s'", entry.getKey());
+                        logger.trace("Registered JMX performance counter '{}'", entry.getKey());
                     } else {
-                        InternalLogger.INSTANCE.trace("Failed to register JMX performance counter '%s'", entry.getKey());
+                        logger.trace("Failed to register JMX performance counter '{}'", entry.getKey());
                     }
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to register JMX performance counter '%s': '%s'", entry.getKey(), e.toString());
+                    logger.error("Failed to register JMX performance counter '{}': '{}'", entry.getKey(), e.toString());
                 }
             }
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to register JMX performance counters: '%s'", e.toString());
+            logger.error("Failed to register JMX performance counters: '{}'", e.toString());
         }
     }
 
@@ -390,7 +383,7 @@ public enum TelemetryConfigurationFactory {
                 configuration.setChannel(channel);
                 return true;
             } else {
-                InternalLogger.INSTANCE.error("Failed to create '%s'", channelName);
+                logger.error("Failed to create '{}'", channelName);
                 if (!InProcessTelemetryChannel.class.getCanonicalName().equals(channelName)) {
                     return false;
                 }
@@ -403,7 +396,7 @@ public enum TelemetryConfigurationFactory {
             configuration.setChannel(channel);
             return true;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to create InProcessTelemetryChannel, exception: %s, will create the default one with default arguments", e.toString());
+            logger.error("Failed to create InProcessTelemetryChannel, exception: {}, will create the default one with default arguments", e.toString());
             TelemetryChannel channel = new InProcessTelemetryChannel(configuration);
             configuration.setChannel(channel);
             return true;
@@ -428,7 +421,7 @@ public enum TelemetryConfigurationFactory {
             try {
                 module.initialize(configuration);
             } catch (Exception e) {
-                InternalLogger.INSTANCE.error(
+                logger.error(
                         "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Exception");
             }
         }

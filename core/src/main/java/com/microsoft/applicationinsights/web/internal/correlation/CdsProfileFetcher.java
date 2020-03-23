@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.web.internal.correlation;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +33,8 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -46,6 +47,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
+
+    private static final Logger logger = LoggerFactory.getLogger(CdsProfileFetcher.class);
 
     private CloseableHttpAsyncClient httpClient;
     private String endpointAddress = null;
@@ -113,7 +116,7 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
 
         // check if we have tried resolving this ikey too many times. If so, quit to save on perf.
         if (failureCounters.containsKey(instrumentationKey) && failureCounters.get(instrumentationKey) >= retryPolicy.getMaxInstantRetries()) {
-            InternalLogger.INSTANCE.info("The profile fetch task will not execute for next %d minutes. Max number of retries reached.", retryPolicy.getResetPeriodInMinutes());
+            logger.info("The profile fetch task will not execute for next %d minutes. Max number of retries reached.", retryPolicy.getResetPeriodInMinutes());
             return result;
         }
 
@@ -176,8 +179,8 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
         URL url = new URL(endpoint);
         String urlStr = url.toString();
         this.endpointAddress = urlStr.substring(0, urlStr.length() - url.getFile().length());
-        if (InternalLogger.INSTANCE.isTraceEnabled()) {
-            InternalLogger.INSTANCE.trace("%s endpoint override: %s", CdsProfileFetcher.class.getSimpleName(), this.endpointAddress);
+        if (logger.isTraceEnabled()) {
+            logger.trace("{} endpoint override: {}", CdsProfileFetcher.class.getSimpleName(), this.endpointAddress);
         }
     }
 

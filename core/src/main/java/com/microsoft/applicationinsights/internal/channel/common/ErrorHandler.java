@@ -2,7 +2,8 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class implements the retry logic for transmissions with the results of a
@@ -14,6 +15,8 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  *
  */
 public class ErrorHandler implements TransmissionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(ErrorHandler.class);
 
     private TransmissionPolicyManager transmissionPolicyManager;
 
@@ -46,7 +49,7 @@ public class ErrorHandler implements TransmissionHandler {
                 backoffAndSendTransmission(args);
                 return true;
             default:
-                InternalLogger.INSTANCE.trace("Http response code %s not handled by %s", args.getResponseCode(),
+                logger.trace("Http response code {} not handled by {}", args.getResponseCode(),
                         this.getClass().getName());
                 return false;
             }

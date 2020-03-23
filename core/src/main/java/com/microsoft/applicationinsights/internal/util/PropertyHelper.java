@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +32,9 @@ import java.util.Properties;
  * Helper class for reading data from a properties file found on the class path.
  */
 public final class PropertyHelper {
+
+    private static final Logger logger = LoggerFactory.getLogger(PropertyHelper.class);
+
     public static final String SDK_VERSION_FILE_NAME = "sdk-version.properties";
     static final String STARTER_VERSION_FILE_NAME = "starter-version.properties";
 
@@ -78,7 +81,7 @@ public final class PropertyHelper {
         try {
             return getProperties(SDK_VERSION_FILE_NAME);
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Could not find sdk version file '%s': %s", SDK_VERSION_FILE_NAME, ExceptionUtils.getStackTrace(e));
+            logger.error("Could not find sdk version file '{}'", SDK_VERSION_FILE_NAME, e);
         }
 
         return null;
@@ -95,7 +98,7 @@ public final class PropertyHelper {
             return getProperties(STARTER_VERSION_FILE_NAME);
         }
         catch (IOException e) {
-            InternalLogger.INSTANCE.error("Could not find starter version file '%s': %s", SDK_VERSION_FILE_NAME, ExceptionUtils.getStackTrace(e));
+            logger.error("Could not find starter version file '{}'", SDK_VERSION_FILE_NAME, e);
         }
         return null;
     }

@@ -49,7 +49,6 @@ import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
 import com.microsoft.applicationinsights.internal.config.ParamXmlElement;
-import com.microsoft.applicationinsights.internal.config.SDKLoggerXmlElement;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
@@ -260,12 +259,6 @@ public class MainEntryPoint {
         }
         xmlConfiguration.getPerformance().setJmxXmlElements(jmxXmls);
 
-        if (config.experimental.debug) {
-            SDKLoggerXmlElement sdkLogger = new SDKLoggerXmlElement();
-            sdkLogger.setType("CONSOLE");
-            sdkLogger.setLevel("TRACE");
-            xmlConfiguration.setSdkLogger(sdkLogger);
-        }
         if (config.experimental.developerMode) {
             xmlConfiguration.getChannel().setDeveloperMode(true);
         }

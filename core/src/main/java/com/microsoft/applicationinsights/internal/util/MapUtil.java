@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 

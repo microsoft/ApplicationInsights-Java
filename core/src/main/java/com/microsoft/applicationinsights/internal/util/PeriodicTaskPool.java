@@ -1,8 +1,9 @@
 package com.microsoft.applicationinsights.internal.util;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
@@ -41,6 +42,8 @@ import java.util.concurrent.TimeUnit;
  * @since 2.4.0
  */
 public class PeriodicTaskPool implements Stoppable {
+
+    private static final Logger logger = LoggerFactory.getLogger(PeriodicTaskPool.class);
 
     /**
      * A Map which stores the currently active PeriodicTasks and it's associate future.
@@ -104,14 +107,14 @@ public class PeriodicTaskPool implements Stoppable {
         }
 
         if (!periodicTaskMap.containsKey(task)) {
-            InternalLogger.INSTANCE.error(String.format("No such Task %s running",task));
+            logger.error(String.format("No such Task {} running",task));
             return false;
         }
 
         ScheduledFuture<?> futureToCancel = periodicTaskMap.get(task);
 
         if (futureToCancel.isCancelled() || futureToCancel.isDone()) {
-            InternalLogger.INSTANCE.info("Cannot cancel task %s, It is either completed or already cancelled",
+            logger.info("Cannot cancel task {}, It is either completed or already cancelled",
                     task);
             return false;
         }

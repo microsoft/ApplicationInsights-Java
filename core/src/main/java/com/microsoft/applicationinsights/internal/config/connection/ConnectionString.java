@@ -4,8 +4,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,6 +14,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class ConnectionString {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConnectionString.class);
 
     @VisibleForTesting
     static final int CONNECTION_STRING_MAX_LENGTH = 4096;
@@ -43,7 +46,7 @@ public class ConnectionString {
             throw new InvalidConnectionStringException("Missing '"+Keywords.INSTRUMENTATION_KEY+"'");
         }
         if (!Strings.isNullOrEmpty(config.getInstrumentationKey())) {
-            InternalLogger.INSTANCE.warn("Connection string is overriding previously configured instrumentation key.");
+            logger.warn("Connection string is overriding previously configured instrumentation key.");
         }
         config.setInstrumentationKey(instrumentationKey);
 

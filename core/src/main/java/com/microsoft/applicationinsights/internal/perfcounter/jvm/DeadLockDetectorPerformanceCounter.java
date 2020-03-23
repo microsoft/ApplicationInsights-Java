@@ -30,12 +30,12 @@ import java.util.ArrayList;
 import static java.lang.Math.min;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class uses the JVM ThreadMXBean to detect threads dead locks
@@ -46,6 +46,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 8/7/2016.
  */
 public final class DeadLockDetectorPerformanceCounter implements PerformanceCounter {
+
+    private static final Logger logger = LoggerFactory.getLogger(DeadLockDetectorPerformanceCounter.class);
 
     public final static String NAME = "ThreadDeadLockDetector";
 
@@ -124,8 +126,8 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Error while setting the Thread Info");
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                logger.error("Error while setting the Thread Info");
+                logger.trace("Error while setting the Thread Info", t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {

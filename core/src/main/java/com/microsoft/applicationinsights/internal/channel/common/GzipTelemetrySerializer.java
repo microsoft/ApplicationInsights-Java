@@ -27,7 +27,6 @@ import java.util.Collection;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.squareup.moshi.JsonWriter;
@@ -35,7 +34,8 @@ import okio.Buffer;
 import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class is an implementation of the {@link TelemetrySerializer}
@@ -44,6 +44,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 12/17/2014.
  */
 public final class GzipTelemetrySerializer implements TelemetrySerializer {
+
+    private static final Logger logger = LoggerFactory.getLogger(GzipTelemetrySerializer.class);
+
     private final static String GZIP_WEB_CONTENT_TYPE = "application/x-json-stream";
     private final static String GZIP_WEB_ENCODING_TYPE = "gzip";
 
@@ -70,12 +73,12 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 try {
                     succeeded = compress(bufferedSink, telemetries);
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
+                    logger.error("Failed to serialize , exception: {}", e.toString());
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t) {
                     try {
-                        InternalLogger.INSTANCE.error("Failed to serialize, unknown exception: %s", t.toString());                    } catch (ThreadDeath td) {
+                        logger.error("Failed to serialize, unknown exception: {}", t.toString());                    } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable t2) {
                         // chomp
@@ -92,7 +95,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 buffer.clear();
             }
         } catch(Exception e) {
-            InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
+            logger.error("Failed to serialize , exception: {}", e.toString());
         }
 
         return Optional.fromNullable(result);
@@ -114,12 +117,12 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 try {
                     succeeded = compressFromStrings(bufferedSink, telemetries);
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
+                    logger.error("Failed to serialize , exception: {}", e.toString());
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t) {
                     try {
-                        InternalLogger.INSTANCE.error("Failed to serialize, unknown exception: %s", t.toString());                    } catch (ThreadDeath td) {
+                        logger.error("Failed to serialize, unknown exception: {}", t.toString());                    } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable t2) {
                         // chomp
@@ -136,7 +139,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 buffer.clear();
             }
         } catch(Exception e) {
-            InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
+            logger.error("Failed to serialize , exception: {}", e.toString());
         }
 
         return Optional.fromNullable(result);
@@ -162,8 +165,8 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 telemetry.markUsed();
                 ++counter;
             } catch (IOException e) {
-                InternalLogger.INSTANCE.error("Failed to serialize Telemetry");
-                InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
+                logger.error("Failed to serialize Telemetry");
+                logger.trace("Failed to serialize Telemetry", e);
             }
         }
 
@@ -186,7 +189,7 @@ public final class GzipTelemetrySerializer implements TelemetrySerializer {
                 sink.write(telemetry.getBytes());
                 ++counter;
             } catch (Exception e) {
-                InternalLogger.INSTANCE.error("Failed to serialize , exception: %s", e.toString());
+                logger.error("Failed to serialize , exception: {}", e.toString());
             }
         }
 

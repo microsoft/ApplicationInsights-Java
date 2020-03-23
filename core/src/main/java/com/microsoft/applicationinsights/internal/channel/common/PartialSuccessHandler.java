@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpStatus;
 
 import com.google.gson.Gson;
@@ -17,7 +16,8 @@ import com.google.gson.GsonBuilder;
 import com.google.common.base.Optional;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class implements the retry logic for partially accepted transmissions.
@@ -30,6 +30,8 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  *
  */
 public class PartialSuccessHandler implements TransmissionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(PartialSuccessHandler.class);
 
     /**
      * Ctor
@@ -64,7 +66,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
 
                 // Somehow the amount of items received and the items sent do not match
                 if (backendResponse != null && (originalItems.size() != backendResponse.itemsReceived)) {
-                    InternalLogger.INSTANCE.trace(
+                    logger.trace(
                             "Skipping partial content handler due to itemsReceived being larger than the items sent.");
                     return false;
                 }
@@ -88,12 +90,12 @@ public class PartialSuccessHandler implements TransmissionHandler {
                     }
                     return sendNewTransmissionFromStrings(args, newTransmission);
                 }
-                InternalLogger.INSTANCE
+                logger
                         .trace("Skipping partial content handler due to itemsAccepted and itemsReceived being equal.");
                 return false;
 
             default:
-                InternalLogger.INSTANCE.trace("Http response code %s not handled by %s", args.getResponseCode(),
+                logger.trace("Http response code {} not handled by {}", args.getResponseCode(),
                         this.getClass().getName());
                 return false;
             }
@@ -127,22 +129,22 @@ public class PartialSuccessHandler implements TransmissionHandler {
                     originalItems.add(line);
                 }
             } catch (IOException ex) {
-                InternalLogger.INSTANCE.error("IOException: Error while reading the GZIP stream.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(ex));
+                logger.error("IOException: Error while reading the GZIP stream", ex);
             } catch (Throwable t) {
-                InternalLogger.INSTANCE.error("Error while reading the GZIP stream.%nStack Trace:%n%s",    ExceptionUtils.getStackTrace(t));
+                logger.error("Error while reading the GZIP stream", t);
             } finally {
                 if (gis != null) {
                     try {
                         gis.close();
                     } catch (IOException ex){
-                        InternalLogger.INSTANCE.warn("Error while closing the GZIP stream.%nStack Trace:%n%s",    ExceptionUtils.getStackTrace(ex));
+                        logger.warn("Error while closing the GZIP stream", ex);
                     }
                 }
                 if (bufferedReader != null) {
                     try {
                         bufferedReader.close();
                     } catch (IOException ex){
-                        InternalLogger.INSTANCE.warn("Error while closing the buffered reader.%nStack Trace:%n%s",    ExceptionUtils.getStackTrace(ex));
+                        logger.warn("Error while closing the buffered reader", ex);
                     }
                 }
             }
@@ -202,9 +204,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
             Gson gson = gsonBuilder.create();
             backend = gson.fromJson(response, BackendResponse.class);
         } catch (Throwable t) {
-            InternalLogger.INSTANCE.trace(
-                    "Error deserializing backend response with Gson.%nStack Trace:%n%s",
-                    ExceptionUtils.getStackTrace(t));
+            logger.trace("Error deserializing backend response with Gson", t);
         } finally {
         }
         return backend;

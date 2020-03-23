@@ -22,13 +22,13 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
 import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -37,6 +37,9 @@ import java.util.Map;
  * your application to external services such as databases or REST APIs.
  */
 public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<RemoteDependencyData> {
+
+    private static final Logger logger = LoggerFactory.getLogger(RemoteDependencyTelemetry.class);
+
     private Double samplingPercentage;
     private final RemoteDependencyData data;
 
@@ -232,8 +235,8 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
                 throw td;
             } catch (Throwable t) {
                 try {
-                    InternalLogger.INSTANCE.error("Exception while getting dependency kind: Type is empty");
-                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                    logger.error("Exception while getting dependency kind: Type is empty");
+                    logger.trace("Exception while getting dependency kind: Type is empty", t);
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {

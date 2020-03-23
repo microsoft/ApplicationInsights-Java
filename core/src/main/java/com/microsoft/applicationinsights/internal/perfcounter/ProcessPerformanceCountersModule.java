@@ -25,8 +25,9 @@ import java.util.ArrayList;
 
 import com.microsoft.applicationinsights.internal.config.PerformanceCountersXmlElement;
 import com.microsoft.applicationinsights.internal.config.WindowsPerformanceCounterXmlElement;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class will be used when the SDK needs to add the 'built-in' performance counters.
@@ -34,6 +35,9 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
  * Created by gupele on 3/3/2015.
  */
 public final class ProcessPerformanceCountersModule extends AbstractPerformanceCounterModule implements PerformanceCounterConfigurationAware {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProcessPerformanceCountersModule.class);
+
     public ProcessPerformanceCountersModule() throws Exception {
         this(new ProcessBuiltInPerformanceCountersFactory());
     }
@@ -56,12 +60,12 @@ public final class ProcessPerformanceCountersModule extends AbstractPerformanceC
     @Override
     public void addConfigurationData(PerformanceCountersXmlElement configuration) {
         if (!SystemInformation.INSTANCE.isWindows()) {
-            InternalLogger.INSTANCE.trace("Windows performance counters are not relevant on this OS.");
+            logger.trace("Windows performance counters are not relevant on this OS.");
             return;
         }
 
         if (!JniPCConnector.initialize()) {
-            InternalLogger.INSTANCE.error("Failed to initialize JNI connection.");
+            logger.error("Failed to initialize JNI connection.");
             return;
         }
 
@@ -86,7 +90,7 @@ public final class ProcessPerformanceCountersModule extends AbstractPerformanceC
                 throw td;
             } catch (Throwable e) {
                 try {
-                    InternalLogger.INSTANCE.error("Failed to initialize Windows performance counter '%s'.", e.toString());
+                    logger.error("Failed to initialize Windows performance counter '{}'.", e.toString());
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
@@ -96,7 +100,7 @@ public final class ProcessPerformanceCountersModule extends AbstractPerformanceC
         }
 
         if (configurationRequests.isEmpty()) {
-            InternalLogger.INSTANCE.error("Failed to initialize Windows performance counters: All requested performance counters are not valid.");
+            logger.error("Failed to initialize Windows performance counters: All requested performance counters are not valid.");
         } else {
             ((WindowsPerformanceCountersFactory)factory).setWindowsPCs(configurationRequests);
         }

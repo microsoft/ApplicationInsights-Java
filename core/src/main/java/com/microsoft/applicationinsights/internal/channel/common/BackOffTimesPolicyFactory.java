@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
 import com.google.common.base.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class knows how to create the {@link BackOffTimesPolicy}
@@ -35,6 +35,9 @@ import com.google.common.base.Strings;
  * Created by gupele on 2/10/2015.
  */
 final class BackOffTimesPolicyFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(BackOffTimesPolicyFactory.class);
+
     private enum BackOffPolicyType {
         EXPONENTIAL,
         STATIC
@@ -43,12 +46,12 @@ final class BackOffTimesPolicyFactory {
     public BackOffTimesPolicy create(String typeAsString) {
         BackOffPolicyType type = BackOffPolicyType.EXPONENTIAL;
         if (Strings.isNullOrEmpty(typeAsString)) {
-            InternalLogger.INSTANCE.trace("No back-off container defined, using the default '%s'", type);
+            logger.trace("No back-off container defined, using the default '{}'", type);
         } else {
             try {
                 type = BackOffPolicyType.valueOf(typeAsString.toUpperCase());
             } catch (Exception e) {
-                InternalLogger.INSTANCE.error("Failed to parse '%s', using the default back-off container '%s'", typeAsString, type);
+                logger.error("Failed to parse '{}', using the default back-off container '{}'", typeAsString, type);
             }
         }
 

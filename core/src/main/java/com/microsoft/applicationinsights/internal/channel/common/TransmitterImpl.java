@@ -32,13 +32,13 @@ import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The default implementation of the {@link TelemetriesTransmitter}
@@ -52,6 +52,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 12/18/2014.
  */
 public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> {
+
+    private static final Logger logger = LoggerFactory.getLogger(TransmitterImpl.class);
+
     private static abstract class SendHandler {
         protected final TransmissionDispatcher transmissionDispatcher;
 
@@ -165,7 +168,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
                         throw td;
                     } catch (Throwable t) {
                         try {
-                            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                            logger.trace(t.getMessage(), t);
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t2) {
@@ -182,8 +185,8 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
         } catch (Throwable t) {
             try {
                 semaphore.release();
-                InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetriesFetcher.fetch().size());
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                logger.error("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetriesFetcher.fetch().size());
+                logger.trace("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetriesFetcher.fetch().size(), t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -213,8 +216,8 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
                         throw td;
                     } catch (Throwable t) {
                         try {
-                            InternalLogger.INSTANCE.error("exception in runnable sendNow()");
-                            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                            logger.error("exception in runnable sendNow()");
+                            logger.trace("exception in runnable sendNow()", t);
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t2) {
@@ -231,8 +234,8 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
         } catch (Throwable t) {
             try {
                 semaphore.release();
-                InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetries.size());
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                logger.error("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetries.size());
+                logger.trace("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetries.size(), t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {

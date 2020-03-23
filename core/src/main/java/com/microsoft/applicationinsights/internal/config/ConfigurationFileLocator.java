@@ -32,16 +32,17 @@ import java.net.URLClassLoader;
 import java.security.CodeSource;
 import java.util.HashSet;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 5/25/2015.
  */
 public final class ConfigurationFileLocator {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationFileLocator.class);
 
     /**
      * name of property containing path to directory with configuration file
@@ -68,7 +69,7 @@ public final class ConfigurationFileLocator {
 
             inputStream = ConfigurationFileLocator.class.getClassLoader().getResourceAsStream(configurationFileName);
             if (inputStream != null) {
-                InternalLogger.INSTANCE.info("Configuration file has been successfully found as resource");
+                logger.info("Configuration file has been successfully found as resource");
                 return inputStream;
             }
 
@@ -87,23 +88,21 @@ public final class ConfigurationFileLocator {
         }
 
         if (configurationFile != null) {
-            InternalLogger.INSTANCE.info("Configuration file has been successfully found in: '%s'", configurationFile);
+            logger.info("Configuration file has been successfully found in: '{}'", configurationFile);
             try {
                 return new FileInputStream(configurationFile);
             } catch (FileNotFoundException e) {
-                InternalLogger.INSTANCE.warn("Configuration file '%s' could not be opened for reading, Exception : %s",
-                        configurationFile,
-                        ExceptionUtils.getStackTrace(e));
+                logger.warn("Configuration file '{}' could not be opened for reading", configurationFile, e);
             }
         } else {
-            InternalLogger.INSTANCE.error("Configuration file '%s' could not be found", configurationFileName);
+            logger.error("Configuration file '{}' could not be found", configurationFileName);
         }
         return null;
     }
 
     private static void logException(Throwable t, String message) {
-        if (InternalLogger.INSTANCE.isWarnEnabled()) {
-            InternalLogger.INSTANCE.warn("Failed to find configuration file, exception while fetching from %s: %s", message, ExceptionUtils.getStackTrace(t));
+        if (logger.isWarnEnabled()) {
+            logger.warn("Failed to find configuration file, exception while fetching from {}", message, t);
         }
     }
 
@@ -119,8 +118,8 @@ public final class ConfigurationFileLocator {
                 }
             }
 
-            InternalLogger.INSTANCE.info(
-                    "Configuration file '%s' was %s found by default class loader",
+            logger.info(
+                    "Configuration file '{}' was {} found by default class loader",
                     configurationFileName,
                     configurationFile == null ? "NOT " : "");
 
@@ -130,7 +129,7 @@ public final class ConfigurationFileLocator {
         } catch (Throwable t) {
             try {
                 logException(t, "current class loader");
-                InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
+                logger.trace(t.getMessage(), t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -158,14 +157,14 @@ public final class ConfigurationFileLocator {
                     return configurationPath;
                 }
             } else {
-                InternalLogger.INSTANCE.warn("Can not access folder '%s'", jarFullPath);
+                logger.warn("Can not access folder '{}'", jarFullPath);
             }
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             try {
                 logException(t, "library location");
-                InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
+                logger.trace(t.getMessage(), t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -214,7 +213,7 @@ public final class ConfigurationFileLocator {
         } catch (Throwable t) {
             try {
                 logException(t, "class path");
-                InternalLogger.INSTANCE.trace("stack trace is : %s", ExceptionUtils.getStackTrace(t));
+                logger.trace(t.getMessage(), t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -231,7 +230,7 @@ public final class ConfigurationFileLocator {
             return configFile.getAbsolutePath();
         }
 
-        InternalLogger.INSTANCE.info("Did not find configuration file '%s' in '%s'", configurationFileName, path);
+        logger.info("Did not find configuration file '{}' in '{}'", configurationFileName, path);
 
 
         return null;
@@ -242,8 +241,7 @@ public final class ConfigurationFileLocator {
         try {
             uri = url.toURI();
         } catch (URISyntaxException e) {
-            InternalLogger.INSTANCE.warn("Failed to convert URL '%s' to URI, Exception : %s ", url,
-                    ExceptionUtils.getStackTrace(e));
+            logger.warn("Failed to convert URL '{}' to URI", url, e);
             return null;
         }
 

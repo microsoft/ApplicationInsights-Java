@@ -25,12 +25,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public enum InstrumentationKeyResolver {
     INSTANCE;
+
+    private static final Logger logger = LoggerFactory.getLogger(InstrumentationKeyResolver.class);
 
     private static final String CorrelationIdFormat = "cid-v1:%s";
     private volatile ApplicationIdResolver appIdResolver;
@@ -84,8 +86,8 @@ public enum InstrumentationKeyResolver {
 
             return appId;
         } catch (Exception e) {
-            if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                InternalLogger.INSTANCE.error("InstrumentationKeyResolver: failed to resolve instrumentation key: %s => Exception: %s", config.getInstrumentationKey(), ExceptionUtils.getStackTrace(e));
+            if (logger.isErrorEnabled()) {
+                logger.error("InstrumentationKeyResolver: failed to resolve instrumentation key: {}", config.getInstrumentationKey(), e);
             }
         }
 
@@ -98,17 +100,17 @@ public enum InstrumentationKeyResolver {
 
         switch (result.getStatus()) {
             case PENDING:
-                InternalLogger.INSTANCE.trace("InstrumentationKeyResolver - pending resolution of instrumentation key: %s", instrumentationKey);
+                logger.trace("InstrumentationKeyResolver - pending resolution of instrumentation key: {}", instrumentationKey);
                 break;
             case FAILED:
-                InternalLogger.INSTANCE.error("InstrumentationKeyResolver - failed to resolve instrumentation key: %s", instrumentationKey);
+                logger.error("InstrumentationKeyResolver - failed to resolve instrumentation key: {}", instrumentationKey);
                 break;
             case COMPLETE:
-                InternalLogger.INSTANCE.trace("InstrumentationKeyResolver - successfully resolved instrumentation key: %s", instrumentationKey);
+                logger.trace("InstrumentationKeyResolver - successfully resolved instrumentation key: {}", instrumentationKey);
                 appId = String.format(CorrelationIdFormat, result.getAppId());
                 break;
             default:
-                InternalLogger.INSTANCE.error("InstrumentationKeyResolver - unexpected status. Instrumentation key: %s", instrumentationKey);
+                logger.error("InstrumentationKeyResolver - unexpected status. Instrumentation key: {}", instrumentationKey);
                 break;
         }
 

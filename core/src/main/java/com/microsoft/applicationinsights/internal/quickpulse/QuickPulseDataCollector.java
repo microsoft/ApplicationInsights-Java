@@ -29,13 +29,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.CpuPerformanceCounterCalculator;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 12/5/2016.
@@ -133,7 +132,8 @@ public enum QuickPulseDataCollector {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Could not initialize %s:%n%s", CpuPerformanceCounterCalculator.class.getSimpleName(), ExceptionUtils.getStackTrace(t));
+                LoggerFactory.getLogger(QuickPulseDataCollector.class)
+                        .error("Could not initialize {}", CpuPerformanceCounterCalculator.class.getSimpleName(), t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {

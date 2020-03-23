@@ -21,12 +21,16 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 12/14/2016.
  */
 final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulseCoordinator.class);
+
     private volatile boolean stopped = false;
     private volatile boolean pingMode = true;
 
@@ -85,7 +89,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
                 return waitBetweenPostsInMS;
 
             default:
-                InternalLogger.INSTANCE.error( "Critical error while sending QP data: unknown status, aborting");
+                logger.error( "Critical error while sending QP data: unknown status, aborting");
                 QuickPulseDataCollector.INSTANCE.disable();
                 stopped = true;
                 return 0;
@@ -106,7 +110,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
                 return waitBetweenPingsInMS;
 
             default:
-                InternalLogger.INSTANCE.error( "Critical error while ping QP: unknown status, aborting");
+                logger.error( "Critical error while ping QP: unknown status, aborting");
                 QuickPulseDataCollector.INSTANCE.disable();
                 stopped = true;
                 return 0;

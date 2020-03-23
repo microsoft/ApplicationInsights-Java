@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -35,6 +35,9 @@ import java.lang.management.RuntimeMXBean;
  * Created by gupele on 12/12/2016.
  */
 public final class CpuPerformanceCounterCalculator {
+
+    private static final Logger logger = LoggerFactory.getLogger(CpuPerformanceCounterCalculator.class);
+
     private final int numberOfCpus;
 
     private long prevUpTime, prevProcessCpuTime;
@@ -64,8 +67,8 @@ public final class CpuPerformanceCounterCalculator {
             prevProcessCpuTime = processCpuTime;
         } catch (Exception e) {
             processCpuUsage = null;
-            InternalLogger.INSTANCE.error("Error in getProcessCPUUsage");
-            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            logger.error("Error in getProcessCPUUsage");
+            logger.trace("Error in getProcessCPUUsage", e);
         }
 
         return processCpuUsage;

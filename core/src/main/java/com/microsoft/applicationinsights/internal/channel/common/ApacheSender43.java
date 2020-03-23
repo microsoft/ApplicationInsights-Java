@@ -44,11 +44,15 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 6/4/2015.
  */
 public final class ApacheSender43 implements ApacheSender {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApacheSender43.class);
 
     public static volatile CountDownLatch safeToInitLatch;
     public static volatile HttpHost proxy;
@@ -79,7 +83,7 @@ public final class ApacheSender43 implements ApacheSender {
                 ((CloseableHttpResponse) response).close();
             }
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to send or failed to close response, exception: %s", e.toString());
+            logger.error("Failed to send or failed to close response, exception: {}", e.toString());
         }
     }
 
@@ -88,7 +92,7 @@ public final class ApacheSender43 implements ApacheSender {
         try {
             ((CloseableHttpClient) getHttpClient()).close();
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to close http client, exception: %s", e.toString());
+            logger.error("Failed to close http client, exception: {}", e.toString());
         }
     }
 

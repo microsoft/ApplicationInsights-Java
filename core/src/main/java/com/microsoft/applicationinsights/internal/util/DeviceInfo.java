@@ -22,8 +22,6 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.lang.management.OperatingSystemMXBean;
 import java.util.Locale;

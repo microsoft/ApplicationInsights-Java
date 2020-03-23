@@ -25,8 +25,8 @@ import java.util.Collection;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A base class for performance modules.
@@ -34,6 +34,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 3/12/2015.
  */
 public abstract class AbstractPerformanceCounterModule implements TelemetryModule {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractPerformanceCounterModule.class);
+
     protected final PerformanceCountersFactory factory;
 
     protected AbstractPerformanceCounterModule(PerformanceCountersFactory factory) {
@@ -54,7 +57,8 @@ public abstract class AbstractPerformanceCounterModule implements TelemetryModul
                 throw td;
             } catch (Throwable e) {
                 try {
-                    InternalLogger.INSTANCE.error("Failed to register performance counter '%s': '%s'", performanceCounter.getId(), e.toString());                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                    logger.error("Failed to register performance counter '{}': '{}'", performanceCounter.getId(), e.toString());
+                    logger.trace("Failed to register performance counter '{}'", performanceCounter.getId(), e);
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {

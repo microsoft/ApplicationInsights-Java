@@ -23,11 +23,12 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 
 import java.io.File;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A base class for Unix performance counters who uses the '/proc/' filesystem for their work.
@@ -35,6 +36,9 @@ import com.google.common.base.Strings;
  * Created by gupele on 3/8/2015.
  */
 abstract class AbstractUnixPerformanceCounter extends AbstractPerformanceCounter {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractUnixPerformanceCounter.class);
+
     private final File processFile;
     private final String path;
 
@@ -51,7 +55,12 @@ abstract class AbstractUnixPerformanceCounter extends AbstractPerformanceCounter
 
     protected void logPerfCounterErrorError(String format, Object... args) {
         format = "Performance Counter " + getId() + ": Error in file '" + path + "': " + format;
-        InternalLogger.INSTANCE.error(format, args);
+        logger.error(format, args);
+    }
+
+    protected void logPerfCounterErrorTrace(String format, Object... args) {
+        format = "Performance Counter " + getId() + ": Error in file '" + path + "': " + format;
+        logger.trace(format, args);
     }
 
     protected File getProcessFile() {

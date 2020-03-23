@@ -27,16 +27,19 @@ import java.util.concurrent.ArrayBlockingQueue;
 import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 12/12/2016.
  */
 final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulseDataFetcher.class);
+
     private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
     private final ArrayBlockingQueue<HttpPost> sendQueue;
     private final TelemetryConfiguration config;
@@ -69,8 +72,8 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         sb.append("\"MachineName\": \"").append(instanceName).append("\",");
         sb.append("\"StreamId\": \"").append(quickPulseId).append("\",");
         postPrefix = sb.toString();
-        if (InternalLogger.INSTANCE.isTraceEnabled()) {
-            InternalLogger.INSTANCE.trace("%s using endpoint %s", DefaultQuickPulseDataFetcher.class.getSimpleName(), getQuickPulseEndpoint());
+        if (logger.isTraceEnabled()) {
+            logger.trace("{} using endpoint {}", DefaultQuickPulseDataFetcher.class.getSimpleName(), getQuickPulseEndpoint());
         }
     }
 
@@ -95,13 +98,13 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
             request.setEntity(postEntity);
 
             if (!sendQueue.offer(request)) {
-                InternalLogger.INSTANCE.trace("Quick Pulse send queue is full");
+                logger.trace("Quick Pulse send queue is full");
             }
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable e) {
             try {
-                InternalLogger.INSTANCE.error("Quick Pulse failed to prepare data for send:%n%s", ExceptionUtils.getStackTrace(e));
+                logger.error("Quick Pulse failed to prepare data for send", e);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {

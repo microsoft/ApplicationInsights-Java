@@ -26,10 +26,11 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class supplies the memory usage in Mega Bytes of the Java process the SDK is in.
@@ -37,6 +38,8 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
  * Created by gupele on 3/3/2015.
  */
 final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProcessMemoryPerformanceCounter.class);
 
     public ProcessMemoryPerformanceCounter() {
     }
@@ -56,7 +59,7 @@ final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
         double memoryBytes = (double)heapMemoryUsage.getUsed();
         memoryBytes += (double)nonHeapMemoryUsage.getUsed();
 
-        InternalLogger.INSTANCE.trace("Performance Counter: %s %s: %s", getProcessCategoryName(), Constants.PROCESS_MEM_PC_COUNTER_NAME, memoryBytes);
+        logger.trace("Performance Counter: {} {}: {}", getProcessCategoryName(), Constants.PROCESS_MEM_PC_COUNTER_NAME, memoryBytes);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 getProcessCategoryName(),
                 Constants.PROCESS_MEM_PC_COUNTER_NAME,

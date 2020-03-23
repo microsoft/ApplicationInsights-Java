@@ -23,16 +23,19 @@ package com.microsoft.applicationinsights.internal.system;
 
 import java.lang.management.ManagementFactory;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.SystemUtils;
 
 import com.google.common.base.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 3/3/2015.
  */
 public enum SystemInformation {
     INSTANCE;
+
+    private static final Logger logger = LoggerFactory.getLogger(SystemInformation.class);
 
     private final static String DEFAULT_PROCESS_NAME = "Java_Process";
 
@@ -60,7 +63,7 @@ public enum SystemInformation {
                     Integer.parseInt(processIdAsString);
                     return processIdAsString;
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to fetch process id: '%s'", e.toString());
+                    logger.error("Failed to fetch process id: '{}'", e.toString());
                 }
             }
         }

@@ -42,8 +42,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     private PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
 
-    private SDKLoggerXmlElement sdkLogger;
-
     private QuickPulseXmlElement quickPulse;
 
     private String schemaVersion;
@@ -105,14 +103,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     public void setQuickPulse(QuickPulseXmlElement quickPulse) {
         this.quickPulse = quickPulse;
-    }
-
-    public SDKLoggerXmlElement getSdkLogger() {
-        return sdkLogger;
-    }
-
-    public void setSdkLogger(SDKLoggerXmlElement sdkLogger) {
-        this.sdkLogger = sdkLogger;
     }
 
     public boolean isDisableTelemetry() {

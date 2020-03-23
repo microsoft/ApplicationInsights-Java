@@ -25,8 +25,9 @@ import java.util.Collection;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A performance counter that sends {@link com.microsoft.applicationinsights.telemetry.MetricTelemetry}
@@ -35,13 +36,15 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
  */
 public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCounter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JmxMetricPerformanceCounter.class);
+
     public JmxMetricPerformanceCounter(String id, String objectName, Collection<JmxAttributeData> attributes) {
         super(id, objectName, attributes);
     }
 
     @Override
     protected void send(TelemetryClient telemetryClient, String displayName, double value) {
-        InternalLogger.INSTANCE.trace("Metric JMX: %s, %s", displayName, value);
+        logger.trace("Metric JMX: {}, {}", displayName, value);
 
     MetricTelemetry telemetry = new MetricTelemetry();
     telemetry.markAsCustomPerfCounter();

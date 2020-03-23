@@ -4,7 +4,6 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.EndpointPrefixes;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hamcrest.Matchers;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -157,8 +156,7 @@ public class ConnectionStringParsingTests {
         try {
             ConnectionString.parseInto(cs, config);
         } catch (Exception e) {
-            fail("Exception thrown from parse: " + ExceptionUtils.getStackTrace(e));
-            return;
+            throw new AssertionError("Exception thrown from parse");
         }
         assertEquals(ikey, config.getInstrumentationKey());
         assertEquals(expectedIngestionEndpoint, config.getEndpointProvider().getIngestionEndpoint());
@@ -176,8 +174,7 @@ public class ConnectionStringParsingTests {
         try {
             ConnectionString.parseInto(cs, config);
         } catch (Exception e) {
-            fail("Exception thrown from parse: " + ExceptionUtils.getStackTrace(e));
-            return;
+            throw new AssertionError("Exception thrown from parse");
         }
         assertEquals(ikey, config.getInstrumentationKey());
         assertEquals(expectedIngestionEndpoint, config.getEndpointProvider().getIngestionEndpoint());
