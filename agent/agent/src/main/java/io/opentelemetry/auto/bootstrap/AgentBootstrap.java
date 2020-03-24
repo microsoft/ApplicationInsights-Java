@@ -70,11 +70,9 @@ public class AgentBootstrap {
     public static void agentmain(final String agentArgs, final Instrumentation inst) {
         // Profiler.start();
         try {
-
             final URL bootstrapURL = installBootstrapJar(inst);
-
             final Class<?> agentClass =
-                    ClassLoader.getSystemClassLoader().loadClass("io.opentelemetry.auto.bootstrap.Agent");
+                    ClassLoader.getSystemClassLoader().loadClass("com.microsoft.applicationinsights.agent.internal.bootstrap.MainEntryPoint");
             final Method startMethod = agentClass.getMethod("start", Instrumentation.class, URL.class);
             startMethod.invoke(null, inst, bootstrapURL);
         } catch (final Throwable ex) {

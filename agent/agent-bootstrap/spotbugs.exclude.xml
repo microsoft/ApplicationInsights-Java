@@ -17,6 +17,11 @@
                 <Class name="com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile$2" />
                 <Method name="run" />
             </And>
+            <And>
+                <!-- False Positive. Path is not from an external source. -->
+                <Class name="com.microsoft.applicationinsights.agent.internal.bootstrap.MainEntryPoint" />
+                <Method name="start"/>
+            </And>
         </Or>
     </Match>
     <Match>

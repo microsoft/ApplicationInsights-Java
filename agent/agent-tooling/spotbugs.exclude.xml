@@ -6,7 +6,7 @@
     <Match>
         <Bug pattern="NP_NULL_ON_SOME_PATH" />
         <!-- Ignore. I see no reason to change this. It's odd this flagged the second dereference and not the first. -->
-        <Class name="com.microsoft.applicationinsights.agent.internal.MainEntryPoint" />
+        <Class name="com.microsoft.applicationinsights.agent.internal.BeforeAgentInstaller" />
         <Or>
             <Method name="premain" />
             <Method name="initLogging" />
@@ -29,7 +29,7 @@
         <Or>
             <And>
                 <!-- False Positive. Path is not from an external source. -->
-                <Class name="io.opentelemetry.auto.tooling.BeforeAgentInstaller"/>
+                <Class name="com.microsoft.applicationinsights.agent.internal.BeforeAgentInstaller" />
                 <Method name="beforeInstallBytebuddyAgent"/>
             </And>
         </Or>

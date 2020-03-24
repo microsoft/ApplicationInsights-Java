@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
@@ -35,7 +36,6 @@ import com.microsoft.applicationinsights.agent.internal.Configuration.FixedRateS
 import com.microsoft.applicationinsights.agent.internal.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.HeartBeatModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
@@ -59,47 +59,24 @@ import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
-public class MainEntryPoint {
+public class BeforeAgentInstaller {
 
     private static Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
-    private MainEntryPoint() {
+    private BeforeAgentInstaller() {
     }
 
-    public static void premain(Instrumentation instrumentation, File agentJarFile) {
-        boolean success = false;
-        try {
-            DiagnosticsHelper.setAgentJarFile(agentJarFile);
-            MDC.put("microsoft.ai.operationName", "Startup");
-            instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
-            start(instrumentation, agentJarFile);
-            // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
-            instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
-            instrumentation.addTransformer(new DependencyTelemetryClassFileTransformer());
-            instrumentation.addTransformer(new PerformanceCounterModuleClassFileTransformer());
-            instrumentation.addTransformer(new QuickPulseClassFileTransformer());
-            instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
-            success = true;
-            LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-                    .info("Application Insights Codeless Agent Attach Successful");
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            if (startupLogger != null) {
-                startupLogger.error("Agent failed to start.", t);
-            } else {
-                t.printStackTrace();
-            }
-        } finally {
-            try {
-                StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success);
-            } catch (Exception e) {
-                startupLogger.error("Error writing status.json", e);
-            }
-            MDC.clear();
-        }
+    public static void beforeInstallBytebuddyAgent(Instrumentation instrumentation, URL bootstrapURL) throws Exception {
+        File agentJarFile = new File(bootstrapURL.toURI());
+        instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
+        start(instrumentation, agentJarFile);
+        // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
+        instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
+        instrumentation.addTransformer(new DependencyTelemetryClassFileTransformer());
+        instrumentation.addTransformer(new PerformanceCounterModuleClassFileTransformer());
+        instrumentation.addTransformer(new QuickPulseClassFileTransformer());
+        instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
     }
 
     private static void start(Instrumentation instrumentation, File agentJarFile) throws Exception {

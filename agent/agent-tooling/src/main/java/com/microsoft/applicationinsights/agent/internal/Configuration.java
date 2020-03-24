@@ -61,7 +61,6 @@ public class Configuration {
         public Heartbeat heartbeat = new Heartbeat();
         public Map<String, Map<String, Object>> instrumentation = Collections.emptyMap();
 
-        public boolean debug;
         public boolean developerMode;
     }
 
