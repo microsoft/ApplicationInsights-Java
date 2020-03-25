@@ -20,163 +20,191 @@
  */
 
 #include "etw_provider.h"
-#include <VersionHelpers.h>
+#include "str_value.h"
 #include <winmeta.h>
 #include <string>
 #include <errno.h>
 
 #ifndef NDEBUG
 #   include <stdio.h>
-#   define DBG(...) { printf(__VA_ARGS__); }
+#   define DBG(...) printf(__VA_ARGS__)
 #elif
 #   define DBG(...) do { } while(0)
 #endif
 
 #define EVENT_KEYWORD_FILTER_ALL 0x0
 
-#define PROVIDER_HANDLE_VAR provider_EtwHandle
+#ifndef DLL_FILENAME
+#define DLL_FILENAME_STR "applicationinsights-java-etw-provider.dll"
+#else
+#define DLL_FILENAME_STR STR_VALUE(DLL_FILENAME)
+#endif
 
 TRACELOGGING_DEFINE_PROVIDER(
-    PROVIDER_HANDLE_VAR,
+    provider_EtwHandle,
     "Microsoft-ApplicationInsights-Java-IPA",
     // {1f0dc33f-30ae-5ff3-8b01-8ca9b8509233}
     (0x1f0dc33f,0x30ae,0x5ff3,0x8b,0x01,0x8c,0xa9,0xb8,0x50,0x92,0x33));
 
-#define WRITE_INFO_EVENT(...) TraceLoggingWrite(PROVIDER_HANDLE_VAR, "JavaIpaInfo", TraceLoggingLevel(WINEVENT_LEVEL_INFO), __VA_ARGS__)
-#define WRITE_ERROR_EVENT(...) TraceLoggingWrite(PROVIDER_HANDLE_VAR, "JavaIpaError", TraceLoggingLevel(WINEVENT_LEVEL_ERROR), __VA_ARGS__)
-#define WRITE_CRITICAL_EVENT(...) TraceLoggingWrite(PROVIDER_HANDLE_VAR, "JavaIpaCritical", TraceLoggingLevel(WINEVENT_LEVEL_CRITICAL), __VA_ARGS__)
+/**
+ * Assigns jstring jstr_##str_var to a new char[len_var] named str_var.
+ * str_var must already be declared.
+ * If copy fails, and error code is thrown
+ *
+ */
+// TODO enforce max length?
+#define EXTRACT_JSTRING(env_var, str_var, len_var, var_id) do \
+{ \
+    len_var = 1 + (env_var->GetStringUTFLength(jstr_##str_var)); \
+    str_var = new char[len_var]; \
+    DBG("copying jstr_" #str_var " (len=%d): %p\n", len_var, &jstr_##str_var); \
+    str_var = getJavaString(env_var, jstr_##str_var, str_var, len_var); \
+    DBG("got " #str_var ": %s\n", str_var); \
+} \
+while (0)
 
-JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppWriteEvent(JNIEnv * env, jobject objJavaThis, 
-    jint jiEventId, jstring jstrEventName, jint jiLevel, jstring jstrExtensionVersion, jstring jstrSubscriptionId, jstring jstrAppName, jstring jstrResourceType, jstring jstrLogger, jstring jstrMessage) {
-        // TODO is eventId needed?
-        
-        jboolean copy = JNI_FALSE;
+/********cppInfo(logger, message, extensionVersion, subscriptionId, appName, resourceType)********/
+JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppInfo
+    (JNIEnv * env, jobject jobj_javaThis, jstring jstr_logger, jstring jstr_message,
+        jstring jstr_extensionVersion, jstring jstr_subscriptionId, jstring jstr_appName, jstring jstr_resourceType)
+{
+    char * logger = NULL;
+    char * message = NULL;
+    char * extensionVersion = NULL;
+    char * subscriptionId = NULL;
+    char * appName = NULL;
+    char * resourceType = NULL;
+    try
+    {
         // convert all jstrings
+        int len;
+        EXTRACT_JSTRING(env, logger, len, JSTRID_LOGGER);
+        EXTRACT_JSTRING(env, message, len, JSTRID_MESSAGE);
+        EXTRACT_JSTRING(env, extensionVersion, len, JSTRID_EXTENSION_VERSION);
+        EXTRACT_JSTRING(env, subscriptionId, len, JSTRID_SUBSCRIPTION_ID);
+        EXTRACT_JSTRING(env, appName, len, JSTRID_APP_NAME);
+        EXTRACT_JSTRING(env, resourceType, len, JSTRID_RESOURCE_TYPE);
 
-        // const char* extensionVersion = env->GetStringUTFChars(jstrExtensionVersion, &copy);
-        // const char* subscriptionId = env->GetStringUTFChars(jstrSubscriptionId, &copy);
-        // const char* appName = env->GetStringUTFChars(jstrAppName, &copy);
-        // const char* resourceType = env->GetStringUTFChars(jstrResourceType, &copy);
-        // const char* logger = env->GetStringUTFChars(jstrLogger, &copy);
+        // write event
+        TraceLoggingRegister(provider_EtwHandle);
+        WRITE_INFO_EVENT(
+            TraceLoggingValue(message, "msg"),
+            TraceLoggingValue(extensionVersion, "ExtVer"),
+            TraceLoggingValue(subscriptionId, "SubscriptionId"),
+            TraceLoggingValue(appName, "AppName"),
+            TraceLoggingValue(resourceType, "ResourceType"),
+            TraceLoggingValue(logger, "Logger"));
+        TraceLoggingUnregister(provider_EtwHandle);
+    }
+    catch (jstrerr_t jstrerr)
+    {
+        handleJstrException(env, jstrerr);
+    }
+    catch (...)
+    {
+        handleGenericException(env);
+    }
 
-        // TODO macro/inline function the string handling code
-        const char* ccMessage = env->GetStringUTFChars(jstrMessage, &copy);
-        if (ccMessage == NULL) {
-            jthrowable ex = env->ExceptionOccurred();
-            if (ex) {
-                DBG("GetStringUTFChars(jstrMessage) failed with exception\n");
-                // let exception be thrown
-                goto jstrCleanUp;
-            } else {
-                // otherwise throw a new exception
-                jclass cls = env->FindClass("java/lang/IllegalStateException");
-                if (cls != NULL) {
-                    env->ThrowNew(cls, "Could not load message string.");
-                }
-                env->DeleteLocalRef(cls);
-                goto jstrCleanUp;
-            }
-        }
-
-        int len_message = 1 + (env->GetStringUTFLength(jstrMessage));
-        char* message = new char[len_message];
-        errno_t cpyerr = strcpy_s(message, len_message, ccMessage);
-        if (cpyerr) {
-            std::string errmsg = "strcpy_s failed for message: err=" + std::to_string(cpyerr);
-            DBG("%s\n", errmsg.c_str());
-            jclass cls = env->FindClass("java/lang/IllegalStateException");
-            if (cls != NULL) {
-                env->ThrowNew(cls, errmsg.c_str());
-            } // else there's already an exception pending
-            env->DeleteLocalRef(cls);
-            delete[] message;
-            goto jstrCleanUp;
-        }
-        DBG("Read message: %s\n", message);
-        // write message
-        // if (IsWindows10OrGreater()) {
-        // switch(jiLevel) {
-        //     case WINEVENT_LEVEL_CRITICAL:
-        //         WRITE_CRITICAL_EVENT(
-        //             provider_EtwHandle,
-        //             eventName,
-        //             TraceLoggingValue(message, "msg")
-        //             TraceLoggingValue(extensionVersion, "ExtVer"),
-        //             TraceLoggingValue(subscriptionId, "SubscriptionId"),
-        //             TraceLoggingValue(appName, "AppName"),
-        //             TraceLoggingValue(resourceType, "ResourceType"),
-        //             TraceLoggingValue(logger, "Logger"));
-        //         break;
-        //     case WINEVENT_LEVEL_ERROR:
-        //         WRITE_ERROR_EVENT(
-        //             provider_EtwHandle,
-        //             eventName,
-        //             TraceLoggingValue(message, "msg")
-        //             TraceLoggingValue(extensionVersion, "ExtVer"),
-        //             TraceLoggingValue(subscriptionId, "SubscriptionId"),
-        //             TraceLoggingValue(appName, "AppName"),
-        //             TraceLoggingValue(resourceType, "ResourceType"),
-        //             TraceLoggingValue(logger, "Logger")
-        //             );
-        //         break;
-        //     case WINEVENT_LEVEL_INFO:
-        //         WRITE_INFO_EVENT(
-        //             provider_EtwHandle,
-        //             eventName,
-        //             TraceLoggingValue(message, "msg")
-        //             TraceLoggingValue(extensionVersion, "ExtVer"),
-        //             TraceLoggingValue(subscriptionId, "SubscriptionId"),
-        //             TraceLoggingValue(appName, "AppName"),
-        //             TraceLoggingValue(resourceType, "ResourceType"),
-        //             TraceLoggingValue(logger, "Logger")
-        //             );
-        //         break;
-        //     default:
-        //         // TODO throw exception; set error flag? still need to release strings
-        // }
-
-        // TraceLoggingWrite(provider_EtwHandle, eventName, 
-        //     // TraceLoggingLevel(WINEVENT_LEVEL_INFO), 
-        //     TraceLoggingString(message, "msg")
-        //     TraceLoggingString(extensionVersion, "ExtVer"),
-        //     TraceLoggingString(subscriptionId, "SubscriptionId"),
-        //     TraceLoggingString(appName, "AppName"),
-        //     TraceLoggingString(resourceType, "ResourceType"),
-        //     TraceLoggingString(logger, "Logger")
-        //     );
-
-        TraceLoggingRegister(PROVIDER_HANDLE_VAR);
-        WRITE_INFO_EVENT(TraceLoggingValue(message, "msg")
-            // ,
-            // TraceLoggingValue(extensionVersion, "ExtVer"),
-            // TraceLoggingValue(subscriptionId, "SubscriptionId"),
-            // TraceLoggingValue(appName, "AppName"),
-            // TraceLoggingValue(resourceType, "ResourceType"),
-            // TraceLoggingValue(logger, "Logger")
-            );
-        TraceLoggingUnregister(PROVIDER_HANDLE_VAR);
-        
-
-        delete[] message;
-
-jstrCleanUp:
-        // release strings
-        // env->ReleaseStringUTFChars(jstrExtensionVersion, extensionVersion);
-        // env->ReleaseStringUTFChars(jstrSubscriptionId, subscriptionId);
-        // env->ReleaseStringUTFChars(jstrAppName, appName);
-        // env->ReleaseStringUTFChars(jstrResourceType, resourceType);
-        // env->ReleaseStringUTFChars(jstrLogger, logger);
-        env->ReleaseStringUTFChars(jstrMessage, ccMessage);
+    // clean up
+    delete[] message;
+    delete[] extensionVersion;
+    delete[] subscriptionId;
+    delete[] appName;
+    delete[] resourceType;
+    delete[] logger;
 }
 
+/********cppError(logger, message, stackTrace, extensionVersion, subscriptionId, appName, resourceType)********/
+JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppError
+    (JNIEnv * env, jobject jobj_javaThis, jstring jstr_logger, jstring jstr_message, jstring jstr_stackTrace,
+        jstring jstr_extensionVersion, jstring jstr_subscriptionId, jstring jstr_appName, jstring jstr_resourceType)
+{
+    DBG("cppError not implemented.\n");
+    DBG("FILE: " DLL_FILENAME_STR "\n");
+}
 
-// TODO delete me
-JNIEXPORT jboolean JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppIsProviderEnabled(JNIEnv * env, jobject objJavaThis, 
-    jint level) {
-        // jint<signed 32 bits> -> UCHAR<unsigned char/8 bits>
-        BOOLEAN enabled = TraceLoggingProviderEnabled(provider_EtwHandle, level, EVENT_KEYWORD_FILTER_ALL);
+/********cppCritical(logger, message, stackTrace, extensionVersion, subscriptionId, appName, resourceType)********/
+JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppCritical
+    (JNIEnv * env, jobject jobj_javaThis, jstring jstr_logger, jstring jstr_message, jstring jstr_stackTrace,
+        jstring jstr_extensionVersion, jstring jstr_subscriptionId, jstring jstr_appName, jstring jstr_resourceType)
+{
+    DBG("cppCritical not implemented.\n");
+}
 
-        DBG("TraceLoggingProviderEnabled, level=%u: %u\n", level, enabled);
+inline void handleJstrException(JNIEnv * env, jstrerr_t jstrerr) noexcept {
+    jthrowable t = env->ExceptionOccurred();
+    if (t) {
+        return; // use existing exception
+    }
+    jclass cls = env->FindClass("java/lang/RuntimeException");
+    if (cls != NULL) {
+        std::string fieldName;
+        switch (jstrerr & 0xFF00) {
+            case JSTRID_APP_NAME:
+                fieldName = "appName";
+                break;
+            case JSTRID_EXTENSION_VERSION:
+                fieldName = "extensionVersion";
+                break;
+            case JSTRID_LOGGER:
+                fieldName = "logger";
+                break;
+            case JSTRID_MESSAGE:
+                fieldName = "message";
+                break;
+            case JSTRID_RESOURCE_TYPE:
+                fieldName = "resourceType";
+                break;
+            case JSTRID_STACK_TRACE:
+                fieldName = "stackTrace";
+                break;
+            case JSTRID_SUBSCRIPTION_ID:
+                fieldName = "subscriptionId";
+                break;
+            default:
+                fieldName = "unknown";
+        }
+        std::string errmsg = "cppInfo could not read string from JNI env: " + fieldName;
+        env->ThrowNew(cls, errmsg.c_str());
+    }
+    env->DeleteLocalRef(cls);
+}
 
-        return enabled;
+inline void handleGenericException(JNIEnv * env) noexcept {
+    jthrowable t = env->ExceptionOccurred();
+    if (t) {
+        return; // use existing exception
+    }
+    jclass cls = env->FindClass("java/lang/RuntimeException");
+    if (cls != NULL) {
+        env->ThrowNew(cls, "Unknown error from " DLL_FILENAME_STR);
+    }
+    env->DeleteLocalRef(cls);
+}
+
+// TODO update to throw(jstrerr_t)
+inline char * getJavaString(JNIEnv * env, jstring &jstr_input, char * cstr_output, int len) throw(jstrerr_t) {
+    jboolean copy = JNI_FALSE;
+    const char * cc_str = env->GetStringUTFChars(jstr_input, &copy);
+    try {
+        if (cc_str == NULL) {
+            DBG("GetStringUTFChars(jstr_input) failed with exception\n");
+            throw JSTRERR_NULL_GETSTR;
+        }
+        errno_t cpyerr = strcpy_s(cstr_output, len, cc_str);
+        if (cpyerr) {
+            DBG("strcpy_s failed: errno=%d\n", cpyerr);
+            throw JSTRERR_STRCPY;
+        }
+    }
+    catch (jstrerr_t ex)
+    {
+        DBG("Exception caught: %d\n", ex);
+        env->ReleaseStringUTFChars(jstr_input, cc_str);
+        throw;
+    }
+
+    DBG("jstr/ccstr cleanup: %p\n", &jstr_input);
+    env->ReleaseStringUTFChars(jstr_input, cc_str);
+    return cstr_output;
 }

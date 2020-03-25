@@ -15,6 +15,7 @@ import org.apache.commons.io.IOUtils;
 class DllFileUtils {
     private DllFileUtils() {}
 
+    // From JniPCConnector in applicationinsights-core
     public static final String AI_BASE_FOLDER = "AISDK";
     public static final String AI_NATIVE_FOLDER = "native";
 

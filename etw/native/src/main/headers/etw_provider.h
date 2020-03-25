@@ -23,30 +23,37 @@
 
 #include <windows.h>
 #include <TraceLoggingProvider.h>
-#include <jni.h>
+#include "jni_etw_provider.h"
 
 TRACELOGGING_DECLARE_PROVIDER(provider_EtwHandle);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define WRITE_INFO_EVENT(...) TraceLoggingWrite(provider_EtwHandle, "JavaIpaInfo", TraceLoggingLevel(WINEVENT_LEVEL_INFO), __VA_ARGS__)
+#define WRITE_ERROR_EVENT(...) TraceLoggingWrite(provider_EtwHandle, "JavaIpaError", TraceLoggingLevel(WINEVENT_LEVEL_ERROR), __VA_ARGS__)
+#define WRITE_CRITICAL_EVENT(...) TraceLoggingWrite(provider_EtwHandle, "JavaIpaCritical", TraceLoggingLevel(WINEVENT_LEVEL_CRITICAL), __VA_ARGS__)
 
-/*
- * Class:     com_microsoft_applicationinsights_internal_etw_EtwProvider
- * Method:    cppWriteEvent
- * Signature: (ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+typedef int jstrerr_t;
+
+#define JSTRERR_SUCCESS     0x00
+#define JSTRERR_NULL_GETSTR 0x01
+#define JSTRERR_STRCPY      0x02
+
+#define JSTRID_MESSAGE            0x0100
+#define JSTRID_LOGGER             0x0200
+#define JSTRID_STACK_TRACE        0x0300
+#define JSTRID_EXTENSION_VERSION  0x0400
+#define JSTRID_SUBSCRIPTION_ID    0x0500
+#define JSTRID_APP_NAME           0x0600
+#define JSTRID_RESOURCE_TYPE      0x0700
+
+#define STR_MAX_BUFF_SIZE   2048
+
+/**
+ * preconditions: char * is allocated, JNIenv and jstring not null, int > 0
+ * postconditions:
+ * returns: 0 on success,
  */
-JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppWriteEvent
-  (JNIEnv *, jobject, jint, jstring, jint, jstring, jstring, jstring, jstring, jstring, jstring);
+inline char * getJavaString(JNIEnv *, jstring&, char *, int);
 
-/*
- * Class:     com_microsoft_applicationinsights_internal_etw_EtwProvider
- * Method:    cppIsProviderEnabled
- * Signature: (I)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppIsProviderEnabled
-  (JNIEnv *, jobject, jint);
+inline void handleJstrException(JNIEnv *, jstrerr_t) noexcept;
 
-#ifdef __cplusplus
-}
-#endif
+inline void handleGenericException(JNIEnv *) noexcept;

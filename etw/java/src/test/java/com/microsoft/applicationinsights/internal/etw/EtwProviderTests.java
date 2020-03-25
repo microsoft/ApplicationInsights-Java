@@ -27,11 +27,17 @@ public class EtwProviderTests {
 
     @Test
     public void testDllExtracted() {
+        // TODO assume windows
         String filename = EtwProvider.getDllFilenameForArch();
         final File dllPath = new File(dllTempFolder, filename);
         System.out.println("Checking for DLL: "+dllPath.getAbsolutePath());
         assertTrue("Dll does not exist: "+dllPath.getAbsolutePath(), dllPath.exists());
-        new EtwProvider().info("test", "testing %d!!!", 123);
+        EtwProvider ep = new EtwProvider();
+        ep.info("test", "testing %d!!!", 123);
+        ep.error("test-error", new Exception("exception message"), "The error: %s", "error test");
+        ep.error("test-error-no-exception", "The error: %s, test %d!", "no exception", 123);
+        ep.critical("test-critical", new Exception("critical message"), "this is critical: %d", -12354);
+        ep.critical("test-critical-noex", "this is critical raised w/o exception: %x", 6738921);
     }
 
 }
