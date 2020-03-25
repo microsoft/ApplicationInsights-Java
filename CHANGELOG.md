@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 2.6.0
+* No changes since 2.6.0-BETA.3
+
 # Version 2.6.0-BETA.3
 * Use newer id format when reporting request and dependency telemetry
   ([#1149](https://github.com/microsoft/ApplicationInsights-Java/issues/1174))
