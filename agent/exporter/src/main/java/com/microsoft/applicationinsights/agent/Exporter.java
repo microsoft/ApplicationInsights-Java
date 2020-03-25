@@ -316,7 +316,11 @@ public class Exporter implements SpanExporter {
     }
 
     private void applyDatabaseQuerySpan(SpanData span, RemoteDependencyTelemetry telemetry) {
-        telemetry.setType(getString(span, "db.type"));
+        String type = getString(span, "db.type");
+        if ("sql".equals(type)) {
+            type = "SQL";
+        }
+        telemetry.setType(type);
         telemetry.setCommandName(getString(span, "db.statement"));
         telemetry.setTarget(getString(span, "db.url"));
         // TODO put db.instance somewhere
