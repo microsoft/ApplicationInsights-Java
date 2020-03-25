@@ -23,13 +23,14 @@
 #include "str_value.h"
 #include <winmeta.h>
 #include <string>
-#include <errno.h>
+#include <cstdlib>
+#include <cerrno>
 
 #ifndef NDEBUG
-#   include <stdio.h>
-#   define DBG(...) printf(__VA_ARGS__)
-#elif
-#   define DBG(...) do { } while(0)
+#include <cstdio>
+#define DBG(...) printf(__VA_ARGS__)
+#else
+#define DBG(...) do { } while(0)
 #endif
 
 #define EVENT_KEYWORD_FILTER_ALL 0x0
@@ -52,14 +53,15 @@ TRACELOGGING_DEFINE_PROVIDER(
  * If copy fails, and error code is thrown
  *
  */
-// TODO enforce max length?
 #define EXTRACT_JSTRING(env_var, str_var, len_var, var_id) do \
 { \
     len_var = 1 + (env_var->GetStringUTFLength(jstr_##str_var)); \
+    DBG("Original length of " STR_VALUE(str_var) ": %d\n", len_var); \
+    len_var = len_var > STR_MAX_BUFF_SIZE ? STR_MAX_BUFF_SIZE : len_var; \
     str_var = new char[len_var]; \
     DBG("copying jstr_" #str_var " (len=%d): %p\n", len_var, &jstr_##str_var); \
     str_var = getJavaString(env_var, jstr_##str_var, str_var, len_var); \
-    DBG("got " #str_var ": %s\n", str_var); \
+    DBG("got " #str_var ":\n\t%s\n", str_var); \
 } \
 while (0)
 
@@ -119,8 +121,54 @@ JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwPr
     (JNIEnv * env, jobject jobj_javaThis, jstring jstr_logger, jstring jstr_message, jstring jstr_stackTrace,
         jstring jstr_extensionVersion, jstring jstr_subscriptionId, jstring jstr_appName, jstring jstr_resourceType)
 {
-    DBG("cppError not implemented.\n");
-    DBG("FILE: " DLL_FILENAME_STR "\n");
+    char * logger = NULL;
+    char * message = NULL;
+    char * stackTrace = NULL;
+    char * extensionVersion = NULL;
+    char * subscriptionId = NULL;
+    char * appName = NULL;
+    char * resourceType = NULL;
+    try
+    {
+        // convert all jstrings
+        int len;
+        EXTRACT_JSTRING(env, logger, len, JSTRID_LOGGER);
+        EXTRACT_JSTRING(env, message, len, JSTRID_MESSAGE);
+        EXTRACT_JSTRING(env, stackTrace, len, JSTRID_STACK_TRACE);
+        EXTRACT_JSTRING(env, extensionVersion, len, JSTRID_EXTENSION_VERSION);
+        EXTRACT_JSTRING(env, subscriptionId, len, JSTRID_SUBSCRIPTION_ID);
+        EXTRACT_JSTRING(env, appName, len, JSTRID_APP_NAME);
+        EXTRACT_JSTRING(env, resourceType, len, JSTRID_RESOURCE_TYPE);
+
+        // write event
+        TraceLoggingRegister(provider_EtwHandle);
+        WRITE_ERROR_EVENT(
+            TraceLoggingValue(message, "msg"),
+            TraceLoggingValue(extensionVersion, "ExtVer"),
+            TraceLoggingValue(subscriptionId, "SubscriptionId"),
+            TraceLoggingValue(appName, "AppName"),
+            TraceLoggingValue(resourceType, "ResourceType"),
+            TraceLoggingValue(logger, "Logger"),
+            TraceLoggingValue(stackTrace, "StackTrace"));
+        TraceLoggingUnregister(provider_EtwHandle);
+    }
+    catch (jstrerr_t jstrerr)
+    {
+        handleJstrException(env, jstrerr);
+    }
+    catch (...)
+    {
+        handleGenericException(env);
+    }
+
+    // clean up
+    delete[] message;
+    delete[] logger;
+    delete[] stackTrace;
+    delete[] extensionVersion;
+    delete[] subscriptionId;
+    delete[] appName;
+    delete[] resourceType;
 }
 
 /********cppCritical(logger, message, stackTrace, extensionVersion, subscriptionId, appName, resourceType)********/
@@ -128,7 +176,54 @@ JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwPr
     (JNIEnv * env, jobject jobj_javaThis, jstring jstr_logger, jstring jstr_message, jstring jstr_stackTrace,
         jstring jstr_extensionVersion, jstring jstr_subscriptionId, jstring jstr_appName, jstring jstr_resourceType)
 {
-    DBG("cppCritical not implemented.\n");
+    char * logger = NULL;
+    char * message = NULL;
+    char * stackTrace = NULL;
+    char * extensionVersion = NULL;
+    char * subscriptionId = NULL;
+    char * appName = NULL;
+    char * resourceType = NULL;
+    try
+    {
+        // convert all jstrings
+        int len;
+        EXTRACT_JSTRING(env, logger, len, JSTRID_LOGGER);
+        EXTRACT_JSTRING(env, message, len, JSTRID_MESSAGE);
+        EXTRACT_JSTRING(env, stackTrace, len, JSTRID_STACK_TRACE);
+        EXTRACT_JSTRING(env, extensionVersion, len, JSTRID_EXTENSION_VERSION);
+        EXTRACT_JSTRING(env, subscriptionId, len, JSTRID_SUBSCRIPTION_ID);
+        EXTRACT_JSTRING(env, appName, len, JSTRID_APP_NAME);
+        EXTRACT_JSTRING(env, resourceType, len, JSTRID_RESOURCE_TYPE);
+
+        // write event
+        TraceLoggingRegister(provider_EtwHandle);
+        WRITE_CRITICAL_EVENT(
+            TraceLoggingValue(message, "msg"),
+            TraceLoggingValue(extensionVersion, "ExtVer"),
+            TraceLoggingValue(subscriptionId, "SubscriptionId"),
+            TraceLoggingValue(appName, "AppName"),
+            TraceLoggingValue(resourceType, "ResourceType"),
+            TraceLoggingValue(logger, "Logger"),
+            TraceLoggingValue(stackTrace, "StackTrace"));
+        TraceLoggingUnregister(provider_EtwHandle);
+    }
+    catch (jstrerr_t jstrerr)
+    {
+        handleJstrException(env, jstrerr);
+    }
+    catch (...)
+    {
+        handleGenericException(env);
+    }
+
+    // clean up
+    delete[] message;
+    delete[] logger;
+    delete[] stackTrace;
+    delete[] extensionVersion;
+    delete[] subscriptionId;
+    delete[] appName;
+    delete[] resourceType;
 }
 
 inline void handleJstrException(JNIEnv * env, jstrerr_t jstrerr) noexcept {
@@ -182,7 +277,6 @@ inline void handleGenericException(JNIEnv * env) noexcept {
     env->DeleteLocalRef(cls);
 }
 
-// TODO update to throw(jstrerr_t)
 inline char * getJavaString(JNIEnv * env, jstring &jstr_input, char * cstr_output, int len) throw(jstrerr_t) {
     jboolean copy = JNI_FALSE;
     const char * cc_str = env->GetStringUTFChars(jstr_input, &copy);
@@ -191,11 +285,16 @@ inline char * getJavaString(JNIEnv * env, jstring &jstr_input, char * cstr_outpu
             DBG("GetStringUTFChars(jstr_input) failed with exception\n");
             throw JSTRERR_NULL_GETSTR;
         }
-        errno_t cpyerr = strcpy_s(cstr_output, len, cc_str);
-        if (cpyerr) {
-            DBG("strcpy_s failed: errno=%d\n", cpyerr);
+        errno_t cpyerr = strncpy_s(cstr_output, len, cc_str, _TRUNCATE);
+        if (cpyerr != 0 && cpyerr != STRUNCATE) {
+            DBG("strncpy_s failed: len=%d, errno=%d\n", len, cpyerr);
             throw JSTRERR_STRCPY;
         }
+#ifndef NDEBUG
+        if (cpyerr == STRUNCATE) {
+            DBG("TRUNCATE!\n");
+        }
+#endif
     }
     catch (jstrerr_t ex)
     {

@@ -45,7 +45,7 @@ typedef int jstrerr_t;
 #define JSTRID_APP_NAME           0x0600
 #define JSTRID_RESOURCE_TYPE      0x0700
 
-#define STR_MAX_BUFF_SIZE   2048
+#define STR_MAX_BUFF_SIZE   1024000
 
 /**
  * preconditions: char * is allocated, JNIenv and jstring not null, int > 0
