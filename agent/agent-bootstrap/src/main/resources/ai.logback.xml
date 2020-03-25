@@ -3,7 +3,7 @@
 <configuration>
   <appender name="CONSOLE" class="com.microsoft.applicationinsights.agent.shadow.ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>TESTING: %d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
   <root level="${applicationInsights.agent.logging.level:-warn}">
