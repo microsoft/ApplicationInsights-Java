@@ -113,6 +113,6 @@ public class EtwProvider {
     }
 
     public void critical(String logger, String messageFormat, Object... messageArgs) {
-        cppError(logger, String.format(messageFormat, messageArgs), "", s_extensionVersion, s_subscriptionId, s_appName, s_resourceType);
+        cppCritical(logger, String.format(messageFormat, messageArgs), "", s_extensionVersion, s_subscriptionId, s_appName, s_resourceType);
     }
 }
