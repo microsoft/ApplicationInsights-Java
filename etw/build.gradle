@@ -1,0 +1,8 @@
+plugins {
+    id 'base'
+}
+
+clean {
+    dependsOn ':etw:java:clean'
+    dependsOn ':etw:native:clean'
+}
