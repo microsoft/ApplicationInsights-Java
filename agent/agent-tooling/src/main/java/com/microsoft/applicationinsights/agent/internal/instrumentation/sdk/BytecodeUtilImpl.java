@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.agent.internal.Global;
-import com.microsoft.applicationinsights.agent.internal.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
+import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.telemetry.Duration;

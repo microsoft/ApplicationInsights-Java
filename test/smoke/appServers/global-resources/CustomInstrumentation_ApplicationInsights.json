@@ -1,6 +1,6 @@
 {
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
-  "experimental": {
+  "preview": {
     "customInstrumentation": [
       {
         "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",

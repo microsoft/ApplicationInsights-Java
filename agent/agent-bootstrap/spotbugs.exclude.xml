@@ -6,7 +6,7 @@
     <Match>
         <!-- this is a fire and forget thread. we don't need to hold onto the Future return value -->
         <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" />
-        <Class name="com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile" />
+        <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile" />
         <Method name="write" />
     </Match>
     <Match>
@@ -14,20 +14,35 @@
         <Or>
             <And>
                 <!-- False Positive. Path is not from an external source. -->
-                <Class name="com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile$2" />
+                <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile$2" />
                 <Method name="run" />
             </And>
             <And>
                 <!-- False Positive. Path is not from an external source. -->
-                <Class name="com.microsoft.applicationinsights.agent.internal.bootstrap.MainEntryPoint" />
+                <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
                 <Method name="start"/>
             </And>
         </Or>
     </Match>
     <Match>
+        <Bug pattern="UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD" />
+        <!-- used from agent-tooling -->
+        <Class name="~com\.microsoft\.applicationinsights\.agent\.bootstrap\.configuration\..*" />
+    </Match>
+    <Match>
+        <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" />
+        <!-- used from agent-tooling -->
+        <Class name="~com\.microsoft\.applicationinsights\.agent\.bootstrap\.configuration\..*" />
+    </Match>
+    <Match>
+        <Bug pattern="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD" />
+        <!-- used from agent-tooling -->
+        <Class name="~com\.microsoft\.applicationinsights\.agent\.bootstrap\.configuration\..*" />
+    </Match>
+    <Match>
         <!-- The exception in question comes from Class.forName. It may throw with different versions of java. -->
         <Bug pattern="REC_CATCH_EXCEPTION" />
-        <Class name="com.microsoft.applicationinsights.agent.internal.diagnostics.PidFinder" />
+        <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder" />
         <Method name="getPidUsingProcessHandle" />
     </Match>
 </FindBugsFilter>

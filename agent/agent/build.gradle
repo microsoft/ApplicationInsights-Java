@@ -75,10 +75,10 @@ shadowJar {
     // relocate OpenTelemetry API dependency
     relocate "io.grpc", "io.opentelemetry.auto.shaded.io.grpc"
 
-    relocate('logback.configurationFile', 'ai.logback.configurationFile')
-    relocate('logback.xml', 'ai.logback.xml')
-    relocate('logback.groovy', 'ai.logback.groovy') // to prevent accidentally picking up from user's class path
-    relocate('logback-test.xml', 'ai.logback-test.xml') // to prevent accidentally picking up from user's class path
+    relocate('logback.configurationFile', 'applicationinsights.logback.configurationFile')
+    relocate('logback.xml', 'applicationinsights.logback.xml')
+    relocate('logback.groovy', 'applicationinsights.logback.groovy') // to prevent accidentally picking up from user's class path
+    relocate('logback-test.xml', 'applicationinsights.logback-test.xml') // to prevent accidentally picking up from user's class path
 
 }
 

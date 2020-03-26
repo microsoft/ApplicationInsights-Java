@@ -32,10 +32,12 @@ import java.util.concurrent.CountDownLatch;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.Configuration.FixedRateSampling;
-import com.microsoft.applicationinsights.agent.internal.Configuration.JmxMetric;
-import com.microsoft.applicationinsights.agent.internal.ConfigurationBuilder.ConfigurationException;
-import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.FixedRateSampling;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.HeartBeatModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
@@ -92,14 +94,13 @@ public class BeforeAgentInstaller {
             throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
         }
 
-        Configuration config = ConfigurationBuilder.create(agentJarFile.toPath());
+        Configuration config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
             throw new ConfigurationException("No connection string or instrumentation key provided");
         }
 
         Properties properties = new Properties();
-        properties.put("additional.bootstrap.package.prefixes",
-                "com.microsoft.applicationinsights.agent.internal.bootstrap");
+        properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
         properties.put("experimental.log.capture.threshold", getThreshold(config, "WARN"));
         properties.put("experimental.controller-and-view.spans.enabled", "false");
         properties.put("http.server.error.statuses", "400-599");
@@ -124,8 +125,8 @@ public class BeforeAgentInstaller {
             instrumentation.addTransformer(new JulListeningClassFileTransformer(ApacheSender43.safeToInitLatch));
         }
 
-        if (config.httpProxy != null) {
-            ApacheSender43.proxy = HttpHost.create(config.httpProxy);
+        if (config.preview.httpProxy.host != null) {
+            ApacheSender43.proxy = new HttpHost(config.preview.httpProxy.host, config.preview.httpProxy.port);
         }
 
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
@@ -134,7 +135,7 @@ public class BeforeAgentInstaller {
         configuration.getContextInitializers().add(new DeviceInfoContextInitializer());
         configuration.getContextInitializers().add(new CloudInfoContextInitializer());
 
-        FixedRateSampling fixedRateSampling = config.experimental.sampling.fixedRate;
+        FixedRateSampling fixedRateSampling = config.preview.sampling.fixedRate;
         if (fixedRateSampling != null && fixedRateSampling.percentage != null) {
             Global.setFixedRateSamplingPercentage(fixedRateSampling.percentage);
         }
@@ -174,7 +175,7 @@ public class BeforeAgentInstaller {
     }
 
     private static String getThreshold(Configuration config, String defaultValue) {
-        Map<String, Object> logging = config.experimental.instrumentation.get("logging");
+        Map<String, Object> logging = config.preview.instrumentation.get("logging");
         if (logging == null) {
             return defaultValue;
         }
@@ -203,13 +204,13 @@ public class BeforeAgentInstaller {
         if (!Strings.isNullOrEmpty(config.instrumentationKey)) {
             xmlConfiguration.setInstrumentationKey(config.instrumentationKey);
         }
-        if (!Strings.isNullOrEmpty(config.roleName)) {
-            xmlConfiguration.setRoleName(config.roleName);
+        if (!Strings.isNullOrEmpty(config.preview.roleName)) {
+            xmlConfiguration.setRoleName(config.preview.roleName);
         }
-        if (!Strings.isNullOrEmpty(config.roleInstance)) {
-            xmlConfiguration.setRoleInstance(config.roleInstance);
+        if (!Strings.isNullOrEmpty(config.preview.roleInstance)) {
+            xmlConfiguration.setRoleInstance(config.preview.roleInstance);
         }
-        if (!config.experimental.liveMetrics.enabled) {
+        if (!config.preview.liveMetrics.enabled) {
             xmlConfiguration.getQuickPulse().setEnabled(false);
         }
 
@@ -217,9 +218,9 @@ public class BeforeAgentInstaller {
         AddTypeXmlElement heartbeatModule = new AddTypeXmlElement();
         heartbeatModule.setType("com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule");
         heartbeatModule.getParameters().add(newParamXml("isHeartBeatEnabled",
-                Boolean.toString(config.experimental.heartbeat.enabled)));
+                Boolean.toString(config.preview.heartbeat.enabled)));
         heartbeatModule.getParameters().add(newParamXml("HeartBeatInterval",
-                Long.toString(config.experimental.heartbeat.intervalSeconds)));
+                Long.toString(config.preview.heartbeat.intervalSeconds)));
         ArrayList<AddTypeXmlElement> modules = new ArrayList<>();
         modules.add(heartbeatModule);
         TelemetryModulesXmlElement modulesXml = new TelemetryModulesXmlElement();
@@ -228,7 +229,7 @@ public class BeforeAgentInstaller {
 
         // configure custom jmx metrics
         ArrayList<JmxXmlElement> jmxXmls = new ArrayList<>();
-        for (JmxMetric jmxMetric : config.jmxMetrics) {
+        for (JmxMetric jmxMetric : config.preview.jmxMetrics) {
             JmxXmlElement jmxXml = new JmxXmlElement();
             jmxXml.setObjectName(jmxMetric.objectName);
             jmxXml.setAttribute(jmxMetric.attribute);
@@ -237,7 +238,7 @@ public class BeforeAgentInstaller {
         }
         xmlConfiguration.getPerformance().setJmxXmlElements(jmxXmls);
 
-        if (config.experimental.developerMode) {
+        if (config.preview.developerMode) {
             xmlConfiguration.getChannel().setDeveloperMode(true);
         }
         return xmlConfiguration;

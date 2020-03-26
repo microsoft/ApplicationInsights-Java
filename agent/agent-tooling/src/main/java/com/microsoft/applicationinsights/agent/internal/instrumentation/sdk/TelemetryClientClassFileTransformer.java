@@ -27,8 +27,8 @@ import java.security.ProtectionDomain;
 
 import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.bootstrap.BytecodeUtil;
-import com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile;
+import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
@@ -72,7 +72,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
     private static final Logger logger = LoggerFactory.getLogger(TelemetryClientClassFileTransformer.class);
 
     private static final String BYTECODE_UTIL_INTERNAL_NAME =
-            "com/microsoft/applicationinsights/agent/internal/bootstrap/BytecodeUtil";
+            "com/microsoft/applicationinsights/agent/bootstrap/BytecodeUtil";
 
     private final String unshadedClassName = UnshadedSdkPackageName.get() + "/TelemetryClient";
 

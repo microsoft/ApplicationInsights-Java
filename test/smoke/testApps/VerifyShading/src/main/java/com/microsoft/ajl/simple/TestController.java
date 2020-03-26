@@ -52,8 +52,9 @@ public class TestController {
         expectedEntries.add("META-INF/MANIFEST\\.MF");
         expectedEntries.add("LICENSE");
         expectedEntries.add("NOTICE");
-        expectedEntries.add("ai.logback.xml");
-        expectedEntries.add("appsvc.ai.logback.xml");
+        expectedEntries.add("applicationinsights.appsvc.logback.xml");
+        expectedEntries.add("applicationinsights.console.logback.xml");
+        expectedEntries.add("applicationinsights.file.logback.xml");
         expectedEntries.add("ai.sdk-version.properties");
         expectedEntries.add("auto-tooling-and-instrumentation.isolated/.*");
         JarFile jarFile = new JarFile(agentJarFile);
