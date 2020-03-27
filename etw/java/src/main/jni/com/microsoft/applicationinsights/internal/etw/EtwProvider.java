@@ -10,7 +10,6 @@ import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO move native methods to abstract class?
 public class EtwProvider {
     private static final String LIB_FILENAME_32_BIT = "applicationinsights-java-etw-provider-x86.dll";
     private static final String LIB_FILENAME_64_BIT = "applicationinsights-java-etw-provider-x86-64.dll";
@@ -41,10 +40,6 @@ public class EtwProvider {
         } else {
             LoggerFactory.getLogger(EtwProvider.class).info("Non-Windows OS. Loading ETW library skipped.");
         }
-    }
-
-    static void load() {
-        // triggers static initializer
     }
 
     private static File loadLibrary() throws IOException {
