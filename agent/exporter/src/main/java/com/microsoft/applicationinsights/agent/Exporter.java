@@ -97,6 +97,9 @@ public class Exporter implements SpanExporter {
                 // maybe user-generated telemetry?
                 // otherwise this top-level span won't show up in Performance blade
                 exportRequest(span);
+            } else if (span.getName().equals("EventHubs.message")) {
+                // TODO eventhubs should use PRODUCER instead of INTERNAL
+                exportRemoteDependency(component, span, false);
             } else {
                 exportRemoteDependency(component, span, true);
             }
@@ -134,7 +137,7 @@ public class Exporter implements SpanExporter {
         }
 
         if (span.getName().equals("EventHubs.process")) {
-            // TODO let Azure SDK folks know this should be CONSUMER instead of SERVER
+            // TODO eventhubs should use CONSUMER instead of SERVER
             // (https://gist.github.com/lmolkova/e4215c0f44a49ef824983382762e6b92#opentelemetry-example-1)
             String peerAddress = getString(span, "peer.address");
             String destination = getString(span, "message_bus.destination");
@@ -176,11 +179,22 @@ public class Exporter implements SpanExporter {
                 applyHttpRequestSpan(span, telemetry);
             } else if (span.getAttributes().containsKey("db.type")) {
                 applyDatabaseQuerySpan(span, telemetry);
-            } else if (span.getName().equals("EventHubs.send") && span.getKind() == Kind.PRODUCER) {
+            } else if (span.getName().equals("EventHubs.send")) {
+                // TODO eventhubs should use CLIENT instead of PRODUCER
+                // TODO eventhubs should add links to messages?
                 telemetry.setType("Microsoft.EventHub");
                 String peerAddress = getString(span, "peer.address");
                 String destination = getString(span, "message_bus.destination");
                 telemetry.setTarget(peerAddress + "/" + destination);
+                telemetry.setName(span.getName());
+            } else if (span.getName().equals("EventHubs.message")) {
+                // TODO eventhubs should populate peer.address and message_bus.destination
+                String peerAddress = getString(span, "peer.address");
+                String destination = getString(span, "message_bus.destination");
+                if (peerAddress != null) {
+                    telemetry.setTarget(peerAddress + "/" + destination);
+                }
+                telemetry.setType("Queue Message | Microsoft.EventHub");
                 telemetry.setName(span.getName());
             } else if ("kafka-clients".equals(component)) {
                 // TODO is this needed?
