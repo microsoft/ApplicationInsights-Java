@@ -47,248 +47,344 @@ TRACELOGGING_DEFINE_PROVIDER(
     // {1f0dc33f-30ae-5ff3-8b01-8ca9b8509233}
     (0x1f0dc33f,0x30ae,0x5ff3,0x8b,0x01,0x8c,0xa9,0xb8,0x50,0x92,0x33));
 
-/**
- * Assigns jstring jstr_##str_var to a new char[len_var] named str_var.
- * str_var must already be declared.
- * If copy fails, and error code is thrown
- *
- */
-#define EXTRACT_JSTRING(env_var, str_var, len_var, var_id) do \
-{ \
-    len_var = 1 + (env_var->GetStringUTFLength(jstr_##str_var)); \
-    DBG("Original length of " STR_VALUE(str_var) ": %d\n", len_var); \
-    len_var = len_var > STR_MAX_BUFF_SIZE ? STR_MAX_BUFF_SIZE : len_var; \
-    str_var = new char[len_var]; \
-    DBG("copying jstr_" #str_var " (len=%d): %p\n", len_var, &jstr_##str_var); \
-    str_var = getJavaString(env_var, jstr_##str_var, str_var, len_var); \
-    DBG("got " #str_var ":\n\t%s\n", str_var); \
-} \
-while (0)
-
-/********cppInfo(logger, message, extensionVersion, subscriptionId, appName, resourceType)********/
-JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppInfo
-    (JNIEnv * env, jobject jobj_javaThis, jstring jstr_logger, jstring jstr_message,
-        jstring jstr_extensionVersion, jstring jstr_subscriptionId, jstring jstr_appName, jstring jstr_resourceType)
+/********cppWriteEvent(IpaEtwEventBase event)********/
+JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppWriteEvent
+    (JNIEnv * env, jobject jobj_javaThis, jobject jobj_event)
 {
-    char * logger = NULL;
-    char * message = NULL;
-    char * extensionVersion = NULL;
-    char * subscriptionId = NULL;
-    char * appName = NULL;
-    char * resourceType = NULL;
+    // TODO get data from objects
     try
     {
-        // convert all jstrings
-        int len;
-        EXTRACT_JSTRING(env, logger, len, JSTRID_LOGGER);
-        EXTRACT_JSTRING(env, message, len, JSTRID_MESSAGE);
-        EXTRACT_JSTRING(env, extensionVersion, len, JSTRID_EXTENSION_VERSION);
-        EXTRACT_JSTRING(env, subscriptionId, len, JSTRID_SUBSCRIPTION_ID);
-        EXTRACT_JSTRING(env, appName, len, JSTRID_APP_NAME);
-        EXTRACT_JSTRING(env, resourceType, len, JSTRID_RESOURCE_TYPE);
-
-        // write event
-        TraceLoggingRegister(provider_EtwHandle);
-        WRITE_INFO_EVENT(
-            TraceLoggingValue(message, "msg"),
-            TraceLoggingValue(extensionVersion, "ExtVer"),
-            TraceLoggingValue(subscriptionId, "SubscriptionId"),
-            TraceLoggingValue(appName, "AppName"),
-            TraceLoggingValue(resourceType, "ResourceType"),
-            TraceLoggingValue(logger, "Logger"));
-        TraceLoggingUnregister(provider_EtwHandle);
-    }
-    catch (jstrerr_t jstrerr)
-    {
-        handleJstrException(env, jstrerr);
-    }
-    catch (...)
-    {
-        handleGenericException(env);
-    }
-
-    // clean up
-    delete[] message;
-    delete[] extensionVersion;
-    delete[] subscriptionId;
-    delete[] appName;
-    delete[] resourceType;
-    delete[] logger;
-}
-
-/********cppError(logger, message, stackTrace, extensionVersion, subscriptionId, appName, resourceType)********/
-JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppError
-    (JNIEnv * env, jobject jobj_javaThis, jstring jstr_logger, jstring jstr_message, jstring jstr_stackTrace,
-        jstring jstr_extensionVersion, jstring jstr_subscriptionId, jstring jstr_appName, jstring jstr_resourceType)
-{
-    char * logger = NULL;
-    char * message = NULL;
-    char * stackTrace = NULL;
-    char * extensionVersion = NULL;
-    char * subscriptionId = NULL;
-    char * appName = NULL;
-    char * resourceType = NULL;
-    try
-    {
-        // convert all jstrings
-        int len;
-        EXTRACT_JSTRING(env, logger, len, JSTRID_LOGGER);
-        EXTRACT_JSTRING(env, message, len, JSTRID_MESSAGE);
-        EXTRACT_JSTRING(env, stackTrace, len, JSTRID_STACK_TRACE);
-        EXTRACT_JSTRING(env, extensionVersion, len, JSTRID_EXTENSION_VERSION);
-        EXTRACT_JSTRING(env, subscriptionId, len, JSTRID_SUBSCRIPTION_ID);
-        EXTRACT_JSTRING(env, appName, len, JSTRID_APP_NAME);
-        EXTRACT_JSTRING(env, resourceType, len, JSTRID_RESOURCE_TYPE);
-
-        // write event
-        TraceLoggingRegister(provider_EtwHandle);
-        WRITE_ERROR_EVENT(
-            TraceLoggingValue(message, "msg"),
-            TraceLoggingValue(extensionVersion, "ExtVer"),
-            TraceLoggingValue(subscriptionId, "SubscriptionId"),
-            TraceLoggingValue(appName, "AppName"),
-            TraceLoggingValue(resourceType, "ResourceType"),
-            TraceLoggingValue(logger, "Logger"),
-            TraceLoggingValue(stackTrace, "StackTrace"));
-        TraceLoggingUnregister(provider_EtwHandle);
-    }
-    catch (jstrerr_t jstrerr)
-    {
-        handleJstrException(env, jstrerr);
-    }
-    catch (...)
-    {
-        handleGenericException(env);
-    }
-
-    // clean up
-    delete[] message;
-    delete[] logger;
-    delete[] stackTrace;
-    delete[] extensionVersion;
-    delete[] subscriptionId;
-    delete[] appName;
-    delete[] resourceType;
-}
-
-/********cppCritical(logger, message, stackTrace, extensionVersion, subscriptionId, appName, resourceType)********/
-JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppCritical
-    (JNIEnv * env, jobject jobj_javaThis, jstring jstr_logger, jstring jstr_message, jstring jstr_stackTrace,
-        jstring jstr_extensionVersion, jstring jstr_subscriptionId, jstring jstr_appName, jstring jstr_resourceType)
-{
-    char * logger = NULL;
-    char * message = NULL;
-    char * stackTrace = NULL;
-    char * extensionVersion = NULL;
-    char * subscriptionId = NULL;
-    char * appName = NULL;
-    char * resourceType = NULL;
-    try
-    {
-        // convert all jstrings
-        int len;
-        EXTRACT_JSTRING(env, logger, len, JSTRID_LOGGER);
-        EXTRACT_JSTRING(env, message, len, JSTRID_MESSAGE);
-        EXTRACT_JSTRING(env, stackTrace, len, JSTRID_STACK_TRACE);
-        EXTRACT_JSTRING(env, extensionVersion, len, JSTRID_EXTENSION_VERSION);
-        EXTRACT_JSTRING(env, subscriptionId, len, JSTRID_SUBSCRIPTION_ID);
-        EXTRACT_JSTRING(env, appName, len, JSTRID_APP_NAME);
-        EXTRACT_JSTRING(env, resourceType, len, JSTRID_RESOURCE_TYPE);
-
-        // write event
-        TraceLoggingRegister(provider_EtwHandle);
-        WRITE_CRITICAL_EVENT(
-            TraceLoggingValue(message, "msg"),
-            TraceLoggingValue(extensionVersion, "ExtVer"),
-            TraceLoggingValue(subscriptionId, "SubscriptionId"),
-            TraceLoggingValue(appName, "AppName"),
-            TraceLoggingValue(resourceType, "ResourceType"),
-            TraceLoggingValue(logger, "Logger"),
-            TraceLoggingValue(stackTrace, "StackTrace"));
-        TraceLoggingUnregister(provider_EtwHandle);
-    }
-    catch (jstrerr_t jstrerr)
-    {
-        handleJstrException(env, jstrerr);
-    }
-    catch (...)
-    {
-        handleGenericException(env);
-    }
-
-    // clean up
-    delete[] message;
-    delete[] logger;
-    delete[] stackTrace;
-    delete[] extensionVersion;
-    delete[] subscriptionId;
-    delete[] appName;
-    delete[] resourceType;
-}
-
-inline void handleJstrException(JNIEnv * env, jstrerr_t jstrerr) noexcept {
-    jthrowable t = env->ExceptionOccurred();
-    if (t) {
-        return; // use existing exception
-    }
-    jclass cls = env->FindClass("java/lang/RuntimeException");
-    if (cls != NULL) {
-        std::string fieldName;
-        switch (jstrerr & 0xFF00) {
-            case JSTRID_APP_NAME:
-                fieldName = "appName";
-                break;
-            case JSTRID_EXTENSION_VERSION:
-                fieldName = "extensionVersion";
-                break;
-            case JSTRID_LOGGER:
-                fieldName = "logger";
-                break;
-            case JSTRID_MESSAGE:
-                fieldName = "message";
-                break;
-            case JSTRID_RESOURCE_TYPE:
-                fieldName = "resourceType";
-                break;
-            case JSTRID_STACK_TRACE:
-                fieldName = "stackTrace";
-                break;
-            case JSTRID_SUBSCRIPTION_ID:
-                fieldName = "subscriptionId";
+        DBG("getting event_id");
+        int event_id = getEventId(env, jobj_event);
+        DBG("event_id=%d\n", event_id);
+        switch (event_id) {
+            case EVENTID_INFO:
+            case EVENTID_ERROR:
+            case EVENTID_CRITICAL:
+            case EVENTID_WARN:
+                writeEvent_IpaEtwEvent(env, jobj_event, event_id);
                 break;
             default:
-                fieldName = "unknown";
+                throw (AIJNIERR_UNKONWN_EVENTID | (event_id << 2));
         }
-        std::string errmsg = "cppInfo could not read string from JNI env: " + fieldName;
-        env->ThrowNew(cls, errmsg.c_str());
     }
-    env->DeleteLocalRef(cls);
+    catch (aijnierr_t err)
+    {
+        handleJstrException(env, err);
+    }
+    catch (...)
+    {
+        handleGenericException(env);
+    }
+
 }
 
-inline void handleGenericException(JNIEnv * env) noexcept {
+int getEventId(JNIEnv * env, jobject &jobj_event) throw(aijnierr_t) {
+    jclass cls = env->GetObjectClass(jobj_event);
+    jmethodID jmid = env->GetMethodID(cls, "id", "()Lcom/microsoft/applicationinsights/internal/etw/events/model/IpaEtwEventId;");
+    if (jmid == NULL) {
+        throw AIJNIERR_METHOD_NAME;
+    }
+    jobject jobj_eventIdEnum = env->CallObjectMethod(jobj_event, jmid);
+    if (env->ExceptionCheck()) {
+        throw AIJNIERR_EXCEPTION_RAISED;
+    }
+    cls = env->GetObjectClass(jobj_eventIdEnum);
+    jmid = env->GetMethodID(cls, "value", "()I");
+    if (jmid == NULL) {
+        throw AIJNIERR_METHOD_NAME;
+    }
+    int value = (int)env->CallObjectMethod(jobj_eventIdEnum, jmid);
+    if(env->ExceptionCheck()) {
+        throw AIJNIERR_EXCEPTION_RAISED;
+    } else {
+        return value;
+    }
+}
+
+
+void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noexcept {
+    char * logger = NULL;
+    char * message = NULL;
+    char * extensionVersion = NULL;
+    char * subscriptionId = NULL;
+    char * appName = NULL;
+    char * resourceType = NULL;
+    char * ikey = NULL;
+    char * stackTrace = NULL;
+    char * operation = NULL;
+    try
+    {
+        // convert all jstrings
+        logger = stringGetter2cstr(env, jobj_event, "getLogger", logger, JSTRID_LOGGER);
+        extensionVersion = stringGetter2cstr(env, jobj_event, "getExtensionVersion", extensionVersion, JSTRID_EXTENSION_VERSION);
+        message = stringGetter2cstr(env, jobj_event, "getFormattedMessage", message, JSTRID_MESSAGE);
+        subscriptionId = stringGetter2cstr(env, jobj_event, "getSubscriptionId", subscriptionId, JSTRID_SUBSCRIPTION_ID);
+        appName = stringGetter2cstr(env, jobj_event, "getAppName", appName, JSTRID_APP_NAME);
+        resourceType = stringGetter2cstr(env, jobj_event, "getResourceType", resourceType, JSTRID_RESOURCE_TYPE);
+        ikey = stringGetter2cstr(env, jobj_event, "getInstrumentationKey", ikey, JSTRID_IKEY);
+        operation = stringGetter2cstr(env, jobj_event, "getOperation", operation, JSTRID_OPERATION);
+
+        // TODO extract constants
+        // write event
+        TraceLoggingRegister(provider_EtwHandle);
+        if (event_id == EVENTID_INFO) {
+            WRITE_INFO_EVENT(
+                TraceLoggingValue(message, "msg"),
+                TraceLoggingValue(extensionVersion, "ExtVer"),
+                TraceLoggingValue(subscriptionId, "SubscriptionId"),
+                TraceLoggingValue(appName, "AppName"),
+                TraceLoggingValue(resourceType, "ResourceType"),
+                TraceLoggingValue(logger, "Logger"),
+                TraceLoggingValue(ikey, "InstrumentationKey"),
+                TraceLoggingValue(operation, "Operation"));
+            DBG("wrote INFO");
+        } else {
+            stackTrace = stringGetter2cstr(env, jobj_event, "getStacktraceString", stackTrace, JSTRID_STACK_TRACE);
+            switch(event_id) {
+                case EVENTID_WARN:
+                    WRITE_WARN_EVENT(
+                        TraceLoggingValue(message, "msg"),
+                        TraceLoggingValue(extensionVersion, "ExtVer"),
+                        TraceLoggingValue(subscriptionId, "SubscriptionId"),
+                        TraceLoggingValue(appName, "AppName"),
+                        TraceLoggingValue(resourceType, "ResourceType"),
+                        TraceLoggingValue(logger, "Logger"),
+                        TraceLoggingValue(ikey, "InstrumentationKey"),
+                        TraceLoggingValue(operation, "Operation"),
+                        TraceLoggingValue(stackTrace, "Exception"));
+                    DBG("wrote WARN");
+                    break;
+                case EVENTID_ERROR:
+                    WRITE_ERROR_EVENT(
+                        TraceLoggingValue(message, "msg"),
+                        TraceLoggingValue(extensionVersion, "ExtVer"),
+                        TraceLoggingValue(subscriptionId, "SubscriptionId"),
+                        TraceLoggingValue(appName, "AppName"),
+                        TraceLoggingValue(resourceType, "ResourceType"),
+                        TraceLoggingValue(logger, "Logger"),
+                        TraceLoggingValue(ikey, "InstrumentationKey"),
+                        TraceLoggingValue(operation, "Operation"),
+                        TraceLoggingValue(stackTrace, "Exception"));
+                    DBG("wrote ERROR");
+                    break;
+                case EVENTID_CRITICAL:
+                    WRITE_CRITICAL_EVENT(
+                        TraceLoggingValue(message, "msg"),
+                        TraceLoggingValue(extensionVersion, "ExtVer"),
+                        TraceLoggingValue(subscriptionId, "SubscriptionId"),
+                        TraceLoggingValue(appName, "AppName"),
+                        TraceLoggingValue(resourceType, "ResourceType"),
+                        TraceLoggingValue(logger, "Logger"),
+                        TraceLoggingValue(ikey, "InstrumentationKey"),
+                        TraceLoggingValue(operation, "Operation"),
+                        TraceLoggingValue(stackTrace, "Exception"));
+                    DBG("wrote CRITICAL");
+                    break;
+            }
+        }
+        TraceLoggingUnregister(provider_EtwHandle);
+        DBG(" event:\n\tmsg=%s,\n\tExtVer=%s,\n\tSubscriptionId=%s,\n\tAppName=%s,\n\tResourceType=%s,\n\tLogger=%s\n\tIkey=%s\n\tOperation=%s\n\tException=%s\n", message, extensionVersion, subscriptionId, appName, resourceType, logger, ikey, operation, stackTrace);
+    }
+    catch (aijnierr_t jnierr)
+    {
+        handleJstrException(env, jnierr);
+    }
+    catch (...)
+    {
+        handleGenericException(env);
+    }
+
+    // clean up
+    delete[] message;
+    delete[] extensionVersion;
+    delete[] subscriptionId;
+    delete[] appName;
+    delete[] resourceType;
+    delete[] logger;
+    delete[] ikey;
+    delete[] stackTrace;
+}
+
+char * stringGetter2cstr(JNIEnv * env, jobject &jobj_target, const char * method_name, char * rval, aijnierr_t field_id) throw(aijnierr_t) {
+    DBG("%s %s\n", __func__, method_name);
+    jclass cls_target = env->GetObjectClass(jobj_target);
+    jmethodID jmid = env->GetMethodID(cls_target, method_name, "()Ljava/lang/String;");
+    if (jmid == NULL) {
+        DBG("No method named '%s'\n", method_name);
+        throw AIJNIERR_METHOD_NAME;
+    }
+    DBG("Calling %s %p\n", method_name, &jmid);
+    jstring jstr_value = (jstring)env->CallObjectMethod(jobj_target, jmid);
+    if (env->ExceptionCheck()) {
+        throw (AIJNIERR_EXCEPTION_RAISED | field_id);
+    }
+    if (!jstr_value) {
+        rval = new char[1];
+        rval[0] = '\0';
+        return rval;
+    }
+    return jstring2cstr(env, jstr_value, rval, field_id);
+}
+
+void handleJstrException(JNIEnv * env, aijnierr_t jnierr) noexcept {
+    std::string message;
+    switch(jnierr & 0xFF) {
+        case AIJNIERR_METHOD_NAME:
+            if (jnierr & 0xFF00) {
+                message = "Could not find expected method for " + jstrid2name(jnierr);
+            } else {
+                message = "Could not find expected method";
+            }
+            break;
+        case AIJNIERR_NULL_GETSTR:
+            if (jnierr & 0xFF00) {
+                message = "Could not load string value for " + jstrid2name(jnierr);
+            } else {
+                message = "Could not load string value";
+            }
+            break;
+        case AIJNIERR_STRCPY:
+            if (jnierr & 0xFF00) {
+                message = "Could not copy string value for " + jstrid2name(jnierr);
+            } else {
+                message = "Could not copy string value";
+            }
+            break;
+        case AIJNIERR_EXCEPTION_RAISED:
+            message = "Exception raised";
+            break;
+        case AIJNIERR_UNKONWN_EVENTID:
+            message = "Unknown event ID: " + std::to_string(jnierr >> 2);
+        default:
+            message = "Unknown error";
+    }
+    javaThrowJniException(env, message);
+}
+
+std::string jstrid2name(int jnierr) noexcept {
+    switch (jnierr & 0xFF00) {
+        case JSTRID_APP_NAME:
+            return "appName";
+        case JSTRID_EXTENSION_VERSION:
+            return "extensionVersion";
+        case JSTRID_LOGGER:
+            return "logger";
+        case JSTRID_MESSAGE:
+            return "message";
+        case JSTRID_RESOURCE_TYPE:
+            return "resourceType";
+        case JSTRID_STACK_TRACE:
+            return "stackTrace";
+        case JSTRID_SUBSCRIPTION_ID:
+            return "subscriptionId";
+        default:
+            return "unknown";
+    }
+}
+
+void handleGenericException(JNIEnv * env) noexcept {
     jthrowable t = env->ExceptionOccurred();
     if (t) {
         return; // use existing exception
     }
+    javaThrowUnknownError(env, "");
+}
+
+jthrowable newJniException(JNIEnv * env, const char * message) noexcept {
+    jclass excls = env->FindClass("com/microsoft/applicationinsights/internal/etw/ApplicationInsightsEtwException");
+    jmethodID init_id = env->GetMethodID(excls, "<init>", "(Ljava/lang/String;)V");
+    jthrowable rval = NULL;
+    if (init_id == NULL) {
+        DBG("Could not find constructor ApplicationInsightsEtwException(String)");
+        javaThrowUnknownError(env, " - could not find ApplicationInsightsEtwException.<init>(String)");
+    } else {
+        jstring jstr_message = env->NewStringUTF(message);
+        rval = (jthrowable)env->NewObject(excls, init_id, jstr_message);
+        if (env->ExceptionCheck()) {
+            DBG("Exception from ApplicationInsightsEtwException.<init>(String)");
+            rval = NULL;
+        }
+        env->DeleteLocalRef(jstr_message);
+    }
+    env->DeleteLocalRef(excls);
+    return rval;
+}
+
+jthrowable newJniException(JNIEnv * env, const char * message, jthrowable cause) noexcept {
+    jclass excls = env->FindClass("com/microsoft/applicationinsights/internal/etw/ApplicationInsightsEtwException");
+    jmethodID init_id = env->GetMethodID(excls, "<init>", "(Ljava/lang/String;Ljava/lang/Throwable;)V");
+    jthrowable rval = NULL;
+    if (init_id == NULL) {
+        DBG("Could not find constructor ApplicationInsightsEtwException(String, Throwable)");
+        javaThrowUnknownError(env, " - could not find ApplicationInsightsEtwException.<init>(String, Throwable)");
+    } else {
+        jstring jstr_message = env->NewStringUTF(message);
+        rval = (jthrowable)env->NewObject(excls, init_id, jstr_message, cause);
+        if (env->ExceptionCheck()) {
+            DBG("Exception from ApplicationInsightsEtwException.<init>(String, Throwable)");
+            rval = NULL;
+        }
+        env->DeleteLocalRef(jstr_message);
+    }
+    env->DeleteLocalRef(excls);
+    return rval;
+}
+
+void javaThrowJniException(JNIEnv * env, std::string message) noexcept {
+    jthrowable cause = env->ExceptionOccurred();
+    jthrowable t;
+    env->ExceptionClear();
+    if (cause) {
+        t = newJniException(env, message.c_str(), cause);
+    } else {
+        t = newJniException(env, message.c_str());
+    }
+
+    if (t) {
+        env->Throw(t);
+    } else {
+        if (!cause) {
+            javaThrowUnknownError(env, ": Error creating exception");
+        } else {
+            if (!env->ExceptionCheck()) {
+                env->Throw(cause);
+            }
+        }
+
+    }
+    env->DeleteLocalRef(t);
+}
+
+void javaThrowUnknownError(JNIEnv * env, std::string message) noexcept {
     jclass cls = env->FindClass("java/lang/RuntimeException");
     if (cls != NULL) {
-        env->ThrowNew(cls, "Unknown error from " DLL_FILENAME_STR);
+        std::string m = "Unknown error from " DLL_FILENAME_STR + message;
+        env->ThrowNew(cls, m.c_str());
     }
     env->DeleteLocalRef(cls);
 }
 
-inline char * getJavaString(JNIEnv * env, jstring &jstr_input, char * cstr_output, int len) throw(jstrerr_t) {
+char * jstring2cstr(JNIEnv * env, jstring &jstr_input, char * cstr_output, aijnierr_t field_id) throw(aijnierr_t) {
     jboolean copy = JNI_FALSE;
+    int len = 1 + (env->GetStringUTFLength(jstr_input));
+    DBG("LEN=%d\n", len);
     const char * cc_str = env->GetStringUTFChars(jstr_input, &copy);
+    DBG("get jstr chars (%s): js=%p, cc=%p\n", jstrid2name(field_id).c_str(), &cc_str, &jstr_input);
     try {
         if (cc_str == NULL) {
             DBG("GetStringUTFChars(jstr_input) failed with exception\n");
-            throw JSTRERR_NULL_GETSTR;
+            throw (AIJNIERR_NULL_GETSTR | field_id);
         }
+
+        if (len > STR_MAX_BUFF_SIZE) {
+            len = STR_MAX_BUFF_SIZE;
+        }
+        cstr_output = new char[len];
         errno_t cpyerr = strncpy_s(cstr_output, len, cc_str, _TRUNCATE);
         if (cpyerr != 0 && cpyerr != STRUNCATE) {
             DBG("strncpy_s failed: len=%d, errno=%d\n", len, cpyerr);
-            throw JSTRERR_STRCPY;
+            throw (AIJNIERR_STRCPY | field_id);
         }
 #ifndef NDEBUG
         if (cpyerr == STRUNCATE) {
@@ -296,14 +392,14 @@ inline char * getJavaString(JNIEnv * env, jstring &jstr_input, char * cstr_outpu
         }
 #endif
     }
-    catch (jstrerr_t ex)
+    catch (aijnierr_t ex)
     {
         DBG("Exception caught: %d\n", ex);
+        DBG("rls jstr chars (%s): js=%p, cc=%p\n", jstrid2name(field_id).c_str(), &cc_str, &jstr_input);
         env->ReleaseStringUTFChars(jstr_input, cc_str);
         throw;
     }
-
-    DBG("jstr/ccstr cleanup: %p\n", &jstr_input);
+    DBG("rls jstr chars (%s): js=%p, cc=%p\n", jstrid2name(field_id).c_str(), &cc_str, &jstr_input);
     env->ReleaseStringUTFChars(jstr_input, cc_str);
     return cstr_output;
 }

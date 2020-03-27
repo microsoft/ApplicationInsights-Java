@@ -4,6 +4,8 @@ plugins {
     id 'visual-studio'
 }
 
+// TODO honor skipWinNative property
+
 def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
 def programFilesX86 = System.env.'ProgramFiles(x86)' ?: 'C:/Program Files (x86)'
 
@@ -37,11 +39,14 @@ toolChains.withType(VisualCpp).configureEach  {
     it.windowsSdkDir winSdkDir
 }
 
-
+ext {
+    headersDir = "$projectDir/src/main/headers"
+}
 library {
     baseName = "applicationinsights-java-etw-provider"
     linkage = [ Linkage.SHARED ]
     targetMachines = [ machines.windows.x86, machines.windows.x86_64 ]
+    privateHeaders.from file(headersDir)
     dependencies {
         implementation files(file("$winSdkLibPath/x64/advapi32.lib"))
         implementation files(file("$winSdkLibPath/x86/advapi32.lib"))

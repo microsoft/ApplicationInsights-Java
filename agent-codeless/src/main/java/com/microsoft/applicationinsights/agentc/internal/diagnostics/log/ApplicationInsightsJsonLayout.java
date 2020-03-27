@@ -30,6 +30,7 @@ import ch.qos.logback.contrib.json.classic.JsonLayout;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.AgentExtensionVersionFinder;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsValueFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.InstrumentationKeyFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.SdkVersionFinder;
@@ -79,7 +80,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     }
 
     public String getOperationName(ILoggingEvent event) {
-        return event.getMDCPropertyMap().get("microsoft.ai.operationName");
+        return event.getMDCPropertyMap().get(DiagnosticsHelper.MDC_PROP_OPERATION);
     }
 
 }

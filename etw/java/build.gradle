@@ -21,15 +21,23 @@ configurations {
     testRuntime.extendsFrom provided
 }
 
+def jniSrcDir = 'src/main/jni'
+sourceSets {
+    main {
+        java {
+            srcDir jniSrcDir
+        }
+    }
+}
 
 dependencies {
     implementation 'org.apache.commons:commons-lang3:3.7'
     implementation 'commons-io:commons-io:2.6'
     implementation 'org.slf4j:slf4j-api:1.7.26'
-    implementation 'com.google.guava:guava:27.1-android'
+    api 'ch.qos.logback:logback-classic:1.2.3'
 
     provided project(path: ':core')
-    provided project(path: ':ApplicationInsightsInternalLogger')
+    provided project(path: ':agent-codeless')
 
     jni32 project(path: ':etw:native', configuration: "${isRelease ? 'release' : 'debug'}X86RuntimeElements")
     jni64 project(path: ':etw:native', configuration: "${isRelease ? 'release' : 'debug'}X86-64RuntimeElements")
@@ -42,13 +50,38 @@ dependencies {
 
 archivesBaseName = "applicationinsights-java-etw-provider"
 
-tasks.register('grabDllsAsResources', Copy) {
+tasks.register('generateNativeHeaders', Exec) {
+    // could be made generic if more native classes existed
+
+    def targetClass = 'com.microsoft.applicationinsights.internal.etw.EtwProvider'
+    def outputDir = project(':etw:native').ext.headersDir
+    def outputFilename = 'jni_etw_provider.h'
+
+    workingDir buildDir
+    commandLine "${System.env.JAVA_HOME}/bin/javah", "-jni", "-force", "-v", "-o", "$outputDir/$outputFilename", "-classpath", "$buildDir/classes/java/main", targetClass
+
+    inputs.dir(file("$projectDir/$jniSrcDir"))
+    outputs.file(file("$outputDir/$outputFilename"))
+
+    doFirst {
+        if (!file(outputDir).exists()) {
+            throw new GradleException("output dir does not exists: $outputDir")
+        }
+    }
+}
+
+tasks.register('processNativeResources', Copy) {
     dependsOn project(':etw:native').tasks.named("assemble${isRelease ? 'Release' : 'Debug'}X86").get()
     dependsOn project(':etw:native').tasks.named("assemble${isRelease ? 'Release' : 'Debug'}X86-64").get()
-    
+
     from configurations.jni32.files
     from configurations.jni64.files
     include '*.dll'
     into "${sourceSets.main.output.resourcesDir}"
 }
-processResources.dependsOn 'grabDllsAsResources'
+
+tasks.named('processResources').configure {
+    dependsOn 'processNativeResources'
+    mustRunAfter 'generateNativeHeaders'
+}
+

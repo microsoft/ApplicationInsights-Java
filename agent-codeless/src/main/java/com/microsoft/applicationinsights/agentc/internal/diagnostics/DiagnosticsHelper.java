@@ -22,6 +22,10 @@ public class DiagnosticsHelper {
 
     public static final String DIAGNOSTICS_LOGGER_NAME = "applicationinsights.extension.diagnostics";
 
+    private static final ApplicationMetadataFactory METADATA_FACTORY = new ApplicationMetadataFactory();
+
+    public static final String MDC_PROP_OPERATION = "microsoft.ai.operationName";
+
     public static void setAgentJarFile(File agentJarFile) {
         Path agentPath = agentJarFile.toPath();
         if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
@@ -48,5 +52,20 @@ public class DiagnosticsHelper {
     public static boolean isAnyCodelessAttach() {
         return appServiceCodeless || aksCodeless || functionsCodeless;
     }
+
+    public static ApplicationMetadataFactory getMetadataFactory() {
+        return METADATA_FACTORY;
+    }
+
+	public static String getCodelessResourceType() {
+        if (appServiceCodeless) {
+            return "appsvc";
+        } else if (aksCodeless) {
+            return "aks";
+        } else if (functionsCodeless) {
+            return "functions";
+        }
+        return null;
+	}
 
 }

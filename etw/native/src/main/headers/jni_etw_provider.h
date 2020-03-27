@@ -9,27 +9,11 @@ extern "C" {
 #endif
 /*
  * Class:     com_microsoft_applicationinsights_internal_etw_EtwProvider
- * Method:    cppInfo
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+ * Method:    cppWriteEvent
+ * Signature: (Lcom/microsoft/applicationinsights/internal/etw/events/model/IpaEtwEventBase;)V
  */
-JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppInfo
-  (JNIEnv *, jobject, jstring, jstring, jstring, jstring, jstring, jstring);
-
-/*
- * Class:     com_microsoft_applicationinsights_internal_etw_EtwProvider
- * Method:    cppError
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
- */
-JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppError
-  (JNIEnv *, jobject, jstring, jstring, jstring, jstring, jstring, jstring, jstring);
-
-/*
- * Class:     com_microsoft_applicationinsights_internal_etw_EtwProvider
- * Method:    cppCritical
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
- */
-JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppCritical
-  (JNIEnv *, jobject, jstring, jstring, jstring, jstring, jstring, jstring, jstring);
+JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppWriteEvent
+  (JNIEnv *, jobject, jobject);
 
 #ifdef __cplusplus
 }

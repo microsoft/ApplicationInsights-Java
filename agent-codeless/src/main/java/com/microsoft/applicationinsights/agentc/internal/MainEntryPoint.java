@@ -88,7 +88,7 @@ public class MainEntryPoint {
         try {
             DiagnosticsHelper.setAgentJarFile(agentJarFile);
             startupLogger = initLogging(instrumentation, agentJarFile);
-            MDC.put("microsoft.ai.operationName", "Startup");
+            MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
             addLibJars(instrumentation, agentJarFile);
             instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
             start(instrumentation, agentJarFile);
