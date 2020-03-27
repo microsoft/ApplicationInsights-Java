@@ -102,6 +102,16 @@ int getEventId(JNIEnv * env, jobject &jobj_event) throw(aijnierr_t) {
     }
 }
 
+#define ETW_FIELD_LOGGER            "Logger"
+#define ETW_FIELD_MESSAGE           "msg"
+#define ETW_FIELD_EXTENSION_VERSION "ExtVer"
+#define ETW_FIELD_SUBSCRIPTION_ID   "SubscriptionId"
+#define ETW_FIELD_APPNAME           "AppName"
+#define ETW_FIELD_RESOURCE_TYPE     "ResourceType"
+#define ETW_FIELD_IKEY              "InstrumentationKey"
+#define ETW_FIELD_STACKTRACE        "Exception"
+#define ETW_FIELD_OPERATION         "Operation"
+
 
 void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noexcept {
     char * logger = NULL;
@@ -130,61 +140,68 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
         TraceLoggingRegister(provider_EtwHandle);
         if (event_id == EVENTID_INFO) {
             WRITE_INFO_EVENT(
-                TraceLoggingValue(message, "msg"),
-                TraceLoggingValue(extensionVersion, "ExtVer"),
-                TraceLoggingValue(subscriptionId, "SubscriptionId"),
-                TraceLoggingValue(appName, "AppName"),
-                TraceLoggingValue(resourceType, "ResourceType"),
-                TraceLoggingValue(logger, "Logger"),
-                TraceLoggingValue(ikey, "InstrumentationKey"),
-                TraceLoggingValue(operation, "Operation"));
-            DBG("wrote INFO");
-        } else {
+                TraceLoggingValue(message, ETW_FIELD_MESSAGE),
+                TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
+                TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
+                TraceLoggingValue(appName, ETW_FIELD_APPNAME),
+                TraceLoggingValue(resourceType, ETW_FIELD_RESOURCE_TYPE),
+                TraceLoggingValue(logger, ETW_FIELD_LOGGER),
+                TraceLoggingValue(ikey, ETW_FIELD_IKEY),
+                TraceLoggingValue(operation, ETW_FIELD_OPERATION));
+            DBG("\nwrote INFO");
+        } else { // all other event types could have Stacktrace data
             stackTrace = stringGetter2cstr(env, jobj_event, "getStacktraceString", stackTrace, JSTRID_STACK_TRACE);
             switch(event_id) {
                 case EVENTID_WARN:
                     WRITE_WARN_EVENT(
-                        TraceLoggingValue(message, "msg"),
-                        TraceLoggingValue(extensionVersion, "ExtVer"),
-                        TraceLoggingValue(subscriptionId, "SubscriptionId"),
-                        TraceLoggingValue(appName, "AppName"),
-                        TraceLoggingValue(resourceType, "ResourceType"),
-                        TraceLoggingValue(logger, "Logger"),
-                        TraceLoggingValue(ikey, "InstrumentationKey"),
-                        TraceLoggingValue(operation, "Operation"),
-                        TraceLoggingValue(stackTrace, "Exception"));
-                    DBG("wrote WARN");
+                        TraceLoggingValue(message, ETW_FIELD_MESSAGE),
+                        TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
+                        TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
+                        TraceLoggingValue(appName, ETW_FIELD_APPNAME),
+                        TraceLoggingValue(resourceType, ETW_FIELD_RESOURCE_TYPE),
+                        TraceLoggingValue(logger, ETW_FIELD_LOGGER),
+                        TraceLoggingValue(ikey, ETW_FIELD_IKEY),
+                        TraceLoggingValue(operation, ETW_FIELD_OPERATION),
+                        TraceLoggingValue(stackTrace, ETW_FIELD_STACKTRACE));
+                    DBG("\nwrote WARN");
                     break;
                 case EVENTID_ERROR:
                     WRITE_ERROR_EVENT(
-                        TraceLoggingValue(message, "msg"),
-                        TraceLoggingValue(extensionVersion, "ExtVer"),
-                        TraceLoggingValue(subscriptionId, "SubscriptionId"),
-                        TraceLoggingValue(appName, "AppName"),
-                        TraceLoggingValue(resourceType, "ResourceType"),
-                        TraceLoggingValue(logger, "Logger"),
-                        TraceLoggingValue(ikey, "InstrumentationKey"),
-                        TraceLoggingValue(operation, "Operation"),
-                        TraceLoggingValue(stackTrace, "Exception"));
-                    DBG("wrote ERROR");
+                        TraceLoggingValue(message, ETW_FIELD_MESSAGE),
+                        TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
+                        TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
+                        TraceLoggingValue(appName, ETW_FIELD_APPNAME),
+                        TraceLoggingValue(resourceType, ETW_FIELD_RESOURCE_TYPE),
+                        TraceLoggingValue(logger, ETW_FIELD_LOGGER),
+                        TraceLoggingValue(ikey, ETW_FIELD_IKEY),
+                        TraceLoggingValue(operation, ETW_FIELD_OPERATION),
+                        TraceLoggingValue(stackTrace, ETW_FIELD_STACKTRACE));
+                    DBG("\nwrote ERROR");
                     break;
                 case EVENTID_CRITICAL:
                     WRITE_CRITICAL_EVENT(
-                        TraceLoggingValue(message, "msg"),
-                        TraceLoggingValue(extensionVersion, "ExtVer"),
-                        TraceLoggingValue(subscriptionId, "SubscriptionId"),
-                        TraceLoggingValue(appName, "AppName"),
-                        TraceLoggingValue(resourceType, "ResourceType"),
-                        TraceLoggingValue(logger, "Logger"),
-                        TraceLoggingValue(ikey, "InstrumentationKey"),
-                        TraceLoggingValue(operation, "Operation"),
-                        TraceLoggingValue(stackTrace, "Exception"));
-                    DBG("wrote CRITICAL");
+                        TraceLoggingValue(message, ETW_FIELD_MESSAGE),
+                        TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
+                        TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
+                        TraceLoggingValue(appName, ETW_FIELD_APPNAME),
+                        TraceLoggingValue(resourceType, ETW_FIELD_RESOURCE_TYPE),
+                        TraceLoggingValue(logger, ETW_FIELD_LOGGER),
+                        TraceLoggingValue(ikey, ETW_FIELD_IKEY),
+                        TraceLoggingValue(operation, ETW_FIELD_OPERATION),
+                        TraceLoggingValue(stackTrace, ETW_FIELD_STACKTRACE));
+                    DBG("\nwrote CRITICAL");
                     break;
             }
         }
         TraceLoggingUnregister(provider_EtwHandle);
-        DBG(" event:\n\tmsg=%s,\n\tExtVer=%s,\n\tSubscriptionId=%s,\n\tAppName=%s,\n\tResourceType=%s,\n\tLogger=%s\n\tIkey=%s\n\tOperation=%s\n\tException=%s\n", message, extensionVersion, subscriptionId, appName, resourceType, logger, ikey, operation, stackTrace);
+        DBG(" event:\n\tmsg=%s,\n\tExtVer=%s,\n\tSubscriptionId=%s,\n\tAppName=%s,\n\tResourceType=%s,\n\tLogger=%s\n\tIkey=%s\n\tOperation=%s\n", message, extensionVersion, subscriptionId, appName, resourceType, logger, ikey, operation);
+#ifndef NDEBUG
+        if (stackTrace != NULL) {
+            DBG("\tException=%s\n\n", stackTrace);
+        } else {
+            DBG("\n");
+        }
+#endif
     }
     catch (aijnierr_t jnierr)
     {
@@ -204,6 +221,7 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
     delete[] logger;
     delete[] ikey;
     delete[] stackTrace;
+    delete[] operation;
 }
 
 char * stringGetter2cstr(JNIEnv * env, jobject &jobj_target, const char * method_name, char * rval, aijnierr_t field_id) throw(aijnierr_t) {
@@ -212,7 +230,7 @@ char * stringGetter2cstr(JNIEnv * env, jobject &jobj_target, const char * method
     jmethodID jmid = env->GetMethodID(cls_target, method_name, "()Ljava/lang/String;");
     if (jmid == NULL) {
         DBG("No method named '%s'\n", method_name);
-        throw AIJNIERR_METHOD_NAME;
+        throw (AIJNIERR_METHOD_NAME | field_id);
     }
     DBG("Calling %s %p\n", method_name, &jmid);
     jstring jstr_value = (jstring)env->CallObjectMethod(jobj_target, jmid);
@@ -220,9 +238,8 @@ char * stringGetter2cstr(JNIEnv * env, jobject &jobj_target, const char * method
         throw (AIJNIERR_EXCEPTION_RAISED | field_id);
     }
     if (!jstr_value) {
-        rval = new char[1];
-        rval[0] = '\0';
-        return rval;
+        DBG("null jstr_value for %s\n", jstrid2name(field_id).c_str());
+        throw (AIJNIERR_NULL_GETSTR | field_id);
     }
     return jstring2cstr(env, jstr_value, rval, field_id);
 }
@@ -265,19 +282,23 @@ void handleJstrException(JNIEnv * env, aijnierr_t jnierr) noexcept {
 std::string jstrid2name(int jnierr) noexcept {
     switch (jnierr & 0xFF00) {
         case JSTRID_APP_NAME:
-            return "appName";
+            return ETW_FIELD_APPNAME;
         case JSTRID_EXTENSION_VERSION:
-            return "extensionVersion";
+            return ETW_FIELD_EXTENSION_VERSION;
         case JSTRID_LOGGER:
-            return "logger";
+            return ETW_FIELD_LOGGER;
         case JSTRID_MESSAGE:
-            return "message";
+            return ETW_FIELD_MESSAGE;
         case JSTRID_RESOURCE_TYPE:
-            return "resourceType";
+            return ETW_FIELD_RESOURCE_TYPE;
         case JSTRID_STACK_TRACE:
-            return "stackTrace";
+            return ETW_FIELD_STACKTRACE;
         case JSTRID_SUBSCRIPTION_ID:
-            return "subscriptionId";
+            return ETW_FIELD_SUBSCRIPTION_ID;
+        case JSTRID_IKEY:
+            return ETW_FIELD_IKEY;
+        case JSTRID_OPERATION:
+            return ETW_FIELD_OPERATION;
         default:
             return "unknown";
     }
@@ -332,9 +353,9 @@ jthrowable newJniException(JNIEnv * env, const char * message, jthrowable cause)
 }
 
 void javaThrowJniException(JNIEnv * env, std::string message) noexcept {
-    jthrowable cause = env->ExceptionOccurred();
+    jthrowable cause = env->ExceptionOccurred(); // save the cause
     jthrowable t;
-    env->ExceptionClear();
+    env->ExceptionClear(); // for future exception check
     if (cause) {
         t = newJniException(env, message.c_str(), cause);
     } else {
@@ -347,9 +368,7 @@ void javaThrowJniException(JNIEnv * env, std::string message) noexcept {
         if (!cause) {
             javaThrowUnknownError(env, ": Error creating exception");
         } else {
-            if (!env->ExceptionCheck()) {
-                env->Throw(cause);
-            }
+            env->Throw(cause);
         }
 
     }
@@ -366,12 +385,13 @@ void javaThrowUnknownError(JNIEnv * env, std::string message) noexcept {
 }
 
 char * jstring2cstr(JNIEnv * env, jstring &jstr_input, char * cstr_output, aijnierr_t field_id) throw(aijnierr_t) {
-    jboolean copy = JNI_FALSE;
-    int len = 1 + (env->GetStringUTFLength(jstr_input));
-    DBG("LEN=%d\n", len);
-    const char * cc_str = env->GetStringUTFChars(jstr_input, &copy);
-    DBG("get jstr chars (%s): js=%p, cc=%p\n", jstrid2name(field_id).c_str(), &cc_str, &jstr_input);
+    const char * cc_str;
     try {
+        jboolean copy = JNI_FALSE;
+        int len = 1 + (env->GetStringUTFLength(jstr_input));
+        DBG("LEN=%d\n", len);
+        cc_str = env->GetStringUTFChars(jstr_input, &copy);
+        DBG("get jstr chars (%s): js=%p, cc=%p\n", jstrid2name(field_id).c_str(), &cc_str, &jstr_input);
         if (cc_str == NULL) {
             DBG("GetStringUTFChars(jstr_input) failed with exception\n");
             throw (AIJNIERR_NULL_GETSTR | field_id);

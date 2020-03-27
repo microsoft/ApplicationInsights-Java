@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.internal.etw.events.model;
 import org.apache.commons.lang3.StringUtils;
 
 public abstract class IpaEtwEventBase implements IpaEtwEvent {
-    private String logger;
     private String extensionVersion;
     private String appName;
     private String resourceType;
@@ -11,6 +10,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     private String subscriptionId;
 
     // not copied from prototype
+    private String logger;
     private String messageFormat;
     private Object[] messageArgs = new Object[0];
     private String operation;
@@ -19,7 +19,6 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     }
 
     public IpaEtwEventBase(IpaEtwEventBase event) {
-        logger = event.logger;
         extensionVersion = event.extensionVersion;
         appName = event.appName;
         resourceType = event.resourceType;
@@ -119,7 +118,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
      * @return the operation
      */
     public String getOperation() {
-        return operation;
+        return StringUtils.defaultString(operation);
     }
 
     /**

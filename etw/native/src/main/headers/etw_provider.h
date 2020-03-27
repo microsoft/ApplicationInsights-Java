@@ -28,10 +28,15 @@
 
 TRACELOGGING_DECLARE_PROVIDER(provider_EtwHandle);
 
-#define WRITE_INFO_EVENT(...) TraceLoggingWrite(provider_EtwHandle, "JavaIpaInfo", TraceLoggingLevel(WINEVENT_LEVEL_INFO), __VA_ARGS__)
-#define WRITE_WARN_EVENT(...) TraceLoggingWrite(provider_EtwHandle, "JavaIpaWarn", TraceLoggingLevel(WINEVENT_LEVEL_WARNING), __VA_ARGS__)
-#define WRITE_ERROR_EVENT(...) TraceLoggingWrite(provider_EtwHandle, "JavaIpaError", TraceLoggingLevel(WINEVENT_LEVEL_ERROR), __VA_ARGS__)
-#define WRITE_CRITICAL_EVENT(...) TraceLoggingWrite(provider_EtwHandle, "JavaIpaCritical", TraceLoggingLevel(WINEVENT_LEVEL_CRITICAL), __VA_ARGS__)
+#define EVENT_NAME_INFO     "JavaIpaInfo"
+#define EVENT_NAME_WARN     "JavaIpaWarn"
+#define EVENT_NAME_ERROR    "JavaIpaError"
+#define EVENT_NAME_CRITICAL "JavaIpaCritical"
+
+#define WRITE_INFO_EVENT(...) TraceLoggingWrite(provider_EtwHandle, EVENT_NAME_INFO, TraceLoggingLevel(WINEVENT_LEVEL_INFO), __VA_ARGS__)
+#define WRITE_WARN_EVENT(...) TraceLoggingWrite(provider_EtwHandle, EVENT_NAME_WARN, TraceLoggingLevel(WINEVENT_LEVEL_WARNING), __VA_ARGS__)
+#define WRITE_ERROR_EVENT(...) TraceLoggingWrite(provider_EtwHandle, EVENT_NAME_ERROR, TraceLoggingLevel(WINEVENT_LEVEL_ERROR), __VA_ARGS__)
+#define WRITE_CRITICAL_EVENT(...) TraceLoggingWrite(provider_EtwHandle, EVENT_NAME_CRITICAL, TraceLoggingLevel(WINEVENT_LEVEL_CRITICAL), __VA_ARGS__)
 
 typedef int aijnierr_t;
 
@@ -78,6 +83,7 @@ std::string jstrid2name(int jnierr) noexcept;
 int getEventId(JNIEnv * env, jobject &jobj_event) throw(aijnierr_t);
 
 jthrowable newJniException(JNIEnv * env, const char * message) noexcept;
+
 jthrowable newJniException(JNIEnv * env, const char * message, jthrowable cause) noexcept;
 
 void javaThrowUnknownError(JNIEnv * env, std::string message) noexcept;
