@@ -385,7 +385,7 @@ void javaThrowUnknownError(JNIEnv * env, std::string message) noexcept {
 }
 
 char * jstring2cstr(JNIEnv * env, jstring &jstr_input, char * cstr_output, aijnierr_t field_id) throw(aijnierr_t) {
-    const char * cc_str;
+    const char * cc_str = NULL;
     try {
         jboolean copy = JNI_FALSE;
         int len = 1 + (env->GetStringUTFLength(jstr_input));
