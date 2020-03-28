@@ -24,6 +24,11 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
         resourceType = event.resourceType;
         instrumentationKey = event.instrumentationKey;
         subscriptionId = event.subscriptionId;
+
+        logger = event.logger;
+        messageFormat = event.messageFormat;
+        messageArgs = event.messageArgs;
+        operation = event.operation;
     }
 
     public String getLogger() {

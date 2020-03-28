@@ -11,6 +11,9 @@ public abstract class IpaEtwEventErrorBase extends IpaEtwEventBase {
     }
     public IpaEtwEventErrorBase(IpaEtwEventBase evt) {
         super(evt);
+        if (evt instanceof IpaEtwEventErrorBase) {
+            setStacktrace(((IpaEtwEventErrorBase)evt).stacktrace);
+        }
     }
 
     /**

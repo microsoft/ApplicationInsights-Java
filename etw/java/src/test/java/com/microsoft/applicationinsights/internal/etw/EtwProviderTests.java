@@ -38,14 +38,25 @@ public class EtwProviderTests {
         }
     }
 
-    private static final int ITERATIONS = 10_000L;
     private static IpaEtwEventBase PROTOTYPE = new IpaInfo();
+    private static final long EVENT_STATS_TIMER_PERIOD_MILLISECONDS;
     static {
         PROTOTYPE.setAppName("EtwProvider-tests");
         PROTOTYPE.setExtensionVersion("fake-version");
         PROTOTYPE.setInstrumentationKey(UUID.randomUUID().toString());
         PROTOTYPE.setSubscriptionId(UUID.randomUUID().toString());
         PROTOTYPE.setResourceType("local-tests");
+
+        String speriod = System.getProperty("ai.tests.etw.stats.period");
+        long period = 2000; // default 2 seconds.
+        if (speriod != null) {
+            try {
+                period = Long.parseLong(speriod);
+            } catch(Exception e) {
+                // ignore
+            }
+        }
+        EVENT_STATS_TIMER_PERIOD_MILLISECONDS = period;
     }
 
     private IpaInfo createInfo(String logger, String operation, String messageFormat, Object...messageArgs) {
@@ -95,42 +106,78 @@ public class EtwProviderTests {
         final File dllPath = new File(dllTempFolder, filename);
         System.out.println("Checking for DLL: "+dllPath.getAbsolutePath());
         assertTrue("Dll does not exist: "+dllPath.getAbsolutePath(), dllPath.exists());
-        EtwProvider ep = new EtwProvider();
-        // ep.info("test", "testing %d!!!", 123);
-        // ep.error("test-error", new Exception("exception message"), "The error: %s", "error test");
-        // ep.error("test-error-no-exception", "The error: %s, test %d!", "no exception", 123);
-        // ep.critical("test-critical", new Exception("critical message"), "this is critical: %d", -12354);
-        // ep.critical("test-critical-noex", "this is critical raised w/o exception: %x", 6738921);
 
         IpaInfo einfo = createInfo("test.info.logger", "testDllExtracted", "test message %s", "hello!");
         IpaError eerror = createError("test.error.logger", "testDllExtracted", new Exception("test error exception"),"test error message '%s'", "hello again!");
         IpaWarn ewarn = createWarn("test.warn.logger", null, null, "simple warning: %s - %x", "NO EXCEPTION", 1234);
         IpaCritical ecritical = createCritical("test.critical.logger", "testDllExtracted.critical", new Error("test critical error"), "something very bad happened...%s %s", "but it's ok,", "this is only a test!!");
+
+        EtwProvider ep = new EtwProvider();
         ep.writeEvent(einfo);
         ep.writeEvent(eerror);
         ep.writeEvent(ewarn);
         ep.writeEvent(ecritical);
     }
 
+    private void longTestCheck() {
+        Assume.assumeFalse("Long tests disabled", "true".equalsIgnoreCase(System.getProperty("ai.tests.etw.long.disabled")));
+        Assume.assumeTrue("Not using release build. Skipping testEventsOnLoop", "release".equalsIgnoreCase(System.getProperty("ai.etw.native.build")));
+    }
+
     @Test
-    public void testEventsOnLoop() throws Exception {
+    public void testEventsOnLoop_10k() throws Exception {
+        longTestCheck();
+        runLoopTest(10_000);
+    }
+
+    @Test
+    public void testEventsOnLoop_100k() throws Exception {
+        longTestCheck();
+        runLoopTest(100_000);
+    }
+
+    private static class EventCounts {
+        int info = 0;
+        int warn = 0;
+        int error = 0;
+        int critical = 0;
+        int sum() {
+            return info + warn + error + critical;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("{ info: %d, warn: %d, error: %d, critical: %d }");
+        }
+
+        void plus(EventCounts operand) {
+            info += operand.info;
+            warn += operand.warn;
+            error += operand.error;
+            critical += operand.critical;
+        }
+    }
+
+    private void runLoopTest(int iterations) throws Exception {
         int warnChance = 10;
         int errorChance = 5;
         int criticalChance = 25;
+        long methodStart = System.currentTimeMillis();
         EtwProvider ep = new EtwProvider();
-        for (int i = 0; i < ITERATIONS; i++) {
+        EventCounts totalEvents = new EventCounts();
+        long printTimer = 0;
+        EventCounts accumulator = new EventCounts();
+        for (int i = 0; i < iterations; i++) {
             long start = System.currentTimeMillis();
             ep.writeEvent(createInfo("test.info", "testEventsOnLoop", "i=%d", i));
-            int ecount = 1;
-            System.out.println("Wrote info " + i);
+            accumulator.info++;
             if (RandomUtils.nextInt(0, warnChance) == 0) {
                 Throwable exception = null;
                 if (RandomUtils.nextBoolean()) {
                     exception = new Exception(String.format("Exeption %d", i));
                 }
                 ep.writeEvent(createWarn("test.warn", "testEventsOnLoop", exception, "i=%d", i));
-                ecount++;
-                System.out.println("Wrote warn " + i + " " + (exception == null ? "" : " with exception"));
+                accumulator.warn++;
             }
             if (RandomUtils.nextInt(0, errorChance) == 0) {
                 Throwable exception = null;
@@ -138,8 +185,7 @@ public class EtwProviderTests {
                     exception = new Exception(String.format("Exeption %d", i));
                 }
                 ep.writeEvent(createError("test.error", "testEventsOnLoop", exception, "i=%d", i));
-                ecount++;
-                System.out.println("Wrote error " + i + " " + (exception == null ? "" : " with exception"));
+                accumulator.error++;
             }
             if (RandomUtils.nextInt(0, criticalChance) == 0) {
                 Throwable exception = null;
@@ -147,12 +193,18 @@ public class EtwProviderTests {
                     exception = new Exception(String.format("Exeption %d", i));
                 }
                 ep.writeEvent(createCritical("test.critical", "testEventsOnLoop", exception, "i=%d", i));
-                ecount++;
-                System.out.println("Wrote critical " + i + " " + (exception == null ? "" : " with exception"));
+                accumulator.critical++;
             }
-            System.out.println("Wrote " + ecount + " events in " + (System.currentTimeMillis() - start) + "ms");
+            long elapsedTime = (System.currentTimeMillis() - start);
+            printTimer += elapsedTime;
+            totalEvents.plus(accumulator);
+            if (printTimer >= EVENT_STATS_TIMER_PERIOD_MILLISECONDS) {
+                System.out.println("Wrote " + accumulator.sum() + " events "+accumulator.toString()+" in " + printTimer + "ms "+String.format("(avg=%.3fms)", ((double)printTimer/accumulator.sum())));
+                printTimer = 0;
+                accumulator = new EventCounts();
+            }
         }
+        long totalElapsedTime = System.currentTimeMillis()-methodStart;
+        System.out.println("FINAL STATS: wrote "+totalEvents.sum()+" events "+totalEvents.toString()+" in "+totalElapsedTime+"ms "+String.format("(avg=%.3fms)", ((double)totalElapsedTime/totalEvents.sum())));
     }
-
-
 }
