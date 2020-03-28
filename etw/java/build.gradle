@@ -30,6 +30,10 @@ sourceSets {
     }
 }
 
+archivesBaseName = "applicationinsights-java-etw-provider"
+
+println ":etw:java:ai.etw.native.build=${project.properties['ai.etw.native.build']}"
+
 dependencies {
     implementation 'org.apache.commons:commons-lang3:3.7'
     implementation 'commons-io:commons-io:2.6'
@@ -39,16 +43,14 @@ dependencies {
     provided project(path: ':core')
     provided project(path: ':agent-codeless')
 
-    jni32 project(path: ':etw:native', configuration: "${isRelease ? 'release' : 'debug'}X86RuntimeElements")
-    jni64 project(path: ':etw:native', configuration: "${isRelease ? 'release' : 'debug'}X86-64RuntimeElements")
+    jni32 project(path: ':etw:native', configuration: "${project.properties['ai.etw.native.build']}X86RuntimeElements")
+    jni64 project(path: ':etw:native', configuration: "${project.properties['ai.etw.native.build']}X86-64RuntimeElements")
 
     testImplementation 'org.hamcrest:hamcrest-core:1.3'
     testImplementation 'org.hamcrest:hamcrest-library:1.3'
     testImplementation 'org.mockito:mockito-core:1.10.19'
     testImplementation 'junit:junit:4.12'
 }
-
-archivesBaseName = "applicationinsights-java-etw-provider"
 
 tasks.register('generateNativeHeaders', Exec) {
     // could be made generic if more native classes existed
@@ -71,8 +73,9 @@ tasks.register('generateNativeHeaders', Exec) {
 }
 
 tasks.register('processNativeResources', Copy) {
-    dependsOn project(':etw:native').tasks.named("assemble${isRelease ? 'Release' : 'Debug'}X86").get()
-    dependsOn project(':etw:native').tasks.named("assemble${isRelease ? 'Release' : 'Debug'}X86-64").get()
+    def useReleaseBuild = project.getProperty('ai.etw.native.build').equalsIgnoreCase('release')
+    dependsOn project(':etw:native').tasks.named("assemble${useReleaseBuild ? 'Release' : 'Debug'}X86").get()
+    dependsOn project(':etw:native').tasks.named("assemble${useReleaseBuild ? 'Release' : 'Debug'}X86-64").get()
 
     from configurations.jni32.files
     from configurations.jni64.files
@@ -85,3 +88,13 @@ tasks.named('processResources').configure {
     mustRunAfter 'generateNativeHeaders'
 }
 
+tasks.named('test').configure {
+    def testprops =
+        System.properties.findAll {
+            it.key.startsWith('ai.tests.')
+        } +
+        project.properties.findAll {
+            it.key.startsWith('ai.etw.')
+        }
+    systemProperties testprops
+}

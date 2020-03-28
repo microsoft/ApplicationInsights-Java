@@ -6,3 +6,11 @@ clean {
     dependsOn ':etw:java:clean'
     dependsOn ':etw:native:clean'
 }
+
+subprojects {
+    // if prop does not exist, use isRelease value, otherwise override isRelease value.
+    if (!project.hasProperty('ai.etw.native.build')) {
+        ext['ai.etw.native.build'] = isRelease ? 'release' : 'debug'
+        println "setting ai.etw.native.build for ${project.name}"
+    }
+}
