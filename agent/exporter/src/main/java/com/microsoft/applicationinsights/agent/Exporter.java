@@ -131,10 +131,10 @@ public class Exporter implements SpanExporter {
         String httpMethod = getString(span, "http.method");
         String name = span.getName();
         if (httpMethod != null && name.startsWith("/")) {
-            telemetry.setName(httpMethod + " " + name);
-        } else {
-            telemetry.setName(span.getName());
+            name = httpMethod + " " + name;
         }
+        telemetry.setName(name);
+        telemetry.getContext().getOperation().setName(name);
 
         if (span.getName().equals("EventHubs.process")) {
             // TODO eventhubs should use CONSUMER instead of SERVER
