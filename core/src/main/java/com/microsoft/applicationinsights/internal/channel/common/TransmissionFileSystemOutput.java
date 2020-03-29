@@ -226,15 +226,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
         Collections.sort(asList, new Comparator<File>() {
             @Override
             public int compare(File file1, File file2) {
-                long file1LastModified = file1.lastModified();
-                long file2LastModified = file2.lastModified();
-                if (file1LastModified < file2LastModified) {
-                    return 1;
-                } else if (file1LastModified > file2LastModified) {
-                    return -1;
-                }
-
-                return 0;
+            	return file2.getName().compareTo(file1.getName());
             }
         });
 
@@ -309,7 +301,8 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     private Optional<File> createTemporaryFile() {
         File file = null;
         try {
-            file = File.createTempFile(TRANSMISSION_FILE_PREFIX, null, folder);
+        	String prefix = TRANSMISSION_FILE_PREFIX + "-" + System.currentTimeMillis() + "-";
+            file = File.createTempFile(prefix, null, folder);
         } catch (IOException e) {
             InternalLogger.INSTANCE.error("Failed to create temporary file, exception: %s", e.toString());
         }
