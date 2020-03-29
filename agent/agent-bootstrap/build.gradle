@@ -24,7 +24,7 @@ task generateVersionProperties(type: PropsFileGen) {
 processResources.dependsOn generateVersionProperties
 
 dependencies {
-    compile (group: 'io.opentelemetry.auto', name: 'auto-bootstrap', version: '0.1.2-SNAPSHOT') {
+    compile (group: 'io.opentelemetry.auto', name: 'auto-bootstrap', version: '0.2.1-SNAPSHOT') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
     compile 'ch.qos.logback:logback-classic:1.2.3'

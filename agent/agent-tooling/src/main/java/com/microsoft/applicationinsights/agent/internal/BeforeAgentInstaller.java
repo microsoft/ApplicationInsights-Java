@@ -55,6 +55,7 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import io.opentelemetry.auto.bootstrap.instrumentation.aiappid.AiAppId;
 import io.opentelemetry.auto.config.Config;
 import io.opentelemetry.auto.config.ConfigOverride;
 import org.apache.http.HttpHost;
@@ -141,6 +142,7 @@ public class BeforeAgentInstaller {
         }
         TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
+        AiAppId.setSupplier(new AppIdSupplier());
     }
 
     @Nullable

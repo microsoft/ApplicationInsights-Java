@@ -37,7 +37,7 @@ dependencies {
 
     compile 'com.google.guava:guava:27.1-android'
 
-    compile 'io.opentelemetry.auto:auto-tooling:0.1.2-SNAPSHOT'
+    compile 'io.opentelemetry.auto:auto-tooling:0.2.1-SNAPSHOT'
     compile 'org.checkerframework:checker-qual-android:3.1.0'
 
     compile(project(':core')) {

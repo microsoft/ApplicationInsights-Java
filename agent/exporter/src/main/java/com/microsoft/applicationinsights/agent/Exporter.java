@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +41,7 @@ import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import io.opentelemetry.auto.bootstrap.instrumentation.aiappid.AiAppId;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -67,7 +69,7 @@ public class Exporter implements SpanExporter {
     }
 
     @Override
-    public ResultCode export(List<SpanData> spans) {
+    public ResultCode export(Collection<SpanData> spans) {
         try {
             for (SpanData span : spans) {
                 logger.debug("exporting span: {}", span);
@@ -115,6 +117,11 @@ public class Exporter implements SpanExporter {
     private void exportRequest(SpanData span) {
 
         RequestTelemetry telemetry = new RequestTelemetry();
+
+        String sourceAppId = getString(span, AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME);
+        if (!AiAppId.getAppId().equals(sourceAppId)) {
+            telemetry.setSource(sourceAppId);
+        }
 
         addLinks(telemetry.getProperties(), span.getLinks());
 
@@ -314,7 +321,12 @@ public class Exporter implements SpanExporter {
             try {
                 URI uriObject = new URI(url);
                 String target = createTarget(uriObject);
-                telemetry.setTarget(target);
+                String targetAppId = getString(span, AiAppId.SPAN_TARGET_ATTRIBUTE_NAME);
+                if (targetAppId == null || AiAppId.getAppId().equals(targetAppId)) {
+                    telemetry.setTarget(target);
+                } else {
+                    telemetry.setTarget(target + " | " + targetAppId);
+                }
                 // TODO is this right, overwriting name to include the full path?
                 String path = uriObject.getPath();
                 if (Strings.isNullOrEmpty(path)) {
