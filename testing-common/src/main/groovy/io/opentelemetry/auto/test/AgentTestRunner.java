@@ -32,6 +32,7 @@ import io.opentelemetry.auto.tooling.AgentInstaller;
 import io.opentelemetry.auto.tooling.Instrumenter;
 import io.opentelemetry.auto.tooling.matcher.AdditionalLibraryIgnoresMatcher;
 import io.opentelemetry.auto.util.test.AgentSpecification;
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Tracer;
@@ -113,6 +114,14 @@ public abstract class AgentTestRunner extends AgentSpecification {
     TEST_WRITER = new InMemoryExporter();
     OpenTelemetrySdk.getTracerProvider().addSpanProcessor(TEST_WRITER);
     TEST_TRACER = OpenTelemetry.getTracerProvider().get("io.opentelemetry.auto");
+
+    AiAppId.setSupplier(
+        new AiAppId.Supplier() {
+          @Override
+          public String get() {
+            return "4321";
+          }
+        });
   }
 
   protected static Tracer getTestTracer() {

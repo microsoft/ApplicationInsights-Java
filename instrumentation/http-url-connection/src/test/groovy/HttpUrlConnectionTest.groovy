@@ -56,6 +56,11 @@ class HttpUrlConnectionTest extends HttpClientTest {
     false
   }
 
+  @Override
+  boolean capturesAiTargetAppId() {
+    false
+  }
+
   @Ignore
   def "trace request with propagation (useCaches: #useCaches)"() {
     setup:
@@ -74,7 +79,8 @@ class HttpUrlConnectionTest extends HttpClientTest {
       connection = url.openConnection()
       connection.useCaches = useCaches
       assert activeSpan() != null
-      assert connection.getResponseCode() == STATUS // call before input stream to test alternate behavior
+      assert connection.getResponseCode() == STATUS
+      // call before input stream to test alternate behavior
       connection.inputStream
       stream = connection.inputStream // one more to ensure state is working
       lines = stream.readLines()
@@ -148,7 +154,8 @@ class HttpUrlConnectionTest extends HttpClientTest {
       connection.useCaches = useCaches
       connection.addRequestProperty("is-test-server", "false")
       assert activeSpan() != null
-      assert connection.getResponseCode() == STATUS // call before input stream to test alternate behavior
+      assert connection.getResponseCode() == STATUS
+      // call before input stream to test alternate behavior
       stream = connection.inputStream
       lines = stream.readLines()
       stream.close()

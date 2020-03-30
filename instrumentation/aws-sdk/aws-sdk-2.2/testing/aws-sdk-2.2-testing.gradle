@@ -16,4 +16,7 @@ dependencies {
   implementation deps.groovy
   implementation deps.opentelemetryApi
   implementation deps.spock
+
+  implementation project(':auto-bootstrap')
+  implementation project(':library-api')
 }

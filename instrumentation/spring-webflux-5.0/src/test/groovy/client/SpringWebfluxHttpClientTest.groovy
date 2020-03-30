@@ -19,6 +19,7 @@ package client
 import io.opentelemetry.auto.test.asserts.TraceAssert
 import io.opentelemetry.auto.test.base.HttpClientTest
 import io.opentelemetry.instrumentation.api.MoreAttributes
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.ClientResponse
@@ -70,6 +71,9 @@ class SpringWebfluxHttpClientTest extends HttpClientTest {
           if (tagQueryString) {
             "$MoreAttributes.HTTP_QUERY" uri.query
             "$MoreAttributes.HTTP_FRAGMENT" { it == null || it == uri.fragment } // Optional
+          }
+          if (!exception && uri.host != "www.google.com") {
+            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
           }
         }
       }

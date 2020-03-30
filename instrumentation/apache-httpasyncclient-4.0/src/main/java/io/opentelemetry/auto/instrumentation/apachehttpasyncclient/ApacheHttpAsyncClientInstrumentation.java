@@ -48,9 +48,11 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.nio.ContentDecoder;
 import org.apache.http.nio.ContentEncoder;
 import org.apache.http.nio.IOControl;
 import org.apache.http.nio.protocol.HttpAsyncRequestProducer;
+import org.apache.http.nio.protocol.HttpAsyncResponseConsumer;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
 
@@ -100,6 +102,7 @@ public class ApacheHttpAsyncClientInstrumentation extends Instrumenter.Default {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static Span methodEnter(
         @Advice.Argument(value = 0, readOnly = false) HttpAsyncRequestProducer requestProducer,
+        @Advice.Argument(value = 1, readOnly = false) HttpAsyncResponseConsumer responseConsumer,
         @Advice.Argument(2) final HttpContext context,
         @Advice.Argument(value = 3, readOnly = false) FutureCallback<?> futureCallback) {
 
@@ -108,6 +111,7 @@ public class ApacheHttpAsyncClientInstrumentation extends Instrumenter.Default {
       DECORATE.afterStart(clientSpan);
 
       requestProducer = new DelegatingRequestProducer(clientSpan, requestProducer);
+      responseConsumer = new DelegatingResponseConsumer(clientSpan, responseConsumer);
       futureCallback =
           new TraceContinuedFutureCallback(parentSpan, clientSpan, context, futureCallback);
 
@@ -182,6 +186,88 @@ public class ApacheHttpAsyncClientInstrumentation extends Instrumenter.Default {
     @Override
     public void close() throws IOException {
       delegate.close();
+    }
+  }
+
+  public static class DelegatingResponseConsumer implements HttpAsyncResponseConsumer {
+    final Span span;
+    final HttpAsyncResponseConsumer delegate;
+
+    public DelegatingResponseConsumer(final Span span, final HttpAsyncResponseConsumer delegate) {
+      this.span = span;
+      this.delegate = delegate;
+    }
+
+    @Override
+    public void responseReceived(final HttpResponse response) throws IOException, HttpException {
+      if (delegate != null) {
+        delegate.responseReceived(response);
+      }
+    }
+
+    @Override
+    public void consumeContent(final ContentDecoder decoder, final IOControl ioctrl)
+        throws IOException {
+      if (delegate != null) {
+        delegate.consumeContent(decoder, ioctrl);
+      }
+    }
+
+    @Override
+    public void responseCompleted(final HttpContext context) {
+      if (delegate != null) {
+        delegate.responseCompleted(context);
+      }
+    }
+
+    @Override
+    public void failed(final Exception ex) {
+      if (delegate != null) {
+        delegate.failed(ex);
+      }
+    }
+
+    @Override
+    public Exception getException() {
+      if (delegate != null) {
+        return delegate.getException();
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public Object getResult() {
+      if (delegate != null) {
+        return delegate.getResult();
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public boolean isDone() {
+      if (delegate != null) {
+        return delegate.isDone();
+      } else {
+        return true;
+      }
+    }
+
+    @Override
+    public void close() throws IOException {
+      if (delegate != null) {
+        delegate.close();
+      }
+    }
+
+    @Override
+    public boolean cancel() {
+      if (delegate != null) {
+        return delegate.cancel();
+      } else {
+        return true;
+      }
     }
   }
 

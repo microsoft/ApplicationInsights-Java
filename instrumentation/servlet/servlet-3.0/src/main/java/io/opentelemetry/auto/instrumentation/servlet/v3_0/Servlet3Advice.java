@@ -21,6 +21,7 @@ import static io.opentelemetry.context.ContextUtils.withScopedContext;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.trace.Span;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -52,6 +53,11 @@ public class Servlet3Advice {
       }
       // We are inside nested servlet/filter, don't create new span
       return;
+    }
+
+    final String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      ((HttpServletResponse) response).setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
     span = TRACER.startSpan(httpServletRequest, httpServletRequest, method);

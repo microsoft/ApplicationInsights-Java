@@ -22,6 +22,7 @@ import io.opentelemetry.auto.test.asserts.TraceAssert
 import io.opentelemetry.auto.test.utils.OkHttpUtils
 import io.opentelemetry.auto.test.utils.PortUtils
 import io.opentelemetry.instrumentation.api.MoreAttributes
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.trace.Span
 import io.opentelemetry.trace.attributes.SemanticAttributes
@@ -138,6 +139,10 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     true
   }
 
+  boolean sendsBackAiTargetAppId() {
+    false
+  }
+
   enum ServerEndpoint {
     SUCCESS("success", 200, "success"),
     REDIRECT("redirect", 302, "/redirected"),
@@ -231,6 +236,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     responses.each { response ->
       assert response.code() == SUCCESS.status
       assert response.body().string() == SUCCESS.body
+      assertRequestContextHeader(response)
     }
 
     and:
@@ -254,6 +260,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     expect:
     response.code() == SUCCESS.status
     response.body().string() == SUCCESS.body
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, traceId, parentId, "GET", SUCCESS, null, response)
@@ -273,6 +280,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     expect:
     response.code() == endpoint.status
     response.body().string() == endpoint.body
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, endpoint, null, response)
@@ -293,6 +301,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     response.header("location") == REDIRECT.body ||
       response.header("location") == "${address.resolve(REDIRECT.body)}"
     response.body().contentLength() < 1 || redirectHasBody()
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, REDIRECT, null, response)
@@ -310,6 +319,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     expect:
     response.code() == ERROR.status
     response.body().string() == ERROR.body
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, ERROR, null, response)
@@ -330,6 +340,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     if (testExceptionBody()) {
       assert response.body().string() == EXCEPTION.body
     }
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, EXCEPTION, EXCEPTION.body, response)
@@ -347,6 +358,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
 
     expect:
     response.code() == NOT_FOUND.status
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, NOT_FOUND, null, response)
@@ -365,6 +377,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     expect:
     response.code() == PATH_PARAM.status
     response.body().string() == PATH_PARAM.body
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, PATH_PARAM, null, response)
@@ -493,4 +506,11 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     }
   }
 
+  void assertRequestContextHeader(Response response) {
+    if (sendsBackAiTargetAppId()) {
+      assert response.header("Request-Context") == "appId=" + AiAppId.getAppId()
+    } else {
+      assert response.header("Request-Context") == null
+    }
+  }
 }
