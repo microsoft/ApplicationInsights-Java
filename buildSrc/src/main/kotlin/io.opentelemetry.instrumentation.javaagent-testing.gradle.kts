@@ -71,7 +71,8 @@ class JavaagentTestArgumentsProvider(
     // Reduce noise in assertion messages since we don't need to verify this in most tests. We check
     // in smoke tests instead.
     "-Dotel.javaagent.add-thread-details=false",
-    "-Dotel.metrics.exporter=otlp"
+    "-Dotel.metrics.exporter=otlp",
+    "-Dai.internal.testing.appId=1234"
   )
 }
 
