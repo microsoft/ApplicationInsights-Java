@@ -33,4 +33,9 @@ class JettyHttpClient9LibraryTest extends AbstractJettyClient9Test implements Li
       .build()
       .getHttpClient()
   }
+
+  @Override
+  boolean capturesAiTargetAppId() {
+    false
+  }
 }
