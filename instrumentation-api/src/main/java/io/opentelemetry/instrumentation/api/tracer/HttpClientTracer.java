@@ -9,12 +9,14 @@ import static io.opentelemetry.api.trace.SpanKind.CLIENT;
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.tracer.net.NetPeerAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.URI;
@@ -31,6 +33,9 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
   public static final String DEFAULT_SPAN_NAME = "HTTP request";
 
   protected static final String USER_AGENT = "User-Agent";
+
+  private static final AttributeKey<String> SPAN_TARGET_APP_ID_ATTRIBUTE_KEY =
+      AttributeKey.stringKey("applicationinsights.internal.target_app_id");
 
   protected final NetPeerAttributes netPeerAttributes;
 
@@ -216,6 +221,8 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
           span.setStatus(statusCode);
         }
       }
+      String responseHeader = responseHeader(response, AiAppId.RESPONSE_HEADER_NAME);
+      setTargetAppId(span, responseHeader);
     }
   }
 
@@ -225,5 +232,17 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
     }
     String method = method(request);
     return method != null ? "HTTP " + method : DEFAULT_SPAN_NAME;
+  }
+
+  private static void setTargetAppId(final Span span, final String responseHeader) {
+    if (responseHeader == null) {
+      return;
+    }
+    int index = responseHeader.indexOf('=');
+    if (index == -1) {
+      return;
+    }
+    String targetAppId = responseHeader.substring(index + 1);
+    span.setAttribute(SPAN_TARGET_APP_ID_ATTRIBUTE_KEY, targetAppId);
   }
 }
