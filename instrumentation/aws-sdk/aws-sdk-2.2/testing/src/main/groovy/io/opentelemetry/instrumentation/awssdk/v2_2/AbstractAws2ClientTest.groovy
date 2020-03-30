@@ -243,6 +243,7 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             "${SemanticAttributes.DB_SYSTEM.key}" "dynamodb"
             "${SemanticAttributes.DB_NAME.key}" "sometable"
             "${SemanticAttributes.DB_OPERATION.key}" "${operation}"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
@@ -361,6 +362,7 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             } else if (service == "Kinesis") {
               "aws.stream.name" "somestream"
             }
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
@@ -450,6 +452,7 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             } else if (service == "Kinesis") {
               "aws.stream.name" "somestream"
             }
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }

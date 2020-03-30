@@ -75,6 +75,7 @@ abstract class AbstractGoogleHttpClientTest extends HttpClientTest implements Ag
             "${SemanticAttributes.HTTP_METHOD.key}" method
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 500
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
         server.distributedRequestSpan(it, 1, span(0))
