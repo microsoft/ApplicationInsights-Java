@@ -47,6 +47,11 @@ class Struts2ActionSpanTest extends HttpServerTest<Server> implements AgentTestT
   }
 
   @Override
+  boolean sendsBackAiTargetAppId() {
+    true
+  }
+
+  @Override
   boolean hasResponseSpan(ServerEndpoint endpoint) {
     endpoint == REDIRECT || endpoint == ERROR || endpoint == EXCEPTION
   }

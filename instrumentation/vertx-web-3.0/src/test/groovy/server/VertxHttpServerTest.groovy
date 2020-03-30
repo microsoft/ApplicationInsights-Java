@@ -65,6 +65,11 @@ class VertxHttpServerTest extends HttpServerTest<Vertx> implements AgentTestTrai
   }
 
   @Override
+  boolean sendsBackAiTargetAppId() {
+    true
+  }
+
+  @Override
   String expectedServerSpanName(ServerEndpoint endpoint) {
     return endpoint == PATH_PARAM ? "/path/:id/param" : endpoint.getPath()
   }

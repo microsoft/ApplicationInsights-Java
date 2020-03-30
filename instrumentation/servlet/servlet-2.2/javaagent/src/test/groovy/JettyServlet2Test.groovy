@@ -72,6 +72,11 @@ class JettyServlet2Test extends HttpServerTest<Server> implements AgentTestTrait
   }
 
   @Override
+  boolean sendsBackAiTargetAppId() {
+    true
+  }
+
+  @Override
   boolean hasResponseSpan(ServerEndpoint endpoint) {
     endpoint == REDIRECT || endpoint == ERROR
   }

@@ -11,6 +11,7 @@ import io.opentelemetry.instrumentation.api.servlet.ServletSpanNaming;
 import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
 import io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class Servlet2HttpServerTracer extends ServletHttpServerTracer<ResponseWithStatus> {
   private static final Servlet2HttpServerTracer TRACER = new Servlet2HttpServerTracer();
@@ -19,19 +20,21 @@ public class Servlet2HttpServerTracer extends ServletHttpServerTracer<ResponseWi
     return TRACER;
   }
 
-  public Context startSpan(HttpServletRequest request) {
-    Context context = startSpan(request, getSpanName(request));
+  public Context startSpan(HttpServletRequest request, HttpServletResponse response) {
+    Context context = startSpan(request, response, getSpanName(request));
     // server span name shouldn't be update when server span was created by servlet 2.2
     // instrumentation
     ServletSpanNaming.setServletUpdatedServerSpanName(context);
     return context;
   }
 
-  public Context updateContext(Context context, HttpServletRequest request) {
+  public Context updateContext(Context context, HttpServletRequest request,
+      HttpServletResponse response) {
     Span span = ServerSpan.fromContextOrNull(context);
     if (span != null && ServletSpanNaming.shouldUpdateServerSpanName(context)) {
       span.updateName(getSpanName(request));
       ServletSpanNaming.setServletUpdatedServerSpanName(context);
+      injectAppIdIntoResponse(response);
     }
 
     return super.updateContext(context, request);

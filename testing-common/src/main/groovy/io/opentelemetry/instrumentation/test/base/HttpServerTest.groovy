@@ -95,6 +95,10 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     true
   }
 
+  boolean sendsBackAiTargetAppId() {
+    false
+  }
+
   enum ServerEndpoint {
     SUCCESS("success", 200, "success"),
     REDIRECT("redirect", 302, "/redirected"),
@@ -193,6 +197,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     responses.each { response ->
       assert response.code() == SUCCESS.status
       assert response.body().string() == SUCCESS.body
+      assertRequestContextHeader(response)
     }
 
     and:
@@ -216,6 +221,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     expect:
     response.code() == SUCCESS.status
     response.body().string() == SUCCESS.body
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, traceId, parentId, "GET", SUCCESS, null, response)
@@ -233,6 +239,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     expect:
     response.code() == endpoint.status
     response.body().string() == endpoint.body
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, endpoint, null, response)
@@ -253,6 +260,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     response.code() == REDIRECT.status
     response.header("location") == REDIRECT.body ||
       response.header("location") == "${address.resolve(REDIRECT.body)}"
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, REDIRECT, null, response)
@@ -273,6 +281,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     if (testErrorBody()) {
       response.body().string() == ERROR.body
     }
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, ERROR, null, response)
@@ -290,6 +299,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
 
     expect:
     response.code() == EXCEPTION.status
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, EXCEPTION, EXCEPTION.body, response)
@@ -307,6 +317,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
 
     expect:
     response.code() == NOT_FOUND.status
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, NOT_FOUND, null, response)
@@ -325,6 +336,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     expect:
     response.code() == PATH_PARAM.status
     response.body().string() == PATH_PARAM.body
+    assertRequestContextHeader(response)
 
     and:
     assertTheTraces(1, null, null, method, PATH_PARAM, null, response)
@@ -502,6 +514,14 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
         "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
         "${SemanticAttributes.HTTP_USER_AGENT.key}" TEST_USER_AGENT
       }
+    }
+  }
+
+  void assertRequestContextHeader(Response response) {
+    if (sendsBackAiTargetAppId()) {
+      assert response.header("Request-Context") == "appId=1234"
+    } else {
+      assert response.header("Request-Context") == null
     }
   }
 }
