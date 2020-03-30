@@ -110,10 +110,12 @@ public class HttpUrlConnectionInstrumentation implements TypeInstrumentation {
         @Advice.Local("otelHttpUrlState") HttpUrlState httpUrlState,
         @Advice.Local("otelScope") Scope scope,
         @Advice.Local("otelCallDepth") CallDepth callDepth) {
-      if (callDepth.decrementAndGet() > 0) {
+      if (callDepth.get() > 1) {
+        callDepth.decrementAndGet();
         return;
       }
       if (scope == null) {
+        callDepth.decrementAndGet();
         return;
       }
       scope.close();
@@ -135,6 +137,10 @@ public class HttpUrlConnectionInstrumentation implements TypeInstrumentation {
         tracer().end(httpUrlState.context, new HttpUrlResponse(connection, responseCode));
         httpUrlState.finished = true;
       }
+
+      // need to reset after calling end(), in case end() calls response headers which will create
+      // infinite recursion
+      callDepth.decrementAndGet();
     }
   }
 

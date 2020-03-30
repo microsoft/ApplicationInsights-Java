@@ -104,6 +104,7 @@ afterEvaluate {
     jvmArgs "-Dotel.javaagent.testing.fail-on-context-leak=${failOnContextLeak == null || failOnContextLeak}"
     // prevent sporadic gradle deadlocks, see SafeLogger for more details
     jvmArgs "-Dotel.javaagent.testing.transform-safe-logging.enabled=true"
+    jvmArgs "-Dai.internal.testing.appId=1234"
 
     dependsOn shadowJar
     dependsOn ":testing:agent-for-testing:shadowJar"

@@ -39,4 +39,9 @@ class CxfHttpServerTest extends JaxRsHttpServerTest<Server> {
   void stopServer(Server httpServer) {
     httpServer.stop()
   }
+
+  @Override
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    return true
+  }
 }
