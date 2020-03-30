@@ -77,6 +77,11 @@ class JettyHandlerTest extends HttpServerTest<Server> implements AgentTestTrait 
   }
 
   @Override
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    endpoint != EXCEPTION
+  }
+
+  @Override
   void responseSpan(TraceAssert trace, int index, Object parent, String method, ServerEndpoint endpoint) {
     switch (endpoint) {
       case REDIRECT:

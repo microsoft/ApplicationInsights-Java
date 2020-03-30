@@ -86,6 +86,11 @@ class VertxRxHttpServerTest extends HttpServerTest<Vertx> implements AgentTestTr
     return false
   }
 
+  @Override
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    true
+  }
+
   protected Class<AbstractVerticle> verticle() {
     return VertxReactiveWebServer
   }

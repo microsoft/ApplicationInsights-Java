@@ -18,6 +18,7 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.Attribute;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.netty.v4_1.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.netty.common.HttpRequestAndChannel;
 import javax.annotation.Nullable;
@@ -50,6 +51,10 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
         // Headers and body all sent together, we have the response information in the msg.
         writePromise.addListener(
             future -> end(ctx.channel(), (FullHttpResponse) msg, writePromise));
+        String appId = AiAppId.getAppId();
+        if (!appId.isEmpty()) {
+          ((HttpResponse) msg).headers().set(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
+        }
       } else {
         // Body sent after headers. We stored the response information in the context when
         // encountering HttpResponse (which was not FullHttpResponse since it's not
@@ -66,6 +71,10 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
       if (msg instanceof HttpResponse) {
         // Headers before body has been sent, store them to use when finishing the span.
         ctx.channel().attr(NettyServerSingletons.HTTP_RESPONSE).set((HttpResponse) msg);
+        String appId = AiAppId.getAppId();
+        if (!appId.isEmpty()) {
+          ((HttpResponse) msg).headers().set(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
+        }
       }
     }
 
