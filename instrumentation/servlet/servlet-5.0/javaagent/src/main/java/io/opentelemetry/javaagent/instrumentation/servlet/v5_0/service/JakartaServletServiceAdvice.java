@@ -42,6 +42,7 @@ public class JakartaServletServiceAdvice {
     }
 
     HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+    HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
     boolean servlet = servletOrFilter instanceof Servlet;
     MappingResolver mappingResolver;
@@ -81,7 +82,7 @@ public class JakartaServletServiceAdvice {
       return;
     }
 
-    context = tracer().startSpan(httpServletRequest, mappingResolver, servlet);
+    context = tracer().startSpan(httpServletRequest, httpServletResponse, mappingResolver, servlet);
     scope = context.makeCurrent();
 
     tracer().setAsyncListenerResponse(httpServletRequest, (HttpServletResponse) response);

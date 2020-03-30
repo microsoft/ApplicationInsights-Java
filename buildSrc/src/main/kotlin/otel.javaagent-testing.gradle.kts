@@ -80,6 +80,7 @@ afterEvaluate {
     jvmArgs("-Dotel.javaagent.testing.fail-on-context-leak=${failOnContextLeak != false}")
     // prevent sporadic gradle deadlocks, see SafeLogger for more details
     jvmArgs("-Dotel.javaagent.testing.transform-safe-logging.enabled=true")
+    jvmArgs("-Dai.internal.testing.appId=1234")
 
     // We do fine-grained filtering of the classpath of this codebase's sources since Gradle's
     // configurations will include transitive dependencies as well, which tests do often need.
