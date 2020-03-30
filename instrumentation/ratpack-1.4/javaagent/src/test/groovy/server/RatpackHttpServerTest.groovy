@@ -5,7 +5,6 @@
 
 package server
 
-
 import io.opentelemetry.instrumentation.ratpack.server.AbstractRatpackHttpServerTest
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import ratpack.server.RatpackServerSpec
