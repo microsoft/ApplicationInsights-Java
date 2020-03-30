@@ -20,6 +20,7 @@ import static io.opentelemetry.auto.test.server.http.TestHttpServer.httpServer
 import static io.opentelemetry.trace.Span.Kind.CLIENT
 
 import io.opentelemetry.auto.test.InstrumentationSpecification
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import java.time.Duration
 import java.util.concurrent.Future
@@ -121,6 +122,7 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             } else if (service == "Kinesis") {
               "aws.stream.name" "somestream"
             }
+            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
           }
         }
       }
@@ -210,6 +212,7 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             } else if (service == "Kinesis") {
               "aws.stream.name" "somestream"
             }
+            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
           }
         }
       }

@@ -81,6 +81,11 @@ abstract class JaxRsHttpServerTest<S> extends HttpServerTest<S> {
   }
 
   @Override
+  boolean sendsBackAiTargetAppId() {
+    return true
+  }
+
+  @Override
   void serverSpan(TraceAssert trace,
                   int index,
                   String traceID = null,

@@ -28,6 +28,7 @@ import static org.junit.Assume.assumeTrue
 import io.opentelemetry.auto.test.AgentTestRunner
 import io.opentelemetry.auto.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.api.MoreAttributes
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.instrumentation.api.config.Config
 import io.opentelemetry.instrumentation.api.tracer.HttpClientTracer
 import io.opentelemetry.sdk.trace.data.SpanData
@@ -421,6 +422,7 @@ abstract class HttpClientTest extends AgentTestRunner {
   // parent span must be cast otherwise it breaks debugging classloading (junit loads it early)
   void clientSpan(TraceAssert trace, int index, Object parentSpan, String method = "GET", boolean tagQueryString = false, URI uri = server.address.resolve("/success"), Integer status = 200, Throwable exception = null) {
     def userAgent = userAgent()
+    def capturesAiTargetAppId = capturesAiTargetAppId()
     trace.span(index) {
       if (parentSpan == null) {
         parent()
@@ -449,6 +451,9 @@ abstract class HttpClientTest extends AgentTestRunner {
         if (tagQueryString) {
           "$MoreAttributes.HTTP_QUERY" uri.query
           "$MoreAttributes.HTTP_FRAGMENT" { it == null || it == uri.fragment } // Optional
+        }
+        if (capturesAiTargetAppId && !exception && uri.host != "www.google.com") {
+          "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
         }
       }
     }
@@ -496,6 +501,10 @@ abstract class HttpClientTest extends AgentTestRunner {
   boolean testCallbackWithParent() {
     // FIXME: this hack is here because callback with parent is broken in play-ws when the stream()
     // function is used.  There is no way to stop a test from a derived class hence the flag
+    true
+  }
+
+  boolean capturesAiTargetAppId() {
     true
   }
 

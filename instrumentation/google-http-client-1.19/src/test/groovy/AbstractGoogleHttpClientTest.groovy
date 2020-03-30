@@ -21,6 +21,7 @@ import com.google.api.client.http.HttpRequest
 import com.google.api.client.http.HttpResponse
 import com.google.api.client.http.javanet.NetHttpTransport
 import io.opentelemetry.auto.test.base.HttpClientTest
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import spock.lang.Shared
 
@@ -83,6 +84,7 @@ abstract class AbstractGoogleHttpClientTest extends HttpClientTest {
             "${SemanticAttributes.HTTP_URL.key()}" "${uri}"
             "${SemanticAttributes.HTTP_METHOD.key()}" method
             "${SemanticAttributes.HTTP_STATUS_CODE.key()}" 500
+            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
           }
         }
         server.distributedRequestSpan(it, 1, span(0))

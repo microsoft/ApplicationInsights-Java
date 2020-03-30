@@ -16,6 +16,9 @@
 
 package io.opentelemetry.javaagent.tooling;
 
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.instrumentation.api.aiappid.AiHttpTraceContext;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.bootstrap.spi.TracerCustomizer;
 import io.opentelemetry.javaagent.tooling.exporter.DefaultExporterConfig;
@@ -45,6 +48,11 @@ public class TracerInstaller {
   @SuppressWarnings("unused")
   public static synchronized void installAgentTracer() {
     if (Config.get().isTraceEnabled()) {
+
+      OpenTelemetry.setPropagators(
+          DefaultContextPropagators.builder()
+              .addTextMapPropagator(new AiHttpTraceContext())
+              .build());
 
       configure();
       // Try to create an exporter from external jar file

@@ -31,6 +31,7 @@ import io.vertx.core.VertxOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.AbstractVerticle
 import io.vertx.reactivex.ext.web.Router
+
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -82,6 +83,11 @@ class VertxRxHttpServerTest extends HttpServerTest<Vertx> {
   @Override
   boolean testNotFound() {
     return false
+  }
+
+  @Override
+  boolean sendsBackAiTargetAppId() {
+    true
   }
 
   @Override
