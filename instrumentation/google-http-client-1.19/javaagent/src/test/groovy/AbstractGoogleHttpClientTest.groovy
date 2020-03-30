@@ -86,6 +86,7 @@ abstract class AbstractGoogleHttpClientTest extends HttpClientTest<HttpRequest> 
             "${SemanticAttributes.HTTP_HOST.key}" "localhost"
             "${SemanticAttributes.HTTP_SCHEME.key}" "http"
             "${SemanticAttributes.HTTP_TARGET.key}" "/error"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
         serverSpan(it, 1, span(0))
