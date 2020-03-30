@@ -36,6 +36,10 @@ abstract class ApacheHttpClientTest<T extends HttpRequest> extends HttpClientTes
     false
   }
 
+  boolean capturesAiTargetAppId() {
+    false
+  }
+
   @Override
   T buildRequest(String method, URI uri, Map<String, String> headers) {
     def request = createRequest(method, uri)
