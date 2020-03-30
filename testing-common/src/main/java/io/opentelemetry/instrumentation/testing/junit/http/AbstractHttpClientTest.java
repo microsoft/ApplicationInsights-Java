@@ -195,6 +195,9 @@ public abstract class AbstractHttpClientTest<REQUEST> {
     if (!testErrorWithCallback()) {
       options.disableTestErrorWithCallback();
     }
+    if (!capturesAiTargetAppId()) {
+      options.disableCapturesAiTargetAppId();
+    }
 
     configure(options);
   }
@@ -1142,6 +1145,16 @@ public abstract class AbstractHttpClientTest<REQUEST> {
                 assertThat(attrs)
                     .containsEntry(SemanticAttributes.HTTP_STATUS_CODE, (long) responseCode);
               }
+
+              if (options.capturesAiTargetAppId
+                  && !uri.getPath().equals("/circular-redirect")
+                  && !uri.getPath().equals("/read-timeout")
+                  && uri.getPort() != PortUtils.UNUSABLE_PORT
+                  && !uri.getHost().equals("192.0.2.1")
+                  && !uri.getHost().equals("www.google.com")) {
+                assertThat(attrs)
+                    .containsEntry("applicationinsights.internal.target_app_id", "1234");
+              }
             });
   }
 
@@ -1240,6 +1253,10 @@ public abstract class AbstractHttpClientTest<REQUEST> {
   }
 
   protected boolean testErrorWithCallback() {
+    return true;
+  }
+
+  protected boolean capturesAiTargetAppId() {
     return true;
   }
 

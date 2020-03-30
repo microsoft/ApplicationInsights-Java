@@ -86,5 +86,7 @@ public abstract class AbstractArmeriaHttpClientTest extends AbstractHttpClientTe
     extra.add(SemanticAttributes.HTTP_TARGET);
     extra.addAll(HttpClientTestOptions.DEFAULT_HTTP_ATTRIBUTES);
     options.setHttpAttributes(unused -> extra);
+
+    options.disableCapturesAiTargetAppId();
   }
 }

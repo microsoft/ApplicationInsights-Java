@@ -10,6 +10,7 @@ import static io.opentelemetry.instrumentation.api.instrumenter.SpanKindExtracto
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
+import io.opentelemetry.instrumentation.api.instrumenter.appid.AppIdAttributeExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
@@ -55,6 +56,7 @@ public final class OkHttpTracingBuilder {
             .addAttributesExtractor(httpAttributesExtractor)
             .addAttributesExtractor(netAttributesExtractor)
             .addAttributesExtractors(additionalExtractors)
+            .addAttributesExtractor(new AppIdAttributeExtractor<>(Response::header))
             .addRequestMetrics(HttpClientMetrics.get())
             .newInstrumenter(alwaysClient());
     return new OkHttpTracing(instrumenter, openTelemetry.getPropagators());
