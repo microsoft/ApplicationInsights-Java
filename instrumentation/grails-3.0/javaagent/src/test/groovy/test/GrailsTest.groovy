@@ -110,6 +110,11 @@ class GrailsTest extends HttpServerTest<ConfigurableApplicationContext> implemen
   }
 
   @Override
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    true
+  }
+
+  @Override
   void errorPageSpans(TraceAssert trace, int index, Object parent, String method = "GET", ServerEndpoint endpoint) {
     forwardSpan(trace, index, trace.span(0))
     def errorSpanName = endpoint == NOT_FOUND ? "ErrorController.notFound" : "ErrorController.index"

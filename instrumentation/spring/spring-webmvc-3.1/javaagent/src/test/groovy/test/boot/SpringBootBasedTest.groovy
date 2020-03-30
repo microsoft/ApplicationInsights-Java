@@ -162,6 +162,11 @@ class SpringBootBasedTest extends HttpServerTest<ConfigurableApplicationContext>
   }
 
   @Override
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    true
+  }
+
+  @Override
   void responseSpan(TraceAssert trace, int index, Object parent, String method = "GET", ServerEndpoint endpoint = SUCCESS) {
     def responseSpanName = endpoint == NOT_FOUND ? "OnCommittedResponseWrapper.sendError" : "OnCommittedResponseWrapper.sendRedirect"
     trace.span(index) {

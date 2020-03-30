@@ -32,8 +32,9 @@ public class Servlet3HttpServerTracer extends ServletHttpServerTracer<HttpServle
     return TRACER;
   }
 
-  public Context startSpan(Object servletOrFilter, HttpServletRequest request) {
-    Context context = startSpan(request, getSpanName(servletOrFilter, request, false));
+  public Context startSpan(
+      Object servletOrFilter, HttpServletRequest request, HttpServletResponse response) {
+    Context context = startSpan(request, response, getSpanName(servletOrFilter, request, false));
     // server span name shouldn't be update when server span was created from a call to Servlet
     // if server span was created from a call to Filter then name may be updated from updateContext.
     if (servletOrFilter instanceof Servlet) {
@@ -118,7 +119,10 @@ public class Servlet3HttpServerTracer extends ServletHttpServerTracer<HttpServle
   }
 
   public Context updateContext(
-      Context context, Object servletOrFilter, HttpServletRequest request) {
+      Context context,
+      Object servletOrFilter,
+      HttpServletRequest request,
+      HttpServletResponse response) {
     Span span = ServerSpan.fromContextOrNull(context);
     if (span != null && ServletSpanNaming.shouldUpdateServerSpanName(context)) {
       String spanName = getSpanName(servletOrFilter, request, true);
@@ -126,6 +130,7 @@ public class Servlet3HttpServerTracer extends ServletHttpServerTracer<HttpServle
         span.updateName(spanName);
         ServletSpanNaming.setServletUpdatedServerSpanName(context);
       }
+      injectAppIdIntoResponse(response);
     }
 
     return updateContext(context, request);

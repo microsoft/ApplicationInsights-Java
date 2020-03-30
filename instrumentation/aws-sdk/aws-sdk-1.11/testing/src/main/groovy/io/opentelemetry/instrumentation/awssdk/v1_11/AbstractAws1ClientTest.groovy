@@ -111,6 +111,7 @@ abstract class AbstractAws1ClientTest extends InstrumentationSpecification {
             for (def addedTag : additionalAttributes) {
               "$addedTag.key" "$addedTag.value"
             }
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }

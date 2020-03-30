@@ -12,6 +12,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
@@ -71,6 +72,12 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
 
     Context parentContext = extract(request, getGetter());
     SpanBuilder spanBuilder = spanBuilder(parentContext, spanName, SERVER);
+
+    final String sourceAppId = Span.fromContext(parentContext).getSpanContext().getTraceState()
+        .get(AiAppId.TRACESTATE_KEY);
+    if (sourceAppId != null && !sourceAppId.isEmpty()) {
+      spanBuilder.setAttribute(AiAppId.SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME, sourceAppId);
+    }
 
     if (startTimestamp >= 0) {
       spanBuilder.setStartTimestamp(startTimestamp, TimeUnit.NANOSECONDS);

@@ -9,6 +9,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
 import io.opentelemetry.instrumentation.api.servlet.ServletContextPath;
 import io.opentelemetry.instrumentation.api.servlet.ServletSpanNaming;
@@ -19,6 +20,7 @@ import java.net.URISyntaxException;
 import java.security.Principal;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +29,11 @@ public abstract class ServletHttpServerTracer<RESPONSE>
 
   private static final Logger log = LoggerFactory.getLogger(ServletHttpServerTracer.class);
 
-  public Context startSpan(HttpServletRequest request, String spanName) {
+  public Context startSpan(HttpServletRequest request, HttpServletResponse response,
+      String spanName) {
+
+    injectAppIdIntoResponse(response);
+
     Context context = startSpan(request, request, request, spanName);
 
     SpanContext spanContext = Span.fromContext(context).getSpanContext();
@@ -75,13 +81,13 @@ public abstract class ServletHttpServerTracer<RESPONSE>
   protected String url(HttpServletRequest httpServletRequest) {
     try {
       return new URI(
-              httpServletRequest.getScheme(),
-              null,
-              httpServletRequest.getServerName(),
-              httpServletRequest.getServerPort(),
-              httpServletRequest.getRequestURI(),
-              httpServletRequest.getQueryString(),
-              null)
+          httpServletRequest.getScheme(),
+          null,
+          httpServletRequest.getServerName(),
+          httpServletRequest.getServerPort(),
+          httpServletRequest.getRequestURI(),
+          httpServletRequest.getQueryString(),
+          null)
           .toString();
     } catch (URISyntaxException e) {
       log.debug("Failed to construct request URI", e);
@@ -176,5 +182,12 @@ public abstract class ServletHttpServerTracer<RESPONSE>
     }
 
     return context;
+  }
+
+  protected void injectAppIdIntoResponse(HttpServletResponse response) {
+    String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      response.setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
+    }
   }
 }

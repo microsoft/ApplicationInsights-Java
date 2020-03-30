@@ -9,6 +9,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
 import io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class JettyHttpServerTracer extends Servlet3HttpServerTracer {
   private static final JettyHttpServerTracer TRACER = new JettyHttpServerTracer();
@@ -17,8 +18,8 @@ public class JettyHttpServerTracer extends Servlet3HttpServerTracer {
     return TRACER;
   }
 
-  public Context startServerSpan(HttpServletRequest request) {
-    return startSpan(request, "HTTP " + request.getMethod());
+  public Context startServerSpan(HttpServletRequest request, HttpServletResponse response) {
+    return startSpan(request, response, "HTTP " + request.getMethod());
   }
 
   @Override

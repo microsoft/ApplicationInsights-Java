@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.javaagent.instrumentation.apachecamel
+package test
 
-import static io.opentelemetry.api.trace.SpanKind.CLIENT
-import static io.opentelemetry.api.trace.SpanKind.INTERNAL
-import static io.opentelemetry.api.trace.SpanKind.SERVER
+import static io.opentelemetry.api.trace.Span.Kind.CLIENT
+import static io.opentelemetry.api.trace.Span.Kind.INTERNAL
+import static io.opentelemetry.api.trace.Span.Kind.SERVER
 
-import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
-import io.opentelemetry.instrumentation.test.RetryOnAddressAlreadyInUseTrait
+import com.google.common.collect.ImmutableMap
+import io.opentelemetry.api.trace.attributes.SemanticAttributes
+import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.instrumentation.test.utils.PortUtils
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import org.apache.camel.CamelContext
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.builder.RouteBuilder
@@ -21,7 +21,7 @@ import org.springframework.boot.SpringApplication
 import org.springframework.context.ConfigurableApplicationContext
 import spock.lang.Shared
 
-class TwoServicesWithDirectClientCamelTest extends AgentInstrumentationSpecification implements RetryOnAddressAlreadyInUseTrait {
+class TwoServicesWithDirectClientCamelTest extends AgentTestRunner {
 
   @Shared
   int portOne
@@ -42,7 +42,7 @@ class TwoServicesWithDirectClientCamelTest extends AgentInstrumentationSpecifica
     portOne = PortUtils.randomOpenPort()
     portTwo = PortUtils.randomOpenPort()
     def app = new SpringApplication(TwoServicesConfig)
-    app.setDefaultProperties(["service.one.port": portOne, "service.two.port": portTwo])
+    app.setDefaultProperties(ImmutableMap.of("service.one.port", portOne, "service.two.port", portTwo))
     server = app.run()
   }
 
@@ -76,51 +76,76 @@ class TwoServicesWithDirectClientCamelTest extends AgentInstrumentationSpecifica
 
     then:
     assertTraces(1) {
-      trace(0, 6) {
+      trace(0, 8) {
         it.span(0) {
           name "input"
           kind INTERNAL
           attributes {
-            "apache-camel.uri" "direct://input"
+            "camel.uri" "direct://input"
           }
         }
         it.span(1) {
           name "POST"
           kind CLIENT
-          parentSpanId(span(0).spanId)
           attributes {
             "$SemanticAttributes.HTTP_METHOD.key" "POST"
             "$SemanticAttributes.HTTP_URL.key" "http://localhost:$portOne/serviceOne"
             "$SemanticAttributes.HTTP_STATUS_CODE.key" 200
-            "apache-camel.uri" "http://localhost:$portOne/serviceOne"
+            "camel.uri" "http://localhost:$portOne/serviceOne"
           }
         }
         it.span(2) {
-          name "/serviceOne"
-          kind SERVER
-          parentSpanId(span(1).spanId)
+          name "HTTP POST"
+          kind CLIENT
           attributes {
             "$SemanticAttributes.HTTP_METHOD.key" "POST"
             "$SemanticAttributes.HTTP_URL.key" "http://localhost:$portOne/serviceOne"
             "$SemanticAttributes.HTTP_STATUS_CODE.key" 200
-            "apache-camel.uri" "http://0.0.0.0:$portOne/serviceOne"
+            "$SemanticAttributes.NET_PEER_NAME.key" "localhost"
+            "$SemanticAttributes.NET_PEER_PORT.key" portOne
+            "$SemanticAttributes.NET_TRANSPORT.key" "IP.TCP"
+            "$SemanticAttributes.HTTP_FLAVOR.key" "1.1"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
         it.span(3) {
+          name "/serviceOne"
+          kind SERVER
+          attributes {
+            "$SemanticAttributes.HTTP_METHOD.key" "POST"
+            "$SemanticAttributes.HTTP_URL.key" "http://localhost:$portOne/serviceOne"
+            "$SemanticAttributes.HTTP_STATUS_CODE.key" 200
+            "camel.uri" "http://0.0.0.0:$portOne/serviceOne"
+          }
+        }
+        it.span(4) {
           name "POST"
           kind CLIENT
-          parentSpanId(span(2).spanId)
           attributes {
             "$SemanticAttributes.HTTP_METHOD.key" "POST"
             "$SemanticAttributes.HTTP_URL.key" "http://0.0.0.0:$portTwo/serviceTwo"
             "$SemanticAttributes.HTTP_STATUS_CODE.key" 200
-            "apache-camel.uri" "http://0.0.0.0:$portTwo/serviceTwo"
+            "camel.uri" "http://0.0.0.0:$portTwo/serviceTwo"
           }
         }
-        it.span(4) {
+        it.span(5) {
+          name "HTTP POST"
+          kind CLIENT
+          attributes {
+            "$SemanticAttributes.HTTP_METHOD.key" "POST"
+            "$SemanticAttributes.HTTP_URL.key" "http://0.0.0.0:$portTwo/serviceTwo"
+            "$SemanticAttributes.HTTP_STATUS_CODE.key" 200
+            "$SemanticAttributes.NET_PEER_NAME.key" "0.0.0.0"
+            "$SemanticAttributes.NET_PEER_PORT.key" portTwo
+            "$SemanticAttributes.NET_TRANSPORT.key" "IP.TCP"
+            "$SemanticAttributes.HTTP_FLAVOR.key" "1.1"
+            "$SemanticAttributes.HTTP_USER_AGENT.key" "Jakarta Commons-HttpClient/3.1"
+            "applicationinsights.internal.target_app_id" "1234"
+          }
+        }
+        it.span(6) {
           name "/serviceTwo"
           kind SERVER
-          parentSpanId(span(3).spanId)
           attributes {
             "$SemanticAttributes.HTTP_METHOD.key" "POST"
             "$SemanticAttributes.HTTP_STATUS_CODE.key" 200
@@ -128,18 +153,17 @@ class TwoServicesWithDirectClientCamelTest extends AgentInstrumentationSpecifica
             "$SemanticAttributes.NET_PEER_PORT.key" Number
             "$SemanticAttributes.NET_PEER_IP.key" InetAddress.getLocalHost().getHostAddress().toString()
             "$SemanticAttributes.HTTP_USER_AGENT.key" "Jakarta Commons-HttpClient/3.1"
-            "$SemanticAttributes.HTTP_FLAVOR.key" "1.1"
+            "$SemanticAttributes.HTTP_FLAVOR.key" "HTTP/1.1"
             "$SemanticAttributes.HTTP_CLIENT_IP.key" InetAddress.getLocalHost().getHostAddress().toString()
           }
         }
-        it.span(5) {
+        it.span(7) {
           name "/serviceTwo"
           kind INTERNAL
-          parentSpanId(span(4).spanId)
           attributes {
             "$SemanticAttributes.HTTP_METHOD.key" "POST"
             "$SemanticAttributes.HTTP_URL.key" "http://0.0.0.0:$portTwo/serviceTwo"
-            "apache-camel.uri" "jetty:http://0.0.0.0:$portTwo/serviceTwo?arg=value"
+            "camel.uri" "jetty:http://0.0.0.0:$portTwo/serviceTwo?arg=value"
           }
         }
       }

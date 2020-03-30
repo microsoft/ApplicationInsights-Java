@@ -13,6 +13,7 @@ import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.tracer.net.NetPeerAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.URI;
@@ -198,6 +199,8 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
         span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, (long) status);
         span.setStatus(HttpStatusConverter.statusFromHttpStatus(status));
       }
+      final String responseHeader = responseHeader(response, AiAppId.RESPONSE_HEADER_NAME);
+      setTargetAppId(span, responseHeader);
     }
   }
 
@@ -207,5 +210,17 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
     }
     String method = method(request);
     return method != null ? "HTTP " + method : DEFAULT_SPAN_NAME;
+  }
+
+  private static void setTargetAppId(final Span span, final String responseHeader) {
+    if (responseHeader == null) {
+      return;
+    }
+    final int index = responseHeader.indexOf('=');
+    if (index == -1) {
+      return;
+    }
+    final String targetAppId = responseHeader.substring(index + 1);
+    span.setAttribute(AiAppId.SPAN_TARGET_APP_ID_ATTRIBUTE_NAME, targetAppId);
   }
 }
