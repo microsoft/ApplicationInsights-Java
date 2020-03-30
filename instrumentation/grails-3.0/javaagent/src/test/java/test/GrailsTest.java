@@ -61,6 +61,7 @@ public class GrailsTest extends AbstractHttpServerTest<ConfigurableApplicationCo
     options.setHasErrorPageSpans(
         endpoint -> endpoint == ERROR || endpoint == EXCEPTION || endpoint == NOT_FOUND);
     options.setTestPathParam(true);
+    options.setSendsBackAiTargetAppId(endpoint -> true);
   }
 
   @SpringBootApplication
