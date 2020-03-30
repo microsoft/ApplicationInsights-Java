@@ -9,6 +9,7 @@ import static io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming.Sour
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
 import io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming;
 import io.opentelemetry.instrumentation.api.tracer.HttpServerTracer;
@@ -31,7 +32,8 @@ public abstract class TomcatTracer extends HttpServerTracer<Request, Response, R
 
   private static final Logger log = LoggerFactory.getLogger(TomcatTracer.class);
 
-  public Context startServerSpan(Request request) {
+  public Context startServerSpan(Request request, Response response) {
+    injectAppIdIntoResponse(response);
     return startSpan(request, request, request, "HTTP " + request.method().toString());
   }
 
@@ -121,5 +123,12 @@ public abstract class TomcatTracer extends HttpServerTracer<Request, Response, R
   @Override
   public String get(Request request, String key) {
     return request.getHeader(key);
+  }
+
+  private static void injectAppIdIntoResponse(Response response) {
+    String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      response.setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
+    }
   }
 }

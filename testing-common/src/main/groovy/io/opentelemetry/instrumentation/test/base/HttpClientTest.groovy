@@ -822,6 +822,7 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
     def userAgent = userAgent()
     def extraAttributes = extraAttributes()
     def hasClientSpanHttpAttributes = hasClientSpanHttpAttributes(uri)
+    def capturesAiTargetAppId = capturesAiTargetAppId()
     trace.span(index) {
       if (parentSpan == null) {
         hasNoParent()
@@ -884,6 +885,9 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
         }
         if (extraAttributes.contains(SemanticAttributes.HTTP_TARGET)) {
           "${SemanticAttributes.HTTP_TARGET}" uri.path + "${uri.query != null ? "?${uri.query}" : ""}"
+        }
+        if (capturesAiTargetAppId && !exception && uri.host != "www.google.com") {
+          "applicationinsights.internal.target_app_id" "1234"
         }
       }
     }
@@ -979,6 +983,10 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
 
   boolean testErrorWithCallback() {
     return true
+  }
+
+  boolean capturesAiTargetAppId() {
+    true
   }
 
   URI removeFragment(URI uri) {

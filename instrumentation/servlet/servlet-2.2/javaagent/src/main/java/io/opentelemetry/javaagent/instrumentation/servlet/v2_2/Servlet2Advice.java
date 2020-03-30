@@ -35,6 +35,7 @@ public class Servlet2Advice {
     }
 
     HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+    HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
     Context serverContext = tracer().getServerContext(httpServletRequest);
     if (serverContext != null) {
@@ -46,7 +47,7 @@ public class Servlet2Advice {
       return;
     }
 
-    context = tracer().startSpan(httpServletRequest);
+    context = tracer().startSpan(httpServletRequest, httpServletResponse);
     scope = context.makeCurrent();
     // reset response status from previous request
     // (some servlet containers reuse response objects to reduce memory allocations)

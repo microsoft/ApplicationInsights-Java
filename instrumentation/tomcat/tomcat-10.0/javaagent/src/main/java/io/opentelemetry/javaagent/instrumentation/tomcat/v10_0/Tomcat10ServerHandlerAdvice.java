@@ -33,7 +33,7 @@ public class Tomcat10ServerHandlerAdvice {
       return;
     }
 
-    context = tracer().startServerSpan(request);
+    context = tracer().startServerSpan(request, response);
 
     scope = context.makeCurrent();
 

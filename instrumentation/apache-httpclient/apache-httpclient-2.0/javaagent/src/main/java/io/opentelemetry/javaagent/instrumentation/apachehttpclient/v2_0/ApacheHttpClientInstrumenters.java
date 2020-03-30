@@ -38,6 +38,7 @@ public final class ApacheHttpClientInstrumenters {
             .addAttributesExtractor(httpAttributesExtractor)
             .addAttributesExtractor(netAttributesExtractor)
             .addAttributesExtractor(PeerServiceAttributesExtractor.create(netAttributesExtractor))
+            .addAttributesExtractor(new ApacheHttpClientAppIdAttributeExtractor())
             .newClientInstrumenter(new HttpHeaderSetter());
   }
 
