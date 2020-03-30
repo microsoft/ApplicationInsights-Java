@@ -60,6 +60,11 @@ abstract class AbstractVertxHttpServerTest extends HttpServerTest<Vertx> impleme
   }
 
   @Override
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    true
+  }
+
+  @Override
   String expectedServerSpanName(ServerEndpoint endpoint) {
     switch (endpoint) {
       case PATH_PARAM:
