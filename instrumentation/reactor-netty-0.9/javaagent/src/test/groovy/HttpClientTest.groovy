@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+
 import static io.opentelemetry.api.trace.Span.Kind.CLIENT
 import static io.opentelemetry.instrumentation.test.server.http.TestHttpServer.httpServer
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
@@ -90,6 +91,7 @@ class HttpClientTest extends AgentTestRunner {
         "${SemanticAttributes.HTTP_USER_AGENT.key}" { it.startsWith(userAgent) }
         "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
         "${SemanticAttributes.HTTP_STATUS_CODE.key}" status
+        "applicationinsights.internal.target_app_id" "1234"
       }
     }
   }

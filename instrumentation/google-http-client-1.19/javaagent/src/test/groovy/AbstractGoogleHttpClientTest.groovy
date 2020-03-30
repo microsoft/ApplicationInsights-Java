@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+
 import static io.opentelemetry.api.trace.Span.Kind.CLIENT
 
 import com.google.api.client.http.GenericUrl
@@ -74,6 +75,7 @@ abstract class AbstractGoogleHttpClientTest extends HttpClientTest {
             "${SemanticAttributes.HTTP_METHOD.key}" method
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 500
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
         server.distributedRequestSpan(it, 1, span(0))

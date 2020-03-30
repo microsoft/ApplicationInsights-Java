@@ -9,6 +9,7 @@ import static io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3Ht
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
@@ -50,6 +51,11 @@ public class Servlet3Advice {
       tracer().updateServerSpanNameOnce(parentContext, httpServletRequest);
       // We are inside nested servlet/filter/app-server span, don't create new span
       return;
+    }
+
+    final String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      ((HttpServletResponse) response).setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
     context = tracer().startSpan(httpServletRequest);

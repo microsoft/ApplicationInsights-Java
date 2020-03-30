@@ -61,6 +61,11 @@ class ServletFilterTest extends HttpServerTest<ConfigurableApplicationContext> {
   }
 
   @Override
+  boolean sendsBackAiTargetAppId() {
+    true
+  }
+
+  @Override
   void handlerSpan(TraceAssert trace, int index, Object parent, String method = "GET", ServerEndpoint endpoint = SUCCESS) {
     trace.span(index) {
       name "TestController.${endpoint.name().toLowerCase()}"

@@ -111,6 +111,7 @@ tasks.withType(Test).configureEach {
   jvmArgs "-javaagent:${project(":testing:agent-for-testing").tasks.shadowJar.archiveFile.get().asFile.absolutePath}"
   jvmArgs "-Dotel.initializer.jar=${shadowJar.archiveFile.get().asFile.absolutePath}"
   jvmArgs "-Dinternal.testing.disable.global.library.ignores=true"
+  jvmArgs "-Dai.internal.testing.appId=1234"
 
   dependsOn shadowJar
   dependsOn ":testing:agent-for-testing:shadowJar"
