@@ -5,17 +5,18 @@
 
 package io.opentelemetry.instrumentation.test.server.http
 
-import static io.opentelemetry.instrumentation.test.server.http.HttpServletRequestExtractAdapter.GETTER
 import static io.opentelemetry.api.trace.Span.Kind.SERVER
+import static io.opentelemetry.instrumentation.test.server.http.HttpServletRequestExtractAdapter.GETTER
 
 import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.instrumentation.api.decorator.BaseDecorator
 import io.opentelemetry.instrumentation.test.asserts.InMemoryExporterAssert
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.utils.PortUtils
 import io.opentelemetry.sdk.trace.data.SpanData
-import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.Tracer
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import javax.servlet.ServletException
@@ -311,6 +312,7 @@ class TestHttpServer implements AutoCloseable {
 
         send()
         resp.setContentLength(body.bytes.length)
+        resp.setHeader("Request-Context", "appId=" + AiAppId.getAppId())
         resp.writer.print(body)
       }
     }

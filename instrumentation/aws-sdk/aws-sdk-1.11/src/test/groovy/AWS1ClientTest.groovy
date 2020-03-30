@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+
+import static io.opentelemetry.api.trace.Span.Kind.CLIENT
 import static io.opentelemetry.instrumentation.test.server.http.TestHttpServer.httpServer
 import static io.opentelemetry.instrumentation.test.utils.PortUtils.UNUSABLE_PORT
-import static io.opentelemetry.api.trace.Span.Kind.CLIENT
 
 import com.amazonaws.AmazonClientException
 import com.amazonaws.AmazonWebServiceClient
@@ -37,10 +38,11 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder
 import com.amazonaws.services.sqs.model.CreateQueueRequest
 import com.amazonaws.services.sqs.model.SendMessageRequest
-import io.opentelemetry.instrumentation.api.tracer.HttpClientTracer
-import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.attributes.SemanticAttributes
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
+import io.opentelemetry.instrumentation.api.tracer.HttpClientTracer
+import io.opentelemetry.instrumentation.test.AgentTestRunner
 import java.util.concurrent.atomic.AtomicReference
 import spock.lang.AutoCleanup
 import spock.lang.Shared
@@ -156,6 +158,7 @@ class AWS1ClientTest extends AgentTestRunner {
             for (def addedTag : additionalAttributes) {
               "$addedTag.key" "$addedTag.value"
             }
+            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
           }
         }
       }

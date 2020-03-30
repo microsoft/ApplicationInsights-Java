@@ -3,15 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+
+import static io.opentelemetry.api.trace.Span.Kind.CLIENT
 import static io.opentelemetry.instrumentation.test.server.http.TestHttpServer.httpServer
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
-import static io.opentelemetry.api.trace.Span.Kind.CLIENT
 
+import io.opentelemetry.api.trace.attributes.SemanticAttributes
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.sdk.trace.data.SpanData
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
 import reactor.netty.http.client.HttpClient
 import reactor.netty.http.client.HttpClientResponse
 import spock.lang.AutoCleanup
@@ -81,6 +83,7 @@ class ReactorNettyTest extends AgentTestRunner {
         "${SemanticAttributes.HTTP_USER_AGENT.key()}" { it.startsWith(userAgent) }
         "${SemanticAttributes.HTTP_FLAVOR.key()}" "1.1"
         "${SemanticAttributes.HTTP_STATUS_CODE.key()}" status
+        "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
       }
     }
   }
