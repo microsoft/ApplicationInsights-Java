@@ -2,9 +2,9 @@
 <!DOCTYPE configuration>
 <configuration>
   <appender name="FILE" class="com.microsoft.applicationinsights.agent.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>${applicationinsights.logback.directory}/application-insights.log</file>
+    <file>${applicationinsights.logback.directory}/applicationinsights.log</file>
     <rollingPolicy class="com.microsoft.applicationinsights.agent.shadow.ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-      <fileNamePattern>${applicationinsights.logback.directory}/application-insights-%d{yyyy-MM-dd}.%i.log.old</fileNamePattern>
+      <fileNamePattern>${applicationinsights.logback.directory}/applicationinsights-%d{yyyy-MM-dd}.%i.log.old</fileNamePattern>
       <maxHistory>1</maxHistory>
       <totalSizeCap>${applicationinsights.logback.totalSizeCap}</totalSizeCap>
       <maxFileSize>${applicationinsights.logback.maxFileSize}</maxFileSize>

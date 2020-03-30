@@ -9,9 +9,9 @@
 
     <!-- site.logdir output -->
     <appender name="LOGDIR" class="com.microsoft.applicationinsights.agent.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${site.logdir:-/home/LogFiles}/ApplicationInsights/application-insights-extension.log</file>
+        <file>${site.logdir:-/home/LogFiles}/ApplicationInsights/applicationinsights-extension.log</file>
         <rollingPolicy class="com.microsoft.applicationinsights.agent.shadow.ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${site.logdir:-/home/LogFiles}/ApplicationInsights/application-insights-extension-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${site.logdir:-/home/LogFiles}/ApplicationInsights/applicationinsights-extension-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxHistory>7</maxHistory>
             <totalSizeCap>5MB</totalSizeCap>
             <maxFileSize>3MB</maxFileSize>
@@ -31,9 +31,9 @@
     <!-- troubleshooting logs -->
     <appender name="APPSVCTBS" class="com.microsoft.applicationinsights.agent.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter"/>
-        <file>/var/log/applicationinsights/application-insights-extension.log</file>
+        <file>/var/log/applicationinsights/applicationinsights-extension.log</file>
         <rollingPolicy class="com.microsoft.applicationinsights.agent.shadow.ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>/var/log/applicationinsights/application-insights-extension-%d{yyyy-MM-dd}.%i.log.old</fileNamePattern>
+            <fileNamePattern>/var/log/applicationinsights/applicationinsights-extension-%d{yyyy-MM-dd}.%i.log.old</fileNamePattern>
             <maxHistory>1</maxHistory>
             <totalSizeCap>10MB</totalSizeCap>
             <maxFileSize>5MB</maxFileSize>
