@@ -16,6 +16,7 @@ import groovy.transform.stc.ClosureParams;
 import groovy.transform.stc.SimpleType;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.test.asserts.InMemoryExporterAssert;
 import io.opentelemetry.instrumentation.test.utils.ConfigUtils;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
@@ -115,6 +116,14 @@ public abstract class AgentTestRunner extends Specification {
     }
     OpenTelemetrySdk.getTracerManagement().addSpanProcessor(TEST_WRITER);
     TEST_TRACER = OpenTelemetry.getTracer("io.opentelemetry.auto");
+
+    AiAppId.setSupplier(
+        new AiAppId.Supplier() {
+          @Override
+          public String get() {
+            return "4321";
+          }
+        });
   }
 
   protected static Tracer getTestTracer() {

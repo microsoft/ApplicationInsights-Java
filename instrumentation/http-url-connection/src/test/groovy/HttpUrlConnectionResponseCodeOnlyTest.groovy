@@ -28,4 +28,9 @@ class HttpUrlConnectionResponseCodeOnlyTest extends HttpClientTest {
   boolean testCircularRedirects() {
     false
   }
+
+  @Override
+  boolean capturesAiTargetAppId() {
+    false
+  }
 }
