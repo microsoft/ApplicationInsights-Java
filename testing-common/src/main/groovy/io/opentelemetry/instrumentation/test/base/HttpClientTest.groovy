@@ -132,6 +132,8 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
             }
             span.startSpan().end()
 
+            ctx.addAdditionalResponseHeader("Request-Context", "appId=1234")
+
             return delegate.serve(ctx, req)
           }
         })
@@ -985,6 +987,7 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
   void clientSpan(TraceAssert trace, int index, Object parentSpan, String method = "GET", URI uri = resolveAddress("/success"), Integer responseCode = 200, Throwable exception = null, String httpFlavor = "1.1") {
     def userAgent = userAgent()
     def httpClientAttributes = httpAttributes(uri)
+    def capturesAiTargetAppId = capturesAiTargetAppId()
     trace.span(index) {
       if (parentSpan == null) {
         hasNoParent()
@@ -1045,6 +1048,13 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
 
         if (responseCode) {
           "${SemanticAttributes.HTTP_STATUS_CODE.key}" responseCode
+        }
+        if (capturesAiTargetAppId && !exception && uri.port != UNUSABLE_PORT && uri.host != "192.0.2.1" && uri.host != "www.google.com") {
+          "applicationinsights.internal.target_app_id" "1234"
+        } else {
+          // some tests, in particular apache-httpasyncclient circular redirect,
+          // throw exception AND capture app id
+          "applicationinsights.internal.target_app_id" { it == null || it == "1234" }
         }
       }
     }
@@ -1132,6 +1142,10 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
 
   boolean testErrorWithCallback() {
     return true
+  }
+
+  boolean capturesAiTargetAppId() {
+    true
   }
 
   URI removeFragment(URI uri) {

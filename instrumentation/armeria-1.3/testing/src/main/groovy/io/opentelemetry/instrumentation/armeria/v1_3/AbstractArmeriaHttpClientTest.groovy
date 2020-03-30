@@ -64,6 +64,11 @@ abstract class AbstractArmeriaHttpClientTest extends HttpClientTest<HttpRequest>
   }
 
   @Override
+  boolean capturesAiTargetAppId() {
+    false
+  }
+
+  @Override
   Set<AttributeKey<?>> httpAttributes(URI uri) {
     Set<AttributeKey<?>> extra = [
       SemanticAttributes.HTTP_HOST,
