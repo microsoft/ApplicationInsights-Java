@@ -10,6 +10,7 @@ import static io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming.Sour
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.servlet.MappingResolver;
 import io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming;
 import io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer;
@@ -33,7 +34,11 @@ public class JakartaServletHttpServerTracer
   }
 
   public Context startSpan(
-      HttpServletRequest request, MappingResolver mappingResolver, boolean servlet) {
+      HttpServletRequest request,
+      HttpServletResponse response,
+      MappingResolver mappingResolver,
+      boolean servlet) {
+    injectAppIdIntoResponse(response);
     return startSpan(request, SPAN_NAME_PROVIDER.getSpanName(mappingResolver, request), servlet);
   }
 
@@ -62,5 +67,12 @@ public class JakartaServletHttpServerTracer
   @Override
   protected String errorExceptionAttributeName() {
     return RequestDispatcher.ERROR_EXCEPTION;
+  }
+
+  private static void injectAppIdIntoResponse(HttpServletResponse response) {
+    String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      response.setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
+    }
   }
 }

@@ -70,6 +70,7 @@ afterEvaluate {
     jvmArgs("-Dotel.javaagent.testing.fail-on-context-leak=${failOnContextLeak != false}")
     // prevent sporadic gradle deadlocks, see SafeLogger for more details
     jvmArgs("-Dotel.javaagent.testing.transform-safe-logging.enabled=true")
+    jvmArgs("-Dai.internal.testing.appId=1234")
 
     // Reduce noise in assertion messages since we don't need to verify this in most tests. We check
     // in smoke tests instead.

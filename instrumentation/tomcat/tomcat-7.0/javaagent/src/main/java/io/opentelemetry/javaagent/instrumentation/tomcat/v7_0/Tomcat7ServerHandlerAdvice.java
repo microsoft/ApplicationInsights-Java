@@ -28,7 +28,7 @@ public class Tomcat7ServerHandlerAdvice {
       return;
     }
 
-    context = tracer().startServerSpan(request);
+    context = tracer().startServerSpan(request, response);
 
     scope = context.makeCurrent();
 

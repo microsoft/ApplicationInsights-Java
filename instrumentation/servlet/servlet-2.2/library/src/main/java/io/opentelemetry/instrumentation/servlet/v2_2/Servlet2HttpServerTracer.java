@@ -8,9 +8,11 @@ package io.opentelemetry.instrumentation.servlet.v2_2;
 import static io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming.Source.SERVLET;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming;
 import io.opentelemetry.instrumentation.servlet.javax.JavaxServletHttpServerTracer;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class Servlet2HttpServerTracer extends JavaxServletHttpServerTracer<ResponseWithStatus> {
   private static final Servlet2HttpServerTracer TRACER = new Servlet2HttpServerTracer();
@@ -23,7 +25,8 @@ public class Servlet2HttpServerTracer extends JavaxServletHttpServerTracer<Respo
     return TRACER;
   }
 
-  public Context startSpan(HttpServletRequest request) {
+  public Context startSpan(HttpServletRequest request, HttpServletResponse response) {
+    injectAppIdIntoResponse(response);
     return startSpan(request, getSpanName(request), true);
   }
 
@@ -36,5 +39,12 @@ public class Servlet2HttpServerTracer extends JavaxServletHttpServerTracer<Respo
   @Override
   protected String getInstrumentationName() {
     return "io.opentelemetry.servlet-2.2";
+  }
+
+  private static void injectAppIdIntoResponse(HttpServletResponse response) {
+    String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      response.setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
+    }
   }
 }
