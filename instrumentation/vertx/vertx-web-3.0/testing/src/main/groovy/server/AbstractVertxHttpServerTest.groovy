@@ -8,6 +8,7 @@ package server
 
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
+import io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Vertx
@@ -55,5 +56,10 @@ abstract class AbstractVertxHttpServerTest extends HttpServerTest<Vertx> impleme
   boolean verifyServerSpanEndTime() {
     // server spans are ended inside of the controller spans
     return false
+  }
+
+  @Override
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    true
   }
 }
