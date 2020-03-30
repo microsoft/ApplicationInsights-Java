@@ -9,10 +9,11 @@ import static io.opentelemetry.instrumentation.test.server.http.HttpServletReque
 import static io.opentelemetry.trace.Span.Kind.SERVER
 
 import io.opentelemetry.OpenTelemetry
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
+import io.opentelemetry.instrumentation.api.decorator.BaseDecorator
 import io.opentelemetry.instrumentation.test.asserts.InMemoryExporterAssert
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.utils.PortUtils
-import io.opentelemetry.instrumentation.api.decorator.BaseDecorator
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.trace.Span
 import io.opentelemetry.trace.Tracer
@@ -311,6 +312,7 @@ class TestHttpServer implements AutoCloseable {
 
         send()
         resp.setContentLength(body.bytes.length)
+        resp.setHeader("Request-Context", "appId=" + AiAppId.getAppId())
         resp.writer.print(body)
       }
 

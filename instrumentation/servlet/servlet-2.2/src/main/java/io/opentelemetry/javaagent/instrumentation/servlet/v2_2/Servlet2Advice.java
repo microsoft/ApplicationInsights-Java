@@ -8,6 +8,7 @@ package io.opentelemetry.javaagent.instrumentation.servlet.v2_2;
 import static io.opentelemetry.javaagent.instrumentation.servlet.v2_2.Servlet2HttpServerTracer.TRACER;
 
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.trace.Span;
 import java.lang.reflect.Method;
@@ -35,6 +36,11 @@ public class Servlet2Advice {
 
     if (TRACER.getServerContext(httpServletRequest) != null) {
       return;
+    }
+
+    final String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      ((HttpServletResponse) response).setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
     span = TRACER.startSpan(httpServletRequest, httpServletRequest, method);

@@ -45,6 +45,11 @@ class HttpUrlConnectionTest extends HttpClientTest {
     false
   }
 
+  @Override
+  boolean capturesAiTargetAppId() {
+    false
+  }
+
   @Ignore
   def "trace request with propagation (useCaches: #useCaches)"() {
     setup:
