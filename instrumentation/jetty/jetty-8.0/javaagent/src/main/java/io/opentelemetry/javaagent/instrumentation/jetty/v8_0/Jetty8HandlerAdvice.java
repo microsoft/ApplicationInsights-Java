@@ -31,7 +31,7 @@ public class Jetty8HandlerAdvice {
       return;
     }
 
-    context = tracer().startServerSpan(request);
+    context = tracer().startServerSpan(request, response);
     scope = context.makeCurrent();
 
     // Must be set here since Jetty handlers can use startAsync outside of servlet scope.

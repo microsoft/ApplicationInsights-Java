@@ -55,6 +55,7 @@ public final class HttpClientTestOptions {
   boolean testCallback = true;
   boolean testCallbackWithParent = true;
   boolean testErrorWithCallback = true;
+  boolean capturesAiTargetAppId = true;
 
   HttpClientTestOptions() {}
 
@@ -159,6 +160,11 @@ public final class HttpClientTestOptions {
 
   public HttpClientTestOptions disableTestErrorWithCallback() {
     testErrorWithCallback = false;
+    return this;
+  }
+
+  public HttpClientTestOptions disableCapturesAiTargetAppId() {
+    capturesAiTargetAppId = false;
     return this;
   }
 }
