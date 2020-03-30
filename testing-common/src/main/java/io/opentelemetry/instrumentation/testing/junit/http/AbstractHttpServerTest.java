@@ -160,6 +160,7 @@ public abstract class AbstractHttpServerTest<SERVER> {
     for (AggregatedHttpResponse response : responses) {
       assertThat(response.status().code()).isEqualTo(SUCCESS.getStatus());
       assertThat(response.contentUtf8()).isEqualTo(SUCCESS.getBody());
+      assertRequestContextHeader(SUCCESS, response);
     }
 
     assertTheTraces(count, null, null, method, SUCCESS, null, responses.get(0));
@@ -199,6 +200,7 @@ public abstract class AbstractHttpServerTest<SERVER> {
 
     assertThat(response.status().code()).isEqualTo(SUCCESS.getStatus());
     assertThat(response.contentUtf8()).isEqualTo(SUCCESS.getBody());
+    assertRequestContextHeader(SUCCESS, response);
 
     assertTheTraces(1, traceId, parentId, "GET", SUCCESS, null, response);
   }
@@ -214,6 +216,7 @@ public abstract class AbstractHttpServerTest<SERVER> {
 
     assertThat(response.status().code()).isEqualTo(endpoint.getStatus());
     assertThat(response.contentUtf8()).isEqualTo(endpoint.getBody());
+    assertRequestContextHeader(endpoint, response);
 
     assertTheTraces(1, null, null, method, endpoint, null, response);
   }
@@ -233,6 +236,7 @@ public abstract class AbstractHttpServerTest<SERVER> {
             location ->
                 assertThat(new URI(location).normalize().toString())
                     .isEqualTo(address.resolve(REDIRECT.getBody()).toString()));
+    assertRequestContextHeader(REDIRECT, response);
 
     assertTheTraces(1, null, null, method, REDIRECT, null, response);
   }
@@ -249,6 +253,7 @@ public abstract class AbstractHttpServerTest<SERVER> {
     if (options.testErrorBody) {
       assertThat(response.contentUtf8()).isEqualTo(ERROR.getBody());
     }
+    assertRequestContextHeader(ERROR, response);
 
     assertTheTraces(1, null, null, method, ERROR, null, response);
   }
@@ -266,6 +271,7 @@ public abstract class AbstractHttpServerTest<SERVER> {
       AggregatedHttpResponse response = client.execute(request).aggregate().join();
 
       assertThat(response.status().code()).isEqualTo(EXCEPTION.getStatus());
+      assertRequestContextHeader(EXCEPTION, response);
 
       assertTheTraces(1, null, null, method, EXCEPTION, EXCEPTION.body, response);
     } finally {
@@ -282,6 +288,7 @@ public abstract class AbstractHttpServerTest<SERVER> {
     AggregatedHttpResponse response = client.execute(request).aggregate().join();
 
     assertThat(response.status().code()).isEqualTo(NOT_FOUND.getStatus());
+    assertRequestContextHeader(NOT_FOUND, response);
 
     assertTheTraces(1, null, null, method, NOT_FOUND, null, response);
   }
@@ -296,6 +303,7 @@ public abstract class AbstractHttpServerTest<SERVER> {
 
     assertThat(response.status().code()).isEqualTo(PATH_PARAM.getStatus());
     assertThat(response.contentUtf8()).isEqualTo(PATH_PARAM.getBody());
+    assertRequestContextHeader(PATH_PARAM, response);
 
     assertTheTraces(1, null, null, method, PATH_PARAM, null, response);
   }
@@ -671,6 +679,14 @@ public abstract class AbstractHttpServerTest<SERVER> {
         return options.contextPath + "/path/:id/param";
       default:
         return endpoint.resolvePath(address).getPath();
+    }
+  }
+
+  void assertRequestContextHeader(ServerEndpoint endpoint, AggregatedHttpResponse response) {
+    if (options.sendsBackAiTargetAppId.test(endpoint)) {
+      assertThat(response.headers().get("Request-Context")).isEqualTo("appId=1234");
+    } else {
+      assertThat(response.headers().get("Request-Context")).isNull();
     }
   }
 

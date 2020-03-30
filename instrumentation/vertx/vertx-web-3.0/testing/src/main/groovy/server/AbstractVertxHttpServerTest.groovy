@@ -56,4 +56,9 @@ abstract class AbstractVertxHttpServerTest extends HttpServerTest<Vertx> impleme
     // server spans are ended inside of the controller spans
     return false
   }
+
+  @Override
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    true
+  }
 }
