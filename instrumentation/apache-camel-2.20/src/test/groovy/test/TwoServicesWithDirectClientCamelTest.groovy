@@ -10,9 +10,10 @@ import static io.opentelemetry.api.trace.Span.Kind.INTERNAL
 import static io.opentelemetry.api.trace.Span.Kind.SERVER
 
 import com.google.common.collect.ImmutableMap
+import io.opentelemetry.api.trace.attributes.SemanticAttributes
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.instrumentation.test.utils.PortUtils
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
 import org.apache.camel.CamelContext
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.builder.RouteBuilder
@@ -105,6 +106,7 @@ class TwoServicesWithDirectClientCamelTest extends AgentTestRunner {
             "$SemanticAttributes.NET_PEER_PORT.key" portOne
             "$SemanticAttributes.NET_TRANSPORT.key" "IP.TCP"
             "$SemanticAttributes.HTTP_FLAVOR.key" "1.1"
+            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
           }
         }
         it.span(3) {
@@ -139,6 +141,7 @@ class TwoServicesWithDirectClientCamelTest extends AgentTestRunner {
             "$SemanticAttributes.NET_TRANSPORT.key" "IP.TCP"
             "$SemanticAttributes.HTTP_FLAVOR.key" "1.1"
             "$SemanticAttributes.HTTP_USER_AGENT.key" "Jakarta Commons-HttpClient/3.1"
+            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
           }
         }
         it.span(6) {
@@ -153,7 +156,6 @@ class TwoServicesWithDirectClientCamelTest extends AgentTestRunner {
             "$SemanticAttributes.HTTP_USER_AGENT.key" "Jakarta Commons-HttpClient/3.1"
             "$SemanticAttributes.HTTP_FLAVOR.key" "HTTP/1.1"
             "$SemanticAttributes.HTTP_CLIENT_IP.key" InetAddress.getLocalHost().getHostAddress().toString()
-
           }
         }
         it.span(7) {

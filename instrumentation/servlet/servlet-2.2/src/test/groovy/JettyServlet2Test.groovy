@@ -71,6 +71,11 @@ class JettyServlet2Test extends HttpServerTest<Server> {
   }
 
   @Override
+  boolean sendsBackAiTargetAppId() {
+    true
+  }
+
+  @Override
   void responseSpan(TraceAssert trace, int index, Object parent, String method = "GET", ServerEndpoint endpoint = SUCCESS) {
     trace.span(index) {
       name endpoint == REDIRECT ? "HttpServletResponse.sendRedirect" : "HttpServletResponse.sendError"

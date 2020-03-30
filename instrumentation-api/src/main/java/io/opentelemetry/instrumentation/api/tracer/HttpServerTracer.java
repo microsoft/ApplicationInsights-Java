@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.context.ContextPropagationDebug;
 import io.opentelemetry.instrumentation.api.decorator.HttpStatusConverter;
 import java.lang.reflect.Method;
@@ -162,6 +163,11 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
   }
 
   protected void onRequest(Span span, REQUEST request) {
+    final String sourceAppId = span.getSpanContext().getTraceState().get(AiAppId.TRACESTATE_KEY);
+    if (sourceAppId != null && !sourceAppId.isEmpty()) {
+      span.setAttribute(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME, sourceAppId);
+    }
+
     span.setAttribute(SemanticAttributes.HTTP_METHOD, method(request));
     span.setAttribute(SemanticAttributes.HTTP_USER_AGENT, requestHeader(request, USER_AGENT));
 

@@ -35,4 +35,9 @@ class HttpUrlConnectionUseCachesFalseTest extends HttpClientTest {
   boolean testCircularRedirects() {
     false
   }
+
+  @Override
+  boolean capturesAiTargetAppId() {
+    false
+  }
 }
