@@ -123,7 +123,6 @@ public class HttpUrlConnectionInstrumentationModule extends InstrumentationModul
       if (state == null) {
         return;
       }
-      CallDepthThreadLocalMap.reset(HttpURLConnection.class);
 
       synchronized (state) {
         if (state.context != null && !state.finished) {
@@ -141,6 +140,10 @@ public class HttpUrlConnectionInstrumentationModule extends InstrumentationModul
           }
         }
       }
+
+      // need to reset after calling end(), in case end() calls response headers which will create
+      // infinite recursion
+      CallDepthThreadLocalMap.reset(HttpURLConnection.class);
     }
   }
 

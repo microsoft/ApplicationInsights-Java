@@ -14,6 +14,7 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanBuilder
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.instrumentation.test.asserts.InMemoryExporterAssert
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.utils.PortUtils
@@ -314,6 +315,7 @@ class TestHttpServer implements AutoCloseable {
 
         send()
         resp.setContentLength(body.bytes.length)
+        resp.setHeader("Request-Context", "appId=" + AiAppId.getAppId())
         resp.writer.print(body)
       }
     }

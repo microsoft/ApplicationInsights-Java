@@ -63,4 +63,9 @@ class GlassFishServerTest extends HttpServerTest<GlassFish> {
   boolean redirectHasBody() {
     true
   }
+
+  @Override
+  boolean sendsBackAiTargetAppId() {
+    true
+  }
 }

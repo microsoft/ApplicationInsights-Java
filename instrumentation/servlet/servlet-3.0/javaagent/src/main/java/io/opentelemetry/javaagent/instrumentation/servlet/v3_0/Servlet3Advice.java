@@ -9,6 +9,7 @@ import static io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3Ht
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -38,6 +39,11 @@ public class Servlet3Advice {
 
       // We are inside nested servlet/filter, don't create new span
       return;
+    }
+
+    final String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      ((HttpServletResponse) response).setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
     context = tracer().startSpan(httpServletRequest);
