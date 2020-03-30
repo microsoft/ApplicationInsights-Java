@@ -51,4 +51,9 @@ class SpringRestTemplateTest extends HttpClientTest {
     // FIXME: exception wrapped in ResourceAccessException
     return false
   }
+
+  @Override
+  boolean capturesAiTargetAppId() {
+    false
+  }
 }

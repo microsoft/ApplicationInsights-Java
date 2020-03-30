@@ -41,6 +41,11 @@ class Netty40ServerTest extends HttpServerTest<EventLoopGroup> {
   static final LoggingHandler LOGGING_HANDLER = new LoggingHandler(SERVER_LOGGER.name, LogLevel.DEBUG)
 
   @Override
+  boolean sendsBackAiTargetAppId() {
+    true
+  }
+
+  @Override
   EventLoopGroup startServer(int port) {
     def eventLoopGroup = new NioEventLoopGroup()
 
