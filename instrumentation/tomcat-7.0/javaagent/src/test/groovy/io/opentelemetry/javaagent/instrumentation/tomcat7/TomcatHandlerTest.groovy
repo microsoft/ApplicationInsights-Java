@@ -52,6 +52,11 @@ class TomcatHandlerTest extends HttpServerTest<Tomcat> implements AgentTestTrait
   }
 
   @Override
+  boolean sendsBackAiTargetAppId() {
+    true
+  }
+
+  @Override
   boolean hasResponseSpan(ServerEndpoint endpoint) {
     endpoint == REDIRECT || endpoint == ERROR
   }

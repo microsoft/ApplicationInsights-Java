@@ -70,6 +70,7 @@ abstract class JaxRsClientTest extends HttpClientTest implements AgentTestTrait 
             "${SemanticAttributes.HTTP_METHOD.key}" method
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" statusCode
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
         serverSpan(it, 1, span(0))

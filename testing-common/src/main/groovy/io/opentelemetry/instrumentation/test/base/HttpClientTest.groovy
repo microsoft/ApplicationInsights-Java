@@ -458,6 +458,7 @@ abstract class HttpClientTest extends InstrumentationSpecification {
   // parent span must be cast otherwise it breaks debugging classloading (junit loads it early)
   void clientSpan(TraceAssert trace, int index, Object parentSpan, String method = "GET", URI uri = server.address.resolve("/success"), Integer status = 200, Throwable exception = null, String httpFlavor = "1.1") {
     def userAgent = userAgent()
+    def capturesAiTargetAppId = capturesAiTargetAppId()
     trace.span(index) {
       if (parentSpan == null) {
         hasNoParent()
@@ -483,6 +484,9 @@ abstract class HttpClientTest extends InstrumentationSpecification {
         }
         if (status) {
           "${SemanticAttributes.HTTP_STATUS_CODE.key}" status
+        }
+        if (capturesAiTargetAppId && !exception && uri.host != "www.google.com") {
+          "applicationinsights.internal.target_app_id" "1234"
         }
       }
     }
@@ -542,6 +546,10 @@ abstract class HttpClientTest extends InstrumentationSpecification {
   boolean testCallbackWithParent() {
     // FIXME: this hack is here because callback with parent is broken in play-ws when the stream()
     // function is used.  There is no way to stop a test from a derived class hence the flag
+    true
+  }
+
+  boolean capturesAiTargetAppId() {
     true
   }
 

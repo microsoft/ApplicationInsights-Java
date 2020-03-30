@@ -8,6 +8,7 @@ package io.opentelemetry.instrumentation.servlet;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
 import io.opentelemetry.instrumentation.api.servlet.ServletContextPath;
 import io.opentelemetry.instrumentation.api.tracer.HttpServerTracer;
@@ -17,6 +18,7 @@ import java.net.URISyntaxException;
 import java.security.Principal;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +27,8 @@ public abstract class ServletHttpServerTracer<RESPONSE>
 
   private static final Logger log = LoggerFactory.getLogger(ServletHttpServerTracer.class);
 
-  public Context startSpan(HttpServletRequest request) {
+  public Context startSpan(HttpServletRequest request, HttpServletResponse response) {
+    injectAppIdIntoResponse(response);
     Context context = startSpan(request, request, request, getSpanName(request));
     return addServletContextPath(context, request);
   }
@@ -163,13 +166,22 @@ public abstract class ServletHttpServerTracer<RESPONSE>
    * forward and other scenarios, where servlet path may change, but we don't want this to be
    * reflected in the span name.
    */
-  public Context runOnceUnderAppServer(Context context, HttpServletRequest request) {
+  public Context runOnceUnderAppServer(
+      Context context, HttpServletRequest request, HttpServletResponse response) {
     if (AppServerBridge.shouldUpdateServerSpanName(context)) {
       updateSpanName(Span.fromContext(context), request);
       AppServerBridge.setServletUpdatedServerSpanName(context, true);
+      injectAppIdIntoResponse(response);
       return addServletContextPath(context, request);
     }
     return context;
+  }
+
+  private void injectAppIdIntoResponse(HttpServletResponse response) {
+    String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      response.setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
+    }
   }
 
   public void updateSpanName(HttpServletRequest request) {
