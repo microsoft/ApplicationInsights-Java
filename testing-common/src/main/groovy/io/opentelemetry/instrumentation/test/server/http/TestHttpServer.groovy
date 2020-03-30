@@ -336,6 +336,7 @@ class TestHttpServer implements AutoCloseable {
 
         send()
         resp.setContentLength(body.bytes.length)
+        resp.setHeader("Request-Context", "appId=1234")
         resp.writer.print(body)
       }
     }

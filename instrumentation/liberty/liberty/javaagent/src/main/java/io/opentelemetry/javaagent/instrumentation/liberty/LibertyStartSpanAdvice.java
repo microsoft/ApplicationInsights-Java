@@ -21,7 +21,7 @@ public class LibertyStartSpanAdvice {
       return;
     }
 
-    Context context = tracer().startSpan(ctx.getRequest());
+    Context context = tracer().startSpan(ctx.getRequest(), ctx.getResponse());
     Scope scope = context.makeCurrent();
 
     ctx.setContext(context);

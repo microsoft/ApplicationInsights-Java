@@ -60,6 +60,11 @@ class VertxHttpServerTest extends HttpServerTest<Vertx> implements AgentTestTrai
   }
 
   @Override
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    true
+  }
+
+  @Override
   String expectedServerSpanName(ServerEndpoint endpoint) {
     switch (endpoint) {
       case PATH_PARAM:

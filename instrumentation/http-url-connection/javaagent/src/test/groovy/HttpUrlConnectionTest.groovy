@@ -114,6 +114,7 @@ class HttpUrlConnectionTest extends HttpClientTest<HttpURLConnection> implements
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" STATUS
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
         span(2) {
@@ -135,6 +136,7 @@ class HttpUrlConnectionTest extends HttpClientTest<HttpURLConnection> implements
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" STATUS
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
         span(4) {
@@ -200,6 +202,7 @@ class HttpUrlConnectionTest extends HttpClientTest<HttpURLConnection> implements
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" STATUS
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
         span(2) {
@@ -214,6 +217,7 @@ class HttpUrlConnectionTest extends HttpClientTest<HttpURLConnection> implements
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" STATUS
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
@@ -256,6 +260,7 @@ class HttpUrlConnectionTest extends HttpClientTest<HttpURLConnection> implements
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" STATUS
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
@@ -313,6 +318,7 @@ class HttpUrlConnectionTest extends HttpClientTest<HttpURLConnection> implements
             "${SemanticAttributes.HTTP_METHOD.key}" "POST"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" STATUS
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
         span(2) {

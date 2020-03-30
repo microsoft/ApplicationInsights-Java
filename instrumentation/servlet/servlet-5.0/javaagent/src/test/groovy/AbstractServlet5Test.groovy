@@ -49,6 +49,11 @@ abstract class AbstractServlet5Test<SERVER, CONTEXT> extends HttpServerTest<SERV
   protected ServerEndpoint lastRequest
 
   @Override
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    true
+  }
+
+  @Override
   Request.Builder request(ServerEndpoint uri, String method, RequestBody body) {
     lastRequest = uri
     super.request(uri, method, body)

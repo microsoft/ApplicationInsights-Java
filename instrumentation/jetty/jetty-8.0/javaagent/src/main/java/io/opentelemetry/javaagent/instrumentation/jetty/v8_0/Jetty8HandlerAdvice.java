@@ -20,6 +20,7 @@ public class Jetty8HandlerAdvice {
   public static void onEnter(
       @Advice.This Object source,
       @Advice.Argument(value = 2, readOnly = false) HttpServletRequest request,
+      @Advice.Argument(3) HttpServletResponse response,
       @Advice.Local("otelContext") Context context,
       @Advice.Local("otelScope") Scope scope) {
 
@@ -29,7 +30,7 @@ public class Jetty8HandlerAdvice {
       return;
     }
 
-    context = tracer().startServerSpan(request);
+    context = tracer().startServerSpan(request, response);
     scope = context.makeCurrent();
   }
 

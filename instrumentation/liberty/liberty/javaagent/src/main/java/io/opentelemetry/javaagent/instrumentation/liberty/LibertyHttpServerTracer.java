@@ -8,6 +8,7 @@ package io.opentelemetry.javaagent.instrumentation.liberty;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.servlet.v3_0.Servlet3HttpServerTracer;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class LibertyHttpServerTracer extends Servlet3HttpServerTracer {
   private static final LibertyHttpServerTracer TRACER = new LibertyHttpServerTracer();
@@ -16,8 +17,8 @@ public class LibertyHttpServerTracer extends Servlet3HttpServerTracer {
     return TRACER;
   }
 
-  public Context startSpan(HttpServletRequest request) {
-    return startSpan(request, "HTTP " + request.getMethod(), false);
+  public Context startSpan(HttpServletRequest request, HttpServletResponse response) {
+    return startSpan(request, response, "HTTP " + request.getMethod(), false);
   }
 
   @Override

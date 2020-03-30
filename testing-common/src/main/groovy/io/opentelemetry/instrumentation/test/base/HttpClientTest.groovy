@@ -821,6 +821,7 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
   void clientSpan(TraceAssert trace, int index, Object parentSpan, String method = "GET", URI uri = server.address.resolve("/success"), Integer responseCode = 200, Throwable exception = null, String httpFlavor = "1.1") {
     def userAgent = userAgent()
     def extraAttributes = extraAttributes()
+    def capturesAiTargetAppId = capturesAiTargetAppId()
     trace.span(index) {
       if (parentSpan == null) {
         hasNoParent()
@@ -882,6 +883,9 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
           }
           if (extraAttributes.contains(SemanticAttributes.HTTP_TARGET)) {
             "${SemanticAttributes.HTTP_TARGET}" uri.path + "${uri.query != null ? "?${uri.query}" : ""}"
+          }
+          if (capturesAiTargetAppId && !exception && uri.host != "www.google.com") {
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
@@ -978,6 +982,10 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
 
   boolean testErrorWithCallback() {
     return true
+  }
+
+  boolean capturesAiTargetAppId() {
+    true
   }
 
   URI removeFragment(URI uri) {
