@@ -9,6 +9,7 @@ import static io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3Si
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.javaagent.bootstrap.servlet.AppServerBridge;
 import io.opentelemetry.javaagent.bootstrap.servlet.MappingResolver;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepth;
@@ -73,6 +74,11 @@ public class Servlet3Advice {
     contextToUpdate =
         helper().updateContext(contextToUpdate, httpServletRequest, mappingResolver, servlet);
     scope = contextToUpdate.makeCurrent();
+
+    String appId = AiAppId.getAppId();
+    if (!appId.isEmpty()) {
+      ((HttpServletResponse) response).setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
+    }
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
