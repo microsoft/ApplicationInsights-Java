@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.concurrent.GuardedBy;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
