@@ -26,6 +26,8 @@ import java.net.URL;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SelfDiagnostics;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import io.opentelemetry.auto.bootstrap.Agent;
@@ -37,12 +39,12 @@ import org.slf4j.MDC;
 // this class has one purpose, start diagnostics before passing control to opentelemetry-auto-instr-java
 public class MainEntryPoint {
 
-    private static Configuration configuration;
+    private static InstrumentationSettings configuration;
 
     private MainEntryPoint() {
     }
 
-    public static Configuration getConfiguration() {
+    public static InstrumentationSettings getConfiguration() {
         return configuration;
     }
 
@@ -53,8 +55,8 @@ public class MainEntryPoint {
             File agentJarFile = new File(bootstrapURL.toURI());
             DiagnosticsHelper.setAgentJarFile(agentJarFile);
             // configuration is only read this early in order to extract logging configuration
-            configuration = ConfigurationBuilder.create(agentJarFile.toPath());
-            startupLogger = configureLogging(configuration);
+            configuration = ConfigurationBuilder.create(agentJarFile.toPath()).instrumentationSettings;
+            startupLogger = configureLogging(configuration.preview.selfDiagnostics);
             ConfigurationBuilder.logConfigurationMessages();
             MDC.put("microsoft.ai.operationName", "Startup");
             Agent.start(instrumentation, bootstrapURL);
@@ -79,9 +81,9 @@ public class MainEntryPoint {
         }
     }
 
-    private static Logger configureLogging(Configuration configuration) {
+    private static Logger configureLogging(SelfDiagnostics selfDiagnostics) {
         String logbackXml;
-        String destination = configuration.preview.selfDiagnostics.destination;
+        String destination = selfDiagnostics.destination;
         boolean logUnknownDestination = false;
         if (DiagnosticsHelper.isAppServiceCodeless()) {
             logbackXml = "applicationinsights.appsvc.logback.xml";
@@ -100,9 +102,9 @@ public class MainEntryPoint {
         final URL configurationFile = cl.getResource(logbackXml);
         System.setProperty("applicationinsights.logback.configurationFile", configurationFile.toString());
 
-        String logbackDirectory = configuration.preview.selfDiagnostics.directory;
-        String logbackLevel = configuration.preview.selfDiagnostics.level;
-        int logbackMaxFileSizeMB = configuration.preview.selfDiagnostics.maxSizeMB;
+        String logbackDirectory = selfDiagnostics.directory;
+        String logbackLevel = selfDiagnostics.level;
+        int logbackMaxFileSizeMB = selfDiagnostics.maxSizeMB;
 
         if (logbackDirectory == null) {
             logbackDirectory = System.getProperty("java.io.tmpdir");

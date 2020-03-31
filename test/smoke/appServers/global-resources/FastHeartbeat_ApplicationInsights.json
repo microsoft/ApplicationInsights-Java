@@ -1,8 +1,10 @@
 {
-  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
-  "preview": {
-    "heartbeat": {
-      "intervalSeconds": 30
+  "instrumentationSettings": {
+    "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
+    "preview": {
+      "heartbeat": {
+        "intervalSeconds": 30
+      }
     }
   }
 }

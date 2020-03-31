@@ -7,6 +7,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharSource;
 import com.google.common.io.Resources;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import org.junit.*;
@@ -23,19 +24,22 @@ public class ConfigurationTest {
         JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
         Configuration configuration = jsonAdapter.fromJson(json.read());
 
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals("Something Good", configuration.preview.roleName);
-        assertEquals("xyz123", configuration.preview.roleInstance);
-        assertEquals((Double) 10.0, configuration.preview.sampling.fixedRate.percentage);
-        assertEquals(false, configuration.preview.liveMetrics.enabled);
-        assertEquals(3, configuration.preview.jmxMetrics.size());
-        assertEquals("java.lang:type=Threading", configuration.preview.jmxMetrics.get(0).objectName);
-        assertEquals("ThreadCount", configuration.preview.jmxMetrics.get(0).attribute);
-        assertEquals("Thread Count", configuration.preview.jmxMetrics.get(0).display);
+        InstrumentationSettings instrumentationSettings = configuration.instrumentationSettings;
+        PreviewConfiguration preview = instrumentationSettings.preview;
+
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", instrumentationSettings.connectionString);
+        assertEquals("Something Good", preview.roleName);
+        assertEquals("xyz123", preview.roleInstance);
+        assertEquals((Double) 10.0, preview.sampling.fixedRate.percentage);
+        assertEquals(false, preview.liveMetrics.enabled);
+        assertEquals(3, preview.jmxMetrics.size());
+        assertEquals("java.lang:type=Threading", preview.jmxMetrics.get(0).objectName);
+        assertEquals("ThreadCount", preview.jmxMetrics.get(0).attribute);
+        assertEquals("Thread Count", preview.jmxMetrics.get(0).display);
         assertEquals(ImmutableMap.of("__comment",
                 Arrays.asList("this sets the explain plan threshold ...", "this is a multi-line comment"),
-                "explainPlanThresholdInMS", 20000.0), configuration.preview.instrumentation.get("jdbc"));
-        assertEquals(ImmutableMap.of("enabled", false), configuration.preview.instrumentation.get("logging"));
+                "explainPlanThresholdInMS", 20000.0), preview.instrumentation.get("jdbc"));
+        assertEquals(ImmutableMap.of("enabled", false), preview.instrumentation.get("logging"));
     }
 
     @Test
@@ -45,11 +49,14 @@ public class ConfigurationTest {
         JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
         Configuration configuration = jsonAdapter.fromJson("{}");
 
-        assertEquals(null, configuration.connectionString);
-        assertEquals(null, configuration.preview.roleName);
-        assertEquals(null, configuration.preview.roleInstance);
-        assertEquals(true, configuration.preview.liveMetrics.enabled);
-        assertEquals(0, configuration.preview.jmxMetrics.size());
-        assertEquals(0, configuration.preview.instrumentation.size());
+        InstrumentationSettings instrumentationSettings = configuration.instrumentationSettings;
+        PreviewConfiguration preview = instrumentationSettings.preview;
+
+        assertEquals(null, instrumentationSettings.connectionString);
+        assertEquals(null, preview.roleName);
+        assertEquals(null, preview.roleInstance);
+        assertEquals(true, preview.liveMetrics.enabled);
+        assertEquals(0, preview.jmxMetrics.size());
+        assertEquals(0, preview.instrumentation.size());
     }
 }

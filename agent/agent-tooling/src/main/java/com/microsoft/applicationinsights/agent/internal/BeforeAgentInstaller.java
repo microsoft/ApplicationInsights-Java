@@ -33,10 +33,10 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.FixedRateSampling;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.FixedRateSampling;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.HeartBeatModuleClassFileTransformer;
@@ -95,7 +95,7 @@ public class BeforeAgentInstaller {
             throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
         }
 
-        Configuration config = MainEntryPoint.getConfiguration();
+        InstrumentationSettings config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
             throw new ConfigurationException("No connection string or instrumentation key provided");
         }
@@ -169,14 +169,14 @@ public class BeforeAgentInstaller {
         return sdkNamePrefix.toString();
     }
 
-    private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
+    private static boolean hasConnectionStringOrInstrumentationKey(InstrumentationSettings config) {
         return !Strings.isNullOrEmpty(config.connectionString)
                 || !Strings.isNullOrEmpty(config.instrumentationKey)
                 || !Strings.isNullOrEmpty(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
                 || !Strings.isNullOrEmpty(System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
     }
 
-    private static String getThreshold(Configuration config, String defaultValue) {
+    private static String getThreshold(InstrumentationSettings config, String defaultValue) {
         Map<String, Object> logging = config.preview.instrumentation.get("logging");
         if (logging == null) {
             return defaultValue;
@@ -196,7 +196,7 @@ public class BeforeAgentInstaller {
         return threshold;
     }
 
-    private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(Configuration config) {
+    private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(InstrumentationSettings config) {
 
         ApplicationInsightsXmlConfiguration xmlConfiguration = new ApplicationInsightsXmlConfiguration();
 

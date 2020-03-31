@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
@@ -55,10 +56,11 @@ public class ConfigurationBuilder {
     public static Configuration create(Path agentJarPath) throws IOException {
 
         Configuration config = loadConfigurationFile(agentJarPath);
+        PreviewConfiguration preview = config.instrumentationSettings.preview;
 
-        config.preview.roleName = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.preview.roleName);
-        config.preview.roleInstance =
-                overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.preview.roleInstance);
+        preview.roleName = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
+        preview.roleInstance =
+                overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
 
         return config;
     }

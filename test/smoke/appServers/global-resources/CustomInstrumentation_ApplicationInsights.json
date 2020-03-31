@@ -1,51 +1,53 @@
 {
-  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
-  "preview": {
-    "customInstrumentation": [
-      {
-        "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
-        "methodName": "one"
-      },
-      {
-        "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
-        "methodName": "two",
-        "signature": "(Ljava/lang/String;)Ljava/lang/String;"
-      },
-      {
-        "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
-        "methodName": "three"
-      },
-      {
-        "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
-        "methodName": "five"
-      },
-      {
-        "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
-        "methodName": "six"
-      },
-      {
-        "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
-        "methodName": "seven"
-      },
-      {
-        "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
-        "methodName": "eight",
-        "signature": "(Ljava/lang/String;)Ljava/lang/String;"
-      },
-      {
-        "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
-        "methodName": "eight",
-        "signature": "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
-      },
-      {
-        "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
-        "methodName": "nine"
-      },
-      {
-        "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject$NestedObject",
-        "methodName": "four",
-        "signature": "(Z[I[[Ljava/lang/String;)V"
-      }
-    ]
+  "instrumentationSettings": {
+    "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
+    "preview": {
+      "customInstrumentation": [
+        {
+          "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
+          "methodName": "one"
+        },
+        {
+          "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
+          "methodName": "two",
+          "signature": "(Ljava/lang/String;)Ljava/lang/String;"
+        },
+        {
+          "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
+          "methodName": "three"
+        },
+        {
+          "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
+          "methodName": "five"
+        },
+        {
+          "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
+          "methodName": "six"
+        },
+        {
+          "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
+          "methodName": "seven"
+        },
+        {
+          "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
+          "methodName": "eight",
+          "signature": "(Ljava/lang/String;)Ljava/lang/String;"
+        },
+        {
+          "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
+          "methodName": "eight",
+          "signature": "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+        },
+        {
+          "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",
+          "methodName": "nine"
+        },
+        {
+          "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject$NestedObject",
+          "methodName": "four",
+          "signature": "(Z[I[[Ljava/lang/String;)V"
+        }
+      ]
+    }
   }
 }
