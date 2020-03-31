@@ -24,49 +24,30 @@
       "sampling": {
         "fixedRate": {
           "percentage": 10
-        },
-        "adaptiveRate": {
-          "default": {
-            "initialRate": 10,
-            "maxPerInterval": 50,
-            "intervalInSeconds": 1
-          },
-          "requests": {
-            "initialRate": 10,
-            "maxPerInterval": 50,
-            "intervalInSeconds": 1
-          }
         }
       },
-      "distributedTracing": {
-        "outboundEnabled": false,
-        "requestIdCompatEnabled": false
+      "heartbeat": {
+        "enabled": true,
+        "intervalSeconds": 900
       },
       "liveMetrics": {
         "enabled": false
       },
       "instrumentation": {
-        "jdbc": {
-          "__comment": [
-            "this sets the explain plan threshold ...",
-            "this is a multi-line comment"
-          ],
-          "explainPlanThresholdInMS": 20000
-        },
         "logging": {
-          "enabled": false
+          "threshold": "error"
         }
       },
-      "customInstrumentation": [
-        {
-          "className": "com.example.MyObject",
-          "methodName": "doSomething"
-        },
-        {
-          "className": "com.example.MyObject",
-          "methodName": "doMoreSomething"
-        }
-      ]
+      "httpProxy": {
+        "host": "myproxy",
+        "port": 8080
+      },
+      "selfDiagnostics": {
+        "destination": "file",
+        "directory": "/var/log/applicationinsights",
+        "level": "error",
+        "maxSizeMB": 10
+      }
     }
   }
 }

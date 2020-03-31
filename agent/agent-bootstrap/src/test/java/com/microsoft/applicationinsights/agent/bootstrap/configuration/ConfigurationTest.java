@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
@@ -36,10 +35,14 @@ public class ConfigurationTest {
         assertEquals("java.lang:type=Threading", preview.jmxMetrics.get(0).objectName);
         assertEquals("ThreadCount", preview.jmxMetrics.get(0).attribute);
         assertEquals("Thread Count", preview.jmxMetrics.get(0).display);
-        assertEquals(ImmutableMap.of("__comment",
-                Arrays.asList("this sets the explain plan threshold ...", "this is a multi-line comment"),
-                "explainPlanThresholdInMS", 20000.0), preview.instrumentation.get("jdbc"));
-        assertEquals(ImmutableMap.of("enabled", false), preview.instrumentation.get("logging"));
+        assertEquals(ImmutableMap.of("threshold", "error"), preview.instrumentation.get("logging"));
+        assertEquals("myproxy", preview.httpProxy.host);
+        assertEquals(8080, preview.httpProxy.port);
+
+        assertEquals("file", preview.selfDiagnostics.destination);
+        assertEquals("/var/log/applicationinsights", preview.selfDiagnostics.directory);
+        assertEquals("error", preview.selfDiagnostics.level);
+        assertEquals(10, preview.selfDiagnostics.maxSizeMB);
     }
 
     @Test
