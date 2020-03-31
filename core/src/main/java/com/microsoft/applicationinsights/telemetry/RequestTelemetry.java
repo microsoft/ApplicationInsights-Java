@@ -144,9 +144,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
      * @param name A human-readable name
      */
     public void setName(String name) {
-        if (Strings.isNullOrEmpty(name)) {
-            throw new IllegalArgumentException("The event name cannot be null or empty");
-        }
         data.setName(name);
     }
 
