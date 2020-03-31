@@ -87,8 +87,10 @@ public class Exporter implements SpanExporter {
         String instrumentationName = span.getInstrumentationLibraryInfo().getName();
         Matcher matcher = COMPONENT_PATTERN.matcher(instrumentationName);
         String component = matcher.matches() ? matcher.group(1) : instrumentationName;
-        if ("jms".equals(component) && span.getName().startsWith("jms.receive") && kind == Kind.CLIENT) {
+        if ("jms".equals(component) && !span.getParentSpanId().isValid() && kind == Kind.CLIENT) {
             // no need to capture these, at least is consistent with prior behavior
+            // these tend to be frameworks pulling messages which are then pushed to consumers
+            // where we capture them
             return;
         }
         if (kind == Kind.INTERNAL) {
