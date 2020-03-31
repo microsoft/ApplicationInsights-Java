@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 public class InstrumentationSettings {
 
     public String connectionString;
-    public String instrumentationKey;
     public PreviewConfiguration preview = new PreviewConfiguration();
 
     public static class PreviewConfiguration {

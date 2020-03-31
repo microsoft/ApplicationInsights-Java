@@ -171,7 +171,6 @@ public class BeforeAgentInstaller {
 
     private static boolean hasConnectionStringOrInstrumentationKey(InstrumentationSettings config) {
         return !Strings.isNullOrEmpty(config.connectionString)
-                || !Strings.isNullOrEmpty(config.instrumentationKey)
                 || !Strings.isNullOrEmpty(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
                 || !Strings.isNullOrEmpty(System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
     }
@@ -202,9 +201,6 @@ public class BeforeAgentInstaller {
 
         if (!Strings.isNullOrEmpty(config.connectionString)) {
             xmlConfiguration.setConnectionString(config.connectionString);
-        }
-        if (!Strings.isNullOrEmpty(config.instrumentationKey)) {
-            xmlConfiguration.setInstrumentationKey(config.instrumentationKey);
         }
         if (!Strings.isNullOrEmpty(config.preview.roleName)) {
             xmlConfiguration.setRoleName(config.preview.roleName);
