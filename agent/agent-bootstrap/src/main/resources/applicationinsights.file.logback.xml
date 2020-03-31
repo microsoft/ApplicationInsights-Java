@@ -15,6 +15,7 @@
   </appender>
   <!-- never want to log apache http at trace or debug, it's just way to verbose -->
   <logger name="org.apache.http" level="${applicationinsights.logback.level.org.apache.http}" />
+  <logger name="applicationinsights.diagnostics" level="info" />
   <root level="${applicationinsights.logback.level}">
     <appender-ref ref="FILE" />
   </root>
