@@ -1,3 +1,23 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 package com.microsoft.applicationinsights.internal.etw.events.model;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,9 +55,6 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
         return StringUtils.defaultString(logger);
     }
 
-    /**
-     * @param logger the logger to set
-     */
     public void setLogger(String logger) {
         this.logger = logger;
     }
@@ -46,9 +63,6 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
         return StringUtils.defaultString(extensionVersion);
     }
 
-    /**
-     * @param extensionVersion the extensionVersion to set
-     */
     public void setExtensionVersion(String extensionVersion) {
         this.extensionVersion = extensionVersion;
     }
@@ -57,9 +71,6 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
         return StringUtils.defaultString(appName);
     }
 
-    /**
-     * @param appName the appName to set
-     */
     public void setAppName(String appName) {
         this.appName = appName;
     }
@@ -68,9 +79,6 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
         return StringUtils.defaultString(resourceType);
     }
 
-    /**
-     * @param resourceType the resourceType to set
-     */
     public void setResourceType(String resourceType) {
         this.resourceType = resourceType;
     }
@@ -79,9 +87,6 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
         return StringUtils.defaultString(instrumentationKey);
     }
 
-    /**
-     * @param instrumentationKey the instrumentationKey to set
-     */
     public void setInstrumentationKey(String instrumentationKey) {
         this.instrumentationKey = instrumentationKey;
     }
@@ -90,23 +95,14 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
         return StringUtils.defaultString(subscriptionId);
     }
 
-    /**
-     * @param subscriptionId the subscriptionId to set
-     */
     public void setSubscriptionId(String subscriptionId) {
         this.subscriptionId = subscriptionId;
     }
 
-    /**
-     * @param messageFormat the messageFormat to set
-     */
     public void setMessageFormat(String messageFormat) {
         this.messageFormat = messageFormat;
     }
 
-    /**
-     * @param messageArgs the messageArgs to set
-     */
     public void setMessageArgs(Object... messageArgs) {
         this.messageArgs = messageArgs;
     }
@@ -119,16 +115,10 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
         }
     }
 
-    /**
-     * @return the operation
-     */
     public String getOperation() {
         return StringUtils.defaultString(operation);
     }
 
-    /**
-     * @param operation the operation to set
-     */
     public void setOperation(String operation) {
         this.operation = operation;
     }
