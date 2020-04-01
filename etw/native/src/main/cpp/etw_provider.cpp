@@ -65,7 +65,7 @@ JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwPr
                 writeEvent_IpaEtwEvent(env, jobj_event, event_id);
                 break;
             default:
-                throw (AIJNIERR_UNKONWN_EVENTID | (event_id << 2));
+                throw (AIJNIERR_UNKONWN_EVENTID | (event_id << 8));
         }
     }
     catch (aijnierr_t err)
