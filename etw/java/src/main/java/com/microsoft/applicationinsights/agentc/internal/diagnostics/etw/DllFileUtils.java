@@ -25,14 +25,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class DllFileUtils {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DllFileUtils.class);
+
     private DllFileUtils() {}
 
     // From JniPCConnector in applicationinsights-core
@@ -54,8 +57,7 @@ class DllFileUtils {
         if (!dllPath.exists() || !dllPath.canRead() || !dllPath.canWrite()) {
             throw new RuntimeException("Failed to create a read/write folder for the native dll.");
         }
-
-        InternalLogger.INSTANCE.trace("%s folder exists", dllPath.toString());
+        LOGGER.trace("{} folder exists", dllPath.toString());
 
         return dllPath;
     }
@@ -75,18 +77,18 @@ class DllFileUtils {
             out = FileUtils.openOutputStream(dllOnDisk);
             IOUtils.copy(in, out);
 
-            InternalLogger.INSTANCE.trace("Successfully extracted '%s' to local folder", libraryToLoad);
+            LOGGER.info("Successfully extracted '{}' to local folder", libraryToLoad);
         } finally {
             try {
                 in.close();
             } catch (IOException e) {
-                InternalLogger.INSTANCE.error("Failed to close input stream for dll extraction: %s", e.toString());
+                LOGGER.error("Failed to close input stream for dll extraction.", e);
             }
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    InternalLogger.INSTANCE.error("Failed to close output stream for dll extraction: %s", e.toString());
+                    LOGGER.error("Failed to close output stream for dll extraction.", e);
                 }
             }
         }
