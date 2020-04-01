@@ -27,10 +27,47 @@ clean {
     dependsOn ':etw:native:clean'
 }
 
+/**
+ * Configures the native build variant.
+ * Values:  release|debug
+ * Default: debug
+ */
+final def NATIVE_BUILD_VARIANT_PROPERTY = 'ai.etw.native.build'
+
+/**
+ * Configures the verbosity of debug output.
+ * This value is ignored if ai.etw.native.build=release
+ * Values:  true|false
+ * Default: false
+ */
+final def NATIVE_VERBOSE_OUTPUT_PROPERTY = 'ai.etw.native.verbose'
+
 subprojects {
+    ext['NATIVE_BUILD_VARIANT_PROPERTY'] = NATIVE_BUILD_VARIANT_PROPERTY
+    ext['NATIVE_VERBOSE_OUTPUT_PROPERTY'] = NATIVE_VERBOSE_OUTPUT_PROPERTY
+
     // if prop does not exist, use isRelease value, otherwise override isRelease value.
-    if (!project.hasProperty('ai.etw.native.build')) {
-        ext['ai.etw.native.build'] = isRelease ? 'release' : 'debug'
-        println "setting ai.etw.native.build for ${project.name}"
+    if (!project.hasProperty(NATIVE_BUILD_VARIANT_PROPERTY)) {
+        if (System.getProperty(NATIVE_BUILD_VARIANT_PROPERTY) == null) {
+            ext[NATIVE_BUILD_VARIANT_PROPERTY] = isRelease ? 'release' : 'debug'
+            println "setting ai.etw.native.build for ${project.name}: ${ext[NATIVE_BUILD_VARIANT_PROPERTY]}"
+        } else {
+            ext[NATIVE_BUILD_VARIANT_PROPERTY] = System.getProperty(NATIVE_BUILD_VARIANT_PROPERTY)
+        }
+    }
+
+    if (!project.hasProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY)) {
+        if (System.getProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY) != null) {
+            ext[NATIVE_VERBOSE_OUTPUT_PROPERTY] = System.getProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY)
+        }
+    }
+
+    if (project.hasProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY) && project.hasProperty(NATIVE_BUILD_VARIANT_PROPERTY)) {
+        // verbose=true is not allowed for release builds
+        if ('true'.equalsIgnoreCase(ext[NATIVE_VERBOSE_OUTPUT_PROPERTY]) && 'release'.equalsIgnoreCase(ext[NATIVE_BUILD_VARIANT_PROPERTY])) {
+            println "$NATIVE_VERBOSE_OUTPUT_PROPERTY cannot be true when $NATIVE_BUILD_VARIANT_PROPERTY=relese."
+            println "Setting $NATIVE_VERBOSE_OUTPUT_PROPERTY=false"
+            ext[NATIVE_VERBOSE_OUTPUT_PROPERTY] = 'false'
+        }
     }
 }

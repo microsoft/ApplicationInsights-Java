@@ -26,7 +26,7 @@
 #include <cstdlib>
 #include <cerrno>
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(AIETW_VERBOSE)
 #include <cstdio>
 #define DBG(...) printf(__VA_ARGS__)
 #else
@@ -195,7 +195,7 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
         }
         TraceLoggingUnregister(provider_EtwHandle);
         DBG(" event:\n\tmsg=%s,\n\tExtVer=%s,\n\tSubscriptionId=%s,\n\tAppName=%s,\n\tResourceType=%s,\n\tLogger=%s\n\tIkey=%s\n\tOperation=%s\n", message, extensionVersion, subscriptionId, appName, resourceType, logger, ikey, operation);
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(AIETW_VERBOSE)
         if (stackTrace != NULL) {
             DBG("\tException=%s\n\n", stackTrace);
         } else {
@@ -406,7 +406,7 @@ char * jstring2cstr(JNIEnv * env, jstring &jstr_input, char * cstr_output, aijni
             DBG("strncpy_s failed: len=%d, errno=%d\n", len, cpyerr);
             throw (AIJNIERR_STRCPY | field_id);
         }
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(AIETW_VERBOSE)
         if (cpyerr == STRUNCATE) {
             DBG("TRUNCATE!\n");
         }

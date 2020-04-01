@@ -140,20 +140,22 @@ public class EtwProviderTests {
     }
 
     private void longTestCheck() {
-        Assume.assumeFalse("Long tests disabled", "true".equalsIgnoreCase(System.getProperty("ai.tests.etw.long.disabled")));
-        Assume.assumeTrue("Not using release build. Skipping testEventsOnLoop", "release".equalsIgnoreCase(System.getProperty("ai.etw.native.build")));
+        Assume.assumeFalse("Long tests disabled", "true".equalsIgnoreCase(System.getProperty("ai.etw.tests.long.disabled")));
+        Assume.assumeTrue("Verbose output enabled. Skipping long tests.",
+            "release".equalsIgnoreCase(System.getProperty("ai.etw.native.build")) ||
+            !"true".equalsIgnoreCase(System.getProperty("ai.etw.native.verbose")));
     }
 
     @Test
-    public void testEventsOnLoop_10k() throws Exception {
+    public void testEventsOnLoop_50k() throws Exception {
         longTestCheck();
-        runLoopTest(10_000);
+        runLoopTest(50_000);
     }
 
     @Test
-    public void testEventsOnLoop_100k() throws Exception {
+    public void testEventsOnLoop_500k() throws Exception {
         longTestCheck();
-        runLoopTest(100_000);
+        runLoopTest(500_000);
     }
 
     private static class EventCounts {
@@ -161,13 +163,14 @@ public class EtwProviderTests {
         int warn = 0;
         int error = 0;
         int critical = 0;
+
         int sum() {
             return info + warn + error + critical;
         }
 
         @Override
         public String toString() {
-            return String.format("{ info: %d, warn: %d, error: %d, critical: %d }");
+            return String.format("{ info: %d, warn: %d, error: %d, critical: %d }", info, warn, error, critical);
         }
 
         void plus(EventCounts operand) {
@@ -175,6 +178,13 @@ public class EtwProviderTests {
             warn += operand.warn;
             error += operand.error;
             critical += operand.critical;
+        }
+
+        void reset() {
+            info = 0;
+            warn = 0;
+            error = 0;
+            critical = 0;
         }
     }
 
@@ -187,7 +197,13 @@ public class EtwProviderTests {
         EventCounts totalEvents = new EventCounts();
         long printTimer = 0;
         EventCounts accumulator = new EventCounts();
+        System.out.println("START: totalEvents: "+totalEvents.sum()+totalEvents.toString());
+        System.out.println("       accumulator: "+accumulator.sum()+accumulator.toString());
         for (int i = 0; i < iterations; i++) {
+            // if (i % 1000 == 0) {
+            //     System.out.println("After "+i+"iterations: total: "+totalEvents.sum()+totalEvents.toString());
+            //     System.out.println("                       accum: "+accumulator.sum()+accumulator.toString());
+            // }
             long start = System.currentTimeMillis();
             ep.writeEvent(createInfo("test.info", "testEventsOnLoop", "i=%d", i));
             accumulator.info++;
@@ -217,14 +233,15 @@ public class EtwProviderTests {
             }
             long elapsedTime = (System.currentTimeMillis() - start);
             printTimer += elapsedTime;
-            totalEvents.plus(accumulator);
             if (printTimer >= EVENT_STATS_TIMER_PERIOD_MILLISECONDS) {
-                System.out.println("Wrote " + accumulator.sum() + " events "+accumulator.toString()+" in " + printTimer + "ms "+String.format("(avg=%.3fms)", ((double)printTimer/accumulator.sum())));
+                totalEvents.plus(accumulator);
+                System.out.println("Wrote " + accumulator.sum() + " events (" + totalEvents.sum() + ") "+accumulator.toString()+" in " + printTimer + "ms "+String.format("(avg=%.3fms)", ((double)printTimer/(double)accumulator.sum())));
                 printTimer = 0;
-                accumulator = new EventCounts();
+                accumulator.reset();
             }
         }
+        totalEvents.plus(accumulator);
         long totalElapsedTime = System.currentTimeMillis()-methodStart;
-        System.out.println("FINAL STATS: wrote "+totalEvents.sum()+" events "+totalEvents.toString()+" in "+totalElapsedTime+"ms "+String.format("(avg=%.3fms)", ((double)totalElapsedTime/totalEvents.sum())));
+        System.out.println("FINAL STATS: wrote "+totalEvents.sum()+" events "+totalEvents.toString()+" in "+totalElapsedTime+"ms "+String.format("(avg=%.3fms)", ((double)totalElapsedTime/(double)totalEvents.sum())));
     }
 }

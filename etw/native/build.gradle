@@ -53,7 +53,7 @@ logger.info "Windows SDK:  $winSdkDir"
 logger.info "SDK Lib path: $winSdkLibPath"
 logger.info "Visual Studio Build Tools: $vsToolsDir"
 
-println ":etw:native:ai.etw.native.build=${project.properties['ai.etw.native.build']}"
+println ":etw:native:$NATIVE_VERBOSE_OUTPUT_PROPERTY=${project.properties[NATIVE_BUILD_VARIANT_PROPERTY]}"
 
 toolChains.withType(VisualCpp).configureEach  {
     // FIXME can this toolchain be addressed directly?
@@ -84,14 +84,15 @@ tasks.withType(CppCompile).configureEach {
     compilerArgs.add '/std:c++14'
     compilerArgs.add '/EHsc'
     compilerArgs.add '/sdl'
-    if (project.properties['ai.etw.native.build'].equalsIgnoreCase('release')) {
+    if (project.hasProperty(NATIVE_BUILD_VARIANT_PROPERTY) && 'release'.equalsIgnoreCase(project.properties[NATIVE_BUILD_VARIANT_PROPERTY])) {
         macros.put("NDEBUG", null)
         compilerArgs.add '/O2' // optimize for speed
         compilerArgs.add '/MD' // multithreaded
     } else {
-        macros.put("DEBUG", null)
-        macros.put("_DEBUG", null)
         compilerArgs.add '/MDd' // multithreaded, debug mode
+        if (project.hasProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY) && 'true'.equalsIgnoreCase(project.properties[NATIVE_VERBOSE_OUTPUT_PROPERTY])) {
+            macros.put("AIETW_VERBOSE", null)
+        }
     }
 }
 
