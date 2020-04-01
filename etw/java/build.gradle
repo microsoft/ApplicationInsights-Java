@@ -59,10 +59,8 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.7'
     implementation 'commons-io:commons-io:2.6'
     implementation 'org.slf4j:slf4j-api:1.7.26'
-    api 'ch.qos.logback:logback-classic:1.2.3'
 
     provided project(path: ':core')
-    provided project(path: ':agent-codeless')
 
     jni32 project(path: ':etw:native', configuration: "${project.properties['ai.etw.native.build']}X86RuntimeElements")
     jni64 project(path: ':etw:native', configuration: "${project.properties['ai.etw.native.build']}X86-64RuntimeElements")

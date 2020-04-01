@@ -22,9 +22,8 @@ package com.microsoft.applicationinsights.agentc.internal.diagnostics.etw;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.*;
-
-import ch.qos.logback.classic.spi.ThrowableProxy;
 
 import static org.junit.Assert.*;
 
@@ -37,9 +36,25 @@ import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.IpaWarn;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.IpaEtwEventBase;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.IpaEtwEventErrorBase;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.StacktraceProvider;
 
 public class EtwProviderTests {
     private static final File dllTempFolder = DllFileUtils.buildDllLocalPath();
+
+    private static class ThrowableStacktraceProvider implements StacktraceProvider {
+        private final Throwable t;
+
+        public ThrowableStacktraceProvider(Throwable t) {
+            this.t = t;
+        }
+
+        @Override
+        public String asString() {
+            return ExceptionUtils.getStackTrace(t);
+        }
+
+
+    }
 
     @BeforeClass
     public static void cleanTempFolder() {
@@ -109,7 +124,7 @@ public class EtwProviderTests {
         event.setLogger(logger);
         event.setOperation(operation);
         if (throwable != null) {
-            event.setStacktrace(new ThrowableProxy(throwable));
+            event.setStacktrace(new ThrowableStacktraceProvider(throwable));
         }
         event.setMessageFormat(messageFormat);
         event.setMessageArgs(messageArgs);

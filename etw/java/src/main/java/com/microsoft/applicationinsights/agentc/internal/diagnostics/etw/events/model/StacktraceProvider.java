@@ -20,28 +20,6 @@
  */
 package com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model;
 
-public abstract class IpaEtwEventErrorBase extends IpaEtwEventBase {
-    private StacktraceProvider stacktrace;
-
-    public IpaEtwEventErrorBase() {
-        super();
-    }
-
-    public IpaEtwEventErrorBase(IpaEtwEventBase evt) {
-        super(evt);
-        if (evt instanceof IpaEtwEventErrorBase) {
-            setStacktrace(((IpaEtwEventErrorBase)evt).stacktrace);
-        }
-    }
-
-    public String getStacktraceString() {
-        if (stacktrace == null) {
-            return "";
-        }
-        return stacktrace.asString();
-    }
-
-    public void setStacktrace(StacktraceProvider stacktrace) {
-        this.stacktrace = stacktrace;
-    }
+public interface StacktraceProvider {
+    String asString();
 }
