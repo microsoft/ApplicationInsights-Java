@@ -51,7 +51,6 @@ TRACELOGGING_DEFINE_PROVIDER(
 JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppWriteEvent
     (JNIEnv * env, jobject jobj_javaThis, jobject jobj_event)
 {
-    // TODO get data from objects
     try
     {
         DBG("getting event_id");
@@ -135,7 +134,6 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
         ikey = stringGetter2cstr(env, jobj_event, "getInstrumentationKey", ikey, JSTRID_IKEY);
         operation = stringGetter2cstr(env, jobj_event, "getOperation", operation, JSTRID_OPERATION);
 
-        // TODO extract constants
         // write event
         TraceLoggingRegister(provider_EtwHandle);
         if (event_id == EVENTID_INFO) {
