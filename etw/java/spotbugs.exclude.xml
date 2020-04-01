@@ -7,7 +7,7 @@
         <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" />
         <Or>
             <And>
-                <Class name="com.microsoft.applicationinsights.internal.etw.DllFileUtils" />
+                <Class name="com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.DllFileUtils" />
                 <Method name="buildDllLocalPath" />
             </And>
         </Or>
@@ -17,7 +17,7 @@
         <Or>
             <And>
                 <!-- The DLL extraction path is read from trusted sources. -->
-                <Class name="com.microsoft.applicationinsights.internal.etw.DllFileUtils" />
+                <Class name="com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.DllFileUtils" />
                 <Method name="buildDllLocalPath"/>
             </And>
         </Or>

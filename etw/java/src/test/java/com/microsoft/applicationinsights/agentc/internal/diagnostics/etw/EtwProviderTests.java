@@ -18,7 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.internal.etw;
+package com.microsoft.applicationinsights.agentc.internal.diagnostics.etw;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -31,12 +31,12 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.UUID;
 
-import com.microsoft.applicationinsights.internal.etw.events.IpaCritical;
-import com.microsoft.applicationinsights.internal.etw.events.IpaError;
-import com.microsoft.applicationinsights.internal.etw.events.IpaInfo;
-import com.microsoft.applicationinsights.internal.etw.events.IpaWarn;
-import com.microsoft.applicationinsights.internal.etw.events.model.IpaEtwEventBase;
-import com.microsoft.applicationinsights.internal.etw.events.model.IpaEtwEventErrorBase;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.IpaCritical;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.IpaError;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.IpaInfo;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.IpaWarn;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.IpaEtwEventBase;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.IpaEtwEventErrorBase;
 
 public class EtwProviderTests {
     private static final File dllTempFolder = DllFileUtils.buildDllLocalPath();
@@ -200,10 +200,6 @@ public class EtwProviderTests {
         System.out.println("START: totalEvents: "+totalEvents.sum()+totalEvents.toString());
         System.out.println("       accumulator: "+accumulator.sum()+accumulator.toString());
         for (int i = 0; i < iterations; i++) {
-            // if (i % 1000 == 0) {
-            //     System.out.println("After "+i+"iterations: total: "+totalEvents.sum()+totalEvents.toString());
-            //     System.out.println("                       accum: "+accumulator.sum()+accumulator.toString());
-            // }
             long start = System.currentTimeMillis();
             ep.writeEvent(createInfo("test.info", "testEventsOnLoop", "i=%d", i));
             accumulator.info++;

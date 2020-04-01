@@ -18,7 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.internal.etw;
+package com.microsoft.applicationinsights.agentc.internal.diagnostics.etw;
 
 import java.io.File;
 import java.io.IOException;

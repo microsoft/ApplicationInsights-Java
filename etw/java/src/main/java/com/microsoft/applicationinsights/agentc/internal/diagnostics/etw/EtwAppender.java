@@ -18,16 +18,16 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.internal.etw;
+package com.microsoft.applicationinsights.agentc.internal.diagnostics.etw;
 
 import java.util.Map;
 
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.internal.etw.events.IpaError;
-import com.microsoft.applicationinsights.internal.etw.events.IpaInfo;
-import com.microsoft.applicationinsights.internal.etw.events.IpaWarn;
-import com.microsoft.applicationinsights.internal.etw.events.model.IpaEtwEventBase;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.IpaError;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.IpaInfo;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.IpaWarn;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.IpaEtwEventBase;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;

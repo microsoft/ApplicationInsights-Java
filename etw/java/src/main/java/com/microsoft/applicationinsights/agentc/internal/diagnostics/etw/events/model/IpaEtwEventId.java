@@ -18,8 +18,21 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.internal.etw.events.model;
+package com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model;
 
-public interface IpaEtwEvent {
-    IpaEtwEventId id();
+public enum IpaEtwEventId {
+    CRITICAL(1),
+    ERROR(2),
+    WARN(3),
+    INFO(4);
+
+    private final int idValue;
+
+    private IpaEtwEventId(int idValue) {
+        this.idValue = idValue;
+    }
+
+    public int value() {
+        return idValue;
+    }
 }

@@ -18,21 +18,20 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.internal.etw.events.model;
+package com.microsoft.applicationinsights.agentc.internal.diagnostics.etw;
 
-public enum IpaEtwEventId {
-    CRITICAL(1),
-    ERROR(2),
-    WARN(3),
-    INFO(4);
+public class ApplicationInsightsEtwException extends Exception {
+    private static final long serialVersionUID = 6108441736100165651L;
 
-    private final int idValue;
-
-    private IpaEtwEventId(int idValue) {
-        this.idValue = idValue;
+    public ApplicationInsightsEtwException() {
+        super();
     }
 
-    public int value() {
-        return idValue;
+    public ApplicationInsightsEtwException(String message) {
+        super(message);
+    }
+
+    public ApplicationInsightsEtwException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

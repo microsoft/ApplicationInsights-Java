@@ -18,20 +18,31 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.internal.etw;
+package com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model;
 
-public class ApplicationInsightsEtwException extends Exception {
-    private static final long serialVersionUID = 6108441736100165651L;
+import ch.qos.logback.classic.spi.IThrowableProxy;
+import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 
-    public ApplicationInsightsEtwException() {
+public abstract class IpaEtwEventErrorBase extends IpaEtwEventBase {
+    private IThrowableProxy stacktrace;
+
+    public IpaEtwEventErrorBase() {
         super();
     }
 
-    public ApplicationInsightsEtwException(String message) {
-        super(message);
+    public IpaEtwEventErrorBase(IpaEtwEventBase evt) {
+        super(evt);
+        if (evt instanceof IpaEtwEventErrorBase) {
+            setStacktrace(((IpaEtwEventErrorBase)evt).stacktrace);
+        }
     }
 
-    public ApplicationInsightsEtwException(String message, Throwable cause) {
-        super(message, cause);
+    public String getStacktraceString() {
+        // if stacktrace == null, returns ""
+        return ThrowableProxyUtil.asString(stacktrace);
+    }
+
+    public void setStacktrace(IThrowableProxy stacktrace) {
+        this.stacktrace = stacktrace;
     }
 }

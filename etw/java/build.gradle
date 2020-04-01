@@ -76,7 +76,7 @@ dependencies {
 tasks.register('generateNativeHeaders', Exec) {
     // could be made generic if more native classes existed
 
-    def targetClass = 'com.microsoft.applicationinsights.internal.etw.EtwProvider'
+    def targetClass = 'com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.EtwProvider'
     def outputDir = project(':etw:native').ext.headersDir
     def outputFilename = 'jni_etw_provider.h'
 

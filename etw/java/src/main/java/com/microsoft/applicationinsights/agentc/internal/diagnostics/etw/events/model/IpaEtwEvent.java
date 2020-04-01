@@ -18,23 +18,8 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.internal.etw.events;
+package com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model;
 
-import com.microsoft.applicationinsights.internal.etw.events.model.IpaEtwEventBase;
-import com.microsoft.applicationinsights.internal.etw.events.model.IpaEtwEventId;
-
-public class IpaInfo extends IpaEtwEventBase {
-
-    public IpaInfo() {
-        super();
-    }
-
-    public IpaInfo(IpaEtwEventBase event) {
-        super(event);
-    }
-
-    @Override
-    public IpaEtwEventId id() {
-        return IpaEtwEventId.INFO;
-    }
+public interface IpaEtwEvent {
+    IpaEtwEventId id();
 }

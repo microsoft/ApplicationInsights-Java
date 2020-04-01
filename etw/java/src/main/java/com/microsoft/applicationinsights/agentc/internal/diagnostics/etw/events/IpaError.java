@@ -18,31 +18,25 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.internal.etw.events.model;
+package com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events;
 
-import ch.qos.logback.classic.spi.IThrowableProxy;
-import ch.qos.logback.classic.spi.ThrowableProxyUtil;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.IpaEtwEventBase;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.IpaEtwEventErrorBase;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.IpaEtwEventId;
 
-public abstract class IpaEtwEventErrorBase extends IpaEtwEventBase {
-    private IThrowableProxy stacktrace;
+public class IpaError extends IpaEtwEventErrorBase {
 
-    public IpaEtwEventErrorBase() {
+    public IpaError() {
         super();
     }
 
-    public IpaEtwEventErrorBase(IpaEtwEventBase evt) {
-        super(evt);
-        if (evt instanceof IpaEtwEventErrorBase) {
-            setStacktrace(((IpaEtwEventErrorBase)evt).stacktrace);
-        }
+    public IpaError(IpaEtwEventBase event) {
+        super(event);
     }
 
-    public String getStacktraceString() {
-        // if stacktrace == null, returns ""
-        return ThrowableProxyUtil.asString(stacktrace);
+    @Override
+    public IpaEtwEventId id() {
+        return IpaEtwEventId.ERROR;
     }
 
-    public void setStacktrace(IThrowableProxy stacktrace) {
-        this.stacktrace = stacktrace;
-    }
 }

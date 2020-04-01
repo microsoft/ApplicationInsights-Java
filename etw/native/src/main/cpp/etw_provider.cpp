@@ -48,7 +48,7 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x1f0dc33f,0x30ae,0x5ff3,0x8b,0x01,0x8c,0xa9,0xb8,0x50,0x92,0x33));
 
 /********cppWriteEvent(IpaEtwEventBase event)********/
-JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwProvider_cppWriteEvent
+JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_agentc_internal_diagnostics_etw_EtwProvider_cppWriteEvent
     (JNIEnv * env, jobject jobj_javaThis, jobject jobj_event)
 {
     try
@@ -80,7 +80,7 @@ JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_internal_etw_EtwPr
 
 int getEventId(JNIEnv * env, jobject &jobj_event) throw(aijnierr_t) {
     jclass cls = env->GetObjectClass(jobj_event);
-    jmethodID jmid = env->GetMethodID(cls, "id", "()Lcom/microsoft/applicationinsights/internal/etw/events/model/IpaEtwEventId;");
+    jmethodID jmid = env->GetMethodID(cls, "id", "()Lcom/microsoft/applicationinsights/agentc/internal/diagnostics/etw/events/model/IpaEtwEventId;");
     if (jmid == NULL) {
         throw AIJNIERR_METHOD_NAME;
     }
@@ -311,7 +311,7 @@ void handleGenericException(JNIEnv * env) noexcept {
 }
 
 jthrowable newJniException(JNIEnv * env, const char * message) noexcept {
-    jclass excls = env->FindClass("com/microsoft/applicationinsights/internal/etw/ApplicationInsightsEtwException");
+    jclass excls = env->FindClass("com/microsoft/applicationinsights/agentc/internal/diagnostics/etw/ApplicationInsightsEtwException");
     jmethodID init_id = env->GetMethodID(excls, "<init>", "(Ljava/lang/String;)V");
     jthrowable rval = NULL;
     if (init_id == NULL) {
@@ -331,7 +331,7 @@ jthrowable newJniException(JNIEnv * env, const char * message) noexcept {
 }
 
 jthrowable newJniException(JNIEnv * env, const char * message, jthrowable cause) noexcept {
-    jclass excls = env->FindClass("com/microsoft/applicationinsights/internal/etw/ApplicationInsightsEtwException");
+    jclass excls = env->FindClass("com/microsoft/applicationinsights/agentc/internal/diagnostics/etw/ApplicationInsightsEtwException");
     jmethodID init_id = env->GetMethodID(excls, "<init>", "(Ljava/lang/String;Ljava/lang/Throwable;)V");
     jthrowable rval = NULL;
     if (init_id == NULL) {
