@@ -24,7 +24,6 @@ import java.util.Map;
 
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.internal.etw.events.IpaCritical;
 import com.microsoft.applicationinsights.internal.etw.events.IpaError;
 import com.microsoft.applicationinsights.internal.etw.events.IpaInfo;
 import com.microsoft.applicationinsights.internal.etw.events.IpaWarn;
@@ -83,10 +82,6 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
             String operation = mdcPropertyMap.get(DiagnosticsHelper.MDC_PROP_OPERATION);
             if (StringUtils.isNotEmpty(operation)) {
                 event.setOperation(operation);
-            }
-            String etwCritical = mdcPropertyMap.get(DiagnosticsHelper.MDC_ETW_CRITICAL);
-            if (StringUtils.isNotEmpty(etwCritical) && Boolean.parseBoolean(etwCritical)) {
-                event = new IpaCritical(event);
             }
         }
         event.setLogger(logEvent.getLoggerName());

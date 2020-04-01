@@ -26,8 +26,6 @@ public class DiagnosticsHelper {
 
     public static final String MDC_PROP_OPERATION = "microsoft.ai.operationName";
 
-	public static final Object MDC_ETW_CRITICAL = "microsoft.ai.etw.critical";
-
     public static void setAgentJarFile(File agentJarFile) {
         Path agentPath = agentJarFile.toPath();
         if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
