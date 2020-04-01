@@ -75,6 +75,12 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
 
     @Override
     protected void append(ILoggingEvent logEvent) {
+        String logger = logEvent.getLoggerName();
+        if (StringUtils.startsWith(logger, "com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.")) {
+            addWarn("Skipping attempt to log to "+logger);
+            return;
+        }
+
         Level level = logEvent.getLevel();
         IpaEtwEventBase event;
         // empty if no throwable
@@ -107,7 +113,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
                 event.setOperation(operation);
             }
         }
-        event.setLogger(logEvent.getLoggerName());
+        event.setLogger(logger);
         event.setMessageFormat(logEvent.getMessage());
         event.setMessageArgs(logEvent.getArgumentArray());
         try {
