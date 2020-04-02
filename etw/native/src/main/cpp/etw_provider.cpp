@@ -122,6 +122,7 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
     char * ikey = NULL;
     char * stackTrace = NULL;
     char * operation = NULL;
+    TraceLoggingRegister(provider_EtwHandle);
     try
     {
         // convert all jstrings
@@ -135,7 +136,6 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
         operation = stringGetter2cstr(env, jobj_event, "getOperation", operation, JSTRID_OPERATION);
 
         // write event
-        TraceLoggingRegister(provider_EtwHandle);
         if (event_id == EVENTID_INFO) {
             WRITE_INFO_EVENT(
                 TraceLoggingValue(message, ETW_FIELD_MESSAGE),
@@ -191,7 +191,6 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
                     break;
             }
         }
-        TraceLoggingUnregister(provider_EtwHandle);
         DBG(" event:\n\tmsg=%s,\n\tExtVer=%s,\n\tSubscriptionId=%s,\n\tAppName=%s,\n\tResourceType=%s,\n\tLogger=%s\n\tIkey=%s\n\tOperation=%s\n", message, extensionVersion, subscriptionId, appName, resourceType, logger, ikey, operation);
 #if !defined(NDEBUG) && defined(AIETW_VERBOSE)
         if (stackTrace != NULL) {
@@ -209,6 +208,7 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
     {
         handleGenericException(env);
     }
+    TraceLoggingUnregister(provider_EtwHandle);
 
     // clean up
     delete[] message;
@@ -267,8 +267,7 @@ void handleJstrException(JNIEnv * env, aijnierr_t jnierr) noexcept {
             }
             break;
         case AIJNIERR_EXCEPTION_RAISED:
-            message = "Exception raised";
-            break;
+            return; // Use current exception
         case AIJNIERR_UNKONWN_EVENTID:
             message = "Unknown event ID: " + std::to_string(jnierr >> 2);
         default:
@@ -311,40 +310,54 @@ void handleGenericException(JNIEnv * env) noexcept {
 }
 
 jthrowable newJniException(JNIEnv * env, const char * message) noexcept {
-    jclass excls = env->FindClass("com/microsoft/applicationinsights/agentc/internal/diagnostics/etw/ApplicationInsightsEtwException");
-    jmethodID init_id = env->GetMethodID(excls, "<init>", "(Ljava/lang/String;)V");
     jthrowable rval = NULL;
-    if (init_id == NULL) {
-        DBG("Could not find constructor ApplicationInsightsEtwException(String)");
-        javaThrowUnknownError(env, " - could not find ApplicationInsightsEtwException.<init>(String)");
+    jclass excls = env->FindClass("com/microsoft/applicationinsights/agentc/internal/diagnostics/etw/ApplicationInsightsEtwException");
+    if (excls == NULL) {
+        DBG("Could not find ApplicationInsightsEtwException");
+        javaThrowUnknownError(env, " - could not find ApplicationInsightsEtwException");
     } else {
-        jstring jstr_message = env->NewStringUTF(message);
-        rval = (jthrowable)env->NewObject(excls, init_id, jstr_message);
-        if (env->ExceptionCheck()) {
-            DBG("Exception from ApplicationInsightsEtwException.<init>(String)");
-            rval = NULL;
+        jmethodID init_id = env->GetMethodID(excls, "<init>", "(Ljava/lang/String;)V");
+        if (init_id == NULL) {
+            DBG("Could not find constructor ApplicationInsightsEtwException(String)");
+            javaThrowUnknownError(env, " - could not find constructor ApplicationInsightsEtwException.<init>(String)");
+        } else {
+            jstring jstr_message = env->NewStringUTF(message);
+            rval = (jthrowable)env->NewObject(excls, init_id, jstr_message);
+            if (env->ExceptionCheck()) {
+                    DBG("Exception from constructor ApplicationInsightsEtwException.<init>(String)");
+                rval = NULL;
+            }
+            env->DeleteLocalRef(jstr_message);
         }
-        env->DeleteLocalRef(jstr_message);
     }
     env->DeleteLocalRef(excls);
     return rval;
 }
 
 jthrowable newJniException(JNIEnv * env, const char * message, jthrowable cause) noexcept {
-    jclass excls = env->FindClass("com/microsoft/applicationinsights/agentc/internal/diagnostics/etw/ApplicationInsightsEtwException");
-    jmethodID init_id = env->GetMethodID(excls, "<init>", "(Ljava/lang/String;Ljava/lang/Throwable;)V");
+    if (cause == NULL) {
+        return newJniException(env, message);
+    }
+
     jthrowable rval = NULL;
-    if (init_id == NULL) {
-        DBG("Could not find constructor ApplicationInsightsEtwException(String, Throwable)");
-        javaThrowUnknownError(env, " - could not find ApplicationInsightsEtwException.<init>(String, Throwable)");
+    jclass excls = env->FindClass("com/microsoft/applicationinsights/agentc/internal/diagnostics/etw/ApplicationInsightsEtwException");
+    if (excls == NULL) {
+        DBG("Could not find class ApplicationInsightsEtwException");
+        javaThrowUnknownError(env, " - could not find class ApplicationInsightsEtwException");
     } else {
-        jstring jstr_message = env->NewStringUTF(message);
-        rval = (jthrowable)env->NewObject(excls, init_id, jstr_message, cause);
-        if (env->ExceptionCheck()) {
-            DBG("Exception from ApplicationInsightsEtwException.<init>(String, Throwable)");
-            rval = NULL;
+        jmethodID init_id = env->GetMethodID(excls, "<init>", "(Ljava/lang/String;Ljava/lang/Throwable;)V");
+        if (init_id == NULL) {
+            DBG("Could not find constructor ApplicationInsightsEtwException.<init>(String, Throwable)");
+            javaThrowUnknownError(env, " - could not find constructor ApplicationInsightsEtwException.<init>(String, Throwable)");
+        } else {
+            jstring jstr_message = env->NewStringUTF(message);
+            rval = (jthrowable)env->NewObject(excls, init_id, jstr_message, cause);
+            if (env->ExceptionCheck()) {
+                    DBG("Exception from constructor ApplicationInsightsEtwException.<init>(String, Throwable)");
+                rval = NULL;
+            }
+            env->DeleteLocalRef(jstr_message);
         }
-        env->DeleteLocalRef(jstr_message);
     }
     env->DeleteLocalRef(excls);
     return rval;
@@ -368,7 +381,6 @@ void javaThrowJniException(JNIEnv * env, std::string message) noexcept {
         } else {
             env->Throw(cause);
         }
-
     }
     env->DeleteLocalRef(t);
 }

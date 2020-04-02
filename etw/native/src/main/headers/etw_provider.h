@@ -47,6 +47,7 @@ typedef int aijnierr_t;
 #define AIJNIERR_METHOD_NAME        0x03
 #define AIJNIERR_EXCEPTION_RAISED   0x04
 #define AIJNIERR_UNKONWN_EVENTID    0x05
+#define AIJNIERR_CLASS_NOT_FOUND    0x06
 
 #define JSTRID_MESSAGE              0x0100
 #define JSTRID_LOGGER               0x0200
