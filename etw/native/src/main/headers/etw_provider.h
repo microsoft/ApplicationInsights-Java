@@ -66,11 +66,6 @@ typedef int aijnierr_t;
 #define EVENTID_ERROR       2
 #define EVENTID_CRITICAL    1
 
-/**
- * preconditions: char * is allocated, JNIenv and jstring not null, int > 0
- * postconditions:
- * returns: 0 on success,
- */
 char * jstring2cstr(JNIEnv * env, jstring &jstr_input, char * cstr_output, aijnierr_t field_id) throw(aijnierr_t);
 
 char * stringGetter2cstr(JNIEnv * env, jobject &jobj_target, const char * method_name, char * rval, aijnierr_t field_id) throw(aijnierr_t);
