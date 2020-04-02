@@ -24,6 +24,7 @@ include 'ApplicationInsightsInternalLogger'
 include 'instrumentation:azure-functions'
 include 'etw:native'
 include 'etw:java'
+include 'etw:etw-testapp'
 include 'agent-codeless'
 include 'core'
 if (System.env.'COLLECTD_HOME') {
