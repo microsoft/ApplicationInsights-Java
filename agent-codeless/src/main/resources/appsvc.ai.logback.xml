@@ -13,10 +13,14 @@
     <!-- internal troubleshooting/diagnostics logs -->
     <include optional="true" resource="${ai.config.appender.diagnostics.location:-rp-logger-config/diagnostics.appender.xml}" />
 
+    <!-- etw appender; windows only -->
+    <include optional="true" resources="${ai.config.appender.etw.location:-rp-logger-config/etw.appender.xml}" />
+
     <root level="${applicationInsights.agent.logging.level:-error}">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="USER_LOG_FILE" /><!-- optional; platform dependent -->
         <appender-ref ref="DIAGNOSTICS_FILE" /><!-- optional; platform dependent -->
+        <appender-ref ref="ETW_PROVIDER" /><!-- optional; windows only, platform dependent -->
     </root>
 
     <logger name="applicationinsights.extension.diagnostics" level="${applicationinsights.extension.diagnostics.level:-info}" />

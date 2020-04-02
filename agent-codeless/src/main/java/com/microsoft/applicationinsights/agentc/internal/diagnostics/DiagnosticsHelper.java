@@ -9,9 +9,23 @@ import com.google.common.annotations.VisibleForTesting;
 public class DiagnosticsHelper {
     private DiagnosticsHelper() { }
 
+    /**
+     * Values: true|false
+     * Default: true
+     */
     public static final String IPA_LOG_FILE_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_LOG_FILE_ENABLED";
 
+    /**
+     * Default: "" (meaning diagnostics file output is disabled)
+     */
     public static final String INTERNAL_LOG_OUTPUT_DIR_ENV_VAR = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
+
+    /**
+     * Windows only. Cannot be enabled on non-windows OS.
+     * Values: true|false
+     * Default: true
+     */
+	public static final String IPA_ETW_PROVIDER_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_ETW_PROVIDER_ENABLED";
 
     @VisibleForTesting
     static volatile boolean appServiceCodeless;
