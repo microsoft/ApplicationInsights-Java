@@ -1,56 +1,54 @@
 package com.microsoft.applicationinsights.agentc.internal.diagnostics;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Arrays;
+import java.util.Iterator;
 
-public class ApplicationMetadataFactory {
-    private final AgentExtensionVersionFinder extensionVersion = new AgentExtensionVersionFinder();
-    private final InstrumentationKeyFinder instrumentationKey = new InstrumentationKeyFinder();
-    private final MachineNameFinder machineName = new MachineNameFinder();
-    private final PidFinder pid = new PidFinder();
-    private final SiteNameFinder siteName = new SiteNameFinder();
-    private final SubscriptionIdFinder subscriptionId = new SubscriptionIdFinder();
-    private final SdkVersionFinder sdkVersion = new SdkVersionFinder();
+public class ApplicationMetadataFactory implements Iterable<DiagnosticsValueFinder> {
+
+    private final DiagnosticsValueFinder[] finders = new DiagnosticsValueFinder[] {
+        new AgentExtensionVersionFinder(), // 0
+        new InstrumentationKeyFinder(), // 1
+        new MachineNameFinder(), // 2
+        new PidFinder(), // 3
+        new SiteNameFinder(), // 4
+        new SubscriptionIdFinder(), // 5
+        new SdkVersionFinder(), // 6
+    };
+
 
     ApplicationMetadataFactory() {}
 
-    public static class MetadataEntry extends SimpleImmutableEntry<String, String> {
-        private static final long serialVersionUID = 2079366300769487514L;
-        public MetadataEntry(String key, String value) {
-            super(key, value);
-        }
+    public DiagnosticsValueFinder getExtensionVersion() {
+        return finders[0];
     }
 
-    public MetadataEntry getExtensionVersion() {
-        return new MetadataEntry(extensionVersion.getName(), extensionVersion.getValue());
+    public DiagnosticsValueFinder getInstrumentationKey() {
+        return finders[1];
     }
 
-    public MetadataEntry getInstrumentationKey() {
-        return new MetadataEntry(instrumentationKey.getName(), instrumentationKey.getValue());
+    public DiagnosticsValueFinder getMachineName() {
+        return finders[2];
     }
 
-
-    public MetadataEntry getMachineName() {
-        return new MetadataEntry(machineName.getName(), machineName.getValue());
+    public DiagnosticsValueFinder getPid() {
+        return finders[3];
     }
 
-
-    public MetadataEntry getPid() {
-        return new MetadataEntry(pid.getName(), pid.getValue());
+    public DiagnosticsValueFinder getSiteName() {
+        return finders[4];
     }
 
-
-    public MetadataEntry getSiteName() {
-        return new MetadataEntry(siteName.getName(), siteName.getValue());
+    public DiagnosticsValueFinder getSubscriptionId() {
+        return finders[5];
     }
 
-
-    public MetadataEntry getSubscriptionId() {
-        return new MetadataEntry(subscriptionId.getName(), subscriptionId.getValue());
+    public DiagnosticsValueFinder getSdkVersion() {
+        return finders[6];
     }
 
-
-    public MetadataEntry getsdkVersion() {
-        return new MetadataEntry(sdkVersion.getName(), sdkVersion.getValue());
+    @Override
+    public Iterator<DiagnosticsValueFinder> iterator() {
+        return Arrays.asList(finders).iterator();
     }
 
 }

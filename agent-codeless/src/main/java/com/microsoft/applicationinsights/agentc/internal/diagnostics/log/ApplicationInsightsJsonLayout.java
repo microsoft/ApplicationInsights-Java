@@ -29,13 +29,9 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.contrib.json.classic.JsonLayout;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.AgentExtensionVersionFinder;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsValueFinder;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.InstrumentationKeyFinder;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.SdkVersionFinder;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.SiteNameFinder;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.SubscriptionIdFinder;
 
 public class ApplicationInsightsJsonLayout extends JsonLayout {
 
@@ -49,12 +45,14 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     @VisibleForTesting
     final List<DiagnosticsValueFinder> valueFinders = new ArrayList<>();
 
+
     public ApplicationInsightsJsonLayout() {
-        valueFinders.add(new SiteNameFinder());
-        valueFinders.add(new InstrumentationKeyFinder());
-        valueFinders.add(new AgentExtensionVersionFinder());
-        valueFinders.add(new SdkVersionFinder());
-        valueFinders.add(new SubscriptionIdFinder());
+        final ApplicationMetadataFactory mf = DiagnosticsHelper.getMetadataFactory();
+        valueFinders.add(mf.getSiteName());
+        valueFinders.add(mf.getInstrumentationKey());
+        valueFinders.add(mf.getExtensionVersion());
+        valueFinders.add(mf.getSdkVersion());
+        valueFinders.add(mf.getSubscriptionId());
     }
 
     @Override

@@ -18,14 +18,11 @@ import javax.annotation.concurrent.GuardedBy;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.AgentExtensionVersionFinder;
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsValueFinder;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.InstrumentationKeyFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.MachineNameFinder;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.PidFinder;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.SdkVersionFinder;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.SiteNameFinder;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.squareup.moshi.Moshi;
@@ -92,12 +89,13 @@ public class StatusFile {
     static {
         WRITER_THREAD.allowCoreThreadTimeOut(true);
         CONSTANT_VALUES.put("AppType", "java");
-        VALUE_FINDERS.add(new MachineNameFinder());
-        VALUE_FINDERS.add(new PidFinder());
-        VALUE_FINDERS.add(new SdkVersionFinder());
-        VALUE_FINDERS.add(new SiteNameFinder());
-        VALUE_FINDERS.add(new InstrumentationKeyFinder());
-        VALUE_FINDERS.add(new AgentExtensionVersionFinder());
+        final ApplicationMetadataFactory mf = DiagnosticsHelper.getMetadataFactory();
+        VALUE_FINDERS.add(mf.getMachineName());
+        VALUE_FINDERS.add(mf.getPid());
+        VALUE_FINDERS.add(mf.getSdkVersion());
+        VALUE_FINDERS.add(mf.getSiteName());
+        VALUE_FINDERS.add(mf.getInstrumentationKey());
+        VALUE_FINDERS.add(mf.getExtensionVersion());
 
         init();
     }
