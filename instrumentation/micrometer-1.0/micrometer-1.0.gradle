@@ -1,0 +1,17 @@
+apply from: "${rootDir}/gradle/instrumentation.gradle"
+apply plugin: 'org.unbroken-dome.test-sets'
+
+muzzle {
+  pass {
+    group = "io.micrometer"
+    module = "micrometer-core"
+    versions = "[1.0.0,)"
+    assertInverse = true
+  }
+}
+
+dependencies {
+  library group: 'io.micrometer', name: 'micrometer-core', version: '1.4.0'
+
+  testCompile group: 'com.microsoft.azure', name: 'azure-spring-boot-metrics-starter', version: '2.2.3'
+}
