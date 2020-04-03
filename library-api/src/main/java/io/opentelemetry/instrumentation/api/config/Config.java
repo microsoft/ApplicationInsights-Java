@@ -90,6 +90,8 @@ public class Config {
 
   public static final String ENDPOINT_PEER_SERVICE_MAPPING = "endpoint.peer.service.mapping";
 
+  public static final String MICROMETER_STEP_MILLIS = "micrometer.step.millis";
+
   private static final boolean DEFAULT_TRACE_ENABLED = true;
   public static final boolean DEFAULT_INTEGRATIONS_ENABLED = true;
 
@@ -103,6 +105,8 @@ public class Config {
   public static final String DEFAULT_EXPERIMENTAL_LOG_CAPTURE_THRESHOLD = null;
 
   public static final boolean DEFAULT_KAFKA_CLIENT_PROPAGATION_ENABLED = true;
+
+  public static final int DEFAULT_MICROMETER_STEP_MILLIS = 60000;
 
   private static final String DEFAULT_TRACE_ANNOTATIONS = null;
   private static final boolean DEFAULT_TRACE_EXECUTORS_ALL = false;
@@ -141,6 +145,8 @@ public class Config {
   // | TRACE/FINEST | FINEST  | TRACE   | TRACE  |
   // | ALL          | ALL     | ALL     | ALL    |
   private final String experimentalLogCaptureThreshold;
+
+  private final int micrometerStepMillis;
 
   private final String traceAnnotations;
 
@@ -195,6 +201,9 @@ public class Config {
         toUpper(
             getSettingFromEnvironment(
                 EXPERIMENTAL_LOG_CAPTURE_THRESHOLD, DEFAULT_EXPERIMENTAL_LOG_CAPTURE_THRESHOLD));
+
+    micrometerStepMillis =
+        getIntegerSettingFromEnvironment(MICROMETER_STEP_MILLIS, DEFAULT_MICROMETER_STEP_MILLIS);
 
     traceAnnotations = getSettingFromEnvironment(TRACE_ANNOTATIONS, DEFAULT_TRACE_ANNOTATIONS);
 
@@ -256,6 +265,9 @@ public class Config {
         toUpper(
             properties.getProperty(
                 EXPERIMENTAL_LOG_CAPTURE_THRESHOLD, parent.experimentalLogCaptureThreshold));
+
+    micrometerStepMillis =
+        getPropertyIntegerValue(properties, MICROMETER_STEP_MILLIS, parent.micrometerStepMillis);
 
     traceAnnotations = properties.getProperty(TRACE_ANNOTATIONS, parent.traceAnnotations);
 
@@ -587,6 +599,10 @@ public class Config {
 
   public String getExperimentalLogCaptureThreshold() {
     return experimentalLogCaptureThreshold;
+  }
+
+  public int getMicrometerStepMillis() {
+    return micrometerStepMillis;
   }
 
   public String getTraceAnnotations() {
