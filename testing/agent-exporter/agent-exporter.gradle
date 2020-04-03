@@ -9,6 +9,8 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk")
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("org.slf4j:slf4j-api")
+  // this is needed for access to MicrometerUtil.MicrometerUtilDelegate
+  compileOnly project(':instrumentation-api')
 
   annotationProcessor "com.google.auto.service:auto-service"
   compileOnly "com.google.auto.service:auto-service"
