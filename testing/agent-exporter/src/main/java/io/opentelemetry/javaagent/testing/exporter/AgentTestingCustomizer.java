@@ -6,6 +6,7 @@
 package io.opentelemetry.javaagent.testing.exporter;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
@@ -34,5 +35,7 @@ public class AgentTestingCustomizer implements AutoConfigurationCustomizerProvid
                 PeriodicMetricReader.builder(AgentTestingExporterFactory.metricExporter)
                     .setInterval(Duration.ofMillis(100))
                     .newMetricReaderFactory()));
+
+    MicrometerUtil.setDelegate(AgentTestingMicrometerDelegate.instance);
   }
 }
