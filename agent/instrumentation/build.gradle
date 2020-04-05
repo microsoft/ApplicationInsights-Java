@@ -8,7 +8,7 @@ repositories {
     mavenLocal()
 }
 
-def instrumentationVersion = '0.2.1-SNAPSHOT'
+def instrumentationVersion = '0.2.3-SNAPSHOT'
 
 dependencies {
     compile project(':agent:agent-tooling')
