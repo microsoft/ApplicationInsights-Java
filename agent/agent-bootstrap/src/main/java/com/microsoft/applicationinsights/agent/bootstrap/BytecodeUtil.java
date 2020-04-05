@@ -23,6 +23,9 @@ package com.microsoft.applicationinsights.agent.bootstrap;
 import java.net.URI;
 import java.util.Map;
 
+import io.opentelemetry.auto.bootstrap.instrumentation.aisdk.MicrometerUtil;
+import io.opentelemetry.auto.bootstrap.instrumentation.aisdk.MicrometerUtil.MicrometerUtilDelegate;
+
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -33,9 +36,15 @@ public class BytecodeUtil {
 
     private static BytecodeUtilDelegate delegate;
 
-    public static void setDelegate(BytecodeUtilDelegate delegate) {
+    public static void setDelegate(final BytecodeUtilDelegate delegate) {
         if (BytecodeUtil.delegate == null) {
             BytecodeUtil.delegate = delegate;
+            MicrometerUtil.setDelegate(new MicrometerUtilDelegate() {
+                @Override
+                public void trackMetric(String name, double value, Integer count, Double min, Double max, Map<String, String> properties) {
+                    delegate.trackMetric(name, value, count, min, max, null, properties);
+                }
+            });
         }
     }
 

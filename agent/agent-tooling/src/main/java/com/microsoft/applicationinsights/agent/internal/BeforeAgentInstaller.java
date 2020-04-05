@@ -32,12 +32,14 @@ import java.util.concurrent.CountDownLatch;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.FixedRateSampling;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.HeartBeatModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
@@ -103,6 +105,7 @@ public class BeforeAgentInstaller {
         Properties properties = new Properties();
         properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
         properties.put("experimental.log.capture.threshold", getThreshold(config, "WARN"));
+        properties.put("micrometer.step.millis", Integer.toString(getReportingIntervalMillis(config, 60000)));
         properties.put("experimental.controller-and-view.spans.enabled", "false");
         properties.put("http.server.error.statuses", "400-599");
         ConfigOverride.set(properties);
@@ -143,6 +146,8 @@ public class BeforeAgentInstaller {
         TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
         AiAppId.setSupplier(new AppIdSupplier());
+        // this is currently used by Micrometer instrumentation in addition to 2.x SDK
+        BytecodeUtil.setDelegate(new BytecodeUtilImpl());
     }
 
     @Nullable
@@ -193,6 +198,22 @@ public class BeforeAgentInstaller {
             return defaultValue;
         }
         return threshold;
+    }
+
+    private static int getReportingIntervalMillis(InstrumentationSettings config, int defaultValue) {
+        Map<String, Object> micrometer = config.preview.instrumentation.get("micrometer");
+        if (micrometer == null) {
+            return defaultValue;
+        }
+        Object reportingIntervalMillisObj = micrometer.get("reportingIntervalMillis");
+        if (reportingIntervalMillisObj == null) {
+            return defaultValue;
+        }
+        if (!(reportingIntervalMillisObj instanceof Number)) {
+            startupLogger.warn("micrometer reportingIntervalMillis must be a number, but found: {}", reportingIntervalMillisObj.getClass());
+            return defaultValue;
+        }
+        return ((Number) reportingIntervalMillisObj).intValue();
     }
 
     private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(InstrumentationSettings config) {

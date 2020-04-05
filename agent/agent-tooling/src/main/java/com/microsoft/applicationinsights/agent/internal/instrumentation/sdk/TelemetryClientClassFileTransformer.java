@@ -86,8 +86,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         }
         // FIXME why isn't this being called for internal TelemetryClient (which is good, but why)?
 
-        BytecodeUtil.setDelegate(new BytecodeUtilImpl());
-
         StatusFile.putValueAndWrite("SDKPresent", true);
         try {
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);

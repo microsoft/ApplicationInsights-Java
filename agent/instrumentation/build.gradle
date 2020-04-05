@@ -36,6 +36,7 @@ dependencies {
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-log4j-1.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-log4j-2.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-logback-1.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-micrometer-1.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-3.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-3.7', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-mongo-async-3.3', version: instrumentationVersion
