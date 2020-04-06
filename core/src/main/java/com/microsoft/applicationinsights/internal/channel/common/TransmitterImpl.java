@@ -82,7 +82,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
         }
     }
 
-    private static final class ScheduledSendHandler extends SendHandler implements Runnable {
+    private static final class ScheduledSendHandler extends SendHandler {
         private final TelemetriesFetcher<Telemetry> telemetriesFetcher;
 
         public ScheduledSendHandler(TransmissionDispatcher transmissionDispatcher, TelemetriesFetcher<Telemetry> telemetriesFetcher, TelemetrySerializer serializer) {
@@ -93,14 +93,13 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
             this.telemetriesFetcher = telemetriesFetcher;
         }
 
-        @Override
         public void run() {
             Collection<Telemetry> telemetriesToSend = telemetriesFetcher.fetch();
             dispatch(telemetriesToSend);
         }
     }
 
-    private static final class SendNowHandler extends SendHandler implements Runnable {
+    private static final class SendNowHandler extends SendHandler {
         private final Collection<Telemetry> telemetries;
 
         public SendNowHandler(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, Collection<Telemetry> telemetries) {
@@ -111,7 +110,6 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
             this.telemetries = telemetries;
         }
 
-        @Override
         public void run() {
             dispatch(telemetries);
         }
@@ -158,7 +156,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
         }
 
         try {
-            final Runnable command = new ScheduledSendHandler(transmissionDispatcher, telemetriesFetcher, serializer);
+            final ScheduledSendHandler command = new ScheduledSendHandler(transmissionDispatcher, telemetriesFetcher, serializer);
             threadPool.schedule(new Runnable() {
                 public void run() {
                     try {
@@ -205,7 +203,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
             return false;
         }
 
-        final Runnable command = new SendNowHandler(transmissionDispatcher, serializer, telemetries);
+        final SendNowHandler command = new SendNowHandler(transmissionDispatcher, serializer, telemetries);
         try {
             threadPool.execute(new Runnable() {
                 public void run() {
