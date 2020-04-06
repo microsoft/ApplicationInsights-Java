@@ -44,8 +44,7 @@ import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
-
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
 import org.apache.commons.io.FileUtils;
@@ -67,7 +66,7 @@ import org.slf4j.LoggerFactory;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmissionFileSystemOutput implements TransmissionOutput {
+public final class TransmissionFileSystemOutput implements TransmissionOutputSync {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionFileSystemOutput.class);
 
@@ -137,7 +136,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     }
 
     @Override
-    public boolean send(Transmission transmission) {
+    public boolean sendSync(Transmission transmission) {
 
         long currentSizeInBytes = size.get();
         if (currentSizeInBytes >= capacityInBytes) {

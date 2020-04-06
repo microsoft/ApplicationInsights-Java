@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.core.volume;
 
 import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputAsync;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 import com.microsoft.applicationinsights.internal.channel.common.*;
@@ -36,7 +36,7 @@ final class ThroughputTestTransmitterFactory implements TransmitterFactory {
     @Override
     public TelemetriesTransmitter create(String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstanceRetries) {
         // An active object with the network sender
-        TransmissionOutput actualNetworkSender = TestThreadLocalData.getTransmissionOutput();
+        TransmissionOutputAsync actualNetworkSender = TestThreadLocalData.getTransmissionOutput();
         final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);
         transmissionPolicyManager.addTransmissionHandler(new ErrorHandler(transmissionPolicyManager));
         transmissionPolicyManager.addTransmissionHandler(new PartialSuccessHandler(transmissionPolicyManager));
@@ -44,15 +44,15 @@ final class ThroughputTestTransmitterFactory implements TransmitterFactory {
         transmissionPolicyManager.setMaxInstantRetries(maxInstanceRetries);
 
         TransmissionPolicyStateFetcher stateFetcher = transmissionPolicyManager.getTransmissionPolicyState();
-        TransmissionOutput networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender, stateFetcher);
+        TransmissionOutputAsync networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender, stateFetcher);
 
 
         // An active object with the file system sender
         TransmissionFileSystemOutput fileSystemSender = new TransmissionFileSystemOutput();
-        TransmissionOutput activeFileSystemOutput = new ActiveTransmissionFileSystemOutput(fileSystemSender, stateFetcher);
+        TransmissionOutputAsync activeFileSystemOutput = new ActiveTransmissionFileSystemOutput(fileSystemSender, stateFetcher);
 
         // The dispatcher works with the two active senders
-        TransmissionDispatcher dispatcher = new NonBlockingDispatcher(new TransmissionOutput[] {networkSender, activeFileSystemOutput});
+        TransmissionDispatcher dispatcher = new NonBlockingDispatcher(new TransmissionOutputAsync[] {networkSender, activeFileSystemOutput});
 
         // The loader works with the file system loader as the active one does
         TransmissionsLoader transmissionsLoader = new ActiveTransmissionLoader(fileSystemSender, stateFetcher, dispatcher);

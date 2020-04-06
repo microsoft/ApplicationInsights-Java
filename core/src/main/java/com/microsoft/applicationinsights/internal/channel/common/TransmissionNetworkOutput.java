@@ -25,7 +25,7 @@ import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmissionNetworkOutput implements TransmissionOutput {
+public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionNetworkOutput.class);
 
@@ -157,10 +157,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
      * @return True when done.
      */
     @Override
-    public boolean send(Transmission transmission) {
+    public boolean sendSync(Transmission transmission) {
         if (!stopped) {
-            // If we're not stopped but in a blocked state then fail to second
-            // TransmissionOutput
+            // If we're not stopped but in a blocked state then fail to second transmission output
             if (transmissionPolicyManager.getTransmissionPolicyState().getCurrentState() != TransmissionPolicy.UNBLOCKED) {
                 return false;
             }
@@ -183,7 +182,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 respString = EntityUtils.toString(respEntity);
                 retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
 
-                // After we reach our instant retry limit we should fail to second TransmissionOutput
+                // After we reach our instant retry limit we should fail to second transmission output
                 if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() > this.transmissionPolicyManager.getMaxInstantRetries()) {
                     return false;
                 } else if (code == HttpStatus.SC_OK) {

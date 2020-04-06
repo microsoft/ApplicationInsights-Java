@@ -105,7 +105,7 @@ public class ActiveTransmissionLoaderTest {
             }
 
             for (int i = 0; i < amount; ++i) {
-                fileSystem.send(new Transmission(new byte[2], "MockContentType", "MockEncodingType"));
+                fileSystem.sendSync(new Transmission(new byte[2], "MockContentType", "MockEncodingType"));
             }
 
             if (putFilesFirst) {

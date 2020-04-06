@@ -25,12 +25,12 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputAsync;
 
 /**
  * The class implements {@link TransmissionDispatcher}
  *
- * Basically, the class tries to find one {@link TransmissionOutput}
+ * Basically, the class tries to find one {@link TransmissionOutputAsync}
  * that will accept the incoming {@link Transmission}.
  *
  * It is a non blocking behavior in the sense that if no one can accept it will drop the data
@@ -38,11 +38,11 @@ import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
  * Created by gupele on 12/18/2014.
  */
 public final class NonBlockingDispatcher implements TransmissionDispatcher {
-    private final TransmissionOutput[] transmissionOutputs;
+    private final TransmissionOutputAsync[] transmissionOutputs;
 
-    public NonBlockingDispatcher(TransmissionOutput[] transmissionOutputs) {
+    public NonBlockingDispatcher(TransmissionOutputAsync[] transmissionOutputs) {
         Preconditions.checkNotNull(transmissionOutputs, "transmissionOutputs should be non-null value");
-        Preconditions.checkArgument(transmissionOutputs.length > 0, "There should be at least one TransmissionOutput");
+        Preconditions.checkArgument(transmissionOutputs.length > 0, "There should be at least one transmission output");
 
         this.transmissionOutputs = transmissionOutputs;
     }
@@ -51,8 +51,8 @@ public final class NonBlockingDispatcher implements TransmissionDispatcher {
     public void dispatch(Transmission transmission) {
         Preconditions.checkNotNull(transmission, "transmission should be non-null value");
 
-        for (TransmissionOutput output : transmissionOutputs) {
-            if (output.send(transmission)) {
+        for (TransmissionOutputAsync output : transmissionOutputs) {
+            if (output.sendAsync(transmission)) {
                 return;
             }
         }
@@ -60,7 +60,7 @@ public final class NonBlockingDispatcher implements TransmissionDispatcher {
 
     @Override
     public void stop(long timeout, TimeUnit timeUnit) {
-        for (TransmissionOutput output : transmissionOutputs) {
+        for (TransmissionOutputAsync output : transmissionOutputs) {
             output.stop(timeout, timeUnit);
         }
     }

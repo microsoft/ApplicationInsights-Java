@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputAsync;
 import org.junit.Test;
 
 import org.mockito.Mockito;
@@ -37,7 +37,7 @@ public class NonBlockingDispatcherTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void emptyTest() {
-        new NonBlockingDispatcher(new TransmissionOutput[]{});
+        new NonBlockingDispatcher(new TransmissionOutputAsync[]{});
     }
 
     @Test(expected = NullPointerException.class)
@@ -47,42 +47,42 @@ public class NonBlockingDispatcherTest {
 
     @Test
     public void testDispatchSuccessOfFirst() {
-        TransmissionOutput mockOutput1 = Mockito.mock(TransmissionOutput.class);
-        Mockito.doReturn(true).when(mockOutput1).send((Transmission) anyObject());
+        TransmissionOutputAsync mockOutput1 = Mockito.mock(TransmissionOutputAsync.class);
+        Mockito.doReturn(true).when(mockOutput1).sendAsync((Transmission) anyObject());
 
-        TransmissionOutput mockOutput2 = Mockito.mock(TransmissionOutput.class);
+        TransmissionOutputAsync mockOutput2 = Mockito.mock(TransmissionOutputAsync.class);
 
-        NonBlockingDispatcher tested = new NonBlockingDispatcher(new TransmissionOutput[] {mockOutput1, mockOutput2});
+        NonBlockingDispatcher tested = new NonBlockingDispatcher(new TransmissionOutputAsync[] {mockOutput1, mockOutput2});
 
         Transmission transmission = new Transmission(new byte[2], "mockType", "mockEncoding");
         tested.dispatch(transmission);
 
-        Mockito.verify(mockOutput1, Mockito.times(1)).send((Transmission) anyObject());
-        Mockito.verify(mockOutput2, Mockito.never()).send((Transmission) anyObject());
+        Mockito.verify(mockOutput1, Mockito.times(1)).sendAsync((Transmission) anyObject());
+        Mockito.verify(mockOutput2, Mockito.never()).sendAsync((Transmission) anyObject());
     }
 
     @Test
     public void testDispatchFailureOfFirst() {
-        TransmissionOutput mockOutput1 = Mockito.mock(TransmissionOutput.class);
-        Mockito.doReturn(false).when(mockOutput1).send((Transmission) anyObject());
+        TransmissionOutputAsync mockOutput1 = Mockito.mock(TransmissionOutputAsync.class);
+        Mockito.doReturn(false).when(mockOutput1).sendAsync((Transmission) anyObject());
 
-        TransmissionOutput mockOutput2 = Mockito.mock(TransmissionOutput.class);
-        Mockito.doReturn(true).when(mockOutput2).send((Transmission) anyObject());
+        TransmissionOutputAsync mockOutput2 = Mockito.mock(TransmissionOutputAsync.class);
+        Mockito.doReturn(true).when(mockOutput2).sendAsync((Transmission) anyObject());
 
-        NonBlockingDispatcher tested = new NonBlockingDispatcher(new TransmissionOutput[] {mockOutput1, mockOutput2});
+        NonBlockingDispatcher tested = new NonBlockingDispatcher(new TransmissionOutputAsync[] {mockOutput1, mockOutput2});
 
         Transmission transmission = new Transmission(new byte[2], "mockType", "mockEncoding");
         tested.dispatch(transmission);
 
-        Mockito.verify(mockOutput1, Mockito.times(1)).send((Transmission) anyObject());
-        Mockito.verify(mockOutput2, Mockito.times(1)).send((Transmission) anyObject());
+        Mockito.verify(mockOutput1, Mockito.times(1)).sendAsync((Transmission) anyObject());
+        Mockito.verify(mockOutput2, Mockito.times(1)).sendAsync((Transmission) anyObject());
     }
 
     private NonBlockingDispatcher createDispatcher() {
-        TransmissionOutput mockOutput1 = Mockito.mock(TransmissionOutput.class);
-        TransmissionOutput mockOutput2 = Mockito.mock(TransmissionOutput.class);
+        TransmissionOutputAsync mockOutput1 = Mockito.mock(TransmissionOutputAsync.class);
+        TransmissionOutputAsync mockOutput2 = Mockito.mock(TransmissionOutputAsync.class);
 
-        NonBlockingDispatcher tested = new NonBlockingDispatcher(new TransmissionOutput[] {mockOutput1, mockOutput2});
+        NonBlockingDispatcher tested = new NonBlockingDispatcher(new TransmissionOutputAsync[] {mockOutput1, mockOutput2});
         return tested;
     }
 }

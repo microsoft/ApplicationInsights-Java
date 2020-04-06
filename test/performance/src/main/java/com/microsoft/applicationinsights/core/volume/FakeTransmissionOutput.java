@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputAsync;
 import com.microsoft.applicationinsights.internal.channel.common.Transmission;
 
 import org.apache.commons.io.IOUtils;
@@ -36,7 +36,7 @@ import org.apache.commons.io.IOUtils;
 /**
  * Created by gupele on 2/4/2015.
  */
-final class FakeTransmissionOutput implements TransmissionOutput {
+final class FakeTransmissionOutput implements TransmissionOutputAsync {
     private volatile AtomicInteger counter = null;
 
     private final TestResultsVerifier testResultsVerifier;
@@ -50,7 +50,7 @@ final class FakeTransmissionOutput implements TransmissionOutput {
     }
 
     @Override
-    public boolean send(Transmission transmission) {
+    public boolean sendAsync(Transmission transmission) {
         ByteArrayOutputStream out = null;
         try {
             out = new ByteArrayOutputStream();
