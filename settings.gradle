@@ -81,6 +81,7 @@ include ':test:smoke:testApps:JMS'
 include ':test:smoke:testApps:Kafka'
 include ':test:smoke:testApps:SpringCloudStream'
 include ':test:smoke:testApps:Micrometer'
+include ':test:smoke:testApps:SystemExit'
 include ':test:smoke:testApps:VerifyShading'
 include ':test:smoke:testApps:VerifyJava7'
 
