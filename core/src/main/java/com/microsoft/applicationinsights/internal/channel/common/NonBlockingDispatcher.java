@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputAsync;
 
@@ -59,9 +60,13 @@ public final class NonBlockingDispatcher implements TransmissionDispatcher {
     }
 
     @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
+    public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         for (TransmissionOutputAsync output : transmissionOutputs) {
-            output.stop(timeout, timeUnit);
+            long remaining = timeout - stopwatch.elapsed(timeUnit);
+            if (remaining > 0) {
+                output.shutdown(remaining, timeUnit);
+            }
         }
     }
 }

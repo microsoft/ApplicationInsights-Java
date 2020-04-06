@@ -28,6 +28,10 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -60,6 +64,7 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import io.opentelemetry.auto.bootstrap.instrumentation.aiappid.AiAppId;
 import io.opentelemetry.auto.config.Config;
 import io.opentelemetry.auto.config.ConfigOverride;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -143,11 +148,26 @@ public class BeforeAgentInstaller {
         if (fixedRateSampling != null && fixedRateSampling.percentage != null) {
             Global.setFixedRateSamplingPercentage(fixedRateSampling.percentage);
         }
-        TelemetryClient telemetryClient = new TelemetryClient();
+        final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
         AiAppId.setSupplier(new AppIdSupplier());
         // this is currently used by Micrometer instrumentation in addition to 2.x SDK
         BytecodeUtil.setDelegate(new BytecodeUtilImpl());
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                startupLogger.debug("running shutdown hook");
+                try {
+                    telemetryClient.flush();
+                    telemetryClient.shutdown(5, TimeUnit.SECONDS);
+                    startupLogger.debug("completed shutdown hook");
+                } catch (InterruptedException e) {
+                    startupLogger.debug("interrupted while flushing telemetry during shutdown");
+                } catch (Throwable t) {
+                    startupLogger.debug(t.getMessage(), t);
+                }
+            }
+        });
     }
 
     @Nullable

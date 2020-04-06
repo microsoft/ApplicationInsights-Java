@@ -71,7 +71,7 @@ public final class TransmitterImplTest {
     }
 
     @Test
-    public void testValidCtor() {
+    public void testValidCtor() throws InterruptedException {
         TransmitterImpl transmitter = null;
         try {
             TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
@@ -82,48 +82,48 @@ public final class TransmitterImplTest {
             Mockito.verify(mockLoader, Mockito.times(1)).load(anyBoolean());
         } finally {
             if (transmitter != null) {
-                transmitter.stop(1L, TimeUnit.SECONDS);
+                transmitter.shutdown(1L, TimeUnit.SECONDS);
             }
         }
     }
 
     @Test
-    public void testScheduleSendWithNoTelemetries() {
+    public void testScheduleSendWithNoTelemetries() throws Exception {
         testScheduleSend(0, true);
         testScheduleSend(0, false);
     }
 
     @Test
-    public void testScheduleSendWith1Telemetry() {
+    public void testScheduleSendWith1Telemetry() throws Exception {
         testScheduleSend(1, true);
         testScheduleSend(1, false);
     }
 
     @Test
-    public void testScheduleSendWith100Telemetries() {
+    public void testScheduleSendWith100Telemetries() throws Exception {
         testScheduleSend(100, true);
         testScheduleSend(100, false);
     }
 
     @Test
-    public void testSendNowWithNoTelemetries() throws IOException {
+    public void testSendNowWithNoTelemetries() throws Exception {
         testSendNow(0, true);
         testSendNow(0, false);
     }
 
     @Test
-    public void testSendNowWith1Telemetry() throws IOException {
+    public void testSendNowWith1Telemetry() throws Exception {
         testSendNow(1, true);
         testSendNow(1, false);
     }
 
     @Test
-    public void testSendNowWith100Telemetries() throws IOException {
+    public void testSendNowWith100Telemetries() throws Exception {
         testSendNow(100, true);
         testSendNow(100, false);
     }
 
-    private void testSendNow(int numberOfTransmissions, boolean serializeOk) throws IOException {
+    private void testSendNow(int numberOfTransmissions, boolean serializeOk) throws InterruptedException {
         TransmitterImpl transmitter = null;
         try {
             TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
@@ -208,12 +208,12 @@ public final class TransmitterImplTest {
         } catch (InterruptedException e) {
         } finally {
             if (transmitter != null) {
-                transmitter.stop(1L, TimeUnit.SECONDS);
+                transmitter.shutdown(1L, TimeUnit.SECONDS);
             }
         }
     }
 
-    private void testScheduleSend(int numberOfTransmissions, boolean serializeOk) {
+    private void testScheduleSend(int numberOfTransmissions, boolean serializeOk) throws InterruptedException {
         TransmitterImpl transmitter = null;
         try {
             TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
@@ -303,7 +303,7 @@ public final class TransmitterImplTest {
         } catch (InterruptedException e) {
         } finally {
             if (transmitter != null) {
-                transmitter.stop(1L, TimeUnit.SECONDS);
+                transmitter.shutdown(1L, TimeUnit.SECONDS);
             }
         }
     }

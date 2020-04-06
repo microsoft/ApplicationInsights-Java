@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -58,10 +59,10 @@ public class ActiveTransmissionNetworkOutputTest {
     public void testBufferIsFull() throws Exception {
         final boolean[] isError = {false};
         final int[] numberExpected = {0};
+        final ReentrantLock lock = new ReentrantLock();
+        final Condition stopCondition = lock.newCondition();
+        final AtomicBoolean done = new AtomicBoolean();
         TransmissionOutputSync mock = new TransmissionOutputSync() {
-            private ReentrantLock lock = new ReentrantLock();
-            private Condition stopCondition = lock.newCondition();
-            private boolean done = false;
             private AtomicInteger counter = new AtomicInteger(0);
 
             @Override
@@ -69,7 +70,7 @@ public class ActiveTransmissionNetworkOutputTest {
                 try {
                     counter.incrementAndGet();
                     lock.lock();
-                    while (!done) {
+                    while (!done.get()) {
                         try {
                             stopCondition.await();
 
@@ -87,17 +88,6 @@ public class ActiveTransmissionNetworkOutputTest {
                 }
                 return false;
             }
-
-            @Override
-            public void stop(long timeout, TimeUnit timeUnit) {
-                try {
-                    lock.lock();
-                    done = true;
-                    stopCondition.signalAll();
-                } finally {
-                    lock.unlock();
-                }
-            }
         };
         TransmissionPolicyStateFetcher mockStateFetcher = Mockito.mock(TransmissionPolicyStateFetcher.class);
         Mockito.doReturn(TransmissionPolicy.UNBLOCKED).when(mockStateFetcher).getCurrentState();
@@ -105,6 +95,14 @@ public class ActiveTransmissionNetworkOutputTest {
         ActiveTransmissionNetworkOutput tested = new ActiveTransmissionNetworkOutput(mock, mockStateFetcher, 1);
         numberExpected[0] = tested.getNumberOfMaxThreads();
         testSend(100, 1, tested);
+        try {
+            lock.lock();
+            done.set(true);
+            stopCondition.signalAll();
+        } finally {
+            lock.unlock();
+        }
+        tested.shutdown(60L, TimeUnit.SECONDS);
         assertTrue("Too many calls to send", isError[0]);
     }
 
@@ -143,8 +141,6 @@ public class ActiveTransmissionNetworkOutputTest {
                 }
             }
         }
-
-        tested.stop(60L, TimeUnit.SECONDS);
     }
 
     @Test

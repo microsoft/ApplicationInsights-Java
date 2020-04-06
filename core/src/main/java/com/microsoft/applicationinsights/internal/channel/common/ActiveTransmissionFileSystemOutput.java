@@ -90,8 +90,8 @@ public final class ActiveTransmissionFileSystemOutput implements TransmissionOut
     }
 
     @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-        actualOutput.stop(timeout, timeUnit);
-        ThreadPoolUtils.stop(threadPool, timeout, timeUnit);
+    public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        threadPool.shutdown();
+        threadPool.awaitTermination(timeout, timeUnit);
     }
 }

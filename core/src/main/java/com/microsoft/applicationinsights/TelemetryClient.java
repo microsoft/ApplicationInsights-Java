@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.base.Strings;
@@ -453,6 +454,10 @@ public class TelemetryClient {
      */
     public void flush() {
         getChannel().flush();
+    }
+
+    public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        getChannel().shutdown(timeout, timeUnit);
     }
 
     /**

@@ -129,7 +129,7 @@ public class ActiveTransmissionLoaderTest {
 
         } finally {
             if (tested != null) {
-                tested.stop(1L, TimeUnit.SECONDS);
+                tested.shutdown();
             }
 
             if (folder != null && folder.exists()) {

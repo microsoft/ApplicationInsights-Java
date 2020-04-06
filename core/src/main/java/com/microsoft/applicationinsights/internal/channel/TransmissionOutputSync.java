@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.channel;
 
-import java.util.concurrent.TimeUnit;
-
 import com.microsoft.applicationinsights.internal.channel.common.Transmission;
 
 /**
@@ -35,7 +33,5 @@ import com.microsoft.applicationinsights.internal.channel.common.Transmission;
  */
 public interface TransmissionOutputSync {
     boolean sendSync(Transmission transmission);
-
-    void stop(long timeout, TimeUnit timeUnit);
 }
 

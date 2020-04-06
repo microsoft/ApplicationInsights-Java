@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.base.Preconditions;
@@ -157,22 +156,9 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
     }
 
     @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
+    public void shutdown() {
         done.set(true);
         interruptAllThreads();
-        joinAllThreads();
-    }
-
-    private void joinAllThreads() {
-        for (Thread thread : threads) {
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                logger.error("Interrupted during join of active transmission loader, exception: {}", e.toString());
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
     }
 
     private void interruptAllThreads() {

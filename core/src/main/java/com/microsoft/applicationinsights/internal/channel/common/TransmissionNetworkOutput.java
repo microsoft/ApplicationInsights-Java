@@ -42,7 +42,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The class is responsible for the actual sending of
@@ -125,24 +124,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
      */
     public void setTransmissionDispatcher(TransmissionDispatcher transmissionDispatcher) {
         this.transmissionDispatcher = transmissionDispatcher;
-    }
-
-    /**
-     * Stops all threads from sending data.
-     *
-     * @param timeout
-     *            The timeout to wait, which is not relevant here.
-     * @param timeUnit
-     *            The time unit, which is not relevant in this method.
-     */
-    @Override
-    public synchronized void stop(long timeout, TimeUnit timeUnit) {
-        if (stopped) {
-            return;
-        }
-
-        httpClient.close();
-        stopped = true;
     }
 
     /**

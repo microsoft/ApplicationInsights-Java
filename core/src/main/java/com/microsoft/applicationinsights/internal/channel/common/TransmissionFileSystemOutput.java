@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
@@ -162,10 +161,6 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
 
         logger.info("Data persisted to file. To be sent when the network is available.");
         return true;
-    }
-
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
     }
 
     public Transmission fetchOldestFile() {

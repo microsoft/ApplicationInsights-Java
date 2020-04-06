@@ -28,6 +28,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Stopwatch;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
@@ -245,9 +246,14 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
     }
 
     @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-        transmissionsLoader.stop(timeout, timeUnit);
-        ThreadPoolUtils.stop(threadPool, timeout, timeUnit);
-        transmissionDispatcher.stop(timeout, timeUnit);
+    public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        transmissionsLoader.shutdown();
+        threadPool.shutdown();
+        threadPool.awaitTermination(timeout, timeUnit);
+        long remaining = timeout - stopwatch.elapsed(timeUnit);
+        if (remaining > 0) {
+            transmissionDispatcher.shutdown(remaining, timeUnit);
+        }
     }
 }

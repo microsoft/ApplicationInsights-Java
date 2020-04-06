@@ -36,6 +36,6 @@ import com.microsoft.applicationinsights.internal.channel.common.Transmission;
 public interface TransmissionOutputAsync {
     boolean sendAsync(Transmission transmission);
 
-    void stop(long timeout, TimeUnit timeUnit);
+    void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException;
 }
 

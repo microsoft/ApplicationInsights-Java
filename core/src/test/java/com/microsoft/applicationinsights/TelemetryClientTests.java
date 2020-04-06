@@ -141,7 +141,7 @@ public final class TelemetryClientTests {
             }
 
             @Override
-            public void stop(long timeout, TimeUnit timeUnit) {
+            public void shutdown(long timeout, TimeUnit timeUnit) {
 
             }
 

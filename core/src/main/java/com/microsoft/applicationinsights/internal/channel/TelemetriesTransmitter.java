@@ -49,5 +49,5 @@ public interface TelemetriesTransmitter<T> {
 
     boolean sendNow(Collection<T> telemetries);
 
-    void stop(long timeout, TimeUnit timeUnit);
+    void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException;
 }

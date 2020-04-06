@@ -70,7 +70,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     private TransmitterFactory transmitterFactory;
     private AtomicLong itemsSent = new AtomicLong(0);
 
-    protected boolean stopped = false;
     protected boolean isInitailized = false;
 
     protected TelemetriesTransmitter<T> telemetriesTransmitter;
@@ -260,30 +259,9 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         }
     }
 
-    /**
-     * Stops on going work
-     */
     @Override
-    public synchronized void stop(long timeout, TimeUnit timeUnit) {
-        try {
-            if (stopped) {
-                return;
-            }
-
-            telemetriesTransmitter.stop(timeout, timeUnit);
-            stopped = true;
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                logger.error("Exception generated while stopping telemetry transmitter");
-                logger.trace("Exception generated while stopping telemetry transmitter", t);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
+    public synchronized void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        telemetriesTransmitter.shutdown(timeout, timeUnit);
     }
 
     /**

@@ -96,9 +96,9 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
     }
 
     @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-        actualOutput.stop(timeout, timeUnit);
-        ThreadPoolUtils.stop(outputThreads, timeout, timeUnit);
+    public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        outputThreads.shutdown();
+        outputThreads.awaitTermination(timeout, timeUnit);
     }
 
     public int getNumberOfMaxThreads() {
