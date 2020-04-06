@@ -28,10 +28,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -64,11 +61,12 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import io.opentelemetry.auto.bootstrap.instrumentation.aiappid.AiAppId;
 import io.opentelemetry.auto.config.Config;
 import io.opentelemetry.auto.config.ConfigOverride;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class BeforeAgentInstaller {
 
@@ -249,17 +247,13 @@ public class BeforeAgentInstaller {
         if (!Strings.isNullOrEmpty(config.preview.roleInstance)) {
             xmlConfiguration.setRoleInstance(config.preview.roleInstance);
         }
-        if (!config.preview.liveMetrics.enabled) {
-            xmlConfiguration.getQuickPulse().setEnabled(false);
-        }
 
         // configure heartbeat module
         AddTypeXmlElement heartbeatModule = new AddTypeXmlElement();
         heartbeatModule.setType("com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule");
-        heartbeatModule.getParameters().add(newParamXml("isHeartBeatEnabled",
-                Boolean.toString(config.preview.heartbeat.enabled)));
-        heartbeatModule.getParameters().add(newParamXml("HeartBeatInterval",
-                Long.toString(config.preview.heartbeat.intervalSeconds)));
+        // do not allow interval longer than 15 minutes, since we use the heartbeat data for usage telemetry
+        long intervalSeconds = Math.min(config.preview.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
+        heartbeatModule.getParameters().add(newParamXml("HeartBeatInterval", Long.toString(intervalSeconds)));
         ArrayList<AddTypeXmlElement> modules = new ArrayList<>();
         modules.add(heartbeatModule);
         TelemetryModulesXmlElement modulesXml = new TelemetryModulesXmlElement();

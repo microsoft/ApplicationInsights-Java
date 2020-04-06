@@ -30,7 +30,7 @@ public class ConfigurationTest {
         assertEquals("Something Good", preview.roleName);
         assertEquals("xyz123", preview.roleInstance);
         assertEquals((Double) 10.0, preview.sampling.fixedRate.percentage);
-        assertEquals(false, preview.liveMetrics.enabled);
+        assertEquals(60, preview.heartbeat.intervalSeconds);
         assertEquals(3, preview.jmxMetrics.size());
         assertEquals("java.lang:type=Threading", preview.jmxMetrics.get(0).objectName);
         assertEquals("ThreadCount", preview.jmxMetrics.get(0).attribute);
@@ -58,7 +58,7 @@ public class ConfigurationTest {
         assertEquals(null, instrumentationSettings.connectionString);
         assertEquals(null, preview.roleName);
         assertEquals(null, preview.roleInstance);
-        assertEquals(true, preview.liveMetrics.enabled);
+        assertEquals(900, preview.heartbeat.intervalSeconds);
         assertEquals(0, preview.jmxMetrics.size());
         assertEquals(0, preview.instrumentation.size());
     }

@@ -27,11 +27,7 @@
         }
       },
       "heartbeat": {
-        "enabled": true,
-        "intervalSeconds": 900
-      },
-      "liveMetrics": {
-        "enabled": false
+        "intervalSeconds": 60
       },
       "instrumentation": {
         "logging": {

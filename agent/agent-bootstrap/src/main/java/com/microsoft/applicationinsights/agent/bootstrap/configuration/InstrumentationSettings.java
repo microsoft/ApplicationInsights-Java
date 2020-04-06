@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 public class InstrumentationSettings {
 
     public String connectionString;
@@ -39,7 +41,6 @@ public class InstrumentationSettings {
         public Sampling sampling = new Sampling();
         public Heartbeat heartbeat = new Heartbeat();
         public HttpProxy httpProxy = new HttpProxy();
-        public LiveMetrics liveMetrics = new LiveMetrics();
         public boolean developerMode;
 
         public List<JmxMetric> jmxMetrics = Collections.emptyList();
@@ -67,19 +68,13 @@ public class InstrumentationSettings {
 
     public static class Heartbeat {
 
-        public boolean enabled = true;
-        public long intervalSeconds = TimeUnit.MINUTES.toSeconds(15);
+        public long intervalSeconds = MINUTES.toSeconds(15);
     }
 
     public static class HttpProxy {
 
         public String host;
         public int port = 80;
-    }
-
-    public static class LiveMetrics {
-
-        public boolean enabled = true;
     }
 
     public static class JmxMetric {
