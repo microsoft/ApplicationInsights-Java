@@ -107,8 +107,19 @@ public class BeforeAgentInstaller {
 
         Properties properties = new Properties();
         properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
-        properties.put("experimental.log.capture.threshold", getThreshold(config, "WARN"));
-        properties.put("micrometer.step.millis", Integer.toString(getReportingIntervalMillis(config, 60000)));
+        properties.put("experimental.log.capture.threshold", getLoggingThreshold(config, "WARN"));
+        properties.put("micrometer.step.millis", Integer.toString(getMicrometerReportingIntervalMillis(config, 60000)));
+        if (!isInstrumentationEnabled(config, "micrometer")) {
+            properties.put("ota.integration.micrometer.enabled", "false");
+        }
+        if (!isInstrumentationEnabled(config, "jdbc")) {
+            properties.put("ota.integration.jdbc.enabled", "false");
+        }
+        if (!isInstrumentationEnabled(config, "logging")) {
+            properties.put("ota.integration.log4j.enabled", "false");
+            properties.put("ota.integration.java-util-logging.enabled", "false");
+            properties.put("ota.integration.logback.enabled", "false");
+        }
         properties.put("experimental.controller-and-view.spans.enabled", "false");
         properties.put("http.server.error.statuses", "400-599");
         ConfigOverride.set(properties);
@@ -198,7 +209,7 @@ public class BeforeAgentInstaller {
                 || !Strings.isNullOrEmpty(System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
     }
 
-    private static String getThreshold(InstrumentationSettings config, String defaultValue) {
+    private static String getLoggingThreshold(InstrumentationSettings config, String defaultValue) {
         Map<String, Object> logging = config.preview.instrumentation.get("logging");
         if (logging == null) {
             return defaultValue;
@@ -218,20 +229,36 @@ public class BeforeAgentInstaller {
         return threshold;
     }
 
-    private static int getReportingIntervalMillis(InstrumentationSettings config, int defaultValue) {
+    private static boolean isInstrumentationEnabled(InstrumentationSettings config, String instrumentationName) {
+        Map<String, Object> properties = config.preview.instrumentation.get(instrumentationName);
+        if (properties == null) {
+            return true;
+        }
+        Object value = properties.get("enabled");
+        if (value == null) {
+            return true;
+        }
+        if (!(value instanceof Boolean)) {
+            startupLogger.warn("{} enabled must be a boolean, but found: {}", instrumentationName, value.getClass());
+            return true;
+        }
+        return (Boolean) value;
+    }
+
+    private static int getMicrometerReportingIntervalMillis(InstrumentationSettings config, int defaultValue) {
         Map<String, Object> micrometer = config.preview.instrumentation.get("micrometer");
         if (micrometer == null) {
             return defaultValue;
         }
-        Object reportingIntervalMillisObj = micrometer.get("reportingIntervalMillis");
-        if (reportingIntervalMillisObj == null) {
+        Object value = micrometer.get("reportingIntervalMillis");
+        if (value == null) {
             return defaultValue;
         }
-        if (!(reportingIntervalMillisObj instanceof Number)) {
-            startupLogger.warn("micrometer reportingIntervalMillis must be a number, but found: {}", reportingIntervalMillisObj.getClass());
+        if (!(value instanceof Number)) {
+            startupLogger.warn("micrometer reportingIntervalMillis must be a number, but found: {}", value.getClass());
             return defaultValue;
         }
-        return ((Number) reportingIntervalMillisObj).intValue();
+        return ((Number) value).intValue();
     }
 
     private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(InstrumentationSettings config) {
