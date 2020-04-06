@@ -16,7 +16,7 @@ public class TestController {
         return "OK";
     }
 
-    @GetMapping("/test")
+    @GetMapping("/test/**")
     public Mono<String> test() {
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
         Executors.newSingleThreadExecutor().execute(new Runnable() {

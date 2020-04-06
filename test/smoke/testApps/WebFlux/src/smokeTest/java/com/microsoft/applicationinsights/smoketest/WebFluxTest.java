@@ -10,18 +10,20 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 @UseAgent
-public class NettyTest extends AiSmokeTest {
+public class WebFluxTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/test")
     public void doMostBasicTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
 
         Envelope rdEnvelope = rdList.get(0);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
+        assertEquals("GET /test/**", rd.getName());
         assertEquals("200", rd.getResponseCode());
     }
 
@@ -29,6 +31,7 @@ public class NettyTest extends AiSmokeTest {
     @TargetUri("/exception")
     public void testException() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
 
         Envelope rdEnvelope = rdList.get(0);
 
@@ -42,6 +45,7 @@ public class NettyTest extends AiSmokeTest {
     @TargetUri("/futureException")
     public void testFutureException() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
 
         Envelope rdEnvelope = rdList.get(0);
 
