@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -30,6 +31,8 @@ import java.util.regex.Pattern;
 // that also injects ApplicationInsight's appId into tracestate
 public class AiHttpTraceContext implements TextMapPropagator {
   private static final Logger logger = Logger.getLogger(AiHttpTraceContext.class.getName());
+
+  private static final boolean AI_BACK_COMPAT = true;
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
   static final String TRACE_PARENT = "traceparent";
@@ -115,8 +118,22 @@ public class AiHttpTraceContext implements TextMapPropagator {
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.copyTraceFlagsHexTo(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
-    TraceState traceState = spanContext.getTraceState();
     final String appId = AiAppId.getAppId();
+
+    if (AI_BACK_COMPAT) {
+      StringBuilder requestId = new StringBuilder(TRACE_ID_HEX_SIZE + SPAN_ID_HEX_SIZE + 3);
+      requestId.append('|');
+      requestId.append(spanContext.getTraceIdAsHexString());
+      requestId.append('.');
+      requestId.append(spanContext.getSpanIdAsHexString());
+      requestId.append('.');
+      setter.set(carrier, "Request-Id", requestId.toString());
+      if (!appId.isEmpty()) {
+        setter.set(carrier, "Request-Context", "appId=" + appId);
+      }
+    }
+
+    TraceState traceState = spanContext.getTraceState();
     if (traceState.isEmpty() && appId.isEmpty()) {
       // No need to add an empty "tracestate" header.
       return;
@@ -158,6 +175,31 @@ public class AiHttpTraceContext implements TextMapPropagator {
   private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {
     String traceParent = getter.get(carrier, TRACE_PARENT);
     if (traceParent == null) {
+      if (AI_BACK_COMPAT) {
+        final String aiRequestId = getter.get(carrier, "Request-Id");
+        if (aiRequestId != null && !aiRequestId.isEmpty()) {
+          // see behavior specified at
+          // https://github.com/microsoft/ApplicationInsights-Java/issues/1174
+          final String legacyOperationId = aiExtractRootId(aiRequestId);
+          final TraceState.Builder traceState =
+              TraceState.builder().set("ai-legacy-parent-id", aiRequestId);
+          final ThreadLocalRandom random = ThreadLocalRandom.current();
+          String traceIdHex;
+          try {
+            traceIdHex = legacyOperationId;
+          } catch (final IllegalArgumentException e) {
+            logger.info("Request-Id root part is not compatible with trace-id.");
+            // see behavior specified at
+            // https://github.com/microsoft/ApplicationInsights-Java/issues/1174
+            traceIdHex = TraceId.fromLongs(random.nextLong(), random.nextLong());
+            traceState.set("ai-legacy-operation-id", legacyOperationId);
+          }
+          final String spanIdHex = SpanId.fromLong(random.nextLong());
+          final byte traceFlags = TraceFlags.getDefault();
+          return SpanContext.createFromRemoteParent(
+              traceIdHex, spanIdHex, traceFlags, traceState.build());
+        }
+      }
       return SpanContext.getInvalid();
     }
 
@@ -236,5 +278,19 @@ public class AiHttpTraceContext implements TextMapPropagator {
       traceStateBuilder.set(listMember.substring(0, index), listMember.substring(index + 1));
     }
     return traceStateBuilder.build();
+  }
+
+  private static String aiExtractRootId(final String parentId) {
+    // ported from .NET's System.Diagnostics.Activity.cs implementation:
+    // https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/System/Diagnostics/Activity.cs
+
+    int rootEnd = parentId.indexOf('.');
+    if (rootEnd < 0) {
+      rootEnd = parentId.length();
+    }
+
+    final int rootStart = parentId.charAt(0) == '|' ? 1 : 0;
+
+    return parentId.substring(rootStart, rootEnd);
   }
 }
