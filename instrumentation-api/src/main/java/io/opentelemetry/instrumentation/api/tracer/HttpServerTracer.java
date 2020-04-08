@@ -39,8 +39,10 @@ import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +57,11 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
 
   private static final boolean FAIL_ON_CONTEXT_LEAK =
       Boolean.getBoolean("otel.internal.failOnContextLeak");
+
+  protected static final String AI_REQUEST_CONTEXT_HEADER_NAME = "Request-Context";
+
+  private static final boolean AI_BACK_COMPAT = true;
+  private static final String AI_REQUEST_CONTEXT_HEADER_APPID_KEY = "appId";
 
   public HttpServerTracer() {
     super();
@@ -176,6 +183,15 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     final String sourceAppId = span.getContext().getTraceState().get(AiAppId.TRACESTATE_KEY);
     if (sourceAppId != null && !sourceAppId.isEmpty()) {
       span.setAttribute(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME, sourceAppId);
+    } else if (AI_BACK_COMPAT) {
+      final String aiRequestContext = aiRequestContext(request);
+      if (aiRequestContext != null) {
+        final Map<String, String> map = toMap(aiRequestContext);
+        final String backCompatSourceAppId = map.get(AI_REQUEST_CONTEXT_HEADER_APPID_KEY);
+        if (backCompatSourceAppId != null && !backCompatSourceAppId.isEmpty()) {
+          span.setAttribute(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME, backCompatSourceAppId);
+        }
+      }
     }
 
     SemanticAttributes.HTTP_METHOD.set(span, method(request));
@@ -331,4 +347,22 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
    * Stores given context in the given request-response-loop storage in implementation specific way.
    */
   protected abstract void attachServerContext(Context context, STORAGE storage);
+
+  protected String aiRequestContext(final REQUEST request) {
+    return null;
+  }
+
+  private static Map<String, String> toMap(final String str) {
+    final Map<String, String> result = new HashMap<>();
+    final String[] pairs = str.split(",");
+    for (final String pair : pairs) {
+      final String[] keyValuePair = pair.trim().split("=");
+      if (keyValuePair.length == 2) {
+        final String key = keyValuePair[0].trim();
+        final String value = keyValuePair[1].trim();
+        result.put(key, value);
+      }
+    }
+    return result;
+  }
 }

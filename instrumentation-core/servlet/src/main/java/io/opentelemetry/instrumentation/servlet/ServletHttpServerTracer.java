@@ -112,4 +112,9 @@ public abstract class ServletHttpServerTracer<RESPONSE>
   protected String requestHeader(HttpServletRequest httpServletRequest, String name) {
     return httpServletRequest.getHeader(name);
   }
+
+  @Override
+  protected String aiRequestContext(final HttpServletRequest request) {
+    return request.getHeader(AI_REQUEST_CONTEXT_HEADER_NAME);
+  }
 }
