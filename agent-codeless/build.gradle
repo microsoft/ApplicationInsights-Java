@@ -244,3 +244,28 @@ task verifyAgentJarContents {
 }
 tasks.assemble.dependsOn verifyAgentJarContents
 // endregion Publishing properties
+
+// creates tasks for each
+def setups = []
+file("$projectDir/package").eachDir {
+    def name = it.name
+    def path = it.absoluteFile
+    def targetDir = "$buildDir/setup/$name"
+    def targetDirRelative = "${buildDir.name}/setup/$name"
+    def sourceDir = it.parent
+    def taskName = "setup${name.capitalize()}"
+    def theTask = tasks.register(taskName, Copy) {
+        group = "Local Dev Setup"
+        description = "Copies agent jar and resource files into $targetDirRelative for use in testing."
+        logger.info "Configuring $taskName: src=${path}, dest=$targetDir"
+        from(path) {
+            include "**/**"
+        }
+        from tasks.jar.archiveFile
+        into targetDir
+        dependsOn assemble
+        doLast {
+            logger.quiet "Dev Setup for ${name.capitalize()}:\n  -javaagent:${file(targetDir)}${File.separator}${tasks.jar.archiveFileName.get()}"
+        }
+    }
+}
