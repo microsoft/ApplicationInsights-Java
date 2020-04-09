@@ -153,8 +153,22 @@ public class Exporter implements SpanExporter {
             telemetry.setSource(peerAddress + "/" + destination);
         }
 
-        setContext(span, telemetry);
         telemetry.setId(span.getSpanId().toLowerBase16());
+        telemetry.getContext().getOperation().setId(span.getTraceId().toLowerBase16());
+        String aiLegacyParentId = span.getTraceState().get("ai-legacy-parent-id");
+        if (aiLegacyParentId != null) {
+            // see behavior specified at https://github.com/microsoft/ApplicationInsights-Java/issues/1174
+            telemetry.getContext().getOperation().setParentId(aiLegacyParentId);
+            String aiLegacyOperationId = span.getTraceState().get("ai-legacy-operation-id");
+            if (aiLegacyOperationId != null) {
+                telemetry.getContext().getProperties().putIfAbsent("ai_legacyRootID", aiLegacyOperationId);
+            }
+        } else {
+            SpanId parentSpanId = span.getParentSpanId();
+            if (parentSpanId.isValid()) {
+                telemetry.getContext().getOperation().setParentId(parentSpanId.toLowerBase16());
+            }
+        }
 
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
@@ -211,8 +225,12 @@ public class Exporter implements SpanExporter {
             }
         }
 
-        setContext(span, telemetry);
         telemetry.setId(span.getSpanId().toLowerBase16());
+        telemetry.getContext().getOperation().setId(span.getTraceId().toLowerBase16());
+        SpanId parentSpanId = span.getParentSpanId();
+        if (parentSpanId.isValid()) {
+            telemetry.getContext().getOperation().setParentId(parentSpanId.toLowerBase16());
+        }
 
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
@@ -437,15 +455,6 @@ public class Exporter implements SpanExporter {
 
     @Override
     public void shutdown() {
-    }
-
-    private static void setContext(SpanData span, Telemetry telemetry) {
-        String traceId = span.getTraceId().toLowerBase16();
-        telemetry.getContext().getOperation().setId(traceId);
-        SpanId parentSpanId = span.getParentSpanId();
-        if (parentSpanId.isValid()) {
-            telemetry.getContext().getOperation().setParentId(parentSpanId.toLowerBase16());
-        }
     }
 
     private static boolean isNonNullLong(AttributeValue attributeValue) {
