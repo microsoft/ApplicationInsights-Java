@@ -121,10 +121,6 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
      * @param name The dependency name.
      */
     public void setName(String name) {
-        if (Strings.isNullOrEmpty(name)) {
-            throw new IllegalArgumentException("The event name cannot be null or empty");
-        }
-
         data.setName(name);
     }
 

@@ -94,10 +94,6 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
      * @param name Name of the event. Max length 150.
      */
     public void setName(String name) {
-        if (Strings.isNullOrEmpty(name)) {
-            throw new IllegalArgumentException("The event name cannot be null or empty");
-        }
-
         data.setName(name);
     }
 
