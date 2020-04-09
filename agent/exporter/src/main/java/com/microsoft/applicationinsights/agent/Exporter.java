@@ -153,8 +153,8 @@ public class Exporter implements SpanExporter {
             telemetry.setSource(peerAddress + "/" + destination);
         }
 
-        String id = setContext(span, telemetry);
-        telemetry.setId(id);
+        setContext(span, telemetry);
+        telemetry.setId(span.getSpanId().toLowerBase16());
 
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
@@ -211,8 +211,8 @@ public class Exporter implements SpanExporter {
             }
         }
 
-        String id = setContext(span, telemetry);
-        telemetry.setId(id);
+        setContext(span, telemetry);
+        telemetry.setId(span.getSpanId().toLowerBase16());
 
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
@@ -267,9 +267,8 @@ public class Exporter implements SpanExporter {
         TraceTelemetry telemetry = new TraceTelemetry(message, toSeverityLevel(level));
 
         if (parentSpanId.isValid()) {
-            String traceIdStr = traceId.toLowerBase16();
-            telemetry.getContext().getOperation().setId(traceIdStr);
-            telemetry.getContext().getOperation().setParentId(combine(traceIdStr, parentSpanId));
+            telemetry.getContext().getOperation().setId(traceId.toLowerBase16());
+            telemetry.getContext().getOperation().setParentId(parentSpanId.toLowerBase16());
         }
 
         setProperties(telemetry.getProperties(), timeEpochNanos, level, loggerName);
@@ -282,9 +281,8 @@ public class Exporter implements SpanExporter {
         ExceptionTelemetry telemetry = new ExceptionTelemetry();
 
         if (parentSpanId.isValid()) {
-            String traceIdStr = traceId.toLowerBase16();
-            telemetry.getContext().getOperation().setId(traceIdStr);
-            telemetry.getContext().getOperation().setParentId(combine(traceIdStr, parentSpanId));
+            telemetry.getContext().getOperation().setId(traceId.toLowerBase16());
+            telemetry.getContext().getOperation().setParentId(parentSpanId.toLowerBase16());
         }
 
         telemetry.getData().setExceptions(Exceptions.minimalParse(errorStack));
@@ -441,19 +439,13 @@ public class Exporter implements SpanExporter {
     public void shutdown() {
     }
 
-    private static String setContext(SpanData span, Telemetry telemetry) {
+    private static void setContext(SpanData span, Telemetry telemetry) {
         String traceId = span.getTraceId().toLowerBase16();
         telemetry.getContext().getOperation().setId(traceId);
         SpanId parentSpanId = span.getParentSpanId();
         if (parentSpanId.isValid()) {
-            telemetry.getContext().getOperation().setParentId(combine(traceId, parentSpanId));
+            telemetry.getContext().getOperation().setParentId(parentSpanId.toLowerBase16());
         }
-        return combine(traceId, span.getSpanId());
-    }
-
-    private static String combine(String traceId, SpanId spanId) {
-        // TODO optimize with fixed length StringBuilder
-        return "|" + traceId + "." + spanId.toLowerBase16() + ".";
     }
 
     private static boolean isNonNullLong(AttributeValue attributeValue) {

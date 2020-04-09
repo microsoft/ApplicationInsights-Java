@@ -141,7 +141,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             String traceId = context.getTraceId().toLowerBase16();
             String spanId = context.getSpanId().toLowerBase16();
             telemetry.getContext().getOperation().setId(traceId);
-            telemetry.getContext().getOperation().setParentId("|" + traceId + "." + spanId + ".");
+            telemetry.getContext().getOperation().setParentId(spanId);
         }
         if (sample(telemetry)) {
             // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
