@@ -50,7 +50,7 @@ subprojects {
     if (!project.hasProperty(NATIVE_BUILD_VARIANT_PROPERTY)) {
         if (System.getProperty(NATIVE_BUILD_VARIANT_PROPERTY) == null) {
             ext[NATIVE_BUILD_VARIANT_PROPERTY] = isRelease ? 'release' : 'debug'
-            println "setting ai.etw.native.build for ${project.name}: ${ext[NATIVE_BUILD_VARIANT_PROPERTY]}"
+            logger.info "setting ai.etw.native.build for ${project.name}: ${ext[NATIVE_BUILD_VARIANT_PROPERTY]}"
         } else {
             ext[NATIVE_BUILD_VARIANT_PROPERTY] = System.getProperty(NATIVE_BUILD_VARIANT_PROPERTY)
         }
@@ -65,8 +65,8 @@ subprojects {
     if (project.hasProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY) && project.hasProperty(NATIVE_BUILD_VARIANT_PROPERTY)) {
         // verbose=true is not allowed for release builds
         if ('true'.equalsIgnoreCase(ext[NATIVE_VERBOSE_OUTPUT_PROPERTY]) && 'release'.equalsIgnoreCase(ext[NATIVE_BUILD_VARIANT_PROPERTY])) {
-            println "$NATIVE_VERBOSE_OUTPUT_PROPERTY cannot be true when $NATIVE_BUILD_VARIANT_PROPERTY=relese."
-            println "Setting $NATIVE_VERBOSE_OUTPUT_PROPERTY=false"
+            logger.warn "$NATIVE_VERBOSE_OUTPUT_PROPERTY cannot be true when $NATIVE_BUILD_VARIANT_PROPERTY=relese."
+            logger.warn "Setting $NATIVE_VERBOSE_OUTPUT_PROPERTY=false"
             ext[NATIVE_VERBOSE_OUTPUT_PROPERTY] = 'false'
         }
     }
