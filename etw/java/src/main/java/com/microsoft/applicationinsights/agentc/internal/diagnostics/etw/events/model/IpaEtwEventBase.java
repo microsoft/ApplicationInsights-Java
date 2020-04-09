@@ -108,7 +108,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     }
 
     public String getFormattedMessage() {
-        if (messageArgs.length == 0) {
+        if (messageArgs == null || messageArgs.length == 0) {
             return StringUtils.defaultString(messageFormat);
         } else {
             return String.format(messageFormat, messageArgs);

@@ -14,7 +14,7 @@
     <include optional="true" resource="${ai.config.appender.diagnostics.location:-rp-logger-config/diagnostics.appender.xml}" />
 
     <!-- etw appender; windows only -->
-    <include optional="true" resources="${ai.config.appender.etw.location:-rp-logger-config/etw.appender.xml}" />
+    <include optional="true" resource="${ai.config.appender.etw.location:-rp-logger-config/etw.appender.xml}" />
 
     <root level="${applicationInsights.agent.logging.level:-error}">
         <appender-ref ref="CONSOLE" />
