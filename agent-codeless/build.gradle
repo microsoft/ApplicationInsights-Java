@@ -30,6 +30,23 @@ def instrumentationVersion = '0.14.9'
 
 def shadowPrefix = 'com.microsoft.applicationinsights.agentc.shadow'
 
+sourceSets {
+    devtest {
+        java {
+            srcDir file('src/devtest/java')
+        }
+        resources {
+            srcDir file('src/devtest/resources')
+        }
+        compileClasspath = sourceSets.main.output + configurations.compile
+        runtimeClasspath = output + compileClasspath + configurations.runtime
+    }
+}
+
+configurations {
+    devtest
+}
+
 shadowJar() {
 
     archiveClassifier = 'intermediate'
@@ -143,6 +160,23 @@ task shadowJar2(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 archivesBaseName = 'applicationinsights-agent-codeless'
 
+task devtestJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    archiveClassifier = 'devtest'
+    dependsOn devtestClasses, assemble
+    from zipTree(file("$buildDir/libs/${project.archivesBaseName}-${project.version}.jar")) // shadowJar2.archiveFile doesn't work
+    from sourceSets.devtest.output
+    configurations = []
+    manifest = shadowJar2.manifest
+    exclude 'LICENSE'
+    exclude 'NOTICE'
+
+    relocate 'org.slf4j', "${shadowPrefix}.org.slf4j"
+}
+
+artifacts {
+    devtest devtestJar
+}
+
 jar {
     dependsOn shadowJar2
     enabled = false
@@ -254,18 +288,28 @@ file("$projectDir/package").eachDir {
     def targetDirRelative = "${buildDir.name}/setup/$name"
     def sourceDir = it.parent
     def taskName = "setup${name.capitalize()}"
-    def theTask = tasks.register(taskName, Copy) {
+    tasks.register(taskName, Copy) {
         group = "Local Dev Setup"
         description = "Copies agent jar and resource files into $targetDirRelative for use in testing."
         logger.info "Configuring $taskName: src=${path}, dest=$targetDir"
         from(path) {
             include "**/**"
         }
-        from tasks.jar.archiveFile
+        def jarFiles = []
+        from(tasks.jar.archiveFile.asFile.get().parent) {
+            include "*.jar"
+            eachFile { jf ->
+                jarFiles << jf.file.absolutePath
+            }
+        }
         into targetDir
         dependsOn assemble
         doLast {
-            logger.quiet "Dev Setup for ${name.capitalize()}:\n  -javaagent:${file(targetDir)}${File.separator}${tasks.jar.archiveFileName.get()}"
+            logger.quiet "Dev Setup for ${name.capitalize()}:\n"
+            def agentArgs = jarFiles.collect {
+                "  -javaagent:$it\n"
+            }.join("  OR\n")
+            logger.quiet agentArgs
         }
     }
 }
