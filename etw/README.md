@@ -1,5 +1,8 @@
 # Etw Provider for Java Codeless Agent
 
+Provider Name: **`Microsoft-ApplicationInsights-Java-IPA`**
+Provider GUID: **`1f0dc33f-30ae-5ff3-8b01-8ca9b8509233`**
+
 # Building
 
 ## Build Requirements
