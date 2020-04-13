@@ -73,6 +73,7 @@ class SdkBridgeImpl extends AbstractSdkBridge<RequestTelemetryContext> {
             setter.put(carrier, "traceparent", traceparent.toString());
             if (w3cBackCompat) {
                 setter.put(carrier, "Request-Id", "|" + traceparent.getTraceId() + "." + traceparent.getSpanId() + ".");
+                setter.put(carrier, "Request-Context", TelemetryCorrelationUtils.retrieveApplicationCorrelationId());
             }
             if (tracestate != null) {
                 setter.put(carrier, "tracestate", tracestate);
