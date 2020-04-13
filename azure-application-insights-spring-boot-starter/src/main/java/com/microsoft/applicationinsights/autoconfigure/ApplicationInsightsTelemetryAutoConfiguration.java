@@ -147,6 +147,7 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         if (telemetryProcessors != null) {
             telemetryConfiguration.getTelemetryProcessors().addAll(telemetryProcessors);
         }
+        initializeTelemetryChannel(telemetryConfiguration);
         initializeComponents(telemetryConfiguration);
         initializePerformanceCounterContainer();
         return telemetryConfiguration;
@@ -173,9 +174,7 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
 
 
 
-    @Bean
-    @ConditionalOnMissingBean
-    public TelemetryChannel telemetryChannel(TelemetryConfiguration configuration) {
+    private void initializeTelemetryChannel(TelemetryConfiguration configuration) {
         InProcess inProcess = applicationInsightsProperties.getChannel().getInProcess();
         final InProcessTelemetryChannel channel;
         if (StringUtils.isNotEmpty(inProcess.getEndpointAddress())) {
@@ -189,7 +188,6 @@ public class ApplicationInsightsTelemetryAutoConfiguration {
         }
 
         configuration.setChannel(channel);
-        return channel;
     }
 
     @Bean
