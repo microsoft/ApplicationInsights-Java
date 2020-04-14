@@ -56,10 +56,6 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
 
     }
 
-    private static void setStacktrace(IpaEtwEventErrorBase event, IThrowableProxy proxy) {
-        event.setStacktrace(new ThrowableProxyStacktraceProvider(proxy));
-    }
-
     private final EtwProvider etwProvider = new EtwProvider();
     private final IpaEtwEventBase proto = new IpaInfo();
 
@@ -87,12 +83,12 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
         switch (level.levelInt) {
             case Level.ERROR_INT:
                 IpaError error = new IpaError(proto);
-                setStacktrace(error, logEvent.getThrowableProxy());
+                error.setStacktrace(new ThrowableProxyStacktraceProvider(logEvent.getThrowableProxy()));
                 event = error;
                 break;
             case Level.WARN_INT:
                 IpaWarn warn = new IpaWarn(proto);
-                setStacktrace(warn, logEvent.getThrowableProxy());
+                warn.setStacktrace(new ThrowableProxyStacktraceProvider(logEvent.getThrowableProxy()));
                 event = warn;
                 break;
             case Level.INFO_INT:
