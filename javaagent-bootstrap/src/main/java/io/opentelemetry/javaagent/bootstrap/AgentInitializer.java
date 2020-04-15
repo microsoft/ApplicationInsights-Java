@@ -61,7 +61,22 @@ public class AgentInitializer {
   // fields must be managed under class lock
   private static ClassLoader AGENT_CLASSLOADER = null;
 
-  public static void initialize(Instrumentation inst, URL bootstrapUrl) {
+  public static void initialize(
+      final Instrumentation inst, final URL bootstrapUrl, final boolean catchAndLogException)
+      throws Exception {
+    if (catchAndLogException) {
+      try {
+        initialize(inst, bootstrapUrl);
+      } catch (final Throwable t) {
+        log.error("Error starting the agent", t);
+      }
+    } else {
+      // allow exception to bubble up
+      initialize(inst, bootstrapUrl);
+    }
+  }
+
+  private static void initialize(Instrumentation inst, URL bootstrapUrl) throws Exception {
     startAgent(inst, bootstrapUrl);
 
     boolean appUsingCustomLogManager = isAppUsingCustomLogManager();
@@ -93,16 +108,12 @@ public class AgentInitializer {
     }
   }
 
-  private static void registerLogManagerCallback(ClassLoadCallBack callback) {
-    try {
-      Class<?> agentInstallerClass =
-          AGENT_CLASSLOADER.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
-      Method registerCallbackMethod =
-          agentInstallerClass.getMethod("registerClassLoadCallback", String.class, Runnable.class);
-      registerCallbackMethod.invoke(null, "java.util.logging.LogManager", callback);
-    } catch (Exception ex) {
-      log.error("Error registering callback for " + callback.getName(), ex);
-    }
+  private static void registerLogManagerCallback(ClassLoadCallBack callback) throws Exception {
+    Class<?> agentInstallerClass =
+        AGENT_CLASSLOADER.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
+    Method registerCallbackMethod =
+        agentInstallerClass.getMethod("registerClassLoadCallback", String.class, Runnable.class);
+    registerCallbackMethod.invoke(null, "java.util.logging.LogManager", callback);
   }
 
   protected abstract static class ClassLoadCallBack implements Runnable {
@@ -145,43 +156,41 @@ public class AgentInitializer {
 
     @Override
     public void execute() {
-      installAgentTracer();
-    }
-  }
-
-  private static synchronized void startAgent(Instrumentation inst, URL bootstrapUrl) {
-    if (AGENT_CLASSLOADER == null) {
       try {
-        ClassLoader agentClassLoader = createAgentClassLoader("inst", bootstrapUrl);
-        Class<?> agentInstallerClass =
-            agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
-        Method agentInstallerMethod =
-            agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
-        agentInstallerMethod.invoke(null, inst);
-        AGENT_CLASSLOADER = agentClassLoader;
-      } catch (Throwable ex) {
-        log.error("Throwable thrown while installing the agent", ex);
+        installAgentTracer();
+      } catch (final Throwable t) {
+        log.error("Error installing the agent tracer", t);
       }
     }
   }
 
-  private static synchronized void installAgentTracer() {
+  private static synchronized void startAgent(Instrumentation inst, URL bootstrapUrl)
+      throws Exception {
+    if (AGENT_CLASSLOADER == null) {
+      ClassLoader agentClassLoader = createAgentClassLoader("inst", bootstrapUrl);
+      Class<?> agentInstallerClass =
+          agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
+      Method agentInstallerMethod =
+          agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
+      agentInstallerMethod.invoke(null, inst);
+      AGENT_CLASSLOADER = agentClassLoader;
+    }
+  }
+
+  private static synchronized void installAgentTracer() throws Exception {
     if (AGENT_CLASSLOADER == null) {
       throw new IllegalStateException("Agent should have been started already");
     }
     // TracerInstaller.installAgentTracer can be called multiple times without any problem
     // so there is no need to have a 'agentTracerInstalled' flag here.
-    try {
-      // install global tracer
-      Class<?> tracerInstallerClass =
-          AGENT_CLASSLOADER.loadClass("io.opentelemetry.javaagent.tooling.TracerInstaller");
-      Method tracerInstallerMethod = tracerInstallerClass.getMethod("installAgentTracer");
-      tracerInstallerMethod.invoke(null);
-      Method logVersionInfoMethod = tracerInstallerClass.getMethod("logVersionInfo");
-      logVersionInfoMethod.invoke(null);
-    } catch (Throwable ex) {
-      log.error("Throwable thrown while installing the agent tracer", ex);
-    }
+
+    // install global tracer
+    Class<?> tracerInstallerClass =
+        AGENT_CLASSLOADER.loadClass("io.opentelemetry.javaagent.tooling.TracerInstaller");
+    Method tracerInstallerMethod = tracerInstallerClass.getMethod("installAgentTracer");
+    tracerInstallerMethod.invoke(null);
+    Method logVersionInfoMethod = tracerInstallerClass.getMethod("logVersionInfo");
+    logVersionInfoMethod.invoke(null);
   }
 
   private static void configureLogger() {
