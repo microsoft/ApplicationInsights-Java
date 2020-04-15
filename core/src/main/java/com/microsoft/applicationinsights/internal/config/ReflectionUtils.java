@@ -53,7 +53,6 @@ public final class ReflectionUtils {
         addClass(com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule.class);
 
         addClass(com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer.class);
-        addClass(com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer.class);
     }
 
     static void addClass(Class<?> clazz) {

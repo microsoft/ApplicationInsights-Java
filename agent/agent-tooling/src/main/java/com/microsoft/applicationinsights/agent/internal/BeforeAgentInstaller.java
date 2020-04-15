@@ -47,7 +47,6 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Perf
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
 import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
@@ -150,7 +149,6 @@ public class BeforeAgentInstaller {
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
-        configuration.getContextInitializers().add(new DeviceInfoContextInitializer());
 
         FixedRateSampling fixedRateSampling = config.preview.sampling.fixedRate;
         if (fixedRateSampling != null && fixedRateSampling.percentage != null) {
