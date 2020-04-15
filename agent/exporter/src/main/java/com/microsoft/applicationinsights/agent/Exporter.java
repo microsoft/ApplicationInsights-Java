@@ -371,7 +371,19 @@ public class Exporter implements SpanExporter {
             // this is needed until all database instrumentation captures the required db.url
             telemetry.setTarget(type);
         } else {
-            telemetry.setTarget(dbUrl);
+            String dbInstance = getString(span, "db.instance");
+            if (dbInstance != null) {
+                dbUrl += " | " + dbInstance;
+            }
+            if (span.getInstrumentationLibraryInfo().getName().equals("io.opentelemetry.auto.jdbc")) {
+                // TODO this is special case to match 2.x behavior
+                //      because U/X strips off the beginning in E2E tx view
+                telemetry.setTarget("jdbc:" + dbUrl);
+                // TODO another special case to match 2.x behavior until we decide on new behavior
+                telemetry.setName(dbUrl);
+            } else {
+                telemetry.setTarget(dbUrl);
+            }
         }
         // TODO put db.instance somewhere
     }
