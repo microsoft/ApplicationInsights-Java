@@ -28,34 +28,15 @@ import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.IpaInfo;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.IpaWarn;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.IpaEtwEventBase;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.IpaEtwEventErrorBase;
-import com.microsoft.applicationinsights.agentc.internal.diagnostics.etw.events.model.StacktraceProvider;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.AppenderBase;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class EtwAppender extends AppenderBase<ILoggingEvent> {
-
-    private static class ThrowableProxyStacktraceProvider implements StacktraceProvider {
-
-        private IThrowableProxy proxy;
-
-        ThrowableProxyStacktraceProvider(IThrowableProxy proxy) {
-            this.proxy = proxy;
-        }
-
-        @Override
-        public String asString() {
-            return ThrowableProxyUtil.asString(proxy);
-        }
-
-    }
-
     private final EtwProvider etwProvider = new EtwProvider();
     private final IpaEtwEventBase proto = new IpaInfo();
 
@@ -83,12 +64,12 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
         switch (level.levelInt) {
             case Level.ERROR_INT:
                 IpaError error = new IpaError(proto);
-                error.setStacktrace(new ThrowableProxyStacktraceProvider(logEvent.getThrowableProxy()));
+                error.setStacktrace(ThrowableProxyUtil.asString(logEvent.getThrowableProxy()));
                 event = error;
                 break;
             case Level.WARN_INT:
                 IpaWarn warn = new IpaWarn(proto);
-                warn.setStacktrace(new ThrowableProxyStacktraceProvider(logEvent.getThrowableProxy()));
+                warn.setStacktrace(ThrowableProxyUtil.asString(logEvent.getThrowableProxy()));
                 event = warn;
                 break;
             case Level.INFO_INT:
