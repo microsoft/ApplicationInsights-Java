@@ -366,7 +366,13 @@ public class Exporter implements SpanExporter {
         }
         telemetry.setType(type);
         telemetry.setCommandName(getString(span, "db.statement"));
-        telemetry.setTarget(getString(span, "db.url"));
+        String dbUrl = getString(span, "db.url");
+        if (dbUrl == null) {
+            // this is needed until all database instrumentation captures the required db.url
+            telemetry.setTarget(type);
+        } else {
+            telemetry.setTarget(dbUrl);
+        }
         // TODO put db.instance somewhere
     }
 
