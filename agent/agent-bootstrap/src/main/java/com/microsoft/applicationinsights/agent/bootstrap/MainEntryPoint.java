@@ -59,7 +59,7 @@ public class MainEntryPoint {
             startupLogger = configureLogging(configuration.preview.selfDiagnostics);
             ConfigurationBuilder.logConfigurationMessages();
             MDC.put("microsoft.ai.operationName", "Startup");
-            Agent.start(instrumentation, bootstrapURL);
+            Agent.start(instrumentation, bootstrapURL, false);
             success = true;
             LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
                     .info("Application Insights Codeless Agent Attach Successful");
