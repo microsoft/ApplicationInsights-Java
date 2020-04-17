@@ -246,19 +246,25 @@ task verifyAgentJarContents {
         def extraEntries = []
         Set foundEntries = []
         def acceptableEntry = { entry ->
+            boolean totalResult = false;
             expectedEntries.each { pattern ->
                 def result = entry.name.matches(pattern)
                 if (result) {
                     foundEntries << pattern
                 }
-                result
+                totalResult = result || totalResult
             }
+            totalResult
         }
 
         new java.util.jar.JarFile(file).withCloseable { jarfile ->
+            logger.info "Verifying ${jarfile}"
             jarfile.entries().each {
                 if (!acceptableEntry(it)) {
+                    logger.debug ">>>> UNEXPECTED ENTRY: ${it.name}"
                     extraEntries << it.name
+                } else {
+                    logger.debug "  >> ${it.name} VERIFIED"
                 }
             }
         }
