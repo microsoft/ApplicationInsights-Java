@@ -235,6 +235,7 @@ whenPomConfigured = { p ->
 
 task verifyAgentJarContents {
     dependsOn jar
+    onlyIf { !(System.properties['skipWinNative'] ?: 'false').toBoolean() }
     Set expectedEntries = []
     // jar_contents.regex should have one pattern per line
     file("$projectDir/jar_contents.regex").eachLine {

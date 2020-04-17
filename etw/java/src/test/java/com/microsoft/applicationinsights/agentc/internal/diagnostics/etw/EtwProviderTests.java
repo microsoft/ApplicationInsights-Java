@@ -117,6 +117,7 @@ public class EtwProviderTests {
     @Before
     public void checkOs() {
         Assume.assumeTrue("Ignoring etw test. Not on windows", SystemUtils.IS_OS_WINDOWS);
+        Assume.assumeFalse("Ignoring etw test. skipWinNative=true", Boolean.parseBoolean(System.getProperty("skipWinNative")));
     }
 
     @Test
@@ -134,8 +135,20 @@ public class EtwProviderTests {
         EtwProvider ep = new EtwProvider();
         ep.writeEvent(einfo);
         ep.writeEvent(eerror);
+        printStacktraceLength(eerror);
         ep.writeEvent(ewarn);
+        printStacktraceLength(ewarn);
         ep.writeEvent(ecritical);
+        printStacktraceLength(ecritical);
+        IpaWarn otherWarn = createWarn("test.warn.logger2", "some-op", null, "another warning");
+        otherWarn.setStacktrace("TEST STACKTRACE");
+        ep.writeEvent(otherWarn);
+        printStacktraceLength(otherWarn);
+    }
+
+    private static void printStacktraceLength(IpaEtwEventErrorBase evt) {
+        System.out.println(">>>" + evt.id() + " event.stacktrace.length = "+evt.getStacktraceString().length());
+        System.err.println(">>> ST:" + evt.getStacktraceString());
     }
 
     private void longTestCheck() {
