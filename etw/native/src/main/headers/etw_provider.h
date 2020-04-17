@@ -21,6 +21,8 @@
 
 #pragma once
 
+#pragma comment(lib, "advapi32")
+
 #include <windows.h>
 #include <TraceLoggingProvider.h>
 #include <string>
