@@ -10,7 +10,6 @@ import static net.bytebuddy.matcher.ElementMatchers.isTypeInitializer;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import com.google.auto.service.AutoService;
-import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
 import java.util.Map;
@@ -52,7 +51,7 @@ public final class MetricsInstrumentation extends Instrumenter.Default {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void onExit(
         @Advice.FieldValue("globalRegistry") final CompositeMeterRegistry globalRegistry) {
-      globalRegistry.add(new AzureMonitorMeterRegistry(Clock.SYSTEM));
+      globalRegistry.add(AzureMonitorMeterRegistry.INSTANCE);
     }
   }
 }

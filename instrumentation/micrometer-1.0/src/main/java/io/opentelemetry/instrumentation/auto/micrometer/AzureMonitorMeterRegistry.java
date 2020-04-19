@@ -27,6 +27,10 @@ import java.util.concurrent.TimeUnit;
 
 public class AzureMonitorMeterRegistry extends StepMeterRegistry {
 
+  public static final AzureMonitorMeterRegistry INSTANCE =
+      new AzureMonitorMeterRegistry(Clock.SYSTEM);
+
+  // visible for testing
   public AzureMonitorMeterRegistry(final Clock clock) {
     super(new AzureMonitorRegistryConfig(), clock);
     config().namingConvention(new AzureMonitorNamingConvention());
