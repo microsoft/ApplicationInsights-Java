@@ -11,6 +11,14 @@ muzzle {
     group = "io.micrometer"
     module = "micrometer-core"
     versions = "[1.0.0,)"
+    extraDependency "org.springframework.boot:spring-boot-actuator-autoconfigure:2.0.0.RELEASE"
+    assertInverse = true
+  }
+  pass {
+    group = "org.springframework.boot"
+    module = "spring-boot-actuator-autoconfigure"
+    versions = "[2.0.0.RELEASE,)"
+    extraDependency "io.micrometer:micrometer-core:1.0.0"
     assertInverse = true
   }
 }
@@ -22,10 +30,15 @@ testSets {
 }
 
 dependencies {
+  compileOnly project(':auto-bootstrap')
   compileOnly group: 'io.micrometer', name: 'micrometer-core', version: '1.4.0'
+  compileOnly group: 'org.springframework.boot', name: 'spring-boot-actuator-autoconfigure', version: '2.2.0.RELEASE'
 
   testCompile group: 'io.micrometer', name: 'micrometer-core', version: '1.4.0'
+  testCompile group: 'org.springframework.boot', name: 'spring-boot-actuator-autoconfigure', version: '2.2.0.RELEASE'
   testCompile group: 'com.microsoft.azure', name: 'azure-spring-boot-metrics-starter', version: '2.2.3'
 
   latestDepTestCompile group: 'io.micrometer', name: 'micrometer-core', version: '+'
+  latestDepTestCompile group: 'org.springframework.boot', name: 'spring-boot-actuator-autoconfigure', version: '+'
+  latestDepTestCompile group: 'com.microsoft.azure', name: 'azure-spring-boot-metrics-starter', version: '2.2.3'
 }

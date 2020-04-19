@@ -17,12 +17,13 @@
 package io.opentelemetry.auto.instrumentation.micrometer;
 
 import static java.util.Collections.singletonMap;
-import static net.bytebuddy.matcher.ElementMatchers.isTypeInitializer;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.returns;
 
 import com.google.auto.service.AutoService;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.opentelemetry.auto.tooling.Instrumenter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
@@ -30,20 +31,21 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
 @AutoService(Instrumenter.class)
-public final class MetricsInstrumentation extends Instrumenter.Default {
+public final class ActuatorInstrumentation extends Instrumenter.Default {
 
-  public MetricsInstrumentation() {
-    super("micrometer");
+  public ActuatorInstrumentation() {
+    super("micrometer-actuator");
   }
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return named("io.micrometer.core.instrument.Metrics");
+    return named("org.springframework.boot.autoconfigure.AutoConfigurationImportSelector");
   }
 
   @Override
   public String[] helperClassNames() {
     return new String[] {
+      packageName + ".AzureMonitorAutoConfiguration",
       packageName + ".AzureMonitorMeterRegistry",
       packageName + ".AzureMonitorNamingConvention",
       packageName + ".AzureMonitorRegistryConfig",
@@ -54,15 +56,24 @@ public final class MetricsInstrumentation extends Instrumenter.Default {
   @Override
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
     return singletonMap(
-        isTypeInitializer(), MetricsInstrumentation.class.getName() + "$StaticInitAdvice");
+        named("getCandidateConfigurations").and(returns(List.class)),
+        ActuatorInstrumentation.class.getName() + "$GetCandidateConfigurationsAdvice");
   }
 
-  public static class StaticInitAdvice {
+  public static class GetCandidateConfigurationsAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void onExit(
-        @Advice.FieldValue("globalRegistry") final CompositeMeterRegistry globalRegistry) {
-      globalRegistry.add(AzureMonitorMeterRegistry.INSTANCE);
+    public static void onExit(@Advice.Return(readOnly = false) List<String> configurations) {
+      if (configurations.contains(
+          "org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration")) {
+        final List<String> configs = new ArrayList<>(configurations.size() + 1);
+        configs.addAll(configurations);
+        // using class reference here so that muzzle will consider it a dependency of this advice
+        configs.add(AzureMonitorAutoConfiguration.class.getName());
+        configs.remove(
+            "com.microsoft.azure.spring.autoconfigure.metrics.AzureMonitorMetricsExportAutoConfiguration");
+        configurations = configs;
+      }
     }
   }
 }
