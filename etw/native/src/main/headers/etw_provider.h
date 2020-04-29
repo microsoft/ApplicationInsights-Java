@@ -30,7 +30,7 @@
 
 TRACELOGGING_DECLARE_PROVIDER(provider_EtwHandle);
 
-#define EVENT_NAME "WebAppsAppInsightsExtensionJava"
+#define EVENT_NAME "WebAppsAppInsightsExtension"
 
 #define WRITE_INFO_EVENT(...) TraceLoggingWrite(provider_EtwHandle, EVENT_NAME, TraceLoggingLevel(WINEVENT_LEVEL_INFO), __VA_ARGS__)
 #define WRITE_WARN_EVENT(...) TraceLoggingWrite(provider_EtwHandle, EVENT_NAME, TraceLoggingLevel(WINEVENT_LEVEL_WARNING), __VA_ARGS__)
