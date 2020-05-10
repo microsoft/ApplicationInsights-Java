@@ -1,0 +1,16 @@
+plugins {
+  id "com.github.johnrengelman.shadow"
+}
+
+apply from: "${rootDir}/gradle/java.gradle"
+
+dependencies {
+  compile group: 'io.opentelemetry', name: 'opentelemetry-api', version: '0.2.4'
+}
+
+// OpenTelemetry API shaded so that it can be used in opentelemetry-api instrumentation, and then its usage can be
+// unshaded after OpenTelemetry API is shaded (see more explanation in opentelemetry-api-0.2.4.gradle)
+shadowJar {
+
+  relocate "io.opentelemetry", "unshaded.io.opentelemetry"
+}
