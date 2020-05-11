@@ -233,9 +233,10 @@ whenPomConfigured = { p ->
     p.dependencies = []
 }
 
+import org.apache.tools.ant.taskdefs.condition.Os
 task verifyAgentJarContents {
     dependsOn jar
-    onlyIf { !(System.properties['skipWinNative'] ?: 'false').toBoolean() }
+    onlyIf { !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS)}
     Set expectedEntries = []
     // jar_contents.regex should have one pattern per line
     file("$projectDir/jar_contents.regex").eachLine {
