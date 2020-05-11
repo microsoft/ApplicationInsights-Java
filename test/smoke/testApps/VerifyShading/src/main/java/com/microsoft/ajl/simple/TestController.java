@@ -64,6 +64,10 @@ public class TestController {
         expectedEntries.add("rp-logger-config/user-logfile.appender.xml");
         expectedEntries.add("rp-logger-config/diagnostics.appender.xml");
         expectedEntries.add("sdk-version.properties");
+        expectedEntries.add("applicationinsights-java-etw-provider-x86-64.dll");
+        expectedEntries.add("applicationinsights-java-etw-provider-x86.dll");
+        expectedEntries.add("rp-logger-config/etw.appender.xml");
+
         JarFile jarFile = new JarFile(agentJarFile);
         List<String> unexpected = new ArrayList<>();
         for (Enumeration<JarEntry> e = jarFile.entries(); e.hasMoreElements(); ) {
