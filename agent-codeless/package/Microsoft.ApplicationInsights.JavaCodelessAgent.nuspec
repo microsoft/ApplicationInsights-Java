@@ -22,7 +22,7 @@
   </metadata>
   <files>
     <!-- Redfield files -->
-    <file src="applicationinsights-agent-codeless-2.5.1.jar" target="content" />
+    <file src="applicationinsights-agent-codeless-2.5.2.jar" target="content" />
     <file src="appsvc\appsvc.codeless" target="content\appsvc" />
     <file src="aks\aks.codeless" target="content\aks" />
     <file src="functions\functions.codeless" target="content\functions" />
