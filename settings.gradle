@@ -18,16 +18,15 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-import org.apache.tools.ant.taskdefs.condition.Os
 
 include 'ApplicationInsightsInternalLogger'
 
 include 'instrumentation:azure-functions'
-if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    include 'etw:native'
-    include 'etw:java'
-    include 'etw:etw-testapp'
-}
+
+include 'etw:native'
+include 'etw:java'
+include 'etw:etw-testapp'
+
 include 'agent-codeless'
 include 'core'
 if (System.env.'COLLECTD_HOME') {
