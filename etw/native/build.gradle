@@ -93,27 +93,29 @@ tasks.withType(LinkSharedLibrary).configureEach {
 
 }
 
-project.afterEvaluate {
-    ['Release', 'Debug'].each { v ->
-        def ppBothArchTask = tasks.register("preprocess$v") {
-            description = "Runs preprocessor for $v variant, all architectures"
-        }
-        ['X86', 'X86-64'].each { a ->
-            def dllFilename = "${project.library.baseName.get()}-${a.toLowerCase()}.dll"
-            tasks.named("link$v$a").configure {
-                linkedFile = file("${linkedFile.asFile.get().parent}/$dllFilename")
+import org.apache.tools.ant.taskdefs.condition.Os
+if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    project.afterEvaluate {
+        ['Release', 'Debug'].each { v ->
+            def ppBothArchTask = tasks.register("preprocess$v") {
+                description = "Runs preprocessor for $v variant, all architectures"
             }
-            def ppArchTask = tasks.register("preprocess$v$a", CppCompile) {
-                description = "Runs preprocessor for $v variant, for $a architecture"
-                compilerArgs.add '/P'
-            }
-            ppBothArchTask.configure {
-                dependsOn ppArchTask
-            }
-            tasks.named("compile$v${a}Cpp").configure {
-                macros.put("DLL_FILENAME", dllFilename.toString())
+            ['X86', 'X86-64'].each { a ->
+                def dllFilename = "${project.library.baseName.get()}-${a.toLowerCase()}.dll"
+                tasks.named("link$v$a").configure {
+                    linkedFile = file("${linkedFile.asFile.get().parent}/$dllFilename")
+                }
+                def ppArchTask = tasks.register("preprocess$v$a", CppCompile) {
+                    description = "Runs preprocessor for $v variant, for $a architecture"
+                    compilerArgs.add '/P'
+                }
+                ppBothArchTask.configure {
+                    dependsOn ppArchTask
+                }
+                tasks.named("compile$v${a}Cpp").configure {
+                    macros.put("DLL_FILENAME", dllFilename.toString())
+                }
             }
         }
     }
 }
-
