@@ -9,9 +9,23 @@ import com.google.common.annotations.VisibleForTesting;
 public class DiagnosticsHelper {
     private DiagnosticsHelper() { }
 
+    /**
+     * Values: true|false
+     * Default: true
+     */
     public static final String IPA_LOG_FILE_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_LOG_FILE_ENABLED";
 
+    /**
+     * Default: "" (meaning diagnostics file output is disabled)
+     */
     public static final String INTERNAL_LOG_OUTPUT_DIR_ENV_VAR = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
+
+    /**
+     * Windows only. Cannot be enabled on non-windows OS.
+     * Values: true|false
+     * Default: true
+     */
+	public static final String IPA_ETW_PROVIDER_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_ETW_PROVIDER_ENABLED";
 
     @VisibleForTesting
     static volatile boolean appServiceCodeless;
@@ -21,6 +35,10 @@ public class DiagnosticsHelper {
     private static volatile boolean functionsCodeless;
 
     public static final String DIAGNOSTICS_LOGGER_NAME = "applicationinsights.extension.diagnostics";
+
+    private static final ApplicationMetadataFactory METADATA_FACTORY = new ApplicationMetadataFactory();
+
+    public static final String MDC_PROP_OPERATION = "microsoft.ai.operationName";
 
     public static void setAgentJarFile(File agentJarFile) {
         Path agentPath = agentJarFile.toPath();
@@ -48,5 +66,20 @@ public class DiagnosticsHelper {
     public static boolean isAnyCodelessAttach() {
         return appServiceCodeless || aksCodeless || functionsCodeless;
     }
+
+    public static ApplicationMetadataFactory getMetadataFactory() {
+        return METADATA_FACTORY;
+    }
+
+	public static String getCodelessResourceType() {
+        if (appServiceCodeless) {
+            return "appsvc";
+        } else if (aksCodeless) {
+            return "aks";
+        } else if (functionsCodeless) {
+            return "functions";
+        }
+        return null;
+	}
 
 }

@@ -88,7 +88,7 @@ public class MainEntryPoint {
         try {
             DiagnosticsHelper.setAgentJarFile(agentJarFile);
             startupLogger = initLogging(instrumentation, agentJarFile);
-            MDC.put("microsoft.ai.operationName", "Startup");
+            MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
             addLibJars(instrumentation, agentJarFile);
             instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
             start(instrumentation, agentJarFile);
@@ -137,7 +137,7 @@ public class MainEntryPoint {
      * @return true, if logging was configured. false, otherwise.
      */
     private static boolean configureLoggingForPlatform() {
-        if (DiagnosticsHelper.isAppServiceCodeless()) {
+        if (DiagnosticsHelper.isAppServiceCodeless()) { // Currently only app services has IPA diagnostics output
             final String resourceFilePath = "appsvc.ai.logback.xml";
             final String resourceUrl = getResourceUrl(resourceFilePath);
             if (resourceUrl != null) {
@@ -145,13 +145,22 @@ public class MainEntryPoint {
             } else {
                 return false;
             }
+
+            // User-accessible IPA log file. Enabled by default.
             if ("false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_LOG_FILE_ENABLED_ENV_VAR))) {
                 System.setProperty("ai.config.appender.user-logdir.location", "");
             }
+
+            // Diagnostics IPA log file location. Disabled by default.
             if (StringUtils.isEmpty(System.getenv(DiagnosticsHelper.INTERNAL_LOG_OUTPUT_DIR_ENV_VAR))) {
-                System.setProperty("applciationinsights.diagnostics.level", "off");
                 System.setProperty("ai.config.appender.diagnostics.location", "");
             }
+
+            // Diagnostics IPA ETW provider. Windows-only. Enabled by default.
+            if (!SystemInformation.INSTANCE.isWindows() || "false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_ETW_PROVIDER_ENABLED_ENV_VAR))) {
+                System.setProperty("ai.config.appender.etw.location", "");
+            }
+
             return true;
         }
         return false;

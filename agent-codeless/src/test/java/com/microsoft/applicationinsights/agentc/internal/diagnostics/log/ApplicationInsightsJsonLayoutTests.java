@@ -6,6 +6,8 @@ import java.util.Map;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
+
+import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agentc.internal.diagnostics.DiagnosticsValueFinder;
 import org.hamcrest.Matchers;
 import org.junit.*;
@@ -103,7 +105,7 @@ public class ApplicationInsightsJsonLayoutTests {
     @Test
     public void mdcOperationNameAppearsInProperties() {
         Map<String, String> map = new HashMap<>();
-        map.put("microsoft.ai.operationName", "test");
+        map.put(DiagnosticsHelper.MDC_PROP_OPERATION, "test");
         when(logEvent.getMDCPropertyMap()).thenReturn(map);
         final Map<String, Object> jsonMap = (Map<String, Object>) ourLayout.toJsonMap(logEvent).get("properties");
         assertThat(jsonMap, Matchers.<String, Object>hasEntry("operation", "test"));
