@@ -370,7 +370,7 @@ public class TraceContextCorrelation {
         String[] keyValue = requestContext.split("=");
 
         String headerAppID = null;
-        if (keyValue[0].equals(REQUEST_CONTEXT_HEADER_APPID_KEY)) {
+        if (keyValue.length == 2 && keyValue[0].equals(REQUEST_CONTEXT_HEADER_APPID_KEY)) {
             headerAppID = keyValue[1];
         }
 
