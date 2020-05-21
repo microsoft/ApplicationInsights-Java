@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Microsoft.ApplicationInsights.JavaCodelessAgent</id>
-    <version>2.5.2</version>
+    <version>2.6.0</version>
     <title>Application Insights Java Codeless Agent Package</title>
     <authors>Microsoft</authors>
     <licenseUrl>http://go.microsoft.com/fwlink/?LinkID=391182</licenseUrl>
@@ -12,7 +12,8 @@
     <description>Application Insights Java Codeless Agent.</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <releaseNotes>
-        * Fixed IPA log directory defaults for Windows.
+        * Added ETW provider: Microsoft-ApplicationInsights-Java-IPA (1f0dc33f-30ae-5ff3-8b01-8ca9b8509233). Enabled in App Services Windows via logging appender.
+        * Fixed IPA log directory defaults for Windows (for non-AppService).
         * Introduced environment variable `APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY` for internal self-diagnostic logs.
         * Updated Status File location to be relative to the log directory (controlled by same variables/properties).
         * Added env var `APPLICATIONINSIGHTS_EXTENSION_LOG_FILE_ENABLED`. $HOME/LogFiles/ApplicationInsights/*.log is disabled when set to "false".
@@ -22,7 +23,7 @@
   </metadata>
   <files>
     <!-- Redfield files -->
-    <file src="applicationinsights-agent-codeless-2.5.2.jar" target="content" />
+    <file src="applicationinsights-agent-codeless-2.6.0.jar" target="content" />
     <file src="appsvc\appsvc.codeless" target="content\appsvc" />
     <file src="aks\aks.codeless" target="content\aks" />
     <file src="functions\functions.codeless" target="content\functions" />
