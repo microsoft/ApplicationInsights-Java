@@ -8,7 +8,7 @@ repositories {
     mavenLocal()
 }
 
-def instrumentationVersion = '0.2.3-SNAPSHOT'
+def instrumentationVersion = '0.4.0-SNAPSHOT'
 
 dependencies {
     compile project(':agent:agent-tooling')
@@ -46,6 +46,7 @@ dependencies {
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-opentelemetry-api-0.2.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-opentelemetry-api-0.2.4', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-opentelemetry-api-0.3', version: instrumentationVersion
+    compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-opentelemetry-api-0.4', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-reactor-3.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-request-2.3', version: instrumentationVersion
     compile group: 'io.opentelemetry.auto.instrumentation', name: 'instrumentation-request-3.0', version: instrumentationVersion

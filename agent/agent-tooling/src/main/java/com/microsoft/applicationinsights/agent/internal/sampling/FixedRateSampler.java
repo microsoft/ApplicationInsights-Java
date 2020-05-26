@@ -67,7 +67,7 @@ public final class FixedRateSampler implements Sampler {
         }
 
         @Override
-        public Map<String, AttributeValue> attributes() {
+        public Map<String, AttributeValue> getAttributes() {
             return attributes;
         }
     }

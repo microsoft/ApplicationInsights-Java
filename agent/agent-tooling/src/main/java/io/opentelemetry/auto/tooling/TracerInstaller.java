@@ -32,7 +32,7 @@ public class TracerInstaller {
         }
         // if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         OpenTelemetrySdk.getTracerProvider()
-                .addSpanProcessor(SimpleSpansProcessor.newBuilder(new Exporter(telemetryClient)).build());
+                .addSpanProcessor(SimpleSpansProcessor.create(new Exporter(telemetryClient)));
     }
 
     public static void logVersionInfo() {

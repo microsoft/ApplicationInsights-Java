@@ -48,6 +48,8 @@ public class TestController {
         expectedEntries.add("io/");
         expectedEntries.add("io/opentelemetry/");
         expectedEntries.add("io/opentelemetry/auto/.*");
+        expectedEntries.add("io/opentelemetry/contrib/");
+        expectedEntries.add("io/opentelemetry/contrib/auto/.*");
         expectedEntries.add("META-INF/");
         expectedEntries.add("META-INF/MANIFEST\\.MF");
         expectedEntries.add("LICENSE");
