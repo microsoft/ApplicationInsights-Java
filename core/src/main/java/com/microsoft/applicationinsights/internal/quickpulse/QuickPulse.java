@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.http.client.methods.HttpPost;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -60,7 +61,7 @@ public enum QuickPulse implements Stoppable {
     public void initialize(final TelemetryConfiguration configuration) {
         Preconditions.checkNotNull(configuration);
         final CountDownLatch latch = new CountDownLatch(1);
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
+        Executors.newSingleThreadExecutor(ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class)).execute(new Runnable() {
             @Override
             public void run() {
                 initializeSync(latch, configuration);
