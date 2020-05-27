@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# Version 2.6.1
+* Fix shutdown issue due to non-daemon thread
+  ([#1245](https://github.com/microsoft/ApplicationInsights-Java/pull/1245))
+
 # Version 2.6.1-BETA
 * Fix W3C BackCompat across multiple Application Insights instrumentation keys
   ([#1228](https://github.com/microsoft/ApplicationInsights-Java/pull/1228))
