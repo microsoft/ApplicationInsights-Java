@@ -1,5 +1,12 @@
 package com.microsoft.applicationinsights.web.internal.httputils;
 
+import java.net.MalformedURLException;
+import java.util.Date;
+import java.util.List;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.internal.logger.InternalLogger;
@@ -9,12 +16,6 @@ import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.WebModulesContainer;
-import java.net.MalformedURLException;
-import java.util.Date;
-import java.util.List;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
 import com.microsoft.applicationinsights.web.internal.WebRequestTrackingFilter;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -75,7 +76,11 @@ public final class HttpServerHandler {
      * @throws MalformedURLException
      */
     public RequestTelemetryContext handleStart(ServletRequest request, ServletResponse response) throws MalformedURLException {
-        RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(),null);
+        HttpServletRequest httpServletRequest = null;
+        if (request instanceof HttpServletRequest) {
+            httpServletRequest = (HttpServletRequest) request;
+        }
+        RequestTelemetryContext context = new RequestTelemetryContext(new Date().getTime(), httpServletRequest);
         RequestTelemetry requestTelemetry = context.getHttpRequestTelemetry();
         ThreadContext.setRequestTelemetryContext(context);
         String method = extractor.getMethod(request);
