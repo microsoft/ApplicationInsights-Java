@@ -24,7 +24,6 @@ import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SelfDiagnostics;
@@ -58,7 +57,7 @@ public class MainEntryPoint {
             configuration = ConfigurationBuilder.create(agentJarFile.toPath()).instrumentationSettings;
             startupLogger = configureLogging(configuration.preview.selfDiagnostics);
             ConfigurationBuilder.logConfigurationMessages();
-            MDC.put("microsoft.ai.operationName", "Startup");
+            MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
             Agent.start(instrumentation, bootstrapURL, false);
             success = true;
             LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
@@ -86,6 +85,21 @@ public class MainEntryPoint {
         String destination = selfDiagnostics.destination;
         boolean logUnknownDestination = false;
         if (DiagnosticsHelper.isAppServiceCodeless()) {
+            // User-accessible IPA log file. Enabled by default.
+            if ("false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_LOG_FILE_ENABLED_ENV_VAR))) {
+                System.setProperty("ai.config.appender.user-logdir.location", "");
+            }
+
+            // Diagnostics IPA log file location. Disabled by default.
+            final String internalLogOutputLocation = System.getenv(DiagnosticsHelper.INTERNAL_LOG_OUTPUT_DIR_ENV_VAR);
+            if (internalLogOutputLocation == null || internalLogOutputLocation.isEmpty()) {
+                System.setProperty("ai.config.appender.diagnostics.location", "");
+            }
+
+            // Diagnostics IPA ETW provider. Windows-only. Enabled by default.
+            if (!DiagnosticsHelper.isOsWindows() || "false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_ETW_PROVIDER_ENABLED_ENV_VAR))) {
+                System.setProperty("ai.config.appender.etw.location", "");
+            }
             logbackXml = "applicationinsights.appsvc.logback.xml";
         } else if (destination == null || destination.equalsIgnoreCase("console")) {
             logbackXml = "applicationinsights.console.logback.xml";

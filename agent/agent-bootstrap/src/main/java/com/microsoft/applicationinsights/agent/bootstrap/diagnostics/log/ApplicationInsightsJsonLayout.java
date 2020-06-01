@@ -27,12 +27,9 @@ import java.util.Map;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.contrib.json.classic.JsonLayout;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.AgentExtensionVersionFinder;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.ApplicationMetadataFactory;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsValueFinder;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.InstrumentationKeyFinder;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SiteNameFinder;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SubscriptionIdFinder;
 
 public class ApplicationInsightsJsonLayout extends JsonLayout {
 
@@ -46,12 +43,14 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     // visible for testing
     final List<DiagnosticsValueFinder> valueFinders = new ArrayList<>();
 
+
     public ApplicationInsightsJsonLayout() {
-        valueFinders.add(new SiteNameFinder());
-        valueFinders.add(new InstrumentationKeyFinder());
-        valueFinders.add(new AgentExtensionVersionFinder());
-        valueFinders.add(new SdkVersionFinder());
-        valueFinders.add(new SubscriptionIdFinder());
+        final ApplicationMetadataFactory mf = DiagnosticsHelper.getMetadataFactory();
+        valueFinders.add(mf.getSiteName());
+        valueFinders.add(mf.getInstrumentationKey());
+        valueFinders.add(mf.getExtensionVersion());
+        valueFinders.add(mf.getSdkVersion());
+        valueFinders.add(mf.getSubscriptionId());
     }
 
     @Override
@@ -77,7 +76,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     }
 
     public String getOperationName(ILoggingEvent event) {
-        return event.getMDCPropertyMap().get("microsoft.ai.operationName");
+        return event.getMDCPropertyMap().get(DiagnosticsHelper.MDC_PROP_OPERATION);
     }
 
 }
