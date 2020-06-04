@@ -58,13 +58,14 @@ public enum SystemInformation {
                 String processIdAsString = rawName.substring(0, i);
                 try {
                     Integer.parseInt(processIdAsString);
+                    InternalLogger.INSTANCE.info("Current PID: "+processIdAsString);
                     return processIdAsString;
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to fetch process id: '%s'", e.toString());
+                    InternalLogger.INSTANCE.error("Failed to parse PID as number: '%s'", e.toString());
                 }
             }
         }
-
+        InternalLogger.INSTANCE.error("Could not extract PID from runtime name: '"+rawName+"'");
         // Default
         return DEFAULT_PROCESS_NAME;
     }
