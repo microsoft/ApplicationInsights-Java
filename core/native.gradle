@@ -49,7 +49,7 @@ if (System.env.APPINSIGHTS_VS_PATH) {
 
 idea {
     module {
-        sourceDirs += file("$projectDir/src/windows/cpp")\
+        sourceDirs += file("$projectDir/src/windows/cpp")
     }
 }
 
