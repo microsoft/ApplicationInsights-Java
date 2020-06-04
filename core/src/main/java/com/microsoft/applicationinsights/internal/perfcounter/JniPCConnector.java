@@ -156,6 +156,15 @@ public final class JniPCConnector {
     }
 
     /**
+     * Performance Counters identify a process by "Instance Name."
+     * This will be the executable name without the extension, e.g. a process running java.exe will have an instance name "java".
+     * If there are multiple instances of the same executable, an additional identifier is appended. By default this looks like "java#1", "java#2".
+     * For some reason, the instance name can change after the process starts with the default naming scheme.
+     *
+     * To workaround this, add a DWORD registry value named 'ProcessNameFormat' set to the value '2' to the key
+     * 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\PerfProc\Performance'.
+     * This changes the naming scheme from "java#2" to "java_PID" where PID is the current process id. It also makes the name constant for the life of the process.
+     *
      * @throws NumberFormatException if pid cannot be parsed.
      */
     private static void initNativeCode() {

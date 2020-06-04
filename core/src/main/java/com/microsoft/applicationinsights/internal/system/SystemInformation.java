@@ -50,6 +50,9 @@ public enum SystemInformation {
         return SystemUtils.IS_OS_UNIX;
     }
 
+    /**
+     * JVMs are not required to publish this value/bean and some processes may not have permission to access it.
+     */
     private String initializeProcessId() {
         String rawName = ManagementFactory.getRuntimeMXBean().getName();
         if (!Strings.isNullOrEmpty(rawName)) {
