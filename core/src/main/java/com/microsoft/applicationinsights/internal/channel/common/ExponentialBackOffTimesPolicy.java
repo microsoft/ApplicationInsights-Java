@@ -51,8 +51,7 @@ final class ExponentialBackOffTimesPolicy implements BackOffTimesPolicy {
             FIVE_SECONDS_IN_MILLIS,
             FOUR_MINUTES_IN_MILLIS,
             FIVE_SECONDS_IN_MILLIS,
-            SIX_MINUTES_IN_MILLIS,
-            FIVE_SECONDS_IN_MILLIS
+            SIX_MINUTES_IN_MILLIS
     };
 
     @Override
