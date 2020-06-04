@@ -35,7 +35,7 @@ public final class ExponentialBackOffTimesPolicyTest {
     public void testBackOffs() {
         long[] backOffs = new ExponentialBackOffTimesPolicy().getBackOffTimeoutsInMillis();
         assertNotNull(backOffs);
-        assertTrue(backOffs.length % 2 == 1);
+        assertTrue(backOffs.length % 2 == 0);
         int couples = backOffs.length / 2;
         long lastEventValue = BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS;
         for (int i = 0; i < couples; ++i) {

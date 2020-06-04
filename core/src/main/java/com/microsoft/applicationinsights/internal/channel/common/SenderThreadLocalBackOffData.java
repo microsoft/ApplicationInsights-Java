@@ -87,13 +87,8 @@ final class SenderThreadLocalBackOffData {
     public long backOffTimerValue() {
         try {
             lock.lock();
-            ++currentBackOffIndex;
-            if (currentBackOffIndex == backOffTimeoutsInMillis.length) {
-                currentBackOffIndex = -1;
-
-                // Exhausted the back-offs
-                return -1;
-            }
+            // when the last backoff index is hit, stay there until backoff is reset
+            currentBackOffIndex = Math.min(currentBackOffIndex + 1, backOffTimeoutsInMillis.length - 1);
 
             if (!instanceIsActive) {
                return 0;
