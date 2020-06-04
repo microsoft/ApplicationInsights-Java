@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 2.5.2
+* Added additional error logging for troubleshooting issues loading JNI performance counter library. 
+
 # Version 2.6.1
 * Fix shutdown issue due to non-daemon thread
   ([#1245](https://github.com/microsoft/ApplicationInsights-Java/pull/1245))
