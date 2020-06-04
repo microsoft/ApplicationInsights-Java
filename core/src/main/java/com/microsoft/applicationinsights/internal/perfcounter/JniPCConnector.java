@@ -150,6 +150,9 @@ public final class JniPCConnector {
         return getPerformanceCounterValue(name);
     }
 
+    /**
+     * @throws NumberFormatException if pid cannot be parsed.
+     */
     private static void initNativeCode() {
         int processId = Integer.parseInt(SystemInformation.INSTANCE.getProcessId());
 
@@ -157,7 +160,7 @@ public final class JniPCConnector {
         if (StringUtils.isEmpty(currentInstanceName)) {
             InternalLogger.INSTANCE.error("Failed to fetch current process instance name, process counters for for the process level will not be activated.");
         } else {
-            InternalLogger.INSTANCE.trace("Java process name is set to '%s'", currentInstanceName);
+            InternalLogger.INSTANCE.info("Java process instance name is set to '%s'", currentInstanceName);
         }
     }
 
