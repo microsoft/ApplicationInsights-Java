@@ -1,6 +1,6 @@
 # CHANGELOG
 
-# Version 2.5.2
+# Version 2.6.2
 * Added additional error logging for troubleshooting issues loading JNI performance counter library. 
 
 # Version 2.6.1
@@ -362,4 +362,3 @@ Livemetrics UX.
 - Support collecting performance counters from 32-bit Windows machines.
 - Support manual tracking of dependencies using a new ```trackDependency``` method API.
 - Ability to tag a telemetry item as synthetic, by adding a ```SyntheticSource``` property to the reported item.
-
