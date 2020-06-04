@@ -83,7 +83,7 @@ public final class JniPCConnector {
         } catch (Throwable e) {
             try {
                 if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                    InternalLogger.INSTANCE.error("Unexpected error initialiing JNI Performance Counter library. Windows performance counters will not be used: "+ExceptionUtils.getStackTrace(e));
+                    InternalLogger.INSTANCE.error("Unexpected error initializing JNI Performance Counter library. Windows performance counters will not be used: "+ExceptionUtils.getStackTrace(e));
                 }
 
                 return false;
