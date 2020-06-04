@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,11 +76,15 @@ public final class JniPCConnector {
             loadNativeLibrary();
         } catch (ThreadDeath td) {
             throw td;
+        } catch (JNIPerformanceCounterConnectorException e) {
+            if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                InternalLogger.INSTANCE.error("Error initializing JNI Performance Counter library. Windows performance counters will not be used.: "+ ExceptionUtils.getStackTrace(e));
+            }
         } catch (Throwable e) {
             try {
-                InternalLogger.INSTANCE.error(
-                    "Failed to load native dll, Windows performance counters will not be used. " +
-                "Please make sure that Visual C++ Redistributable is properly installed: %s.", e.toString());
+                if (InternalLogger.INSTANCE.isErrorEnabled()) {
+                    InternalLogger.INSTANCE.error("Unexpected error initialiing JNI Performance Counter library. Windows performance counters will not be used: "+ExceptionUtils.getStackTrace(e));
+                }
 
                 return false;
             } catch (ThreadDeath td) {
@@ -176,21 +181,39 @@ public final class JniPCConnector {
      * @throws IOException If there are errors in opening/writing/reading/closing etc.
      *         Note that the method might throw RuntimeExceptions due to critical issues
      */
-    private static void loadNativeLibrary() throws IOException {
-        String model = System.getProperty("sun.arch.data.model");
-        String libraryToLoad = BITS_MODEL_64.equals(model) ? NATIVE_LIBRARY_64 : NATIVE_LIBRARY_32;
+    private static void loadNativeLibrary() throws JNIPerformanceCounterConnectorException {
+        final File dllOnDisk;
+        final String libraryToLoad;
+        try {
+            String model = System.getProperty("sun.arch.data.model");
+            libraryToLoad = BITS_MODEL_64.equals(model) ? NATIVE_LIBRARY_64 : NATIVE_LIBRARY_32;
 
-        File dllPath = buildDllLocalPath();
+            File dllPath = buildDllLocalPath();
 
-        File dllOnDisk = new File(dllPath, libraryToLoad);
+            dllOnDisk = new File(dllPath, libraryToLoad);
 
-        if (!dllOnDisk.exists()) {
-            extractToLocalFolder(dllOnDisk, libraryToLoad);
+            if (!dllOnDisk.exists()) {
+                extractToLocalFolder(dllOnDisk, libraryToLoad);
+            } else if (InternalLogger.INSTANCE.isTraceEnabled()) {
+                InternalLogger.INSTANCE.trace("Found existing DLL: " + dllOnDisk.getAbsolutePath());
+            }
+        } catch (Exception e) {
+            throw new JNIPerformanceCounterConnectorException("Error extracting DLL to disk", e);
         }
 
-        System.load(dllOnDisk.toString());
+        try {
+            System.load(dllOnDisk.toString());
+        } catch (Exception e) {
+            throw new JNIPerformanceCounterConnectorException("Error loading DLL. Please make sure that Visual C++ 2015 Redistributable is properly installed", e);
+        }
 
-        initNativeCode();
+        try {
+            initNativeCode();
+        } catch (NumberFormatException e) {
+            throw new JNIPerformanceCounterConnectorException("Could not parse PID as int", e);
+        } catch (Exception e) {
+            throw new JNIPerformanceCounterConnectorException("Unexpected error initializing performance counter DLL library", e);
+        }
 
         InternalLogger.INSTANCE.trace("Successfully loaded library '%s'", libraryToLoad);
     }
@@ -245,5 +268,15 @@ public final class JniPCConnector {
         InternalLogger.INSTANCE.trace("%s folder exists", dllPath.toString());
 
         return dllPath;
+    }
+
+    private static class JNIPerformanceCounterConnectorException extends Exception {
+        public JNIPerformanceCounterConnectorException(String s) {
+            super(s);
+        }
+
+        public JNIPerformanceCounterConnectorException(String s, Throwable throwable) {
+            super(s, throwable);
+        }
     }
 }
