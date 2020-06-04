@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -79,50 +78,6 @@ final class SenderThreadLocalBackOffData {
     }
 
     /**
-     * The calling thread will be suspended for an amount of time that is
-     * set in the 'backOffTimeoutsInSeconds' array by using its index 'currentBackOffIndex'.
-     *
-     * @return True if the thread completed the suspension time as expected, in which case
-     *         the caller should re-try to send the Transmission.
-     *         False, in which case the caller should 'abandon' this Transmission and move to the next one,
-     *         if:
-     *         1. The instance was marked as non-active before the thread started to wait.
-     *         2. The thread was signaled to stop while was waiting.
-     *         3. The thread was interrupted while was waiting.
-     *         4. The thread has exhausted all the back-off timeouts
-     */
-    public boolean backOff() {
-        try {
-            lock.lock();
-            ++currentBackOffIndex;
-            if (currentBackOffIndex == backOffTimeoutsInMillis.length) {
-                currentBackOffIndex = -1;
-
-                // Exhausted the back-offs
-                return false;
-            }
-
-            if (!instanceIsActive) {
-               return false;
-           }
-
-            try {
-                long millisecondsToWait = backOffTimeoutsInMillis[currentBackOffIndex];
-                if (millisecondsToWait > BackOffTimesPolicy.MIN_TIME_TO_BACK_OFF_IN_MILLS) {
-                    millisecondsToWait += addMilliseconds;
-                }
-                backOffCondition.await(millisecondsToWait, TimeUnit.MILLISECONDS);
-                return instanceIsActive;
-           } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return false;
-           }
-       } finally {
-           lock.unlock();
-       }
-   }
-
-    /**
      * Increment the current back off amount or resets the counter if needed.
      * <p>
      * This method does not block but instead provides the amount of time to sleep which can be used
@@ -132,13 +87,8 @@ final class SenderThreadLocalBackOffData {
     public long backOffTimerValue() {
         try {
             lock.lock();
-            ++currentBackOffIndex;
-            if (currentBackOffIndex == backOffTimeoutsInMillis.length) {
-                currentBackOffIndex = -1;
-
-                // Exhausted the back-offs
-                return -1;
-            }
+            // when the last backoff index is hit, stay there until backoff is reset
+            currentBackOffIndex = Math.min(currentBackOffIndex + 1, backOffTimeoutsInMillis.length - 1);
 
             if (!instanceIsActive) {
                return 0;
