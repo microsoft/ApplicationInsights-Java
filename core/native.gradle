@@ -20,6 +20,7 @@
  */
 
 apply plugin: 'cpp'
+apply plugin: 'idea'
 
 buildscript {
     repositories {
@@ -44,6 +45,12 @@ def vsToolsDir = "$programFilesX86\\Microsoft Visual Studio 14.0"
 if (System.env.APPINSIGHTS_VS_PATH) {
     vsToolsDir = System.env.APPINSIGHTS_VS_PATH
     println "Using custom Visual Studio Tools path: $vsToolsDir"
+}
+
+idea {
+    module {
+        sourceDirs += file("$projectDir/src/windows/cpp")
+    }
 }
 
 // region Native binary definition and configuration
