@@ -1,0 +1,18 @@
+restore:
+  commands:
+    - !!defaultcommand
+      name: 'Install Tools'
+      command: 'cdpx/scripts/restore.cmd'
+    - !!defaultcommand
+      name: 'Clean'
+      command: './gradlew clean'
+build:
+  commands:
+    - !!buildcommand
+      name: 'Assemble ApplicationInsights-Java projects'
+      command: './gradlew assemble'
+test:
+  commands:
+    - !!testcommand
+      name: 'Test ApplicationInsights-Java projects'
+      command: './gradlew check'
