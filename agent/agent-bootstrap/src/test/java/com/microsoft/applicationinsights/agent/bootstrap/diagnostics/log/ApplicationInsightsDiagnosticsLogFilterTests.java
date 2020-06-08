@@ -32,12 +32,6 @@ public class ApplicationInsightsDiagnosticsLogFilterTests {
     }
 
     @Test
-    public void denyIfDiagnosticsAreDisabled() {
-        DiagnosticsTestHelper.setEnabled(false);
-        assertEquals(FilterReply.DENY, filter.decide(mockEvent));
-    }
-
-    @Test
     public void neutralIfError() {
         assertEquals(FilterReply.NEUTRAL, filter.decide(mockEvent));
     }

@@ -24,34 +24,34 @@ javaconfig.json
 build/
  
 # Ignore Gradle GUI config 
-gradle-app.setting 
+gradle-app.setting
 
-## Directory-based project format: 
-.idea
-# if you remove the above rule, at least ignore the following: 
 
- 
-# User-specific stuff: 
-# .idea/workspace.xml 
-# .idea/tasks.xml 
-# .idea/dictionaries 
+# Ignore all xml in idea (keep codeStyles)
+.idea/*.xml
+
+## Directory-based project format:
+# User-specific stuff:
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
 
  
 # Sensitive or high-churn files: 
-# .idea/dataSources.ids 
-# .idea/dataSources.xml 
-# .idea/sqlDataSources.xml 
-# .idea/dynamic.xml 
-# .idea/uiDesigner.xml 
+.idea/dataSources.ids
+.idea/dataSources.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
 
  
 # Gradle: 
-# .idea/gradle.xml 
-# .idea/libraries 
+.idea/gradle.xml
+.idea/libraries
 
  
 # Mongo Explorer plugin: 
-# .idea/mongoSettings.xml 
+.idea/mongoSettings.xml
 
  
 ## File-based project format: 
@@ -62,8 +62,7 @@ gradle-app.setting
 ## Plugin-specific files: 
  
 # IntelliJ 
-out/ 
-*.iml
+out/
  
 # mpeltonen/sbt-idea plugin 
 .idea_modules/ 
@@ -98,3 +97,6 @@ Backend/OrderService/OrderService.iml
 
 # VS Code Workspace settings
 .vscode/settings.json
+
+# Visual Studio
+.vs

@@ -16,14 +16,12 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.AgentExtensionVersionFinder;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsValueFinder;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.InstrumentationKeyFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MachineNameFinder;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SiteNameFinder;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
+
 import com.squareup.moshi.Moshi;
 import okio.BufferedSink;
 import okio.Okio;
@@ -33,8 +31,6 @@ import org.slf4j.LoggerFactory;
 public class StatusFile {
 
     private static final Logger logger = LoggerFactory.getLogger(StatusFile.class);
-
-    private static final boolean isWindows;
 
     private static final List<DiagnosticsValueFinder> VALUE_FINDERS = new ArrayList<>();
 
@@ -47,7 +43,26 @@ public class StatusFile {
     // visible for testing
     static final String FILE_EXTENSION = ".json";
 
-    private static final String DEFAULT_STATUS_FILE_DIRECTORY = "/home/LogFiles/ApplicationInsights/status";
+    // visible for testing
+    static final String SITE_LOGDIR_PROPERTY = "site.logdir";
+
+    // visible for testing
+    static final String HOME_ENV_VAR = "HOME";
+
+    // visible for testing
+    static final String DEFAULT_HOME_DIR = ".";
+
+    // visible for testing
+    static final String DEFAULT_LOGDIR = "/LogFiles";
+
+    // visible for testing
+    static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = "/ApplicationInsights";
+
+    // visible for testing
+    static final String STATUS_FILE_DIRECTORY = "/status";
+
+    // visible for testing
+    static final String STATUS_FILE_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_STATUS_FILE_ENABLED";
 
     // visible for testing
     static String directory;
@@ -74,31 +89,49 @@ public class StatusFile {
             new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
                     THREAD_FACTORY);
 
+    private static boolean enabled;
+
     static {
         WRITER_THREAD.allowCoreThreadTimeOut(true);
         CONSTANT_VALUES.put("AppType", "java");
-        VALUE_FINDERS.add(new MachineNameFinder());
-        VALUE_FINDERS.add(new PidFinder());
-        VALUE_FINDERS.add(new SdkVersionFinder());
-        VALUE_FINDERS.add(new SiteNameFinder());
-        VALUE_FINDERS.add(new InstrumentationKeyFinder());
-        VALUE_FINDERS.add(new AgentExtensionVersionFinder());
+        final ApplicationMetadataFactory mf = DiagnosticsHelper.getMetadataFactory();
+        VALUE_FINDERS.add(mf.getMachineName());
+        VALUE_FINDERS.add(mf.getPid());
+        VALUE_FINDERS.add(mf.getSdkVersion());
+        VALUE_FINDERS.add(mf.getSiteName());
+        VALUE_FINDERS.add(mf.getInstrumentationKey());
+        VALUE_FINDERS.add(mf.getExtensionVersion());
 
-        String osName = System.getProperty("os.name");
-        isWindows = osName != null && osName.startsWith("Windows");
+        init();
+    }
 
-        if (isWindows) {
-            directory = "D:" + DEFAULT_STATUS_FILE_DIRECTORY;
+    // visible for testing
+    static void init() {
+        enabled = !"false".equalsIgnoreCase(System.getenv(STATUS_FILE_ENABLED_ENV_VAR));
+        final String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
+        final String statusFileRelativePath = DEFAULT_APPLICATIONINSIGHTS_LOGDIR + STATUS_FILE_DIRECTORY;
+        if (siteLogDir != null && !siteLogDir.isEmpty()) {
+            directory = siteLogDir + statusFileRelativePath;
         } else {
-            directory = DEFAULT_STATUS_FILE_DIRECTORY;
+            final String homeDir = System.getenv(HOME_ENV_VAR);
+            if (homeDir != null && !homeDir.isEmpty()) {
+                directory = homeDir  + DEFAULT_LOGDIR + statusFileRelativePath;
+            } else {
+                directory = DEFAULT_HOME_DIR + DEFAULT_LOGDIR + statusFileRelativePath;
+            }
         }
     }
 
     private StatusFile() {
     }
 
+    // visible for testing
+    static boolean shouldWrite() {
+        return enabled && DiagnosticsHelper.isAppServiceCodeless();
+    }
+
     public static <T> void putValueAndWrite(String key, T value) {
-        if (!DiagnosticsHelper.shouldOutputDiagnostics()) {
+        if (!shouldWrite()) {
             return;
         }
         CONSTANT_VALUES.put(key, value);
@@ -106,7 +139,7 @@ public class StatusFile {
     }
 
     public static void write() {
-        if (!DiagnosticsHelper.shouldOutputDiagnostics()) {
+        if (!shouldWrite()) {
             return;
         }
         WRITER_THREAD.submit(new Runnable() {
@@ -152,7 +185,7 @@ public class StatusFile {
             if (buffer != null) {
                 buffer.close();
             }
-            if (isWindows) {
+            if (DiagnosticsHelper.isOsWindows()) {
                 buffer = Okio.buffer(
                         Okio.sink(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.DELETE_ON_CLOSE,
                                 StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));

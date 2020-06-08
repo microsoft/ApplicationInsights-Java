@@ -5,8 +5,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class DiagnosticsHelper {
-    private DiagnosticsHelper() {
-    }
+    private DiagnosticsHelper() { }
+
+    /**
+     * Values: true|false
+     * Default: true
+     */
+    public static final String IPA_LOG_FILE_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_LOG_FILE_ENABLED";
+
+    /**
+     * Default: "" (meaning diagnostics file output is disabled)
+     */
+    public static final String INTERNAL_LOG_OUTPUT_DIR_ENV_VAR = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
+
+    /**
+     * Windows only. Cannot be enabled on non-windows OS.
+     * Values: true|false
+     * Default: true
+     */
+	public static final String IPA_ETW_PROVIDER_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_ETW_PROVIDER_ENABLED";
 
     // visible for testing
     static volatile boolean appServiceCodeless;
@@ -15,25 +32,17 @@ public class DiagnosticsHelper {
 
     private static volatile boolean functionsCodeless;
 
-    // visible for testing
-    static boolean enabled;
+    private static final boolean isWindows;
 
-    // visible for testing
-    static final String DIAGNOSTICS_OUTPUT_ENABLED_ENV_VAR_NAME = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_ENABLED";
+    public static final String DIAGNOSTICS_LOGGER_NAME = "applicationinsights.extension.diagnostics";
 
-    public static final String DIAGNOSTICS_LOGGER_NAME = "applicationinsights.diagnostics";
+    private static final ApplicationMetadataFactory METADATA_FACTORY = new ApplicationMetadataFactory();
+
+    public static final String MDC_PROP_OPERATION = "microsoft.ai.operationName";
 
     static {
-        boolean result = true;
-        try {
-            final String envValue = System.getenv(DIAGNOSTICS_OUTPUT_ENABLED_ENV_VAR_NAME);
-            if (envValue != null) {
-                // Boolean.parseBoolean will be false if string is not "true"; if var is garbage, assume enabled
-                result = !envValue.equalsIgnoreCase("false");
-            }
-        } catch (Exception e) {
-        }
-        enabled = result;
+        final String osName = System.getProperty("os.name");
+        isWindows = osName != null && osName.startsWith("Windows");
     }
 
     public static void setAgentJarFile(File agentJarFile) {
@@ -63,8 +72,23 @@ public class DiagnosticsHelper {
         return appServiceCodeless || aksCodeless || functionsCodeless;
     }
 
-    public static boolean shouldOutputDiagnostics() {
-        return enabled && isAppServiceCodeless();
+    public static ApplicationMetadataFactory getMetadataFactory() {
+        return METADATA_FACTORY;
+    }
+
+	public static String getCodelessResourceType() {
+        if (appServiceCodeless) {
+            return "appsvc";
+        } else if (aksCodeless) {
+            return "aks";
+        } else if (functionsCodeless) {
+            return "functions";
+        }
+        return null;
+	}
+
+	public static boolean isOsWindows() {
+        return isWindows;
     }
 
 }

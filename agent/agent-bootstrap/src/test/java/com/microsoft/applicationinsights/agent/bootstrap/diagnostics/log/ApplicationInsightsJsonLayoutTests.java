@@ -6,11 +6,19 @@ import java.util.Map;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
-import ch.qos.logback.contrib.json.classic.JsonLayout;
+
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsValueFinder;
 import org.hamcrest.Matchers;
 import org.junit.*;
 
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout.CUSTOM_FIELDS_PROP_NAME;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout.FORMATTED_MESSAGE_ATTR_NAME;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout.LOGGER_ATTR_NAME;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout.OPERATION_NAME_PROP_NAME;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout.TIMESTAMP_PROP_NAME;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout.UNKNOWN_VALUE;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -45,11 +53,9 @@ public class ApplicationInsightsJsonLayoutTests {
     @Test
     public void topLevelIncludesRequiredFields() {
         final Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
-        // there is no timestamp format specified, so it just uses the raw long value.
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry(ApplicationInsightsJsonLayout.TIMESTAMP_PROP_NAME,
-                String.valueOf(TIMESTAMP_VALUE)));
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry(JsonLayout.LOGGER_ATTR_NAME, LOGGER_NAME));
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, LOG_MESSAGE));
+        assertThat(jsonMap, Matchers.<String, Object>hasEntry(TIMESTAMP_PROP_NAME, String.valueOf(TIMESTAMP_VALUE))); // there is no timestamp format specified, so it just uses the raw long value.
+        assertThat(jsonMap, Matchers.<String, Object>hasEntry(LOGGER_ATTR_NAME, LOGGER_NAME));
+        assertThat(jsonMap, Matchers.<String, Object>hasEntry(FORMATTED_MESSAGE_ATTR_NAME, LOG_MESSAGE));
     }
 
     @Test
@@ -66,8 +72,7 @@ public class ApplicationInsightsJsonLayoutTests {
 
         verify(mockFinder, atLeastOnce()).getName();
         verify(mockFinder, atLeastOnce()).getValue();
-        assertThat((Map<String, Object>) jsonMap.get(ApplicationInsightsJsonLayout.CUSTOM_FIELDS_PROP_NAME),
-                Matchers.<String, Object>hasEntry(key, value));
+        assertThat((Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME), Matchers.<String, Object>hasEntry(key, value));
     }
 
     @Test
@@ -87,21 +92,20 @@ public class ApplicationInsightsJsonLayoutTests {
 
         final Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
 
-        Map<String, Object> propMap = (Map<String, Object>) jsonMap.get(
-                ApplicationInsightsJsonLayout.CUSTOM_FIELDS_PROP_NAME);
+        Map<String, Object> propMap = (Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME);
 
         verify(nullValueFinder, atLeastOnce()).getName();
         verify(nullValueFinder, atLeastOnce()).getValue();
         verify(emptyValueFinder, atLeastOnce()).getName();
         verify(emptyValueFinder, atLeastOnce()).getValue();
-        assertThat(propMap, Matchers.<String, Object>hasEntry(eKey, ApplicationInsightsJsonLayout.UNKNOWN_VALUE));
-        assertThat(propMap, Matchers.<String, Object>hasEntry(nKey, ApplicationInsightsJsonLayout.UNKNOWN_VALUE));
+        assertThat(propMap, Matchers.<String, Object>hasEntry(eKey, UNKNOWN_VALUE));
+        assertThat(propMap, Matchers.<String, Object>hasEntry(nKey, UNKNOWN_VALUE));
     }
 
     @Test
     public void mdcOperationNameAppearsInProperties() {
         Map<String, String> map = new HashMap<>();
-        map.put("microsoft.ai.operationName", "test");
+        map.put(DiagnosticsHelper.MDC_PROP_OPERATION, "test");
         when(logEvent.getMDCPropertyMap()).thenReturn(map);
         final Map<String, Object> jsonMap = (Map<String, Object>) ourLayout.toJsonMap(logEvent).get("properties");
         assertThat(jsonMap, Matchers.<String, Object>hasEntry("operation", "test"));
