@@ -1,6 +1,10 @@
 version:
-  major: 2
-  minor: 6
-  patch: 2
+  major: 0
+  minor: 0
   name: 'ApplicationInsights-Java'
-  system: 'revisioncounter'
+  system: 'custom'
+versioning:
+  commands:
+    - !!defaultcommand
+      name: 'Generate Version'
+      command: '.scripts/version.cmd'
