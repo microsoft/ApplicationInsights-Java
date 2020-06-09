@@ -14,12 +14,12 @@ restore:
       command: '.scripts/restore.cmd'
     - !!defaultcommand
       name: 'Clean'
-      command: './gradlew clean'
+      command: 'gradlew.bat clean'
 build:
   commands:
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java projects'
-      command: './gradlew assemble'
+      command: 'gradlew.bat assemble --info'
       artifacts:
         - from: 'core/build/libs'
           to: 'build/artifacts'
@@ -29,7 +29,7 @@ test:
   commands:
     - !!testcommand
       name: 'Test ApplicationInsights-Java projects'
-      command: './gradlew check'
+      command: 'gradlew.bat check --info'
       testresults:
         - from: 'core/build/test-results/test'
           include:
