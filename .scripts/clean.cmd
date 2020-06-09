@@ -1,1 +1,2 @@
-call %~dp0..\gradlew.bat clean --project-dir="%~dp0.."
+cd "%~dp0.."
+call %~dp0..\gradlew.bat :core:clean --project-dir="%~dp0.."
