@@ -117,7 +117,10 @@ function Get-File
     $file = [System.IO.Path]::Combine("C:\Downloads", $FileName)
 
     Trace-Message "Downloading from $Url to file $File"
-    Invoke-WebRequest -Uri $Url -UseBasicParsing -OutFile $file -UserAgent "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)"
+    #Invoke-WebRequest -Uri $Url -UseBasicParsing -OutFile $file -UserAgent "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)"
+    Import-Module BitsTransfer
+    Start-BitsTransfer -Source $Url -Destination $File
+    #(New-Object System.Net.WebClient).DownloadFile($Url, $File)
 
     Trace-Message "Finished download"
     Write-Host $Separator
