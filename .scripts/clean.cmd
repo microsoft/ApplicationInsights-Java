@@ -1,5 +1,4 @@
-pushd
 cd "%~dp0.."
 dir
-call gradlew.bat clean
-popd
+cd
+call %~dp0..\gradlew.bat clean
