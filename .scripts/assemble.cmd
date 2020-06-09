@@ -1,2 +1,2 @@
-@cd "%~dp0"
-call ..\gradlew.bat assemble --info
+@cd "%~dp0.."
+call gradlew.bat assemble --info

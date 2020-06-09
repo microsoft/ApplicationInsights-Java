@@ -1,2 +1,2 @@
-@cd "%~dp0"
-call ..\gradlew.bat clean
+@cd "%~dp0.."
+call gradlew.bat clean
