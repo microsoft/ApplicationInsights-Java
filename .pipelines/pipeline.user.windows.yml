@@ -10,16 +10,16 @@ environment:
 restore:
   commands:
     - !!defaultcommand
-      name: 'Install Tools'
-      command: '.scripts/restore.cmd'
+      name: 'Install Java'
+      command: '.scripts/installJava.cmd'
     - !!defaultcommand
       name: 'Clean'
-      command: 'gradlew.bat clean'
+      command: '.scripts/clean.cmd'
 build:
   commands:
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java projects'
-      command: 'gradlew.bat assemble --info'
+      command: '.scripts/assemble.cmd'
       artifacts:
         - from: 'core/build/libs'
           to: 'build/artifacts'
@@ -29,7 +29,7 @@ test:
   commands:
     - !!testcommand
       name: 'Test ApplicationInsights-Java projects'
-      command: 'gradlew.bat check --info'
+      command: '.scripts/test.cmd'
       testresults:
         - from: 'core/build/test-results/test'
           include:
