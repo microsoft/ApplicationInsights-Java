@@ -7,9 +7,13 @@ popd
 
 pushd %~dp0..
 set PROJECT_ROOT=%CD%
-call gradlew.bat :core:clean
+echo dir of '%PROJECT_ROOT%'
+dir
+set GRADLE_CMD=gradlew.bat :core:clean --info
+echo Running '%GRADLE_CMD%' from '%PROJECT_ROOT%'
+call %GRADLE_CMD%
 if errorlevel 1 (
-    echo Error running 'gradlew.bat clean' from '%PROJECT_ROOT%'
+    echo Error running '%GRADLE_CMD%' from '%PROJECT_ROOT%'
     exit /b 1
 )
 popd
