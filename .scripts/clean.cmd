@@ -7,13 +7,16 @@ popd
 
 pushd %~dp0..
 set PROJECT_ROOT=%CD%
-echo dir of '%PROJECT_ROOT%'
-dir
-set GRADLE_CMD=gradlew.bat :core:clean --info
-echo Running '%GRADLE_CMD%' from '%PROJECT_ROOT%'
+
+:: Update this to the tasks you want to run
+set GRADLE_TASKS=:core:clean
+:: Add any additonal options
+set GRADLE_OPTIONS=--info
+set GRADLE_CMD=gradlew.bat %GRADLE_TASKS% %GRADLE_OPTIONS%
+echo Running '%GRADLE_CMD%' in '%PROJECT_ROOT%'
 call %GRADLE_CMD%
 if errorlevel 1 (
-    echo Error running '%GRADLE_CMD%' from '%PROJECT_ROOT%'
+    echo Error running '%GRADLE_CMD%' in '%PROJECT_ROOT%'
     exit /b 1
 )
 popd
