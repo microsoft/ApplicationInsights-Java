@@ -1,7 +1,10 @@
 # CHANGELOG
 
-# Version 2.6.2
-* Added additional error logging for troubleshooting issues loading JNI performance counter library. 
+# Version 2.6.2-BETA
+* Added additional error logging for troubleshooting issues loading JNI performance counter library
+  ([#1254](https://github.com/microsoft/ApplicationInsights-Java/pull/1254))
+* Fix backoff condition so that retries will continue indefinitely
+  ([#1253](https://github.com/microsoft/ApplicationInsights-Java/pull/1253))
 
 # Version 2.6.1
 * Fix shutdown issue due to non-daemon thread
