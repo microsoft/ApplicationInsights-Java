@@ -11,7 +11,7 @@ restore:
   commands:
     - !!defaultcommand
       name: 'Install Tools'
-      command: 'cdpx/scripts/restore.cmd'
+      command: '.scripts/restore.cmd'
     - !!defaultcommand
       name: 'Clean'
       command: './gradlew clean'
