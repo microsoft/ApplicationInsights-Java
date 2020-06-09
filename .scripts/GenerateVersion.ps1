@@ -1,7 +1,11 @@
 # To generate a custom version with "M.m.p.yyyymmdd<build_count_of_day>"
-
-$versionProps = ConvertFrom-StringData (Get-Content core\build\src\generated\main\resources\sdk-version.properties -Raw)
-Write-Host "Read from skd-version.properties: " $versionProps.version
+$path = "core\build\src\generated\main\resources\sdk-version.properties"
+if (-Not (Test-Path -Path $path -PathType Leaf)) {
+    Write-Error -Message "'$path' does not exist" -Category ObjectNotFound
+    exit 2
+}
+$versionProps = ConvertFrom-StringData (Get-Content $path -Raw)
+Write-Host "Read from sdk-version.properties: " $versionProps.version
 $matches = ($versionProps.version | Select-String -Pattern "^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?:-(?<tag>.*))?")
 $major, $minor, $patch, $tag = $matches.Matches[0].Groups['major', 'minor','patch','tag'].Value
 $date = Get-Date -UFormat "%Y%m%d"
