@@ -1,3 +1,5 @@
-@cd "%~dp0.."
+pushd
+cd "%~dp0.."
 dir
 call gradlew.bat clean
+popd
