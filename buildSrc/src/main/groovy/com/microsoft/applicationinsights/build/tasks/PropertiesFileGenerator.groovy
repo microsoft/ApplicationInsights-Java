@@ -44,8 +44,8 @@ class PropsFileGen extends DefaultTask {
         }
 
         Properties oldProps = new Properties();
-        targetFile.withInputStream { ifs ->
-            oldProps.load(ifs);
+        targetFile.withInputStream { inFileStream ->
+            oldProps.load(inFileStream);
         }
 
         return oldProps.equals(props);
