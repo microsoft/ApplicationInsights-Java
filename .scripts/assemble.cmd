@@ -1,2 +1,1 @@
-@cd "%~dp0.."
-call gradlew.bat assemble --info
+call %~dp0..\gradlew.bat assemble --info --project-dir="%~dp0.."
