@@ -12,9 +12,6 @@ restore:
     - !!defaultcommand
       name: 'Install Java'
       command: '.scripts/installJava.cmd'
-    - !!defaultcommand
-      name: 'Clean'
-      command: '.scripts/clean.cmd'
 build:
   commands:
     - !!buildcommand

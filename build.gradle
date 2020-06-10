@@ -80,6 +80,28 @@ allprojects {
         }
     }
 
+    tasks.register('resolveDependencies') {
+        def nonEmptyConfigs = configurations.findAll {
+            !it.allDependencies.isEmpty()
+        }
+        enabled !nonEmptyConfigs.isEmpty()
+        nonEmptyConfigs.findAll { c ->
+            c.allDependencies.findAll { d ->
+                d instanceof ProjectDependency
+            }.each { d ->
+                dependsOn d.getDependencyProject().tasks.named('resolveDependencies')
+            }
+        }
+        doLast {
+            nonEmptyConfigs.findAll {
+                it.canBeResolved
+            }.each {
+                logger.info "Resolving $it"
+                it.files
+            }
+        }
+    }
+
     tasks.withType(JavaCompile) {
         doFirst {
             logger.info("sourceCompatibility = $sourceCompatibility")
