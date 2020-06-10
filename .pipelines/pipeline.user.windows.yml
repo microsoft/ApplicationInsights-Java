@@ -12,11 +12,16 @@ restore:
     - !!defaultcommand
       name: 'Install Java'
       command: '.scripts/installJava.cmd'
+    - !!defaultcommand
+      name: 'Clean and Resolve Dependencies'
+      command: '.scripts/gradle.cmd'
+      arguments: ':core:clean :core:resolveDependencies --info --stacktrace --refresh-dependencies'
 build:
   commands:
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java projects'
-      command: '.scripts/assemble.cmd'
+      command: '.scripts/gradle.cmd'
+      arguments: ':core:assemble --info --stacktrace'
       artifacts:
         - from: 'core/build/libs'
           to: 'build/artifacts'
@@ -26,7 +31,8 @@ test:
   commands:
     - !!testcommand
       name: 'Test ApplicationInsights-Java projects'
-      command: '.scripts/test.cmd'
+      command: '.scripts/gradle.cmd'
+      arguments: ':core:check --info --stacktrace'
       testresults:
         - from: 'core/build/test-results/test'
           include:

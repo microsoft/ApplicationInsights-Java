@@ -8,11 +8,7 @@ popd
 pushd %~dp0..
 set PROJECT_ROOT=%CD%
 
-:: Update this to the tasks you want to run
-set GRADLE_TASKS=:core:resolveDependencies
-:: Add any additonal options
-set GRADLE_OPTIONS=--info --stacktrace --refresh-dependencies
-set GRADLE_CMD=gradlew.bat %GRADLE_TASKS% %GRADLE_OPTIONS%
+set GRADLE_CMD=gradlew.bat %*
 echo Running '%GRADLE_CMD%' in '%PROJECT_ROOT%'
 call %GRADLE_CMD%
 if errorlevel 1 (
