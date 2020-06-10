@@ -8,11 +8,3 @@ versioning:
     - !!defaultcommand
       name: 'Generate Version'
       command: '.scripts/version.cmd'
-restore:
-  commands:
-    - !!defaultcommand
-      name: 'Clean Environment'
-      command: '.scripts/clean.cmd'
-    - !!defaultcommand
-      name: 'Resolve Dependencies'
-      command: '.scripts/resolve-dependencies.cmd'
