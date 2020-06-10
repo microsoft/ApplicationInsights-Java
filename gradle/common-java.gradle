@@ -123,7 +123,7 @@ if (hasProperty("JDKToUse")) {
         executable = javaExecutables.java
     }
 } else {
-    logger.info("JDKToUse not found. Using default JAVA_HOME")
+    logger.info("JDKToUse not found. Using default")
 }
 updateTestDirectories()
 
