@@ -36,12 +36,8 @@ param (
     [switch]$SkipUnzip = $false
 )
 
-# $url = "https://repos.azul.com/azure-only/zulu/packages/zulu-11/11.0.7/zulu-11-azure-jdk_11.39.15-11.0.7-win_x64.zip"
-$fileName = ($Url | Select-String -Pattern ".+/(?<filename>[^/]+)$").Matches[0].Groups['filename'].Value
-$dirName = $fileName.split('.')[0]
+$fileName, $dirName = ($Url | Select-String -Pattern ".+/(?<filename>(?<dirname>[^/]+)\..+)$").Matches[0].Groups['filename', 'dirname'].Value
 $source = [System.IO.Path]::Combine("C:\Downloads", $fileName)
-# $destination = "C:\Program Files\Java\"
-# $envVarKey = "JAVA_HOME"
 $envVarValue = [System.IO.Path]::Combine($Destination, $dirName)
 
 $ErrorActionPreference = "Stop"
