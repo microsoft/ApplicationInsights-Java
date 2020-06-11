@@ -10,8 +10,11 @@ environment:
 restore:
   commands:
     - !!defaultcommand
-      name: 'Install Java'
-      command: '.scripts/installJava.cmd'
+      name: 'Install Java 11 JDK'
+      command: '.scripts/installJava11jdk.cmd'
+    - !!defaultcommand
+      name: 'Install Java 7 JRE'
+      command: '.scripts/installJava7jre.cmd'
     - !!defaultcommand
       name: 'Clean and Resolve Dependencies'
       command: '.scripts/gradle.cmd'
@@ -21,7 +24,7 @@ build:
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java projects'
       command: '.scripts/gradle.cmd'
-      arguments: ':core:assemble --info --stacktrace'
+      arguments: ':core:assemble --info --stacktrace -DskipWinNative=true'
       artifacts:
         - from: 'core/build/libs'
           to: 'build/artifacts'
@@ -32,7 +35,7 @@ test:
     - !!testcommand
       name: 'Test ApplicationInsights-Java projects'
       command: '.scripts/gradle.cmd'
-      arguments: ':core:check --info --stacktrace'
+      arguments: ':core:check --info --stacktrace -DskipWinNative=true'
       testresults:
         - from: 'core/build/test-results/test'
           include:
