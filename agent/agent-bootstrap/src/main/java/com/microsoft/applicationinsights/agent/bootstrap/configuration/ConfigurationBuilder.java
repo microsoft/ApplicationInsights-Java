@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -35,6 +36,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Instrumen
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import okio.Buffer;
 import okio.Okio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,8 +96,10 @@ public class ConfigurationBuilder {
             try (InputStream in = Files.newInputStream(configPath)) {
                 Moshi moshi = new Moshi.Builder().build();
                 JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+                Buffer buffer = new Buffer();
+                buffer.readFrom(in);
                 try {
-                    return jsonAdapter.fromJson(Okio.buffer(Okio.source(in)));
+                    return jsonAdapter.fromJson(buffer);
                 } catch (Exception e) {
                     throw new ConfigurationException(
                             "Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
