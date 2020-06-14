@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.api.sync.RedisCommands;
 
 @WebServlet("/*")
 public class LettuceTestServlet extends HttpServlet {
@@ -34,7 +35,8 @@ public class LettuceTestServlet extends HttpServlet {
     private void lettuce() throws Exception {
         String hostname = System.getenv("REDIS");
         RedisClient redisClient = RedisClient.create("redis://" + hostname);
-        redisClient.connect().sync();
+        RedisCommands<String, String> redisCommands = redisClient.connect().sync();
+        redisCommands.get("test");
         redisClient.shutdown();
     }
 }

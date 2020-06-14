@@ -9,7 +9,7 @@ import io.opentelemetry.auto.bootstrap.instrumentation.aiappid.AiHttpTraceContex
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 
 public class TracerInstaller {
 
@@ -32,7 +32,7 @@ public class TracerInstaller {
         }
         // if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         OpenTelemetrySdk.getTracerProvider()
-                .addSpanProcessor(SimpleSpansProcessor.create(new Exporter(telemetryClient)));
+                .addSpanProcessor(SimpleSpanProcessor.newBuilder(new Exporter(telemetryClient)).build());
     }
 
     public static void logVersionInfo() {

@@ -45,8 +45,8 @@ import io.opentelemetry.auto.bootstrap.instrumentation.aiappid.AiAppId;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -78,7 +78,7 @@ public class Exporter implements SpanExporter {
             return ResultCode.SUCCESS;
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
-            return ResultCode.FAILED_NOT_RETRYABLE;
+            return ResultCode.FAILURE;
         }
     }
 
@@ -264,7 +264,7 @@ public class Exporter implements SpanExporter {
 
     // currently only gRPC instrumentation creates events, which we export here as logs ("traces")
     private void exportEvents(SpanData span, Double samplingPercentage) {
-        for (TimedEvent event : span.getTimedEvents()) {
+        for (Event event : span.getEvents()) {
             String message = event.getName();
             long timeEpochNanos = event.getEpochNanos();
             String level = getString(event, "level");
@@ -439,7 +439,7 @@ public class Exporter implements SpanExporter {
     }
 
 
-    private static String getString(TimedEvent event, String attributeName) {
+    private static String getString(Event event, String attributeName) {
         AttributeValue attributeValue = event.getAttributes().get(attributeName);
         if (attributeValue == null) {
             return null;
@@ -469,6 +469,11 @@ public class Exporter implements SpanExporter {
             ((SupportSampling) telemetry).setSamplingPercentage(samplingPercentage);
         }
         telemetryClient.track(telemetry);
+    }
+
+    @Override
+    public ResultCode flush() {
+        return null;
     }
 
     @Override
