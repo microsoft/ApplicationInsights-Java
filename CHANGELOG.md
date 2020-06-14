@@ -1,5 +1,21 @@
 # CHANGELOG
 
+# Version 2.6.2-BETA
+* Added additional error logging for troubleshooting issues loading JNI performance counter library
+  ([#1254](https://github.com/microsoft/ApplicationInsights-Java/pull/1254))
+* Fix backoff condition so that retries will continue indefinitely
+  ([#1253](https://github.com/microsoft/ApplicationInsights-Java/pull/1253))
+
+# Version 2.6.1
+* Fix shutdown issue due to non-daemon thread
+  ([#1245](https://github.com/microsoft/ApplicationInsights-Java/pull/1245))
+
+# Version 2.6.1-BETA
+* Fix W3C BackCompat across multiple Application Insights instrumentation keys
+  ([#1228](https://github.com/microsoft/ApplicationInsights-Java/pull/1228))
+* Fix spring boot starter when used with `spring.main.lazy-initialization=true`
+  ([#1227](https://github.com/microsoft/ApplicationInsights-Java/pull/1227))
+
 # Version 2.6.0
 * No changes since 2.6.0-BETA.3
 
