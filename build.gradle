@@ -1,9 +1,5 @@
-import nebula.plugin.release.git.opinion.Strategies
-
 plugins {
   id 'idea'
-
-  id "nebula.release" version "15.3.0"
 
   id 'org.gradle.test-retry' version '1.2.0' apply false
 
@@ -20,17 +16,11 @@ plugins {
   id "net.ltgt.errorprone" version "1.3.0" apply false
 }
 
-release {
-  defaultVersionStrategy = Strategies.SNAPSHOT
-}
-
-nebulaRelease {
-  addReleaseBranchPattern(/v\d+\.\d+\.x/)
-}
-
 allprojects {
   apply from: "$rootDir/gradle/dependencies.gradle"
   apply from: "$rootDir/gradle/util.gradle"
+
+  version = '0.11.0+ai.patch.1'
 }
 
 repositories {
