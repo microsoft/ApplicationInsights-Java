@@ -1,18 +1,16 @@
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.sdk.trace.Sampler;
+import io.opentelemetry.trace.Link;
+import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.TraceId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-
-import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.sdk.trace.Sampler;
-import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.trace.Link;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +35,12 @@ public final class FixedRateSampler implements Sampler {
     }
 
     @Override
-    public Decision shouldSample(@Nullable SpanContext parentContext, TraceId traceId, SpanId spanId, String name,
-                                 Kind spanKind, Map<String, AttributeValue> attributes, List<Link> parentLinks) {
+    public Decision shouldSample(@Nullable SpanContext parentContext,
+                                 TraceId traceId,
+                                 String name,
+                                 Span.Kind spanKind,
+                                 Map<String, AttributeValue> attributes,
+                                 List<Link> parentLinks) {
         if (SamplingScoreGeneratorV2.getSamplingScore(traceId.toLowerBase16()) >= samplingPercentage) {
             logger.debug("Item {} sampled out", name);
             return alwaysOffDecision;
