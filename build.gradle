@@ -1,11 +1,9 @@
 import java.time.Duration
-import nebula.plugin.release.git.opinion.Strategies
 
 plugins {
   id 'idea'
 
   id "io.github.gradle-nexus.publish-plugin"
-  id "nebula.release"
 
   id 'org.gradle.test-retry' apply false
 
@@ -17,14 +15,6 @@ plugins {
   id "com.diffplug.spotless"
   id "net.ltgt.errorprone" apply false
   id "net.ltgt.nullaway" apply false
-}
-
-release {
-  defaultVersionStrategy = Strategies.SNAPSHOT
-}
-
-nebulaRelease {
-  addReleaseBranchPattern(/v\d+\.\d+\.x/)
 }
 
 nexusPublishing {
@@ -53,6 +43,8 @@ nexusPublishing {
 
 allprojects {
   apply from: "$rootDir/gradle/util.gradle"
+
+  version = '1.2.0+ai.patch.1'
 }
 
 repositories {
