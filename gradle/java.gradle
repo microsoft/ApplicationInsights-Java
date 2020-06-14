@@ -43,14 +43,12 @@ java {
   withSourcesJar()
 }
 
-tasks.withType(JavaCompile) {
-  options.compilerArgs.addAll(['--release', project.ext.release.majorVersion])
-}
-tasks.withType(GroovyCompile) {
-  options.compilerArgs.addAll(['--release', project.ext.release.majorVersion])
-}
-tasks.withType(ScalaCompile) {
-  options.compilerArgs.addAll(['--release', project.ext.release.majorVersion])
+sourceSets {
+  main {
+    java {
+      srcDir 'src/main/java'
+    }
+  }
 }
 
 apply plugin: "eclipse"
