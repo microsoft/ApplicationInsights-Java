@@ -50,9 +50,6 @@ include ':testing-bootstrap'
 include ':testing-common'
 include ':utils:test-utils'
 
-// smoke tests
-include ':smoke-tests'
-
 include ':instrumentation:akka-actor-2.5'
 include ':instrumentation:akka-http-10.0'
 include ':instrumentation:apache-camel-2.20'
@@ -105,7 +102,6 @@ include ':instrumentation:hibernate:hibernate-4.3'
 include ':instrumentation:hibernate:hibernate-common'
 include ':instrumentation:http-url-connection'
 include ':instrumentation:hystrix-1.4'
-include ':instrumentation:java-httpclient'
 include ':instrumentation:jaxrs:jaxrs-1.0'
 include ':instrumentation:jaxrs:jaxrs-2.0:jaxrs-2.0-common'
 include ':instrumentation:jaxrs:jaxrs-2.0:jaxrs-2.0-jersey-2.0'
