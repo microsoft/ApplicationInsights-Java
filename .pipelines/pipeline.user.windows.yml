@@ -16,6 +16,9 @@ restore:
       name: 'Install Java 7 JRE'
       command: '.scripts/installJava7jre.cmd'
     - !!defaultcommand
+      name: 'Install Windows 8.1 SDK'
+      command: '.scripts/installWindowsSDK.cmd'
+    - !!defaultcommand
       name: 'Clean and Resolve Dependencies'
       command: '.scripts/gradle.cmd'
       arguments: ':core:clean :core:resolveDependencies --info --stacktrace --refresh-dependencies'
@@ -24,7 +27,7 @@ build:
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java projects'
       command: '.scripts/gradle.cmd'
-      arguments: ':core:assemble --info --stacktrace -DskipWinNative=true'
+      arguments: ':core:assemble --info --stacktrace'
       artifacts:
         - from: 'core/build/libs'
           to: 'build/artifacts'
@@ -35,7 +38,7 @@ test:
     - !!testcommand
       name: 'Test ApplicationInsights-Java projects'
       command: '.scripts/gradle.cmd'
-      arguments: ':core:check --info --stacktrace -DskipWinNative=true'
+      arguments: ':core:check --info --stacktrace'
       testresults:
         - from: 'core/build/test-results/test'
           include:
