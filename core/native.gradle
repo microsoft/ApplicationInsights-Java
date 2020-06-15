@@ -57,8 +57,12 @@ idea {
 model {
     toolChains {
         visualCpp(VisualCpp) {
-            windowsSdkDir winSdkDir
-            installDir vsToolsDir
+            if (System.env.APPINSIGHTS_WIN_SDK_PATH) {
+                windowsSdkDir winSdkDir
+            }
+            if (System.env.APPINSIGHTS_VS_PATH) {
+                installDir vsToolsDir
+            }
         }
     }
     buildTypes {
