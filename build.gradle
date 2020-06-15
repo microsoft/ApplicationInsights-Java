@@ -81,11 +81,8 @@ allprojects {
     }
 
     tasks.register('resolveDependencies') {
-        def nonEmptyConfigs = configurations.findAll {
-            !it.allDependencies.isEmpty()
-        }
-        enabled !nonEmptyConfigs.isEmpty()
-        nonEmptyConfigs.findAll { c ->
+        enabled !configurations.isEmpty()
+        configurations.findAll { c ->
             c.allDependencies.findAll { d ->
                 d instanceof ProjectDependency
             }.each { d ->
@@ -93,7 +90,7 @@ allprojects {
             }
         }
         doLast {
-            nonEmptyConfigs.findAll {
+            configurations.findAll {
                 it.canBeResolved
             }.each {
                 logger.info "Resolving $it"
