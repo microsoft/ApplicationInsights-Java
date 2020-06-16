@@ -95,12 +95,16 @@ $DownloadedFile = [System.IO.Path]::Combine($DownloadDirectory, $Filename)
 $HomeDirectory = [System.IO.Path]::Combine($InstallationDirectory, $HomeFolder)
 $PathDirectory = [System.IO.Path]::Combine($HomeDirectory, $PathFolder)
 
+Trace-Message "Creating download location $DownloadDirectory"
+New-Item -Path $DownloadDirectory -ItemType Container -ErrorAction SilentlyContinue
+
 #region function definitions
 function Download-File
 {
     if (-not $SkipDownload) {
         Write-Host "Downloading '$Filename' from '$Url' to '$DownloadedFile'"
-        Get-File -Url $Url -FileName $Filename -Path $DownloadDirectory
+        Import-Module BitsTransfer
+        Start-BitsTransfer -Source $Url -Destination $DownloadedFile
         Write-Host "Download finished: $DownloadedFile"
     }
     else
@@ -216,6 +220,9 @@ finally
 
     if ($CleanOnFinish)
     {
+        Trace-Message "Deleting download location $DownloadDirectory"
+        Remove-Item -Path $DownloadDirectory -Recurse -ErrorAction SilentlyContinue
+
         Stop-Setup
     }
     else
