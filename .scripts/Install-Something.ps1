@@ -95,56 +95,7 @@ $DownloadedFile = [System.IO.Path]::Combine($DownloadDirectory, $Filename)
 $HomeDirectory = [System.IO.Path]::Combine($InstallationDirectory, $HomeFolder)
 $PathDirectory = [System.IO.Path]::Combine($HomeDirectory, $PathFolder)
 
-
-Start-Setup
-$PathNodes=@()
-try
-{
-    Download-File
-    Valdate-File
-
-    if (-not $SkipInstall)
-    {
-        if ($Unzip)
-        {
-            Extract-Zipfile
-        }
-        else
-        {
-            Run-Installer
-        }
-    }
-    else
-    {
-        Write-Host "Skipping installation."
-    }
-
-    Create-HomeVar
-
-    if ($UpdatePath)
-    {
-        # TODO user homepath or pathdirectory
-        $PathNodes += $PathDirectory
-    }
-}
-finally
-{
-    if (!$PathNodes -eq "")
-    {
-        Write-Host "Appending to PATH: '$PathNodes'"
-        Update-Path -PathNodes $PathNodes
-    }
-
-    if ($CleanOnFinish)
-    {
-        Stop-Setup
-    }
-    else
-    {
-        Stop-Setup -PreserveTemp -PreserveDownloads
-    }
-}
-
+#region function definitions
 function Download-File
 {
     if (-not $SkipDownload) {
@@ -220,5 +171,55 @@ function Run-Installer
     elseif ($InstallerType -eq 'MSI')
     {
         Install-FromMSI -Path $DownloadedFile
+    }
+}
+#endregion
+
+Start-Setup
+$PathNodes=@()
+try
+{
+    Download-File
+    Valdate-File
+
+    if (-not $SkipInstall)
+    {
+        if ($Unzip)
+        {
+            Extract-Zipfile
+        }
+        else
+        {
+            Run-Installer
+        }
+    }
+    else
+    {
+        Write-Host "Skipping installation."
+    }
+
+    Create-HomeVar
+
+    if ($UpdatePath)
+    {
+        # TODO user homepath or pathdirectory
+        $PathNodes += $PathDirectory
+    }
+}
+finally
+{
+    if (!$PathNodes -eq "")
+    {
+        Write-Host "Appending to PATH: '$PathNodes'"
+        Update-Path -PathNodes $PathNodes
+    }
+
+    if ($CleanOnFinish)
+    {
+        Stop-Setup
+    }
+    else
+    {
+        Stop-Setup -PreserveTemp -PreserveDownloads
     }
 }
