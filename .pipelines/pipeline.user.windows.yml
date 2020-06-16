@@ -15,7 +15,8 @@ restore:
       logs:
         - from: 'AIJ-BuildLogs/Restore/WinSdk'
           to: 'Build Logs/Restore/WinSdk'
-          include: '**/*.log'
+          include:
+            - '**/*.log'
     - !!defaultcommand
       name: 'Install Java 11 JDK'
       command: '.scripts/installJava11jdk.cmd'
