@@ -10,14 +10,14 @@ environment:
 restore:
   commands:
     - !!defaultcommand
+      name: 'Install Windows 8.1 SDK'
+      command: '.scripts/installWindows81SDK.cmd'
+    - !!defaultcommand
       name: 'Install Java 11 JDK'
       command: '.scripts/installJava11jdk.cmd'
     - !!defaultcommand
       name: 'Install Java 7 JRE'
       command: '.scripts/installJava7jre.cmd'
-    - !!defaultcommand
-      name: 'Install Windows 8.1 SDK'
-      command: '.scripts/installWindows81SDK.cmd'
     - !!defaultcommand
       name: 'Clean and Resolve Dependencies'
       command: '.scripts/gradle.cmd'
