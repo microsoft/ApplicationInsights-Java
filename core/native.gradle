@@ -58,9 +58,11 @@ model {
     toolChains {
         visualCpp(VisualCpp) {
             if (System.env.APPINSIGHTS_WIN_SDK_PATH) {
+                println "Setting custom Windows SDK path: $winSdkDir"
                 windowsSdkDir winSdkDir
             }
             if (System.env.APPINSIGHTS_VS_PATH) {
+                println "Setting custom VS Build Tools path: $vsToolsDir"
                 installDir vsToolsDir
             }
         }
