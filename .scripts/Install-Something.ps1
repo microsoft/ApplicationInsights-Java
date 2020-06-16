@@ -184,7 +184,7 @@ $PathNodes=@()
 try
 {
     Download-File
-    Valdate-File
+    Validate-File
 
     if (-not $SkipInstall)
     {
