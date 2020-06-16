@@ -53,6 +53,9 @@ param(
     [ValidateSet('EXE','MSI')]
     [string]$InstallerType='EXE',
 
+    [Parameter(ParameterSetName='Installer')]
+    [string[]]$InstallerArgs, #arguments to pass to installer
+
     [Parameter(ParameterSetName='Unzip')]
     [Parameter(ParameterSetName='Installer')]
     [ValidateNotNullOrEmpty()]
@@ -170,11 +173,11 @@ function Run-Installer
 {
     if ($InstallerType -eq 'EXE')
     {
-        Install-FromEXE -Path $DownloadedFile
+        Install-FromEXE -Path $DownloadedFile -Arguments $InstallerArgs
     }
     elseif ($InstallerType -eq 'MSI')
     {
-        Install-FromMSI -Path $DownloadedFile
+        Install-FromMSI -Path $DownloadedFile -Arguments $InstallerArgs
     }
 }
 #endregion
