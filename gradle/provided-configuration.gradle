@@ -3,3 +3,5 @@ configurations {
     provided
     compileOnly.extendsFrom provided, optional
 }
+
+spotbugsMain.auxClassPaths = configurations.provided + configurations.optional + sourceSets.main.runtimeClasspath
