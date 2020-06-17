@@ -10,6 +10,9 @@ environment:
 restore:
   commands:
     - !!defaultcommand
+      name: 'Download collectd-api.jar'
+      command: '.scripts/downloadCollectdJar.cmd'
+    - !!defaultcommand
       name: 'Install Windows 8.1 SDK'
       command: '.scripts/installWindows81SDK.cmd'
       logs:
@@ -26,25 +29,38 @@ restore:
     - !!defaultcommand
       name: 'Clean and Resolve Dependencies'
       command: '.scripts/gradle.cmd'
-      arguments: ':core:clean :core:resolveDependencies --info --stacktrace --refresh-dependencies'
+      arguments: 'clean resolveDependencies --info --stacktrace --refresh-dependencies'
 build:
   commands:
     - !!buildcommand
-      name: 'Assemble ApplicationInsights-Java projects'
+      name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
-      arguments: ':core:assemble --info --stacktrace'
+      arguments: 'assemble --info --stacktrace'
       artifacts:
-        - from: 'core/build/libs'
-          to: 'build/artifacts'
+        - to: 'Artifacts'
           include:
-            - '*.jar'
-test:
-  commands:
-    - !!testcommand
-      name: 'Test ApplicationInsights-Java projects'
+            - '**/build/libs/*.jar'
+    - !!defaultcommand
+      name: 'Checks for ApplicationInsights-Java'
       command: '.scripts/gradle.cmd'
-      arguments: ':core:check --info --stacktrace'
-      testresults:
-        - from: 'core/build/test-results/test'
+      arguments: 'check --info --stacktrace -x test'
+      logs:
+        - to: 'Checks Reports'
           include:
-            - '*.xml'
+            - '**/build/reports/**/*'
+          exclude:
+            - '**/build/reports/test/**/*'
+    - !!testcommand
+      name: 'Run ApplicationInsights-Java Unit Tests'
+      command: '.scripts/gradle.cmd'
+      arguments: 'test --info --stacktrace'
+      fail_on_stderr: false
+      testresults:
+        - title: 'ApplicationInsights-Java Unit Tests'
+          type: 'junit'
+          include:
+            - '**/build/test-results/test/*.xml'
+      logs:
+        - to: 'Test Logs'
+          include:
+            - '**/build/reports/test/**/*'
