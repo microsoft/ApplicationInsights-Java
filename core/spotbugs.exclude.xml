@@ -189,6 +189,25 @@
         <Class name="com.microsoft.applicationinsights.extensibility.initializer.docker.DockerContextInitializer" />
         <Method name="&lt;init&gt;" />
     </Match>
+    <Match><!-- False Positive from new try-with-resources bytecode in Java 11: https://github.com/spotbugs/spotbugs/issues/756 -->
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE" />
+        <Class name="com.microsoft.applicationinsights.internal.channel.simplehttp.SimpleHttpChannel" />
+        <Method name="send" />
+        <Or>
+            <Local name="httpClient" />
+            <Local name="response" />
+        </Or>
+    </Match>
+    <Match><!-- False Positive from new try-with-resources bytecode in Java 11: https://github.com/spotbugs/spotbugs/issues/756 -->
+        <Or>
+            <Bug pattern="NP_LOAD_OF_KNOWN_NULL_VALUE" />
+            <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
+            <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE" />
+        </Or>
+        <Class name="com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory" />
+        <Method name="initialize" />
+        <Local name="configurationFile" />
+    </Match>
     <Match>
         <!-- These rules are fine to skip. -->
         <Or>

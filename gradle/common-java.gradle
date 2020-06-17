@@ -49,14 +49,22 @@ checkstyle {
 spotbugs {
     effort = 'max'
     reportLevel = 'medium'
+    showProgress = true
     ignoreFailures = false
-    sourceSets = [sourceSets.main]
+    toolVersion = '4.0.2'
+}
+
+spotbugsMain {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
 }
 
 tasks.withType(JavaCompile) {
     dependencies {
         // See https://find-sec-bugs.github.io/bugs.htm for bug pattern definitions
-        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
+        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.+'
     }
     def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
     if (spotbugsExcludeFile.exists()) {
