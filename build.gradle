@@ -121,6 +121,15 @@ allprojects {
         from "${rootProject.projectDir}/NOTICE"
         from "${rootProject.projectDir}/LICENSE"
     }
+
+    // Only run spotbugs against these configurations
+    def spotConfigs = ["main"]
+    tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+        enabled = spotConfigs.contains(getBaseName())
+        if (!enabled) {
+            logger.info "Skipping $it"
+        }
+    }
 }
 
 wrapper {

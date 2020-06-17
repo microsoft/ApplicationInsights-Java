@@ -61,8 +61,6 @@ spotbugsMain {
     }
 }
 
-spotbugsTest.enabled = false
-
 tasks.withType(JavaCompile) {
     dependencies {
         // See https://find-sec-bugs.github.io/bugs.htm for bug pattern definitions
