@@ -39,12 +39,14 @@ def programFilesX86 = System.env.'ProgramFiles(x86)' ?: 'C:\\Program Files (x86)
 def winSdkDir = "$programFilesX86\\Windows Kits\\8.1"
 if (System.env.APPINSIGHTS_WIN_SDK_PATH) {
     winSdkDir = System.env.APPINSIGHTS_WIN_SDK_PATH
-    println "Using custom Windows SDK path: $winSdkDir"
+    logger.info "Using custom Windows SDK path: $winSdkDir"
+} else {
+    logger.info "Using default Windows SDK path: $winSdkDir"
 }
 def vsToolsDir = "$programFilesX86\\Microsoft Visual Studio 14.0"
 if (System.env.APPINSIGHTS_VS_PATH) {
     vsToolsDir = System.env.APPINSIGHTS_VS_PATH
-    println "Using custom Visual Studio Tools path: $vsToolsDir"
+    logger.info "Using custom Visual Studio Tools path: $vsToolsDir"
 }
 
 idea {
@@ -57,12 +59,10 @@ idea {
 model {
     toolChains {
         visualCpp(VisualCpp) {
-            if (System.env.APPINSIGHTS_WIN_SDK_PATH) {
-                println "Setting custom Windows SDK path: $winSdkDir"
-                windowsSdkDir winSdkDir
-            }
+            logger.info "Setting custom Windows SDK path: $winSdkDir"
+            windowsSdkDir winSdkDir
             if (System.env.APPINSIGHTS_VS_PATH) {
-                println "Setting custom VS Build Tools path: $vsToolsDir"
+                logger.info "Setting custom VS Build Tools path: $vsToolsDir"
                 installDir vsToolsDir
             }
         }
