@@ -7,7 +7,9 @@ ext.appServerShortName = "jbosseap${jbossEapVersion}"
 ext.jbossZipFile = null
 
 if (!System.env."${jbossEapZipfileVar}") {
-    logger.warn "Skipping generation of JBoss EAP ${jbossEapVersion} containers. To run these, you must sign up for the Red Hat Developer Program and download the zip file manually. Then set '${jbossEapZipfileVar}' environment variable to the location of the installer jar."
+    if (logger.isInfoEnabled()) {
+        logger.warn "Skipping generation of JBoss EAP ${jbossEapVersion} containers. To run these, you must sign up for the Red Hat Developer Program and download the zip file manually. Then set '${jbossEapZipfileVar}' environment variable to the location of the installer jar."
+    }
     if (!isBuildServer) {
         project.tasks.all { task -> task.enabled = false }
     }
