@@ -7,6 +7,8 @@ environment:
     provider: 'appcontainer'
     image: 'cdpxwin1809.azurecr.io/global/vse2019:latest'
     source_mode: 'map'
+signing_options:
+  profile: '170'
 restore:
   commands:
     - !!defaultcommand
