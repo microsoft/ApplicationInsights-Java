@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class Exporter implements SpanExporter {
 
     private static final Logger logger = LoggerFactory.getLogger(Exporter.class);
 
-    private static final Pattern COMPONENT_PATTERN = Pattern.compile("io\\.opentelemetry\\.auto\\.(.*)(-[0-9.]*)");
+    private static final Pattern COMPONENT_PATTERN = Pattern.compile("io\\.opentelemetry\\.auto\\.([^0-9]*)(-[0-9.]*)?");
 
     private static final Joiner JOINER = Joiner.on(", ");
 
@@ -90,8 +91,8 @@ public class Exporter implements SpanExporter {
         Kind kind = span.getKind();
         String instrumentationName = span.getInstrumentationLibraryInfo().getName();
         Matcher matcher = COMPONENT_PATTERN.matcher(instrumentationName);
-        String component = matcher.matches() ? matcher.group(1) : instrumentationName;
-        if ("jms".equals(component) && !span.getParentSpanId().isValid() && kind == Kind.CLIENT) {
+        String stdComponent = matcher.matches() ? matcher.group(1) : null;
+        if ("jms".equals(stdComponent) && !span.getParentSpanId().isValid() && kind == Kind.CLIENT) {
             // no need to capture these, at least is consistent with prior behavior
             // these tend to be frameworks pulling messages which are then pushed to consumers
             // where we capture them
@@ -104,48 +105,50 @@ public class Exporter implements SpanExporter {
                 // TODO revisit this decision
                 // maybe user-generated telemetry?
                 // otherwise this top-level span won't show up in Performance blade
-                exportRequest(component, span);
+                exportRequest(stdComponent, span);
             } else if (span.getName().equals("EventHubs.message")) {
                 // TODO eventhubs should use PRODUCER instead of INTERNAL
-                exportRemoteDependency(component, span, false);
+                exportRemoteDependency(stdComponent, span, false);
             } else {
-                exportRemoteDependency(component, span, true);
+                exportRemoteDependency(stdComponent, span, true);
             }
         } else if (kind == Kind.CLIENT || kind == Kind.PRODUCER) {
-            exportRemoteDependency(component, span, false);
+            exportRemoteDependency(stdComponent, span, false);
         } else if (kind == Kind.SERVER || kind == Kind.CONSUMER) {
-            exportRequest(component, span);
+            exportRequest(stdComponent, span);
         } else {
             throw new UnsupportedOperationException(kind.name());
         }
     }
 
-    private void exportRequest(String component, SpanData span) {
+    private void exportRequest(String stdComponent, SpanData span) {
 
         RequestTelemetry telemetry = new RequestTelemetry();
 
-        String sourceAppId = getString(span, AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME);
+        Map<String, AttributeValue> attributes = new HashMap<>(span.getAttributes());
+
+        String sourceAppId = removeAttributeString(attributes, AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME);
         if (!AiAppId.getAppId().equals(sourceAppId)) {
             telemetry.setSource(sourceAppId);
-        } else if ("kafka-clients".equals(component)) {
+        } else if ("kafka-clients".equals(stdComponent)) {
             telemetry.setSource(span.getName()); // destination queue name
-        } else if ("jms".equals(component)) {
+        } else if ("jms".equals(stdComponent)) {
             telemetry.setSource(span.getName()); // destination queue name
         }
 
         addLinks(telemetry.getProperties(), span.getLinks());
 
-        AttributeValue httpStatusCode = span.getAttributes().get("http.status_code");
+        AttributeValue httpStatusCode = attributes.remove("http.status_code");
         if (isNonNullLong(httpStatusCode)) {
             telemetry.setResponseCode(Long.toString(httpStatusCode.getLongValue()));
         }
 
-        String httpUrl = getString(span, "http.url");
+        String httpUrl = removeAttributeString(attributes, "http.url");
         if (httpUrl != null) {
             telemetry.setUrl(httpUrl);
         }
 
-        String httpMethod = getString(span, "http.method");
+        String httpMethod = removeAttributeString(attributes, "http.method");
         String name = span.getName();
         if (httpMethod != null && name.startsWith("/")) {
             name = httpMethod + " " + name;
@@ -156,8 +159,8 @@ public class Exporter implements SpanExporter {
         if (span.getName().equals("EventHubs.process")) {
             // TODO eventhubs should use CONSUMER instead of SERVER
             // (https://gist.github.com/lmolkova/e4215c0f44a49ef824983382762e6b92#opentelemetry-example-1)
-            String peerAddress = getString(span, "peer.address");
-            String destination = getString(span, "message_bus.destination");
+            String peerAddress = removeAttributeString(attributes, "peer.address");
+            String destination = removeAttributeString(attributes, "message_bus.destination");
             telemetry.setSource(peerAddress + "/" + destination);
         }
 
@@ -187,13 +190,21 @@ public class Exporter implements SpanExporter {
             telemetry.getProperties().put("statusDescription", description);
         }
 
-        Double samplingPercentage = getSamplingPercentage(span);
+        Double samplingPercentage = removeAiSamplingPercentage(attributes);
+        String errorStack = removeAttributeString(attributes, "error.stack");
+
+        // for now, only add extra attributes for custom telemetry
+        if (stdComponent == null) {
+            addExtraAttributes(telemetry.getProperties(), attributes);
+        }
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
-        trackExceptionIfNeeded(span, telemetry, telemetry.getId(), samplingPercentage);
+        if (errorStack != null) {
+            trackException(errorStack, span, telemetry, telemetry.getId(), samplingPercentage);
+        }
     }
 
-    private void exportRemoteDependency(String component, SpanData span, boolean inProc) {
+    private void exportRemoteDependency(String stdComponent, SpanData span, boolean inProc) {
 
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
 
@@ -203,32 +214,34 @@ public class Exporter implements SpanExporter {
 
         span.getInstrumentationLibraryInfo().getName();
 
+        Map<String, AttributeValue> attributes = new HashMap<>(span.getAttributes());
+
         if (inProc) {
             telemetry.setType("InProc");
         } else {
-            if (span.getAttributes().containsKey("http.method")) {
-                applyHttpRequestSpan(span, telemetry);
-            } else if (span.getAttributes().containsKey("db.type")) {
-                applyDatabaseQuerySpan(span, telemetry);
+            if (attributes.containsKey("http.method")) {
+                applyHttpRequestSpan(attributes, telemetry);
+            } else if (attributes.containsKey("db.type")) {
+                applyDatabaseQuerySpan(attributes, telemetry, stdComponent);
             } else if (span.getName().equals("EventHubs.send")) {
                 // TODO eventhubs should use CLIENT instead of PRODUCER
                 // TODO eventhubs should add links to messages?
                 telemetry.setType("Microsoft.EventHub");
-                String peerAddress = getString(span, "peer.address");
-                String destination = getString(span, "message_bus.destination");
+                String peerAddress = removeAttributeString(attributes, "peer.address");
+                String destination = removeAttributeString(attributes, "message_bus.destination");
                 telemetry.setTarget(peerAddress + "/" + destination);
             } else if (span.getName().equals("EventHubs.message")) {
                 // TODO eventhubs should populate peer.address and message_bus.destination
-                String peerAddress = getString(span, "peer.address");
-                String destination = getString(span, "message_bus.destination");
+                String peerAddress = removeAttributeString(attributes, "peer.address");
+                String destination = removeAttributeString(attributes, "message_bus.destination");
                 if (peerAddress != null) {
                     telemetry.setTarget(peerAddress + "/" + destination);
                 }
                 telemetry.setType("Microsoft.EventHub");
-            } else if ("kafka-clients".equals(component)) {
+            } else if ("kafka-clients".equals(stdComponent)) {
                 telemetry.setType("Kafka");
                 telemetry.setTarget(span.getName()); // destination queue name
-            } else if ("jms".equals(component)) {
+            } else if ("jms".equals(stdComponent)) {
                 telemetry.setType("JMS");
                 telemetry.setTarget(span.getName()); // destination queue name
             }
@@ -250,18 +263,27 @@ public class Exporter implements SpanExporter {
             telemetry.getProperties().put("statusDescription", description);
         }
 
-        Double samplingPercentage = getSamplingPercentage(span);
+        Double samplingPercentage = removeAiSamplingPercentage(attributes);
+        String errorStack = removeAttributeString(attributes, "error.stack");
+
+        // for now, only add extra attributes for custom telemetry
+        if (stdComponent == null) {
+            addExtraAttributes(telemetry.getProperties(), attributes);
+        }
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
-        trackExceptionIfNeeded(span, telemetry, telemetry.getId(), samplingPercentage);
+        if (errorStack != null) {
+            trackException(errorStack, span, telemetry, telemetry.getId(), samplingPercentage);
+        }
     }
 
     private void exportLogSpan(SpanData span) {
-        String message = getString(span, "message");
-        String level = getString(span, "level");
-        String loggerName = getString(span, "loggerName");
-        String errorStack = getString(span, "error.stack");
-        Double samplingPercentage = getSamplingPercentage(span);
+        Map<String, AttributeValue> attributes = new HashMap<>(span.getAttributes());
+        String message = removeAttributeString(attributes, "message");
+        String level = removeAttributeString(attributes, "level");
+        String loggerName = removeAttributeString(attributes, "loggerName");
+        String errorStack = removeAttributeString(attributes, "error.stack");
+        Double samplingPercentage = removeAiSamplingPercentage(attributes);
         if (errorStack == null) {
             trackTrace(message, span.getStartEpochNanos(), level, loggerName, span.getTraceId(),
                     span.getParentSpanId(), samplingPercentage);
@@ -277,13 +299,7 @@ public class Exporter implements SpanExporter {
             telemetry.getContext().getOperation().setId(span.getTraceId().toLowerBase16());
             telemetry.getContext().getOperation().setParentId(span.getParentSpanId().toLowerBase16());
             telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(event.getEpochNanos())));
-            Map<String, String> properties = telemetry.getProperties();
-            for (Map.Entry<String, AttributeValue> entry : event.getAttributes().entrySet()) {
-                String value = getStringValue(entry.getValue());
-                if (value != null) {
-                    properties.put(entry.getKey(), value);
-                }
-            }
+            addExtraAttributes(telemetry.getProperties(), event.getAttributes());
             track(telemetry, samplingPercentage);
         }
     }
@@ -318,16 +334,14 @@ public class Exporter implements SpanExporter {
         track(telemetry, samplingPercentage);
     }
 
-    private void trackExceptionIfNeeded(SpanData span, Telemetry telemetry, String id, Double samplingPercentage) {
-        String errorStack = getString(span, "error.stack");
-        if (errorStack != null) {
-            ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry();
-            exceptionTelemetry.getData().setExceptions(Exceptions.minimalParse(errorStack));
-            exceptionTelemetry.getContext().getOperation().setId(telemetry.getContext().getOperation().getId());
-            exceptionTelemetry.getContext().getOperation().setParentId(id);
-            exceptionTelemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getEndEpochNanos())));
-            track(exceptionTelemetry, samplingPercentage);
-        }
+    private void trackException(String errorStack, SpanData span, Telemetry telemetry,
+                                String id, Double samplingPercentage) {
+        ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry();
+        exceptionTelemetry.getData().setExceptions(Exceptions.minimalParse(errorStack));
+        exceptionTelemetry.getContext().getOperation().setId(telemetry.getContext().getOperation().getId());
+        exceptionTelemetry.getContext().getOperation().setParentId(id);
+        exceptionTelemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getEndEpochNanos())));
+        track(exceptionTelemetry, samplingPercentage);
     }
 
     private void track(Telemetry telemetry, Double samplingPercentage) {
@@ -358,14 +372,14 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static void applyHttpRequestSpan(SpanData span, RemoteDependencyTelemetry telemetry) {
+    private static void applyHttpRequestSpan(Map<String, AttributeValue> attributes, RemoteDependencyTelemetry telemetry) {
 
         telemetry.setType("Http (tracked component)");
 
-        String method = getString(span, "http.method");
-        String url = getString(span, "http.url");
+        String method = removeAttributeString(attributes, "http.method");
+        String url = removeAttributeString(attributes, "http.url");
 
-        AttributeValue httpStatusCode = span.getAttributes().get("http.status_code");
+        AttributeValue httpStatusCode = attributes.remove("http.status_code");
         if (httpStatusCode != null && httpStatusCode.getType() == Type.LONG) {
             long statusCode = httpStatusCode.getLongValue();
             telemetry.setResultCode(Long.toString(statusCode));
@@ -375,7 +389,7 @@ public class Exporter implements SpanExporter {
             try {
                 URI uriObject = new URI(url);
                 String target = createTarget(uriObject);
-                String targetAppId = getString(span, AiAppId.SPAN_TARGET_ATTRIBUTE_NAME);
+                String targetAppId = removeAttributeString(attributes, AiAppId.SPAN_TARGET_ATTRIBUTE_NAME);
                 if (targetAppId == null || AiAppId.getAppId().equals(targetAppId)) {
                     telemetry.setTarget(target);
                 } else {
@@ -395,23 +409,23 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static void applyDatabaseQuerySpan(SpanData span, RemoteDependencyTelemetry telemetry) {
-        String type = getString(span, "db.type");
+    private static void applyDatabaseQuerySpan(Map<String, AttributeValue> attributes, RemoteDependencyTelemetry telemetry, String component) {
+        String type = removeAttributeString(attributes, "db.type");
         if ("sql".equals(type)) {
             type = "SQL";
         }
         telemetry.setType(type);
-        telemetry.setCommandName(getString(span, "db.statement"));
-        String dbUrl = getString(span, "db.url");
+        telemetry.setCommandName(removeAttributeString(attributes, "db.statement"));
+        String dbUrl = removeAttributeString(attributes, "db.url");
         if (dbUrl == null) {
             // this is needed until all database instrumentation captures the required db.url
             telemetry.setTarget(type);
         } else {
-            String dbInstance = getString(span, "db.instance");
+            String dbInstance = removeAttributeString(attributes, "db.instance");
             if (dbInstance != null) {
                 dbUrl += " | " + dbInstance;
             }
-            if (span.getInstrumentationLibraryInfo().getName().equals("io.opentelemetry.auto.jdbc")) {
+            if ("jdbc".equals(component)) {
                 // TODO this is special case to match 2.x behavior
                 //      because U/X strips off the beginning in E2E tx view
                 telemetry.setTarget("jdbc:" + dbUrl);
@@ -446,12 +460,21 @@ public class Exporter implements SpanExporter {
         properties.put("_MS.links", sb.toString());
     }
 
-    private static Double getSamplingPercentage(SpanData span) {
-        return getDouble(span, "ai.sampling.percentage");
+    private static void addExtraAttributes(Map<String, String> properties, Map<String, AttributeValue> attributes) {
+        for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
+            String value = getStringValue(entry.getValue());
+            if (value != null) {
+                properties.put(entry.getKey(), value);
+            }
+        }
     }
 
-    private static String getString(SpanData span, String attributeName) {
-        AttributeValue attributeValue = span.getAttributes().get(attributeName);
+    private static Double removeAiSamplingPercentage(Map<String, AttributeValue> attributes) {
+        return removeAttributeDouble(attributes, "ai.sampling.percentage");
+    }
+
+    private static String removeAttributeString(Map<String, AttributeValue> attributes, String attributeName) {
+        AttributeValue attributeValue = attributes.remove(attributeName);
         if (attributeValue == null) {
             return null;
         } else if (attributeValue.getType() == AttributeValue.Type.STRING) {
@@ -462,8 +485,8 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static Double getDouble(SpanData span, String attributeName) {
-        AttributeValue attributeValue = span.getAttributes().get(attributeName);
+    private static Double removeAttributeDouble(Map<String, AttributeValue> attributes, String attributeName) {
+        AttributeValue attributeValue = attributes.get(attributeName);
         if (attributeValue == null) {
             return null;
         } else if (attributeValue.getType() == AttributeValue.Type.DOUBLE) {
