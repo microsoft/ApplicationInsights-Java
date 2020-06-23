@@ -150,6 +150,11 @@ public final class ApacheSender43 implements ApacheSender {
         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
         HttpClientBuilder builder = HttpClients.custom()
+                // need to set empty User-Agent, otherwise Breeze ingestion service will put the Apache HttpClient User-Agent header
+                // into the client_Browser field for all telemetry that doesn't explicitly set it's own UserAgent
+                // (ideally Breeze would only have this behavior for ingestion directly from browsers)
+                // (not setting User-Agent header at all would be a good option, but Apache HttpClient doesn't have a simple way to do that)
+                .setUserAgent("")
                 .setConnectionManager(cm)
                 .useSystemProperties();
         if (proxy != null) {
