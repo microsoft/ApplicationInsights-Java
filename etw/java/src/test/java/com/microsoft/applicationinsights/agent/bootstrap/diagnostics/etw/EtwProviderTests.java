@@ -64,7 +64,6 @@ public class EtwProviderTests {
         PROTOTYPE.setExtensionVersion("fake-version");
         PROTOTYPE.setInstrumentationKey(UUID.randomUUID().toString());
         PROTOTYPE.setSubscriptionId(UUID.randomUUID().toString());
-        PROTOTYPE.setResourceType("local-tests");
 
         String speriod = System.getProperty("ai.tests.etw.stats.period");
         long period = 2000; // default 2 seconds.

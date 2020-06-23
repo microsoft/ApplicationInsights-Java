@@ -40,13 +40,9 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
 
     public EtwAppender() {
         ApplicationMetadataFactory metadata = DiagnosticsHelper.getMetadataFactory();
-        // TODO siteName == appName ???
         proto.setAppName(metadata.getSiteName().getValue());
-        proto.setExtensionVersion(metadata.getExtensionVersion().getValue());
+        proto.setExtensionVersion(metadata.getSdkVersion().getValue());
         proto.setSubscriptionId(metadata.getSubscriptionId().getValue());
-        proto.setInstrumentationKey(metadata.getInstrumentationKey().getValue());
-        final String restype = DiagnosticsHelper.getCodelessResourceType();
-        proto.setResourceType(restype != null ? restype : "unknown");
     }
 
     @Override

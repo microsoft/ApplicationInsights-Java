@@ -20,6 +20,8 @@
  */
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model;
 
+import org.apache.commons.lang3.StringUtils;
+
 public abstract class IpaEtwEventErrorBase extends IpaEtwEventBase {
     private String stacktrace;
 
@@ -34,11 +36,13 @@ public abstract class IpaEtwEventErrorBase extends IpaEtwEventBase {
         }
     }
 
-    public String getStacktraceString() {
-        if (stacktrace == null) {
-            return "";
+    @Override
+    protected String processMessageFormat() {
+        if (StringUtils.isEmpty(stacktrace)) {
+            return super.processMessageFormat();
+        } else {
+            return super.processMessageFormat() + "\n" + this.stacktrace;
         }
-        return stacktrace;
     }
 
     public void setStacktrace(String stacktrace) {

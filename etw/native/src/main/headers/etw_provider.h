@@ -49,14 +49,9 @@ typedef int aijnierr_t;
 #define AIJNIERR_CLASS_NOT_FOUND    0x06
 
 #define JSTRID_MESSAGE              0x0100
-#define JSTRID_LOGGER               0x0200
-#define JSTRID_STACK_TRACE          0x0300
 #define JSTRID_EXTENSION_VERSION    0x0400
 #define JSTRID_SUBSCRIPTION_ID      0x0500
 #define JSTRID_APP_NAME             0x0600
-#define JSTRID_RESOURCE_TYPE        0x0700
-#define JSTRID_IKEY                 0x0800
-#define JSTRID_OPERATION            0x0900
 
 #define STR_MAX_BUFF_SIZE   1024000
 
