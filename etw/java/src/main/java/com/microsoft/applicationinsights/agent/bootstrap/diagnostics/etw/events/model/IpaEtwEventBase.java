@@ -93,14 +93,14 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     }
 
     protected String processMessageFormat() {
-        if (!StringUtils.isEmpty(this.logger)) {
+        if (StringUtils.isNotEmpty(this.logger)) {
             String prefix = "["+this.logger;
-            if (StringUtils.isEmpty(this.operation)) {
+            if (StringUtils.isNotEmpty(this.operation)) {
                 prefix += "/"+this.operation;
             }
             prefix += "] ";
             return prefix + messageFormat;
-        } else if(!StringUtils.isEmpty(this.operation)) {
+        } else if(StringUtils.isNotEmpty(this.operation)) {
             return "[-/"+this.operation+"] "+messageFormat;
         } else {
             return messageFormat;
