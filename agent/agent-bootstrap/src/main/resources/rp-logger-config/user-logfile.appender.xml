@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <included>
     <property scope="local" name="ai.logdir" value="${site.logdir:-${HOME:-.}/LogFiles}/ApplicationInsights" />
-    <property scope="local" name="ai.logfile.name" value="application-insights-extension" />
+    <property scope="local" name="ai.logfile.name" value="applicationinsights-extension" />
     <property scope="local" name="ai.logfile.ext" value=".log" />
 
     <!-- site.logdir output -->
