@@ -108,15 +108,13 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
             result = parser.getValue();
         } catch (Exception e) {
             result = null;
-            logPerfCounterErrorError("Error while parsing file: '%s'", getId());
-            logPerfCounterErrorTrace("Error while parsing file: '%s'", getId(), e);
+            logPerfCounterErrorError("Error while parsing file: '{}'", getId(), e);
         } finally {
             if (bufferedReader != null ) {
                 try {
                     bufferedReader.close();
                 } catch (Exception e) {
-                    logPerfCounterErrorError("Error while closing file : '%s'", e.toString());
-                    logPerfCounterErrorTrace("Error while closing file", e);
+                    logPerfCounterErrorError("Error while closing file : '{}'", e);
                 }
             }
         }

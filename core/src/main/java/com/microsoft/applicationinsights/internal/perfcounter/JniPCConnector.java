@@ -112,11 +112,11 @@ public final class JniPCConnector {
         }
 
         if (logger.isTraceEnabled()) {
-            logger.trace("Registering performance counter: {}\\{} [{}]", category, counter, StringUtils.trimToEmpty(instance));
+            logger.trace("Registering performance counter: {} \\ {} [{}]", category, counter, StringUtils.trimToEmpty(instance));
         }
         final String s = addCounter(category, counter, instance);
         if (StringUtils.isEmpty(s) && logger.isWarnEnabled()) {
-            logger.warn("Performance coutner registration failed for {}\\{} [{}]", category, counter, StringUtils.trimToEmpty(instance));
+            logger.warn("Performance coutner registration failed for {} \\ {} [{}]", category, counter, StringUtils.trimToEmpty(instance));
         }
         return s;
     }
@@ -203,7 +203,7 @@ public final class JniPCConnector {
         }
         InputStream in = classLoader.getResourceAsStream(libraryToLoad);
         if (in == null) {
-            throw new RuntimeException(String.format("Failed to find '%s' in jar", libraryToLoad));
+            throw new RuntimeException(String.format("Failed to find '{}' in jar", libraryToLoad));
         }
 
         OutputStream out = null;
