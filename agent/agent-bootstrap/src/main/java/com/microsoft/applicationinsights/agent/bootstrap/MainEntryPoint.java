@@ -74,7 +74,7 @@ public class MainEntryPoint {
             try {
                 StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success);
             } catch (Exception e) {
-                startupLogger.error("Error writing status.json", e);
+                startupLogger.error("Error writing status.json", e); // lgtm[java/dereferenced-value-may-be-null]
             }
             MDC.clear();
         }

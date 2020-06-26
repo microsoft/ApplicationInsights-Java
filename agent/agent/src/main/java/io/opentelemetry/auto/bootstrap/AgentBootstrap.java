@@ -93,7 +93,7 @@ public class AgentBootstrap {
             final File bootstrapFile = new File(bootstrapURL.toURI());
 
             if (!bootstrapFile.isDirectory()) {
-                inst.appendToBootstrapClassLoaderSearch(new JarFile(bootstrapFile));
+                inst.appendToBootstrapClassLoaderSearch(new JarFile(bootstrapFile)); // lgtm[java/input-resource-leak]
                 return bootstrapURL;
             }
         }
@@ -136,7 +136,7 @@ public class AgentBootstrap {
             throw new RuntimeException("Unable to find javaagent file: " + javaagentFile);
         }
         bootstrapURL = javaagentFile.toURI().toURL();
-        inst.appendToBootstrapClassLoaderSearch(new JarFile(javaagentFile));
+        inst.appendToBootstrapClassLoaderSearch(new JarFile(javaagentFile)); // lgtm[java/input-resource-leak]
 
         return bootstrapURL;
     }
