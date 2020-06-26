@@ -67,10 +67,6 @@ public class Exceptions {
                 } else {
                     current.setTypeName(line);
                 }
-            } else {
-                // stack
-                current.getParsedStack();
-
             }
             System.out.println(line);
         }
