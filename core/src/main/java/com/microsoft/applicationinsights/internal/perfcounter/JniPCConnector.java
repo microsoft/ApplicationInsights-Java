@@ -203,7 +203,7 @@ public final class JniPCConnector {
         }
         InputStream in = classLoader.getResourceAsStream(libraryToLoad);
         if (in == null) {
-            throw new RuntimeException(String.format("Failed to find '{}' in jar", libraryToLoad));
+            throw new RuntimeException("Failed to find '"+libraryToLoad+"' in jar");
         }
 
         OutputStream out = null;
