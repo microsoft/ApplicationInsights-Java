@@ -25,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 public abstract class IpaEtwEventBase implements IpaEtwEvent {
     private String extensionVersion;
     private String appName;
-    private String resourceType;
     private String instrumentationKey;
     private String subscriptionId;
 
@@ -41,18 +40,8 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     public IpaEtwEventBase(IpaEtwEventBase event) {
         extensionVersion = event.extensionVersion;
         appName = event.appName;
-        resourceType = event.resourceType;
         instrumentationKey = event.instrumentationKey;
         subscriptionId = event.subscriptionId;
-
-        logger = event.logger;
-        messageFormat = event.messageFormat;
-        messageArgs = event.messageArgs;
-        operation = event.operation;
-    }
-
-    public String getLogger() {
-        return StringUtils.defaultString(logger);
     }
 
     public void setLogger(String logger) {
@@ -75,22 +64,6 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
         this.appName = appName;
     }
 
-    public String getResourceType() {
-        return StringUtils.defaultString(resourceType);
-    }
-
-    public void setResourceType(String resourceType) {
-        this.resourceType = resourceType;
-    }
-
-    public String getInstrumentationKey() {
-        return StringUtils.defaultString(instrumentationKey);
-    }
-
-    public void setInstrumentationKey(String instrumentationKey) {
-        this.instrumentationKey = instrumentationKey;
-    }
-
     public String getSubscriptionId() {
         return StringUtils.defaultString(subscriptionId);
     }
@@ -108,15 +81,30 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     }
 
     public String getFormattedMessage() {
+        // operation
+        // logger
+        // exception (in error class)
+        final String fmt = processMessageFormat();
         if (messageArgs == null || messageArgs.length == 0) {
-            return StringUtils.defaultString(messageFormat);
+            return StringUtils.defaultString(fmt);
         } else {
-            return String.format(messageFormat, messageArgs);
+            return String.format(fmt, messageArgs);
         }
     }
 
-    public String getOperation() {
-        return StringUtils.defaultString(operation);
+    protected String processMessageFormat() {
+        if (StringUtils.isNotEmpty(this.logger)) {
+            String prefix = "["+this.logger;
+            if (StringUtils.isNotEmpty(this.operation)) {
+                prefix += "/"+this.operation;
+            }
+            prefix += "] ";
+            return prefix + messageFormat;
+        } else if(StringUtils.isNotEmpty(this.operation)) {
+            return "[-/"+this.operation+"] "+messageFormat;
+        } else {
+            return messageFormat;
+        }
     }
 
     public void setOperation(String operation) {

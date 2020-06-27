@@ -186,7 +186,7 @@ public enum PerformanceCounterContainer implements Stoppable {
      */
     void setStartCollectingDelayInMillis(long startCollectingDelayInMillis) {
         if (startCollectingDelayInMillis < START_DEFAULT_MIN_DELAY_IN_MILLIS) {
-            logger.error("Start Collecting Delay: illegal value '%d'. The minimum value, '%'d, is used instead.", startCollectingDelayInMillis, START_DEFAULT_MIN_DELAY_IN_MILLIS);
+            logger.error("Start Collecting Delay: illegal value '{}'. The minimum value, '{}', is used instead.", startCollectingDelayInMillis, START_DEFAULT_MIN_DELAY_IN_MILLIS);
 
             startCollectingDelayInMillis = START_DEFAULT_MIN_DELAY_IN_MILLIS;
         }

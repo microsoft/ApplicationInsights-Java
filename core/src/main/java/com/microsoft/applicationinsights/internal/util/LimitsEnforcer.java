@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +52,7 @@ public final class LimitsEnforcer {
         switch (type) {
             case DEFAULT_ON_ERROR:
                 if (value == null || value < minimum || value > maximum) {
-                    logger.warn("'{}': bad value is replaced by the default: '%d'", propertyName, defaultValue);
+                    logger.warn("'{}': bad value is replaced by the default: '{}'", propertyName, defaultValue);
                     currentValue = defaultValue;
                 } else {
                     currentValue = value;
@@ -63,20 +62,20 @@ public final class LimitsEnforcer {
             case CLOSEST_LIMIT_ON_ERROR:
                 if (value == null) {
                     currentValue = defaultValue;
-                    logger.info("'{}': null value is replaced with '%d'", propertyName, defaultValue);
+                    logger.info("'{}': null value is replaced with '{}'", propertyName, defaultValue);
                 } else if (value < minimum) {
                     currentValue = minimum;
-                    logger.warn("'{}': value is under the minimum, therefore is replaced with '%d'", propertyName, minimum);
+                    logger.warn("'{}': value is under the minimum, therefore is replaced with '{}'", propertyName, minimum);
                 } else if (value > maximum) {
                     currentValue = maximum;
-                    logger.warn("'{}': value is above the maximum, therefore is replaced with '%d'", propertyName, maximum);
+                    logger.warn("'{}': value is above the maximum, therefore is replaced with '{}'", propertyName, maximum);
                 } else {
                     currentValue = value;
                 }
                 break;
 
             default:
-                throw new IllegalStateException(String.format("Unknown type %s", type));
+                throw new IllegalStateException("Unknown type "+type);
         }
 
         return currentValue;

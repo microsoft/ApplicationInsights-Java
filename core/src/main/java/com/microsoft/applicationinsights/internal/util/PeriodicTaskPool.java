@@ -107,15 +107,14 @@ public class PeriodicTaskPool implements Stoppable {
         }
 
         if (!periodicTaskMap.containsKey(task)) {
-            logger.error(String.format("No such Task {} running",task));
+            logger.error("No such Task {} running", task);
             return false;
         }
 
         ScheduledFuture<?> futureToCancel = periodicTaskMap.get(task);
 
         if (futureToCancel.isCancelled() || futureToCancel.isDone()) {
-            logger.info("Cannot cancel task {}, It is either completed or already cancelled",
-                    task);
+            logger.info("Cannot cancel task {}, It is either completed or already cancelled", task);
             return false;
         }
         periodicTaskMap.remove(task);

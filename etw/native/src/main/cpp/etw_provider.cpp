@@ -101,66 +101,42 @@ int getEventId(JNIEnv * env, jobject &jobj_event) throw(aijnierr_t) {
     }
 }
 
-#define ETW_FIELD_LOGGER            "Logger"
 #define ETW_FIELD_MESSAGE           "msg"
 #define ETW_FIELD_EXTENSION_VERSION "ExtVer"
 #define ETW_FIELD_SUBSCRIPTION_ID   "SubscriptionId"
 #define ETW_FIELD_APPNAME           "AppName"
-#define ETW_FIELD_RESOURCE_TYPE     "ResourceType"
-#define ETW_FIELD_IKEY              "InstrumentationKey"
-#define ETW_FIELD_STACKTRACE        "Exception"
-#define ETW_FIELD_OPERATION         "Operation"
 
 
 void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noexcept {
-    char * logger = NULL;
     char * message = NULL;
     char * extensionVersion = NULL;
     char * subscriptionId = NULL;
     char * appName = NULL;
-    char * resourceType = NULL;
-    char * ikey = NULL;
-    char * stackTrace = NULL;
-    char * operation = NULL;
     TraceLoggingRegister(provider_EtwHandle);
     try
     {
         // convert all jstrings
-        logger = stringGetter2cstr(env, jobj_event, "getLogger", logger, JSTRID_LOGGER);
         extensionVersion = stringGetter2cstr(env, jobj_event, "getExtensionVersion", extensionVersion, JSTRID_EXTENSION_VERSION);
         message = stringGetter2cstr(env, jobj_event, "getFormattedMessage", message, JSTRID_MESSAGE);
         subscriptionId = stringGetter2cstr(env, jobj_event, "getSubscriptionId", subscriptionId, JSTRID_SUBSCRIPTION_ID);
         appName = stringGetter2cstr(env, jobj_event, "getAppName", appName, JSTRID_APP_NAME);
-        resourceType = stringGetter2cstr(env, jobj_event, "getResourceType", resourceType, JSTRID_RESOURCE_TYPE);
-        ikey = stringGetter2cstr(env, jobj_event, "getInstrumentationKey", ikey, JSTRID_IKEY);
-        operation = stringGetter2cstr(env, jobj_event, "getOperation", operation, JSTRID_OPERATION);
 
         // write event
-        if (event_id == EVENTID_INFO) {
-            WRITE_INFO_EVENT(
-                TraceLoggingValue(message, ETW_FIELD_MESSAGE),
-                TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
-                TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
-                TraceLoggingValue(appName, ETW_FIELD_APPNAME),
-                TraceLoggingValue(resourceType, ETW_FIELD_RESOURCE_TYPE),
-                TraceLoggingValue(logger, ETW_FIELD_LOGGER),
-                TraceLoggingValue(ikey, ETW_FIELD_IKEY),
-                TraceLoggingValue(operation, ETW_FIELD_OPERATION));
-            DBG("\nwrote INFO");
-        } else { // all other event types could have Stacktrace data
-            stackTrace = stringGetter2cstr(env, jobj_event, "getStacktraceString", stackTrace, JSTRID_STACK_TRACE);
-            switch(event_id) {
+        switch(event_id) {
+            case EVENTID_INFO:
+                WRITE_INFO_EVENT(
+                    TraceLoggingValue(message, ETW_FIELD_MESSAGE),
+                    TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
+                    TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
+                    TraceLoggingValue(appName, ETW_FIELD_APPNAME));
+                DBG("\nwrote INFO");
+                break;
                 case EVENTID_WARN:
                     WRITE_WARN_EVENT(
                         TraceLoggingValue(message, ETW_FIELD_MESSAGE),
                         TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
                         TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
-                        TraceLoggingValue(appName, ETW_FIELD_APPNAME),
-                        TraceLoggingValue(resourceType, ETW_FIELD_RESOURCE_TYPE),
-                        TraceLoggingValue(logger, ETW_FIELD_LOGGER),
-                        TraceLoggingValue(ikey, ETW_FIELD_IKEY),
-                        TraceLoggingValue(operation, ETW_FIELD_OPERATION),
-                        TraceLoggingValue(stackTrace, ETW_FIELD_STACKTRACE));
+                        TraceLoggingValue(appName, ETW_FIELD_APPNAME));
                     DBG("\nwrote WARN");
                     break;
                 case EVENTID_ERROR:
@@ -168,12 +144,7 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
                         TraceLoggingValue(message, ETW_FIELD_MESSAGE),
                         TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
                         TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
-                        TraceLoggingValue(appName, ETW_FIELD_APPNAME),
-                        TraceLoggingValue(resourceType, ETW_FIELD_RESOURCE_TYPE),
-                        TraceLoggingValue(logger, ETW_FIELD_LOGGER),
-                        TraceLoggingValue(ikey, ETW_FIELD_IKEY),
-                        TraceLoggingValue(operation, ETW_FIELD_OPERATION),
-                        TraceLoggingValue(stackTrace, ETW_FIELD_STACKTRACE));
+                        TraceLoggingValue(appName, ETW_FIELD_APPNAME));
                     DBG("\nwrote ERROR");
                     break;
                 case EVENTID_CRITICAL:
@@ -181,24 +152,11 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
                         TraceLoggingValue(message, ETW_FIELD_MESSAGE),
                         TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
                         TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
-                        TraceLoggingValue(appName, ETW_FIELD_APPNAME),
-                        TraceLoggingValue(resourceType, ETW_FIELD_RESOURCE_TYPE),
-                        TraceLoggingValue(logger, ETW_FIELD_LOGGER),
-                        TraceLoggingValue(ikey, ETW_FIELD_IKEY),
-                        TraceLoggingValue(operation, ETW_FIELD_OPERATION),
-                        TraceLoggingValue(stackTrace, ETW_FIELD_STACKTRACE));
+                        TraceLoggingValue(appName, ETW_FIELD_APPNAME));
                     DBG("\nwrote CRITICAL");
                     break;
             }
-        }
-        DBG(" event:\n\tmsg=%s,\n\tExtVer=%s,\n\tSubscriptionId=%s,\n\tAppName=%s,\n\tResourceType=%s,\n\tLogger=%s\n\tIkey=%s\n\tOperation=%s\n", message, extensionVersion, subscriptionId, appName, resourceType, logger, ikey, operation);
-#if !defined(NDEBUG) && defined(AIETW_VERBOSE)
-        if (stackTrace != NULL) {
-            DBG("\tException=%s\n\n", stackTrace);
-        } else {
-            DBG("\n");
-        }
-#endif
+        DBG(" event:\n\tmsg=%s,\n\tExtVer=%s,\n\tSubscriptionId=%s,\n\tAppName=%s,\n", message, extensionVersion, subscriptionId, appName);
     }
     catch (aijnierr_t jnierr)
     {
@@ -215,11 +173,6 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
     delete[] extensionVersion;
     delete[] subscriptionId;
     delete[] appName;
-    delete[] resourceType;
-    delete[] logger;
-    delete[] ikey;
-    delete[] stackTrace;
-    delete[] operation;
 }
 
 char * stringGetter2cstr(JNIEnv * env, jobject &jobj_target, const char * method_name, char * rval, aijnierr_t field_id) throw(aijnierr_t) {
@@ -282,20 +235,10 @@ std::string jstrid2name(int jnierr) noexcept {
             return ETW_FIELD_APPNAME;
         case JSTRID_EXTENSION_VERSION:
             return ETW_FIELD_EXTENSION_VERSION;
-        case JSTRID_LOGGER:
-            return ETW_FIELD_LOGGER;
         case JSTRID_MESSAGE:
             return ETW_FIELD_MESSAGE;
-        case JSTRID_RESOURCE_TYPE:
-            return ETW_FIELD_RESOURCE_TYPE;
-        case JSTRID_STACK_TRACE:
-            return ETW_FIELD_STACKTRACE;
         case JSTRID_SUBSCRIPTION_ID:
             return ETW_FIELD_SUBSCRIPTION_ID;
-        case JSTRID_IKEY:
-            return ETW_FIELD_IKEY;
-        case JSTRID_OPERATION:
-            return ETW_FIELD_OPERATION;
         default:
             return "unknown";
     }
