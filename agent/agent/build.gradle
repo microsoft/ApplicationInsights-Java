@@ -243,8 +243,8 @@ tasks.assemble.dependsOn verifyAgentJarContents
 file("$projectDir/package").eachDir {
     def name = it.name
     def path = it.absoluteFile
-    def targetDir = "$buildDir/setup/$name"
-    def targetDirRelative = "${buildDir.name}/setup/$name"
+    def targetDir = "$buildDir${File.separator}setup${File.separator}$name"
+    def targetDirRelative = "${buildDir.name}${File.separator}setup${File.separator}$name"
     def taskName = "setup${name.capitalize()}"
     tasks.register(taskName, Copy) {
         group = "Local Dev Setup"
@@ -257,7 +257,7 @@ file("$projectDir/package").eachDir {
         from(tasks.jar.archiveFile.asFile.get().parent) {
             include "*.jar"
             eachFile { jf ->
-                jarFiles << jf.file.absolutePath
+                jarFiles << "$targetDir${File.separator}${jf.name}"
             }
         }
         into targetDir
