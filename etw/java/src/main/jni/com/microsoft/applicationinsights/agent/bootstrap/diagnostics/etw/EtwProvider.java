@@ -25,8 +25,6 @@ import java.io.IOException;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +36,8 @@ public class EtwProvider {
     private static Logger LOGGER;
 
     static {
-        if (SystemUtils.IS_OS_WINDOWS) {
+        final String osname = System.getProperty("os.name");
+        if (osname != null && osname.startsWith("Windows")) {
             LOGGER = LoggerFactory.getLogger(EtwProvider.class);
             File dllPath = null;
             try {
@@ -79,7 +78,8 @@ public class EtwProvider {
     }
 
     static String getDllFilenameForArch() {
-        final boolean is32bit = StringUtils.defaultIfEmpty(System.getProperty("os.arch"), "null").equalsIgnoreCase("x86");
+        final String osarch = System.getProperty("os.arch");
+        final boolean is32bit = osarch == null ? false : osarch.equalsIgnoreCase("x86");
         return is32bit ? LIB_FILENAME_32_BIT : LIB_FILENAME_64_BIT;
     }
 

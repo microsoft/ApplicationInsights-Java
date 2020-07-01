@@ -21,6 +21,7 @@
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,8 +29,6 @@ import java.io.OutputStream;
 import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,36 +61,39 @@ class DllFileUtils {
         return dllPath;
     }
 
+    /**
+     * Assumes dllOnDisk is non-null and exists.
+     * @param dllOnDisk
+     * @param libraryToLoad
+     * @throws IOException
+     */
     public static void extractToLocalFolder(File dllOnDisk, String libraryToLoad) throws IOException {
         ClassLoader classLoader = DllFileUtils.class.getClassLoader();
         if (classLoader == null) {
             classLoader = ClassLoader.getSystemClassLoader();
         }
-        InputStream in = classLoader.getResourceAsStream(libraryToLoad);
-        if (in == null) {
-            throw new RuntimeException(String.format("Failed to find '%s' in jar", libraryToLoad));
-        }
-
-        OutputStream out = null;
-        try {
-            out = FileUtils.openOutputStream(dllOnDisk);
-            IOUtils.copy(in, out);
-
-            LOGGER.info("Successfully extracted '{}' to local folder", libraryToLoad);
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                LOGGER.error("Failed to close input stream for dll extraction.", e);
+        try (InputStream in = classLoader.getResourceAsStream(libraryToLoad)) {
+            if (in == null) {
+                throw new RuntimeException(String.format("Failed to find '%s' in jar", libraryToLoad));
             }
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    LOGGER.error("Failed to close output stream for dll extraction.", e);
+            final byte[] buffer = new byte[8192];
+            try (OutputStream out = new FileOutputStream(dllOnDisk, false)) {
+                if (dllOnDisk.exists()) {
+                    if (dllOnDisk.isDirectory()) {
+                        throw new IOException("Cannot extract dll: "+dllOnDisk.getAbsolutePath()+" exists as a directory");
+                    }
+                    if (!dllOnDisk.canWrite()) {
+                        throw new IOException("Cannote extract dll: "+dllOnDisk.getAbsolutePath()+" is not writeable.");
+                    }
+                }
+
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) { // while not EOF
+                    out.write(buffer, 0, bytesRead);
                 }
             }
         }
+        LOGGER.info("Successfully extracted '{}' to local folder", libraryToLoad);
     }
 
 }

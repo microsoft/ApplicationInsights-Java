@@ -61,7 +61,9 @@ def buildNative = !(System.properties['skipWinNative'] ?: 'false').toBoolean() &
 dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.26'
 
-    provided project(path: ':core')
+    provided(project(path: ':core')) {
+        transitive = false;
+    }
 
     if (buildNative) {
         jni32 project(path: ':etw:native', configuration: "${project.properties['ai.etw.native.build']}X86RuntimeElements")
