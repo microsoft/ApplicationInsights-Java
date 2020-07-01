@@ -22,4 +22,10 @@
             </And>
         </Or>
     </Match>
+    <Match><!-- False Positive from new try-with-resources bytecode in Java 11: https://github.com/spotbugs/spotbugs/issues/756 -->
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
+        <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.DllFileUtils" />
+        <Method name="extractToLocalFolder" />
+        <Local name="in" />
+    </Match>
 </FindBugsFilter>
