@@ -25,9 +25,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
-import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +42,16 @@ class DllFileUtils {
     public static final String AI_NATIVE_FOLDER = "native";
 
     // from :core:JniPCConnector.java
-    public static File buildDllLocalPath() {
-        File dllPath = LocalFileSystemUtils.getTempDir();
+    public static File buildDllLocalPath(String versionDirectory) {
+        File dllPath = getTempDir();
 
-        dllPath = new File(dllPath.toString(), AI_BASE_FOLDER);
-        dllPath = new File(dllPath.toString(), AI_NATIVE_FOLDER);
-        dllPath = new File(dllPath.toString(), PropertyHelper.getSdkVersionNumber());
+        dllPath = new File(dllPath, AI_BASE_FOLDER);
+        dllPath = new File(dllPath, AI_NATIVE_FOLDER);
+        if (versionDirectory == null || versionDirectory.isEmpty()) {
+            dllPath = new File(dllPath, "unknown-version");
+        } else {
+            dllPath = new File(dllPath, versionDirectory);
+        }
 
         if (!dllPath.exists()) {
             dllPath.mkdirs();
@@ -94,6 +98,64 @@ class DllFileUtils {
             }
         }
         LOGGER.info("Successfully extracted '{}' to local folder", libraryToLoad);
+    }
+
+    private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES = Collections.unmodifiableList(Arrays.asList("USER", "LOGNAME", "USERNAME"));
+
+    /**
+     * From :core/com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils
+     */
+    private static File getTempDir() {
+        final String tempDirectory = System.getProperty("java.io.tmpdir");
+        final String currentUserName = determineCurrentUserName();
+
+        final File result = getTempDir(tempDirectory, currentUserName);
+        if (!result.isDirectory()) {
+            // Noinspection ResultOfMethodCallIgnored
+            result.mkdirs();
+        }
+        return result;
+    }
+
+    /**
+     * From :core/com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils
+     */
+    private static File getTempDir(final String initialValue, final String userName) {
+        String tempDirectory = initialValue;
+
+        // does it look shared?
+        // TODO: this only catches the Linux case; I think a few system users on Windows might share c:\Windows\Temp
+        if ("/tmp".contentEquals(tempDirectory)) {
+            final File candidate = new File(tempDirectory, userName);
+            tempDirectory = candidate.getAbsolutePath();
+        }
+
+        return new File(tempDirectory);
+    }
+
+    /**
+     * From :core/com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils
+     */
+    private static String determineCurrentUserName() {
+        String userName;
+        // Start with the value of the "user.name" property
+        userName = System.getProperty("user.name");
+
+        if (userName != null && !userName.isEmpty()) {
+            // Try some environment variables
+            for (final String candidate : CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES) {
+                userName = System.getenv(candidate);
+                if (userName != null && userName.isEmpty()) {
+                    break;
+                }
+            }
+        }
+
+        if (userName == null || userName.isEmpty()) {
+            userName = "unknown";
+        }
+
+        return userName;
     }
 
 }

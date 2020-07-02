@@ -10,15 +10,23 @@
                 <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.DllFileUtils" />
                 <Method name="buildDllLocalPath" />
             </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.LocalFileSystemUtils" />
+                <Method name="getTempDir" />
+            </And>
         </Or>
     </Match>
     <Match>
         <Bug pattern="PATH_TRAVERSAL_IN" />
         <Or>
+            <!-- The DLL extraction path is read from trusted sources. -->
             <And>
-                <!-- The DLL extraction path is read from trusted sources. -->
                 <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.DllFileUtils" />
                 <Method name="buildDllLocalPath"/>
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.LocalFileSystemUtils" />
+                <Method name="getTempDir" />
             </And>
         </Or>
     </Match>

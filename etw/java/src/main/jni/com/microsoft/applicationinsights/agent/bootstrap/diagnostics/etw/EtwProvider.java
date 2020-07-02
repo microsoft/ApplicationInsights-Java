@@ -32,16 +32,15 @@ public class EtwProvider {
     private static final String LIB_FILENAME_32_BIT = "applicationinsights-java-etw-provider-x86.dll";
     private static final String LIB_FILENAME_64_BIT = "applicationinsights-java-etw-provider-x86-64.dll";
 
-    // TODO make sure this logger does not append to EtwAppender
     private static Logger LOGGER;
 
-    static {
+    public EtwProvider(final String sdkVersion) {
         final String osname = System.getProperty("os.name");
         if (osname != null && osname.startsWith("Windows")) {
             LOGGER = LoggerFactory.getLogger(EtwProvider.class);
             File dllPath = null;
             try {
-                dllPath = loadLibrary();
+                dllPath = loadLibrary(sdkVersion);
                 LOGGER.info("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
             } catch (ThreadDeath td) {
                 throw td;
@@ -60,12 +59,12 @@ public class EtwProvider {
         } else {
             LoggerFactory.getLogger(EtwProvider.class).info("Non-Windows OS. Loading ETW library skipped.");
         }
-    }
+	}
 
-    private static File loadLibrary() throws IOException {
+    private static File loadLibrary(final String sdkVersion) throws IOException {
         final String fileName = getDllFilenameForArch();
 
-        final File targetDir = DllFileUtils.buildDllLocalPath();
+        final File targetDir = DllFileUtils.buildDllLocalPath(sdkVersion);
         final File dllPath = new File(targetDir, fileName);
 
         if (!dllPath.exists()) {
@@ -88,4 +87,6 @@ public class EtwProvider {
     public void writeEvent(IpaEtwEventBase event) throws ApplicationInsightsEtwException {
         cppWriteEvent(event);
     }
+
+
 }
