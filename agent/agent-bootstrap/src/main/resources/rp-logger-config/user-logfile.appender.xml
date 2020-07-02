@@ -24,4 +24,8 @@
             </layout>
         </encoder>
     </appender>
+
+    <root>
+        <appender-ref ref="USER_LOG_FILE" /><!-- optional; platform dependent -->
+    </root>
 </included>
