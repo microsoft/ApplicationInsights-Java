@@ -239,6 +239,8 @@ tasks.assemble.dependsOn verifyAgentJarContents
  *
  * For each subfolder in /package, e.g. `xyz`, it creates a task `setupXyz`
  * This creates a folder in /build/setup/xyz which contains the package contents for that environment.
+ *
+ * Using File.separator here because the console output in indended to be copy/pasted.
  */
 file("$projectDir/package").eachDir {
     def name = it.name
