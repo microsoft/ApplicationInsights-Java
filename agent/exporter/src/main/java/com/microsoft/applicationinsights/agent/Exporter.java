@@ -100,7 +100,7 @@ public class Exporter implements SpanExporter {
                 // TODO revisit this decision
                 // maybe user-generated telemetry?
                 // otherwise this top-level span won't show up in Performance blade
-                exportRequest(span);
+                exportRequest(component, span);
             } else if (span.getName().equals("EventHubs.message")) {
                 // TODO eventhubs should use PRODUCER instead of INTERNAL
                 exportRemoteDependency(component, span, false);
@@ -110,19 +110,23 @@ public class Exporter implements SpanExporter {
         } else if (kind == Kind.CLIENT || kind == Kind.PRODUCER) {
             exportRemoteDependency(component, span, false);
         } else if (kind == Kind.SERVER || kind == Kind.CONSUMER) {
-            exportRequest(span);
+            exportRequest(component, span);
         } else {
             throw new UnsupportedOperationException(kind.name());
         }
     }
 
-    private void exportRequest(SpanData span) {
+    private void exportRequest(String component, SpanData span) {
 
         RequestTelemetry telemetry = new RequestTelemetry();
 
         String sourceAppId = getString(span, AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME);
         if (!AiAppId.getAppId().equals(sourceAppId)) {
             telemetry.setSource(sourceAppId);
+        } else if ("kafka-clients".equals(component)) {
+            telemetry.setSource(span.getName()); // destination queue name
+        } else if ("jms".equals(component)) {
+            telemetry.setSource(span.getName()); // destination queue name
         }
 
         addLinks(telemetry.getProperties(), span.getLinks());
@@ -209,7 +213,6 @@ public class Exporter implements SpanExporter {
                 String peerAddress = getString(span, "peer.address");
                 String destination = getString(span, "message_bus.destination");
                 telemetry.setTarget(peerAddress + "/" + destination);
-                telemetry.setName(span.getName());
             } else if (span.getName().equals("EventHubs.message")) {
                 // TODO eventhubs should populate peer.address and message_bus.destination
                 String peerAddress = getString(span, "peer.address");
@@ -217,11 +220,13 @@ public class Exporter implements SpanExporter {
                 if (peerAddress != null) {
                     telemetry.setTarget(peerAddress + "/" + destination);
                 }
-                telemetry.setType("Queue Message | Microsoft.EventHub");
-                telemetry.setName(span.getName());
+                telemetry.setType("Microsoft.EventHub");
             } else if ("kafka-clients".equals(component)) {
-                // TODO is this needed?
-                telemetry.setType("kafka");
+                telemetry.setType("Kafka");
+                telemetry.setTarget(span.getName()); // destination queue name
+            } else if ("jms".equals(component)) {
+                telemetry.setType("JMS");
+                telemetry.setTarget(span.getName()); // destination queue name
             }
         }
 
