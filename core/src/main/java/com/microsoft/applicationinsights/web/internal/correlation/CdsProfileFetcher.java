@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
@@ -37,10 +38,10 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -52,7 +53,6 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
     private static final Logger logger = LoggerFactory.getLogger(CdsProfileFetcher.class);
 
     private CloseableHttpAsyncClient httpClient;
-    private String endpointAddress = null;
     private static final String PROFILE_QUERY_ENDPOINT_APP_ID_FORMAT = "%s/api/profiles/%s/appId";
 
     // cache of tasks per ikey
@@ -143,7 +143,14 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
         try {
             HttpResponse response = currentTask.get();
 
-            if (response.getStatusLine().getStatusCode() != 200) {
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                URI uri = configuration.getEndpointProvider().getAppIdEndpointURL(instrumentationKey);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                response.getEntity().writeTo(baos);
+                String responseBody = new String(baos.toByteArray(), Charsets.UTF_8);
+                // logging the URL to make it easy to diagnose the issue (e.g. in case of local firewall/routing issue)
+                logger.warn("{} returned {}: {}", uri, statusCode, responseBody);
                 incrementFailureCount(instrumentationKey);
                 return new ProfileFetcherResult(null, ProfileFetcherResultTaskStatus.FAILED);
             }
@@ -171,29 +178,8 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
         this.httpClient = client;
     }
 
-    /**
-     * @deprecated Set endpoints using {@link TelemetryConfiguration#setConnectionString(String)}.
-     */
-    @Deprecated
-    public void setEndpointAddress(String endpoint) throws MalformedURLException {
-        // set endpoint address to the base address (e.g. https://dc.services.visualstudio.com)
-        // later we will append the profile/ikey segment
-        URL url = new URL(endpoint);
-        String urlStr = url.toString();
-        this.endpointAddress = urlStr.substring(0, urlStr.length() - url.getFile().length());
-        if (logger.isTraceEnabled()) {
-            logger.trace("{} endpoint override: {}", CdsProfileFetcher.class.getSimpleName(), this.endpointAddress);
-        }
-    }
-
     private Future<HttpResponse> createFetchTask(String instrumentationKey, TelemetryConfiguration configuration) {
-        final HttpGet request;
-        if (endpointAddress == null) {
-            request = new HttpGet(configuration.getEndpointProvider().getAppIdEndpointURL(instrumentationKey));
-        } else {
-            request = new HttpGet(String.format(PROFILE_QUERY_ENDPOINT_APP_ID_FORMAT, this.endpointAddress, instrumentationKey));
-        }
-
+        final HttpGet request = new HttpGet(configuration.getEndpointProvider().getAppIdEndpointURL(instrumentationKey));
         return this.httpClient.execute(request, null);
     }
 
