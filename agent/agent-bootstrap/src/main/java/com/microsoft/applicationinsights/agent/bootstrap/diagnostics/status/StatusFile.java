@@ -138,6 +138,13 @@ public class StatusFile {
         write();
     }
 
+    public static <T> void putValue(String key, T value) {
+        if (!shouldWrite()) {
+            return;
+        }
+        CONSTANT_VALUES.put(key, value);
+    }
+
     public static void write() {
         if (!shouldWrite()) {
             return;
