@@ -8,11 +8,10 @@
         <Or>
             <And>
                 <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.DllFileUtils" />
-                <Method name="buildDllLocalPath" />
-            </And>
-            <And>
-                <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.LocalFileSystemUtils" />
-                <Method name="getTempDir" />
+                <Or>
+                    <Method name="buildDllLocalPath" />
+                    <Method name="getTempDir" />
+                </Or>
             </And>
         </Or>
     </Match>
@@ -22,11 +21,10 @@
             <!-- The DLL extraction path is read from trusted sources. -->
             <And>
                 <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.DllFileUtils" />
-                <Method name="buildDllLocalPath"/>
-            </And>
-            <And>
-                <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.LocalFileSystemUtils" />
-                <Method name="getTempDir" />
+                <Or>
+                    <Method name="buildDllLocalPath"/>
+                    <Method name="getTempDir" />
+                </Or>
             </And>
         </Or>
     </Match>

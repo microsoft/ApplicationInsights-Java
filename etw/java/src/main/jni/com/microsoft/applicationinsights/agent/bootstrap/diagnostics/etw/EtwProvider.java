@@ -32,12 +32,11 @@ public class EtwProvider {
     private static final String LIB_FILENAME_32_BIT = "applicationinsights-java-etw-provider-x86.dll";
     private static final String LIB_FILENAME_64_BIT = "applicationinsights-java-etw-provider-x86-64.dll";
 
-    private static Logger LOGGER;
+    private static Logger LOGGER = LoggerFactory.getLogger(EtwProvider.class);
 
     public EtwProvider(final String sdkVersion) {
         final String osname = System.getProperty("os.name");
         if (osname != null && osname.startsWith("Windows")) {
-            LOGGER = LoggerFactory.getLogger(EtwProvider.class);
             File dllPath = null;
             try {
                 dllPath = loadLibrary(sdkVersion);
