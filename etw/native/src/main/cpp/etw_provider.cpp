@@ -57,6 +57,7 @@ JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_agent_bootstrap_di
         int event_id = getEventId(env, jobj_event);
         DBG("event_id=%d\n", event_id);
         switch (event_id) {
+            case EVENTID_VERBOSE:
             case EVENTID_INFO:
             case EVENTID_ERROR:
             case EVENTID_CRITICAL:
@@ -123,6 +124,14 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
 
         // write event
         switch(event_id) {
+            case EVENTID_VERBOSE:
+                WRITE_VERBOSE_EVENT(
+                    TraceLoggingValue(message, ETW_FIELD_MESSAGE),
+                    TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
+                    TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
+                    TraceLoggingValue(appName, ETW_FIELD_APPNAME));
+                DBG("\nwrote DEBUG");
+                break;
             case EVENTID_INFO:
                 WRITE_INFO_EVENT(
                     TraceLoggingValue(message, ETW_FIELD_MESSAGE),
@@ -131,30 +140,30 @@ void writeEvent_IpaEtwEvent(JNIEnv * env, jobject &jobj_event, int event_id) noe
                     TraceLoggingValue(appName, ETW_FIELD_APPNAME));
                 DBG("\nwrote INFO");
                 break;
-                case EVENTID_WARN:
-                    WRITE_WARN_EVENT(
-                        TraceLoggingValue(message, ETW_FIELD_MESSAGE),
-                        TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
-                        TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
-                        TraceLoggingValue(appName, ETW_FIELD_APPNAME));
-                    DBG("\nwrote WARN");
-                    break;
-                case EVENTID_ERROR:
-                    WRITE_ERROR_EVENT(
-                        TraceLoggingValue(message, ETW_FIELD_MESSAGE),
-                        TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
-                        TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
-                        TraceLoggingValue(appName, ETW_FIELD_APPNAME));
-                    DBG("\nwrote ERROR");
-                    break;
-                case EVENTID_CRITICAL:
-                    WRITE_CRITICAL_EVENT(
-                        TraceLoggingValue(message, ETW_FIELD_MESSAGE),
-                        TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
-                        TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
-                        TraceLoggingValue(appName, ETW_FIELD_APPNAME));
-                    DBG("\nwrote CRITICAL");
-                    break;
+            case EVENTID_WARN:
+                WRITE_WARN_EVENT(
+                    TraceLoggingValue(message, ETW_FIELD_MESSAGE),
+                    TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
+                    TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
+                    TraceLoggingValue(appName, ETW_FIELD_APPNAME));
+                DBG("\nwrote WARN");
+                break;
+            case EVENTID_ERROR:
+                WRITE_ERROR_EVENT(
+                    TraceLoggingValue(message, ETW_FIELD_MESSAGE),
+                    TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
+                    TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
+                    TraceLoggingValue(appName, ETW_FIELD_APPNAME));
+                DBG("\nwrote ERROR");
+                break;
+            case EVENTID_CRITICAL:
+                WRITE_CRITICAL_EVENT(
+                    TraceLoggingValue(message, ETW_FIELD_MESSAGE),
+                    TraceLoggingValue(extensionVersion, ETW_FIELD_EXTENSION_VERSION),
+                    TraceLoggingValue(subscriptionId, ETW_FIELD_SUBSCRIPTION_ID),
+                    TraceLoggingValue(appName, ETW_FIELD_APPNAME));
+                DBG("\nwrote CRITICAL");
+                break;
             }
         DBG(" event:\n\tmsg=%s,\n\tExtVer=%s,\n\tSubscriptionId=%s,\n\tAppName=%s,\n", message, extensionVersion, subscriptionId, appName);
     }

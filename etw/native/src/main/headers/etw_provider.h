@@ -32,6 +32,7 @@ TRACELOGGING_DECLARE_PROVIDER(provider_EtwHandle);
 
 #define EVENT_NAME "WebAppsAppInsightsExtension"
 
+#define WRITE_VERBOSE_EVENT(...) TraceLoggingWrite(provider_EtwHandle, EVENT_NAME, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE), __VA_ARGS__)
 #define WRITE_INFO_EVENT(...) TraceLoggingWrite(provider_EtwHandle, EVENT_NAME, TraceLoggingLevel(WINEVENT_LEVEL_INFO), __VA_ARGS__)
 #define WRITE_WARN_EVENT(...) TraceLoggingWrite(provider_EtwHandle, EVENT_NAME, TraceLoggingLevel(WINEVENT_LEVEL_WARNING), __VA_ARGS__)
 #define WRITE_ERROR_EVENT(...) TraceLoggingWrite(provider_EtwHandle, EVENT_NAME, TraceLoggingLevel(WINEVENT_LEVEL_ERROR), __VA_ARGS__)
@@ -55,6 +56,7 @@ typedef int aijnierr_t;
 
 #define STR_MAX_BUFF_SIZE   1024000
 
+#define EVENTID_VERBOSE     5
 #define EVENTID_INFO        4
 #define EVENTID_WARN        3
 #define EVENTID_ERROR       2
