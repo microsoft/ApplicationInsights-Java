@@ -25,8 +25,6 @@ import java.io.IOException;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,15 +32,14 @@ public class EtwProvider {
     private static final String LIB_FILENAME_32_BIT = "applicationinsights-java-etw-provider-x86.dll";
     private static final String LIB_FILENAME_64_BIT = "applicationinsights-java-etw-provider-x86-64.dll";
 
-    // TODO make sure this logger does not append to EtwAppender
-    private static Logger LOGGER;
+    private static Logger LOGGER = LoggerFactory.getLogger(EtwProvider.class);
 
-    static {
-        if (SystemUtils.IS_OS_WINDOWS) {
-            LOGGER = LoggerFactory.getLogger(EtwProvider.class);
+    public EtwProvider(final String sdkVersion) {
+        final String osname = System.getProperty("os.name");
+        if (osname != null && osname.startsWith("Windows")) {
             File dllPath = null;
             try {
-                dllPath = loadLibrary();
+                dllPath = loadLibrary(sdkVersion);
                 LOGGER.info("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
             } catch (ThreadDeath td) {
                 throw td;
@@ -61,12 +58,12 @@ public class EtwProvider {
         } else {
             LoggerFactory.getLogger(EtwProvider.class).info("Non-Windows OS. Loading ETW library skipped.");
         }
-    }
+	}
 
-    private static File loadLibrary() throws IOException {
+    private static File loadLibrary(final String sdkVersion) throws IOException {
         final String fileName = getDllFilenameForArch();
 
-        final File targetDir = DllFileUtils.buildDllLocalPath();
+        final File targetDir = DllFileUtils.buildDllLocalPath(sdkVersion);
         final File dllPath = new File(targetDir, fileName);
 
         if (!dllPath.exists()) {
@@ -79,7 +76,8 @@ public class EtwProvider {
     }
 
     static String getDllFilenameForArch() {
-        final boolean is32bit = StringUtils.defaultIfEmpty(System.getProperty("os.arch"), "null").equalsIgnoreCase("x86");
+        final String osarch = System.getProperty("os.arch");
+        final boolean is32bit = osarch == null ? false : osarch.equalsIgnoreCase("x86");
         return is32bit ? LIB_FILENAME_32_BIT : LIB_FILENAME_64_BIT;
     }
 
@@ -88,4 +86,6 @@ public class EtwProvider {
     public void writeEvent(IpaEtwEventBase event) throws ApplicationInsightsEtwException {
         cppWriteEvent(event);
     }
+
+
 }

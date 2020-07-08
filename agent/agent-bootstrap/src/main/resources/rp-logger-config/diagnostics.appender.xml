@@ -26,4 +26,9 @@
         <!-- accepts logs only from applicationinsights.extension.diagnostics or errors -->
         <filter class="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter"/>
     </appender>
+
+    <root>
+        <appender-ref ref="DIAGNOSTICS_FILE" /><!-- optional; platform dependent -->
+    </root>
+
 </included>

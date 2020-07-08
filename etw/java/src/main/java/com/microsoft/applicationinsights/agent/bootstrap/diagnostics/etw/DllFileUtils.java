@@ -21,15 +21,14 @@
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
-import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +42,16 @@ class DllFileUtils {
     public static final String AI_NATIVE_FOLDER = "native";
 
     // from :core:JniPCConnector.java
-    public static File buildDllLocalPath() {
-        File dllPath = LocalFileSystemUtils.getTempDir();
+    public static File buildDllLocalPath(String versionDirectory) {
+        File dllPath = getTempDir();
 
-        dllPath = new File(dllPath.toString(), AI_BASE_FOLDER);
-        dllPath = new File(dllPath.toString(), AI_NATIVE_FOLDER);
-        dllPath = new File(dllPath.toString(), PropertyHelper.getSdkVersionNumber());
+        dllPath = new File(dllPath, AI_BASE_FOLDER);
+        dllPath = new File(dllPath, AI_NATIVE_FOLDER);
+        if (versionDirectory == null || versionDirectory.isEmpty()) {
+            dllPath = new File(dllPath, "unknown-version");
+        } else {
+            dllPath = new File(dllPath, versionDirectory);
+        }
 
         if (!dllPath.exists()) {
             dllPath.mkdirs();
@@ -62,36 +65,97 @@ class DllFileUtils {
         return dllPath;
     }
 
+    /**
+     * Assumes dllOnDisk is non-null and exists.
+     * @param dllOnDisk
+     * @param libraryToLoad
+     * @throws IOException
+     */
     public static void extractToLocalFolder(File dllOnDisk, String libraryToLoad) throws IOException {
         ClassLoader classLoader = DllFileUtils.class.getClassLoader();
         if (classLoader == null) {
             classLoader = ClassLoader.getSystemClassLoader();
         }
-        InputStream in = classLoader.getResourceAsStream(libraryToLoad);
-        if (in == null) {
-            throw new RuntimeException(String.format("Failed to find '%s' in jar", libraryToLoad));
-        }
-
-        OutputStream out = null;
-        try {
-            out = FileUtils.openOutputStream(dllOnDisk);
-            IOUtils.copy(in, out);
-
-            LOGGER.info("Successfully extracted '{}' to local folder", libraryToLoad);
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                LOGGER.error("Failed to close input stream for dll extraction.", e);
+        try (InputStream in = classLoader.getResourceAsStream(libraryToLoad)) {
+            if (in == null) {
+                throw new RuntimeException(String.format("Failed to find '%s' in jar", libraryToLoad));
             }
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    LOGGER.error("Failed to close output stream for dll extraction.", e);
+            final byte[] buffer = new byte[8192];
+            try (OutputStream out = new FileOutputStream(dllOnDisk, false)) {
+                if (dllOnDisk.exists()) {
+                    if (dllOnDisk.isDirectory()) {
+                        throw new IOException("Cannot extract dll: "+dllOnDisk.getAbsolutePath()+" exists as a directory");
+                    }
+                    if (!dllOnDisk.canWrite()) {
+                        throw new IOException("Cannote extract dll: "+dllOnDisk.getAbsolutePath()+" is not writeable.");
+                    }
+                }
+
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) { // while not EOF
+                    out.write(buffer, 0, bytesRead);
                 }
             }
         }
+        LOGGER.info("Successfully extracted '{}' to local folder", libraryToLoad);
+    }
+
+    private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES = Collections.unmodifiableList(Arrays.asList("USER", "LOGNAME", "USERNAME"));
+
+    /**
+     * From :core/com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils
+     */
+    private static File getTempDir() {
+        final String tempDirectory = System.getProperty("java.io.tmpdir");
+        final String currentUserName = determineCurrentUserName();
+
+        final File result = getTempDir(tempDirectory, currentUserName);
+        if (!result.isDirectory()) {
+            // Noinspection ResultOfMethodCallIgnored
+            result.mkdirs();
+        }
+        return result;
+    }
+
+    /**
+     * From :core/com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils
+     */
+    private static File getTempDir(final String initialValue, final String userName) {
+        String tempDirectory = initialValue;
+
+        // does it look shared?
+        // TODO: this only catches the Linux case; I think a few system users on Windows might share c:\Windows\Temp
+        if ("/tmp".contentEquals(tempDirectory)) {
+            final File candidate = new File(tempDirectory, userName);
+            tempDirectory = candidate.getAbsolutePath();
+        }
+
+        return new File(tempDirectory);
+    }
+
+    /**
+     * From :core/com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils
+     */
+    private static String determineCurrentUserName() {
+        String userName;
+        // Start with the value of the "user.name" property
+        userName = System.getProperty("user.name");
+
+        if (userName != null && !userName.isEmpty()) {
+            // Try some environment variables
+            for (final String candidate : CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES) {
+                userName = System.getenv(candidate);
+                if (userName != null && userName.isEmpty()) {
+                    break;
+                }
+            }
+        }
+
+        if (userName == null || userName.isEmpty()) {
+            userName = "unknown";
+        }
+
+        return userName;
     }
 
 }

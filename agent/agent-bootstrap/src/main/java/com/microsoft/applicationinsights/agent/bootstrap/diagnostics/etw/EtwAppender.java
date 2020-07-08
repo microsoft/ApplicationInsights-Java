@@ -35,14 +35,18 @@ import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.AppenderBase;
 
 public class EtwAppender extends AppenderBase<ILoggingEvent> {
-    private final EtwProvider etwProvider = new EtwProvider();
-    private final IpaEtwEventBase proto = new IpaInfo();
+    private final EtwProvider etwProvider;
+    private final IpaEtwEventBase proto;
 
     public EtwAppender() {
         ApplicationMetadataFactory metadata = DiagnosticsHelper.getMetadataFactory();
+
+        proto = new IpaInfo();
         proto.setAppName(metadata.getSiteName().getValue());
         proto.setExtensionVersion(metadata.getSdkVersion().getValue());
         proto.setSubscriptionId(metadata.getSubscriptionId().getValue());
+
+        etwProvider = new EtwProvider(metadata.getSdkVersion().getValue());
     }
 
     @Override
@@ -76,9 +80,6 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
         }
 
         Map<String, String> mdcPropertyMap = logEvent.getMDCPropertyMap();
-
-        // TODO should this timestamp be included?
-        // long timeStamp = logEvent.getTimeStamp();
         if (!mdcPropertyMap.isEmpty()) {
             String operation = mdcPropertyMap.get(DiagnosticsHelper.MDC_PROP_OPERATION);
             if (operation != null && !operation.isEmpty()) {

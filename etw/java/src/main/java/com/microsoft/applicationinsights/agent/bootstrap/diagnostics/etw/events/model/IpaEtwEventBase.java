@@ -20,8 +20,6 @@
  */
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model;
 
-import org.apache.commons.lang3.StringUtils;
-
 public abstract class IpaEtwEventBase implements IpaEtwEvent {
     private String extensionVersion;
     private String appName;
@@ -49,7 +47,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     }
 
     public String getExtensionVersion() {
-        return StringUtils.defaultString(extensionVersion);
+        return extensionVersion == null ? "" : extensionVersion;
     }
 
     public void setExtensionVersion(String extensionVersion) {
@@ -57,7 +55,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     }
 
     public String getAppName() {
-        return StringUtils.defaultString(appName);
+        return appName == null ? "" : appName;
     }
 
     public void setAppName(String appName) {
@@ -65,7 +63,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     }
 
     public String getSubscriptionId() {
-        return StringUtils.defaultString(subscriptionId);
+        return subscriptionId == null ? "" : subscriptionId;
     }
 
     public void setSubscriptionId(String subscriptionId) {
@@ -86,21 +84,21 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
         // exception (in error class)
         final String fmt = processMessageFormat();
         if (messageArgs == null || messageArgs.length == 0) {
-            return StringUtils.defaultString(fmt);
+            return fmt == null ? "" : fmt;
         } else {
             return String.format(fmt, messageArgs);
         }
     }
 
     protected String processMessageFormat() {
-        if (StringUtils.isNotEmpty(this.logger)) {
+        if (this.logger != null && !this.logger.isEmpty()) {
             String prefix = "["+this.logger;
-            if (StringUtils.isNotEmpty(this.operation)) {
+            if (this.operation != null && !this.operation.isEmpty()) {
                 prefix += "/"+this.operation;
             }
             prefix += "] ";
             return prefix + messageFormat;
-        } else if(StringUtils.isNotEmpty(this.operation)) {
+        } else if(this.operation != null && !this.operation.isEmpty()) {
             return "[-/"+this.operation+"] "+messageFormat;
         } else {
             return messageFormat;

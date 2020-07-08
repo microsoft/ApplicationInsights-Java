@@ -20,8 +20,6 @@
  */
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model;
 
-import org.apache.commons.lang3.StringUtils;
-
 public abstract class IpaEtwEventErrorBase extends IpaEtwEventBase {
     private String stacktrace;
 
@@ -38,7 +36,7 @@ public abstract class IpaEtwEventErrorBase extends IpaEtwEventBase {
 
     @Override
     protected String processMessageFormat() {
-        if (StringUtils.isEmpty(stacktrace)) {
+        if (stacktrace == null || stacktrace.isEmpty()) {
             return super.processMessageFormat();
         } else {
             return super.processMessageFormat() + "\n" + this.stacktrace;

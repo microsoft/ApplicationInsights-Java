@@ -38,7 +38,8 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventErrorBase;
 
 public class EtwProviderTests {
-    private static final File dllTempFolder = DllFileUtils.buildDllLocalPath();
+    private static final String FOLDER_NAME = "EtwProviderTests";
+    private static final File dllTempFolder = DllFileUtils.buildDllLocalPath(FOLDER_NAME);
 
     @BeforeClass
     public static void cleanTempFolder() {
@@ -120,6 +121,7 @@ public class EtwProviderTests {
 
     @Test
     public void testDllExtracted() throws Exception {
+        new EtwProvider(FOLDER_NAME); // Triggers DLL extraction
         String filename = EtwProvider.getDllFilenameForArch();
         final File dllPath = new File(dllTempFolder, filename);
         System.out.println("Checking for DLL: "+dllPath.getAbsolutePath());
@@ -130,7 +132,7 @@ public class EtwProviderTests {
         IpaWarn ewarn = createWarn("test.warn.logger", null, null, "simple warning: %s - %x", "NO EXCEPTION", 1234);
         IpaCritical ecritical = createCritical("test.critical.logger", "testDllExtracted.critical", new Error("test critical error"), "something very bad happened...%s %s", "but it's ok,", "this is only a test!!");
 
-        EtwProvider ep = new EtwProvider();
+        EtwProvider ep = new EtwProvider(FOLDER_NAME);
         ep.writeEvent(einfo);
         ep.writeEvent(eerror);
         ep.writeEvent(ewarn);
@@ -194,7 +196,7 @@ public class EtwProviderTests {
         int errorChance = 5;
         int criticalChance = 25;
         long methodStart = System.currentTimeMillis();
-        EtwProvider ep = new EtwProvider();
+        EtwProvider ep = new EtwProvider(FOLDER_NAME);
         EventCounts totalEvents = new EventCounts();
         long printTimer = 0;
         EventCounts accumulator = new EventCounts();
