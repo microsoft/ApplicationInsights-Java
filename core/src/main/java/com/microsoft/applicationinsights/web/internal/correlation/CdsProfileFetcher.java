@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
+import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
@@ -80,6 +81,7 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
         final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
         setHttpClient(HttpAsyncClients.custom()
                 .setDefaultRequestConfig(requestConfig)
+                .setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(CdsProfileFetcher.class))
                 .setSSLStrategy(new SSLIOSessionStrategy(SSLContexts.createDefault(), allowedProtocols, null, SSLIOSessionStrategy.getDefaultHostnameVerifier()))
                 .useSystemProperties()
                 .build());
