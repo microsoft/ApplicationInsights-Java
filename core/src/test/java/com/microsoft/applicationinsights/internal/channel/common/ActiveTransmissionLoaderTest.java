@@ -23,10 +23,13 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
-import org.junit.Test;
+import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.logger.LoggerTestHelper;
+import org.junit.*;
 import org.mockito.Mockito;
 
 import org.apache.commons.io.FileUtils;
@@ -37,6 +40,16 @@ import static org.mockito.Matchers.anyObject;
 
 public class ActiveTransmissionLoaderTest {
     private final static String TEMP_TEST_FOLDER = "TransmissionTests";
+
+    @BeforeClass
+    public static void initLogger() {
+        InternalLogger.INSTANCE.initialize("CONSOLE", new HashMap<String, String>());
+    }
+
+    @AfterClass
+    public static void tearDownLogger() {
+        LoggerTestHelper.resetInternalLogger();
+    }
 
     @Test(expected = NullPointerException.class)
     public void testNullFileSystem() throws Exception {
