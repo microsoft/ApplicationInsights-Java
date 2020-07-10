@@ -33,7 +33,7 @@ public class CommonUtils {
   }
 
   /**
-   * Returns the hostname using {@link InetAddress#getCanonicalHostName()} on {@link InetAddress#getLocalHost()}.
+   * Returns the hostname using {@link InetAddress#getHostName()} on {@link InetAddress#getLocalHost()}.
    * If an error is encountered, the error is logged and it returns null.
    *
    * @return the local hostname, or null
@@ -41,7 +41,7 @@ public class CommonUtils {
   public static String getHostName() {
     try {
       InetAddress addr = InetAddress.getLocalHost();
-      return addr.getCanonicalHostName();
+      return addr.getHostName();
     } catch (UnknownHostException ex) {
       InternalLogger.INSTANCE.warn("Error resolving hostname:%n%s", ExceptionUtils.getStackTrace(ex));
       return null;
