@@ -1,4 +1,4 @@
-[submodule "opentelemetry-auto-instr-java"]
-	path = opentelemetry-auto-instr-java
-	url = https://github.com/trask/opentelemetry-auto-instr-java
+[submodule "opentelemetry-java-instrumentation"]
+	path = opentelemetry-java-instrumentation
+	url = https://github.com/trask/opentelemetry-java-instrumentation
 	branch = applicationinsights

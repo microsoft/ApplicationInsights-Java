@@ -47,6 +47,9 @@ import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import io.opentelemetry.auto.bootstrap.instrumentation.aiappid.AiAppId;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.AttributeValue.Type;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
@@ -125,7 +128,7 @@ public class Exporter implements SpanExporter {
 
         RequestTelemetry telemetry = new RequestTelemetry();
 
-        Map<String, AttributeValue> attributes = new HashMap<>(span.getAttributes());
+        Map<String, AttributeValue> attributes = getAttributesCopy(span.getAttributes());
 
         String sourceAppId = removeAttributeString(attributes, AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME);
         if (!AiAppId.getAppId().equals(sourceAppId)) {
@@ -204,6 +207,17 @@ public class Exporter implements SpanExporter {
         }
     }
 
+    private Map<String, AttributeValue> getAttributesCopy(ReadableAttributes attributes) {
+        final Map<String, AttributeValue> copy = new HashMap<>();
+        attributes.forEach(new KeyValueConsumer<AttributeValue>() {
+            @Override
+            public void consume(String key, AttributeValue value) {
+                copy.put(key, value);
+            }
+        });
+        return copy;
+    }
+
     private void exportRemoteDependency(String stdComponent, SpanData span, boolean inProc) {
 
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
@@ -214,7 +228,7 @@ public class Exporter implements SpanExporter {
 
         span.getInstrumentationLibraryInfo().getName();
 
-        Map<String, AttributeValue> attributes = new HashMap<>(span.getAttributes());
+        Map<String, AttributeValue> attributes = getAttributesCopy(span.getAttributes());
 
         if (inProc) {
             telemetry.setType("InProc");
@@ -278,7 +292,7 @@ public class Exporter implements SpanExporter {
     }
 
     private void exportLogSpan(SpanData span) {
-        Map<String, AttributeValue> attributes = new HashMap<>(span.getAttributes());
+        Map<String, AttributeValue> attributes = getAttributesCopy(span.getAttributes());
         String message = removeAttributeString(attributes, "message");
         String level = removeAttributeString(attributes, "level");
         String loggerName = removeAttributeString(attributes, "loggerName");
@@ -467,6 +481,18 @@ public class Exporter implements SpanExporter {
                 properties.put(entry.getKey(), value);
             }
         }
+    }
+
+    private static void addExtraAttributes(final Map<String, String> properties, Attributes attributes) {
+        attributes.forEach(new KeyValueConsumer<AttributeValue>() {
+            @Override
+            public void consume(String key, AttributeValue value) {
+                String val = getStringValue(value);
+                if (val != null) {
+                    properties.put(key, val);
+                }
+            }
+        });
     }
 
     private static Double removeAiSamplingPercentage(Map<String, AttributeValue> attributes) {

@@ -37,7 +37,10 @@ dependencies {
 
     compile 'com.google.guava:guava:27.1-android'
 
-    compile 'io.opentelemetry.auto:auto-tooling:0.5.0-SNAPSHOT'
+    compile 'io.opentelemetry.instrumentation.auto:opentelemetry-auto-auto-tooling:0.5.0-SNAPSHOT'
+    // TODO sync bytebuddy version with version from auto-tooling (above)
+    compile group: 'net.bytebuddy', name: 'byte-buddy', version: '1.10.10'
+
     compile 'org.checkerframework:checker-qual-android:3.1.0'
 
     compile(project(':core')) {

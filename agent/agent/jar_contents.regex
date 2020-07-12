@@ -5,8 +5,6 @@ com/microsoft/applicationinsights/agent/.*
 io/
 io/opentelemetry/
 io/opentelemetry/auto/.*
-io/opentelemetry/contrib/
-io/opentelemetry/contrib/auto/.*
 META-INF/
 META-INF/MANIFEST\.MF
 LICENSE
@@ -21,4 +19,4 @@ rp-logger-config/diagnostics\.appender\.xml
 rp-logger-config/etw.appender\.xml
 applicationinsights-java-etw-provider-x86-64\.dll
 applicationinsights-java-etw-provider-x86\.dll
-auto-tooling-and-instrumentation.isolated/.*
+inst/.*
