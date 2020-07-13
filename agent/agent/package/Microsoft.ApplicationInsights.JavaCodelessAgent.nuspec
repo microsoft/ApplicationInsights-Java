@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Microsoft.ApplicationInsights.JavaCodelessAgent</id>
-    <version>2.6.0</version>
+    <version>$version$</version>
     <title>Application Insights Java Codeless Agent Package</title>
     <authors>Microsoft</authors>
     <licenseUrl>http://go.microsoft.com/fwlink/?LinkID=391182</licenseUrl>
@@ -23,7 +23,7 @@
   </metadata>
   <files>
     <!-- Redfield files -->
-    <file src="applicationinsights-agent-codeless-2.6.0.jar" target="content" />
+    <file src="applicationinsights-agent-$version$.jar" target="content" />
     <file src="appsvc\appsvc.codeless" target="content\appsvc" />
     <file src="aks\aks.codeless" target="content\aks" />
     <file src="functions\functions.codeless" target="content\functions" />
