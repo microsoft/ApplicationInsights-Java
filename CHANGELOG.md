@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 2.6.2-BETA.2
+* Fixed RequestTelemetryContext initialization ([#1247](https://github.com/microsoft/ApplicationInsights-Java/issues/1247)). Thanks, librucha!
+
 # Version 2.6.2-BETA
 * Added additional error logging for troubleshooting issues loading JNI performance counter library
   ([#1254](https://github.com/microsoft/ApplicationInsights-Java/pull/1254))
