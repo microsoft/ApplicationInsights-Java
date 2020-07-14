@@ -36,7 +36,7 @@ build:
   commands:
     - !!buildcommand
       name: 'Assemble Perf Counters DLL'
-      command: './scripts/gradle.cmd'
+      command: '.scripts/gradle.cmd'
       arguments: ':core:windowsX64SharedLibrary :core:windowsX86SharedLibrary --info --stacktrace'
       artifacts:
         - from: 'core/build/libs/windows/shared'
