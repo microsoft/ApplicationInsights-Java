@@ -51,7 +51,7 @@ build:
           include:
             - '**/build/reports/**/*'
           exclude:
-            - '**/build/reports/test/**/*'
+            - '**/build/reports/tests/**/*'
     - !!testcommand
       name: 'Run ApplicationInsights-Java Unit Tests'
       command: '.scripts/gradle.cmd'
