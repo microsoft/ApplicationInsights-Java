@@ -35,6 +35,16 @@ restore:
 build:
   commands:
     - !!buildcommand
+      name: 'Assemble Perf Counters DLL'
+      command: './scripts/gradle.cmd'
+      arguments: ':core:windowsX64SharedLibrary :core:windowsX86SharedLibrary --info --stacktrace'
+      artifacts:
+        - from: 'core/build/libs/windows/shared'
+          include:
+            - '**/*.dll'
+          signing_options:
+            profile: external_distribution
+    - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
       arguments: 'assemble --info --stacktrace'
