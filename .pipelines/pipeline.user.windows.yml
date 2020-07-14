@@ -68,11 +68,47 @@ build:
       arguments: 'test --info --stacktrace'
       fail_on_stderr: false
       testresults:
-        - title: 'ApplicationInsights-Java Unit Tests'
+        - title: ':core Unit Test Results'
           type: 'junit'
           include:
-            - '**/build/test-results/test/*.xml'
+            - 'core/build/test-results/test/*.xml'
+        - title: ':agent Unit Test Results'
+          type: 'junit'
+          include:
+            - 'agent/build/test-results/test/*.xml'
+        - title: ':ApplciationInsightsInternalLogger Unit Test Results'
+          type: 'junit'
+          include:
+            - 'ApplciationInsightsInternalLogger/build/test-results/test/*.xml'
+        - title: ':azure-application-insights-spring-boot-starter Unit Test Results'
+          type: 'junit'
+          include:
+            - 'azure-application-insights-spring-boot-starter/build/test-results/test/*.xml'
+        - title: ':web Unit Test Results'
+          type: 'junit'
+          include:
+            - 'web/build/test-results/test/*.xml'
+        - title: ':web-auto Unit Test Results'
+          type: 'junit'
+          include:
+            - 'web-auto/build/test-results/test/*.xml'
+        - title: ':logging:common Unit Test Results'
+          type: 'junit'
+          include:
+            - 'logging/common/build/test-results/test/*.xml'
+        - title: ':logging:log4j1_2 Unit Test Results'
+          type: 'junit'
+          include:
+            - 'logging/log4j1_2/build/test-results/test/*.xml'
+        - title: ':logging:log4j2 Unit Test Results'
+          type: 'junit'
+          include:
+            - 'logging/log4j2/build/test-results/test/*.xml'
+        - title: ':logging:logback Unit Test Results'
+          type: 'junit'
+          include:
+            - 'logging/logback/build/test-results/test/*.xml'
       logs:
         - to: 'Test Logs'
           include:
-            - '**/build/reports/test/**/*'
+            - '**/build/reports/tests/**/*'
