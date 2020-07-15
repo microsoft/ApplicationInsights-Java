@@ -44,6 +44,7 @@ build:
             - '**/*.dll'
           signing_options:
             profile: external_distribution
+            sign_inline: true
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
