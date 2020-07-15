@@ -39,7 +39,8 @@ build:
       command: '.scripts/gradle.cmd'
       arguments: ':core:windowsSharedLibrary --info --stacktrace'
       artifacts:
-        - from: 'core/build/libs/windows/shared'
+        - to: 'PerfCounters DLL'
+          from: 'core/build/libs/windows/shared'
           include:
             - '**/*'
           exclude:
