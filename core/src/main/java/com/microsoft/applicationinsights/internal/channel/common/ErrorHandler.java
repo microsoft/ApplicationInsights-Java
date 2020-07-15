@@ -43,6 +43,7 @@ public class ErrorHandler implements TransmissionHandler {
             case TransmissionSendResult.REQUEST_TIMEOUT:
             case TransmissionSendResult.INTERNAL_SERVER_ERROR:
             case TransmissionSendResult.SERVICE_UNAVAILABLE:
+            case TransmissionSendResult.CLIENT_SIDE_EXCEPTION:
                 backoffAndSendTransmission(args);
                 return true;
             default:
