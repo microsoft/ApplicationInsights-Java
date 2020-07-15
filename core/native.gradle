@@ -92,19 +92,9 @@ model {
                 }
             }
 
-            if ((System.properties["isRelease"] ?: "false").toBoolean()) {
-                targetBuildTypes "release"
-            } else {
-                targetBuildTypes "debug"
-            }
-
-            binaries.all {
-                if (delegate instanceof StaticLibraryBinarySpec) {
-                    buildable = false
-                } else {
-                    assert (delegate instanceof SharedLibraryBinarySpec)
-                    sharedLibraryFile = ReconstructFileName(sharedLibraryFile, buildType, targetPlatform)
-
+            binaries.withType(SharedLibraryBinarySpec) { // Only build shared libraries
+                sharedLibraryFile = ReconstructFileName(sharedLibraryFile, targetPlatform)
+                if ((project.properties["isRelease"] ?: "false").toBoolean() == (buildType.name == "release")) {
                     tasks.all { t ->
                         logger.info "Adding \"processResources\".dependsOn \"$t\" (${t.getClass()})"
                         processResources.dependsOn t
@@ -112,7 +102,6 @@ model {
 
                     logger.info "Adding \"$sharedLibraryFile.parentFile\" to sourceSets.main.resources"
                     sourceSets.main.resources.srcDir sharedLibraryFile.parentFile
-
                 }
                 if (toolChain in VisualCpp) {
                     // Visual Studio Compiler Options: https://msdn.microsoft.com/en-us/library/fwkeyyhe.aspx
@@ -179,9 +168,13 @@ sourceSets {
     }
 }
 
+tasks.register('windowsSharedLibrary') {
+    dependsOn windowsX64DebugSharedLibrary, windowsX86DebugSharedLibrary, windowsX64ReleaseSharedLibrary, windowsX86ReleaseSharedLibrary
+}
+
 // This function will reconstruct the file name based on the buildType and targetPlatform
-// New file name structure: <baseName><32|64>[dbg].<ext>
-def ReconstructFileName(File originalFile, BuildType buildType, NativePlatform targetPlatform) {
+// New file name structure: <baseName><32|64>.<ext>
+def ReconstructFileName(File originalFile, NativePlatform targetPlatform) {
     def originalFileName = originalFile.absolutePath
     def filePath = FilenameUtils.getFullPath(originalFileName)
     def baseName = FilenameUtils.getBaseName(originalFileName)
@@ -201,7 +194,7 @@ def ReconstructFileName(File originalFile, BuildType buildType, NativePlatform t
 
     def newName = "$baseName$bitnessPart.$extension"
     def newFile = new File(filePath, newName)
-    logger.info "Reconstructed file name: $originalFile => $newFile"
+    logger.debug "Reconstructed file name: $originalFile => $newFile"
     newFile
 }
 
