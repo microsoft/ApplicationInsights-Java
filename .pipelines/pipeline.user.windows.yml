@@ -41,7 +41,9 @@ build:
       artifacts:
         - from: 'core/build/libs/windows/shared'
           include:
-            - '**/*.dll'
+            - '**/*'
+          exclude:
+            - '*.pdb'
           signing_options:
             profile: external_distribution
             sign_inline: true
@@ -53,6 +55,12 @@ build:
         - to: 'Artifacts'
           include:
             - '**/build/libs/*.jar'
+          exclude:
+            - '**/build/libs/*-sources.jar'
+            - '**/build/libs/*-javadoc.jar'
+            - 'logging/common/**/*'
+            - 'ApplicationInsightsInternalLogger/**/*'
+            - 'buildSrc/**/*'
     - !!defaultcommand
       name: 'Checks for ApplicationInsights-Java'
       command: '.scripts/gradle.cmd'
