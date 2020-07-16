@@ -48,6 +48,11 @@ build:
           signing_options:
             profile: external_distribution
             sign_inline: true
+      logs:
+        - to: 'PerfCounters DLL Logs'
+          from: 'core/build/tmp'
+          include:
+            - '*WindowsCpp/*'
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
