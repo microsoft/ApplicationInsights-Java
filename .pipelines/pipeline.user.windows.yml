@@ -31,58 +31,23 @@ restore:
     - !!defaultcommand
       name: 'Clean and Resolve Dependencies'
       command: '.scripts/gradle.cmd'
-      arguments: 'clean resolveDependencies --info --stacktrace --refresh-dependencies'
-build:
+      arguments: 'clean resolveDependencies --refresh-dependencies'
+test:
   commands:
-    - !!buildcommand
-      name: 'Assemble Perf Counters DLL'
-      command: '.scripts/gradle.cmd'
-      arguments: ':core:windowsSharedLibrary --info --stacktrace'
-      artifacts:
-        - to: 'PerfCounters DLL'
-          from: 'core/build/libs/windows/shared'
-          include:
-            - '**/*'
-          exclude:
-            - '*.pdb'
-          signing_options:
-            profile: external_distribution
-            sign_inline: true
-      logs:
-        - to: 'PerfCounters DLL Logs'
-          from: 'core/build/tmp'
-          include:
-            - '*WindowsCpp/*'
-    - !!buildcommand
-      name: 'Assemble ApplicationInsights-Java JARs'
-      command: '.scripts/gradle.cmd'
-      arguments: 'assemble --info --stacktrace'
-      artifacts:
-        - to: 'Artifacts'
-          include:
-            - '**/build/libs/*.jar'
-          exclude:
-            - '**/build/libs/*-sources.jar'
-            - '**/build/libs/*-javadoc.jar'
-            - 'logging/common/**/*'
-            - 'ApplicationInsightsInternalLogger/**/*'
-            - 'buildSrc/**/*'
     - !!defaultcommand
-      name: 'Checks for ApplicationInsights-Java'
+      name: 'Gradle Static Analysis'
       command: '.scripts/gradle.cmd'
-      arguments: 'check --info --stacktrace -x test'
+      arguments: 'check -x test'
       logs:
         - to: 'Checks Reports'
           include:
             - '**/build/reports/**/*'
           exclude:
             - '**/build/reports/tests/**/*'
-test:
-  commands:
     - !!testcommand
-      name: 'Run ApplicationInsights-Java Unit Tests'
+      name: 'ApplicationInsights-Java Unit Tests'
       command: '.scripts/gradle.cmd'
-      arguments: 'test --info --stacktrace'
+      arguments: 'test'
       fail_on_stderr: false
       testresults:
         - title: ':core Unit Test Results'

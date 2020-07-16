@@ -1,7 +1,3 @@
-static_analysis_options:
-  policheck_options:
-    disable_tool_scan: false
-    fail_on_error: true
 build:
   commands:
     - !!buildcommand
@@ -26,7 +22,7 @@ build:
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
-      arguments: 'assemble'
+      arguments: 'prepare -DisRelease=true'
       artifacts:
         - to: 'Artifacts'
           include:
