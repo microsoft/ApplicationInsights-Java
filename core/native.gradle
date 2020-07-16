@@ -100,16 +100,15 @@ model {
                 }
 
                 sharedLibraryFile = ReconstructFileName(sharedLibraryFile, targetPlatform)
-                if ((project.properties["isRelease"] ?: "false").toBoolean() == (buildType.name == "release")) {
+                def shouldExport = project.properties.isRelease.asBoolean() == (buildType == buildTypes.release)
+                if (shouldExport) {
                     logger.info "Adding \"$sharedLibraryFile.parentFile\" to sourceSets.main.resources"
                     sourceSets.main.resources.srcDir sharedLibraryFile.parentFile
-
-                    if ((project.properties["core.native.artifacts.prebuilt"] ?: "false").toBoolean()) {
-                        buildable = false
-                        return
-                    }
+                }
 
                     tasks.all { t ->
+                    t.enabled = !project.properties["core.native.artifacts.prebuilt"].asBoolean()
+                    if (shouldExport) {
                         logger.info "Adding \"processResources\".dependsOn \"$t\" (${t.getClass()})"
                         processResources.dependsOn t
                     }
