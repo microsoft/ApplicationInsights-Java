@@ -5,12 +5,11 @@ build:
       command: '.scripts/gradle.cmd'
       arguments: ':core:windowsSharedLibrary'
       artifacts:
-        - to: 'PerfCounters DLL'
-          from: 'core/build/libs/windows/shared'
+        - from: 'core/build/libs/windows/shared'
           include:
-            - '**/*'
+            - '**/*.dll'
           exclude:
-            - '*.pdb'
+            - '**/*.pdb'
           signing_options:
             profile: external_distribution
             sign_inline: true
@@ -22,7 +21,7 @@ build:
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
-      arguments: 'prepare -DisRelease=true'
+      arguments: 'prepare -DisRelease=true -Pcore.native.artifacts.prebuilt=true'
       artifacts:
         - to: 'Artifacts'
           include:

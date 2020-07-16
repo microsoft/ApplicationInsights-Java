@@ -101,13 +101,18 @@ model {
 
                 sharedLibraryFile = ReconstructFileName(sharedLibraryFile, targetPlatform)
                 if ((project.properties["isRelease"] ?: "false").toBoolean() == (buildType.name == "release")) {
+                    logger.info "Adding \"$sharedLibraryFile.parentFile\" to sourceSets.main.resources"
+                    sourceSets.main.resources.srcDir sharedLibraryFile.parentFile
+
+                    if ((project.properties["core.native.artifacts.prebuilt"] ?: "false").toBoolean()) {
+                        buildable = false
+                        return
+                    }
+
                     tasks.all { t ->
                         logger.info "Adding \"processResources\".dependsOn \"$t\" (${t.getClass()})"
                         processResources.dependsOn t
                     }
-
-                    logger.info "Adding \"$sharedLibraryFile.parentFile\" to sourceSets.main.resources"
-                    sourceSets.main.resources.srcDir sharedLibraryFile.parentFile
                 }
                 if (toolChain in VisualCpp) {
                     // Visual Studio Compiler Options: https://msdn.microsoft.com/en-us/library/fwkeyyhe.aspx
