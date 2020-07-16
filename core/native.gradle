@@ -92,7 +92,13 @@ model {
                 }
             }
 
-            binaries.withType(SharedLibraryBinarySpec) { // Only build shared libraries
+            binaries.all {
+                // Only build shared libraries
+                if (!(delegate instanceof SharedLibraryBinarySpec)) {
+                    buildable = false
+                    return
+                }
+
                 sharedLibraryFile = ReconstructFileName(sharedLibraryFile, targetPlatform)
                 if ((project.properties["isRelease"] ?: "false").toBoolean() == (buildType.name == "release")) {
                     tasks.all { t ->
