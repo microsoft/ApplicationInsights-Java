@@ -8,7 +8,8 @@ popd
 pushd %~dp0..
 set PROJECT_ROOT=%CD%
 
-set GRADLE_CMD=gradlew.bat %*
+set DEFAULT_OPTIONS=--stacktrace -DisBuildServer=true
+set GRADLE_CMD=gradlew.bat %* %DEFAULT_OPTIONS%
 echo Running '%GRADLE_CMD%' in '%PROJECT_ROOT%'
 call %GRADLE_CMD%
 if errorlevel 1 (
