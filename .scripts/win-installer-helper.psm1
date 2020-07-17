@@ -68,14 +68,14 @@ function Stop-Setup
         Reset-TempFolders
     }
 
-    Trace-Message "Checking disk space"
-    gwmi win32_logicaldisk | Format-Table DeviceId, MediaType, {$_.Size /1GB}, {$_.FreeSpace /1GB}
+    # Trace-Message "Checking disk space"
+    # gwmi win32_logicaldisk | Format-Table DeviceId, MediaType, {$_.Size /1GB}, {$_.FreeSpace /1GB}
 
-    Trace-Message "Listing installed 32-bit software"
-    Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName,DisplayVersion,Publisher,InstallDate | Sort-Object DisplayName,DisplayVersion,Publisher,InstallDate
+    # Trace-Message "Listing installed 32-bit software"
+    # Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName,DisplayVersion,Publisher,InstallDate | Sort-Object DisplayName,DisplayVersion,Publisher,InstallDate
 
-    Trace-Message "Listing installed 64-bit software"
-    Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName,DisplayVersion,Publisher,InstallDate | Sort-Object DisplayName,DisplayVersion,Publisher,InstallDate
+    # Trace-Message "Listing installed 64-bit software"
+    # Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName,DisplayVersion,Publisher,InstallDate | Sort-Object DisplayName,DisplayVersion,Publisher,InstallDate
 
     Trace-Message "Finished installation."
     Write-Host $Separator
