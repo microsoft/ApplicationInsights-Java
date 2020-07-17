@@ -6,10 +6,14 @@ build:
       arguments: 'assemble'
 test:
   commands:
+    - !!defaultcommand
+      name: 'Find docker'
+      command: 'powershell'
+      arguments: '-NoProfile -ExecutionPolicy Unrestricted -File Init-Docker.ps1'
     - !!testcommand
       name: 'Run one smoketest'
       command: '.scripts/gradle.cmd'
-      arguments: ':test:smoke:testApps:CoreAndFilter:smokeTest'
+      arguments: '-PwithIntegrationTests :test:smoke:testApps:CoreAndFilter:smokeTest'
       testresults:
         - title: 'CoreAndFilter SmokeTest Results'
           type: 'junit'
