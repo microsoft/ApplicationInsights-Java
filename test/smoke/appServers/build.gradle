@@ -6,7 +6,6 @@ apply plugin: 'base'
 ext {
     partialDockerfileExt = '.partial.dockerfile'
     jreMasterList = file('jre.master.txt')
-    dockerCliExe = findDockerCliExe()
     globalResourcesDir = "$projectDir/global-resources"
     agentLibsDir = file("${project(':agent:agent').buildDir}/libs") // is there a better way to get this?
     agentJarName = project(':agent:agent').jar.archiveFileName.get()
@@ -131,10 +130,6 @@ task buildDockerImage {
     dependsOn project.subprojects.collect { it.getTasksByName('buildDockerImage', false) }
 
     outputs.upToDateWhen { false }
-    doFirst {
-        // TODO should be configurable
-        // switchDockerDaemon("linux")
-    }
 
     doLast {
         project.subprojects.each { sp ->
@@ -224,13 +219,6 @@ def getConfigSet(File universeFile, File includesFile, File excludesFile) {
     return resultantSet
 }
 
-def findDockerCliExe() {
-    if (!System.env.DOCKER_CLI_EXE) {
-        logger.info 'DOCKER_CLI_EXE not set'
-    }
-    return System.env.DOCKER_CLI_EXE
-}
-
 def verifyDockerInstallation() {
     exec {
         executable dockerExe
@@ -250,22 +238,4 @@ def getCurrentDockerServerArch() {
     String strOut = dockerVersionOutput.toString().trim()
     def m = strOut =~ /(?ism).+?Server:.+?OS\/Arch:\s+(\w+?)\//
     return m[0][1];
-}
-
-def switchDockerDaemon(targetMode = null) {
-    verifyDockerInstallation()
-    logger.lifecycle "Switching docker mode. Current mode = "+getCurrentDockerServerArch()
-    if (targetMode != null) {
-        assert targetMode == "linux" || targetMode == "windows"
-        def currentMode = getCurrentDockerServerArch()
-        if (targetMode == currentMode) {
-            logger.lifecycle "Docker is already in $targetMode mode"
-            return;
-        }
-    }
-    exec {
-        executable dockerCliExe
-        args '-SwitchDaemon'
-    }.assertNormalExitValue()
-    logger.lifecycle "Mode switched. Current mode = "+getCurrentDockerServerArch()
 }
