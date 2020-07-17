@@ -41,15 +41,7 @@ $source = [System.IO.Path]::Combine("C:\Downloads", $fileName)
 $envVarValue = [System.IO.Path]::Combine($Destination, $dirName)
 
 $ErrorActionPreference = "Stop"
-
-if (Test-Path "$PSScriptRoot\win-installer-helper.psm1")
-{
-    Import-Module "$PSScriptRoot\win-installer-helper.psm1" -DisableNameChecking
-}
-elseif (Test-Path "$PSScriptRoot\..\..\Helpers\win-installer-helper.psm1")
-{
-    Import-Module "$PSScriptRoot\..\..\Helpers\win-installer-helper.psm1" -DisableNameChecking
-}
+Import-Module "$PSScriptRoot\win-installer-helper.psm1" -DisableNameChecking
 
 Start-Setup
 $PathNodes=@()
