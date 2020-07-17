@@ -52,44 +52,54 @@ test:
       testresults:
         - title: ':core Unit Test Results'
           type: 'junit'
+          from: 'core/build/test-results/text'
           include:
-            - 'core/build/test-results/test/*.xml'
+            - '**/*'
         - title: ':agent Unit Test Results'
           type: 'junit'
+          from: 'agent/build/test-results/test'
           include:
-            - 'agent/build/test-results/test/*.xml'
+            - '**/*'
         - title: ':ApplciationInsightsInternalLogger Unit Test Results'
           type: 'junit'
+          from: 'ApplciationInsightsInternalLogger/build/test-results/test'
           include:
-            - 'ApplciationInsightsInternalLogger/build/test-results/test/*.xml'
+            - '**/*'
         - title: ':azure-application-insights-spring-boot-starter Unit Test Results'
           type: 'junit'
+          from: 'azure-application-insights-spring-boot-starter/build/test-results/test'
           include:
-            - 'azure-application-insights-spring-boot-starter/build/test-results/test/*.xml'
+            - '**/*'
         - title: ':web Unit Test Results'
           type: 'junit'
+          from: 'web/build/test-results/test'
           include:
-            - 'web/build/test-results/test/*.xml'
+            - '**/*'
         - title: ':web-auto Unit Test Results'
           type: 'junit'
+          from: 'web-auto/build/test-results/test'
           include:
-            - 'web-auto/build/test-results/test/*.xml'
+            - '**/*'
         - title: ':logging:common Unit Test Results'
           type: 'junit'
+          from: 'logging/common/build/test-results/test'
           include:
-            - 'logging/common/build/test-results/test/*.xml'
+            - '**/*'
         - title: ':logging:log4j1_2 Unit Test Results'
           type: 'junit'
+          from: 'logging/log4j1_2/build/test-results/test'
           include:
-            - 'logging/log4j1_2/build/test-results/test/*.xml'
+            - '**/*'
         - title: ':logging:log4j2 Unit Test Results'
           type: 'junit'
+          from: 'logging/log4j2/build/test-results/test'
           include:
-            - 'logging/log4j2/build/test-results/test/*.xml'
+            - '**/*'
         - title: ':logging:logback Unit Test Results'
           type: 'junit'
+          from: 'logging/logback/build/test-results/test'
           include:
-            - 'logging/logback/build/test-results/test/*.xml'
+            - '**/*'
       logs:
         - to: 'Test Logs'
           include:
