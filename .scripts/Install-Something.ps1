@@ -85,14 +85,7 @@ Write-Host
 Write-Host "set = " $PSCmdlet.ParameterSetName
 
 $ErrorActionPreference = "Stop"
-if (Test-Path "$PSScriptRoot\win-installer-helper.psm1")
-{
-    Import-Module "$PSScriptRoot\win-installer-helper.psm1" -DisableNameChecking
-}
-elseif (Test-Path "$PSScriptRoot\..\..\Helpers\win-installer-helper.psm1")
-{
-    Import-Module "$PSScriptRoot\..\..\Helpers\win-installer-helper.psm1" -DisableNameChecking
-}
+Import-Module "$PSScriptRoot\win-installer-helper.psm1" -DisableNameChecking
 
 $DownloadedFile = [System.IO.Path]::Combine($DownloadDirectory, $Filename)
 $HomeDirectory = [System.IO.Path]::Combine($InstallationDirectory, $HomeFolder)
