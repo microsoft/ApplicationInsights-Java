@@ -33,6 +33,7 @@ import java.util.UUID;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaCritical;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaError;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaInfo;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaVerbose;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaWarn;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventErrorBase;
@@ -75,6 +76,14 @@ public class EtwProviderTests {
             }
         }
         EVENT_STATS_TIMER_PERIOD_MILLISECONDS = period;
+    }
+
+    private IpaVerbose createVerbose(String logger, String operation, String messageFormat, Object...messageArgs) {
+        IpaVerbose rval = new IpaVerbose(PROTOTYPE);
+        rval.setLogger(logger);
+        rval.setMessageFormat(messageFormat);
+        rval.setMessageArgs(messageArgs);
+        return rval;
     }
 
     private IpaInfo createInfo(String logger, String operation, String messageFormat, Object...messageArgs) {
@@ -127,12 +136,14 @@ public class EtwProviderTests {
         System.out.println("Checking for DLL: "+dllPath.getAbsolutePath());
         assertTrue("Dll does not exist: "+dllPath.getAbsolutePath(), dllPath.exists());
 
+        IpaVerbose everbose = createVerbose("test.verbose.logger", "testDllExtracted", "verbose test message %s", "hello, world!");
         IpaInfo einfo = createInfo("test.info.logger", "testDllExtracted", "test message %s", "hello!");
         IpaError eerror = createError("test.error.logger", "testDllExtracted", new Exception("test error exception"),"test error message '%s'", "hello again!");
         IpaWarn ewarn = createWarn("test.warn.logger", null, null, "simple warning: %s - %x", "NO EXCEPTION", 1234);
         IpaCritical ecritical = createCritical("test.critical.logger", "testDllExtracted.critical", new Error("test critical error"), "something very bad happened...%s %s", "but it's ok,", "this is only a test!!");
 
         EtwProvider ep = new EtwProvider(FOLDER_NAME);
+        ep.writeEvent(everbose);
         ep.writeEvent(einfo);
         ep.writeEvent(eerror);
         ep.writeEvent(ewarn);
@@ -162,6 +173,7 @@ public class EtwProviderTests {
     }
 
     private static class EventCounts {
+        int verbose = 0;
         int info = 0;
         int warn = 0;
         int error = 0;
@@ -173,10 +185,11 @@ public class EtwProviderTests {
 
         @Override
         public String toString() {
-            return String.format("{ info: %d, warn: %d, error: %d, critical: %d }", info, warn, error, critical);
+            return String.format("{ verbose: %d, info: %d, warn: %d, error: %d, critical: %d }", verbose, info, warn, error, critical);
         }
 
         void plus(EventCounts operand) {
+            verbose += operand.verbose;
             info += operand.info;
             warn += operand.warn;
             error += operand.error;
@@ -184,6 +197,7 @@ public class EtwProviderTests {
         }
 
         void reset() {
+            verbose = 0;
             info = 0;
             warn = 0;
             error = 0;
@@ -192,6 +206,7 @@ public class EtwProviderTests {
     }
 
     private void runLoopTest(int iterations) throws Exception {
+        int verboseChance = 20;
         int warnChance = 10;
         int errorChance = 5;
         int criticalChance = 25;
@@ -206,6 +221,10 @@ public class EtwProviderTests {
             long start = System.currentTimeMillis();
             ep.writeEvent(createInfo("test.info", "testEventsOnLoop", "i=%d", i));
             accumulator.info++;
+            if (RandomUtils.nextInt(0, verboseChance) == 0) {
+                ep.writeEvent(createVerbose("test.verbose", "testEventsOnLoop", "i=%d", i));
+                accumulator.verbose++;
+            }
             if (RandomUtils.nextInt(0, warnChance) == 0) {
                 Throwable exception = null;
                 if (RandomUtils.nextBoolean()) {

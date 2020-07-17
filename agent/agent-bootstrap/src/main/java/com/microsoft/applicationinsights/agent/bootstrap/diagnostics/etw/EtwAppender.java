@@ -26,8 +26,12 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Application
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaError;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaInfo;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaVerbose;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaWarn;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
+
+import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -47,6 +51,28 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
         proto.setSubscriptionId(metadata.getSubscriptionId().getValue());
 
         etwProvider = new EtwProvider(metadata.getSdkVersion().getValue());
+    }
+
+    @Override
+    public void start() {
+        IpaVerbose event = new IpaVerbose(proto);
+        event.setMessageFormat("EtwProvider initialized sucessfully.");
+        try {
+            this.etwProvider.writeEvent(event);
+        } catch (LinkageError | ApplicationInsightsEtwException e) {
+            final String message = "EtwProvider failed to initialize.";
+            LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME).error(message, e);
+            addError(message, e);
+
+            StatusFile.putValue("EtwProviderInitialized", "false");
+            StatusFile.putValue("EtwProviderError", e.getLocalizedMessage());
+            StatusFile.write();
+
+            return; // appender fails to start
+        }
+
+        StatusFile.putValueAndWrite("EtwProviderInitialized", "true");
+        super.start();
     }
 
     @Override

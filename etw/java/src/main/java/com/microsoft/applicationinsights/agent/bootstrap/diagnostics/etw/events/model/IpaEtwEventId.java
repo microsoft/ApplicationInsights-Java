@@ -24,7 +24,8 @@ public enum IpaEtwEventId {
     CRITICAL(1),
     ERROR(2),
     WARN(3),
-    INFO(4);
+    INFO(4),
+    VERBOSE(5);
 
     private final int idValue;
 
