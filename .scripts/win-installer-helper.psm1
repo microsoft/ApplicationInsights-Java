@@ -829,10 +829,10 @@ function Install-FromEXEAsyncWithDevenvKill
     Trace-Message "Running $Path with $Arguments"
 
     $process = Start-Process $Path -PassThru -Verbose -NoNewWindow -ArgumentList $Arguments
-    $pid = $process.Id
+    $thePid = $process.Id
     $pn = [System.IO.Path]::GetFileNameWithoutExtension($Path)
 
-    Trace-Message "Started EXE asynchronously. Process ID is $pid"
+    Trace-Message "Started EXE asynchronously. Process ID is $thePid"
 
     Wait-ForProcess -Process $process -Minutes $WaitMinutes
 
@@ -847,7 +847,7 @@ function Install-FromEXEAsyncWithDevenvKill
 
     Stop-ProcessByName -Name "msiexec" -WaitBefore 3 -WaitAfter 3
 
-    Wait-WithMessage -Message "Waiting for process with ID $pid launched from $Path to finish now that children have been killed off" -Minutes 2
+    Wait-WithMessage -Message "Waiting for process with ID $thePid launched from $Path to finish now that children have been killed off" -Minutes 2
 
     Stop-ProcessByName -Name $pn -WaitBefore 3 -WaitAfter 3
 
@@ -1330,18 +1330,18 @@ function Start-ExternalProcess
     }
 
     $handle = $process.Handle
-    $pid = $process.Id
+    $thePid = $process.Id
     $ex = 0
 
-    Trace-Message -Message "Started process from $Path with PID $pid (and cached handle $handle)"
+    Trace-Message -Message "Started process from $Path with PID $thePid (and cached handle $handle)"
 
     while ($true)
     {
-        Trace-Message -Message "Waiting for PID $pid to exit ..."
+        Trace-Message -Message "Waiting for PID $thePid to exit ..."
 
         if ($process.HasExited)
         {
-            Trace-Message -Message "PID $pid has exited!"
+            Trace-Message -Message "PID $thePid has exited!"
             break
         }
 
@@ -1358,12 +1358,12 @@ function Start-ExternalProcess
 
     if ($ex -eq $null)
     {
-        Trace-Warning -Message "The process $pid returned a null or invalid exit code value. Assuming and returning 0"
+        Trace-Warning -Message "The process $thePid returned a null or invalid exit code value. Assuming and returning 0"
         $ex = 0
     }
     else
     {
-        Trace-Message "Process $pid exited with exit code $ex"
+        Trace-Message "Process $thePid exited with exit code $ex"
     }
 
     return $ex
@@ -1427,25 +1427,25 @@ function Run-ExternalProcessWithWaitAndKill
     }
 
     $handle = $process.Handle
-    $pid = $process.Id
+    $thePid = $process.Id
     $ex = 0
 
-    Trace-Message -Message "Started process from $Path with PID $pid (and cached handle $handle)"
+    Trace-Message -Message "Started process from $Path with PID $thePid (and cached handle $handle)"
 
     $exited = Wait-ForProcess -Process $process -Minutes $Minutes -Monitor $Monitor
 
     if (-not $exited)
     {
-        Trace-Warning "CDPXERROR: Process with ID $pid failed to exit within $Minutes minutes. Killing it."
+        Trace-Warning "CDPXERROR: Process with ID $thePid failed to exit within $Minutes minutes. Killing it."
 
         try
         {
             $process.Kill()
-            Trace-Warning "Killed PID $pid"
+            Trace-Warning "Killed PID $thePid"
         }
         catch
         {
-            Trace-Warning "Exception raised while attempting to kill PID $pid. Perhaps the process has already exited."
+            Trace-Warning "Exception raised while attempting to kill PID $thePid. Perhaps the process has already exited."
             $_.Exception | Format-List
         }
     }
@@ -1463,7 +1463,7 @@ function Run-ExternalProcessWithWaitAndKill
 
     if ($ex -eq $null)
     {
-        Trace-Warning -Message "The process $pid returned a null or invalid exit code value. Assuming and returning 0"
+        Trace-Warning -Message "The process $thePid returned a null or invalid exit code value. Assuming and returning 0"
         return 0
     }
 
@@ -1505,16 +1505,16 @@ function Wait-ForProcess
     $waitTime = $Minutes
 
     $handle = $process.Handle
-    $pid = $Process.Id
+    $thePid = $Process.Id
 
     while ($waitTime -gt 0)
     {
-        Trace-Message -Message "Waiting for process with ID $pid to exit in $waitTime minutes."
+        Trace-Message -Message "Waiting for process with ID $thePid to exit in $waitTime minutes."
 
         if ($Process.HasExited)
         {
             $ex = $Process.ExitCode
-            Trace-Message "Process with ID $pid has already exited with exit code $ex"
+            Trace-Message "Process with ID $thePid has already exited with exit code $ex"
             return $true
         }
 
@@ -2102,7 +2102,7 @@ function Run-VisualStudioInstallerProcessMonitor
 
         $process = $_
         $handle = $process.Handle
-        $pid = $process.Id
+        $thePid = $process.Id
         $ppath = $process.Path
 
         if ($process.Name.StartsWith("vs_installer") -or
@@ -2110,7 +2110,7 @@ function Run-VisualStudioInstallerProcessMonitor
         {
             $numVSIProcesses++
 
-            Trace-Message -Message "Found VS Installer process with PID $pid launched from $ppath"
+            Trace-Message -Message "Found VS Installer process with PID $thePid launched from $ppath"
         }
 
         ++$numTotalProcesses
