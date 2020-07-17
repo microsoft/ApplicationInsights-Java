@@ -32,6 +32,9 @@ restore:
       name: 'Clean and Resolve Dependencies'
       command: '.scripts/gradle.cmd'
       arguments: 'clean resolveDependencies --refresh-dependencies'
+    - !!defaultcommand
+      name: 'List Installation Information'
+      command: '.scripts/dumpInstallationInfo.cmd'
 test:
   commands:
     - !!defaultcommand
