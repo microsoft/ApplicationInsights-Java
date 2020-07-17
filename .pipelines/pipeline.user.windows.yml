@@ -18,8 +18,8 @@ restore:
       name: 'Install Windows 8.1 SDK'
       command: '.scripts/installWindows81SDK.cmd'
       logs:
-        - from: 'AIJ-BuildLogs/Restore/WinSdk'
-          to: 'Build Logs/Restore/WinSdk'
+        - from: 'WinSdkInstall'
+          to: 'WinSdkInstall'
           include:
             - '**/*.log'
     - !!defaultcommand
