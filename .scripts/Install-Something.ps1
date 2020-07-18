@@ -95,7 +95,7 @@ Trace-Message "Creating download location $DownloadDirectory"
 New-Item -Path $DownloadDirectory -ItemType Container -ErrorAction SilentlyContinue
 
 #region function definitions
-function Download-File
+function Get-Installer
 {
     if (-not $SkipDownload) {
         Write-Host "Downloading '$Filename' from '$Url' to '$DownloadedFile'"
@@ -113,28 +113,7 @@ function Download-File
     }
 }
 
-function Validate-File
-{
-    if ($Checksum)
-    {
-        Write-Host "Validating download..."
-        $sha = Get-FileHash $Source
-        Write-Host "$fileName checksum (SHA256): "$sha.Hash
-        if (-not $sha -eq $Checksum)
-        {
-            Write-Error "Checksum for $Source did not match!"
-            Write-Host "Expected: $Checksum"
-            exit
-        }
-        Write-Host "Download validated successfully."
-    }
-    else
-    {
-        Write-Host "Skipping checksum validation."
-    }
-}
-
-function Create-HomeVar
+function Set-HomeVar
 {
     if ($HomeVar)
     {
@@ -143,7 +122,7 @@ function Create-HomeVar
     }
 }
 
-function Extract-Zipfile
+function Expand-Zipfile
 {
     Write-Host "Expanding $Source to $InstallationDirectory"
     if ($PathTo7Zip)
@@ -162,7 +141,7 @@ function Extract-Zipfile
     Write-Host "Finished unzipping to $InstallationDirectory"
 }
 
-function Run-Installer
+function Invoke-Installer
 {
     if ($InstallerType -eq 'EXE')
     {
@@ -179,18 +158,21 @@ Start-Setup
 $PathNodes=@()
 try
 {
-    Download-File
-    Validate-File
+    Get-Installer
+    if ($Checksum)
+    {
+        Confirm-FileHash -Path $Source -ExpectedHash $Checksum
+    }
 
     if (-not $SkipInstall)
     {
         if ($Unzip)
         {
-            Extract-Zipfile
+            Expand-Zipfile
         }
         else
         {
-            Run-Installer
+            Invoke-Installer
         }
     }
     else
@@ -198,7 +180,7 @@ try
         Write-Host "Skipping installation."
     }
 
-    Create-HomeVar
+    Set-HomeVar
 
     if ($UpdatePath)
     {

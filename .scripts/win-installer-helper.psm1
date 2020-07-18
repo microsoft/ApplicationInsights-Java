@@ -23,7 +23,7 @@ function Start-Setup
     Trace-Message "Starting installation"
 
     Trace-Message "Checking disk space"
-    gwmi win32_logicaldisk | Format-Table DeviceId, MediaType, {$_.Size /1GB}, {$_.FreeSpace /1GB}
+    Get-WmiObject win32_logicaldisk | Format-Table DeviceId, MediaType, {$_.Size /1GB}, {$_.FreeSpace /1GB}
 
     Trace-Message "Creating download location C:\Downloads"
     New-Item -Path $DefaultDownloadFolder -ItemType Container -ErrorAction SilentlyContinue
@@ -214,24 +214,24 @@ function Update-Path
 
     foreach ($PathNode in $PathNodes)
     {
-       if (!$PathNode.endswith(";"))
-       {
-       $PathNode = $PathNode + ";"
-       }
-    $NodesToAppend += $PathNode
+        if (!$PathNode.endswith(";"))
+        {
+            $PathNode = $PathNode + ";"
+        }
+        $NodesToAppend += $PathNode
     }
-# add the new nodes
+    # add the new nodes
     $path = $path + $NodesToAppend
 
-#prettify it because there is some cruft from base images and or path typos i.e. foo;;
+    #prettify it because there is some cruft from base images and or path typos i.e. foo;;
     $path = $path -replace ";+",";"
 
-#pull these in a hack until remove nodes is implemented
+    #pull these in a hack until remove nodes is implemented
     $path = $path.Replace("C:\Program Files\NuGet;","")
     $path = $path.Replace("C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin;","")
     $path = $path.Replace("C:\Program Files (x86)\Microsoft Visual Studio\2019\TestAgent\Common7\IDE\CommonExtensions\Microsoft\TestWindow;","")
 
-#and set it
+    #and set it
     Trace-Message "Setting PATH to $path"
     [System.Environment]::SetEnvironmentVariable("PATH", $path, [EnvironmentVariableTarget]::Machine)
 
@@ -373,12 +373,12 @@ function Install-FromMSI
 
     $log = [System.IO.Path]::Combine($env:TEMP, $fileNameOnly + ".log")
 
-    $args = "/quiet /qn /norestart /lv! `"$log`" /i `"$Path`" $Arguments"
+    $argsToUse = "/quiet /qn /norestart /lv! `"$log`" /i `"$Path`" $Arguments"
 
     Trace-Message "Installing from $Path"
-    Trace-Message "Running msiexec.exe $args"
+    Trace-Message "Running msiexec.exe $argsToUse"
 
-    $ex = Start-ExternalProcess -Path "msiexec.exe" -Arguments $args
+    $ex = Start-ExternalProcess -Path "msiexec.exe" -Arguments $argsToUse
 
     if ($ex -eq 3010)
     {
@@ -521,10 +521,10 @@ function Install-FromInnoSetup
     $logName = $fileNameOnly + ".log"
     $logFile = Join-Path $Env:TEMP -ChildPath $logName
 
-    $args = "/QUIET /SP- /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS /NOICONS /TYPE=full /LOG `"$logFile`" "
-    $args += $Arguments
+    $argsToUse = "/QUIET /SP- /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS /NOICONS /TYPE=full /LOG `"$logFile`" "
+    $argsToUse += $Arguments
 
-    Install-FromEXE -Path $Path -Arguments $args -IgnoreExitCodes $IgnoreExitCodes -IgnoreFailures:$IgnoreFailures
+    Install-FromEXE -Path $Path -Arguments $argsToUse -IgnoreExitCodes $IgnoreExitCodes -IgnoreFailures:$IgnoreFailures
 }
 
 #####################################################################################################
@@ -570,13 +570,13 @@ function Install-FromDevDivToolsInstaller
     $logName = $fileNameOnly + ".log"
     $logFile = Join-Path $Env:TEMP -ChildPath $logName
 
-    $args = "/QUIET /INSTALL /NORESTART `"$logFile`" "
-    $args += $Arguments
+    $argsToUse = "/QUIET /INSTALL /NORESTART `"$logFile`" "
+    $argsToUse += $Arguments
 
     $iec = (3010)
     $iec += $IgnoreExitCodes
 
-    Install-FromEXE -Path $Path -Arguments $args -IgnoreExitCodes $iec -IgnoreFailures:$IgnoreFailures
+    Install-FromEXE -Path $Path -Arguments $argsToUse -IgnoreExitCodes $iec -IgnoreFailures:$IgnoreFailures
 }
 
 #####################################################################################################
@@ -1009,10 +1009,9 @@ function Start-ExternalProcess
     $outLogFileName = -join($guid, "-stdout.log")
     $errLogFile = Join-Path -Path $Env:TEMP -ChildPath $errLogFileName
     $outLogFile = Join-Path -Path $Env:TEMP -ChildPath $outLogFileName
-    $workDir = [System.IO.Path]::GetDirectoryName($Path)
     [System.Diagnostics.Process]$process = $null
 
-    if (($Arguments -ne $null) -and ($Arguments.Length -gt 0))
+    if (($null -ne $Arguments) -and ($Arguments.Length -gt 0))
     {
         $process = Start-Process -FilePath $Path -ArgumentList $Arguments -NoNewWindow -PassThru -RedirectStandardError $errLogFile -RedirectStandardOutput $outLogFile
     }
@@ -1037,7 +1036,7 @@ function Start-ExternalProcess
             break
         }
 
-        Sleep -Seconds 60
+        Start-Sleep -Seconds 60
     }
 
     Trace-Message "STDERR ---------------------------"
@@ -1048,7 +1047,7 @@ function Start-ExternalProcess
 
     $ex = $process.ExitCode
 
-    if ($ex -eq $null)
+    if ($null -eq $ex)
     {
         Trace-Warning -Message "The process $thePid returned a null or invalid exit code value. Assuming and returning 0"
         $ex = 0
@@ -1106,7 +1105,6 @@ function Invoke-ExternalProcessWithWaitAndKill
     $outLogFileName = -join($guid, "-stdout.log")
     $errLogFile = Join-Path -Path $Env:TEMP -ChildPath $errLogFileName
     $outLogFile = Join-Path -Path $Env:TEMP -ChildPath $outLogFileName
-    $workDir = [System.IO.Path]::GetDirectoryName($Path)
     [System.Diagnostics.Process]$process = $null
 
     if (-not $Arguments)
@@ -1153,7 +1151,7 @@ function Invoke-ExternalProcessWithWaitAndKill
     Trace-Message "STDOUT ---------------------------"
     Get-Content $outLogFile | Write-Host
 
-    if ($ex -eq $null)
+    if ($null -eq $ex)
     {
         Trace-Warning -Message "The process $thePid returned a null or invalid exit code value. Assuming and returning 0"
         return 0
@@ -1188,7 +1186,7 @@ function Wait-ForProcess
 
         [Parameter(Mandatory=$true)]
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$Minutes = 10,
+        [int]$Minutes,
 
         [Parameter(Mandatory=$false)]
         [ScriptBlock]$Monitor
@@ -1201,7 +1199,7 @@ function Wait-ForProcess
 
     while ($waitTime -gt 0)
     {
-        Trace-Message -Message "Waiting for process with ID $thePid to exit in $waitTime minutes."
+        Trace-Message -Message "Waiting for process with ID $thePid to exit in $waitTime minutes (handle: $handle) ."
 
         if ($Process.HasExited)
         {
@@ -1210,7 +1208,7 @@ function Wait-ForProcess
             return $true
         }
 
-        Sleep -Seconds 60
+        Start-Sleep -Seconds 60
 
         if ($Monitor)
         {
