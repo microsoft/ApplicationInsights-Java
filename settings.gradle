@@ -19,8 +19,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-include 'ApplicationInsightsInternalLogger'
-
 include 'instrumentation:azure-functions'
 
 include 'etw:native'

@@ -60,7 +60,6 @@ archivesBaseName = 'applicationinsights-core'
 apply from: "$buildScriptsDir/provided-configuration.gradle"
 
 dependencies {
-    compile(project(':ApplicationInsightsInternalLogger'))
     compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
     compile ([group: 'commons-io', name: 'commons-io', version: '2.6' ])
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
