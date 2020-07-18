@@ -1,15 +1,15 @@
 build:
   commands:
     - !!defaultcommand
+      name: 'Find docker'
+      command: 'powershell'
+      arguments: '-NoProfile -ExecutionPolicy Unrestricted -File Init-Docker.ps1'
+    - !!defaultcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
       arguments: 'assemble'
 test:
   commands:
-    - !!defaultcommand
-      name: 'Find docker'
-      command: 'powershell'
-      arguments: '-NoProfile -ExecutionPolicy Unrestricted -File Init-Docker.ps1'
     - !!testcommand
       name: 'Run one smoketest'
       command: '.scripts/gradle.cmd'
