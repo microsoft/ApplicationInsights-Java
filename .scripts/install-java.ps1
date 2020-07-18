@@ -37,7 +37,7 @@ param (
 )
 
 $fileName, $dirName = ($Url | Select-String -Pattern ".+/(?<filename>(?<dirname>[^/]+)\..+)$").Matches[0].Groups['filename', 'dirname'].Value
-$source = [System.IO.Path]::Combine("C:\Downloads", $fileName)
+$Source = [System.IO.Path]::Combine("C:\Downloads", $fileName)
 $envVarValue = [System.IO.Path]::Combine($Destination, $dirName)
 
 $ErrorActionPreference = "Stop"
@@ -48,7 +48,7 @@ $PathNodes=@()
 try
 {
     if (-not $SkipDownload) {
-        Write-Host "Downloading '$fileName' from '$Url' to '$source'"
+        Write-Host "Downloading '$fileName' from '$Url' to '$Source'"
         Get-File -Url $url -FileName $fileName
         Write-Host "Download finished: $Source"
     }
@@ -96,11 +96,11 @@ try
                 Write-Error "7zip location does not exist: $PathTo7Zip"
                 exit
             }
-            Expand-ArchiveWith7Zip -Source $source -Destination $destination -ToolPath $PathTo7Zip
+            Expand-ArchiveWith7Zip -Source $Source -Destination $destination -ToolPath $PathTo7Zip
         }
         else
         {
-            Expand-ArchiveWith7Zip -Source $source -Destination $destination
+            Expand-ArchiveWith7Zip -Source $Source -Destination $destination
         }
         Write-Host "Finished unzipping to $destination"
     }

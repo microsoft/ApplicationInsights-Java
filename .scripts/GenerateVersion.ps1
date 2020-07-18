@@ -6,8 +6,8 @@ if (-Not (Test-Path -Path $path -PathType Leaf)) {
 }
 $versionProps = ConvertFrom-StringData (Get-Content $path -Raw)
 Write-Host "Read from sdk-version.properties: " $versionProps.version
-$matches = ($versionProps.version | Select-String -Pattern "^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?:-(?<tag>.*))?")
-$major, $minor, $patch, $tag = $matches.Matches[0].Groups['major', 'minor','patch','tag'].Value
+$matchObj = ($versionProps.version | Select-String -Pattern "^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?:-(?<tag>.*))?")
+$major, $minor, $patch, $tag = $matchObj.Matches[0].Groups['major', 'minor','patch','tag'].Value
 $date = Get-Date -UFormat "%Y%m%d"
 $revision = "$date$env:CDP_DEFINITION_BUILD_COUNT_DAY"
 $buildNumber = "$major.$minor.$patch.$revision"
