@@ -53,6 +53,9 @@ public enum SystemInformation {
         return SystemUtils.IS_OS_UNIX;
     }
 
+    /**
+     * JVMs are not required to publish this value/bean and some processes may not have permission to access it.
+     */
     private String initializeProcessId() {
         String rawName = ManagementFactory.getRuntimeMXBean().getName();
         if (!Strings.isNullOrEmpty(rawName)) {
@@ -61,13 +64,15 @@ public enum SystemInformation {
                 String processIdAsString = rawName.substring(0, i);
                 try {
                     Integer.parseInt(processIdAsString);
+                    logger.info("Current PID: "+processIdAsString);
                     return processIdAsString;
                 } catch (Exception e) {
                     logger.error("Failed to fetch process id: '{}'", e.toString());
+                    logger.error("Failed to parse PID as number: '{}'", e.toString());
                 }
             }
         }
-
+        logger.error("Could not extract PID from runtime name: '"+rawName+"'");
         // Default
         return DEFAULT_PROCESS_NAME;
     }

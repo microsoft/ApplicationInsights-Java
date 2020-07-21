@@ -204,6 +204,11 @@ public enum InternalLogger {
             loggingLevel = LoggingLevel.OFF;
         }
     }
+    /* VisibleForTesting */
+    void reset() {
+        INSTANCE.stop();
+        INSTANCE.initialized = false;
+    }
 
     public boolean isTraceEnabled() {
         return loggingLevel.getValue() <= LoggingLevel.TRACE.getValue();

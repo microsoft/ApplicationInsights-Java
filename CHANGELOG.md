@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# Version 2.6.2-BETA.2
+* Fixed retry transmission on client side exception
+  ([#1282](https://github.com/microsoft/ApplicationInsights-Java/issues/1282)).
+* Fixed RequestTelemetryContext initialization
+  ([#1247](https://github.com/microsoft/ApplicationInsights-Java/issues/1247)). Thanks, librucha!
+
 # Version 2.6.2-BETA
 * Added additional error logging for troubleshooting issues loading JNI performance counter library
   ([#1254](https://github.com/microsoft/ApplicationInsights-Java/pull/1254))
@@ -365,4 +371,3 @@ Livemetrics UX.
 - Support collecting performance counters from 32-bit Windows machines.
 - Support manual tracking of dependencies using a new ```trackDependency``` method API.
 - Ability to tag a telemetry item as synthetic, by adding a ```SyntheticSource``` property to the reported item.
-

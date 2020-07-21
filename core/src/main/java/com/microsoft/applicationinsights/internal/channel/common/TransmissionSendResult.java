@@ -32,4 +32,5 @@ final class TransmissionSendResult {
     public final static int THROTTLED_OVER_EXTENDED_TIME = 439;
     public final static int INTERNAL_SERVER_ERROR = 500;
     public final static int SERVICE_UNAVAILABLE = 503;
+    public final static int CLIENT_SIDE_EXCEPTION = 0;
 }

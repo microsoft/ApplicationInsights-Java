@@ -20,6 +20,7 @@
  */
 
 apply plugin: 'cpp'
+apply plugin: 'idea'
 
 buildscript {
     repositories {
@@ -46,6 +47,12 @@ if (System.env.APPINSIGHTS_VS_PATH) {
     println "Using custom Visual Studio Tools path: $vsToolsDir"
 }
 
+idea {
+    module {
+        sourceDirs += file("$projectDir/src/windows/cpp")
+    }
+}
+
 // region Native binary definition and configuration
 model {
     toolChains {
@@ -56,6 +63,7 @@ model {
     }
     buildTypes {
         release
+        debug
     }
     platforms {
         x86 { architecture "x86" }
@@ -78,6 +86,12 @@ model {
                 }
             }
 
+            if ((System.properties["isRelease"] ?: "false").toBoolean()) {
+                targetBuildTypes "release"
+            } else {
+                targetBuildTypes "debug"
+            }
+
             binaries.all {
                 if (delegate instanceof StaticLibraryBinarySpec) {
                     buildable = false
@@ -86,7 +100,7 @@ model {
                     sharedLibraryFile = ReconstructFileName(sharedLibraryFile, buildType, targetPlatform)
 
                     tasks.all { t ->
-                        logger.info "Adding task \"processResources\" a dependency on task \"$t.name\""
+                        logger.info "Adding \"processResources\".dependsOn \"$t\" (${t.getClass()})"
                         processResources.dependsOn t
                     }
 
@@ -154,6 +168,7 @@ sourceSets {
         resources {
             exclude "**/*.exp"
             exclude "**/*.lib"
+            exclude "**/*.pdb"
         }
     }
 }
