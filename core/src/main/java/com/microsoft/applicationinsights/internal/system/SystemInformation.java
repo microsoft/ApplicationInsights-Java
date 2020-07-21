@@ -35,7 +35,11 @@ import org.slf4j.LoggerFactory;
 public enum SystemInformation {
     INSTANCE;
 
-    private static final Logger logger = LoggerFactory.getLogger(SystemInformation.class);
+    // if logger is a static member of SystemInformation, it won't be initialized prior to INSTANCE construction
+    // and will then be null in initializeProcessId() below
+    private static class SystemInfoLogger {
+        private static final Logger logger = LoggerFactory.getLogger(SystemInformation.class);
+    }
 
     private final static String DEFAULT_PROCESS_NAME = "Java_Process";
 
@@ -64,15 +68,16 @@ public enum SystemInformation {
                 String processIdAsString = rawName.substring(0, i);
                 try {
                     Integer.parseInt(processIdAsString);
-                    logger.info("Current PID: "+processIdAsString);
+                    SystemInfoLogger.logger.info("Current PID: "+processIdAsString);
                     return processIdAsString;
                 } catch (Exception e) {
-                    logger.error("Failed to fetch process id: '{}'", e.toString());
-                    logger.error("Failed to parse PID as number: '{}'", e.toString());
+                    e.printStackTrace();
+                    SystemInfoLogger.logger.error("Failed to fetch process id: '{}'", e.toString());
+                    SystemInfoLogger.logger.error("Failed to parse PID as number: '{}'", e.toString());
                 }
             }
         }
-        logger.error("Could not extract PID from runtime name: '"+rawName+"'");
+        SystemInfoLogger.logger.error("Could not extract PID from runtime name: '"+rawName+"'");
         // Default
         return DEFAULT_PROCESS_NAME;
     }
