@@ -21,7 +21,7 @@ public class GrpcTest extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
         List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
         // individual messages are captured as events (and exported as traces) on CLIENT/SERVER spans
-        mockedIngestion.waitForMessageItemsInRequest(2);
+        mockedIngestion.waitForItemsInRequest("EventData", 2);
 
         Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /simple");
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
@@ -39,8 +39,8 @@ public class GrpcTest extends AiSmokeTest {
     public void doConversationTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
         List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
-        // individual messages are captured as events (and exported as traces) on CLIENT/SERVER spans
-        mockedIngestion.waitForMessageItemsInRequest(3);
+        // individual messages are captured as events on CLIENT/SERVER spans
+        mockedIngestion.waitForItemsInRequest("EventData", 3);
 
         Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /conversation");
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/Conversation");

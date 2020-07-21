@@ -2,6 +2,8 @@ package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
@@ -29,9 +31,10 @@ public final class FixedRateSampler implements Sampler {
 
     public FixedRateSampler(double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
-        alwaysOnDecision = new FixedRateSamplerDecision(true, ImmutableMap.of("ai.sampling.percentage",
-                AttributeValue.doubleAttributeValue(samplingPercentage)));
-        alwaysOffDecision= new FixedRateSamplerDecision(false, Collections.<String, AttributeValue>emptyMap());
+        Attributes attributes = Attributes.of("ai.sampling.percentage",
+                AttributeValue.doubleAttributeValue(samplingPercentage));
+        alwaysOnDecision = new FixedRateSamplerDecision(true, attributes);
+        alwaysOffDecision= new FixedRateSamplerDecision(false, Attributes.empty());
     }
 
     @Override
@@ -39,7 +42,7 @@ public final class FixedRateSampler implements Sampler {
                                  TraceId traceId,
                                  String name,
                                  Span.Kind spanKind,
-                                 Map<String, AttributeValue> attributes,
+                                 ReadableAttributes attributes,
                                  List<Link> parentLinks) {
         if (SamplingScoreGeneratorV2.getSamplingScore(traceId.toLowerBase16()) >= samplingPercentage) {
             logger.debug("Item {} sampled out", name);
@@ -56,9 +59,9 @@ public final class FixedRateSampler implements Sampler {
     private static final class FixedRateSamplerDecision implements Decision {
 
         private final boolean sampled;
-        private final Map<String, AttributeValue> attributes;
+        private final Attributes attributes;
 
-        private FixedRateSamplerDecision(boolean sampled, Map<String, AttributeValue> attributes) {
+        private FixedRateSamplerDecision(boolean sampled, Attributes attributes) {
             this.sampled = sampled;
             this.attributes = attributes;
         }
@@ -69,7 +72,7 @@ public final class FixedRateSampler implements Sampler {
         }
 
         @Override
-        public Map<String, AttributeValue> getAttributes() {
+        public Attributes getAttributes() {
             return attributes;
         }
     }

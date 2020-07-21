@@ -48,8 +48,6 @@ public class TestController {
         expectedEntries.add("io/");
         expectedEntries.add("io/opentelemetry/");
         expectedEntries.add("io/opentelemetry/auto/.*");
-        expectedEntries.add("io/opentelemetry/contrib/");
-        expectedEntries.add("io/opentelemetry/contrib/auto/.*");
         expectedEntries.add("META-INF/");
         expectedEntries.add("META-INF/MANIFEST\\.MF");
         expectedEntries.add("LICENSE");
@@ -64,7 +62,7 @@ public class TestController {
         expectedEntries.add("rp-logger-config/etw\\.appender\\.xml");
         expectedEntries.add("applicationinsights-java-etw-provider-x86-64\\.dll");
         expectedEntries.add("applicationinsights-java-etw-provider-x86\\.dll");
-        expectedEntries.add("auto-tooling-and-instrumentation.isolated/.*");
+        expectedEntries.add("inst/.*");
         JarFile jarFile = new JarFile(agentJarFile);
         List<String> unexpected = new ArrayList<>();
         for (Enumeration<JarEntry> e = jarFile.entries(); e.hasMoreElements(); ) {

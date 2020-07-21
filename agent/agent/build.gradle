@@ -36,7 +36,7 @@ processResources {
     dependsOn ':agent:instrumentation:shadowJar'
 
     from(zipTree(tasks.getByPath(':agent:instrumentation:shadowJar').archivePath)) {
-        into 'auto-tooling-and-instrumentation.isolated'
+        into 'inst'
         rename '(^.*)\\.class$', '$1.classdata'
     }
 }
