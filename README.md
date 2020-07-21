@@ -15,12 +15,13 @@ For more information please refer to:
 
 The following packages are built in this repository:
 
-- Base API and channel: [![applicationinsights-core](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-core.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-core&v=latest)
-- Web applications instrumentation: [![applicationinsights-web](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-web.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-web&v=latest)
-- Application Insights SpringBoot Starter: [![applicationinsights-spring-boot-starter](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-spring-boot-starter.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-spring-boot-starter&v=latest)
-- Logback adaptor: [![applicationinsights-logging-logback](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-logging-logback.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-logging-logback&v=latest)
-- Log4J 2 adaptor: [![applicationinsights-logging-log4j2](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-logging-log4j2.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-logging-log4j2&v=latest)
-- Log4J 1.2 adaptor: [![applicationinsights-logging-log4j1_2](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-logging-log4j1_2.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-logging-log4j1_2&v=latest)
+| Base API and channel: | Web applications instrumentation: | Application Insights SpringBoot Starter: |
+|-|-|-|
+[![applicationinsights-core](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-core.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-core&v=latest) | [![applicationinsights-web](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-web.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-web&v=latest) | [![applicationinsights-spring-boot-starter](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-spring-boot-starter.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-spring-boot-starter&v=latest) |
+
+| Logback adaptor: | Log4J 2 adaptor: | Log4J 1.2 adaptor: |
+|-|-|-|
+| [![applicationinsights-logging-logback](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-logging-logback.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-logging-logback&v=latest) | [![applicationinsights-logging-log4j2](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-logging-log4j2.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-logging-log4j2&v=latest) | [![applicationinsights-logging-log4j1_2](https://img.shields.io/maven-central/v/com.microsoft.azure/applicationinsights-logging-log4j1_2.svg)](https://search.maven.org/remote_content?g=com.microsoft.azure&a=applicationinsights-logging-log4j1_2&v=latest) |
 
 ## To upgrade to the latest SDK
 

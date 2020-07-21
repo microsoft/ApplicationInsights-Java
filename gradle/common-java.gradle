@@ -112,7 +112,7 @@ if (hasProperty("JDKToUse")) {
         options.with {
             fork = true
             forkOptions.executable = javaExecutables.javac
-            forkOptions.javaHome = JDKToUse
+            forkOptions.javaHome = file(JDKToUse)
         }
     }
     tasks.withType(Javadoc) {

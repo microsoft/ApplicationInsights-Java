@@ -36,7 +36,7 @@ public class CommonUtils {
   }
 
   /**
-   * Returns the hostname using {@link InetAddress#getCanonicalHostName()} on {@link InetAddress#getLocalHost()}.
+   * Returns the hostname using {@link InetAddress#getHostName()} on {@link InetAddress#getLocalHost()}.
    * If an error is encountered, the error is logged and it returns null.
    *
    * @return the local hostname, or null

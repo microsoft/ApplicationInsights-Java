@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.InvalidClassException;
 import java.io.ObjectInput;
 import java.io.FileInputStream;
 import java.io.BufferedInputStream;
@@ -30,7 +31,7 @@ import java.io.ObjectInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.ObjectStreamClass;
 import java.io.BufferedOutputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
@@ -241,7 +242,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
         if (file == null) {
             return Optional.absent();
         }
-        try (ObjectInput input = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+        try (ObjectInput input = new SafeObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
             transmission = (Transmission)input.readObject();
         } catch (FileNotFoundException e) {
             logger.error("Failed to load transmission, file not found, exception: {}", e.toString());
@@ -252,6 +253,21 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
         }
 
         return Optional.fromNullable(transmission);
+    }
+
+    private final static class SafeObjectInputStream extends ObjectInputStream {
+
+        public SafeObjectInputStream(InputStream in) throws IOException {
+            super(in);
+        }
+
+        protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+            if (!desc.getName().equals(Transmission.class.getName()) && !desc.getName().equals(byte[].class.getName())) {
+                throw new InvalidClassException("Cannot deserialize "+desc.getName());
+            } else {
+                return super.resolveClass(desc);
+            }
+        }
     }
 
     private boolean renameToPermanentName(File tempTransmissionFile) {
