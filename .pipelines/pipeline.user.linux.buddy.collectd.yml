@@ -16,3 +16,8 @@ build:
     - !!buildcommand
       name: 'Build collectd plugin'
       command: '.scripts/collectd-build.sh'
+      artifacts:
+        - to: 'Artifacts'
+          from: 'collectd/build/libs'
+          include:
+            - '*.jar'
