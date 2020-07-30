@@ -5,7 +5,11 @@ environment:
   host:
     os: 'linux'
     flavor: 'deprecated'
-    version: 'deprecated'  
+    version: 'deprecated'
+  runtime:
+    provider: 'appcontainer'
+    image: 'cdpxlinux.azurecr.io/global/ubuntu-1804-all:3.0'
+    source_mode: 'link'
 restore:
   commands:
     - !!defaultcommand
