@@ -1,8 +1,3 @@
-versioning:
-  commands:
-    - !!defaultcommand
-      name: 'Generate Version'
-      command: '.scripts/version.cmd'
 artifact_publish_options:
   publish_to_legacy_artifacts: false
   publish_to_pipeline_artifacts: true
