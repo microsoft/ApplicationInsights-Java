@@ -6,7 +6,7 @@ environment:
   runtime:
     provider: 'appcontainer'
     image: 'cdpxwin1809.azurecr.io/global/vse2019:latest'
-    source_mode: 'map'
+    source_mode: 'link'
 versioning:
   commands:
     - !!defaultcommand
