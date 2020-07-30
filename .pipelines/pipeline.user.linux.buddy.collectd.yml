@@ -1,0 +1,18 @@
+version:
+  major: 0
+  minor: 0
+environment:
+  host:
+    os: 'linux'
+    flavor: 'deprecated'
+    version: 'deprecated'  
+restore:
+  commands:
+    - !!defaultcommand
+      name: 'Build collectd-api.jar'
+      command: '.scripts/collectd-init.sh'
+build:
+  commands:
+    - !!buildcommand
+      name: 'Build collectd plugin'
+      command: '.scripts/collectd-build.sh'
