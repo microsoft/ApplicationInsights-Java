@@ -9,7 +9,7 @@ environment:
     version: 'deprecated'
   runtime:
     provider: 'appcontainer'
-    image: 'cdpxlinux.azurecr.io/global/ubuntu-1804-all:3.0'
+    image: 'cdpxlinux.azurecr.io/global/ubuntu-1804-all:4.0'
     source_mode: 'link'
 restore:
   commands:
