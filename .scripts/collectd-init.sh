@@ -2,6 +2,8 @@
 
 set -e
 
+sudo apt-get update -y
+
 sudo apt-get install -y gnupg
 sudo apt-get install -y software-properties-common
 
@@ -14,7 +16,6 @@ sudo apt-get install -y zulu-8
 sudo apt-get install -y gcc
 sudo apt-get install -y make
 
-sudo apt-get update -y
 
 export JAVA_HOME=/usr/lib/jvm/zulu-8-amd64
 
