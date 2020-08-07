@@ -1,6 +1,7 @@
 version:
   major: 0
   minor: 0
+  name: 'ApplicationInsights-Java CollectD Plugin'
 environment:
   host:
     os: 'linux'
