@@ -21,7 +21,7 @@ export JAVA_HOME=/usr/lib/jvm/zulu-8-amd64
 ls -FAl $JAVA_HOME
 
 ROOT_DIR="$(pwd)"
-COLLECTD_HOME=$ROOT_DIR/collectd
+export COLLECTD_HOME=$ROOT_DIR/collectd
 
 wget https://github.com/collectd/collectd/releases/download/collectd-5.11.0/collectd-5.11.0.tar.bz2
 tar -xvf collectd-5.11.0.tar.bz2 --directory $COLLECTD_HOME
