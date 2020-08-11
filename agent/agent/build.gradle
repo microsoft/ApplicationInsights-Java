@@ -80,6 +80,9 @@ shadowJar {
     // early (e.g. in the case of jboss which wants to do some setup before jul is initialized)
     relocate 'java.util.logging.Logger', 'io.opentelemetry.auto.bootstrap.PatchLogger'
 
+    // prevents conflict with library instrumentation
+    relocate 'io.opentelemetry.instrumentation.api', 'io.opentelemetry.auto.shaded.instrumentation.api'
+
     // relocate OpenTelemetry API
     relocate "io.opentelemetry.OpenTelemetry", "io.opentelemetry.auto.shaded.io.opentelemetry.OpenTelemetry"
     relocate "io.opentelemetry.common", "io.opentelemetry.auto.shaded.io.opentelemetry.common"

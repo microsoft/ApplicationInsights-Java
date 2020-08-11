@@ -2,7 +2,7 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
-import io.opentelemetry.auto.bootstrap.instrumentation.aiappid.AiAppId;
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -23,8 +23,8 @@ package com.microsoft.applicationinsights.agent.bootstrap;
 import java.net.URI;
 import java.util.Map;
 
-import io.opentelemetry.auto.bootstrap.instrumentation.aisdk.MicrometerUtil;
-import io.opentelemetry.auto.bootstrap.instrumentation.aisdk.MicrometerUtil.MicrometerUtilDelegate;
+import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil;
+import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil.MicrometerUtilDelegate;
 
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
