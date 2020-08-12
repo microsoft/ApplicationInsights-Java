@@ -117,7 +117,7 @@ public final class WebRequestTrackingFilter implements Filter {
      * @throws ServletException Exception that can be thrown from invoking the filters chain.
      */
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        if (req instanceof  HttpServletRequest && res instanceof HttpServletResponse) {
+        if (handler != null && req instanceof  HttpServletRequest && res instanceof HttpServletResponse) {
             HttpServletRequest httpRequest = (HttpServletRequest) req;
             HttpServletResponse httpResponse = (HttpServletResponse) res;
             boolean hasAlreadyBeenFiltered = httpRequest.getAttribute(ALREADY_FILTERED) != null;
