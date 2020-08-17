@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ ! -f "$CDP_USER_SOURCE_FOLDER_CONTAINER_PATH" ]; then
+if [ ! -d "$CDP_USER_SOURCE_FOLDER_CONTAINER_PATH" ]; then
     >&2 echo "CDP_USER_SOURCE_FOLDER_CONTAINER_PATH ('$CDP_USER_SOURCE_FOLDER_CONTAINER_PATH') does not exist"
     exit 1
 fi
