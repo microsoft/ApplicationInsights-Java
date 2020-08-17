@@ -5,7 +5,7 @@ if [ ! -d "$CDP_USER_SOURCE_FOLDER_CONTAINER_PATH" ]; then
     exit 1
 fi
 
-GRALDEW_PATH="$CDP_USER_SOURCE_FOLDER_CONTAINER_PATH/gradlew"
+GRADLEW_PATH="$CDP_USER_SOURCE_FOLDER_CONTAINER_PATH/gradlew"
 if [ ! -f "$GRADLEW_PATH" ]; then
     >&2 echo "GRADLEW_PATH ('$GRADLEW_PATH') does not exist"
     exit 1
