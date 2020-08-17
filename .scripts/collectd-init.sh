@@ -26,8 +26,10 @@ sudo apt-get install -y automake autoconf gcc make wget pkg-config
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9
 sudo apt-add-repository 'deb http://repos.azulsystems.com/ubuntu stable main'
 sudo apt-get install -y zulu-8
+sudo apt-get install -y zulu-7
 
 export JAVA_HOME=/usr/lib/jvm/zulu-8-amd64
+export JAVA_JRE_7=/usr/lib/jvm/zulu-7-amd64/jre
 
 ls -FAl $JAVA_HOME
 
