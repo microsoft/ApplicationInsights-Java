@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 if [ ! -f "$CDP_USER_SOURCE_FOLDER_CONTAINER_PATH" ]; then
-    echo "CDP_USER_SOURCE_FOLDER_CONTAINER_PATH ('$CDP_USER_SOURCE_FOLDER_CONTAINER_PATH') does not exist" > &2
+    >&2 echo "CDP_USER_SOURCE_FOLDER_CONTAINER_PATH ('$CDP_USER_SOURCE_FOLDER_CONTAINER_PATH') does not exist"
     exit 1
 fi
 
 GRALDEW_PATH="$CDP_USER_SOURCE_FOLDER_CONTAINER_PATH/gradlew"
 if [ ! -f "$GRADLEW_PATH" ]; then
-    echo "GRADLEW_PATH ('') does not exist" > &2
+    >&2 echo "GRADLEW_PATH ('$GRADLEW_PATH') does not exist"
     exit 1
 fi
 
