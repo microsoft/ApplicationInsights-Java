@@ -57,6 +57,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.attributes.SemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -235,7 +236,7 @@ public class Exporter implements SpanExporter {
         } else {
             if (attributes.containsKey("http.method")) {
                 applyHttpRequestSpan(attributes, telemetry);
-            } else if (attributes.containsKey("db.type")) {
+            } else if (attributes.containsKey(SemanticAttributes.DB_SYSTEM.key())) {
                 applyDatabaseQuerySpan(attributes, telemetry, stdComponent);
             } else if (span.getName().equals("EventHubs.send")) {
                 // TODO eventhubs should use CLIENT instead of PRODUCER
@@ -424,7 +425,8 @@ public class Exporter implements SpanExporter {
     }
 
     private static void applyDatabaseQuerySpan(Map<String, AttributeValue> attributes, RemoteDependencyTelemetry telemetry, String component) {
-        String type = removeAttributeString(attributes, "db.type");
+
+        String type = removeAttributeString(attributes, SemanticAttributes.DB_SYSTEM.key());
         if ("sql".equals(type)) {
             type = "SQL";
         }
