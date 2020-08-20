@@ -142,17 +142,17 @@ public class Exporter implements SpanExporter {
 
         addLinks(telemetry.getProperties(), span.getLinks());
 
-        AttributeValue httpStatusCode = attributes.remove("http.status_code");
+        AttributeValue httpStatusCode = attributes.remove( SemanticAttributes.HTTP_STATUS_CODE.key());
         if (isNonNullLong(httpStatusCode)) {
             telemetry.setResponseCode(Long.toString(httpStatusCode.getLongValue()));
         }
 
-        String httpUrl = removeAttributeString(attributes, "http.url");
+        String httpUrl = removeAttributeString(attributes, SemanticAttributes.HTTP_URL.key());
         if (httpUrl != null) {
             telemetry.setUrl(httpUrl);
         }
 
-        String httpMethod = removeAttributeString(attributes, "http.method");
+        String httpMethod = removeAttributeString(attributes, SemanticAttributes.HTTP_METHOD.key());
         String name = span.getName();
         if (httpMethod != null && name.startsWith("/")) {
             name = httpMethod + " " + name;
@@ -391,10 +391,10 @@ public class Exporter implements SpanExporter {
 
         telemetry.setType("Http (tracked component)");
 
-        String method = removeAttributeString(attributes, "http.method");
-        String url = removeAttributeString(attributes, "http.url");
+        String method = removeAttributeString(attributes, SemanticAttributes.HTTP_METHOD.key());
+        String url = removeAttributeString(attributes, SemanticAttributes.HTTP_URL.key());
 
-        AttributeValue httpStatusCode = attributes.remove("http.status_code");
+        AttributeValue httpStatusCode = attributes.remove(SemanticAttributes.HTTP_STATUS_CODE.key());
         if (httpStatusCode != null && httpStatusCode.getType() == Type.LONG) {
             long statusCode = httpStatusCode.getLongValue();
             telemetry.setResultCode(Long.toString(statusCode));
@@ -431,13 +431,13 @@ public class Exporter implements SpanExporter {
             type = "SQL";
         }
         telemetry.setType(type);
-        telemetry.setCommandName(removeAttributeString(attributes, "db.statement"));
-        String dbUrl = removeAttributeString(attributes, "db.url");
+        telemetry.setCommandName(removeAttributeString(attributes,  SemanticAttributes.DB_STATEMENT.key()));
+        String dbUrl = removeAttributeString(attributes, SemanticAttributes.DB_CONNECTION_STRING.key());
         if (dbUrl == null) {
             // this is needed until all database instrumentation captures the required db.url
             telemetry.setTarget(type);
         } else {
-            String dbInstance = removeAttributeString(attributes, "db.instance");
+            String dbInstance = removeAttributeString(attributes, SemanticAttributes.DB_NAME.key());
             if (dbInstance != null) {
                 dbUrl += " | " + dbInstance;
             }
