@@ -427,8 +427,9 @@ public class Exporter implements SpanExporter {
     private static void applyDatabaseQuerySpan(Map<String, AttributeValue> attributes, RemoteDependencyTelemetry telemetry, String component) {
 
         String type = removeAttributeString(attributes, SemanticAttributes.DB_SYSTEM.key());
-        if ("sql".equals(type)) {
-            type = "SQL";
+
+        if ("mssql".equals(type)) {
+            type = "mssql";
         }
         telemetry.setType(type);
         telemetry.setCommandName(removeAttributeString(attributes,  SemanticAttributes.DB_STATEMENT.key()));
