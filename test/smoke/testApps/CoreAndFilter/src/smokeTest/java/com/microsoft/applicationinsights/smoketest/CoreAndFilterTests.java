@@ -330,7 +330,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(false, rd.getSuccess());
 
         ExceptionDetails eDetails = getExceptionDetails(ed);
-        assertEquals("This is a auto thrown exception !", eDetails.getMessage());
+        assertEquals("DEFAULT message", eDetails.getMessage());
     }
 
     @Test
