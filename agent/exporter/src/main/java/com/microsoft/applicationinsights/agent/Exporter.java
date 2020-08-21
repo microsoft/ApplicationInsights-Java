@@ -195,7 +195,6 @@ public class Exporter implements SpanExporter {
         }
 
         Double samplingPercentage = removeAiSamplingPercentage(attributes);
-        String errorStack = removeAttributeString(attributes, "error.stack");
 
         // for now, only add extra attributes for custom telemetry
         if (stdComponent == null) {
@@ -203,9 +202,6 @@ public class Exporter implements SpanExporter {
         }
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
-        if (errorStack != null) {
-            trackException(errorStack, span, telemetry, telemetry.getId(), samplingPercentage);
-        }
     }
 
     private Map<String, AttributeValue> getAttributesCopy(ReadableAttributes attributes) {
@@ -279,7 +275,6 @@ public class Exporter implements SpanExporter {
         }
 
         Double samplingPercentage = removeAiSamplingPercentage(attributes);
-        String errorStack = removeAttributeString(attributes, "error.stack");
 
         // for now, only add extra attributes for custom telemetry
         if (stdComponent == null) {
@@ -287,9 +282,6 @@ public class Exporter implements SpanExporter {
         }
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
-        if (errorStack != null) {
-            trackException(errorStack, span, telemetry, telemetry.getId(), samplingPercentage);
-        }
     }
 
     private void exportLogSpan(SpanData span) {
@@ -309,13 +301,24 @@ public class Exporter implements SpanExporter {
     }
 
     private void trackEvents(SpanData span, Double samplingPercentage) {
+        boolean foundException = false;
         for (Event event : span.getEvents()) {
             EventTelemetry telemetry = new EventTelemetry(event.getName());
             telemetry.getContext().getOperation().setId(span.getTraceId().toLowerBase16());
             telemetry.getContext().getOperation().setParentId(span.getParentSpanId().toLowerBase16());
             telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(event.getEpochNanos())));
             addExtraAttributes(telemetry.getProperties(), event.getAttributes());
-            track(telemetry, samplingPercentage);
+
+            String exceptionMessage = SemanticAttributes.EXCEPTION_MESSAGE.key();
+            if ( event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE.key()) != null && exceptionMessage != null) {
+                // TODO Remove this boolean after we can confirm that the exception duplicate is a bug from the opentelmetry-java-instrumentation
+                if (!foundException) {
+                  trackException(exceptionMessage, span, telemetry, span.getSpanId().toLowerBase16(), samplingPercentage);
+                }
+                foundException = true;
+            } else {
+                track(telemetry, samplingPercentage);
+            }
         }
     }
 
