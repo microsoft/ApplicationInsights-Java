@@ -19,38 +19,42 @@ public class GrpcTest extends AiSmokeTest {
     @TargetUri("/simple")
     public void doSimpleTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
         // individual messages are captured as events (and exported as traces) on CLIENT/SERVER spans
         mockedIngestion.waitForItemsInRequest("EventData", 2);
 
-        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /simple");
-        Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
+        Envelope rdEnvelope2 = getRequestEnvelope(rdList, "GET /simple");
         Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
+        Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "HelloController.simple");
 
         RequestData rd1 = (RequestData) ((Data) rdEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
 
-        assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
-        assertParentChild(rdd1.getId(), rddEnvelope1, rdEnvelope2);
+        assertParentChild(rdd2.getId(), rdEnvelope2, rddEnvelope1);
+        assertParentChild(rdd1.getId(), rddEnvelope2, rdEnvelope1);
     }
 
     @Test
     @TargetUri("/conversation")
     public void doConversationTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
         // individual messages are captured as events on CLIENT/SERVER spans
         mockedIngestion.waitForItemsInRequest("EventData", 3);
 
-        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /conversation");
-        Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/Conversation");
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "example.Greeter/Conversation");
+        Envelope rdEnvelope2 = getRequestEnvelope(rdList, "GET /conversation");
         Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "example.Greeter/Conversation");
+        Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "HelloController.conversation");
 
         RequestData rd1 = (RequestData) ((Data) rdEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
 
-        assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
-        assertParentChild(rdd1.getId(), rddEnvelope1, rdEnvelope2);
+        assertParentChild(rdd2.getId(), rdEnvelope2, rddEnvelope1);
+        assertParentChild(rdd1.getId(), rddEnvelope2, rdEnvelope1);
     }
 
     private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {
