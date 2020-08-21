@@ -33,26 +33,6 @@ public class JmsTest extends AiSmokeTest {
     RemoteDependencyData rdd2 =
         (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
 
-    if (!rd1.getName().equals("GET /sendMessage")) {
-      // swap request and envelope 1 and 2
-      Envelope tmpEnvelope = rdEnvelope1;
-      rdEnvelope1 = rdEnvelope2;
-      rdEnvelope2 = tmpEnvelope;
-      RequestData tmp = rd1;
-      rd1 = rd2;
-      rd2 = tmp;
-    }
-
-    if (!rdd1.getName().equals("queue/message")) {
-      // swap RequestData and envelope 1 and 2
-      Envelope tmpEnvelope = rdEnvelope1;
-      rdEnvelope1 = rdEnvelope2;
-      rdEnvelope2 = tmpEnvelope;
-      RemoteDependencyData tmp = rdd1;
-      rdd1 = rdd2;
-      rdd2 = tmp;
-    }
-
     assertEquals("GET /sendMessage", rd1.getName());
     assertEquals("HelloController.sendMessage", rdd2.getName());
     assertEquals("queue/message", rdd1.getName());

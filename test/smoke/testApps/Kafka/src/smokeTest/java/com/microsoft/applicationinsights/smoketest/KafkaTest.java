@@ -37,20 +37,30 @@ public class KafkaTest extends AiSmokeTest {
     @TargetUri("/sendMessage")
     public void doMostBasicTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 3);
 
         Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic");
-        Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "mytopic");
-        Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "GET /");
+        Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
+        Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "mytopic");
+        Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "GET /");
 
         RequestData rd1 = (RequestData) ((Data) rdEnvelope1.getData()).getBaseData();
         RequestData rd2 = (RequestData) ((Data) rdEnvelope2.getData()).getBaseData();
-        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
 
-        assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
-        assertParentChild(rdd1.getId(), rddEnvelope1, rdEnvelope2);
-        assertParentChild(rd2.getId(), rdEnvelope2, rddEnvelope2);
+        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
+        RemoteDependencyData rdd3 = (RemoteDependencyData) ((Data) rddEnvelope3.getData()).getBaseData();
+
+        assertEquals("GET /sendMessage", rd1.getName());
+        assertEquals("HelloController.sendMessage", rdd1.getName());
+        assertEquals("mytopic", rdd2.getName());
+        assertEquals("mytopic", rd2.getName());
+        assertEquals("GET /", rdd3.getName());
+
+        assertParentChild(rdd1.getId(), rdEnvelope1, rddEnvelope2);
+        assertParentChild(rdd2.getId(), rddEnvelope1, rdEnvelope2);
+        assertParentChild(rd2.getId(), rddEnvelope2, rddEnvelope3);
     }
 
     private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {
