@@ -309,11 +309,15 @@ public class Exporter implements SpanExporter {
             telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(event.getEpochNanos())));
             addExtraAttributes(telemetry.getProperties(), event.getAttributes());
 
-            String exceptionMessage = SemanticAttributes.EXCEPTION_MESSAGE.key();
-            if ( event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE.key()) != null && exceptionMessage != null) {
+            if ( event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE.key()) != null
+                    || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE.key()) != null) {
                 // TODO Remove this boolean after we can confirm that the exception duplicate is a bug from the opentelmetry-java-instrumentation
                 if (!foundException) {
-                  trackException(exceptionMessage, span, telemetry, span.getSpanId().toLowerBase16(), samplingPercentage);
+                    // TODO map OpenTelemetry exception to Application Insights exception better
+                    AttributeValue stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE.key());
+                    if (stacktrace != null) {
+                        trackException(stacktrace.getStringValue(), span, telemetry, span.getSpanId().toLowerBase16(), samplingPercentage);
+                    }
                 }
                 foundException = true;
             } else {
