@@ -29,11 +29,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
@@ -431,12 +433,14 @@ public class Exporter implements SpanExporter {
         }
     }
 
+    private static final Set<String> SqlDbSystems = ImmutableSet.of("db2", "derby", "mariadb", "mssql", "mysql", "oracle", "postgresql", "sqlite", "other_sql", "hsqldb", "h2");
+
     private static void applyDatabaseQuerySpan(Map<String, AttributeValue> attributes, RemoteDependencyTelemetry telemetry, String component) {
 
         String type = removeAttributeString(attributes, SemanticAttributes.DB_SYSTEM.key());
 
-        if ("mssql".equals(type)) {
-            type = "mssql";
+        if (SqlDbSystems.contains(type)) {
+            type = "SQL";
         }
         telemetry.setType(type);
         telemetry.setCommandName(removeAttributeString(attributes,  SemanticAttributes.DB_STATEMENT.key()));

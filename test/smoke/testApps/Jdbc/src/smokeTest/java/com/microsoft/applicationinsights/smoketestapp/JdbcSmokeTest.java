@@ -51,7 +51,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("hsqldb", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertEquals("hsqldb:mem: | test", rdd.getName());
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
@@ -72,7 +72,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("hsqldb", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertEquals("hsqldb:mem: | test", rdd.getName());
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
@@ -93,7 +93,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("hsqldb", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertEquals("hsqldb:mem: | test", rdd.getName());
         assertEquals("insert into abc (xyz) values (?)", rdd.getData());
         // assertEquals(" [Batch of 3]", rdd.getProperties().get("Args"));
@@ -116,7 +116,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("mssql", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertEquals("hsqldb:mem: | test", rdd.getName());
         assertEquals("insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');" +
                 " insert into abc (xyz) values ('v')", rdd.getData());
@@ -150,7 +150,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("mysql", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertTrue(rdd.getName().startsWith("mysql://"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
@@ -181,7 +181,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("mysql", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertTrue(rdd.getName().startsWith("mysql://"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
@@ -202,7 +202,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("postgresql", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertTrue(rdd.getName().startsWith("postgresql://"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
@@ -223,7 +223,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("postgresql", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertTrue(rdd.getName().startsWith("postgresql://"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
@@ -244,7 +244,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("mssql", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertTrue(rdd.getName().startsWith("sqlserver://"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
@@ -265,7 +265,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("mssql", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertTrue(rdd.getName().startsWith("sqlserver://"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
@@ -287,7 +287,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("mssql", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertTrue(rdd.getName().startsWith("oracle:thin:@"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
@@ -309,7 +309,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("mssql", rdd.getType());
+        assertEquals("SQL", rdd.getType());
         assertTrue(rdd.getName().startsWith("oracle:thin:@"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
