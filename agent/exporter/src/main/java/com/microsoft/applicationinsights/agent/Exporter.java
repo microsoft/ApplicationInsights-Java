@@ -433,13 +433,13 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static final Set<String> SqlDbSystems = ImmutableSet.of("db2", "derby", "mariadb", "mssql", "mysql", "oracle", "postgresql", "sqlite", "other_sql", "hsqldb", "h2");
+    private static final Set<String> SQL_DB_SYSTEMS = ImmutableSet.of("db2", "derby", "mariadb", "mssql", "mysql", "oracle", "postgresql", "sqlite", "other_sql", "hsqldb", "h2");
 
     private static void applyDatabaseQuerySpan(Map<String, AttributeValue> attributes, RemoteDependencyTelemetry telemetry, String component) {
 
         String type = removeAttributeString(attributes, SemanticAttributes.DB_SYSTEM.key());
 
-        if (SqlDbSystems.contains(type)) {
+        if (SQL_DB_SYSTEMS.contains(type)) {
             type = "SQL";
         }
         telemetry.setType(type);
