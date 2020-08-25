@@ -26,19 +26,19 @@ public final class FixedRateSampler implements Sampler {
     // failure to follow this pattern can result in unexpected / incorrect computation of values in the portal
     private final double samplingPercentage;
 
-    private final Decision alwaysOnDecision;
-    private final Decision alwaysOffDecision;
+    private final SamplingResult alwaysOnDecision;
+    private final SamplingResult alwaysOffDecision;
 
     public FixedRateSampler(double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
         Attributes attributes = Attributes.of("ai.sampling.percentage",
                 AttributeValue.doubleAttributeValue(samplingPercentage));
-        alwaysOnDecision = new FixedRateSamplerDecision(true, attributes);
-        alwaysOffDecision= new FixedRateSamplerDecision(false, Attributes.empty());
+        alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLED, attributes);
+        alwaysOffDecision= new FixedRateSamplerDecision(Decision.NOT_RECORD, Attributes.empty());
     }
 
     @Override
-    public Decision shouldSample(@Nullable SpanContext parentContext,
+    public SamplingResult shouldSample(@Nullable SpanContext parentContext,
                                  TraceId traceId,
                                  String name,
                                  Span.Kind spanKind,
@@ -56,19 +56,19 @@ public final class FixedRateSampler implements Sampler {
         return "fixed rate sampler: " + samplingPercentage;
     }
 
-    private static final class FixedRateSamplerDecision implements Decision {
+    private static final class FixedRateSamplerDecision implements SamplingResult {
 
-        private final boolean sampled;
+        private final Decision decision;
         private final Attributes attributes;
 
-        private FixedRateSamplerDecision(boolean sampled, Attributes attributes) {
-            this.sampled = sampled;
+        private FixedRateSamplerDecision(Decision decision, Attributes attributes) {
+            this.decision = decision;
             this.attributes = attributes;
         }
 
         @Override
-        public boolean isSampled() {
-            return sampled;
+        public Decision getDecision() {
+            return decision;
         }
 
         @Override

@@ -29,11 +29,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
@@ -57,6 +59,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.attributes.SemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,17 +144,17 @@ public class Exporter implements SpanExporter {
 
         addLinks(telemetry.getProperties(), span.getLinks());
 
-        AttributeValue httpStatusCode = attributes.remove("http.status_code");
+        AttributeValue httpStatusCode = attributes.remove( SemanticAttributes.HTTP_STATUS_CODE.key());
         if (isNonNullLong(httpStatusCode)) {
             telemetry.setResponseCode(Long.toString(httpStatusCode.getLongValue()));
         }
 
-        String httpUrl = removeAttributeString(attributes, "http.url");
+        String httpUrl = removeAttributeString(attributes, SemanticAttributes.HTTP_URL.key());
         if (httpUrl != null) {
             telemetry.setUrl(httpUrl);
         }
 
-        String httpMethod = removeAttributeString(attributes, "http.method");
+        String httpMethod = removeAttributeString(attributes, SemanticAttributes.HTTP_METHOD.key());
         String name = span.getName();
         if (httpMethod != null && name.startsWith("/")) {
             name = httpMethod + " " + name;
@@ -194,7 +197,6 @@ public class Exporter implements SpanExporter {
         }
 
         Double samplingPercentage = removeAiSamplingPercentage(attributes);
-        String errorStack = removeAttributeString(attributes, "error.stack");
 
         // for now, only add extra attributes for custom telemetry
         if (stdComponent == null) {
@@ -202,9 +204,6 @@ public class Exporter implements SpanExporter {
         }
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
-        if (errorStack != null) {
-            trackException(errorStack, span, telemetry, telemetry.getId(), samplingPercentage);
-        }
     }
 
     private Map<String, AttributeValue> getAttributesCopy(ReadableAttributes attributes) {
@@ -235,7 +234,7 @@ public class Exporter implements SpanExporter {
         } else {
             if (attributes.containsKey("http.method")) {
                 applyHttpRequestSpan(attributes, telemetry);
-            } else if (attributes.containsKey("db.type")) {
+            } else if (attributes.containsKey(SemanticAttributes.DB_SYSTEM.key())) {
                 applyDatabaseQuerySpan(attributes, telemetry, stdComponent);
             } else if (span.getName().equals("EventHubs.send")) {
                 // TODO eventhubs should use CLIENT instead of PRODUCER
@@ -278,7 +277,6 @@ public class Exporter implements SpanExporter {
         }
 
         Double samplingPercentage = removeAiSamplingPercentage(attributes);
-        String errorStack = removeAttributeString(attributes, "error.stack");
 
         // for now, only add extra attributes for custom telemetry
         if (stdComponent == null) {
@@ -286,9 +284,6 @@ public class Exporter implements SpanExporter {
         }
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
-        if (errorStack != null) {
-            trackException(errorStack, span, telemetry, telemetry.getId(), samplingPercentage);
-        }
     }
 
     private void exportLogSpan(SpanData span) {
@@ -308,13 +303,28 @@ public class Exporter implements SpanExporter {
     }
 
     private void trackEvents(SpanData span, Double samplingPercentage) {
+        boolean foundException = false;
         for (Event event : span.getEvents()) {
             EventTelemetry telemetry = new EventTelemetry(event.getName());
             telemetry.getContext().getOperation().setId(span.getTraceId().toLowerBase16());
             telemetry.getContext().getOperation().setParentId(span.getParentSpanId().toLowerBase16());
             telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(event.getEpochNanos())));
             addExtraAttributes(telemetry.getProperties(), event.getAttributes());
-            track(telemetry, samplingPercentage);
+
+            if ( event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE.key()) != null
+                    || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE.key()) != null) {
+                // TODO Remove this boolean after we can confirm that the exception duplicate is a bug from the opentelmetry-java-instrumentation
+                if (!foundException) {
+                    // TODO map OpenTelemetry exception to Application Insights exception better
+                    AttributeValue stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE.key());
+                    if (stacktrace != null) {
+                        trackException(stacktrace.getStringValue(), span, telemetry, span.getSpanId().toLowerBase16(), samplingPercentage);
+                    }
+                }
+                foundException = true;
+            } else {
+                track(telemetry, samplingPercentage);
+            }
         }
     }
 
@@ -390,10 +400,10 @@ public class Exporter implements SpanExporter {
 
         telemetry.setType("Http (tracked component)");
 
-        String method = removeAttributeString(attributes, "http.method");
-        String url = removeAttributeString(attributes, "http.url");
+        String method = removeAttributeString(attributes, SemanticAttributes.HTTP_METHOD.key());
+        String url = removeAttributeString(attributes, SemanticAttributes.HTTP_URL.key());
 
-        AttributeValue httpStatusCode = attributes.remove("http.status_code");
+        AttributeValue httpStatusCode = attributes.remove(SemanticAttributes.HTTP_STATUS_CODE.key());
         if (httpStatusCode != null && httpStatusCode.getType() == Type.LONG) {
             long statusCode = httpStatusCode.getLongValue();
             telemetry.setResultCode(Long.toString(statusCode));
@@ -423,19 +433,23 @@ public class Exporter implements SpanExporter {
         }
     }
 
+    private static final Set<String> SQL_DB_SYSTEMS = ImmutableSet.of("db2", "derby", "mariadb", "mssql", "mysql", "oracle", "postgresql", "sqlite", "other_sql", "hsqldb", "h2");
+
     private static void applyDatabaseQuerySpan(Map<String, AttributeValue> attributes, RemoteDependencyTelemetry telemetry, String component) {
-        String type = removeAttributeString(attributes, "db.type");
-        if ("sql".equals(type)) {
+
+        String type = removeAttributeString(attributes, SemanticAttributes.DB_SYSTEM.key());
+
+        if (SQL_DB_SYSTEMS.contains(type)) {
             type = "SQL";
         }
         telemetry.setType(type);
-        telemetry.setCommandName(removeAttributeString(attributes, "db.statement"));
-        String dbUrl = removeAttributeString(attributes, "db.url");
+        telemetry.setCommandName(removeAttributeString(attributes,  SemanticAttributes.DB_STATEMENT.key()));
+        String dbUrl = removeAttributeString(attributes, SemanticAttributes.DB_CONNECTION_STRING.key());
         if (dbUrl == null) {
             // this is needed until all database instrumentation captures the required db.url
             telemetry.setTarget(type);
         } else {
-            String dbInstance = removeAttributeString(attributes, "db.instance");
+            String dbInstance = removeAttributeString(attributes, SemanticAttributes.DB_NAME.key());
             if (dbInstance != null) {
                 dbUrl += " | " + dbInstance;
             }

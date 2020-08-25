@@ -40,7 +40,7 @@ public class MongoSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("mongo", rdd.getType());
+        assertEquals("mongodb", rdd.getType());
         assertEquals("{\"find\": \"test\", \"$db\": \"?\"}", rdd.getName());
         assertTrue(rdd.getSuccess());
 

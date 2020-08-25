@@ -16,7 +16,7 @@ public class WebFluxTest extends AiSmokeTest {
     @TargetUri("/test")
     public void doMostBasicTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
+        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
 
         Envelope rdEnvelope = rdList.get(0);
 
@@ -31,7 +31,7 @@ public class WebFluxTest extends AiSmokeTest {
     @TargetUri("/exception")
     public void testException() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
+        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
 
         Envelope rdEnvelope = rdList.get(0);
 
@@ -45,7 +45,7 @@ public class WebFluxTest extends AiSmokeTest {
     @TargetUri("/futureException")
     public void testFutureException() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        assertEquals(0, mockedIngestion.getCountForType("RemoteDependencyData"));
+        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
 
         Envelope rdEnvelope = rdList.get(0);
 
