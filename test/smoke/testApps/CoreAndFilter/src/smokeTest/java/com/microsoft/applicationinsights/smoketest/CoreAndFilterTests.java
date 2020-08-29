@@ -209,7 +209,6 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertParentChild(rd, rdEnvelope, mdEnvelope);
     }
 
-    @Ignore
     @Test
     @TargetUri("/trackTrace")
     public void testTrackTrace() throws Exception {
