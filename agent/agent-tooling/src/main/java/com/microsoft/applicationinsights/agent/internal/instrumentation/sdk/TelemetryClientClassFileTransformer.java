@@ -481,10 +481,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
 
         private TelemetryConfiguration configuration;
 
-        public void append(Object x) {
-
-        }
-
         public boolean isDisabled() {
             return configuration.isTrackingDisabled();
         }
@@ -497,7 +493,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         }
 
         public void track(Telemetry telemetry) {
-            System.out.println("track() is being run now!");
             if (isDisabled()) {
                 return;
             }
