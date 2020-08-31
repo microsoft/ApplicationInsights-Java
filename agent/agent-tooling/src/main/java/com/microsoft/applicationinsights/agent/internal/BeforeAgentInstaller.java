@@ -40,6 +40,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Instrumen
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.FixedRateSampling;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.HeartBeatModuleClassFileTransformer;
@@ -84,6 +85,7 @@ public class BeforeAgentInstaller {
         instrumentation.addTransformer(new PerformanceCounterModuleClassFileTransformer());
         instrumentation.addTransformer(new QuickPulseClassFileTransformer());
         instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
+        instrumentation.addTransformer(new ApplicationInsightsAppenderClassFileTransformer());
     }
 
     private static void start(Instrumentation instrumentation, File agentJarFile) throws Exception {

@@ -34,7 +34,9 @@ import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
@@ -126,6 +128,29 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         MapUtil.copy(metrics, telemetry.getMetrics());
 
         track(telemetry);
+    }
+
+    @Override public void trackTrace(String message, int severityLevel, Map<String, String> properties) {
+        if (Strings.isNullOrEmpty(message)) {
+            return;
+        }
+
+        TraceTelemetry telemetry = new TraceTelemetry();
+        telemetry.setMessage(message);
+        if (severityLevel != -1) {
+            telemetry.setSeverityLevel(getSeverityLevel(severityLevel));
+        }
+        MapUtil.copy(properties, telemetry.getProperties());
+        track(telemetry);
+    }
+
+    private SeverityLevel getSeverityLevel(int value) {
+        for (SeverityLevel sl : SeverityLevel.values()) {
+            if (value == sl.getValue()) {
+                return sl;
+            }
+        }
+        return null;
     }
 
     @Override
