@@ -22,8 +22,10 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Map;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.message.Message;
 import org.slf4j.LoggerFactory;
 
@@ -41,13 +43,16 @@ public class Log4jSpans {
       return;
     }
 
-    Span span =
+    Span.Builder builder =
         TRACER
             .spanBuilder("log.message")
             .setAttribute("message", message.getFormattedMessage())
             .setAttribute("level", level.toString())
-            .setAttribute("loggerName", logger.getName())
-            .startSpan();
+            .setAttribute("loggerName", logger.getName());
+    for (Map.Entry<String, String> entry : ThreadContext.getImmutableContext().entrySet()) {
+      builder.setAttribute(entry.getKey(), entry.getValue());
+    }
+    Span span = builder.startSpan();
     if (t != null) {
       span.setAttribute("error.stack", toString(t));
     }

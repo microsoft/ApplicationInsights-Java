@@ -25,6 +25,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +52,16 @@ public class LogbackSpans {
       t = ((ThrowableProxy) throwableProxy).getThrowable();
     }
 
-    Span span =
+    Span.Builder builder =
         TRACER
             .spanBuilder("log.message")
             .setAttribute("message", event.getFormattedMessage())
             .setAttribute("level", level.toString())
-            .setAttribute("loggerName", event.getLoggerName())
-            .startSpan();
+            .setAttribute("loggerName", event.getLoggerName());
+    for (Map.Entry<String, String> entry : event.getMDCPropertyMap().entrySet()) {
+      builder.setAttribute(entry.getKey(), entry.getValue());
+    }
+    Span span = builder.startSpan();
     if (t != null) {
       span.setAttribute("error.stack", toString(t));
     }
