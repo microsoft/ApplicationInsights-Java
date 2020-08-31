@@ -24,11 +24,12 @@ public class TraceLogBackTest extends AiSmokeTest {
     @TargetUri("/traceLogBack")
     public void testTraceLogBack() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(2);
+        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
+        Envelope mdEnvelope3 = mdList.get(2);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
@@ -42,18 +43,25 @@ public class TraceLogBackTest extends AiSmokeTest {
 
         MessageData md1 = logs.get(0);
         MessageData md2 = logs.get(1);
+        MessageData md3 = logs.get(2);
 
-        assertEquals("This is logback warn.", md1.getMessage());
-        assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
+        assertEquals("This is logback info.", md1.getMessage());
+        assertEquals(SeverityLevel.Information, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
-        assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
+        assertEquals("INFO", md1.getProperties().get("LoggingLevel"));
+        assertParentChild(rd, rdEnvelope, mdEnvelope1);
+
+        assertEquals("This is logback warn.", md2.getMessage());
+        assertEquals(SeverityLevel.Warning, md2.getSeverityLevel());
+        assertEquals("Logger", md2.getProperties().get("SourceType"));
+        assertEquals("WARN", md2.getProperties().get("LoggingLevel"));
         assertParentChild(rd, rdEnvelope, mdEnvelope2);
 
-        assertEquals("This is logback error.", md2.getMessage());
-        assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
-        assertEquals("Logger", md2.getProperties().get("SourceType"));
-        assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
-        assertParentChild(rd, rdEnvelope, mdEnvelope2);
+        assertEquals("This is logback error.", md3.getMessage());
+        assertEquals(SeverityLevel.Error, md3.getSeverityLevel());
+        assertEquals("Logger", md3.getProperties().get("SourceType"));
+        assertEquals("ERROR", md3.getProperties().get("LoggingLevel"));
+        assertParentChild(rd, rdEnvelope, mdEnvelope3);
     }
 
     @Test
