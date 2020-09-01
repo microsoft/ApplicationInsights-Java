@@ -32,6 +32,7 @@ import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -39,6 +40,8 @@ import java.util.regex.Pattern;
 // that also injects ApplicationInsight's appId into tracestate
 public class AiHttpTraceContext implements HttpTextFormat {
   private static final Logger logger = Logger.getLogger(AiHttpTraceContext.class.getName());
+
+  private static final boolean AI_BACK_COMPAT = true;
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
   static final String TRACE_PARENT = "traceparent";
@@ -97,8 +100,23 @@ public class AiHttpTraceContext implements HttpTextFormat {
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars));
-    final List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
+
     final String appId = AiAppId.getAppId();
+
+    if (AI_BACK_COMPAT) {
+      final char[] requestId = new char[TRACE_ID_HEX_SIZE + SPAN_ID_HEX_SIZE + 3];
+      requestId[0] = '|';
+      spanContext.getTraceId().copyLowerBase16To(requestId, 1);
+      requestId[TRACE_ID_HEX_SIZE + 1] = '.';
+      spanContext.getSpanId().copyLowerBase16To(requestId, TRACE_ID_HEX_SIZE + 2);
+      requestId[TRACE_ID_HEX_SIZE + SPAN_ID_HEX_SIZE + 2] = '.';
+      setter.set(carrier, "Request-Id", new String(requestId));
+      if (!appId.isEmpty()) {
+        setter.set(carrier, "Request-Context", "appId=" + appId);
+      }
+    }
+
+    final List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
     if (entries.isEmpty() && appId.isEmpty()) {
       // No need to add an empty "tracestate" header.
       return;
@@ -136,6 +154,31 @@ public class AiHttpTraceContext implements HttpTextFormat {
   private static <C> SpanContext extractImpl(final C carrier, final Getter<C> getter) {
     final String traceparent = getter.get(carrier, TRACE_PARENT);
     if (traceparent == null) {
+      if (AI_BACK_COMPAT) {
+        final String aiRequestId = getter.get(carrier, "Request-Id");
+        if (aiRequestId != null && !aiRequestId.isEmpty()) {
+          // see behavior specified at
+          // https://github.com/microsoft/ApplicationInsights-Java/issues/1174
+          final String legacyOperationId = aiExtractRootId(aiRequestId);
+          final TraceState.Builder traceState =
+              TraceState.builder().set("ai-legacy-parent-id", aiRequestId);
+          final ThreadLocalRandom random = ThreadLocalRandom.current();
+          TraceId traceId;
+          try {
+            traceId = TraceId.fromLowerBase16(legacyOperationId, 0);
+          } catch (final IllegalArgumentException e) {
+            logger.info("Request-Id root part is not compatible with trace-id.");
+            // see behavior specified at
+            // https://github.com/microsoft/ApplicationInsights-Java/issues/1174
+            traceId = new TraceId(random.nextLong(), random.nextLong());
+            traceState.set("ai-legacy-operation-id", legacyOperationId);
+          }
+          final SpanId spanId = new SpanId(random.nextLong());
+          final TraceFlags traceFlags = TraceFlags.getDefault();
+          return SpanContext.createFromRemoteParent(
+              traceId, spanId, traceFlags, traceState.build());
+        }
+      }
       return SpanContext.getInvalid();
     }
 
@@ -202,5 +245,19 @@ public class AiHttpTraceContext implements HttpTextFormat {
       traceStateBuilder.set(listMember.substring(0, index), listMember.substring(index + 1));
     }
     return traceStateBuilder.build();
+  }
+
+  private static String aiExtractRootId(final String parentId) {
+    // ported from .NET's System.Diagnostics.Activity.cs implementation:
+    // https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/System/Diagnostics/Activity.cs
+
+    int rootEnd = parentId.indexOf('.');
+    if (rootEnd < 0) {
+      rootEnd = parentId.length();
+    }
+
+    final int rootStart = parentId.charAt(0) == '|' ? 1 : 0;
+
+    return parentId.substring(rootStart, rootEnd);
   }
 }
