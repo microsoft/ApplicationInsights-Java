@@ -295,7 +295,7 @@ public class Exporter implements SpanExporter {
         Double samplingPercentage = removeAiSamplingPercentage(attributes);
         if (errorStack == null) {
             trackTrace(message, span.getStartEpochNanos(), level, loggerName, span.getTraceId(),
-                    span.getParentSpanId(), samplingPercentage);
+                    span.getParentSpanId(), samplingPercentage, attributes);
         } else {
             trackTraceAsException(message, span.getStartEpochNanos(), level, loggerName, errorStack, span.getTraceId(),
                     span.getParentSpanId(), samplingPercentage);
@@ -329,7 +329,7 @@ public class Exporter implements SpanExporter {
     }
 
     private void trackTrace(String message, long timeEpochNanos, String level, String loggerName, TraceId traceId,
-                            SpanId parentSpanId, Double samplingPercentage) {
+                            SpanId parentSpanId, Double samplingPercentage, Map<String, AttributeValue> attributes) {
         TraceTelemetry telemetry = new TraceTelemetry(message, toSeverityLevel(level));
 
         if (parentSpanId.isValid()) {
@@ -337,7 +337,7 @@ public class Exporter implements SpanExporter {
             telemetry.getContext().getOperation().setParentId(parentSpanId.toLowerBase16());
         }
 
-        setProperties(telemetry.getProperties(), timeEpochNanos, level, loggerName);
+        setProperties(telemetry.getProperties(), timeEpochNanos, level, loggerName, attributes);
         track(telemetry, samplingPercentage);
     }
 
@@ -354,7 +354,7 @@ public class Exporter implements SpanExporter {
         telemetry.getData().setExceptions(Exceptions.minimalParse(errorStack));
         telemetry.setSeverityLevel(toSeverityLevel(level));
         telemetry.getProperties().put("Logger Message", message);
-        setProperties(telemetry.getProperties(), timeEpochNanos, level, loggerName);
+        setProperties(telemetry.getProperties(), timeEpochNanos, level, loggerName, null);
         track(telemetry, samplingPercentage);
     }
 
@@ -384,8 +384,7 @@ public class Exporter implements SpanExporter {
     public void shutdown() {
     }
 
-    private static void setProperties(Map<String, String> properties, long timeEpochNanos, String level, String loggerName) {
-
+    private static void setProperties(Map<String, String> properties, long timeEpochNanos, String level, String loggerName, Map<String, AttributeValue> attributes) {
         properties.put("TimeStamp", getFormattedDate(NANOSECONDS.toMillis(timeEpochNanos)));
         if (level != null) {
             properties.put("SourceType", "Logger");
@@ -393,6 +392,12 @@ public class Exporter implements SpanExporter {
         }
         if (loggerName != null) {
             properties.put("LoggerName", loggerName);
+        }
+
+        if (attributes != null) {
+            for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
+                properties.put(entry.getKey(), entry.getValue().getStringValue());
+            }
         }
     }
 
