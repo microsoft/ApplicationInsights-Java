@@ -44,16 +44,6 @@ sourceSets {
   }
 }
 
-tasks.withType(JavaCompile) {
-  options.compilerArgs.addAll(['--release', project.ext.release.majorVersion])
-}
-tasks.withType(GroovyCompile) {
-  options.compilerArgs.addAll(['--release', project.ext.release.majorVersion])
-}
-tasks.withType(ScalaCompile) {
-  options.compilerArgs.addAll(['--release', project.ext.release.majorVersion])
-}
-
 apply plugin: "eclipse"
 eclipse {
   classpath {
