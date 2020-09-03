@@ -15,12 +15,13 @@ public class TraceLog4j1_2Test extends AiSmokeTest {
     @TargetUri("/traceLog4j1_2")
     public void testTraceLog4j1_2() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3);
+        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(4);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
         Envelope mdEnvelope3 = mdList.get(2);
+        Envelope mdEnvelope4 = mdList.get(3);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
@@ -35,24 +36,31 @@ public class TraceLog4j1_2Test extends AiSmokeTest {
         MessageData md1 = logs.get(0);
         MessageData md2 = logs.get(1);
         MessageData md3 = logs.get(2);
+        MessageData md4 = logs.get(3);
 
-        assertEquals("This is log4j1.2 warn.", md1.getMessage());
-        assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
+        assertEquals("This is log4j1.2 info.", md1.getMessage());
+        assertEquals(SeverityLevel.Information, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
-        assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
+        assertEquals("INFO", md1.getProperties().get("LoggingLevel"));
         assertParentChild(rd, rdEnvelope, mdEnvelope1);
 
-        assertEquals("This is log4j1.2 error.", md2.getMessage());
-        assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
+        assertEquals("This is log4j1.2 warn.", md2.getMessage());
+        assertEquals(SeverityLevel.Warning, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
-        assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
+        assertEquals("WARN", md2.getProperties().get("LoggingLevel"));
         assertParentChild(rd, rdEnvelope, mdEnvelope2);
 
-        assertEquals("This is log4j1.2 fatal.", md3.getMessage());
-        assertEquals(SeverityLevel.Critical, md3.getSeverityLevel());
+        assertEquals("This is log4j1.2 error.", md3.getMessage());
+        assertEquals(SeverityLevel.Error, md3.getSeverityLevel());
         assertEquals("Logger", md3.getProperties().get("SourceType"));
-        assertEquals("FATAL", md3.getProperties().get("LoggingLevel"));
+        assertEquals("ERROR", md3.getProperties().get("LoggingLevel"));
         assertParentChild(rd, rdEnvelope, mdEnvelope3);
+
+        assertEquals("This is log4j1.2 fatal.", md4.getMessage());
+        assertEquals(SeverityLevel.Critical, md4.getSeverityLevel());
+        assertEquals("Logger", md4.getProperties().get("SourceType"));
+        assertEquals("FATAL", md4.getProperties().get("LoggingLevel"));
+        assertParentChild(rd, rdEnvelope, mdEnvelope4);
     }
 
     @Test

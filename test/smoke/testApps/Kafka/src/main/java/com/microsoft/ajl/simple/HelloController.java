@@ -20,6 +20,9 @@ public class HelloController {
 
     @RequestMapping("/sendMessage")
     public String sendMessage() throws ExecutionException, InterruptedException {
+        // need to wait a bit on the first request to make sure the consumer is ready
+        // and listening for the message before sending it
+        Thread.sleep(5000);
         kafkaTemplate.send("mytopic", "hello world!").get();
         return "Sent!";
     }
