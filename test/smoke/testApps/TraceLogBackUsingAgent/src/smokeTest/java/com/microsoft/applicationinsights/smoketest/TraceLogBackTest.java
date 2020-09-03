@@ -93,6 +93,7 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
         assertEquals("Logger", ed.getProperties().get("SourceType"));
         assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
+        assertEquals("MDC value", ed.getProperties().get("MDC key"));
         assertParentChild(rd, rdEnvelope, edEnvelope);
     }
 

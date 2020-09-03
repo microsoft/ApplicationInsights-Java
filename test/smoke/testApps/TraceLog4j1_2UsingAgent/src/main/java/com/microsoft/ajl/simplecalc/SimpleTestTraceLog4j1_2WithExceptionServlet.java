@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
 
 /**
  * Servlet implementation class SimpleTestTraceLog4j1_2
@@ -27,7 +28,7 @@ public class SimpleTestTraceLog4j1_2WithExceptionServlet extends HttpServlet {
         ServletFuncs.geRrenderHtml(request, response);
 
         Logger logger = LogManager.getRootLogger();
+        MDC.put("MDC key", "MDC value");
         logger.error("This is an exception!", new Exception("Fake Exception"));
-
     }
 }
