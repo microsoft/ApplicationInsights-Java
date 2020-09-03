@@ -62,6 +62,7 @@ public class TraceLog4j1_2Test extends AiSmokeTest {
         assertEquals("This is log4j1.2 fatal.", md4.getMessage());
         assertEquals(SeverityLevel.Critical, md4.getSeverityLevel());
         assertEquals("Logger", md4.getProperties().get("SourceType"));
+        assertEquals("FATAL", md4.getProperties().get("LoggingLevel"));
         assertFalse(md4.getProperties().containsKey("MDC key"));
         assertParentChild(rd, rdEnvelope, mdEnvelope4);
     }
