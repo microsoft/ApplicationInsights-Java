@@ -43,8 +43,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
     private final String id;
     private final String objectName;
     private final Collection<JmxAttributeData> attributes;
-    private boolean relevant = true;
-    private boolean firstTime = true;
+    private boolean alreadyLogged = false;
 
     @Override
     public String getId() {
@@ -58,10 +57,6 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
      */
     @Override
     public synchronized void report(TelemetryClient telemetryClient) {
-        if (!relevant) {
-            return;
-        }
-
         try {
             Map<String, Collection<Object>> result =
                     JmxDataFetcher.fetch(objectName, attributes);
@@ -88,16 +83,11 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                 }
             }
         } catch (Exception e) {
-            if (firstTime) {
+            if (!alreadyLogged) {
                 logger.error("Error while fetching JMX data: '{}', The PC will be ignored", e.toString());
                 logger.trace("Error while fetching JMX data, The PC will be ignored", e);
-                relevant = false;
-            } else {
-                logger.error("Error while fetching JMX data: '{}'", e.toString());
-                logger.trace("Error while fetching JMX data", e);
+                alreadyLogged = true;
             }
-        } finally {
-            firstTime = false;
         }
     }
 
