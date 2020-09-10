@@ -84,8 +84,8 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
             }
         } catch (Exception e) {
             if (!alreadyLogged) {
-                logger.error("Error while fetching JMX data: '{}', The PC will be ignored", e.toString());
-                logger.trace("Error while fetching JMX data, The PC will be ignored", e);
+                logger.error("Error while fetching JMX data: '{}'", e.toString());
+                logger.trace("Error while fetching JMX data", e);
                 alreadyLogged = true;
             }
         }
