@@ -35,6 +35,7 @@ public class SimpleTestTraceLogBackWithExceptionServlet extends HttpServlet {
             Logger logger = (Logger) LoggerFactory.getLogger("root");
             MDC.put("MDC key", "MDC value");
             logger.error("This is an exception!", new Exception("Fake Exception"));
+            MDC.remove("MDC key");
         } catch (Exception e) {
             //TODO: handle exception
             TelemetryClient client = new TelemetryClient();

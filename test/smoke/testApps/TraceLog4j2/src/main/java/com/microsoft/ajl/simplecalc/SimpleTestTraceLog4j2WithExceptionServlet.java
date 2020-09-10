@@ -30,5 +30,6 @@ public class SimpleTestTraceLog4j2WithExceptionServlet extends HttpServlet {
 
         ThreadContext.put("MDC key", "MDC value");
         logger.error("This is an exception!", new Exception("Fake Exception"));
+        ThreadContext.remove("MDC key");
     }
 }

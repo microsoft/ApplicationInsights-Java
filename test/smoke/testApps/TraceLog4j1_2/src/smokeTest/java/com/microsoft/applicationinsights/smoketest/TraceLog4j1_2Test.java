@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import com.microsoft.applicationinsights.internal.schemav2.*;
 import org.junit.Test;
@@ -42,7 +43,7 @@ public class TraceLog4j1_2Test extends AiSmokeTest {
         assertEquals(SeverityLevel.Information, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
         assertEquals("INFO", md1.getProperties().get("LoggingLevel"));
-//        assertFalse(md1.getProperties().containsKey("MDC key"));
+        assertFalse(md1.getProperties().containsKey("MDC key"));
         assertParentChild(rd, rdEnvelope, mdEnvelope1);
 
         assertEquals("This is log4j1.2 warn.", md2.getMessage());

@@ -30,5 +30,6 @@ public class SimpleTestTraceLog4j1_2WithExceptionServlet extends HttpServlet {
         Logger logger = LogManager.getRootLogger();
         MDC.put("MDC key", "MDC value");
         logger.error("This is an exception!", new Exception("Fake Exception"));
+        MDC.remove("MDC key");
     }
 }
