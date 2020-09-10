@@ -49,24 +49,28 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertEquals(SeverityLevel.Information, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
         assertEquals("INFO", md1.getProperties().get("LoggingLevel"));
+        assertFalse(md1.getProperties().containsKey("MDC key"));
         assertParentChild(rd, rdEnvelope, mdEnvelope1);
 
         assertEquals("This is log4j2 warn.", md2.getMessage());
         assertEquals(SeverityLevel.Warning, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
         assertEquals("WARN", md2.getProperties().get("LoggingLevel"));
+        assertEquals("MDC value", md2.getProperties().get("MDC key"));
         assertParentChild(rd, rdEnvelope, mdEnvelope2);
 
         assertEquals("This is log4j2 error.", md3.getMessage());
         assertEquals(SeverityLevel.Error, md3.getSeverityLevel());
         assertEquals("Logger", md3.getProperties().get("SourceType"));
         assertEquals("ERROR", md3.getProperties().get("LoggingLevel"));
+        assertFalse(md3.getProperties().containsKey("MDC key"));
         assertParentChild(rd, rdEnvelope, mdEnvelope3);
 
         assertEquals("This is log4j2 fatal.", md4.getMessage());
         assertEquals(SeverityLevel.Critical, md4.getSeverityLevel());
         assertEquals("Logger", md4.getProperties().get("SourceType"));
         assertEquals("FATAL", md4.getProperties().get("LoggingLevel"));
+        assertFalse(md4.getProperties().containsKey("MDC key"));
         assertParentChild(rd, rdEnvelope, mdEnvelope4);
     }
 
@@ -90,6 +94,7 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
         assertEquals("Logger", ed.getProperties().get("SourceType"));
         assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
+        assertEquals("MDC value", ed.getProperties().get("MDC key"));
         assertParentChild(rd, rdEnvelope, edEnvelope);
     }
 
