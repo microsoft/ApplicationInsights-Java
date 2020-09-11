@@ -65,19 +65,32 @@ public class ConfigurationBuilder {
         preview.roleInstance =
                 overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
 
-        JmxMetric threadCountJmxMetric = new JmxMetric();
-        threadCountJmxMetric.objectName = "java.lang:type=Threading";
-        threadCountJmxMetric.attribute = "ThreadCount";
-        threadCountJmxMetric.display = "Current Thread Count";
-        preview.jmxMetrics.add(threadCountJmxMetric);
+        if (jmxMetricExisted(preview.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
+            JmxMetric threadCountJmxMetric = new JmxMetric();
+            threadCountJmxMetric.objectName = "java.lang:type=Threading";
+            threadCountJmxMetric.attribute = "ThreadCount";
+            threadCountJmxMetric.display = "Current Thread Count";
+            preview.jmxMetrics.add(threadCountJmxMetric);
+        }
 
-        JmxMetric classCountJmxMetric = new JmxMetric();
-        classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
-        classCountJmxMetric.attribute = "LoadedClassCount";
-        classCountJmxMetric.display = "Loaded Class Count";
-        preview.jmxMetrics.add(classCountJmxMetric);
+        if (jmxMetricExisted(preview.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
+            JmxMetric classCountJmxMetric = new JmxMetric();
+            classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
+            classCountJmxMetric.attribute = "LoadedClassCount";
+            classCountJmxMetric.display = "Loaded Class Count";
+            preview.jmxMetrics.add(classCountJmxMetric);
+        }
 
         return config;
+    }
+
+    private static boolean jmxMetricExisted(List<InstrumentationSettings.JmxMetric> jmxMetrics, String objectName, String attribute) {
+        for (JmxMetric metric : jmxMetrics) {
+            if (metric.objectName == objectName && metric.attribute == attribute) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
