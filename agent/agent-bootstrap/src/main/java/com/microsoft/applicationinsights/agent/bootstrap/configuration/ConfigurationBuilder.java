@@ -67,8 +67,8 @@ public class ConfigurationBuilder {
 
         JmxMetric threadCountJmxMetric = new JmxMetric();
         threadCountJmxMetric.objectName = "java.lang:type=Threading";
-        threadCountJmxMetric.attribute = "threadCount";
-        threadCountJmxMetric.display = "Thread Count";
+        threadCountJmxMetric.attribute = "ThreadCount";
+        threadCountJmxMetric.display = "Current Thread Count";
         preview.jmxMetrics.add(threadCountJmxMetric);
 
         JmxMetric classCountJmxMetric = new JmxMetric();

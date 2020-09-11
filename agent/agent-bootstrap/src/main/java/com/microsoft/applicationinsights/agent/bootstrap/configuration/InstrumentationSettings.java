@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class InstrumentationSettings {
         public HttpProxy httpProxy = new HttpProxy();
         public boolean developerMode;
 
-        public List<JmxMetric> jmxMetrics = Collections.emptyList();
+        public List<JmxMetric> jmxMetrics = new ArrayList<>();
 
         public Map<String, Map<String, Object>> instrumentation = Collections.emptyMap();
     }
