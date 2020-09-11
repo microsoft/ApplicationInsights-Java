@@ -65,7 +65,7 @@ public class ConfigurationBuilder {
         preview.roleInstance =
                 overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
 
-        if (jmxMetricExisted(preview.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
+        if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
             JmxMetric threadCountJmxMetric = new JmxMetric();
             threadCountJmxMetric.objectName = "java.lang:type=Threading";
             threadCountJmxMetric.attribute = "ThreadCount";
@@ -73,7 +73,7 @@ public class ConfigurationBuilder {
             preview.jmxMetrics.add(threadCountJmxMetric);
         }
 
-        if (jmxMetricExisted(preview.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
+        if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
             JmxMetric classCountJmxMetric = new JmxMetric();
             classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
             classCountJmxMetric.attribute = "LoadedClassCount";
