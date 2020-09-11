@@ -27,6 +27,7 @@ import java.util.Map;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.jmx.JmxDataFetcher;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +67,11 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                 double value = 0.0;
                 for (Object obj : displayAndValues.getValue()) {
                     try {
-                        value += Double.parseDouble(String.valueOf(obj));
+                        if (obj instanceof Boolean) {
+                            value = ((Boolean) obj).booleanValue() ? 1 : 0;
+                        } else {
+                            value += Double.parseDouble(String.valueOf(obj));
+                        }
                     } catch (Exception e) {
                         ok = false;
                         break;
