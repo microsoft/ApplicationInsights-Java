@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
@@ -63,6 +64,18 @@ public class ConfigurationBuilder {
         preview.roleName = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
         preview.roleInstance =
                 overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
+
+        JmxMetric threadCountJmxMetric = new JmxMetric();
+        threadCountJmxMetric.objectName = "java.lang:type=Threading";
+        threadCountJmxMetric.attribute = "threadCount";
+        threadCountJmxMetric.display = "Thread Count";
+        preview.jmxMetrics.add(threadCountJmxMetric);
+
+        JmxMetric classCountJmxMetric = new JmxMetric();
+        classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
+        classCountJmxMetric.attribute = "LoadedClassCount";
+        classCountJmxMetric.display = "Loaded Class Count";
+        preview.jmxMetrics.add(classCountJmxMetric);
 
         return config;
     }
