@@ -86,7 +86,7 @@ public class ConfigurationBuilder {
 
     private static boolean jmxMetricExisted(List<InstrumentationSettings.JmxMetric> jmxMetrics, String objectName, String attribute) {
         for (JmxMetric metric : jmxMetrics) {
-            if (metric.objectName == objectName && metric.attribute == attribute) {
+            if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
                 return true;
             }
         }
