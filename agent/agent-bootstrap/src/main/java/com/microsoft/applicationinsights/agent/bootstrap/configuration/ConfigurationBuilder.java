@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
@@ -64,7 +65,32 @@ public class ConfigurationBuilder {
         preview.roleInstance =
                 overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
 
+        if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
+            JmxMetric threadCountJmxMetric = new JmxMetric();
+            threadCountJmxMetric.objectName = "java.lang:type=Threading";
+            threadCountJmxMetric.attribute = "ThreadCount";
+            threadCountJmxMetric.display = "Current Thread Count";
+            preview.jmxMetrics.add(threadCountJmxMetric);
+        }
+
+        if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
+            JmxMetric classCountJmxMetric = new JmxMetric();
+            classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
+            classCountJmxMetric.attribute = "LoadedClassCount";
+            classCountJmxMetric.display = "Loaded Class Count";
+            preview.jmxMetrics.add(classCountJmxMetric);
+        }
+
         return config;
+    }
+
+    private static boolean jmxMetricExisted(List<InstrumentationSettings.JmxMetric> jmxMetrics, String objectName, String attribute) {
+        for (JmxMetric metric : jmxMetrics) {
+            if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
