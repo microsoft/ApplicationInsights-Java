@@ -21,6 +21,8 @@
 package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 
 import java.net.URI;
+import java.net.URL;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,6 +36,7 @@ import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
@@ -130,7 +133,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         track(telemetry);
     }
 
-    @Override public void trackTrace(String message, int severityLevel, Map<String, String> properties) {
+    @Override
+    public void trackTrace(String message, int severityLevel, Map<String, String> properties) {
         if (Strings.isNullOrEmpty(message)) {
             return;
         }
@@ -141,6 +145,27 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             telemetry.setSeverityLevel(getSeverityLevel(severityLevel));
         }
         MapUtil.copy(properties, telemetry.getProperties());
+
+        track(telemetry);
+    }
+
+    @Override
+    public void trackRequest(String id, String name, URL url, Date timestamp, long duration, String responseCode, boolean success) {
+        if (Strings.isNullOrEmpty(name)) {
+            return;
+        }
+
+        RequestTelemetry telemetry = new RequestTelemetry();
+        telemetry.setId(id);
+        telemetry.setName(name);
+        if (url != null) {
+            telemetry.setUrl(url);
+        }
+        telemetry.setTimestamp(timestamp);
+        telemetry.setDuration(new Duration(duration));
+        telemetry.setResponseCode(responseCode);
+        telemetry.setSuccess(success);
+
         track(telemetry);
     }
 
