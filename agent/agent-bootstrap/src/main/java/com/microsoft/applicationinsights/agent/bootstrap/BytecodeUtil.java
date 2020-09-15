@@ -21,6 +21,8 @@
 package com.microsoft.applicationinsights.agent.bootstrap;
 
 import java.net.URI;
+import java.net.URL;
+import java.util.Date;
 import java.util.Map;
 
 import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil;
@@ -83,6 +85,18 @@ public class BytecodeUtil {
         }
     }
 
+    public static void trackRequest(String id, String name, URL url, Date timestamp, long duration, String responseCode, boolean success) {
+        if (delegate != null) {
+            delegate.trackRequest(id, name, url, timestamp, duration, responseCode, success);
+        }
+    }
+
+    public static void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
+        if (delegate != null) {
+            delegate.trackException(exception, properties, metrics);
+        }
+    }
+
     public static void logErrorOnce(Throwable t) {
         if (delegate != null) {
             delegate.logErrorOnce(t);
@@ -112,6 +126,10 @@ public class BytecodeUtil {
                            Map<String, Double> metrics);
 
         void trackTrace(String message, int severityLevel, Map<String, String> properties);
+
+        void trackRequest(String id, String name, URL url, Date timestamp, long duration, String responseCode, boolean success);
+
+        void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics);
 
         void logErrorOnce(Throwable t);
     }
