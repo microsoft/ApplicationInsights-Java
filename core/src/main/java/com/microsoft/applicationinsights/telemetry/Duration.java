@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import java.io.IOException;
+
 import com.google.common.base.Preconditions;
 
 /**
@@ -30,6 +32,7 @@ import com.google.common.base.Preconditions;
  * It has various constructors to let the user easily define an interval of time.
  */
 public final class Duration {
+
     private final static String DAYS_FORMAT = "%02d.";
     private final static String HH_MM_SS_FORMAT = "%02d:%02d:%02d";
     private final static String MILLISECONDS_FORMAT = ".%03d0000";
@@ -135,16 +138,57 @@ public final class Duration {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(24); // length optimized for duration < 1 min
         if (days != 0) {
-            sb.append(String.format(DAYS_FORMAT, days));
+            appendTwoDigits(sb, days);
+            sb.append('.');
         }
-        sb.append(String.format(HH_MM_SS_FORMAT, hours, minutes, seconds));
-        if (milliseconds > 0) {
-            sb.append(String.format(MILLISECONDS_FORMAT, milliseconds));
+        appendTwoDigits(sb, hours);
+        sb.append(':');
+        appendTwoDigits(sb, minutes);
+        sb.append(':');
+        appendTwoDigits(sb, seconds);
+        if (milliseconds != 0) {
+            sb.append('.');
+            appendThreeDigits(sb, milliseconds);
+            sb.append("0000");
         }
-
         return sb.toString();
+    }
+
+    private static void appendTwoDigits(StringBuilder sb, long value) {
+        if (value < 0) {
+            sb.append('-');
+            value = -value;
+        }
+        if (value < 10) {
+            sb.append('0');
+        }
+        sb.append(value);
+    }
+
+    private static void appendTwoDigits(StringBuilder sb, int value) {
+        if (value < 0) {
+            sb.append('-');
+            value = -value;
+        }
+        if (value < 10) {
+            sb.append('0');
+        }
+        sb.append(value);
+    }
+
+    private static void appendThreeDigits(StringBuilder sb, int value) {
+        if (value < 0) {
+            sb.append('-');
+            value = -value;
+        }
+        if (value < 10) {
+            sb.append("00");
+        } else if (value < 100) {
+            sb.append('0');
+        }
+        sb.append(value);
     }
 
     @Override

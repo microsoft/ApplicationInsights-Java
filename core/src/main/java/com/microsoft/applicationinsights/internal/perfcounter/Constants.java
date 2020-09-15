@@ -34,7 +34,6 @@ public final class Constants {
     public final static String TOTAL_CPU_PC_CATEGORY_NAME = "Processor";
     public final static String CPU_PC_COUNTER_NAME = "% Processor Time";
 
-
     public final static String TOTAL_MEMORY_PC_ID = PERFORMANCE_COUNTER_PREFIX + "TotalMemoryPerformanceCounter";
     public final static String PROCESS_MEM_PC_ID = PERFORMANCE_COUNTER_PREFIX + "ProcessMemoryPerformanceCounter";
 
@@ -42,7 +41,6 @@ public final class Constants {
 
     public final static String TOTAL_MEMORY_PC_CATEGORY_NAME = "Memory";
     public final static String TOTAL_MEMORY_PC_COUNTER_NAME = "Available Bytes";
-
 
     public final static String PROCESS_IO_PC_ID = PERFORMANCE_COUNTER_PREFIX + "ProcessIOPerformanceCounter";
     public final static String PROCESS_IO_PC_COUNTER_NAME = "IO Data Bytes/sec";

@@ -32,7 +32,7 @@ Microsoft Application Insights Java Software Development Kit consists of materia
 9.  Guava version 27.1-android (https://github.com/google/guava)
 10. INFOMAS PCM Application Suite version 3.0.4 (https://github.com/rmuller/infomas-asl)
 11. JSR-305 version 2.0.1 (http://code.google.com/p/jsr-305/)
-12. XStream version 1.4.11.1 (https://github.com/x-stream/xstream)
+12. Moshi version 1.8.0 (https://github.com/square/moshi)
 13. SLF4J 1.7.26 (https://github.com/qos-ch/slf4j)
 14. Logback 1.2.3 (https://github.com/qos-ch/logback)
 15. Guava dependency: FindBugs JSR305 annotations 3.0.2 (https://github.com/findbugsproject/findbugs)
@@ -40,7 +40,6 @@ Microsoft Application Insights Java Software Development Kit consists of materia
 17. Guava dependency: Google ErrorProne annotations 2.2.0 (https://github.com/google/error-prone/tree/master/annotations)
 18. Guava dependency: Google J2ObjC annotations 1.1 (https://github.com/google/j2objc/tree/master/annotations)
 19. Guava dependency: Animal Sniffer annotations 1.17 (https://github.com/mojohaus/animal-sniffer/tree/master/animal-sniffer-annotations)
-20. Glowroot Instrumentation 0.14.9 (https://github.com/glowroot/instrumentation)
 21. CheckerFramework annotations for Java 6 1.0.0 (https://github.com/trask/checker-framework-annotations-for-jdk6)
 22. Gson 2.8.5 (https://github.com/google/gson)
 23. os-maven-plugin 1.6.2 (https://github.com/trustin/os-maven-plugin)
@@ -789,38 +788,11 @@ END OF CREATIVE COMMONS ATTRIBUTION 4.0 INTERNATIONAL PUBLIC LICENSE
  ============================================================================================================================
  END OF FILE FROM /commons-lang-LANG_3_6/src/main/java/org/apache/commons/lang3/StringUtils.java NOTICE, INFORMATION AND LICENSE
 
- %% XStream NOTICES, INFORMATION, AND LICENSE BEGIN HERE
- =========================================
- (BSD Style License)
-
- Copyright (c) 2003-2006, Joe Walnes
- Copyright (c) 2006-2015, XStream Committers
- All rights reserved.
-
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
-
- Redistributions of source code must retain the above copyright notice, this list of
- conditions and the following disclaimer. Redistributions in binary form must reproduce
- the above copyright notice, this list of conditions and the following disclaimer in
- the documentation and/or other materials provided with the distribution.
-
- Neither the name of XStream nor the names of its contributors may be used to endorse
- or promote products derived from this software without specific prior written
- permission.
-
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
- EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
- SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
- BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
- WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE.
- =========================================
- END OF XStream NOTICES, INFORMATION, AND LICENSE
+ %% Moshi NOTICES, INFORMATION, AND LICENSE BEGIN HERE
+  =========================================
+  Licensed under the Apache License, Version 2.0
+  =========================================
+  END OF Moshi NOTICES, INFORMATION, AND LICENSE
 
  %% SLF4J NOTICES, INFORMATION, AND LICENSE BEGIN HERE
  =========================================
@@ -932,12 +904,6 @@ END OF CREATIVE COMMONS ATTRIBUTION 4.0 INTERNATIONAL PUBLIC LICENSE
  THE SOFTWARE.
  =========================================
  END OF Animal Sniffer annotations NOTICES, INFORMATION, AND LICENSE
-
- %% Glowroot Instrumentation NOTICES, INFORMATION, AND LICENSE BEGIN HERE
- =========================================
- Licensed under the Apache License, Version 2.0
- =========================================
- END OF Glowroot Instrumentation NOTICES, INFORMATION, AND LICENSE
 
  %% CheckerFramework annotations for Java 6 NOTICES, INFORMATION, AND LICENSE BEGIN HERE
  =========================================

@@ -25,8 +25,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class will create the 'built-in'/default performance counters.
@@ -34,6 +35,9 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
  * Created by gupele on 3/3/2015.
  */
 final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCountersFactory, WindowsPerformanceCountersFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProcessBuiltInPerformanceCountersFactory.class);
+
     private Iterable<WindowsPerformanceCounterData> windowsPCsData;
 
     /**
@@ -51,13 +55,13 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
             } else if (SystemInformation.INSTANCE.isUnix()) {
                 return getUnixPerformanceCounters();
             } else {
-                InternalLogger.INSTANCE.error("Unknown OS, performance counters are not created.");
+                logger.error("Unknown OS, performance counters are not created.");
             }
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Error while creating performance counters: '%s'", t.toString());            } catch (ThreadDeath td) {
+                logger.error("Error while creating performance counters: '{}'", t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -74,8 +78,9 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
     private ArrayList<PerformanceCounter> getMutualPerformanceCounters() {
         ArrayList<PerformanceCounter> performanceCounters = new ArrayList<PerformanceCounter>();
 
-        performanceCounters.add(new ProcessMemoryPerformanceCounter());
         performanceCounters.add(new ProcessCpuPerformanceCounter());
+        performanceCounters.add(new ProcessMemoryPerformanceCounter());
+        performanceCounters.add(new FreeMemoryPerformanceCounter());
 
         return performanceCounters;
     }
@@ -88,7 +93,6 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
         ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
         performanceCounters.add(new UnixProcessIOPerformanceCounter());
         performanceCounters.add(new UnixTotalCpuPerformanceCounter());
-        performanceCounters.add(new UnixTotalMemoryPerformanceCounter());
 
         return performanceCounters;
     }
@@ -110,7 +114,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
             throw td;
         } catch (Throwable e) {
             try {
-                InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsMetric: '%s'", e.toString());
+                logger.error("Failed to create WindowsPerformanceCounterAsMetric: '{}'", e.toString());
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -125,7 +129,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
             throw td;
         } catch (Throwable e) {
             try {
-                InternalLogger.INSTANCE.error("Failed to create WindowsPerformanceCounterAsPC: '%s'", e.toString());
+                logger.error("Failed to create WindowsPerformanceCounterAsPC: '{}'", e.toString());
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {

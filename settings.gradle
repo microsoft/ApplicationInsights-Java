@@ -19,33 +19,19 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-include 'ApplicationInsightsInternalLogger'
+include 'instrumentation:azure-functions'
 
-include 'agent'
+include 'etw:native'
+include 'etw:java'
+include 'etw:etw-testapp'
+
 include 'core'
-include 'logging:common'
-include 'logging:log4j1_2'
-include 'logging:log4j2'
-include 'logging:logback'
-include 'web'
-include 'web-auto'
-include 'azure-application-insights-spring-boot-starter'
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
-}
 
-//include 'distributions'
-
-
-if (System.properties.AI_SAMPLES) {
-    include 'springbootsample'
-    include ':test:webapps:PerfTestApp'
-    include ':test:webapps:PerfTestAppSpringBoot'
-    include ':test:webapps:bookstore-spring'
-
-    //  TODO rewrite samples; these are not representative of "real-world" usage
-    include 'samples'
-}
+include ':agent:agent-bootstrap'
+include ':agent:exporter'
+include ':agent:agent-tooling'
+include ':agent:instrumentation'
+include ':agent:agent'
 
 // Projects for smokeTests
 include ':test:smoke'
@@ -55,6 +41,7 @@ include ':test:smoke:appServers:Tomcat.8.5'
 include ':test:smoke:appServers:JBossEAP.7'
 include ':test:smoke:appServers:JBossEAP.6'
 include ':test:smoke:appServers:Jetty.9'
+include ':test:smoke:appServers:JavaSE'
 include ':test:smoke:testApps'
 
 include ':test:smoke:framework:testCore'
@@ -64,6 +51,7 @@ include ':test:fakeIngestion:servlet'
 include ':test:fakeIngestion:standalone'
 
 include ':test:smoke:testApps:CachingCalculator'
+include ':test:smoke:testApps:Cassandra'
 include ':test:smoke:testApps:CoreAndFilter'
 include ':test:smoke:testApps:AutoPerfCounters'
 include ':test:smoke:testApps:TraceLog4j1_2'
@@ -72,16 +60,30 @@ include ':test:smoke:testApps:TraceLogBack'
 include ':test:smoke:testApps:TraceLogBackUsingAgent'
 include ':test:smoke:testApps:TraceLog4j2'
 include ':test:smoke:testApps:TraceLog4j2UsingAgent'
+include ':test:smoke:testApps:TraceJavaUtilLoggingUsingAgent'
 include ':test:smoke:testApps:HeartBeat'
 include ':test:smoke:testApps:SpringBootTest'
-include ':test:smoke:testApps:FixedRateSampling'
+// IMPORTANT: when bringing back this test, be sure to re-add it to CI TestApp variable
+// this is broken because fixed rate sampling applies same percentage to all telemetry types now
+// and test infra was relying on request capture always being 100% (e.g. for checking application health)
+//include ':test:smoke:testApps:FixedRateSampling'
+include ':test:smoke:testApps:gRPC'
 include ':test:smoke:testApps:Jdbc'
+include ':test:smoke:testApps:Lettuce'
 include ':test:smoke:testApps:MongoDB'
 include ':test:smoke:testApps:HttpClients'
-include ':test:smoke:testApps:CustomInstrumentation'
+//include ':test:smoke:testApps:CustomInstrumentation'
 include ':test:smoke:testApps:WebAuto'
 include ':test:smoke:testApps:SpringBoot1_3Auto'
 include ':test:smoke:testApps:SpringBootAuto'
+include ':test:smoke:testApps:WebFlux'
+include ':test:smoke:testApps:JMS'
+include ':test:smoke:testApps:Kafka'
+include ':test:smoke:testApps:SpringCloudStream'
+include ':test:smoke:testApps:Micrometer'
+include ':test:smoke:testApps:ActuatorMetrics'
+include ':test:smoke:testApps:SystemExit'
+include ':test:smoke:testApps:VerifyShading'
 include ':test:smoke:testApps:VerifyJava7'
 
 

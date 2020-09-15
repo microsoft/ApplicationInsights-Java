@@ -25,11 +25,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.GCPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class will create dedicated Jvm performance counters, unless disabled by user in the configuration file
@@ -37,6 +37,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 8/8/2016.
  */
 public class JvmPerformanceCountersFactory implements PerformanceCountersFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(JvmPerformanceCountersFactory.class);
+
     private boolean isEnabled = true;
     private HashSet<String> disabledJvmPCs = new HashSet<String>();
 
@@ -48,7 +51,7 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
             addJvmMemoryPerformanceCounter(pcs);
             addGCPerformanceCounter(pcs);
         } else {
-            InternalLogger.INSTANCE.trace("JvmPerformanceCountersFactory is disabled");
+            logger.trace("JvmPerformanceCountersFactory is disabled");
         }
         return pcs;
     }
@@ -56,13 +59,13 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
     private void addDeadLockDetector(ArrayList<PerformanceCounter> pcs) {
         try {
             if (disabledJvmPCs.contains(DeadLockDetectorPerformanceCounter.NAME)) {
-                InternalLogger.INSTANCE.trace("DeadLockDetectorPerformanceCounter is disabled");
+                logger.trace("DeadLockDetectorPerformanceCounter is disabled");
                 return;
             }
 
             DeadLockDetectorPerformanceCounter dlpc = new DeadLockDetectorPerformanceCounter();
             if (!dlpc.isSupported()) {
-                InternalLogger.INSTANCE.trace("DeadLockDetectorPerformanceCounter is not supported");
+                logger.trace("DeadLockDetectorPerformanceCounter is not supported");
                 return;
             }
 
@@ -71,8 +74,7 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Failed to create DeadLockDetector, exception: %s",
-                        ExceptionUtils.getStackTrace(t));
+                logger.error("Failed to create DeadLockDetector", t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -84,7 +86,7 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
     private void addJvmMemoryPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
         try {
             if (disabledJvmPCs.contains(JvmHeapMemoryUsedPerformanceCounter.NAME)) {
-                InternalLogger.INSTANCE.trace("JvmHeapMemoryUsedPerformanceCounter is disabled");
+                logger.trace("JvmHeapMemoryUsedPerformanceCounter is disabled");
                 return;
             }
 
@@ -94,8 +96,7 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Failed to create JvmHeapMemoryUsedPerformanceCounter, exception: %s",
-                        ExceptionUtils.getStackTrace(t));
+                logger.error("Failed to create JvmHeapMemoryUsedPerformanceCounter", t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -116,8 +117,7 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Failed to create GCPerformanceCounter, exception: %s",
-                        ExceptionUtils.getStackTrace(t));
+                logger.error("Failed to create GCPerformanceCounter", t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {

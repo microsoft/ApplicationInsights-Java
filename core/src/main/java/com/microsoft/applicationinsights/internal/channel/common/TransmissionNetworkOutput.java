@@ -25,8 +25,7 @@ import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -36,13 +35,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.util.EntityUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The class is responsible for the actual sending of
@@ -52,7 +51,10 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmissionNetworkOutput implements TransmissionOutput {
+public final class TransmissionNetworkOutput implements TransmissionOutputSync {
+
+    private static final Logger logger = LoggerFactory.getLogger(TransmissionNetworkOutput.class);
+
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String CONTENT_ENCODING_HEADER = "Content-Encoding";
     private static final String RESPONSE_THROTTLING_HEADER = "Retry-After";
@@ -106,13 +108,13 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
         this.serverUri = serverUri;
         this.configuration = configuration;
         if (StringUtils.isNotEmpty(serverUri)) {
-            InternalLogger.INSTANCE.warn("Setting the endpoint via the <Channel> element is deprecated and will be removed in a future version. Use the top-level element <ConnectionString>.");
+            logger.warn("Setting the endpoint via the <Channel> element is deprecated and will be removed in a future version. Use the top-level element <ConnectionString>.");
         }
         httpClient = ApacheSenderFactory.INSTANCE.create();
         this.transmissionPolicyManager = transmissionPolicyManager;
         stopped = false;
-        if (InternalLogger.INSTANCE.isTraceEnabled()) {
-            InternalLogger.INSTANCE.trace("%s using endpoint %s", TransmissionNetworkOutput.class.getSimpleName(), getIngestionEndpoint());
+        if (logger.isTraceEnabled()) {
+            logger.trace("{} using endpoint {}", TransmissionNetworkOutput.class.getSimpleName(), getIngestionEndpoint());
         }
     }
     /**
@@ -122,24 +124,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
      */
     public void setTransmissionDispatcher(TransmissionDispatcher transmissionDispatcher) {
         this.transmissionDispatcher = transmissionDispatcher;
-    }
-
-    /**
-     * Stops all threads from sending data.
-     *
-     * @param timeout
-     *            The timeout to wait, which is not relevant here.
-     * @param timeUnit
-     *            The time unit, which is not relevant in this method.
-     */
-    @Override
-    public synchronized void stop(long timeout, TimeUnit timeUnit) {
-        if (stopped) {
-            return;
-        }
-
-        httpClient.close();
-        stopped = true;
     }
 
     /**
@@ -154,10 +138,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
      * @return True when done.
      */
     @Override
-    public boolean send(Transmission transmission) {
+    public boolean sendSync(Transmission transmission) {
         if (!stopped) {
-            // If we're not stopped but in a blocked state then fail to second
-            // TransmissionOutput
+            // If we're not stopped but in a blocked state then fail to second transmission output
             if (transmissionPolicyManager.getTransmissionPolicyState().getCurrentState() != TransmissionPolicy.UNBLOCKED) {
                 return false;
             }
@@ -180,7 +163,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 respString = EntityUtils.toString(respEntity);
                 retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
 
-                // After we reach our instant retry limit we should fail to second TransmissionOutput
+                // After we reach our instant retry limit we should fail to second transmission output
                 if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() > this.transmissionPolicyManager.getMaxInstantRetries()) {
                     return false;
                 } else if (code == HttpStatus.SC_OK) {
@@ -192,25 +175,25 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
 
             } catch (ConnectionPoolTimeoutException e) {
                 ex = e;
-                InternalLogger.INSTANCE.error("Failed to send, connection pool timeout exception%nStack Trace:%n%s", ExceptionUtils.getStackTrace(e));
+                logger.error("Failed to send, connection pool timeout exception", e);
             } catch (SocketException e) {
                 ex = e;
-                InternalLogger.INSTANCE.error("Failed to send, socket exception.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(e));
+                logger.error("Failed to send, socket exception", e);
             } catch (UnknownHostException e) {
                 ex = e;
-                InternalLogger.INSTANCE.error("Failed to send, wrong host address or cannot reach address due to network issues.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(e));
+                logger.error("Failed to send, wrong host address or cannot reach address due to network issues", e);
             } catch (IOException ioe) {
                 ex = ioe;
-                InternalLogger.INSTANCE.error("Failed to send.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(ioe));
+                logger.error("Failed to send", ioe);
             } catch (Exception e) {
                 ex = e;
-                InternalLogger.INSTANCE.error("Failed to send, unexpected exception.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(e));
+                logger.error("Failed to send, unexpected exception", e);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t) {
                 ex = t;
                 try {
-                    InternalLogger.INSTANCE.error("Failed to send, unexpected error.%nStack Trace:%n%s", ExceptionUtils.getStackTrace(t));
+                    logger.error("Failed to send, unexpected error", t);
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
@@ -223,7 +206,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutput {
                 httpClient.dispose(response);
 
                 if (code == HttpStatus.SC_BAD_REQUEST) {
-                    InternalLogger.INSTANCE.error("Error sending data: %s", reason);
+                    logger.error("Error sending data: {}", reason);
                 } else if (code != HttpStatus.SC_OK) {
                     // Invoke the listeners for handling things like errors
                     // The listeners will handle the back off logic as well as the dispatch

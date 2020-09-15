@@ -27,7 +27,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputAsync;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
 /**
@@ -37,14 +38,14 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
  *
  * Created by gupele on 12/22/2014.
  */
-public final class ActiveTransmissionFileSystemOutput implements TransmissionOutput {
+public final class ActiveTransmissionFileSystemOutput implements TransmissionOutputAsync {
     private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1);
     private final ThreadPoolExecutor threadPool;
-    private final TransmissionOutput actualOutput;
+    private final TransmissionOutputSync actualOutput;
     private final TransmissionPolicyStateFetcher transmissionPolicy;
     private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
 
-    public ActiveTransmissionFileSystemOutput(TransmissionOutput actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
+    public ActiveTransmissionFileSystemOutput(TransmissionOutputSync actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
         Preconditions.checkNotNull(transmissionPolicy, "transmissionPolicy must be a non-null value");
 
         this.actualOutput = actualOutput;
@@ -56,7 +57,7 @@ public final class ActiveTransmissionFileSystemOutput implements TransmissionOut
     }
 
     @Override
-    public boolean send(final Transmission transmission) {
+    public boolean sendAsync(final Transmission transmission) {
         // TODO: check the possibility of refactoring the 'send' and possible log on errors
         try {
             if (transmissionPolicy.getCurrentState() == TransmissionPolicy.BLOCKED_AND_CANNOT_BE_PERSISTED) {
@@ -67,7 +68,7 @@ public final class ActiveTransmissionFileSystemOutput implements TransmissionOut
                 @Override
                 public void run() {
                     try {
-                        actualOutput.send(transmission);
+                        actualOutput.sendSync(transmission);
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable throwable) {
@@ -89,8 +90,8 @@ public final class ActiveTransmissionFileSystemOutput implements TransmissionOut
     }
 
     @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-        actualOutput.stop(timeout, timeUnit);
-        ThreadPoolUtils.stop(threadPool, timeout, timeUnit);
+    public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        threadPool.shutdown();
+        threadPool.awaitTermination(timeout, timeUnit);
     }
 }

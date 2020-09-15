@@ -21,55 +21,29 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-
 /**
  * Created by gupele on 3/13/2015.
  */
-@XStreamAlias("ApplicationInsights")
 public class ApplicationInsightsXmlConfiguration {
 
-    @XStreamAlias("InstrumentationKey")
     private String instrumentationKey;
 
-    @XStreamAlias("ConnectionString")
     private String connectionString;
 
-    @XStreamAlias("RoleName")
     private String roleName;
 
-    @XStreamAlias("DisableTelemetry")
+    private String roleInstance;
+
     public boolean disableTelemetry;
 
-    @XStreamAlias("TelemetryInitializers")
-    private TelemetryInitializersXmlElement telemetryInitializers;
-
-    @XStreamAlias("TelemetryProcessors")
-    private TelemetryProcessorsXmlElement telemetryProcessors;
-
-    @XStreamAlias("ContextInitializers")
-    private ContextInitializersXmlElement contextInitializers;
-
-    @XStreamAlias("Channel")
     private ChannelXmlElement channel = new ChannelXmlElement();
 
-    @XStreamAlias("TelemetryModules")
     private TelemetryModulesXmlElement modules;
 
-    @XStreamAlias("PerformanceCounters")
     private PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
 
-    @XStreamAlias("SDKLogger")
-    private SDKLoggerXmlElement sdkLogger;
-
-    @XStreamAlias("Sampling")
-    private SamplerXmlElement sampler;
-
-    @XStreamAlias("QuickPulse")
     private QuickPulseXmlElement quickPulse;
 
-    @XStreamAsAttribute
     private String schemaVersion;
 
     public String getInstrumentationKey() {
@@ -96,6 +70,14 @@ public class ApplicationInsightsXmlConfiguration {
         this.roleName = roleName;
     }
 
+    public String getRoleInstance() {
+        return roleInstance;
+    }
+
+    public void setRoleInstance(String roleInstance) {
+        this.roleInstance = roleInstance;
+    }
+
     public String getSchemaVersion() {
         return schemaVersion;
     }
@@ -104,44 +86,12 @@ public class ApplicationInsightsXmlConfiguration {
         this.schemaVersion = schemaVersion;
     }
 
-    public TelemetryInitializersXmlElement getTelemetryInitializers() {
-        return telemetryInitializers;
-    }
-
-    public void setTelemetryInitializers(TelemetryInitializersXmlElement telemetryInitializers) {
-        this.telemetryInitializers = telemetryInitializers;
-    }
-
-    public ContextInitializersXmlElement getContextInitializers() {
-        return contextInitializers;
-    }
-
-    public void setTelemetryProcessors(TelemetryProcessorsXmlElement telemetryProcessors) {
-        this.telemetryProcessors = telemetryProcessors;
-    }
-
-    public TelemetryProcessorsXmlElement getTelemetryProcessors() {
-        return telemetryProcessors;
-    }
-
-    public void setContextInitializers(ContextInitializersXmlElement contextInitializers) {
-        this.contextInitializers = contextInitializers;
-    }
-
     public ChannelXmlElement getChannel() {
         return channel;
     }
 
     public void setChannel(ChannelXmlElement channel) {
         this.channel = channel;
-    }
-
-    public SamplerXmlElement getSampler() {
-        return sampler;
-    }
-
-    public void setSampler(SamplerXmlElement sampler) {
-        this.sampler = sampler;
     }
 
     public QuickPulseXmlElement getQuickPulse() {
@@ -153,14 +103,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     public void setQuickPulse(QuickPulseXmlElement quickPulse) {
         this.quickPulse = quickPulse;
-    }
-
-    public SDKLoggerXmlElement getSdkLogger() {
-        return sdkLogger;
-    }
-
-    public void setSdkLogger(SDKLoggerXmlElement sdkLogger) {
-        this.sdkLogger = sdkLogger;
     }
 
     public boolean isDisableTelemetry() {

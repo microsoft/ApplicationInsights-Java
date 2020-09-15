@@ -48,6 +48,7 @@ public final class TelemetryContext {
     private ContextTagsMap tags;
 
     private String instrumentationKey;
+    private String normalizedInstrumentationKey = "";
     private ComponentContext component;
     private DeviceContext device;
     private SessionContext session;
@@ -164,6 +165,10 @@ public final class TelemetryContext {
         return instrumentationKey;
     }
 
+    public String getNormalizedInstrumentationKey() {
+        return normalizedInstrumentationKey;
+    }
+
     /**
      * Sets the default instrumentation key for all {@link com.microsoft.applicationinsights.telemetry.Telemetry}
      * objects logged in this {@link com.microsoft.applicationinsights.telemetry.TelemetryContext}.
@@ -178,6 +183,12 @@ public final class TelemetryContext {
      */
     public void setInstrumentationKey(String instrumentationKey) {
         this.instrumentationKey = instrumentationKey;
+        this.normalizedInstrumentationKey = BaseTelemetry.normalizeInstrumentationKey(instrumentationKey);
+    }
+
+    public void setInstrumentationKey(String instrumentationKey, String normalizedInstrumentationKey) {
+        this.instrumentationKey = instrumentationKey;
+        this.normalizedInstrumentationKey = normalizedInstrumentationKey;
     }
 
     /**
@@ -198,7 +209,7 @@ public final class TelemetryContext {
 
     public void initialize(TelemetryContext source) {
         if (Strings.isNullOrEmpty(this.instrumentationKey) && !Strings.isNullOrEmpty(source.getInstrumentationKey()))
-            setInstrumentationKey(source.getInstrumentationKey());
+            setInstrumentationKey(source.getInstrumentationKey(), source.getNormalizedInstrumentationKey());
 
         MapUtil.copy(source.tags, this.tags);
         MapUtil.copy(source.properties, this.properties);

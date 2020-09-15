@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -8,7 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <h1>WebApp Heartbeat Property Provider</h1>
@@ -20,6 +20,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * @author Dhaval Doshi
  */
 public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterface {
+
+  private static final Logger logger = LoggerFactory.getLogger(WebAppsHeartbeatProvider.class);
 
   /**
    * Name of the provider
@@ -102,13 +104,13 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                 hasSetValues = true;
                 break;
               default:
-                InternalLogger.INSTANCE.trace("Unknown web apps property encountered");
+                logger.trace("Unknown web apps property encountered");
                 break;
             }
           }
           catch (Exception e) {
-            if (InternalLogger.INSTANCE.isWarnEnabled()) {
-              InternalLogger.INSTANCE.warn("Failed to obtain heartbeat property: %s", ExceptionUtils.getStackTrace(e));
+            if (logger.isWarnEnabled()) {
+              logger.warn("Failed to obtain heartbeat property", e);
             }
           }
         }

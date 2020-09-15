@@ -42,7 +42,6 @@ buildscript {
 ext.buildScriptsDir = "$rootDir/gradle"
 
 apply from: "$buildScriptsDir/common.gradle"
-apply from: "$buildScriptsDir/test.gradle"
 
 // endregion Common configurations
 

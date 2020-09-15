@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 
 /**
  * Servlet implementation class SimpleTestTraceLog4j2WithExceptionServlet
@@ -27,7 +28,8 @@ public class SimpleTestTraceLog4j2WithExceptionServlet extends HttpServlet {
             throws ServletException, IOException {
         ServletFuncs.geRrenderHtml(request, response);
 
+        ThreadContext.put("MDC key", "MDC value");
         logger.error("This is an exception!", new Exception("Fake Exception"));
-
+        ThreadContext.remove("MDC key");
     }
 }

@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utililty methods for dealing with reflection
@@ -41,30 +41,18 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 public final class ReflectionUtils {
 
+    private static final Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);
+
     private static final Map<String, Class<?>> builtInMap = new HashMap<>();
 
     static {
         addClass(com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel.class);
-        addClass(com.microsoft.applicationinsights.internal.channel.stdout.StdOutChannel.class);
 
         addClass(com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule.class);
         addClass(com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule.class);
         addClass(com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule.class);
 
         addClass(com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer.class);
-        addClass(com.microsoft.applicationinsights.extensibility.initializer.DeviceInfoContextInitializer.class);
-
-        addClass(com.microsoft.applicationinsights.extensibility.initializer.TimestampPropertyInitializer.class);
-        addClass(com.microsoft.applicationinsights.extensibility.initializer.SequencePropertyInitializer.class);
-        addClass(com.microsoft.applicationinsights.extensibility.initializer.docker.DockerContextInitializer.class);
-
-        addClass(com.microsoft.applicationinsights.internal.processor.MetricTelemetryFilter.class);
-        addClass(com.microsoft.applicationinsights.internal.processor.RequestTelemetryFilter.class);
-        addClass(com.microsoft.applicationinsights.internal.channel.samplingV2.FixedRateSamplingTelemetryProcessor.class);
-        addClass(com.microsoft.applicationinsights.internal.processor.SyntheticSourceFilter.class);
-        addClass(com.microsoft.applicationinsights.internal.processor.PageViewTelemetryFilter.class);
-        addClass(com.microsoft.applicationinsights.internal.processor.TelemetryEventFilter.class);
-        addClass(com.microsoft.applicationinsights.internal.processor.TraceTelemetryFilter.class);
     }
 
     static void addClass(Class<?> clazz) {
@@ -85,7 +73,7 @@ public final class ReflectionUtils {
     public static <T> T createInstance(String className, Class<T> interfaceClass) {
         try {
             if (LocalStringsUtils.isNullOrEmpty(className)) {
-                InternalLogger.INSTANCE.error("Failed to create empty class name");
+                logger.error("Failed to create empty class name");
                 return null;
             }
 
@@ -98,7 +86,7 @@ public final class ReflectionUtils {
             T instance = (T)clazz.newInstance();
             return instance;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
+            logger.error("Failed to create {}", className, e);
         }
 
         return null;
@@ -122,7 +110,7 @@ public final class ReflectionUtils {
     public static  <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument) {
         try {
             if (LocalStringsUtils.isNullOrEmpty(className)) {
-                InternalLogger.INSTANCE.error("Failed to create empty class name");
+                logger.error("Failed to create empty class name");
                 return null;
             }
 
@@ -135,7 +123,7 @@ public final class ReflectionUtils {
             Constructor<?> clazzConstructor = clazz.getConstructor(argumentClass);
             return (T) clazzConstructor.newInstance(argument);
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to create %s, Exception : %s", className, ExceptionUtils.getStackTrace(e));
+            logger.error("Failed to create {}", className, e);
         }
 
         return null;
@@ -155,7 +143,7 @@ public final class ReflectionUtils {
             Constructor<?> clazzConstructor = clazz.getConstructor(TelemetryConfiguration.class, Map.class);
             return (T) clazzConstructor.newInstance(configuration, componentConfig);
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Failed to instantiate %s: %s", className, ExceptionUtils.getStackTrace(e));
+            logger.error("Failed to instantiate {}", className, e);
         }
         return null;
     }
@@ -178,11 +166,11 @@ public final class ReflectionUtils {
             method.invoke(object, value);
             return true;
         } catch (NoSuchMethodException e) {
-            InternalLogger.INSTANCE.error("Failed to call method %s .NoSuchMethodException",  methodName);
+            logger.error("Failed to call method {} .NoSuchMethodException",  methodName);
         } catch (InvocationTargetException e) {
-            InternalLogger.INSTANCE.error("Failed to call method %s .InvocationTargetException",  methodName);
+            logger.error("Failed to call method {} .InvocationTargetException",  methodName);
         } catch (IllegalAccessException e) {
-            InternalLogger.INSTANCE.error("Failed to call method %s .IllegalAccessException",  methodName);
+            logger.error("Failed to call method {} .IllegalAccessException",  methodName);
         }
         return false;
     }

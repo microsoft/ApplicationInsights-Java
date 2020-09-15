@@ -27,13 +27,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputAsync;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
 /**
  * Created by gupele on 12/18/2014.
  */
-public final class ActiveTransmissionNetworkOutput implements TransmissionOutput {
+public final class ActiveTransmissionNetworkOutput implements TransmissionOutputAsync {
     private final static int DEFAULT_MAX_MESSAGES_IN_BUFFER = 128;
     private final static int DEFAULT_MIN_NUMBER_OF_THREADS = 7;
     private final static int DEFAULT_MAX_NUMBER_OF_THREADS = 7;
@@ -42,15 +43,15 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
 
     private final int maxThreads;
     private final ThreadPoolExecutor outputThreads;
-    private final TransmissionOutput actualOutput;
+    private final TransmissionOutputSync actualOutput;
     private final TransmissionPolicyStateFetcher transmissionPolicy;
     private final int instanceId = INTSTANCE_ID_POOL.getAndIncrement();
 
-    public ActiveTransmissionNetworkOutput(TransmissionOutput actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
+    public ActiveTransmissionNetworkOutput(TransmissionOutputSync actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
         this(actualOutput, transmissionPolicy, DEFAULT_MAX_MESSAGES_IN_BUFFER);
     }
 
-    public ActiveTransmissionNetworkOutput(TransmissionOutput actualOutput, TransmissionPolicyStateFetcher transmissionPolicy, int maxMessagesInBuffer) {
+    public ActiveTransmissionNetworkOutput(TransmissionOutputSync actualOutput, TransmissionPolicyStateFetcher transmissionPolicy, int maxMessagesInBuffer) {
         Preconditions.checkNotNull(transmissionPolicy, "transmissionPolicy must be a valid non-null value");
 
         this.actualOutput = actualOutput;
@@ -66,7 +67,7 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
     }
 
     @Override
-    public boolean send(final Transmission transmission) {
+    public boolean sendAsync(final Transmission transmission) {
         try {
             if (transmissionPolicy.getCurrentState() != TransmissionPolicy.UNBLOCKED) {
                 return false;
@@ -76,7 +77,7 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
                 @Override
                 public void run() {
                     try {
-                        actualOutput.send(transmission);
+                        actualOutput.sendSync(transmission);
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable throwable) {
@@ -95,9 +96,9 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
     }
 
     @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-        actualOutput.stop(timeout, timeUnit);
-        ThreadPoolUtils.stop(outputThreads, timeout, timeUnit);
+    public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        outputThreads.shutdown();
+        outputThreads.awaitTermination(timeout, timeUnit);
     }
 
     public int getNumberOfMaxThreads() {

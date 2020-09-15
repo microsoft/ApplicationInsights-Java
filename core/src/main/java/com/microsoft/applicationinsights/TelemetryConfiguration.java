@@ -24,15 +24,13 @@ package com.microsoft.applicationinsights;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.channel.concrete.nop.NopTelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
+import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -50,15 +48,15 @@ public final class TelemetryConfiguration {
     private static volatile TelemetryConfiguration active;
 
     private String instrumentationKey;
+    private String normalizedInstrumentationKey;
     private String connectionString;
     private String roleName;
+    private String roleInstance;
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
     private final List<ContextInitializer> contextInitializers =  new  CopyOnWriteArrayList<ContextInitializer>();
-    private final List<TelemetryInitializer> telemetryInitializers = new CopyOnWriteArrayList<TelemetryInitializer>();
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<TelemetryModule>();
-    private final List<TelemetryProcessor> telemetryProcessors = new CopyOnWriteArrayList<TelemetryProcessor>();
 
     private TelemetryChannel channel;
 
@@ -117,9 +115,6 @@ public final class TelemetryConfiguration {
      * @return An instance of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
      */
     public synchronized TelemetryChannel getChannel() {
-        if (channel == null) {
-            return NopTelemetryChannel.instance();
-        }
         return channel;
     }
 
@@ -168,23 +163,8 @@ public final class TelemetryConfiguration {
         return contextInitializers;
     }
 
-    /**
-     * Gets the list of modules that automatically generate application telemetry.
-     *
-     * Telemetry modules automatically send telemetry describing the application to Application Insights. For example, a telemetry
-     * module can handle application exception events and automatically send
-     * @return List of Telemetry Initializers
-     */
-    public List<TelemetryInitializer> getTelemetryInitializers() {
-        return telemetryInitializers;
-    }
-
     public List<TelemetryModule> getTelemetryModules() {
         return telemetryModules;
-    }
-
-    public List<TelemetryProcessor> getTelemetryProcessors() {
-        return telemetryProcessors;
     }
 
     /**
@@ -197,6 +177,10 @@ public final class TelemetryConfiguration {
      */
     public String getInstrumentationKey() {
         return instrumentationKey;
+    }
+
+    public String getNormalizedInstrumentationKey() {
+        return normalizedInstrumentationKey;
     }
 
     /**
@@ -216,6 +200,7 @@ public final class TelemetryConfiguration {
         }
 
         instrumentationKey = key;
+        normalizedInstrumentationKey = BaseTelemetry.normalizeInstrumentationKey(key);
     }
 
     public String getRoleName() {
@@ -224,6 +209,14 @@ public final class TelemetryConfiguration {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public String getRoleInstance() {
+        return roleInstance;
+    }
+
+    public void setRoleInstance(String roleInstance) {
+        this.roleInstance = roleInstance;
     }
 
     public String getConnectionString() {

@@ -21,24 +21,16 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-
 /**
  * Created by gupele on 3/15/2015.
  */
 public class JmxXmlElement {
 
-    @XStreamAsAttribute
     private String displayName;
 
-    @XStreamAsAttribute
     private String objectName;
 
-    @XStreamAsAttribute
     private String attribute;
-
-    @XStreamAsAttribute
-    private String type;
 
     public String getDisplayName() {
         return displayName;
@@ -62,13 +54,5 @@ public class JmxXmlElement {
 
     public void setAttribute(String attribute) {
         this.attribute = attribute;
-    }
-
-    public String getType() {
-        return type == null ? null : type.toUpperCase();
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 }

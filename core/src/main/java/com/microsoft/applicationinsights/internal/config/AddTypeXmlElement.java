@@ -26,19 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
-
 /**
  * Created by gupele on 3/15/2015.
  */
 public class AddTypeXmlElement {
 
-    @XStreamAsAttribute
     private String type;
 
-    @XStreamImplicit(itemFieldName = "Param")
     private ArrayList<ParamXmlElement> paramElements = new ArrayList<>();
 
     public String getType() {

@@ -2,8 +2,8 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +22,8 @@ import java.util.Map;
  * @author Dhaval Doshi
  */
 public class HeartBeatModule implements TelemetryModule {
+
+  private static final Logger logger = LoggerFactory.getLogger(HeartBeatModule.class);
 
   /**
    * Interface object holding concrete implementation of heartbeat provider.
@@ -59,8 +61,8 @@ public class HeartBeatModule implements TelemetryModule {
             try {
               setHeartBeatInterval(Long.parseLong(entry.getValue()));
             } catch (Exception e) {
-              if (InternalLogger.INSTANCE.isTraceEnabled()) {
-                InternalLogger.INSTANCE.trace("Exception while adding Heartbeat interval: %s", ExceptionUtils.getStackTrace(e));
+              if (logger.isTraceEnabled()) {
+                logger.trace("Exception while adding Heartbeat interval", e);
               }
             }
             break;
@@ -68,8 +70,8 @@ public class HeartBeatModule implements TelemetryModule {
             try {
               setHeartBeatEnabled(Boolean.parseBoolean(entry.getValue()));
             } catch (Exception e) {
-              if (InternalLogger.INSTANCE.isTraceEnabled()) {
-                InternalLogger.INSTANCE.trace("Exception while adding enabling/disabling heartbeat: %s", ExceptionUtils.getStackTrace(e));
+              if (logger.isTraceEnabled()) {
+                logger.trace("Exception while adding enabling/disabling heartbeat", e);
               }
             }
             break;
@@ -78,8 +80,8 @@ public class HeartBeatModule implements TelemetryModule {
               List<String> excludedHeartBeatPropertiesProviderList = parseStringToList(entry.getValue());
               setExcludedHeartBeatPropertiesProvider(excludedHeartBeatPropertiesProviderList);
             } catch (Exception e) {
-              if (InternalLogger.INSTANCE.isTraceEnabled()) {
-                InternalLogger.INSTANCE.trace("Exception while adding Excluded Heartbeat providers: %s", ExceptionUtils.getStackTrace(e));
+              if (logger.isTraceEnabled()) {
+                logger.trace("Exception while adding Excluded Heartbeat providers", e);
               }
             }
             break;
@@ -88,13 +90,13 @@ public class HeartBeatModule implements TelemetryModule {
               List<String> excludedHeartBeatPropertiesList = parseStringToList(entry.getValue());
               setExcludedHeartBeatProperties(excludedHeartBeatPropertiesList);
             } catch (Exception e) {
-              if (InternalLogger.INSTANCE.isTraceEnabled()) {
-                InternalLogger.INSTANCE.trace("Exception while adding excluded heartbeat properties: %s", ExceptionUtils.getStackTrace(e));
+              if (logger.isTraceEnabled()) {
+                logger.trace("Exception while adding excluded heartbeat properties", e);
               }
             }
             break;
           default:
-            InternalLogger.INSTANCE.trace("Encountered unknown parameter, no action will be performed");
+            logger.trace("Encountered unknown parameter, no action will be performed");
             break;
         }
       }
@@ -173,7 +175,7 @@ public class HeartBeatModule implements TelemetryModule {
       synchronized (lock) {
         if (!isInitialized && isHeartBeatEnabled()) {
           this.heartBeatProviderInterface.initialize(configuration);
-          InternalLogger.INSTANCE.info("heartbeat is enabled");
+          logger.info("heartbeat is enabled");
           isInitialized = true;
         }
       }

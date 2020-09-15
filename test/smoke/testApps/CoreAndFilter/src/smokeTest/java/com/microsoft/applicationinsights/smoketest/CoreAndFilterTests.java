@@ -21,6 +21,7 @@ import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatcher
 import com.microsoft.applicationinsights.smoketest.matchers.PageViewDataMatchers;
 import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
 import com.microsoft.applicationinsights.telemetry.Duration;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers.withMessage;
@@ -42,13 +43,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
+@UseAgent
 public class CoreAndFilterTests extends AiSmokeTest {
 
     @Test
     @TargetUri("/trackDependency")
     public void trackDependency() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -71,7 +73,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     @TargetUri("/trackEvent")
     public void testTrackEvent() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> edList = mockedIngestion.waitForItems("EventData", 2);
+        List<Envelope> edList = mockedIngestion.waitForItemsInRequest("EventData", 2);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope edEnvelope1 = edList.get(0);
@@ -79,7 +81,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
-        List<EventData> events = mockedIngestion.getTelemetryDataByType("EventData");
+        List<EventData> events = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
         events.sort(new Comparator<EventData>() {
             @Override
             public int compare(EventData o1, EventData o2) {
@@ -104,7 +106,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     @TargetUri("/trackException")
     public void testTrackException() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> edList = mockedIngestion.waitForItems("ExceptionData", 3);
+        List<Envelope> edList = mockedIngestion.waitForItemsInRequest("ExceptionData", 3);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope edEnvelope1 = edList.get(0);
@@ -117,7 +119,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         final String expectedProperties = "value";
         final Double expectedMetrice = 1d;
 
-        final List<ExceptionData> exceptions = mockedIngestion.getTelemetryDataByType("ExceptionData");
+        final List<ExceptionData> exceptions = mockedIngestion.getTelemetryDataByTypeInRequest("ExceptionData");
         assertThat(exceptions, hasItem(hasException(withMessage(expectedName))));
         assertThat(exceptions, hasItem(allOf(
                 hasException(withMessage(expectedName)),
@@ -209,7 +211,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     @TargetUri("/trackTrace")
     public void testTrackTrace() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForItems("MessageData", 3);
+        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope1 = mdList.get(0);
@@ -218,7 +220,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
-        final List<MessageData> messages = mockedIngestion.getTelemetryDataByType("MessageData");
+        final List<MessageData> messages = mockedIngestion.getMessageDataInRequest();
         assertThat(messages, hasItem(
                 TraceDataMatchers.hasMessage("This is first trace message.")
         ));
@@ -243,7 +245,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     @TargetUri("/trackPageView")
     public void testTrackPageView() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> pvdList = mockedIngestion.waitForItems("PageViewData", 2);
+        List<Envelope> pvdList = mockedIngestion.waitForItemsInRequest("PageViewData", 2);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope pvdEnvelope1 = pvdList.get(0);
@@ -251,7 +253,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
-        final List<Domain> pageViews = mockedIngestion.getTelemetryDataByType("PageViewData");
+        final List<Domain> pageViews = mockedIngestion.getTelemetryDataByTypeInRequest("PageViewData");
         assertThat(pageViews, hasItem(allOf(
                 PageViewDataMatchers.hasName("test-page"),
                 PageViewDataMatchers.hasDuration(new Duration(0))
@@ -271,7 +273,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     @TargetUri("/doPageView.jsp")
     public void testTrackPageView_JSP() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> pvdList = mockedIngestion.waitForItems("PageViewData", 1);
+        List<Envelope> pvdList = mockedIngestion.waitForItemsInRequest("PageViewData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope pvdEnvelope = pvdList.get(0);
@@ -314,7 +316,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
     @TargetUri("/autoExceptionWithFailedRequest")
     public void testAutoExceptionWithFailedRequest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> edList = mockedIngestion.waitForItems("ExceptionData", 1);
+        List<Envelope> edList = mockedIngestion.waitForItemsInRequest("ExceptionData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope edEnvelope = edList.get(0);

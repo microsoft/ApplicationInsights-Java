@@ -53,16 +53,10 @@ public interface TelemetryChannel {
      * @param timeout Time to try and stop
      * @param timeUnit The units of the 'timeout' parameter
      */
-    void stop(long timeout, TimeUnit timeUnit);
+    void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException;
 
     /**
      * Flushes the data that the channel might have internally.
      */
     void flush();
-
-    /**
-     * Sets an optional Sampler that can sample out telemetries
-     * @param telemetrySampler - The sampler
-     */
-    void setSampler(TelemetrySampler telemetrySampler);
 }

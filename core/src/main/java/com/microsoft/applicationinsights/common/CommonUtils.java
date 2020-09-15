@@ -21,13 +21,16 @@
 
 package com.microsoft.applicationinsights.common;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Created by oriy on 11/2/2016. */
 public class CommonUtils {
+
+  private static final Logger logger = LoggerFactory.getLogger(CommonUtils.class);
+
   public static boolean isNullOrEmpty(String string) {
     return string == null || string.length() == 0;
   }
@@ -43,7 +46,7 @@ public class CommonUtils {
       InetAddress addr = InetAddress.getLocalHost();
       return addr.getHostName();
     } catch (UnknownHostException ex) {
-      InternalLogger.INSTANCE.warn("Error resolving hostname:%n%s", ExceptionUtils.getStackTrace(ex));
+      logger.warn("Error resolving hostname", ex);
       return null;
     }
   }
@@ -60,8 +63,8 @@ public class CommonUtils {
       Class.forName(classSignature, false, classLoader);
       return true;
     } catch (ClassNotFoundException e) {
-      InternalLogger.INSTANCE.info(
-          "Specified class %s is not present on the classpath", classSignature);
+      logger.info(
+          "Specified class {} is not present on the classpath", classSignature);
       return false;
     }
   }

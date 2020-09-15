@@ -23,25 +23,32 @@ package com.microsoft.applicationinsights;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.extensibility.TelemetryInitializer;
-import com.microsoft.applicationinsights.extensibility.TelemetryProcessor;
-import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
-import com.microsoft.applicationinsights.internal.util.ChannelFetcher;
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
-import com.microsoft.applicationinsights.telemetry.*;
 import com.microsoft.applicationinsights.internal.util.MapUtil;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.telemetry.Duration;
+import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
+import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
+import com.microsoft.applicationinsights.telemetry.SessionState;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // Created by gupele
 /**
@@ -50,11 +57,12 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 public class TelemetryClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(TelemetryClient.class);
+
     private final TelemetryConfiguration configuration;
     private volatile TelemetryContext context;
     private TelemetryChannel channel;
 
-    private static final Object TELEMETRY_STOP_HOOK_LOCK = new Object();
     private static final Object TELEMETRY_CONTEXT_LOCK = new Object();
 
     private static AtomicLong generateCounter = new AtomicLong(0);
@@ -65,10 +73,6 @@ public class TelemetryClient {
     public TelemetryClient(TelemetryConfiguration configuration) {
         if (configuration == null) {
             configuration = TelemetryConfiguration.getActive();
-        }
-
-        synchronized (TELEMETRY_STOP_HOOK_LOCK) {
-            SDKShutdownActivity.INSTANCE.register(configuration.getChannel());
         }
 
         this.configuration = configuration;
@@ -386,7 +390,7 @@ public class TelemetryClient {
     public void track(Telemetry telemetry) {
 
         if (generateCounter.incrementAndGet() % 10000 == 0) {
-            InternalLogger.INSTANCE.info("Total events generated till now %d", generateCounter.get());
+            logger.info("Total events generated till now {}", generateCounter.get());
         }
 
         if (telemetry == null) {
@@ -413,21 +417,15 @@ public class TelemetryClient {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Exception while telemetry context's initialization: '%s'", t.toString());            } catch (ThreadDeath td) {
+                logger.error("Exception while telemetry context's initialization: '{}'", t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
             }
         }
 
-        activateInitializers(telemetry);
-
         if (Strings.isNullOrEmpty(telemetry.getContext().getInstrumentationKey())) {
             throw new IllegalArgumentException("Instrumentation key cannot be undefined.");
-        }
-
-        if (!activateProcessors(telemetry)) {
-            return;
         }
 
         try {
@@ -443,7 +441,7 @@ public class TelemetryClient {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.error("Exception while sending telemetry: '%s'",t.toString());            } catch (ThreadDeath td) {
+                logger.error("Exception while sending telemetry: '{}'",t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -451,49 +449,15 @@ public class TelemetryClient {
         }
     }
 
-    private void activateInitializers(Telemetry telemetry) {
-        for (TelemetryInitializer initializer : this.configuration.getTelemetryInitializers()) {
-            try {
-                initializer.initialize(telemetry);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                try {
-                    InternalLogger.INSTANCE.error("Failed during telemetry initialization class '%s', exception: %s", initializer.getClass().getName(), e.toString());                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            }
-        }
-    }
-
-    private boolean activateProcessors(Telemetry telemetry) {
-        for (TelemetryProcessor processor : configuration.getTelemetryProcessors()) {
-            try {
-                if (!processor.process(telemetry)) {
-                    return false;
-                }
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t) {
-                try {
-                    InternalLogger.INSTANCE.error("Exception while processing telemetry: '%s'",t.toString());                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            }
-        }
-
-        return true;
-    }
-
     /**
      * Flushes possible pending Telemetries in the channel. Not required for a continuously-running server application.
      */
     public void flush() {
         getChannel().flush();
+    }
+
+    public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        getChannel().shutdown(timeout, timeUnit);
     }
 
     /**
@@ -514,9 +478,13 @@ public class TelemetryClient {
         if (StringUtils.isNotEmpty(roleName)) {
             ctx.getCloud().setRole(roleName);
         }
+        String roleInstance = configuration.getRoleInstance();
+        if (StringUtils.isNotEmpty(roleInstance)) {
+            ctx.getCloud().setRoleInstance(roleInstance);
+        }
         for (ContextInitializer init : configuration.getContextInitializers()) {
             if (init == null) { // since collection reference is exposed, we need a null check here
-                InternalLogger.INSTANCE.warn("Found null ContextInitializer in configuration. Skipping...");
+                logger.warn("Found null ContextInitializer in configuration. Skipping...");
                 continue;
             }
 
@@ -526,8 +494,8 @@ public class TelemetryClient {
                 throw td;
             } catch (Throwable t) {
                 try {
-                    if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                        InternalLogger.INSTANCE.error("Exception in context initializer, %s: %s", init.getClass().getSimpleName(), ExceptionUtils.getStackTrace(t));
+                    if (logger.isErrorEnabled()) {
+                        logger.error("Exception in context initializer, {}: {}", init.getClass().getSimpleName(), ExceptionUtils.getStackTrace(t));
                     }
                 } catch (ThreadDeath td) {
                     throw td;

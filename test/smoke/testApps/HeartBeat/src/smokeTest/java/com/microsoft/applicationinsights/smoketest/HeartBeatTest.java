@@ -16,6 +16,7 @@ import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 
 import org.junit.Test;
 
+@UseAgent("FastHeartbeat")
 public class HeartBeatTest extends AiSmokeTest {
 
     @Test

@@ -22,11 +22,12 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
 import org.junit.Test;
 
 import org.mockito.Mockito;
@@ -58,18 +59,18 @@ public class ActiveTransmissionNetworkOutputTest {
     public void testBufferIsFull() throws Exception {
         final boolean[] isError = {false};
         final int[] numberExpected = {0};
-        TransmissionOutput mock = new TransmissionOutput() {
-            private ReentrantLock lock = new ReentrantLock();
-            private Condition stopCondition = lock.newCondition();
-            private boolean done = false;
+        final ReentrantLock lock = new ReentrantLock();
+        final Condition stopCondition = lock.newCondition();
+        final AtomicBoolean done = new AtomicBoolean();
+        TransmissionOutputSync mock = new TransmissionOutputSync() {
             private AtomicInteger counter = new AtomicInteger(0);
 
             @Override
-            public boolean send(Transmission transmission) {
+            public boolean sendSync(Transmission transmission) {
                 try {
                     counter.incrementAndGet();
                     lock.lock();
-                    while (!done) {
+                    while (!done.get()) {
                         try {
                             stopCondition.await();
 
@@ -87,17 +88,6 @@ public class ActiveTransmissionNetworkOutputTest {
                 }
                 return false;
             }
-
-            @Override
-            public void stop(long timeout, TimeUnit timeUnit) {
-                try {
-                    lock.lock();
-                    done = true;
-                    stopCondition.signalAll();
-                } finally {
-                    lock.unlock();
-                }
-            }
         };
         TransmissionPolicyStateFetcher mockStateFetcher = Mockito.mock(TransmissionPolicyStateFetcher.class);
         Mockito.doReturn(TransmissionPolicy.UNBLOCKED).when(mockStateFetcher).getCurrentState();
@@ -105,6 +95,14 @@ public class ActiveTransmissionNetworkOutputTest {
         ActiveTransmissionNetworkOutput tested = new ActiveTransmissionNetworkOutput(mock, mockStateFetcher, 1);
         numberExpected[0] = tested.getNumberOfMaxThreads();
         testSend(100, 1, tested);
+        try {
+            lock.lock();
+            done.set(true);
+            stopCondition.signalAll();
+        } finally {
+            lock.unlock();
+        }
+        tested.shutdown(60L, TimeUnit.SECONDS);
         assertTrue("Too many calls to send", isError[0]);
     }
 
@@ -113,11 +111,11 @@ public class ActiveTransmissionNetworkOutputTest {
     }
 
     private void testSend(int amount, int expectedSends, ActiveTransmissionNetworkOutput theTested) throws InterruptedException {
-        TransmissionOutput mockOutput = null;
+        TransmissionOutputSync mockOutput = null;
         ActiveTransmissionNetworkOutput tested = null;
         if (theTested == null) {
-            mockOutput = Mockito.mock(TransmissionOutput.class);
-            Mockito.doReturn(true).when(mockOutput).send((Transmission) anyObject());
+            mockOutput = Mockito.mock(TransmissionOutputSync.class);
+            Mockito.doReturn(true).when(mockOutput).sendSync((Transmission) anyObject());
 
             TransmissionPolicyStateFetcher mockStateFetcher = Mockito.mock(TransmissionPolicyStateFetcher.class);
             Mockito.doReturn(TransmissionPolicy.UNBLOCKED).when(mockStateFetcher).getCurrentState();
@@ -128,13 +126,13 @@ public class ActiveTransmissionNetworkOutputTest {
         }
 
         for (int i = 0; i < amount; ++i) {
-            tested.send(new Transmission(new byte[2], MOCK_CONTENT_TYPE, MOCK_ENCODING_TYPE));
+            tested.sendAsync(new Transmission(new byte[2], MOCK_CONTENT_TYPE, MOCK_ENCODING_TYPE));
         }
 
         int waitCounter = 0;
         if (mockOutput != null) {
             try {
-                Mockito.verify(mockOutput, Mockito.times(expectedSends)).send((Transmission) anyObject());
+                Mockito.verify(mockOutput, Mockito.times(expectedSends)).sendSync((Transmission) anyObject());
                 Thread.sleep(1000);
             } catch (Error e) {
                 ++waitCounter;
@@ -143,8 +141,6 @@ public class ActiveTransmissionNetworkOutputTest {
                 }
             }
         }
-
-        tested.stop(60L, TimeUnit.SECONDS);
     }
 
     @Test

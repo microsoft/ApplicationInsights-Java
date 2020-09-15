@@ -151,7 +151,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     }
 
     @Override
-    protected ExceptionData getData() {
+    public ExceptionData getData() {
         return data;
     }
 

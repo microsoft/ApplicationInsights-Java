@@ -27,36 +27,26 @@ import java.util.Map;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 /**
  * Created by gupele on 3/15/2015.
  */
 public class ChannelXmlElement {
 
-    @XStreamAlias("EndpointAddress")
     private String endpointAddress;
 
-    @XStreamAlias("MaxTelemetryBufferCapacity")
     private String maxTelemetryBufferCapacity;
 
-    @XStreamAlias("FlushIntervalInSeconds")
     private String flushIntervalInSeconds;
 
-    @XStreamAlias("DeveloperMode")
     private boolean developerMode;
 
-    @XStreamAlias("Throttling")
     private boolean throttling = true;
 
-    @XStreamAlias("MaxTransmissionStorageFilesCapacityInMB")
     private String maxTransmissionStorageFilesCapacityInMB;
 
-    @XStreamAlias("MaxInstantRetry")
     private String maxInstantRetry;
 
-    @XStreamAsAttribute
     private String type = "com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel";
 
     public String getType() {

@@ -31,7 +31,7 @@ public class MongoSmokeTest extends AiSmokeTest {
     @TargetUri("/mongo")
     public void mongo() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -40,9 +40,8 @@ public class MongoSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("MongoDB", rdd.getType());
-        assertEquals("MongoDB", rdd.getName());
-        assertEquals("find testdb.test", rdd.getData());
+        assertEquals("mongodb", rdd.getType());
+        assertEquals("{\"find\": \"test\", \"$db\": \"?\"}", rdd.getName());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope);
