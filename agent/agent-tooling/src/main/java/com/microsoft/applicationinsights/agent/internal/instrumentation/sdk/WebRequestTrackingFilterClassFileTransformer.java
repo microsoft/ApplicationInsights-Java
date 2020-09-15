@@ -77,7 +77,7 @@ public class WebRequestTrackingFilterClassFileTransformer implements ClassFileTr
                                          String /*@Nullable*/[] exceptions) {
             MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
             if (name.equals("doFilter") && descriptor.equals("(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;)V")) {
-                // no-op the append() method
+                // no-op the doFilter() method
                 mv.visitCode();
                 mv.visitVarInsn(ALOAD, 3);
                 mv.visitVarInsn(ALOAD, 1);
