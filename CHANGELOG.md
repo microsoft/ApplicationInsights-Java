@@ -1,6 +1,6 @@
 # CHANGELOG
 
-# Version 2.6.2-BETA.3
+# Version 2.6.2
 * Fixed NullPointer when testing with MockMvc ([#1281](https://github.com/microsoft/ApplicationInsights-Java/issues/1281))
 
 # Version 2.6.2-BETA.2
