@@ -47,6 +47,7 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Hear
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
@@ -86,6 +87,7 @@ public class BeforeAgentInstaller {
         instrumentation.addTransformer(new QuickPulseClassFileTransformer());
         instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
         instrumentation.addTransformer(new ApplicationInsightsAppenderClassFileTransformer());
+        instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
     }
 
     private static void start(Instrumentation instrumentation, File agentJarFile) throws Exception {

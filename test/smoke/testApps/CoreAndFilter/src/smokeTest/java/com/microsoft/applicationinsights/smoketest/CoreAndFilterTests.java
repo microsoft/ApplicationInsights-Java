@@ -136,7 +136,6 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertParentChild(rd, rdEnvelope, edEnvelope3);
     }
 
-    @Ignore
     @Test
     @TargetUri("/trackHttpRequest")
     public void testHttpRequest() throws Exception {
