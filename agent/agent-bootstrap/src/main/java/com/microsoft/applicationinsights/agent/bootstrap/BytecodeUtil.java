@@ -91,6 +91,12 @@ public class BytecodeUtil {
         }
     }
 
+    public static void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
+        if (delegate != null) {
+            delegate.trackException(exception, properties, metrics);
+        }
+    }
+
     public static void logErrorOnce(Throwable t) {
         if (delegate != null) {
             delegate.logErrorOnce(t);
@@ -122,6 +128,8 @@ public class BytecodeUtil {
         void trackTrace(String message, int severityLevel, Map<String, String> properties);
 
         void trackRequest(String id, String name, URL url, Date timestamp, long duration, String responseCode, boolean success);
+
+        void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics);
 
         void logErrorOnce(Throwable t);
     }

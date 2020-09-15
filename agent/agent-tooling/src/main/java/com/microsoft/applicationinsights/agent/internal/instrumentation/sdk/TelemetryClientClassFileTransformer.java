@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
@@ -52,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static net.bytebuddy.jar.asm.Opcodes.ACC_PRIVATE;
+import static net.bytebuddy.jar.asm.Opcodes.ACC_PUBLIC;
 import static net.bytebuddy.jar.asm.Opcodes.ACONST_NULL;
 import static net.bytebuddy.jar.asm.Opcodes.ALOAD;
 import static net.bytebuddy.jar.asm.Opcodes.ARETURN;
@@ -168,6 +170,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             writeAgentTrackPageViewTelemetryMethod();
             writeAgentTrackTraceTelemetryMethod();
             writeAgentTrackRequestTelemetryMethod();
+            writeAgentTrackExceptionTelemetryMethod();
             writeAgentToMillisMethod();
         }
 
@@ -248,15 +251,26 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/RequestTelemetry");
             mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$trackRequestTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/RequestTelemetry;)V", false);
+            mv.visitLabel(l8);
+            mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/ExceptionTelemetry");
+            Label l9 = new Label();
+            mv.visitJumpInsn(IFEQ, l9);
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/ExceptionTelemetry");
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/TelemetryClient", "agent$trackExceptionTelemetry",
+                    "(L" + unshadedPrefix + "/telemetry/ExceptionTelemetry;)V", false);
             mv.visitLabel(l1);
-            mv.visitJumpInsn(GOTO, l8);
+            mv.visitJumpInsn(GOTO, l9);
             mv.visitLabel(l2);
             mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[]{"java/lang/Throwable"});
             mv.visitVarInsn(ASTORE, 2);
             mv.visitVarInsn(ALOAD, 2);
             mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "logErrorOnce", "(Ljava/lang/Throwable;)V",
                     false);
-            mv.visitLabel(l8);
+            mv.visitLabel(l9);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitInsn(RETURN);
             mv.visitMaxs(2, 3);
@@ -487,6 +501,21 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitEnd();
         }
 
+        private void writeAgentTrackExceptionTelemetryMethod() {
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackExceptionTelemetry", "(L" + unshadedPrefix + "/telemetry/ExceptionTelemetry;)V", null, null);
+            mv.visitCode();
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getException", "()Ljava/lang/Exception;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getProperties", "()Ljava/util/Map;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getMetrics", "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agent/bootstrap/BytecodeUtil", "trackException", "(Ljava/lang/Exception;Ljava/util/Map;Ljava/util/Map;)V", false);
+            mv.visitInsn(RETURN);
+            mv.visitMaxs(3, 2);
+            mv.visitEnd();
+        }
+
         private void writeAgentToMillisMethod() {
             MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$toMillis",
                     "(L" + unshadedPrefix + "/telemetry/Duration;)Ljava/lang/Long;", null, null);
@@ -572,6 +601,9 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
                 if (telemetry instanceof RequestTelemetry) {
                     agent$trackRequestTelemetry((RequestTelemetry) telemetry);
                 }
+                if (telemetry instanceof ExceptionTelemetry) {
+                    agent$trackExceptionTelemetry((ExceptionTelemetry) telemetry);
+                }
             } catch (Throwable t) {
                 BytecodeUtil.logErrorOnce(t);
             }
@@ -607,6 +639,10 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             } catch (MalformedURLException e) {
                 BytecodeUtil.logErrorOnce(e);
             }
+        }
+
+        public void agent$trackExceptionTelemetry(ExceptionTelemetry telemetry) {
+            BytecodeUtil.trackException(telemetry.getException(), telemetry.getProperties(), telemetry.getMetrics());
         }
 
         @Nullable

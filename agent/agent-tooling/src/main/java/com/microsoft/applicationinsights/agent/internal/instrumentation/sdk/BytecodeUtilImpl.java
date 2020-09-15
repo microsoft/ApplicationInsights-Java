@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGe
 import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
@@ -165,6 +166,21 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.setDuration(new Duration(duration));
         telemetry.setResponseCode(responseCode);
         telemetry.setSuccess(success);
+
+        track(telemetry);
+    }
+
+    @Override
+    public void trackException(Exception exception, Map<String, String> properties, Map<String, Double> metrics) {
+        if (exception == null) {
+            return;
+        }
+
+        ExceptionTelemetry telemetry = new ExceptionTelemetry();
+        telemetry.setException(exception);
+        telemetry.setSeverityLevel(SeverityLevel.Error);
+        MapUtil.copy(properties, telemetry.getProperties());
+        MapUtil.copy(metrics, telemetry.getMetrics());
 
         track(telemetry);
     }
