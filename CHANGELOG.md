@@ -5,6 +5,7 @@
   ([#1282](https://github.com/microsoft/ApplicationInsights-Java/issues/1282)).
 * Fixed RequestTelemetryContext initialization
   ([#1247](https://github.com/microsoft/ApplicationInsights-Java/issues/1247)). Thanks, librucha!
+* Built in instrumentation for Jetty Native handlers
 
 # Version 2.6.2-BETA
 * Added additional error logging for troubleshooting issues loading JNI performance counter library
