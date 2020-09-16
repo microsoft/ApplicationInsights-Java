@@ -97,3 +97,6 @@ Backend/OrderService/OrderService.iml
 
 # VS Code Workspace settings
 .vscode/settings.json
+
+# Visual Studio
+.vs

@@ -23,16 +23,23 @@ package com.microsoft.applicationinsights.internal.system;
 
 import java.lang.management.ManagementFactory;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.SystemUtils;
 
 import com.google.common.base.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 3/3/2015.
  */
 public enum SystemInformation {
     INSTANCE;
+
+    // if logger is a static member of SystemInformation, it won't be initialized prior to INSTANCE construction
+    // and will then be null in initializeProcessId() below
+    private static class SystemInfoLogger {
+        private static final Logger logger = LoggerFactory.getLogger(SystemInformation.class);
+    }
 
     private final static String DEFAULT_PROCESS_NAME = "Java_Process";
 
@@ -61,14 +68,16 @@ public enum SystemInformation {
                 String processIdAsString = rawName.substring(0, i);
                 try {
                     Integer.parseInt(processIdAsString);
-                    InternalLogger.INSTANCE.info("Current PID: "+processIdAsString);
+                    SystemInfoLogger.logger.info("Current PID: "+processIdAsString);
                     return processIdAsString;
                 } catch (Exception e) {
-                    InternalLogger.INSTANCE.error("Failed to parse PID as number: '%s'", e.toString());
+                    e.printStackTrace();
+                    SystemInfoLogger.logger.error("Failed to fetch process id: '{}'", e.toString());
+                    SystemInfoLogger.logger.error("Failed to parse PID as number: '{}'", e.toString());
                 }
             }
         }
-        InternalLogger.INSTANCE.error("Could not extract PID from runtime name: '"+rawName+"'");
+        SystemInfoLogger.logger.error("Could not extract PID from runtime name: '"+rawName+"'");
         // Default
         return DEFAULT_PROCESS_NAME;
     }

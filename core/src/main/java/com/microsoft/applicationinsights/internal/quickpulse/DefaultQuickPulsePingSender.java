@@ -25,18 +25,22 @@ import java.io.IOException;
 import java.util.Date;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 12/12/2016.
  */
 final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulsePingSender.class);
+
     private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
 
     private final TelemetryConfiguration configuration;
@@ -58,8 +62,8 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
                 "\"Metrics\": null," +
                 "\"StreamId\": \"" + quickPulseId + "\"," +
                 "\"Timestamp\": \"\\/Date(";
-        if (InternalLogger.INSTANCE.isTraceEnabled()) {
-            InternalLogger.INSTANCE.trace("%s using endpoint %s", DefaultQuickPulsePingSender.class.getSimpleName(), getQuickPulseEndpoint());
+        if (logger.isTraceEnabled()) {
+            logger.trace("{} using endpoint {}", DefaultQuickPulsePingSender.class.getSimpleName(), getQuickPulseEndpoint());
         }
     }
 

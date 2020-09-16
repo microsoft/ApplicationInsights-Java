@@ -1,16 +1,17 @@
 package com.microsoft.ajl.simple;
 
 import com.google.common.base.Joiner;
-import com.microsoft.applicationinsights.TelemetryClient;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -27,9 +28,9 @@ public class TestController {
     @GetMapping("/verifyJava7")
     public String verifyJava7() throws IOException {
 
-        URL url = TelemetryClient.class.getProtectionDomain().getCodeSource().getLocation();
+        File agentJarFile = getAgentJarFile();
 
-        InputStream in = url.openStream();
+        InputStream in = new FileInputStream(agentJarFile);
         JarInputStream jarIn = new JarInputStream(in);
 
         List<String> java8Classnames = new ArrayList<>();
@@ -40,10 +41,6 @@ public class TestController {
             if (name.endsWith(".class")) {
                 VersionCapturingClassVisitor cv = new VersionCapturingClassVisitor();
                 new ClassReader(jarIn).accept(cv, 0);
-                if (name.equals("com/microsoft/applicationinsights/core/dependencies/xmlpull/mxp1/MXParser.class") && cv.version == 196653) {
-                    // strange..
-                    continue;
-                }
                 if (cv.version > 51) {
                     java8Classnames.add(name.replace('/', '.'));
                 }
@@ -57,6 +54,16 @@ public class TestController {
             throw new AssertionError("Found Java 8+ classes: " + Joiner.on(", ").join(java8Classnames));
         }
         return "OK";
+    }
+
+    private static File getAgentJarFile() {
+        List<String> jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments();
+        for (String jvmArg : jvmArgs) {
+            if (jvmArg.startsWith("-javaagent:") && jvmArg.contains("applicationinsights-agent")) {
+                return new File(jvmArg.substring("-javaagent:".length()));
+            }
+        }
+        throw new AssertionError("Agent jar not found on command line: " + Joiner.on(' ').join(jvmArgs));
     }
 
     static class VersionCapturingClassVisitor extends ClassVisitor {

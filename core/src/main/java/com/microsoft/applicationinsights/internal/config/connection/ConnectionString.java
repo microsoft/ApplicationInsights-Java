@@ -4,8 +4,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,6 +14,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class ConnectionString {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConnectionString.class);
 
     @VisibleForTesting
     static final int CONNECTION_STRING_MAX_LENGTH = 4096;
@@ -43,7 +46,7 @@ public class ConnectionString {
             throw new InvalidConnectionStringException("Missing '"+Keywords.INSTRUMENTATION_KEY+"'");
         }
         if (!Strings.isNullOrEmpty(config.getInstrumentationKey())) {
-            InternalLogger.INSTANCE.warn("Connection string is overriding previously configured instrumentation key.");
+            logger.warn("Connection string is overriding previously configured instrumentation key.");
         }
         config.setInstrumentationKey(instrumentationKey);
 
@@ -104,17 +107,16 @@ public class ConnectionString {
     /**
      * All tokens are lowercase. Parsing should be case insensitive.
      */
-    @VisibleForTesting
-    static class Keywords {
+    public static class Keywords {
         private Keywords(){}
 
-        static final String AUTHORIZATION = "Authorization";
-        static final String INSTRUMENTATION_KEY = "InstrumentationKey";
-        static final String ENDPOINT_SUFFIX = "EndpointSuffix";
-        static final String INGESTION_ENDPOINT = "IngestionEndpoint";
-        static final String LIVE_ENDPOINT = "LiveEndpoint";
-        static final String PROFILER_ENDPOINT = "ProfilerEndpoint";
-        static final String SNAPSHOT_ENDPOINT = "SnapshotEndpoint";
+        public static final String AUTHORIZATION = "Authorization";
+        public static final String INSTRUMENTATION_KEY = "InstrumentationKey";
+        public static final String ENDPOINT_SUFFIX = "EndpointSuffix";
+        public static final String INGESTION_ENDPOINT = "IngestionEndpoint";
+        public static final String LIVE_ENDPOINT = "LiveEndpoint";
+        public static final String PROFILER_ENDPOINT = "ProfilerEndpoint";
+        public static final String SNAPSHOT_ENDPOINT = "SnapshotEndpoint";
     }
 
     @VisibleForTesting

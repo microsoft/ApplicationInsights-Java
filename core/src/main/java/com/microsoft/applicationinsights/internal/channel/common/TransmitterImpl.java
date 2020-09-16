@@ -28,16 +28,18 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Stopwatch;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The default implementation of the {@link TelemetriesTransmitter}
@@ -50,7 +52,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmitterImpl implements TelemetriesTransmitter<String> {
+public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> {
+
+    private static final Logger logger = LoggerFactory.getLogger(TransmitterImpl.class);
+
     private static abstract class SendHandler {
         protected final TransmissionDispatcher transmissionDispatcher;
 
@@ -64,7 +69,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
             this.serializer = serializer;
         }
 
-        protected void dispatch(Collection<String> telemetries) {
+        protected void dispatch(Collection<Telemetry> telemetries) {
             if (telemetries.isEmpty()) {
                 return;
             }
@@ -78,10 +83,10 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
         }
     }
 
-    private static final class ScheduledSendHandler extends SendHandler implements Runnable {
-        private final TelemetriesFetcher<String> telemetriesFetcher;
+    private static final class ScheduledSendHandler extends SendHandler {
+        private final TelemetriesFetcher<Telemetry> telemetriesFetcher;
 
-        public ScheduledSendHandler(TransmissionDispatcher transmissionDispatcher, TelemetriesFetcher<String> telemetriesFetcher, TelemetrySerializer serializer) {
+        public ScheduledSendHandler(TransmissionDispatcher transmissionDispatcher, TelemetriesFetcher<Telemetry> telemetriesFetcher, TelemetrySerializer serializer) {
             super(transmissionDispatcher,  serializer);
 
             Preconditions.checkNotNull(telemetriesFetcher, "telemetriesFetcher should be a non-null value");
@@ -89,17 +94,16 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
             this.telemetriesFetcher = telemetriesFetcher;
         }
 
-        @Override
         public void run() {
-            Collection<String> telemetriesToSend = telemetriesFetcher.fetch();
+            Collection<Telemetry> telemetriesToSend = telemetriesFetcher.fetch();
             dispatch(telemetriesToSend);
         }
     }
 
-    private static final class SendNowHandler extends SendHandler implements Runnable {
-        private final Collection<String> telemetries;
+    private static final class SendNowHandler extends SendHandler {
+        private final Collection<Telemetry> telemetries;
 
-        public SendNowHandler(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, Collection<String> telemetries) {
+        public SendNowHandler(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, Collection<Telemetry> telemetries) {
             super(transmissionDispatcher,  serializer);
 
             Preconditions.checkNotNull(telemetries, "telemetries should be non-null value");
@@ -107,7 +111,6 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
             this.telemetries = telemetries;
         }
 
-        @Override
         public void run() {
             dispatch(telemetries);
         }
@@ -154,7 +157,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
         }
 
         try {
-            final Runnable command = new ScheduledSendHandler(transmissionDispatcher, telemetriesFetcher, serializer);
+            final ScheduledSendHandler command = new ScheduledSendHandler(transmissionDispatcher, telemetriesFetcher, serializer);
             threadPool.schedule(new Runnable() {
                 public void run() {
                     try {
@@ -164,7 +167,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
                         throw td;
                     } catch (Throwable t) {
                         try {
-                            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                            logger.trace(t.getMessage(), t);
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t2) {
@@ -181,8 +184,8 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
         } catch (Throwable t) {
             try {
                 semaphore.release();
-                InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetriesFetcher.fetch().size());
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                logger.error("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetriesFetcher.fetch().size());
+                logger.trace("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetriesFetcher.fetch().size(), t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -194,14 +197,14 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
     }
 
     @Override
-    public boolean sendNow(Collection<String> telemetries) {
+    public boolean sendNow(Collection<Telemetry> telemetries) {
         Preconditions.checkNotNull(telemetries, "telemetries should be non-null value");
 
         if (!semaphore.tryAcquire()) {
             return false;
         }
 
-        final Runnable command = new SendNowHandler(transmissionDispatcher, serializer, telemetries);
+        final SendNowHandler command = new SendNowHandler(transmissionDispatcher, serializer, telemetries);
         try {
             threadPool.execute(new Runnable() {
                 public void run() {
@@ -212,8 +215,8 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
                         throw td;
                     } catch (Throwable t) {
                         try {
-                            InternalLogger.INSTANCE.error("exception in runnable sendNow()");
-                            InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                            logger.error("exception in runnable sendNow()");
+                            logger.trace("exception in runnable sendNow()", t);
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t2) {
@@ -230,8 +233,8 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
         } catch (Throwable t) {
             try {
                 semaphore.release();
-                InternalLogger.INSTANCE.error("Error in scheduledSend of telemetry items failed. %d items were not sent ", telemetries.size());
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(t));
+                logger.error("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetries.size());
+                logger.trace("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetries.size(), t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -243,9 +246,14 @@ public final class TransmitterImpl implements TelemetriesTransmitter<String> {
     }
 
     @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
-        transmissionsLoader.stop(timeout, timeUnit);
-        ThreadPoolUtils.stop(threadPool, timeout, timeUnit);
-        transmissionDispatcher.stop(timeout, timeUnit);
+    public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        transmissionsLoader.shutdown();
+        threadPool.shutdown();
+        threadPool.awaitTermination(timeout, timeUnit);
+        long remaining = timeout - stopwatch.elapsed(timeUnit);
+        if (remaining > 0) {
+            transmissionDispatcher.shutdown(remaining, timeUnit);
+        }
     }
 }

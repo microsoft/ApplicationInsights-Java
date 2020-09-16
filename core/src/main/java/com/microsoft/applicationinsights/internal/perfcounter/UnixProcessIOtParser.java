@@ -21,13 +21,16 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by gupele on 3/16/2015.
  */
 final class UnixProcessIOtParser {
+
+    private static final Logger logger = LoggerFactory.getLogger(UnixProcessIOtParser.class);
+
     private static final String READ_BYTES_PART = "read_bytes:";
     private static final String WRITE_BYTES_PART = "write_bytes:";
 
@@ -62,8 +65,8 @@ final class UnixProcessIOtParser {
                 state.decrementDoneCounter();
                 return true;
             } catch (Exception e) {
-                InternalLogger.INSTANCE.error("Error in parsing value of UnixProcess counter");
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                logger.error("Error in parsing value of UnixProcess counter");
+                logger.trace("Error in parsing value of UnixProcess counter", e);
             }
         }
 

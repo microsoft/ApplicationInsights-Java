@@ -27,8 +27,9 @@ import java.util.Map;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.jmx.JmxDataFetcher;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class is a base class for JMX performance counters.
@@ -37,11 +38,13 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 3/15/2015.
  */
 public abstract class AbstractJmxPerformanceCounter implements PerformanceCounter {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractJmxPerformanceCounter.class);
+
     private final String id;
     private final String objectName;
     private final Collection<JmxAttributeData> attributes;
-    private boolean relevant = true;
-    private boolean firstTime = true;
+    private boolean alreadyLogged = false;
 
     @Override
     public String getId() {
@@ -55,10 +58,6 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
      */
     @Override
     public synchronized void report(TelemetryClient telemetryClient) {
-        if (!relevant) {
-            return;
-        }
-
         try {
             Map<String, Collection<Object>> result =
                     JmxDataFetcher.fetch(objectName, attributes);
@@ -68,7 +67,11 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                 double value = 0.0;
                 for (Object obj : displayAndValues.getValue()) {
                     try {
-                        value += Double.parseDouble(String.valueOf(obj));
+                        if (obj instanceof Boolean) {
+                            value = ((Boolean) obj).booleanValue() ? 1 : 0;
+                        } else {
+                            value += Double.parseDouble(String.valueOf(obj));
+                        }
                     } catch (Exception e) {
                         ok = false;
                         break;
@@ -79,22 +82,17 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                     try {
                         send(telemetryClient, displayAndValues.getKey(), value);
                     } catch (Exception e) {
-                        InternalLogger.INSTANCE.error("Error while sending JMX data: '%s'", e.toString());
-                        InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                        logger.error("Error while sending JMX data: '{}'", e.toString());
+                        logger.trace("Error while sending JMX data", e);
                     }
                 }
             }
         } catch (Exception e) {
-            if (firstTime) {
-                InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s', The PC will be ignored", e.toString());
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
-                relevant = false;
-            } else {
-                InternalLogger.INSTANCE.error("Error while fetching JMX data: '%s'", e.toString());
-                InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+            if (!alreadyLogged) {
+                logger.error("Error while fetching JMX data: '{}'", e.toString());
+                logger.trace("Error while fetching JMX data", e);
+                alreadyLogged = true;
             }
-        } finally {
-            firstTime = false;
         }
     }
 

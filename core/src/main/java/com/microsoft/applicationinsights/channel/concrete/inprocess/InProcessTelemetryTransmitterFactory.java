@@ -24,8 +24,8 @@ package com.microsoft.applicationinsights.channel.concrete.inprocess;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputAsync;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmissionFileSystemOutput;
 import com.microsoft.applicationinsights.internal.channel.common.ActiveTransmissionLoader;
@@ -77,14 +77,14 @@ final class InProcessTelemetryTransmitterFactory implements ConfiguredTransmitte
     private TelemetriesTransmitter finishTransmitterConstruction(String maxTransmissionStorageCapacity, TransmissionPolicyManager transmissionPolicyManager, TransmissionNetworkOutput actualNetworkSender) {
         TransmissionPolicyStateFetcher stateFetcher = transmissionPolicyManager.getTransmissionPolicyState();
 
-        TransmissionOutput networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender, stateFetcher);
 
+        TransmissionOutputAsync networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender, stateFetcher);
         // An active object with the file system sender
         TransmissionFileSystemOutput fileSystemSender = new TransmissionFileSystemOutput(null, maxTransmissionStorageCapacity);
-        TransmissionOutput activeFileSystemOutput = new ActiveTransmissionFileSystemOutput(fileSystemSender, stateFetcher);
+        TransmissionOutputAsync activeFileSystemOutput = new ActiveTransmissionFileSystemOutput(fileSystemSender, stateFetcher);
 
         // The dispatcher works with the two active senders
-        TransmissionDispatcher dispatcher = new NonBlockingDispatcher(new TransmissionOutput[]{networkSender, activeFileSystemOutput});
+        TransmissionDispatcher dispatcher = new NonBlockingDispatcher(new TransmissionOutputAsync[]{networkSender, activeFileSystemOutput});
         actualNetworkSender.setTransmissionDispatcher(dispatcher);
 
 

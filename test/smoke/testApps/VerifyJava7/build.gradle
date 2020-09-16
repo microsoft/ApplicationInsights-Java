@@ -1,22 +1,20 @@
-apply plugin: 'war'
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.1.7.RELEASE'
+}
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 compileSmokeTestJava.sourceCompatibility = 1.8
 compileSmokeTestJava.targetCompatibility = 1.8
 
-ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = war.archiveFileName.get()
+ext.testAppArtifactDir = jar.destinationDirectory
+ext.testAppArtifactFilename = jar.archiveFileName.get()
 
 dependencies {
-    compile aiWebAutoJar
-    compileOnly aiCoreJar
+    compileOnly aiAgentJar // this is just to force building the agent first
 
-    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE') {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
-    }
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
     compile 'org.ow2.asm:asm:7.2'
     compile 'com.google.guava:guava:20.0'
-
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 }

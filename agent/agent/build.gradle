@@ -1,0 +1,278 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+apply from: "$buildScriptsDir/common-java.gradle"
+apply from: "$buildScriptsDir/publishing.gradle"
+
+repositories {
+    mavenLocal()
+}
+
+configurations {
+    shadowInclude {
+        description "For marking dependencies that should be shaded into this project's artifact"
+    }
+    devtest {
+        description "For making a test jar for executing code not usually exposed to client applications (or loggers)"
+    }
+}
+
+sourceSets {
+    devtest {
+        java {
+            srcDir file('src/devtest/java')
+        }
+        resources {
+            srcDir file('src/devtest/resources')
+        }
+        compileClasspath = sourceSets.main.output + configurations.compile + configurations.devtest
+        runtimeClasspath = output + compileClasspath + configurations.runtime
+    }
+}
+
+processResources {
+
+    dependsOn ':agent:instrumentation:shadowJar'
+
+    from(zipTree(tasks.getByPath(':agent:instrumentation:shadowJar').archivePath)) {
+        into 'inst'
+        rename '(^.*)\\.class$', '$1.classdata'
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                "Main-Class": "io.opentelemetry.auto.bootstrap.AgentBootstrap",
+                "Agent-Class": "io.opentelemetry.auto.bootstrap.AgentBootstrap",
+                "Premain-Class": "io.opentelemetry.auto.bootstrap.AgentBootstrap",
+                "Can-Redefine-Classes": true,
+                "Can-Retransform-Classes": true,
+        )
+    }
+    dependsOn shadowJar
+    enabled = false
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowInclude]
+
+    archiveClassifier = ''
+
+    mergeServiceFiles()
+
+    exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
+    exclude 'META-INF/proguard/**'
+    //exclude 'module-info.class'
+
+    // Prevents conflict with other SLF4J instances. Important for premain.
+    relocate 'org.slf4j', 'io.opentelemetry.auto.slf4j'
+
+    def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
+
+    relocate 'ch.qos.logback', "${shadowPrefix}.ch.qos.logback"
+    relocate 'com.squareup.moshi', "${shadowPrefix}.com.squareup.moshi"
+    relocate 'okio', "${shadowPrefix}.okio"
+
+    // rewrite dependencies calling Logger.getLogger
+    // this shades internal use of java util logging which is needed to prevent java util logging from being initialized
+    // early (e.g. in the case of jboss which wants to do some setup before jul is initialized)
+    relocate 'java.util.logging.Logger', 'io.opentelemetry.auto.bootstrap.PatchLogger'
+
+    // prevents conflict with library instrumentation
+    relocate 'io.opentelemetry.instrumentation.api', 'io.opentelemetry.auto.shaded.instrumentation.api'
+
+    // relocate OpenTelemetry API
+    relocate "io.opentelemetry.OpenTelemetry", "io.opentelemetry.auto.shaded.io.opentelemetry.OpenTelemetry"
+    relocate "io.opentelemetry.common", "io.opentelemetry.auto.shaded.io.opentelemetry.common"
+    relocate "io.opentelemetry.context", "io.opentelemetry.auto.shaded.io.opentelemetry.context"
+    relocate "io.opentelemetry.correlationcontext", "io.opentelemetry.auto.shaded.io.opentelemetry.correlationcontext"
+    relocate "io.opentelemetry.internal", "io.opentelemetry.auto.shaded.io.opentelemetry.internal"
+    relocate "io.opentelemetry.metrics", "io.opentelemetry.auto.shaded.io.opentelemetry.metrics"
+    relocate "io.opentelemetry.trace", "io.opentelemetry.auto.shaded.io.opentelemetry.trace"
+
+    // relocate OpenTelemetry API dependency
+    relocate "io.grpc", "io.opentelemetry.auto.shaded.io.grpc"
+
+    relocate('logback.configurationFile', 'applicationinsights.logback.configurationFile')
+    relocate('logback.xml', 'applicationinsights.logback.xml')
+    relocate('logback.groovy', 'applicationinsights.logback.groovy') // to prevent accidentally picking up from user's class path
+    relocate('logback-test.xml', 'applicationinsights.logback-test.xml') // to prevent accidentally picking up from user's class path
+
+}
+
+archivesBaseName = 'applicationinsights-agent'
+
+dependencies {
+    shadowInclude project(path: ':agent:agent-bootstrap')
+    devtest 'org.slf4j:slf4j-api:1.7.26'
+}
+
+// region Publishing properties
+
+projectPomName = project.msftAppInsights + " Codeless Java Agent"
+projectPomDescription = "This is the Codeless Java agent of " + project.msftAppInsightsJavaSdk
+
+whenPomConfigured = { p ->
+    p.dependencies = []
+}
+
+// endregion Publishing properties
+/**
+ * For building -devtest JAR which contains classes for calling internal code for graybox testing.
+ */
+task devtestJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    archiveClassifier = 'devtest'
+    dependsOn devtestClasses, assemble
+
+    // shadowJar.archiveFile doesn't work
+    from(zipTree(file("$buildDir/libs/${project.archivesBaseName}-${project.version}.jar"))) {
+        exclude 'LICENSE'
+        exclude 'NOTICE'
+    }
+    from sourceSets.devtest.output
+    configurations = []
+    manifest = shadowJar.manifest
+
+    relocate 'org.slf4j', 'io.opentelemetry.auto.slf4j'
+}
+
+artifacts {
+    devtest devtestJar
+}
+
+import org.apache.tools.ant.taskdefs.condition.Os
+import java.util.jar.JarFile
+task verifyAgentJarContents {
+    dependsOn jar
+    def jarContentsFile = file("$projectDir/jar_contents.regex")
+    def jarContentsFileExists = jarContentsFile.exists()
+    logger.info "${project.name} will ${jarContentsFileExists ? '' : 'not '}run '$name'"
+    onlyIf {
+        !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS) && jarContentsFileExists
+    }
+    Set expectedEntries = []
+    // jar_contents.regex should have one pattern per line
+    jarContentsFile.eachLine {
+        expectedEntries << it
+    }
+    def logOutputDirectory = "$buildDir/reports/verifyAgentJar"
+    def extraEntriesFilePath = "$logOutputDirectory/extraEntries.txt"
+    def missingEntriesFilePath = "$logOutputDirectory/missingEntries.txt"
+    def foundEntriesFilePath = "$logOutputDirectory/foundEntries.txt"
+    def summaryFilePath = "$logOutputDirectory/summary.txt"
+    doLast {
+        def file = tasks.jar.archiveFile.get().asFile
+        Set<String> extraEntries = []
+        Set<String> foundEntries = []
+        def acceptableEntry = { entry ->
+            boolean totalResult = false;
+            expectedEntries.each { pattern ->
+                def result = entry.name.matches(pattern)
+                if (result) {
+                    foundEntries << pattern
+                }
+                totalResult = result || totalResult
+            }
+            totalResult
+        }
+
+        LogLevel lvl = isBuildServer ? LogLevel.INFO : LogLevel.DEBUG
+        new JarFile(file).withCloseable { jarfile ->
+            logger.info "Verifying ${jarfile}"
+            jarfile.entries().each {
+                if (!acceptableEntry(it)) {
+                    logger.log(lvl, ">>>> UNEXPECTED ENTRY: ${it.name}")
+                    extraEntries << it.name
+                } else {
+                    logger.log(lvl, "  >> ${it.name} VERIFIED")
+                }
+            }
+        }
+
+        def error = ""
+        Set missingEntries = expectedEntries - foundEntries
+
+        // always cleanup existing files
+        [foundEntriesFilePath, missingEntriesFilePath, extraEntriesFilePath, summaryFilePath].each { filename ->
+            File f = new File(filename)
+            if (f.exists()) {
+                f.delete()
+            }
+        }
+
+        ext.writeEntriesToFile = { filename, entries ->
+            File f = new File(filename)
+            if (!f.parentFile.exists()) {
+                f.parentFile.mkdirs();
+            }
+            f.withWriter { w ->
+                entries.each { e -> w.println e }
+            }
+        }
+        writeEntriesToFile(foundEntriesFilePath, foundEntries)
+        if (!missingEntries.empty) {
+            writeEntriesToFile(missingEntriesFilePath, missingEntries)
+            if (isBuildServer) {
+                missingEntries.each {
+                    logger.log(lvl, ">>>> MISSING ENTRY: $it")
+                }
+            }
+            error += "  ${missingEntries.size()} missing entries. See list in $missingEntriesFilePath\n"
+        }
+        if (!extraEntries.empty) {
+            writeEntriesToFile(extraEntriesFilePath, extraEntries)
+            error += " ${extraEntries.size()} unexpected entries. See list in $extraEntriesFilePath\n"
+        }
+        new File(summaryFilePath).withWriter { w ->
+            w.println "${missingEntries.size()} missing entries (expected ${expectedEntries.size()}."
+            w.println "${extraEntries.size()} extra entries."
+        }
+        if (!error.empty) {
+            throw new RuntimeException("${file.name} has issues:\n$error")
+        }
+        logger.info "${file.name} verified successfully."
+    }
+}
+tasks.assemble.dependsOn verifyAgentJarContents
+
+/**
+ * Creates tasks for setting up integration environments making local testing easier
+ *
+ * For each subfolder in /package, e.g. `xyz`, it creates a task `setupXyz`
+ * This creates a folder in /build/setup/xyz which contains the package contents for that environment.
+ *
+ * Using File.separator here because the console output in indended to be copy/pasted.
+ */
+file("$projectDir/package").eachDir {
+    def name = it.name
+    def path = it.absoluteFile
+    def targetDir = "$buildDir${File.separator}setup${File.separator}$name"
+    def targetDirRelative = "${buildDir.name}${File.separator}setup${File.separator}$name"
+    def taskName = "setup${name.capitalize()}"
+    tasks.register(taskName, Copy) {
+        group = "Local Dev Setup"
+        description = "Copies agent jar and resource files into $targetDirRelative for use in testing."
+        logger.info "Configuring $taskName: src=${path}, dest=$targetDir"
+        from(path) {
+            include "**/**"
+        }
+        def jarFiles = []
+        from(tasks.jar.archiveFile.asFile.get().parent) {
+            include "*.jar"
+            eachFile { jf ->
+                jarFiles << "$targetDir${File.separator}${jf.name}"
+            }
+        }
+        into targetDir
+        dependsOn assemble
+        doLast {
+            logger.quiet "Dev Setup for ${name.capitalize()}:\n"
+            def agentArgs = jarFiles.collect {
+                "  -javaagent:$it\n"
+            }.join("  OR\n")
+            logger.quiet agentArgs
+        }
+    }
+}

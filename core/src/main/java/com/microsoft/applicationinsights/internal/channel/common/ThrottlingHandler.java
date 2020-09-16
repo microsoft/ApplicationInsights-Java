@@ -6,13 +6,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.Header;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class implements the retry logic for throttled requests. HTTP status
@@ -22,6 +22,8 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  *
  */
 public class ThrottlingHandler implements TransmissionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(ThrottlingHandler.class);
 
     private TransmissionPolicyManager transmissionPolicyManager;
     private final static String RESPONSE_RETRY_AFTER_DATE_FORMAT = "E, dd MMM yyyy HH:mm:ss";
@@ -62,12 +64,12 @@ public class ThrottlingHandler implements TransmissionHandler {
                 args.getTransmissionDispatcher().dispatch(args.getTransmission());
                 return true;
             default:
-                InternalLogger.INSTANCE.trace("Http response code %s not handled by %s", args.getResponseCode(),
+                logger.trace("Http response code {} not handled by {}", args.getResponseCode(),
                         this.getClass().getName());
                 return false;
             }
         }
-        InternalLogger.INSTANCE.trace("Http response code %s not handled by %s.", args.getResponseCode(),
+        logger.trace("Http response code {} not handled by {}.", args.getResponseCode(),
                 this.getClass().getName());
         return false;
     }
@@ -101,8 +103,7 @@ public class ThrottlingHandler implements TransmissionHandler {
             long retryAfterAsSeconds = (date.getTime() - convertToDateToGmt(now).getTime()) / 1000;
             this.transmissionPolicyManager.suspendInSeconds(suspensionPolicy, retryAfterAsSeconds);
         } catch (Throwable e) {
-            InternalLogger.INSTANCE.error("Throttled but failed to block transmission.%nStack Trace:%n%s",
-                    ExceptionUtils.getStackTrace(e));
+            logger.error("Throttled but failed to block transmission", e);
             this.transmissionPolicyManager.backoff();
         }
 

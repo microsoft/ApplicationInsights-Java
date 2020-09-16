@@ -1,4 +1,6 @@
 extraction:
     java:
+        before_index:
+            - ./opentelemetry-auto-instr-java/gradlew --project-dir ./opentelemetry-auto-instr-java publishToMavenLocal
         index:
             java_version: 7

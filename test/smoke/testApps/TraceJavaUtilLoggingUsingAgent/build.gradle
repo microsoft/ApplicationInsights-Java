@@ -1,0 +1,15 @@
+apply plugin: 'war'
+
+dependencies {
+    compileOnly aiAgentJar // this is just to force building the agent first
+
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
+
+ext.testAppArtifactDir = war.destinationDirectory
+ext.testAppArtifactFilename = war.archiveFileName.get()

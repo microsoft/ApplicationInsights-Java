@@ -24,13 +24,12 @@ package com.microsoft.applicationinsights.channel.concrete.inprocess;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.ref.WeakReference;
 import java.util.Map;
 
 /**
@@ -53,7 +52,7 @@ import java.util.Map;
  *
  * <p>Created by gupele on 12/17/2014.
  */
-public final class InProcessTelemetryChannel extends TelemetryChannelBase<String> {
+public final class InProcessTelemetryChannel extends TelemetryChannelBase<Telemetry> {
 
     public InProcessTelemetryChannel(TelemetryConfiguration configuration) {
         super(configuration);
@@ -92,26 +91,16 @@ public final class InProcessTelemetryChannel extends TelemetryChannelBase<String
 
     @Override
     protected boolean doSend(Telemetry telemetry) {
-        StringWriter writer = new StringWriter();
-        JsonTelemetryDataSerializer jsonWriter = null;
-        try {
-            jsonWriter = new JsonTelemetryDataSerializer(writer);
-            telemetry.serialize(jsonWriter);
-            jsonWriter.close();
-            String asJson = writer.toString();
-            telemetryBuffer.add(asJson);
-            telemetry.reset();
-
-        } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to serialize Telemetry");
-            InternalLogger.INSTANCE.trace("Stack trace is %s", ExceptionUtils.getStackTrace(e));
-            return false;
+        // this is temporary until we are convinced that telemetry are never re-used by codeless agent
+        if (telemetry.previouslyUsed()) {
+            throw new IllegalStateException("Telemetry was previously used: " + telemetry);
         }
+        telemetryBuffer.add(telemetry);
         return true;
     }
 
     @Override
-    protected ConfiguredTransmitterFactory<String> createTransmitterFactory() {
+    protected ConfiguredTransmitterFactory<Telemetry> createTransmitterFactory() {
         return new InProcessTelemetryTransmitterFactory();
     }
 

@@ -25,12 +25,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Performance counters that are sent as {@link com.microsoft.applicationinsights.telemetry.MetricTelemetry}
@@ -38,6 +38,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 3/30/2015.
  */
 public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerformanceCounter {
+
+    private static final Logger logger = LoggerFactory.getLogger(WindowsPerformanceCounterAsMetric.class);
+
     private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "WindowsPerformanceCounterAsMetric";
 
     private final HashMap<String, String> keyToDisplayName = new HashMap<String, String>();
@@ -86,13 +89,14 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
                     reportError(value, entry.getValue());
                 } else {
                     send(telemetryClient, value, entry.getValue());
-                    InternalLogger.INSTANCE.trace("Sent metric performance counter for '%s': '%s'", entry.getValue(), value);
+                    logger.trace("Sent metric performance counter for '{}': '{}'", entry.getValue(), value);
                 }
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable e) {
                 try {
-                    InternalLogger.INSTANCE.error("Failed to send metric performance counter for '%s': '%s'", entry.getValue(), e.toString());                    InternalLogger.INSTANCE.trace("Stack trace generated is %s", ExceptionUtils.getStackTrace(e));
+                    logger.error("Failed to send metric performance counter for '{}': '{}'", entry.getValue(), e.toString());
+                    logger.trace("Failed to send metric performance counter for '{}'", entry.getValue(), e);
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
@@ -117,7 +121,7 @@ public final class WindowsPerformanceCounterAsMetric extends AbstractWindowsPerf
                 throw td;
             } catch (Throwable t) {
                 try {
-                    InternalLogger.INSTANCE.trace("error registering %s, Stack trace generated is %s", data.getDisplayName(), ExceptionUtils.getStackTrace(t));
+                    logger.trace("error registering {}", data.getDisplayName(), t);
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {

@@ -22,13 +22,13 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class is responsible for loading transmission files that were saved to the disk
@@ -38,6 +38,9 @@ import com.microsoft.applicationinsights.internal.logger.InternalLogger;
  * Created by gupele on 12/22/2014.
  */
 public final class ActiveTransmissionLoader implements TransmissionsLoader {
+
+    private static final Logger logger = LoggerFactory.getLogger(ActiveTransmissionLoader.class);
+
     public static final int MAX_THREADS_ALLOWED = 10;
 
     private static final int DEFAULT_NUMBER_OF_THREADS = 1;
@@ -113,7 +116,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
                                     break;
 
                                 default:
-                                    InternalLogger.INSTANCE.error("Could not find transmission policy '%s'", currentTransmissionState);
+                                    logger.error("Could not find transmission policy '{}'", currentTransmissionState);
                                     Thread.sleep(DEFAULT_SLEEP_INTERVAL_AFTER_DISPATCHING_IN_MILLS);
                                     break;
                             }
@@ -145,7 +148,7 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
             latch.await();
             return true;
         } catch (InterruptedException e) {
-            InternalLogger.INSTANCE.error("Interrupted waiting for threads to start: %s", e.toString());
+            logger.error("Interrupted waiting for threads to start: {}", e.toString());
             Thread.currentThread().interrupt();
         }
 
@@ -153,22 +156,9 @@ public final class ActiveTransmissionLoader implements TransmissionsLoader {
     }
 
     @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
+    public void shutdown() {
         done.set(true);
         interruptAllThreads();
-        joinAllThreads();
-    }
-
-    private void joinAllThreads() {
-        for (Thread thread : threads) {
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                InternalLogger.INSTANCE.error("Interrupted during join of active transmission loader, exception: %s", e.toString());
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
     }
 
     private void interruptAllThreads() {

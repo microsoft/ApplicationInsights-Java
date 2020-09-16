@@ -22,7 +22,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
     @TargetUri("/customInstrumentationOne")
     public void customInstrumentationOne() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -42,7 +42,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
     @TargetUri("/customInstrumentationTwo")
     public void customInstrumentationTwo() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -62,8 +62,8 @@ public class CustomInstrumentationTest extends AiSmokeTest {
     @TargetUri("/customInstrumentationThree")
     public void customInstrumentationThree() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
-        List<Envelope> edList = mockedIngestion.waitForItems("ExceptionData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
+        List<Envelope> edList = mockedIngestion.waitForItemsInRequest("ExceptionData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -90,7 +90,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
     @TargetUri("/customInstrumentationFour")
     public void customInstrumentationFour() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -110,7 +110,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
     @TargetUri("/customInstrumentationFive")
     public void customInstrumentationFive() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 4);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 4);
 
         Envelope rdEnvelope = rdList.get(0);
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
@@ -173,7 +173,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
     @TargetUri("/customInstrumentationSeven")
     public void customInstrumentationSeven() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -192,7 +192,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
     @TargetUri("/customInstrumentationEight")
     public void customInstrumentationEight() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 2);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope1 = rddList.get(0);
@@ -219,7 +219,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
     @TargetUri("/customInstrumentationNine")
     public void customInstrumentationNine() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 2);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
 
         Envelope rdEnvelope = rdList.get(0);
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();

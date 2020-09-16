@@ -25,21 +25,6 @@ If you're interested in contributing, take a look at the general [contributer's 
 4.  In Eclipse used _File -> Import Existing Project_ in a workspace.
 5.  Use `gradle build` to build the project from the command line.
 
-### CollectD Plugin - Optional
-
-To build Application Insights CollectD writer plugin, please do the following:
-
-1.  Aquire 'collectd-api.jar' using one of the following methods:
-    * Install CollectD
-        * Set an environment variable **COLLECTD_HOME** to the installation directory.
-    * Download CollectD Java API sources and compile them using JDK 1.7.
-    The output jar should be named: 'collectd-api.jar'.
-    More info on compiling CollectD sources can be found here: https://collectd.org/dev-info.shtml
-        * Create a new directory for CollectD library you just built, and set a new environment variable **COLLECTD_HOME** pointing to that folder.
-        * Copy the new jar into _%COLLECTD_HOME%/lib_.
-4.  Reload Application Insights project. CollectD writer plugin sub-project should now be loaded.
-    IDE restart may be required in order to identify the new environment variable.
-
 ### Notes
 
 * If you are using Java 8+, set JAVA_JRE_7 environment variable to point a Java 7 JRE installation. This will configure the bootstrap classpath to use the Java 7 library jars.

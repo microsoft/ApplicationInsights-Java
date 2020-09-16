@@ -9,6 +9,8 @@ ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = war.archiveFileName.get()
 
 dependencies {
+    compileOnly aiAgentJar // this is just to force building the agent first
+
     compile aiWebAutoJar
     compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.3.8.RELEASE') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'

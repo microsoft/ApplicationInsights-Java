@@ -36,7 +36,6 @@ import org.apache.http.client.methods.HttpPost;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSenderFactory;
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 
 /**
@@ -89,7 +88,10 @@ public enum QuickPulse implements Stoppable {
 
                     quickPulseDataSender = new DefaultQuickPulseDataSender(apacheSender, sendQueue);
 
-                    String instanceName = DeviceInfo.getHostName();
+                    String instanceName = configuration.getRoleInstance();
+                    if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
+                        instanceName = DeviceInfo.getHostName();
+                    }
                     if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
                         instanceName = "Unknown host";
                     }
@@ -113,8 +115,6 @@ public enum QuickPulse implements Stoppable {
                     thread = new Thread(coordinator, DefaultQuickPulseCoordinator.class.getSimpleName());
                     thread.setDaemon(true);
                     thread.start();
-
-                    SDKShutdownActivity.INSTANCE.register(this);
 
                     QuickPulseDataCollector.INSTANCE.enable(configuration);
                 }

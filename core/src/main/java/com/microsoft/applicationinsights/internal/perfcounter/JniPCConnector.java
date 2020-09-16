@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
@@ -29,7 +28,8 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +42,9 @@ import java.io.OutputStream;
  * Created by gupele on 3/30/2015.
  */
 public final class JniPCConnector {
+
+    private static final Logger logger = LoggerFactory.getLogger(JniPCConnector.class);
+
     public static final String AI_BASE_FOLDER = "AISDK";
     public static final String AI_NATIVE_FOLDER = "native";
     public static final String PROCESS_SELF_INSTANCE_NAME = "__SELF__";
@@ -69,7 +72,7 @@ public final class JniPCConnector {
     public static boolean initialize() {
         try {
             if (!SystemInformation.INSTANCE.isWindows()) {
-                InternalLogger.INSTANCE.error("Jni connector is only used on Windows OS.");
+                logger.error("Jni connector is only used on Windows OS.");
                 return false;
             }
 
@@ -77,14 +80,10 @@ public final class JniPCConnector {
         } catch (ThreadDeath td) {
             throw td;
         } catch (JNIPerformanceCounterConnectorException e) {
-            if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                InternalLogger.INSTANCE.error("Error initializing JNI Performance Counter library. Windows performance counters will not be used.: "+ ExceptionUtils.getStackTrace(e));
-            }
+            logger.error("Error initializing JNI Performance Counter library. Windows performance counters will not be used.", e);
         } catch (Throwable e) {
             try {
-                if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                    InternalLogger.INSTANCE.error("Unexpected error initializing JNI Performance Counter library. Windows performance counters will not be used: "+ExceptionUtils.getStackTrace(e));
-                }
+                logger.error("Unexpected error initializing JNI Performance Counter library. Windows performance counters will not be used", e);
 
                 return false;
             } catch (ThreadDeath td) {
@@ -112,12 +111,12 @@ public final class JniPCConnector {
             throw new IllegalArgumentException("counter must be non-null non empty string.");
         }
 
-        if (InternalLogger.INSTANCE.isTraceEnabled()) {
-            InternalLogger.INSTANCE.trace("Registering performance counter: %s\\%s [%s]", category, counter, StringUtils.trimToEmpty(instance));
+        if (logger.isTraceEnabled()) {
+            logger.trace("Registering performance counter: {} \\ {} [{}]", category, counter, StringUtils.trimToEmpty(instance));
         }
         final String s = addCounter(category, counter, instance);
-        if (StringUtils.isEmpty(s) && InternalLogger.INSTANCE.isWarnEnabled()) {
-            InternalLogger.INSTANCE.warn("Performance coutner registration failed for %s\\%s [%s]", category, counter, StringUtils.trimToEmpty(instance));
+        if (StringUtils.isEmpty(s) && logger.isWarnEnabled()) {
+            logger.warn("Performance coutner registration failed for {} \\ {} [{}]", category, counter, StringUtils.trimToEmpty(instance));
         }
         return s;
     }
@@ -172,9 +171,9 @@ public final class JniPCConnector {
 
         currentInstanceName = getInstanceName(processId);
         if (StringUtils.isEmpty(currentInstanceName)) {
-            InternalLogger.INSTANCE.error("Failed to fetch current process instance name, process counters for for the process level will not be activated.");
+            logger.error("Failed to fetch current process instance name, process counters for for the process level will not be activated.");
         } else {
-            InternalLogger.INSTANCE.info("Java process instance name is set to '%s'", currentInstanceName);
+            logger.info("Java process instance name is set to '{}'", currentInstanceName);
         }
     }
 
@@ -203,8 +202,8 @@ public final class JniPCConnector {
 
             if (!dllOnDisk.exists()) {
                 extractToLocalFolder(dllOnDisk, libraryToLoad);
-            } else if (InternalLogger.INSTANCE.isTraceEnabled()) {
-                InternalLogger.INSTANCE.trace("Found existing DLL: " + dllOnDisk.getAbsolutePath());
+            } else {
+                logger.trace("Found existing DLL: {}", dllOnDisk.getAbsolutePath());
             }
         } catch (Exception e) {
             throw new JNIPerformanceCounterConnectorException("Error extracting DLL to disk", e);
@@ -224,7 +223,7 @@ public final class JniPCConnector {
             throw new JNIPerformanceCounterConnectorException("Unexpected error initializing performance counter DLL library", e);
         }
 
-        InternalLogger.INSTANCE.trace("Successfully loaded library '%s'", libraryToLoad);
+        logger.trace("Successfully loaded library '{}'", libraryToLoad);
     }
 
     private static void extractToLocalFolder(File dllOnDisk, String libraryToLoad) throws IOException {
@@ -234,7 +233,7 @@ public final class JniPCConnector {
         }
         InputStream in = classLoader.getResourceAsStream(libraryToLoad);
         if (in == null) {
-            throw new RuntimeException(String.format("Failed to find '%s' in jar", libraryToLoad));
+            throw new RuntimeException("Failed to find '"+libraryToLoad+"' in jar");
         }
 
         OutputStream out = null;
@@ -242,18 +241,18 @@ public final class JniPCConnector {
             out = FileUtils.openOutputStream(dllOnDisk);
             IOUtils.copy(in, out);
 
-            InternalLogger.INSTANCE.trace("Successfully extracted '%s' to local folder", libraryToLoad);
+            logger.trace("Successfully extracted '{}' to local folder", libraryToLoad);
         } finally {
             try {
                 in.close();
             } catch (IOException e) {
-                InternalLogger.INSTANCE.error("Failed to close input stream for dll extraction: %s", e.toString());
+                logger.error("Failed to close input stream for dll extraction: {}", e.toString());
             }
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    InternalLogger.INSTANCE.error("Failed to close output stream for dll extraction: %s", e.toString());
+                    logger.error("Failed to close output stream for dll extraction: {}", e.toString());
                 }
             }
         }
@@ -274,7 +273,7 @@ public final class JniPCConnector {
             throw new RuntimeException("Failed to create a read/write folder for the native dll.");
         }
 
-        InternalLogger.INSTANCE.trace("%s folder exists", dllPath.toString());
+        logger.trace("{} folder exists", dllPath.toString());
 
         return dllPath;
     }

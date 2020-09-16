@@ -22,11 +22,11 @@
 package com.microsoft.applicationinsights.internal.perfcounter;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class supplies the cpu usage of the Java process the SDK is in.
@@ -34,6 +34,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * Created by gupele on 3/3/2015.
  */
 final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProcessCpuPerformanceCounter.class);
 
     private CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
 
@@ -45,8 +47,7 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
         } catch (Throwable t) {
             try {
                 cpuPerformanceCounterCalculator = null;
-                InternalLogger.INSTANCE.error("Failed to create ProcessCpuPerformanceCounter," +
-                        " Exception : %s", ExceptionUtils.getStackTrace(t));
+                logger.error("Failed to create ProcessCpuPerformanceCounter", t);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -71,7 +72,7 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
             return;
         }
 
-        InternalLogger.INSTANCE.trace("Performance Counter: %s %s: %s", getProcessCategoryName(), Constants.CPU_PC_COUNTER_NAME, processCpuUsage);
+        logger.trace("Performance Counter: {} {}: {}", getProcessCategoryName(), Constants.CPU_PC_COUNTER_NAME, processCpuUsage);
         Telemetry telemetry = new PerformanceCounterTelemetry(
                 getProcessCategoryName(),
                 Constants.CPU_PC_COUNTER_NAME,

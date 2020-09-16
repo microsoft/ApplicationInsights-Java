@@ -87,5 +87,9 @@ public interface Telemetry extends JsonSerializable
      */
     void serialize(JsonTelemetryDataSerializer writer) throws IOException;
 
-    void reset();
+    // this is temporary until we are convinced that telemetry are never re-used by codeless agent
+    boolean previouslyUsed();
+
+    // this is temporary until we are convinced that telemetry are never re-used by codeless agent
+    void markUsed();
 }

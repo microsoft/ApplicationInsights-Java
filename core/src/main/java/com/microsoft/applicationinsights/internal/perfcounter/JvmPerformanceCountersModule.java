@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import com.microsoft.applicationinsights.internal.annotation.PerformanceModule;
 import com.microsoft.applicationinsights.internal.config.JvmXmlElement;
 import com.microsoft.applicationinsights.internal.config.PerformanceCounterJvmSectionXmlElement;
 import com.microsoft.applicationinsights.internal.config.PerformanceCountersXmlElement;
@@ -73,7 +72,6 @@ import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryU
  *
  * Created by gupele on 8/7/2016.
  */
-@PerformanceModule("BuiltIn")
 public final class JvmPerformanceCountersModule extends AbstractPerformanceCounterModule implements PerformanceCounterConfigurationAware {
 
     private String[] JvmPCNames = {

@@ -30,12 +30,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.extensibility.PerformanceCountersCollectionPlugin;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class serves as the container of all {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
@@ -58,6 +56,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 public enum PerformanceCounterContainer implements Stoppable {
     INSTANCE;
 
+    private static final Logger logger = LoggerFactory.getLogger(PerformanceCounterContainer.class);
+
     // By default the container will wait 2 minutes before the collection of performance data.
     private final static long START_COLLECTING_DELAY_IN_MILLIS = 60000;
     private final static long START_DEFAULT_MIN_DELAY_IN_MILLIS = 20000;
@@ -69,8 +69,6 @@ public enum PerformanceCounterContainer implements Stoppable {
     private final ConcurrentMap<String, PerformanceCounter> performanceCounters = new ConcurrentHashMap<String, PerformanceCounter>();
 
     private volatile boolean initialized = false;
-
-    private PerformanceCountersCollectionPlugin plugin;
 
     private long startCollectingDelayInMillis = START_COLLECTING_DELAY_IN_MILLIS;
     private long collectionFrequencyInMS = DEFAULT_COLLECTION_FREQUENCY_IN_SEC * 1000;
@@ -92,10 +90,10 @@ public enum PerformanceCounterContainer implements Stoppable {
 
         initialize();
 
-        InternalLogger.INSTANCE.trace("Registering PC '%s'", performanceCounter.getId());
+        logger.trace("Registering PC '{}'", performanceCounter.getId());
         PerformanceCounter prev = performanceCounters.putIfAbsent(performanceCounter.getId(), performanceCounter);
         if (prev != null) {
-            InternalLogger.INSTANCE.trace("Failed to store performance counter '%s', since there is already one", performanceCounter.getId());
+            logger.trace("Failed to store performance counter '{}', since there is already one", performanceCounter.getId());
             return false;
         }
 
@@ -119,7 +117,7 @@ public enum PerformanceCounterContainer implements Stoppable {
     public void unregister(String id) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(id), "id should be non null, non empty value");
 
-        InternalLogger.INSTANCE.trace("Un-registering PC '%s'", id);
+        logger.trace("Un-registering PC '{}'", id);
         performanceCounters.remove(id);
     }
 
@@ -169,7 +167,7 @@ public enum PerformanceCounterContainer implements Stoppable {
         if (collectionFrequencyInSec <= MIN_COLLECTION_FREQUENCY_IN_SEC) {
             String errorMessage = String.format("Collecting Interval: illegal value '%d'. The minimum value, '%d', " +
                     "is used instead.", collectionFrequencyInSec, MIN_COLLECTION_FREQUENCY_IN_SEC);
-            InternalLogger.INSTANCE.error(errorMessage);
+            logger.error(errorMessage);
 
             collectionFrequencyInSec = MIN_COLLECTION_FREQUENCY_IN_SEC;
         }
@@ -188,7 +186,7 @@ public enum PerformanceCounterContainer implements Stoppable {
      */
     void setStartCollectingDelayInMillis(long startCollectingDelayInMillis) {
         if (startCollectingDelayInMillis < START_DEFAULT_MIN_DELAY_IN_MILLIS) {
-            InternalLogger.INSTANCE.error("Start Collecting Delay: illegal value '%d'. The minimum value, '%'d, is used instead.", startCollectingDelayInMillis, START_DEFAULT_MIN_DELAY_IN_MILLIS);
+            logger.error("Start Collecting Delay: illegal value '{}'. The minimum value, '{}', is used instead.", startCollectingDelayInMillis, START_DEFAULT_MIN_DELAY_IN_MILLIS);
 
             startCollectingDelayInMillis = START_DEFAULT_MIN_DELAY_IN_MILLIS;
         }
@@ -204,7 +202,7 @@ public enum PerformanceCounterContainer implements Stoppable {
      * A private method that is called only when the container needs to start
      * collecting performance counters data. The method will schedule a callback
      * to be called, it will initialize a {@link com.microsoft.applicationinsights.TelemetryClient} that the Performance Counters
-     * will use to report their data, and it will also register itself a the {@link com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity}
+     * will use to report their data
      */
     private void initialize() {
         if (!initialized) {
@@ -229,23 +227,6 @@ public enum PerformanceCounterContainer implements Stoppable {
                             telemetryClient = new TelemetryClient();
                         }
 
-                        if (plugin != null) {
-                            try {
-                                plugin.preCollection();
-                            } catch (ThreadDeath td) {
-                                throw td;
-                            } catch (Throwable t) {
-                                try {
-                                    InternalLogger.INSTANCE.error("Error in thread scheduled for PerformanceCounterContainer" +
-                                            " Exception : %s ", ExceptionUtils.getStackTrace(t));
-                                } catch (ThreadDeath td) {
-                                    throw td;
-                                } catch (Throwable t2) {
-                                    // chomp
-                                }
-                            }
-                        }
-
                         for (PerformanceCounter performanceCounter : performanceCounters.values()) {
                             try {
                                 performanceCounter.report(telemetryClient);
@@ -253,25 +234,7 @@ public enum PerformanceCounterContainer implements Stoppable {
                                 throw td;
                             } catch (Throwable t) {
                                 try {
-                                    InternalLogger.INSTANCE.error("Exception while reporting performance counter '%s': " +
-                                            " Exception : '%s'", performanceCounter.getId(), ExceptionUtils.getStackTrace(t));
-                                } catch (ThreadDeath td) {
-                                    throw td;
-                                } catch (Throwable t2) {
-                                    // chomp
-                                }
-                            }
-                        }
-
-                        if (plugin != null) {
-                            try {
-                                plugin.postCollection();
-                            } catch (ThreadDeath td) {
-                                throw td;
-                            } catch (Throwable t) {
-                                try {
-                                    InternalLogger.INSTANCE.error("Error while executing post collection, Exception : %s ",
-                                            ExceptionUtils.getStackTrace(t));
+                                    logger.error("Exception while reporting performance counter '{}'", performanceCounter.getId(), t);
                                 } catch (ThreadDeath td) {
                                     throw td;
                                 } catch (Throwable t2) {
@@ -284,17 +247,10 @@ public enum PerformanceCounterContainer implements Stoppable {
                 startCollectingDelayInMillis,
                 collectionFrequencyInMS,
                 TimeUnit.MILLISECONDS);
-
-        // Register the instance so the container is stopped when the application exits.
-        SDKShutdownActivity.INSTANCE.register(INSTANCE);
     }
 
     private void createThreadToCollect() {
         threads = new ScheduledThreadPoolExecutor(1);
         threads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(PerformanceCounterContainer.class));
-    }
-
-    public void setPlugin(PerformanceCountersCollectionPlugin plugin) {
-        this.plugin = plugin;
     }
 }

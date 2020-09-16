@@ -7,7 +7,7 @@ import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
-import org.junit.Test;
+import org.junit.*;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     @TargetUri("/apacheHttpClient4")
     public void testAsyncDependencyCallWithApacheHttpClient4() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -38,7 +38,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     @TargetUri("/apacheHttpClient4WithResponseHandler")
     public void testAsyncDependencyCallWithApacheHttpClient4WithResponseHandler() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -56,7 +56,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     @TargetUri("/apacheHttpClient3")
     public void testAsyncDependencyCallWithApacheHttpClient3() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -74,7 +74,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     @TargetUri("/okHttp3")
     public void testAsyncDependencyCallWithOkHttp3() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -88,11 +88,12 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
+    @Ignore // OpenTelemetry Auto-Instrumentation does not support OkHttp 2
     @Test
     @TargetUri("/okHttp2")
     public void testAsyncDependencyCallWithOkHttp2() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -110,7 +111,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     @TargetUri("/httpURLConnection")
     public void testAsyncDependencyCallWithHttpURLConnection() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);

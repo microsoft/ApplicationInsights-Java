@@ -17,12 +17,9 @@ public class SampleTestWithDependencyContainer extends AiSmokeTest {
 
     @Test
     @TargetUri("/index.jsp")
-    public void doCalcSendsRequestDataAndMetricData() {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        assertThat(rdList, hasSize(1));
-        assertThat(rddList, hasSize(1));
+    public void doCalcSendsRequestDataAndMetricData() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -30,7 +27,7 @@ public class SampleTestWithDependencyContainer extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
-        assertEquals("Redis", rdd.getType());
+        assertEquals("redis", rdd.getType());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope);

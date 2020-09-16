@@ -52,6 +52,7 @@ spotbugs {
     ignoreFailures = false
     sourceSets = [sourceSets.main]
 }
+spotbugsMain.classpath = configurations.compileOnly + sourceSets.main.runtimeClasspath
 
 tasks.withType(JavaCompile) {
     dependencies {
@@ -59,7 +60,8 @@ tasks.withType(JavaCompile) {
         spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
     }
     def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
-    if (spotbugsExcludeFile.exists()) {
+    if (spotbugsExcludeFile.exists() && !spotbugs.excludeFilter) {
+        logger.info "${project} using ${spotbugsExcludeFile.absolutePath}"
         spotbugs.excludeFilter = spotbugsExcludeFile
     }
 }

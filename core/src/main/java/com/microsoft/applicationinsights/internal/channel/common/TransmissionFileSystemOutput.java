@@ -42,12 +42,9 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.microsoft.applicationinsights.internal.channel.TransmissionOutput;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-
+import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
 import org.apache.commons.io.FileUtils;
@@ -55,7 +52,8 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class knows how to manage {@link Transmission} that needs
@@ -68,7 +66,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  *
  * Created by gupele on 12/18/2014.
  */
-public final class TransmissionFileSystemOutput implements TransmissionOutput {
+public final class TransmissionFileSystemOutput implements TransmissionOutputSync {
+
+    private static final Logger logger = LoggerFactory.getLogger(TransmissionFileSystemOutput.class);
+
     private final static String TRANSMISSION_FILE_PREFIX = "Transmission";
     private final static String TRANSMISSION_DEFAULT_FOLDER = "transmissions";
     private final static String TEMP_FILE_EXTENSION = ".tmp";
@@ -135,14 +136,14 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
     }
 
     @Override
-    public boolean send(Transmission transmission) {
+    public boolean sendSync(Transmission transmission) {
 
         long currentSizeInBytes = size.get();
         if (currentSizeInBytes >= capacityInBytes) {
-            InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.WARN, "Persistent storage max capacity has been reached; "
-                + "currently at %.3f KB. Telemetry will be lost, "
+            logger.error("Persistent storage max capacity has been reached; "
+                + "currently at {} bytes. Telemetry will be lost, "
                 + "please consider increasing the value of MaxTransmissionStorageFilesCapacityInMB property in the configuration file.",
-                (currentSizeInBytes / 1024.0));
+                currentSizeInBytes);
             return false;
         }
 
@@ -159,12 +160,8 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             return false;
         }
 
-        InternalLogger.INSTANCE.info("Data persisted to file. To be sent when the network is available.");
+        logger.info("Data persisted to file. To be sent when the network is available.");
         return true;
-    }
-
-    @Override
-    public void stop(long timeout, TimeUnit timeUnit) {
     }
 
     public Transmission fetchOldestFile() {
@@ -206,7 +203,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
                 }
             }
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Error fetching oldest file: %s", ExceptionUtils.getStackTrace(e));
+            logger.error("Error fetching oldest file", e);
         }
 
         return null;
@@ -248,11 +245,11 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
         try (ObjectInput input = new SafeObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
             transmission = (Transmission)input.readObject();
         } catch (FileNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to load transmission, file not found, exception: %s", e.toString());
+            logger.error("Failed to load transmission, file not found, exception: {}", e.toString());
         } catch (ClassNotFoundException e) {
-            InternalLogger.INSTANCE.error("Failed to load transmission, non transmission, exception: %s", e.toString());
+            logger.error("Failed to load transmission, non transmission, exception: {}", e.toString());
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to load transmission, io exception: %s", e.toString());
+            logger.error("Failed to load transmission, io exception: {}", e.toString());
         }
 
         return Optional.fromNullable(transmission);
@@ -281,7 +278,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             size.addAndGet(fileLength);
             return true;
         } catch (Exception e) {
-            InternalLogger.INSTANCE.error("Rename To Permanent Name failed, exception: %s", e.toString());
+            logger.error("Rename To Permanent Name failed, exception: {}", e.toString());
         }
 
         return false;
@@ -295,7 +292,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             size.addAndGet(-renamedFile.length());
             transmissionFile = renamedFile;
         } catch (Exception ignore) {
-            InternalLogger.INSTANCE.error("Rename To Temporary Name failed, exception: %s", ignore.toString());
+            logger.error("Rename To Temporary Name failed, exception: {}", ignore.toString());
             // Consume the exception, since there isn't anything 'smart' to do now
         }
 
@@ -308,7 +305,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
             output.writeObject(transmission);
             return true;
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to save transmission, exception: %s", e.toString());
+            logger.error("Failed to save transmission, exception: {}", e.toString());
         }
 
         return false;
@@ -320,7 +317,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutput {
         	String prefix = TRANSMISSION_FILE_PREFIX + "-" + System.currentTimeMillis() + "-";
             file = File.createTempFile(prefix, null, folder);
         } catch (IOException e) {
-            InternalLogger.INSTANCE.error("Failed to create temporary file, exception: %s", e.toString());
+            logger.error("Failed to create temporary file, exception: {}", e.toString());
         }
 
         return Optional.fromNullable(file);

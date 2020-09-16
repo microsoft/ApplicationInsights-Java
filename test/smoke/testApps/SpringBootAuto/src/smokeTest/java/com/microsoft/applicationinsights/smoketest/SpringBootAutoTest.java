@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import org.junit.Test;
 
+@UseAgent
 public class SpringBootAutoTest extends AiSmokeTest {
 
     @Test

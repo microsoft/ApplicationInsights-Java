@@ -30,13 +30,13 @@ public class SimpleTrackHttpRequestServlet extends HttpServlet {
 
         RequestTelemetry rt = new RequestTelemetry("PingTest", new Date(), 1, "200", true);
         rt.setUrl("http://tempuri.org/ping");
-        client.track(rt);
+        client.trackRequest(rt);
 
         //false
         client.trackHttpRequest("FailedHttpRequest", new Date(), 6666, "404", false);
 
         RequestTelemetry rt2 = new RequestTelemetry("FailedHttpRequest2", new Date(), 8888, "505", false);
         rt2.setUrl("https://www.bingasdasdasdasda.com/");
-        client.track(rt2);
+        client.trackRequest(rt2);
     }
 }

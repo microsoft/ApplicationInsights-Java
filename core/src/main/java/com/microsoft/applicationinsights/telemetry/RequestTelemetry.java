@@ -42,7 +42,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     private Double samplingPercentage;
     private final RequestData data;
     private String httpMethod;
-    private boolean allowAgentToOverrideName;
 
     /**
      * Envelope Name for this telemetry.
@@ -145,11 +144,7 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
      * @param name A human-readable name
      */
     public void setName(String name) {
-        if (Strings.isNullOrEmpty(name)) {
-            throw new IllegalArgumentException("The event name cannot be null or empty");
-        }
         data.setName(name);
-        allowAgentToOverrideName = false;
     }
 
     /**
@@ -260,11 +255,9 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     /**
      * Sets request url.
      * @param url The url to store
-     * @throws MalformedURLException If the url is malformed
      */
-    public void setUrl(String url) throws MalformedURLException {
-        URL u = new URL(url); // to validate and normalize
-        data.setUrl(u.toString());
+    public void setUrl(String url) {
+        data.setUrl(url);
     }
 
     /**
@@ -319,13 +312,5 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     @Override
     public String getBaseTypeName() {
         return BASE_TYPE;
-    }
-
-    public boolean isAllowAgentToOverrideName() {
-        return allowAgentToOverrideName;
-    }
-
-    public void setAllowAgentToOverrideName(boolean allowAgentToOverrideName) {
-        this.allowAgentToOverrideName = allowAgentToOverrideName;
     }
 }

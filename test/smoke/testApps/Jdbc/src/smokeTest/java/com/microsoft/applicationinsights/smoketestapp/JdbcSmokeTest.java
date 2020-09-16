@@ -42,7 +42,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     @TargetUri("/hsqldbPreparedStatement")
     public void hsqldbPreparedStatement() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -52,7 +52,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertEquals("jdbc:hsqldb:mem:test", rdd.getName());
+        assertEquals("hsqldb:mem: | test", rdd.getName());
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -63,7 +63,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     @TargetUri("/hsqldbStatement")
     public void hsqldbStatement() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -73,7 +73,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertEquals("jdbc:hsqldb:mem:test", rdd.getName());
+        assertEquals("hsqldb:mem: | test", rdd.getName());
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -84,7 +84,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     @TargetUri("/hsqldbBatchPreparedStatement")
     public void hsqldbBatchPreparedStatement() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -94,19 +94,20 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertEquals("jdbc:hsqldb:mem:test", rdd.getName());
+        assertEquals("hsqldb:mem: | test", rdd.getName());
         assertEquals("insert into abc (xyz) values (?)", rdd.getData());
-        assertEquals(" [Batch of 3]", rdd.getProperties().get("Args"));
+        // assertEquals(" [Batch of 3]", rdd.getProperties().get("Args"));
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
+    @Ignore // OpenTelemetry auto-instrumentation does not support non- prepared statement batching yet
     @Test
     @TargetUri("/hsqldbBatchStatement")
     public void hsqldbBatchStatement() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -116,7 +117,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertEquals("jdbc:hsqldb:mem:test", rdd.getName());
+        assertEquals("hsqldb:mem: | test", rdd.getName());
         assertEquals("insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');" +
                 " insert into abc (xyz) values ('v')", rdd.getData());
         assertEquals(" [Batch]", rdd.getProperties().get("Args"));
@@ -150,7 +151,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertTrue(rdd.getName().startsWith("jdbc:mysql://"));
+        assertTrue(rdd.getName().startsWith("mysql://"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -181,7 +182,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertTrue(rdd.getName().startsWith("jdbc:mysql://"));
+        assertTrue(rdd.getName().startsWith("mysql://"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -192,7 +193,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     @TargetUri("/postgresPreparedStatement")
     public void postgresPreparedStatement() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -202,7 +203,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertTrue(rdd.getName().startsWith("jdbc:postgresql://"));
+        assertTrue(rdd.getName().startsWith("postgresql://"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -213,7 +214,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     @TargetUri("/postgresStatement")
     public void postgresStatement() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -223,7 +224,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertTrue(rdd.getName().startsWith("jdbc:postgresql://"));
+        assertTrue(rdd.getName().startsWith("postgresql://"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -234,7 +235,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     @TargetUri("/sqlServerPreparedStatement")
     public void sqlServerPreparedStatement() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -244,7 +245,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertTrue(rdd.getName().startsWith("jdbc:sqlserver://"));
+        assertTrue(rdd.getName().startsWith("sqlserver://"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -255,7 +256,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     @TargetUri("/sqlServerStatement")
     public void sqlServerStatement() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -265,7 +266,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertTrue(rdd.getName().startsWith("jdbc:sqlserver://"));
+        assertTrue(rdd.getName().startsWith("sqlserver://"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -277,7 +278,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     @TargetUri("/oraclePreparedStatement")
     public void oraclePreparedStatement() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -287,7 +288,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertTrue(rdd.getName().startsWith("jdbc:oracle:thin:@"));
+        assertTrue(rdd.getName().startsWith("oracle:thin:@"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -299,7 +300,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
     @TargetUri("/oracleStatement")
     public void oracleStatement() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItems("RemoteDependencyData", 1);
+        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
@@ -309,7 +310,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
-        assertTrue(rdd.getName().startsWith("jdbc:oracle:thin:@"));
+        assertTrue(rdd.getName().startsWith("oracle:thin:@"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 

@@ -2,8 +2,8 @@ package com.microsoft.applicationinsights.internal.util;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import java.security.NoSuchAlgorithmException;
@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SSLOptionsUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(SSLOptionsUtil.class);
 
     private SSLOptionsUtil() {}
 
@@ -22,8 +24,8 @@ public class SSLOptionsUtil {
 
     static {
         DEFAULT_SUPPORTED_PROTOCOLS = filterSupportedProtocols(Arrays.asList(DEFAULT_PROTOCOLS), false);
-        if (DEFAULT_SUPPORTED_PROTOCOLS.length == 0 && InternalLogger.INSTANCE.isErrorEnabled()) {
-            InternalLogger.INSTANCE.error("Default protocols are not supported in this JVM: %s. System property '%s' can be used to configure supported SSL protocols.",
+        if (DEFAULT_SUPPORTED_PROTOCOLS.length == 0 && logger.isErrorEnabled()) {
+            logger.error("Default protocols are not supported in this JVM: {}. System property '{}' can be used to configure supported SSL protocols.",
                     Arrays.toString(DEFAULT_PROTOCOLS), APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY);
         }
     }
@@ -35,8 +37,8 @@ public class SSLOptionsUtil {
                 SSLContext.getInstance(protocol);
                 supported.add(protocol);
             } catch (NoSuchAlgorithmException e) {
-                if (InternalLogger.INSTANCE.isErrorEnabled() && reportErrors) {
-                    InternalLogger.INSTANCE.error("Could not find protocol '%s': %s", protocol, ExceptionUtils.getStackTrace(e));
+                if (logger.isErrorEnabled() && reportErrors) {
+                    logger.error("Could not find protocol '{}'", protocol, e);
                 }
             }
         }
@@ -59,22 +61,22 @@ public class SSLOptionsUtil {
         }
 
         if (Strings.isNullOrEmpty(rawProp)) {
-            if (InternalLogger.INSTANCE.isWarnEnabled()) {
-                InternalLogger.INSTANCE.warn("%s specifies no protocols; using defaults: %s", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, Arrays.toString(DEFAULT_SUPPORTED_PROTOCOLS));
+            if (logger.isWarnEnabled()) {
+                logger.warn("{} specifies no protocols; using defaults: {}", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, Arrays.toString(DEFAULT_SUPPORTED_PROTOCOLS));
             }
             return defaultSupportedProtocols();
         }
 
         String[] customProtocols = filterSupportedProtocols(Splitter.on(',').trimResults().omitEmptyStrings().split(rawProp), true);
         if (customProtocols.length == 0) {
-            if (InternalLogger.INSTANCE.isErrorEnabled()) {
-                InternalLogger.INSTANCE.error("%s contained no supported protocols: '%s'; using default: %s", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, rawProp, Arrays.toString(DEFAULT_SUPPORTED_PROTOCOLS));
+            if (logger.isErrorEnabled()) {
+                logger.error("{} contained no supported protocols: '{}'; using default: {}", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, rawProp, Arrays.toString(DEFAULT_SUPPORTED_PROTOCOLS));
             }
             return defaultSupportedProtocols();
         }
 
-        if (InternalLogger.INSTANCE.isInfoEnabled()) {
-            InternalLogger.INSTANCE.info("Found %s='%s'; HTTP client will allow only these protocols", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, Arrays.toString(customProtocols));
+        if (logger.isInfoEnabled()) {
+            logger.info("Found {}='{}'; HTTP client will allow only these protocols", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, Arrays.toString(customProtocols));
         }
         return customProtocols;
     }

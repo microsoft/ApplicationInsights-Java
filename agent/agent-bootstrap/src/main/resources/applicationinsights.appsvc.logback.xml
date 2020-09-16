@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
+<configuration>
+    <appender name="CONSOLE" class="com.microsoft.applicationinsights.agent.shadow.ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSSX} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.apache.http" level="${applicationinsights.logback.level.org.apache.http}" />
+    <root level="${applicationInsights.logback.level:-error}">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+    <!-- site.logdir logs -->
+    <include optional="true" resource="${ai.config.appender.user-logdir.location:-rp-logger-config/user-logfile.appender.xml}" />
+
+    <!-- internal troubleshooting/diagnostics logs -->
+    <include optional="true" resource="${ai.config.appender.diagnostics.location:-rp-logger-config/diagnostics.appender.xml}" />
+
+    <!-- etw appender; windows only -->
+    <include optional="true" resource="${ai.config.appender.etw.location:-rp-logger-config/etw.appender.xml}" />
+
+    <logger name="applicationinsights.extension.diagnostics" level="${applicationinsights.extension.diagnostics.level:-info}" />
+</configuration>

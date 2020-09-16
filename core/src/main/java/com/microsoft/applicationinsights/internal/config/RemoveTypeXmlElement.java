@@ -21,14 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-
 /**
  * Created by gupele on 3/16/2015.
  */
 public class RemoveTypeXmlElement {
 
-    @XStreamAsAttribute
     private String type;
 
     public String getType() {

@@ -79,7 +79,7 @@ public final class TransmissionFileSystemOutputTest {
             for (int i = 1; i <= 10; ++i) {
                 String iAsString = String.valueOf(i);
                 String content = MOCK_CONTENT + iAsString;
-                tested.send(new Transmission(content.getBytes(), MOCK_CONTENT_TYPE_BASE + iAsString, MOCK_ENCODING_TYPE_BASE + iAsString));
+                tested.sendSync(new Transmission(content.getBytes(), MOCK_CONTENT_TYPE_BASE + iAsString, MOCK_ENCODING_TYPE_BASE + iAsString));
                 TimeUnit.MILLISECONDS.sleep(150); // sleep a bit so 2 files can never have the same timestamp.
             }
 
@@ -136,7 +136,7 @@ public final class TransmissionFileSystemOutputTest {
         }
 
         for (int i = 0; i < amount; ++i) {
-            tested.send(new Transmission(new byte[SIZE_OF_TRANSMISSION_CONTENT], "MockContentType", "MockEncodingType"));
+            tested.sendSync(new Transmission(new byte[SIZE_OF_TRANSMISSION_CONTENT], "MockContentType", "MockEncodingType"));
         }
 
         return tested;

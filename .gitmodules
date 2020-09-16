@@ -1,0 +1,4 @@
+[submodule "otel"]
+	path = otel
+	url = https://github.com/trask/opentelemetry-java-instrumentation
+	branch = applicationinsights

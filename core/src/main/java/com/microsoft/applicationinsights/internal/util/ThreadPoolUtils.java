@@ -21,7 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -34,6 +35,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by gupele on 12/22/2014.
  */
 public final class ThreadPoolUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(ThreadPoolUtils.class);
 
     public static ThreadPoolExecutor newLimitedThreadPool(int minNumberOfThreads, int maxNumberOfThreads, long defaultRemoveIdleThread, int bufferSize) {
         return new ThreadPoolExecutor(
@@ -61,7 +64,7 @@ public final class ThreadPoolUtils {
                 executorService.shutdownNow();
 
                 if (!executorService.awaitTermination(timeout, timeUnit)) {
-                    InternalLogger.INSTANCE.trace("Pool did not terminate");
+                    logger.trace("Pool did not terminate");
                 }
             }
         } catch (InterruptedException ie) {

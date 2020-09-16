@@ -34,10 +34,10 @@ import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerObserver;
-import com.microsoft.applicationinsights.internal.logger.InternalLogger;
-import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for managing the transmission state.
@@ -51,6 +51,9 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
  * Created by gupele on 6/29/2015.
  */
 public final class TransmissionPolicyManager implements Stoppable, TransmissionHandlerObserver {
+
+    private static final Logger logger = LoggerFactory.getLogger(TransmissionPolicyManager.class);
+
     private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1);
 
     private int instantRetryAmount = 3;         // Should always be set by the creator of this class
@@ -118,7 +121,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
         if (backOffMillis > 0)
         {
             long backOffSeconds = backOffMillis / 1000;
-            InternalLogger.INSTANCE.info("App is throttled, telemetry will be blocked for %s seconds.", backOffSeconds);
+            logger.info("App is throttled, telemetry will be blocked for {} seconds.", backOffSeconds);
             this.suspendInSeconds(TransmissionPolicy.BACKOFF, backOffSeconds);
         }
     }
@@ -128,7 +131,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
      */
     public void clearBackoff() {
         if (policyState.setCurrentState(TransmissionPolicy.UNBLOCKED)) {
-            InternalLogger.INSTANCE.trace("Backoff has been reset.");
+            logger.trace("Backoff has been reset.");
         }
         backoffManager.onDoneSending();
     }
@@ -188,12 +191,12 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
             policyState.setCurrentState(policy);
             suspensionDate = date;
 
-            InternalLogger.INSTANCE.info("App is throttled, telemetries are blocked from now, for %s seconds", suspendInSeconds);
+            logger.info("App is throttled, telemetries are blocked from now, for {} seconds", suspendInSeconds);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             try {
-                InternalLogger.INSTANCE.logAlways(InternalLogger.LoggingLevel.ERROR, "App is throttled but failed to block transmission exception: %s", t.toString());            } catch (ThreadDeath td) {
+                logger.error("App is throttled but failed to block transmission exception: {}", t.toString());            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -208,7 +211,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 
         policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
         suspensionDate = null;
-        InternalLogger.INSTANCE.info("App throttling is cancelled.");
+        logger.info("App throttling is cancelled.");
     }
 
     private synchronized void createScheduler() {
@@ -218,8 +221,6 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 
         threads = new ScheduledThreadPoolExecutor(1);
         threads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(TransmissionPolicyManager.class, instanceId));
-
-        SDKShutdownActivity.INSTANCE.register(this);
     }
 
     @Override

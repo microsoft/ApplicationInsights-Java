@@ -1,0 +1,22 @@
+apply plugin: 'war'
+
+dependencies {
+    compileOnly aiAgentJar // this is just to force building the agent first
+
+    compile aiWebJar
+    compile 'com.google.guava:guava:20.0'
+    compile 'io.lettuce:lettuce-core:5.2.2.RELEASE'
+
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+    smokeTestCompile 'com.google.guava:guava:23.0'
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+compileSmokeTestJava.sourceCompatibility = 1.8
+compileSmokeTestJava.targetCompatibility = 1.8
+
+ext.testAppArtifactDir = war.destinationDirectory
+ext.testAppArtifactFilename = war.archiveFileName.get()
+ext.dependencyContainers = ['redis']

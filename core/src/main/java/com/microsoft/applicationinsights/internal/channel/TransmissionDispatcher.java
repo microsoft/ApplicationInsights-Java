@@ -33,6 +33,6 @@ import java.util.concurrent.TimeUnit;
 public interface TransmissionDispatcher {
     void dispatch(Transmission transmission);
 
-    void stop(long timeout, TimeUnit timeUnit);
+    void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException;
 }
 

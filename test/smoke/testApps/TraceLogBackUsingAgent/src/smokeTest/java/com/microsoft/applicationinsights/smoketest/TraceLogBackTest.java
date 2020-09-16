@@ -30,15 +30,16 @@ public class TraceLogBackTest extends AiSmokeTest {
     @TargetUri("/traceLogBack")
     public void testTraceLogBack() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForItems("MessageData", 2);
+        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
+        Envelope mdEnvelope3 = mdList.get(2);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
-        List<MessageData> logs = mockedIngestion.getTelemetryDataByType("MessageData");
+        List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
         logs.sort(new Comparator<MessageData>() {
             @Override
             public int compare(MessageData o1, MessageData o2) {
@@ -48,25 +49,35 @@ public class TraceLogBackTest extends AiSmokeTest {
 
         MessageData md1 = logs.get(0);
         MessageData md2 = logs.get(1);
+        MessageData md3 = logs.get(2);
 
-        assertEquals("This is logback warn.", md1.getMessage());
-        assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
+        assertEquals("This is logback info.", md1.getMessage());
+        assertEquals(SeverityLevel.Information, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
-        assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
+        assertEquals("INFO", md1.getProperties().get("LoggingLevel"));
+        assertFalse(md1.getProperties().containsKey("MDC key"));
         assertParentChild(rd, rdEnvelope, mdEnvelope1);
 
-        assertEquals("This is logback error.", md2.getMessage());
-        assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
+        assertEquals("This is logback warn.", md2.getMessage());
+        assertEquals(SeverityLevel.Warning, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
-        assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
+        assertEquals("WARN", md2.getProperties().get("LoggingLevel"));
+        assertEquals("MDC value", md2.getProperties().get("MDC key"));
         assertParentChild(rd, rdEnvelope, mdEnvelope2);
+
+        assertEquals("This is logback error.", md3.getMessage());
+        assertEquals(SeverityLevel.Error, md3.getSeverityLevel());
+        assertEquals("Logger", md3.getProperties().get("SourceType"));
+        assertEquals("ERROR", md3.getProperties().get("LoggingLevel"));
+        assertFalse(md3.getProperties().containsKey("MDC key"));
+        assertParentChild(rd, rdEnvelope, mdEnvelope3);
     }
 
     @Test
     @TargetUri("traceLogBackWithException")
     public void testTraceLogBackWithExeption() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> edList = mockedIngestion.waitForItems("ExceptionData", 1);
+        List<Envelope> edList = mockedIngestion.waitForItemsInRequest("ExceptionData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope edEnvelope = edList.get(0);
@@ -82,6 +93,7 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
         assertEquals("Logger", ed.getProperties().get("SourceType"));
         assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
+        assertEquals("MDC value", ed.getProperties().get("MDC key"));
         assertParentChild(rd, rdEnvelope, edEnvelope);
     }
 
