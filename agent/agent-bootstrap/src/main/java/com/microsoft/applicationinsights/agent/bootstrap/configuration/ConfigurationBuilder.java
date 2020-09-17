@@ -22,8 +22,11 @@
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -36,7 +39,9 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Instrumen
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 import okio.Buffer;
 import okio.Okio;
 import org.slf4j.Logger;
@@ -46,6 +51,7 @@ public class ConfigurationBuilder {
 
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_CONTENT = "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT";
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_CONFIGURATION_FILE";
+    private static final String APPLICATIONINSIGHTS_JMX_METRICS = "APPLICATIONINSIGHTS_JMX_METRICS";
 
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
@@ -65,20 +71,32 @@ public class ConfigurationBuilder {
         preview.roleInstance =
                 overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
 
-        if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
-            JmxMetric threadCountJmxMetric = new JmxMetric();
-            threadCountJmxMetric.objectName = "java.lang:type=Threading";
-            threadCountJmxMetric.attribute = "ThreadCount";
-            threadCountJmxMetric.display = "Current Thread Count";
-            preview.jmxMetrics.add(threadCountJmxMetric);
-        }
+        String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, null, null);
 
-        if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
-            JmxMetric classCountJmxMetric = new JmxMetric();
-            classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
-            classCountJmxMetric.attribute = "LoadedClassCount";
-            classCountJmxMetric.display = "Loaded Class Count";
-            preview.jmxMetrics.add(classCountJmxMetric);
+        // JmxMetrics env variable has higher precedence over jmxMetrics config from ApplicationInsights.json
+        if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
+            Moshi moshi = new Moshi.Builder().build();
+            Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
+            JsonReader reader = JsonReader.of(new Buffer().writeUtf8(jmxMetricsEnvVarJson));
+            reader.setLenient(true);
+            JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
+            jsonAdapter.lenient();
+            preview.jmxMetrics = jsonAdapter.fromJson(reader);
+        } else {
+            if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
+                JmxMetric threadCountJmxMetric = new JmxMetric();
+                threadCountJmxMetric.objectName = "java.lang:type=Threading";
+                threadCountJmxMetric.attribute = "ThreadCount";
+                threadCountJmxMetric.display = "Current Thread Count";
+                preview.jmxMetrics.add(threadCountJmxMetric);
+            }
+            if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
+                JmxMetric classCountJmxMetric = new JmxMetric();
+                classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
+                classCountJmxMetric.attribute = "LoadedClassCount";
+                classCountJmxMetric.display = "Loaded Class Count";
+                preview.jmxMetrics.add(classCountJmxMetric);
+            }
         }
 
         return config;
@@ -164,14 +182,6 @@ public class ConfigurationBuilder {
             return value;
         }
         value = getEnv(name2);
-        if (value != null && !value.isEmpty()) {
-            return value;
-        }
-        return defaultValue;
-    }
-
-    static String overlayWithEnvVar(String name, String defaultValue) {
-        String value = getEnv(name);
         if (value != null && !value.isEmpty()) {
             return value;
         }
