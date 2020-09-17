@@ -118,7 +118,6 @@ public class ConfigurationBuilder {
             JsonReader reader = JsonReader.of(new Buffer().writeUtf8(jmxMetricsEnvVarJson));
             reader.setLenient(true);
             JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
-            jsonAdapter.lenient();
             preview.jmxMetrics = jsonAdapter.fromJson(reader);
         } else {
             if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
@@ -148,7 +147,6 @@ public class ConfigurationBuilder {
     }
 
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
-
         String configurationContent = System.getenv(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
         if (configurationContent != null && !configurationContent.isEmpty()) {
             Moshi moshi = new Moshi.Builder().build();
