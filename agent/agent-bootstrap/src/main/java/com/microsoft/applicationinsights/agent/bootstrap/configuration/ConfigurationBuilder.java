@@ -21,11 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,7 +42,6 @@ import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import okio.Buffer;
-import okio.Okio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,9 +67,9 @@ public class ConfigurationBuilder {
         Configuration config = loadConfigurationFile(agentJarPath);
         PreviewConfiguration preview = config.instrumentationSettings.preview;
 
-        preview.roleName = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
+        preview.roleName = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
         preview.roleInstance =
-                overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
+                overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
 
         loadSamplingRateEnvVar(preview);
         loadLogCaptureEnvVar(preview);
@@ -83,7 +79,7 @@ public class ConfigurationBuilder {
     }
 
     private static void loadSamplingRateEnvVar(PreviewConfiguration preview) {
-        final String samplingRate = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_RATE, null, "100");
+        final String samplingRate = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_RATE, "100");
         if (samplingRate != "100") {
             configurationMessages.add(new ConfigurationMessage("Update default sampling rate from 100 to {}", samplingRate));
             FixedRateSampling fixedRateSampling = new FixedRateSampling();
@@ -95,7 +91,7 @@ public class ConfigurationBuilder {
     }
 
     private static void loadLogCaptureEnvVar(PreviewConfiguration preview) {
-        final String logCaptureThreshold = overlayWithEnvVar(APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD, null, "INFO");
+        final String logCaptureThreshold = overlayWithEnvVar(APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD, "INFO");
         if (logCaptureThreshold != "INFO") {
             configurationMessages.add(new ConfigurationMessage("Update default log capture threshold from INFO to {}", logCaptureThreshold));
             final Map<String, Object> threshold = new HashMap<String, Object>() {{
@@ -108,7 +104,7 @@ public class ConfigurationBuilder {
     }
 
     private static void loadJmxMetrics(PreviewConfiguration preview) throws IOException {
-        String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, null, null);
+        String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, null);
 
         // JmxMetrics env variable has higher precedence over jmxMetrics config from ApplicationInsights.json
         if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
@@ -210,7 +206,7 @@ public class ConfigurationBuilder {
     }
 
     // visible for testing
-    static String overlayWithEnvVar(String name1, String name2, String defaultValue) {
+    static String overlayWithEnvVars(String name1, String name2, String defaultValue) {
         String value = getEnv(name1);
         if (value != null && !value.isEmpty()) {
             return value;
@@ -219,6 +215,15 @@ public class ConfigurationBuilder {
         if (value != null && !value.isEmpty()) {
             return value;
         }
+        return defaultValue;
+    }
+
+    static String overlayWithEnvVar(String name, String defaultValue) {
+        String value = getEnv(name);
+        if (value != null && !value.isEmpty()) {
+            return value;
+        }
+
         return defaultValue;
     }
 
@@ -234,7 +239,7 @@ public class ConfigurationBuilder {
     }
 
     // visible for testing
-    static Map<String, String> overlayWithEnvVar(String name, Map<String, String> defaultValue) {
+    static Map<String, String> overlayWithEnvVars(String name, Map<String, String> defaultValue) {
         String value = System.getenv(name);
         if (value != null && !value.isEmpty()) {
             Moshi moshi = new Moshi.Builder().build();
