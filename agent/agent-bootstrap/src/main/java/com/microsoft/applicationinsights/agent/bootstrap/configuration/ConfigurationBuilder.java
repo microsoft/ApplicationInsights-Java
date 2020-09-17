@@ -35,8 +35,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.FixedRateSampling;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.Sampling;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
@@ -52,6 +54,8 @@ public class ConfigurationBuilder {
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_CONTENT = "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT";
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_CONFIGURATION_FILE";
     private static final String APPLICATIONINSIGHTS_JMX_METRICS = "APPLICATIONINSIGHTS_JMX_METRICS";
+    private static final String APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD = "APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD";
+    private static final String APPLICATIONINSIGHTS_SAMPLING_RATE = "APPLICATIONINSIGHTS_SAMPLING_RATE";
 
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
@@ -71,10 +75,44 @@ public class ConfigurationBuilder {
         preview.roleInstance =
                 overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
 
+        loadSamplingRateEnvVar(preview);
+        loadLogCaptureEnvVar(preview);
+        loadJmxMetrics(preview);
+
+        return config;
+    }
+
+    private static void loadSamplingRateEnvVar(PreviewConfiguration preview) {
+        final String samplingRate = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_RATE, null, "100");
+        if (samplingRate != "100") {
+            configurationMessages.add(new ConfigurationMessage("Update default sampling rate from 100 to {}", samplingRate));
+            FixedRateSampling fixedRateSampling = new FixedRateSampling();
+            fixedRateSampling.percentage = new Double(samplingRate);
+            Sampling sampling = new Sampling();
+            sampling.fixedRate = fixedRateSampling;
+            preview.sampling = sampling;
+        }
+    }
+
+    private static void loadLogCaptureEnvVar(PreviewConfiguration preview) {
+        final String logCaptureThreshold = overlayWithEnvVar(APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD, null, "INFO");
+        if (logCaptureThreshold != "INFO") {
+            configurationMessages.add(new ConfigurationMessage("Update default log capture threshold from INFO to {}", logCaptureThreshold));
+            final Map<String, Object> threshold = new HashMap<String, Object>() {{
+                put("threshold", logCaptureThreshold);
+            }};
+            preview.instrumentation = new HashMap<String, Map<String, Object>>() {{
+                put("logging", threshold);
+            }};
+        }
+    }
+
+    private static void loadJmxMetrics(PreviewConfiguration preview) throws IOException {
         String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, null, null);
 
         // JmxMetrics env variable has higher precedence over jmxMetrics config from ApplicationInsights.json
         if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
+            configurationMessages.add(new ConfigurationMessage("Update JMX metrics to {}", jmxMetricsEnvVarJson));
             Moshi moshi = new Moshi.Builder().build();
             Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
             JsonReader reader = JsonReader.of(new Buffer().writeUtf8(jmxMetricsEnvVarJson));
@@ -98,8 +136,6 @@ public class ConfigurationBuilder {
                 preview.jmxMetrics.add(classCountJmxMetric);
             }
         }
-
-        return config;
     }
 
     private static boolean jmxMetricExisted(List<InstrumentationSettings.JmxMetric> jmxMetrics, String objectName, String attribute) {
