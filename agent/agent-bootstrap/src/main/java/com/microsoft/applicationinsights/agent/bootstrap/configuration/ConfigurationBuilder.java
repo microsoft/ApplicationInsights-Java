@@ -95,6 +95,7 @@ public class ConfigurationBuilder {
             Map<String, Object> logging = preview.instrumentation.get("logging");
             if (logging == null) {
                 logging = new HashMap<>();
+                preview.instrumentation.put("logging", logging);
             }
             logging.put("threshold", logCaptureThreshold);
         }
