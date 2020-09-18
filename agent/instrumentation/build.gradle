@@ -31,6 +31,7 @@ dependencies {
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jdbc', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jedis-1.4', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jedis-3.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jetty-8.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jms-1.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-kafka-clients-0.11', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-kafka-streams-0.11', version: instrumentationVersion

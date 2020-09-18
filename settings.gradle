@@ -85,5 +85,6 @@ include ':test:smoke:testApps:ActuatorMetrics'
 include ':test:smoke:testApps:SystemExit'
 include ':test:smoke:testApps:VerifyShading'
 include ':test:smoke:testApps:VerifyJava7'
+include ':test:smoke:testApps:JettyNativeHandler'
 
 
