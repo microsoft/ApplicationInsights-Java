@@ -22,10 +22,9 @@
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -46,7 +45,7 @@ public class InstrumentationSettings {
 
         public List<JmxMetric> jmxMetrics = new ArrayList<>();
 
-        public Map<String, Map<String, Object>> instrumentation = Collections.emptyMap();
+        public Map<String, Map<String, Object>> instrumentation = new HashMap<>();
     }
 
     public static class SelfDiagnostics {

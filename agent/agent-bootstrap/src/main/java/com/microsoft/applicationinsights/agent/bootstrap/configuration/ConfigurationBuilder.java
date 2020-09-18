@@ -80,10 +80,9 @@ public class ConfigurationBuilder {
 
     private static void loadSamplingRateEnvVar(PreviewConfiguration preview) {
         final String samplingRate = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_RATE, "100");
-        if (samplingRate != "100") {
-            configurationMessages.add(new ConfigurationMessage("Update default sampling rate from 100 to {}", samplingRate));
+        if (!samplingRate.equals("100")) {
             FixedRateSampling fixedRateSampling = new FixedRateSampling();
-            fixedRateSampling.percentage = new Double(samplingRate);
+            fixedRateSampling.percentage = Double.parseDouble(samplingRate);
             Sampling sampling = new Sampling();
             sampling.fixedRate = fixedRateSampling;
             preview.sampling = sampling;
@@ -92,14 +91,12 @@ public class ConfigurationBuilder {
 
     private static void loadLogCaptureEnvVar(PreviewConfiguration preview) {
         final String logCaptureThreshold = overlayWithEnvVar(APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD, "INFO");
-        if (logCaptureThreshold != "INFO") {
-            configurationMessages.add(new ConfigurationMessage("Update default log capture threshold from INFO to {}", logCaptureThreshold));
-            final Map<String, Object> threshold = new HashMap<String, Object>() {{
-                put("threshold", logCaptureThreshold);
-            }};
-            preview.instrumentation = new HashMap<String, Map<String, Object>>() {{
-                put("logging", threshold);
-            }};
+        if (!logCaptureThreshold.equals("INFO")) {
+            Map<String, Object> logging = preview.instrumentation.get("logging");
+            if (logging == null) {
+                logging = new HashMap<>();
+            }
+            logging.put("threshold", logCaptureThreshold);
         }
     }
 
@@ -108,28 +105,26 @@ public class ConfigurationBuilder {
 
         // JmxMetrics env variable has higher precedence over jmxMetrics config from ApplicationInsights.json
         if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
-            configurationMessages.add(new ConfigurationMessage("Update JMX metrics to {}", jmxMetricsEnvVarJson));
             Moshi moshi = new Moshi.Builder().build();
             Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
             JsonReader reader = JsonReader.of(new Buffer().writeUtf8(jmxMetricsEnvVarJson));
             reader.setLenient(true);
             JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
             preview.jmxMetrics = jsonAdapter.fromJson(reader);
-        } else {
-            if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
-                JmxMetric threadCountJmxMetric = new JmxMetric();
-                threadCountJmxMetric.objectName = "java.lang:type=Threading";
-                threadCountJmxMetric.attribute = "ThreadCount";
-                threadCountJmxMetric.display = "Current Thread Count";
-                preview.jmxMetrics.add(threadCountJmxMetric);
-            }
-            if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
-                JmxMetric classCountJmxMetric = new JmxMetric();
-                classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
-                classCountJmxMetric.attribute = "LoadedClassCount";
-                classCountJmxMetric.display = "Loaded Class Count";
-                preview.jmxMetrics.add(classCountJmxMetric);
-            }
+        }
+        if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
+            JmxMetric threadCountJmxMetric = new JmxMetric();
+            threadCountJmxMetric.objectName = "java.lang:type=Threading";
+            threadCountJmxMetric.attribute = "ThreadCount";
+            threadCountJmxMetric.display = "Current Thread Count";
+            preview.jmxMetrics.add(threadCountJmxMetric);
+        }
+        if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
+            JmxMetric classCountJmxMetric = new JmxMetric();
+            classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
+            classCountJmxMetric.attribute = "LoadedClassCount";
+            classCountJmxMetric.display = "Loaded Class Count";
+            preview.jmxMetrics.add(classCountJmxMetric);
         }
     }
 
