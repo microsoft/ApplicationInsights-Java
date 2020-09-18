@@ -396,7 +396,37 @@ public class Exporter implements SpanExporter {
 
         if (attributes != null) {
             for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-                properties.put(entry.getKey(), entry.getValue().getStringValue());
+                AttributeValue av = entry.getValue();
+                String stringValue = null;
+                switch(av.getType()) {
+                    case STRING:
+                        stringValue = av.getStringValue();
+                        break;
+                    case BOOLEAN:
+                        stringValue = String.valueOf(av.getBooleanValue());
+                        break;
+                    case LONG:
+                        stringValue = String.valueOf(av.getLongValue());
+                        break;
+                    case DOUBLE:
+                        stringValue = String.valueOf(av.getDoubleValue());
+                        break;
+                    case STRING_ARRAY:
+                        stringValue = String.valueOf(av.getStringArrayValue());
+                        break;
+                    case BOOLEAN_ARRAY:
+                        stringValue = String.valueOf(av.getBooleanArrayValue());
+                        break;
+                    case LONG_ARRAY:
+                        stringValue = String.valueOf(av.getLongArrayValue());
+                        break;
+                    case DOUBLE_ARRAY:
+                        stringValue = String.valueOf(av.getDoubleArrayValue());
+                        break;
+                }
+                if (stringValue != null) {
+                    properties.put(entry.getKey(), stringValue);
+                }
             }
         }
     }
@@ -531,7 +561,7 @@ public class Exporter implements SpanExporter {
     }
 
     private static Double removeAttributeDouble(Map<String, AttributeValue> attributes, String attributeName) {
-        AttributeValue attributeValue = attributes.get(attributeName);
+        AttributeValue attributeValue = attributes.remove(attributeName);
         if (attributeValue == null) {
             return null;
         } else if (attributeValue.getType() == AttributeValue.Type.DOUBLE) {
