@@ -68,41 +68,22 @@ public class ConfigurationBuilder {
         PreviewConfiguration preview = config.instrumentationSettings.preview;
 
         preview.roleName = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
-        preview.roleInstance =
-                overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
+        preview.roleInstance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
+        preview.sampling.fixedRate.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_RATE, preview.sampling.fixedRate.percentage);
 
-        loadSamplingRateEnvVar(preview);
         loadLogCaptureEnvVar(preview);
         loadJmxMetrics(preview);
 
         return config;
     }
 
-    private static void loadSamplingRateEnvVar(PreviewConfiguration preview) {
-        final String samplingRate = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_RATE, "100");
-        if (!samplingRate.equals("100")) {
-            FixedRateSampling fixedRateSampling = new FixedRateSampling();
-            fixedRateSampling.percentage = Double.parseDouble(samplingRate);
-            Sampling sampling = new Sampling();
-            sampling.fixedRate = fixedRateSampling;
-            preview.sampling = sampling;
-        }
-    }
-
     private static void loadLogCaptureEnvVar(PreviewConfiguration preview) {
-        final String logCaptureThreshold = overlayWithEnvVar(APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD, "INFO");
-        if (!logCaptureThreshold.equals("INFO")) {
-            Map<String, Object> logging = preview.instrumentation.get("logging");
-            if (logging == null) {
-                logging = new HashMap<>();
-                preview.instrumentation.put("logging", logging);
-            }
-            logging.put("threshold", logCaptureThreshold);
-        }
+        Map<String, Object> logging = preview.instrumentation.get("logging");
+        logging.put("threshold", overlayWithEnvVar(APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD, (String)logging.get("threshold")));
     }
 
     private static void loadJmxMetrics(PreviewConfiguration preview) throws IOException {
-        String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, null);
+        String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, (String)null);
 
         // JmxMetrics env variable has higher precedence over jmxMetrics config from ApplicationInsights.json
         if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
@@ -218,6 +199,15 @@ public class ConfigurationBuilder {
         String value = getEnv(name);
         if (value != null && !value.isEmpty()) {
             return value;
+        }
+
+        return defaultValue;
+    }
+
+    static Double overlayWithEnvVar(String name, Double defaultValue) {
+        String value = getEnv(name);
+        if (value != null && !value.isEmpty()) {
+            return Double.parseDouble(value);
         }
 
         return defaultValue;

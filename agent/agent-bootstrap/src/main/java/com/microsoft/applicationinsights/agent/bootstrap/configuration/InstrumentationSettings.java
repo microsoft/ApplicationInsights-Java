@@ -45,7 +45,9 @@ public class InstrumentationSettings {
 
         public List<JmxMetric> jmxMetrics = new ArrayList<>();
 
-        public Map<String, Map<String, Object>> instrumentation = new HashMap<>();
+        public Map<String, Map<String, Object>> instrumentation = new HashMap<String, Map<String, Object>>() {{
+            put("logging", new HashMap<String, Object>());
+        }};
     }
 
     public static class SelfDiagnostics {
@@ -58,7 +60,7 @@ public class InstrumentationSettings {
 
     public static class Sampling {
 
-        public FixedRateSampling fixedRate;
+        public FixedRateSampling fixedRate = new FixedRateSampling();
     }
 
     public static class FixedRateSampling {
