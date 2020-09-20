@@ -59,7 +59,7 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import io.opentelemetry.auto.config.ConfigOverride;
+import io.opentelemetry.javaagent.config.ConfigOverride;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.config.Config;
 import org.apache.http.HttpHost;

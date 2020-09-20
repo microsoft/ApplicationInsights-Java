@@ -1,4 +1,4 @@
-package io.opentelemetry.auto.tooling;
+package io.opentelemetry.javaagent.tooling;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.Exporter;
@@ -21,7 +21,7 @@ public class TracerInstaller {
         }
 
         OpenTelemetry.setPropagators(
-                DefaultContextPropagators.builder().addHttpTextFormat(new AiHttpTraceContext()).build());
+                DefaultContextPropagators.builder().addTextMapPropagator(new AiHttpTraceContext()).build());
 
         double fixedRateSamplingPercentage = Global.getFixedRateSamplingPercentage();
         if (fixedRateSamplingPercentage != 100) {

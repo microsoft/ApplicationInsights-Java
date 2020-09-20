@@ -18,13 +18,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package io.opentelemetry.auto.bootstrap;
+package io.opentelemetry.javaagent;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
@@ -33,7 +32,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.CodeSource;
-import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.List;
 import java.util.jar.JarFile;
@@ -61,7 +59,7 @@ import java.util.regex.Pattern;
  *   <li>Do dot touch any logging facilities here so we can configure them later
  * </ul>
  */
-public class AgentBootstrap {
+public class OpenTelemetryAgent {
 
     public static void premain(final String agentArgs, final Instrumentation inst) {
         agentmain(agentArgs, inst);
@@ -86,7 +84,7 @@ public class AgentBootstrap {
         URL bootstrapURL = null;
 
         // First try Code Source
-        final CodeSource codeSource = AgentBootstrap.class.getProtectionDomain().getCodeSource();
+        final CodeSource codeSource = OpenTelemetryAgent.class.getProtectionDomain().getCodeSource();
 
         if (codeSource != null) {
             bootstrapURL = codeSource.getLocation();
@@ -145,10 +143,10 @@ public class AgentBootstrap {
         try {
             // Try Oracle-based
             final Class managementFactoryHelperClass =
-                    AgentBootstrap.class.getClassLoader().loadClass("sun.management.ManagementFactoryHelper");
+                    OpenTelemetryAgent.class.getClassLoader().loadClass("sun.management.ManagementFactoryHelper");
 
             final Class vmManagementClass =
-                    AgentBootstrap.class.getClassLoader().loadClass("sun.management.VMManagement");
+                    OpenTelemetryAgent.class.getClassLoader().loadClass("sun.management.VMManagement");
 
             Object vmManagement;
 
@@ -167,7 +165,7 @@ public class AgentBootstrap {
 
         } catch (final ReflectiveOperationException e) {
             try { // Try IBM-based.
-                final Class VMClass = AgentBootstrap.class.getClassLoader().loadClass("com.ibm.oti.vm.VM");
+                final Class VMClass = OpenTelemetryAgent.class.getClassLoader().loadClass("com.ibm.oti.vm.VM");
                 final String[] argArray = (String[]) VMClass.getMethod("getVMArgs").invoke(null);
                 return Arrays.asList(argArray);
             } catch (final ReflectiveOperationException e1) {
@@ -205,7 +203,7 @@ public class AgentBootstrap {
         try (final BufferedReader reader =
                      new BufferedReader(
                              new InputStreamReader(
-                                     AgentBootstrap.class.getResourceAsStream("/java-agent.version"),
+                                     OpenTelemetryAgent.class.getResourceAsStream("/java-agent.version"),
                                      StandardCharsets.UTF_8))) {
 
             for (int c = reader.read(); c != -1; c = reader.read()) {

@@ -1,4 +1,4 @@
-package io.opentelemetry.auto.tooling;
+package io.opentelemetry.javaagent.tooling;
 
 import java.lang.instrument.Instrumentation;
 import java.net.URL;

@@ -52,6 +52,7 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
@@ -80,16 +81,16 @@ public class Exporter implements SpanExporter {
     }
 
     @Override
-    public ResultCode export(Collection<SpanData> spans) {
+    public CompletableResultCode export(Collection<SpanData> spans) {
         try {
             for (SpanData span : spans) {
                 logger.debug("exporting span: {}", span);
                 export(span);
             }
-            return ResultCode.SUCCESS;
+            return CompletableResultCode.ofSuccess();
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
-            return ResultCode.FAILURE;
+            return CompletableResultCode.ofFailure();
         }
     }
 
@@ -376,12 +377,13 @@ public class Exporter implements SpanExporter {
     }
 
     @Override
-    public ResultCode flush() {
-        return null;
+    public CompletableResultCode flush() {
+        return CompletableResultCode.ofSuccess();
     }
 
     @Override
-    public void shutdown() {
+    public CompletableResultCode shutdown() {
+        return CompletableResultCode.ofSuccess();
     }
 
     private static void setProperties(Map<String, String> properties, long timeEpochNanos, String level, String loggerName, Map<String, AttributeValue> attributes) {
