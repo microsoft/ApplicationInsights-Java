@@ -40,7 +40,7 @@ public class ConfigurationTest {
         assertEquals("java.lang:type=Threading", preview.jmxMetrics.get(0).objectName);
         assertEquals("ThreadCount", preview.jmxMetrics.get(0).attribute);
         assertEquals("Thread Count", preview.jmxMetrics.get(0).display);
-        assertEquals(ImmutableMap.of("threshold", "error"), preview.instrumentation.get("logging"));
+        assertEquals(ImmutableMap.of("threshold", "error", "enabled", "true"), preview.instrumentation.get("logging"));
         assertEquals("myproxy", preview.httpProxy.host);
         assertEquals(8080, preview.httpProxy.port);
 
@@ -78,7 +78,7 @@ public class ConfigurationTest {
 
     @Test
     public void shouldOverrideLogCaptureThreshold() throws IOException {
-        envVars.set("APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD", "TRACE");
+        envVars.set("APPLICATIONINSIGHTS_LOGGING_THRESHOLD", "TRACE");
 
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
