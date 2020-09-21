@@ -32,10 +32,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.FixedRateSampling;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.Sampling;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
@@ -51,7 +49,7 @@ public class ConfigurationBuilder {
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_CONFIGURATION_FILE";
     private static final String APPLICATIONINSIGHTS_JMX_METRICS = "APPLICATIONINSIGHTS_JMX_METRICS";
     private static final String APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD = "APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD";
-    private static final String APPLICATIONINSIGHTS_SAMPLING_RATE = "APPLICATIONINSIGHTS_SAMPLING_RATE";
+    private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE = "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
@@ -183,7 +181,7 @@ public class ConfigurationBuilder {
         PreviewConfiguration preview = config.instrumentationSettings.preview;
         preview.roleName = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
         preview.roleInstance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
-        preview.sampling.fixedRate.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_RATE, preview.sampling.fixedRate.percentage);
+        preview.sampling.fixedRate.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, preview.sampling.fixedRate.percentage);
 
         loadLogCaptureEnvVar(preview);
         loadJmxMetrics(preview);
