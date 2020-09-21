@@ -48,7 +48,7 @@ public class ConfigurationBuilder {
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_CONTENT = "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT";
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_CONFIGURATION_FILE";
     private static final String APPLICATIONINSIGHTS_JMX_METRICS = "APPLICATIONINSIGHTS_JMX_METRICS";
-    private static final String APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD = "APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD";
+    private static final String APPLICATIONINSIGHTS_LOGGING_THRESHOLD = "APPLICATIONINSIGHTS_LOGGING_THRESHOLD";
     private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE = "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
@@ -68,12 +68,15 @@ public class ConfigurationBuilder {
     }
 
     private static void loadLogCaptureEnvVar(PreviewConfiguration preview) {
-        final String loggingEnvVar = overlayWithEnvVar(APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD, (String)null);
+        Map<String, Object> logging = preview.instrumentation.get("logging");
+        if (logging == null) {
+            logging = new HashMap<>();
+            preview.instrumentation.put("logging", logging);
+        }
+
+        final String loggingEnvVar = overlayWithEnvVar(APPLICATIONINSIGHTS_LOGGING_THRESHOLD, (String)null);
         if (loggingEnvVar != null) {
-            Map<String, Object> threshold = new HashMap<String, Object>() {{
-                put("threshold", loggingEnvVar);
-            }};
-            preview.instrumentation.put("logging", threshold);
+            logging.put("threshold", loggingEnvVar);
         }
     }
 

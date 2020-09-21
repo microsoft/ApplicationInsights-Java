@@ -31,7 +31,8 @@
       },
       "instrumentation": {
         "logging": {
-          "threshold": "error"
+          "threshold": "error",
+          "enabled": "true"
         },
         "micrometer": {
           "enabled": "true"

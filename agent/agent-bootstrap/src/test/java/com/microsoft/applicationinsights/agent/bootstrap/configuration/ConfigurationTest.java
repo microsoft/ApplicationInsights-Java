@@ -63,6 +63,7 @@ public class ConfigurationTest {
         assertEquals(3, preview.jmxMetrics.size());
         assertEquals("error", preview.instrumentation.get("logging").get("threshold"));
         assertEquals("true", preview.instrumentation.get("micrometer").get("enabled"));
+        assertEquals("true", preview.instrumentation.get("logging").get("enabled"));
     }
 
     @Test
@@ -83,6 +84,7 @@ public class ConfigurationTest {
         ConfigurationBuilder.overlayEnvVars(configuration);
 
         assertEquals("TRACE", configuration.instrumentationSettings.preview.instrumentation.get("logging").get("threshold"));
+        assertEquals("true", configuration.instrumentationSettings.preview.instrumentation.get("logging").get("enabled"));
     }
 
     @Test
