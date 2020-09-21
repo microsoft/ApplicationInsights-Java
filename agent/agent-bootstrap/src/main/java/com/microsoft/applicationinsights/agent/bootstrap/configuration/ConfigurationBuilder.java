@@ -63,16 +63,8 @@ public class ConfigurationBuilder {
     private static final List<ConfigurationMessage> configurationMessages = new CopyOnWriteArrayList<>();
 
     public static Configuration create(Path agentJarPath) throws IOException {
-
         Configuration config = loadConfigurationFile(agentJarPath);
-        PreviewConfiguration preview = config.instrumentationSettings.preview;
-
-        preview.roleName = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
-        preview.roleInstance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
-        preview.sampling.fixedRate.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_RATE, preview.sampling.fixedRate.percentage);
-
-        loadLogCaptureEnvVar(preview);
-        loadJmxMetrics(preview);
+        overlayEnvVars(config);
 
         return config;
     }
@@ -180,6 +172,16 @@ public class ConfigurationBuilder {
     private static String getEnvVarOrProperty(String envVarName, String propertyName) {
         String value = trimAndEmptyToNull(System.getenv(envVarName));
         return value != null ? value : trimAndEmptyToNull(System.getProperty(propertyName));
+    }
+
+    static void overlayEnvVars(Configuration config) throws IOException {
+        PreviewConfiguration preview = config.instrumentationSettings.preview;
+        preview.roleName = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
+        preview.roleInstance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
+        preview.sampling.fixedRate.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_RATE, preview.sampling.fixedRate.percentage);
+
+        loadLogCaptureEnvVar(preview);
+        loadJmxMetrics(preview);
     }
 
     // visible for testing
