@@ -62,6 +62,7 @@ public class ConfigurationTest {
         assertEquals(60, preview.heartbeat.intervalSeconds);
         assertEquals(3, preview.jmxMetrics.size());
         assertEquals("error", preview.instrumentation.get("logging").get("threshold"));
+        assertEquals("true", preview.instrumentation.get("micrometer").get("enabled"));
     }
 
     @Test

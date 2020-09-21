@@ -45,9 +45,7 @@ public class InstrumentationSettings {
 
         public List<JmxMetric> jmxMetrics = new ArrayList<>();
 
-        public Map<String, Map<String, Object>> instrumentation = new HashMap<String, Map<String, Object>>() {{
-            put("logging", new HashMap<String, Object>());
-        }};
+        public Map<String, Map<String, Object>> instrumentation = new HashMap<String, Map<String, Object>>();
     }
 
     public static class SelfDiagnostics {

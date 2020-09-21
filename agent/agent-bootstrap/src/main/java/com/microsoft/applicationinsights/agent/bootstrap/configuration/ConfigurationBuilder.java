@@ -70,9 +70,12 @@ public class ConfigurationBuilder {
     }
 
     private static void loadLogCaptureEnvVar(PreviewConfiguration preview) {
-        if (preview.instrumentation.containsKey("logging")) {
-            Map<String, Object> logging = preview.instrumentation.get("logging");
-            logging.put("threshold", overlayWithEnvVar(APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD, (String) logging.get("threshold")));
+        final String loggingEnvVar = overlayWithEnvVar(APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD, (String)null);
+        if (loggingEnvVar != null) {
+            Map<String, Object> threshold = new HashMap<String, Object>() {{
+                put("threshold", loggingEnvVar);
+            }};
+            preview.instrumentation.put("logging", threshold);
         }
     }
 
