@@ -68,7 +68,7 @@ public class ConfigurationTest {
 
     @Test
     public void shouldOverrideSamplingRate() throws IOException {
-        envVars.set("APPLICATIONINSIGHTS_SAMPLING_RATE", "25");
+        envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "25");
 
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
