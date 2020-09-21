@@ -70,8 +70,10 @@ public class ConfigurationBuilder {
     }
 
     private static void loadLogCaptureEnvVar(PreviewConfiguration preview) {
-        Map<String, Object> logging = preview.instrumentation.get("logging");
-        logging.put("threshold", overlayWithEnvVar(APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD, (String)logging.get("threshold")));
+        if (preview.instrumentation.containsKey("logging")) {
+            Map<String, Object> logging = preview.instrumentation.get("logging");
+            logging.put("threshold", overlayWithEnvVar(APPLICATIONINSIGHTS_LOG_CAPTURE_THRESHOLD, (String) logging.get("threshold")));
+        }
     }
 
     private static void loadJmxMetrics(PreviewConfiguration preview) throws IOException {
