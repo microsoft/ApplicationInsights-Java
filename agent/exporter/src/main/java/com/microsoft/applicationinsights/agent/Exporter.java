@@ -387,7 +387,6 @@ public class Exporter implements SpanExporter {
     }
 
     private static void setProperties(Map<String, String> properties, long timeEpochNanos, String level, String loggerName, Map<String, AttributeValue> attributes) {
-        properties.put("TimeStamp", getFormattedDate(NANOSECONDS.toMillis(timeEpochNanos)));
         if (level != null) {
             properties.put("SourceType", "Logger");
             properties.put("LoggingLevel", level);
@@ -584,10 +583,6 @@ public class Exporter implements SpanExporter {
             target += ":" + uriObject.getPort();
         }
         return target;
-    }
-
-    private static String getFormattedDate(long dateInMilliseconds) {
-        return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).format(new Date(dateInMilliseconds));
     }
 
     private static String getStringValue(AttributeValue value) {
