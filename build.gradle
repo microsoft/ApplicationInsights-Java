@@ -1,5 +1,3 @@
-import nebula.plugin.release.git.opinion.Strategies
-
 plugins {
   id 'idea'
 
@@ -20,14 +18,11 @@ plugins {
   id "com.github.spotbugs" version "4.0.1"
 }
 
-release {
-  defaultVersionStrategy = Strategies.SNAPSHOT
-}
-
 def isCI = System.getenv("CI") != null
 
 allprojects {
   group = 'io.opentelemetry.instrumentation.auto'
+  version = '0.8.0'
 
   if (isCI) {
     buildDir = "$rootDir/workspace/${projectDir.path.replace(rootDir.path, '')}/build/"
