@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -22,12 +23,19 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @WebServlet("/*")
 public class HttpClientTestServlet extends HttpServlet {
 
     private final CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build();
+    private final CloseableHttpAsyncClient httpAsyncClient = HttpAsyncClients.createDefault();
+
+    public HttpClientTestServlet() {
+        httpAsyncClient.start();
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
@@ -51,6 +59,8 @@ public class HttpClientTestServlet extends HttpServlet {
             return apacheHttpClient4WithResponseHandler();
         } else if (pathInfo.equals("/apacheHttpClient3")) {
             return apacheHttpClient3();
+        } else if (pathInfo.equals("/apacheHttpAsyncClient")) {
+            return apacheHttpAsyncClient();
         } else if (pathInfo.equals("/okHttp3")) {
             return okHttp3();
         } else if (pathInfo.equals("/okHttp2")) {
@@ -92,6 +102,13 @@ public class HttpClientTestServlet extends HttpServlet {
         httpClient3.executeMethod(httpGet);
         httpGet.releaseConnection();
         return httpGet.getStatusCode();
+    }
+
+    private int apacheHttpAsyncClient() throws ExecutionException, InterruptedException, IOException {
+        HttpGet get = new HttpGet("https://www.bing.com");
+        HttpResponse httpResponse = httpAsyncClient.execute(get, null).get();
+        httpResponse.getEntity().getContent().close();
+        return httpResponse.getStatusLine().getStatusCode();
     }
 
     private int okHttp3() throws IOException {
