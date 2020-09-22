@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -36,9 +36,10 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Instrumen
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 import okio.Buffer;
-import okio.Okio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +47,9 @@ public class ConfigurationBuilder {
 
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_CONTENT = "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT";
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_CONFIGURATION_FILE";
+    private static final String APPLICATIONINSIGHTS_JMX_METRICS = "APPLICATIONINSIGHTS_JMX_METRICS";
+    private static final String APPLICATIONINSIGHTS_LOGGING_THRESHOLD = "APPLICATIONINSIGHTS_LOGGING_THRESHOLD";
+    private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE = "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
@@ -57,14 +61,37 @@ public class ConfigurationBuilder {
     private static final List<ConfigurationMessage> configurationMessages = new CopyOnWriteArrayList<>();
 
     public static Configuration create(Path agentJarPath) throws IOException {
-
         Configuration config = loadConfigurationFile(agentJarPath);
-        PreviewConfiguration preview = config.instrumentationSettings.preview;
+        overlayEnvVars(config);
 
-        preview.roleName = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
-        preview.roleInstance =
-                overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
+        return config;
+    }
 
+    private static void loadLogCaptureEnvVar(PreviewConfiguration preview) {
+        Map<String, Object> logging = preview.instrumentation.get("logging");
+        if (logging == null) {
+            logging = new HashMap<>();
+            preview.instrumentation.put("logging", logging);
+        }
+
+        final String loggingEnvVar = overlayWithEnvVar(APPLICATIONINSIGHTS_LOGGING_THRESHOLD, (String)null);
+        if (loggingEnvVar != null) {
+            logging.put("threshold", loggingEnvVar);
+        }
+    }
+
+    private static void loadJmxMetrics(PreviewConfiguration preview) throws IOException {
+        String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, (String)null);
+
+        // JmxMetrics env variable has higher precedence over jmxMetrics config from ApplicationInsights.json
+        if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
+            Moshi moshi = new Moshi.Builder().build();
+            Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
+            JsonReader reader = JsonReader.of(new Buffer().writeUtf8(jmxMetricsEnvVarJson));
+            reader.setLenient(true);
+            JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
+            preview.jmxMetrics = jsonAdapter.fromJson(reader);
+        }
         if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
             JmxMetric threadCountJmxMetric = new JmxMetric();
             threadCountJmxMetric.objectName = "java.lang:type=Threading";
@@ -72,7 +99,6 @@ public class ConfigurationBuilder {
             threadCountJmxMetric.display = "Current Thread Count";
             preview.jmxMetrics.add(threadCountJmxMetric);
         }
-
         if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
             JmxMetric classCountJmxMetric = new JmxMetric();
             classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
@@ -80,8 +106,6 @@ public class ConfigurationBuilder {
             classCountJmxMetric.display = "Loaded Class Count";
             preview.jmxMetrics.add(classCountJmxMetric);
         }
-
-        return config;
     }
 
     private static boolean jmxMetricExisted(List<InstrumentationSettings.JmxMetric> jmxMetrics, String objectName, String attribute) {
@@ -94,7 +118,6 @@ public class ConfigurationBuilder {
     }
 
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
-
         String configurationContent = System.getenv(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
         if (configurationContent != null && !configurationContent.isEmpty()) {
             Moshi moshi = new Moshi.Builder().build();
@@ -157,8 +180,18 @@ public class ConfigurationBuilder {
         return value != null ? value : trimAndEmptyToNull(System.getProperty(propertyName));
     }
 
+    static void overlayEnvVars(Configuration config) throws IOException {
+        PreviewConfiguration preview = config.instrumentationSettings.preview;
+        preview.roleName = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
+        preview.roleInstance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
+        preview.sampling.fixedRate.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, preview.sampling.fixedRate.percentage);
+
+        loadLogCaptureEnvVar(preview);
+        loadJmxMetrics(preview);
+    }
+
     // visible for testing
-    static String overlayWithEnvVar(String name1, String name2, String defaultValue) {
+    static String overlayWithEnvVars(String name1, String name2, String defaultValue) {
         String value = getEnv(name1);
         if (value != null && !value.isEmpty()) {
             return value;
@@ -175,6 +208,16 @@ public class ConfigurationBuilder {
         if (value != null && !value.isEmpty()) {
             return value;
         }
+
+        return defaultValue;
+    }
+
+    static Double overlayWithEnvVar(String name, Double defaultValue) {
+        String value = getEnv(name);
+        if (value != null && !value.isEmpty()) {
+            return Double.parseDouble(value);
+        }
+
         return defaultValue;
     }
 
@@ -190,7 +233,7 @@ public class ConfigurationBuilder {
     }
 
     // visible for testing
-    static Map<String, String> overlayWithEnvVar(String name, Map<String, String> defaultValue) {
+    static Map<String, String> overlayWithEnvVars(String name, Map<String, String> defaultValue) {
         String value = System.getenv(name);
         if (value != null && !value.isEmpty()) {
             Moshi moshi = new Moshi.Builder().build();
