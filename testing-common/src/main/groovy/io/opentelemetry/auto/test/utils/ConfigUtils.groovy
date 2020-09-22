@@ -36,7 +36,7 @@ class ConfigUtils {
       def existingConfig = Config.get()
       Properties properties = new Properties()
       properties.put(name, value)
-      CONFIG_INSTANCE_FIELD.set(null, new Config(properties, existingConfig))
+      CONFIG_INSTANCE_FIELD.set(null, new Config(properties))
       assert Config.get() != existingConfig
       try {
         return r.call()

@@ -23,6 +23,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -92,6 +94,10 @@ public class Config {
 
   public static final String EXPERIMENTAL_LOG_CAPTURE_THRESHOLD =
       "experimental.log.capture.threshold";
+
+  // this is not exposed to end users
+  private static final String ADDITIONAL_BOOTSTRAP_PACKAGE_PREFIXES =
+      "additional.bootstrap.package.prefixes";
 
   private static final boolean DEFAULT_TRACE_ENABLED = true;
   public static final boolean DEFAULT_INTEGRATIONS_ENABLED = true;
@@ -165,12 +171,19 @@ public class Config {
 
   private final Map<String, String> endpointPeerServiceMapping;
 
+  // this is not exposed to end users
+  private final List<String> additionalBootstrapPackagePrefixes;
+
   // Values from an optionally provided properties file
-  private static Properties propertiesFromConfigFile;
+  private final Properties propertiesFromConfigFile;
+
+  private final boolean lookAtEnvironment;
 
   // Read order: System Properties -> Env Variables, [-> properties file], [-> default value]
   // Visible for testing
   Config() {
+    lookAtEnvironment = true;
+
     propertiesFromConfigFile = loadConfigurationFile();
 
     propagators = getListSettingFromEnvironment(PROPAGATORS, null);
@@ -229,70 +242,81 @@ public class Config {
 
     endpointPeerServiceMapping = getMapSettingFromEnvironment(ENDPOINT_PEER_SERVICE_MAPPING);
 
+    // this is not exposed to end users
+    additionalBootstrapPackagePrefixes = new ArrayList<>();
+
     log.debug("New instance: {}", this);
   }
 
-  // Read order: Properties -> Parent
-  private Config(Properties properties, Config parent) {
-    exporterJar = properties.getProperty(EXPORTER_JAR, parent.exporterJar);
-    exporter = properties.getProperty(EXPORTER, parent.exporter);
+  // Read order: Properties -> Default
+  private Config(final Properties properties) {
+    lookAtEnvironment = false;
 
-    propagators = getPropertyListValue(properties, PROPAGATORS, parent.propagators);
+    propertiesFromConfigFile = properties;
 
-    traceEnabled = getPropertyBooleanValue(properties, TRACE_ENABLED, parent.traceEnabled);
+    exporterJar = properties.getProperty(EXPORTER_JAR, null);
+    exporter = properties.getProperty(EXPORTER, "otlp");
+
+    propagators = getPropertyListValue(properties, PROPAGATORS, null);
+
+    traceEnabled = getPropertyBooleanValue(properties, TRACE_ENABLED, DEFAULT_TRACE_ENABLED);
     integrationsEnabled =
-        getPropertyBooleanValue(properties, INTEGRATIONS_ENABLED, parent.integrationsEnabled);
+        getPropertyBooleanValue(properties, INTEGRATIONS_ENABLED, DEFAULT_INTEGRATIONS_ENABLED);
 
     excludedClasses =
-        getPropertyListValue(properties, TRACE_CLASSES_EXCLUDE, parent.excludedClasses);
+        getPropertyListValue(properties, TRACE_CLASSES_EXCLUDE, Collections.<String>emptyList());
 
     httpServerTagQueryString =
         getPropertyBooleanValue(
-            properties, HTTP_SERVER_TAG_QUERY_STRING, parent.httpServerTagQueryString);
+            properties, HTTP_SERVER_TAG_QUERY_STRING, DEFAULT_HTTP_SERVER_TAG_QUERY_STRING);
 
     httpClientTagQueryString =
         getPropertyBooleanValue(
-            properties, HTTP_CLIENT_TAG_QUERY_STRING, parent.httpClientTagQueryString);
+            properties, HTTP_CLIENT_TAG_QUERY_STRING, DEFAULT_HTTP_CLIENT_TAG_QUERY_STRING);
 
     scopeDepthLimit =
-        getPropertyIntegerValue(properties, SCOPE_DEPTH_LIMIT, parent.scopeDepthLimit);
+        getPropertyIntegerValue(properties, SCOPE_DEPTH_LIMIT, DEFAULT_SCOPE_DEPTH_LIMIT);
 
     runtimeContextFieldInjection =
         getPropertyBooleanValue(
-            properties, RUNTIME_CONTEXT_FIELD_INJECTION, parent.runtimeContextFieldInjection);
+            properties, RUNTIME_CONTEXT_FIELD_INJECTION, DEFAULT_RUNTIME_CONTEXT_FIELD_INJECTION);
 
     micrometerStepMillis =
-        getPropertyIntegerValue(properties, MICROMETER_STEP_MILLIS, parent.micrometerStepMillis);
+        getPropertyIntegerValue(properties, MICROMETER_STEP_MILLIS, DEFAULT_MICROMETER_STEP_MILLIS);
 
     experimentalLogCaptureThreshold =
         toUpper(
             properties.getProperty(
-                EXPERIMENTAL_LOG_CAPTURE_THRESHOLD, parent.experimentalLogCaptureThreshold));
+                EXPERIMENTAL_LOG_CAPTURE_THRESHOLD, DEFAULT_EXPERIMENTAL_LOG_CAPTURE_THRESHOLD));
 
-    traceAnnotations = properties.getProperty(TRACE_ANNOTATIONS, parent.traceAnnotations);
+    traceAnnotations = properties.getProperty(TRACE_ANNOTATIONS, DEFAULT_TRACE_ANNOTATIONS);
 
-    traceMethods = properties.getProperty(TRACE_METHODS, parent.traceMethods);
+    traceMethods = properties.getProperty(TRACE_METHODS, DEFAULT_TRACE_METHODS);
     traceAnnotatedMethodsExclude =
         properties.getProperty(
-            TRACE_ANNOTATED_METHODS_EXCLUDE, parent.traceAnnotatedMethodsExclude);
+            TRACE_ANNOTATED_METHODS_EXCLUDE, DEFAULT_TRACE_ANNOTATED_METHODS_EXCLUDE);
 
     traceExecutorsAll =
-        getPropertyBooleanValue(properties, TRACE_EXECUTORS_ALL, parent.traceExecutorsAll);
-    traceExecutors = getPropertyListValue(properties, TRACE_EXECUTORS, parent.traceExecutors);
+        getPropertyBooleanValue(properties, TRACE_EXECUTORS_ALL, DEFAULT_TRACE_EXECUTORS_ALL);
+    traceExecutors =
+        getPropertyListValue(properties, TRACE_EXECUTORS, parseList(DEFAULT_TRACE_EXECUTORS));
 
     sqlNormalizerEnabled =
-        getPropertyBooleanValue(properties, SQL_NORMALIZER_ENABLED, parent.sqlNormalizerEnabled);
+        getPropertyBooleanValue(properties, SQL_NORMALIZER_ENABLED, DEFAULT_SQL_NORMALIZER_ENABLED);
 
     kafkaClientPropagationEnabled =
         getPropertyBooleanValue(
-            properties, KAFKA_CLIENT_PROPAGATION_ENABLED, parent.kafkaClientPropagationEnabled);
+            properties, KAFKA_CLIENT_PROPAGATION_ENABLED, DEFAULT_KAFKA_CLIENT_PROPAGATION_ENABLED);
 
     hystrixTagsEnabled =
-        getBooleanSettingFromEnvironment(HYSTRIX_TAGS_ENABLED, parent.hystrixTagsEnabled);
+        getBooleanSettingFromEnvironment(HYSTRIX_TAGS_ENABLED, DEFAULT_HYSTRIX_TAGS_ENABLED);
 
     endpointPeerServiceMapping =
         getPropertyMapValue(
-            properties, ENDPOINT_PEER_SERVICE_MAPPING, parent.endpointPeerServiceMapping);
+            properties, ENDPOINT_PEER_SERVICE_MAPPING, Collections.<String, String>emptyMap());
+
+    additionalBootstrapPackagePrefixes =
+        parseList(properties.getProperty(ADDITIONAL_BOOTSTRAP_PACKAGE_PREFIXES));
 
     log.debug("New instance: {}", this);
   }
@@ -324,20 +348,22 @@ public class Config {
    * @return
    * @deprecated This method should only be used internally. Use the explicit getter instead.
    */
-  public static String getSettingFromEnvironment(String name, String defaultValue) {
+  public String getSettingFromEnvironment(String name, String defaultValue) {
     String value;
     String systemPropertyName = propertyNameToSystemPropertyName(name);
 
-    // System properties and properties provided from command line have the highest precedence
-    value = System.getProperties().getProperty(systemPropertyName);
-    if (null != value) {
-      return value;
-    }
+    if (lookAtEnvironment) {
+      // System properties and properties provided from command line have the highest precedence
+      value = System.getProperties().getProperty(systemPropertyName);
+      if (null != value) {
+        return value;
+      }
 
-    // If value not provided from system properties, looking at env variables
-    value = System.getenv(propertyNameToEnvironmentVariableName(name));
-    if (null != value) {
-      return value;
+      // If value not provided from system properties, looking at env variables
+      value = System.getenv(propertyNameToEnvironmentVariableName(name));
+      if (null != value) {
+        return value;
+      }
     }
 
     // If value is not defined yet, we look at properties optionally defined in a properties file
@@ -353,30 +379,29 @@ public class Config {
    * Calls {@link #getSettingFromEnvironment(String, String)} and converts the result to a list by
    * splitting on `,`.
    */
-  private static List<String> getListSettingFromEnvironment(String name, String defaultValue) {
+  private List<String> getListSettingFromEnvironment(String name, String defaultValue) {
     return parseList(getSettingFromEnvironment(name, defaultValue));
   }
 
-  private static Map<String, String> getMapSettingFromEnvironment(String name) {
+  private Map<String, String> getMapSettingFromEnvironment(String name) {
     return parseMap(getSettingFromEnvironment(name, null));
   }
 
   /**
    * Calls {@link #getSettingFromEnvironment(String, String)} and converts the result to a Boolean.
    */
-  private static Boolean getBooleanSettingFromEnvironment(String name, Boolean defaultValue) {
+  private Boolean getBooleanSettingFromEnvironment(String name, Boolean defaultValue) {
     return getSettingFromEnvironmentWithLog(name, Boolean.class, defaultValue);
   }
 
   /**
    * Calls {@link #getSettingFromEnvironment(String, String)} and converts the result to a Integer.
    */
-  private static Integer getIntegerSettingFromEnvironment(String name, Integer defaultValue) {
+  private Integer getIntegerSettingFromEnvironment(String name, Integer defaultValue) {
     return getSettingFromEnvironmentWithLog(name, Integer.class, defaultValue);
   }
 
-  private static <T> T getSettingFromEnvironmentWithLog(
-      String name, Class<T> tClass, T defaultValue) {
+  private <T> T getSettingFromEnvironmentWithLog(String name, Class<T> tClass, T defaultValue) {
     try {
       return valueOf(getSettingFromEnvironment(name, null), tClass, defaultValue);
     } catch (NumberFormatException e) {
@@ -538,17 +563,41 @@ public class Config {
   }
 
   // This has to be placed after all other static fields to give them a chance to initialize
-  private static final Config INSTANCE = new Config();
+  private static final Config INSTANCE;
+
+  static {
+    Properties properties = null;
+    Class<?> clazz = null;
+    try {
+      clazz = Class.forName("io.opentelemetry.javaagent.config.ConfigOverride");
+    } catch (final ClassNotFoundException e) {
+    }
+    if (clazz != null) {
+      // exceptions in this code should be propagated up so that agent startup fails
+      try {
+        final Method method = clazz.getMethod("get");
+        properties = (Properties) method.invoke(null);
+      } catch (final Exception e) {
+        throw new IllegalStateException(e);
+      }
+    }
+    if (properties != null) {
+      INSTANCE = new Config(properties);
+    } else {
+      INSTANCE = new Config();
+    }
+  }
 
   public static Config get() {
     return INSTANCE;
   }
 
-  public static Config get(Properties properties) {
+  // only used by tests
+  public static Config get(final Properties properties) {
     if (properties == null || properties.isEmpty()) {
       return INSTANCE;
     } else {
-      return new Config(properties, INSTANCE);
+      return new Config(properties);
     }
   }
 
@@ -634,6 +683,10 @@ public class Config {
 
   public Map<String, String> getEndpointPeerServiceMapping() {
     return endpointPeerServiceMapping;
+  }
+
+  public List<String> getAdditionalBootstrapPackagePrefixes() {
+    return additionalBootstrapPackagePrefixes;
   }
 
   @Override
