@@ -90,6 +90,9 @@ public class Config {
 
   public static final String MICROMETER_STEP_MILLIS = "micrometer.step.millis";
 
+  public static final String EXPERIMENTAL_LOG_CAPTURE_THRESHOLD =
+      "experimental.log.capture.threshold";
+
   private static final boolean DEFAULT_TRACE_ENABLED = true;
   public static final boolean DEFAULT_INTEGRATIONS_ENABLED = true;
 
@@ -129,6 +132,22 @@ public class Config {
   private final boolean runtimeContextFieldInjection;
 
   private final int micrometerStepMillis;
+
+  // mapping of threshold values to different logging frameworks:
+  //
+  // | Threshold    | JUL     | Logback | Log4j  |
+  // |--------------|---------|---------|--------|
+  // | OFF          | OFF     | OFF     | OFF    |
+  // | FATAL        | SEVERE  | ERROR   | FATAL  |
+  // | ERROR/SEVERE | SEVERE  | ERROR   | ERROR  |
+  // | WARN/WARNING | WARNING | WARN    | WARN   |
+  // | INFO         | INFO    | INFO    | INFO   |
+  // | CONFIG       | CONFIG  | DEBUG   | DEBUG  |
+  // | DEBUG/FINE   | FINE    | DEBUG   | DEBUG  |
+  // | FINER        | FINER   | DEBUG   | DEBUG  |
+  // | TRACE/FINEST | FINEST  | TRACE   | TRACE  |
+  // | ALL          | ALL     | ALL     | ALL    |
+  private final String experimentalLogCaptureThreshold;
 
   private final String traceAnnotations;
 
@@ -180,6 +199,11 @@ public class Config {
 
     micrometerStepMillis =
         getIntegerSettingFromEnvironment(MICROMETER_STEP_MILLIS, DEFAULT_MICROMETER_STEP_MILLIS);
+
+    experimentalLogCaptureThreshold =
+        toUpper(
+            getSettingFromEnvironment(
+                EXPERIMENTAL_LOG_CAPTURE_THRESHOLD, DEFAULT_EXPERIMENTAL_LOG_CAPTURE_THRESHOLD));
 
     traceAnnotations = getSettingFromEnvironment(TRACE_ANNOTATIONS, DEFAULT_TRACE_ANNOTATIONS);
 
@@ -239,6 +263,11 @@ public class Config {
 
     micrometerStepMillis =
         getPropertyIntegerValue(properties, MICROMETER_STEP_MILLIS, parent.micrometerStepMillis);
+
+    experimentalLogCaptureThreshold =
+        toUpper(
+            properties.getProperty(
+                EXPERIMENTAL_LOG_CAPTURE_THRESHOLD, parent.experimentalLogCaptureThreshold));
 
     traceAnnotations = properties.getProperty(TRACE_ANNOTATIONS, parent.traceAnnotations);
 
@@ -565,6 +594,10 @@ public class Config {
 
   public int getMicrometerStepMillis() {
     return micrometerStepMillis;
+  }
+
+  public String getExperimentalLogCaptureThreshold() {
+    return experimentalLogCaptureThreshold;
   }
 
   public String getTraceAnnotations() {
