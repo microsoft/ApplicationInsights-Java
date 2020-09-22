@@ -20,9 +20,8 @@ import static org.junit.Assert.*;
 public class TraceLogBackTest extends AiSmokeTest {
 
     @Before
-    public void skipJbosseap6AndJbosseap7Image() {
-        // this doesn't work with jbosseap6 and jbosseap7;
-        Assume.assumeFalse(currentImageName.contains("jbosseap6"));
+    public void skipJbosseap7Image() {
+        // this doesn't work with jbosseap7;
         Assume.assumeFalse(currentImageName.contains("jbosseap7"));
     }
 
