@@ -1,4 +1,4 @@
-package io.opentelemetry.auto.bootstrap;
+package io.opentelemetry.javaagent.bootstrap;
 
 // currently, the existence of this class and method trigger OpenTelemetry auto-instrumentation not to configure its own logging
 public class ConfigureLogging {

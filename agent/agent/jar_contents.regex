@@ -4,7 +4,7 @@ com/microsoft/applicationinsights/
 com/microsoft/applicationinsights/agent/.*
 io/
 io/opentelemetry/
-io/opentelemetry/auto/.*
+io/opentelemetry/javaagent/.*
 io/opentelemetry/instrumentation/
 io/opentelemetry/instrumentation/auto/.*
 META-INF/

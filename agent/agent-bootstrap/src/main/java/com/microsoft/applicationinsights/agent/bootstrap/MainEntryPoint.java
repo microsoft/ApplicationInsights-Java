@@ -29,8 +29,8 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Instrumen
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SelfDiagnostics;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
-import io.opentelemetry.auto.bootstrap.Agent;
-import io.opentelemetry.auto.bootstrap.ConfigureLogging;
+import io.opentelemetry.javaagent.bootstrap.ConfigureLogging;
+import io.opentelemetry.javaagent.bootstrap.AgentInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -58,7 +58,7 @@ public class MainEntryPoint {
             startupLogger = configureLogging(configuration.preview.selfDiagnostics);
             ConfigurationBuilder.logConfigurationMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
-            Agent.start(instrumentation, bootstrapURL, false);
+            AgentInitializer.start(instrumentation, bootstrapURL, false);
             success = true;
             LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
                     .info("Application Insights Codeless Agent Attach Successful");

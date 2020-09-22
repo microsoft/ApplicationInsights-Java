@@ -1,4 +1,4 @@
-package io.opentelemetry.auto.config;
+package io.opentelemetry.javaagent.config;
 
 import java.util.Properties;
 

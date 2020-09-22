@@ -35,8 +35,8 @@ public class JmsTest extends AiSmokeTest {
 
         assertEquals("GET /sendMessage", rd1.getName());
         assertEquals("HelloController.sendMessage", rdd2.getName());
-        assertEquals("queue/message", rdd1.getName());
-        assertEquals("queue/message", rd2.getName());
+        assertEquals("queue/message send", rdd1.getName());
+        assertEquals("queue/message receive", rd2.getName());
 
         assertParentChild(rdd2.getId(), rdEnvelope1, rddEnvelope1);
         assertParentChild(rdd1.getId(), rddEnvelope2, rdEnvelope2);

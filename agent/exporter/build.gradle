@@ -9,10 +9,10 @@ repositories {
 }
 
 dependencies {
-    compile 'io.opentelemetry:opentelemetry-sdk:0.7.0'
+    compile 'io.opentelemetry:opentelemetry-sdk:0.8.0'
 
     // this is needed in order to access AiAppId for appId exchange data
-    compileOnly group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-library-api', version: '0.8.0-SNAPSHOT'
+    compileOnly group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: '0.8.0'
 
     compile 'org.slf4j:slf4j-api:1.7.26'
 
