@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import static io.opentelemetry.trace.Span.Kind.CLIENT
+
 import com.google.api.client.http.GenericUrl
 import com.google.api.client.http.HttpRequest
 import com.google.api.client.http.HttpResponse
@@ -22,8 +24,6 @@ import io.opentelemetry.auto.test.base.HttpClientTest
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import spock.lang.Shared
-
-import static io.opentelemetry.trace.Span.Kind.CLIENT
 
 abstract class AbstractGoogleHttpClientTest extends HttpClientTest {
 

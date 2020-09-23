@@ -1,9 +1,4 @@
-ext {
-  retryTests = true
-}
-
 apply from: "$rootDir/gradle/instrumentation.gradle"
-apply plugin: 'org.unbroken-dome.test-sets'
 
 muzzle {
   pass {
@@ -15,16 +10,6 @@ muzzle {
   }
 }
 
-testSets {
-  latestDepTest {
-    dirName = 'test'
-  }
-}
-
 dependencies {
-  compileOnly group: 'com.google.http-client', name: 'google-http-client', version: '1.19.0'
-
-  testImplementation group: 'com.google.http-client', name: 'google-http-client', version: '1.19.0'
-
-  latestDepTestImplementation group: 'com.google.http-client', name: 'google-http-client', version: '+'
+  library group: 'com.google.http-client', name: 'google-http-client', version: '1.19.0'
 }

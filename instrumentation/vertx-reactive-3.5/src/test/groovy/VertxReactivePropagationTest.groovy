@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.SUCCESS
+import static io.opentelemetry.auto.test.utils.TraceUtils.basicSpan
+import static io.opentelemetry.trace.Span.Kind.CLIENT
+import static io.opentelemetry.trace.Span.Kind.SERVER
+
 import io.opentelemetry.auto.test.AgentTestRunner
 import io.opentelemetry.auto.test.utils.OkHttpUtils
 import io.opentelemetry.auto.test.utils.PortUtils
@@ -22,11 +27,6 @@ import io.vertx.reactivex.core.Vertx
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import spock.lang.Shared
-
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.SUCCESS
-import static io.opentelemetry.auto.test.utils.TraceUtils.basicSpan
-import static io.opentelemetry.trace.Span.Kind.CLIENT
-import static io.opentelemetry.trace.Span.Kind.SERVER
 
 class VertxReactivePropagationTest extends AgentTestRunner {
   @Shared
@@ -48,7 +48,7 @@ class VertxReactivePropagationTest extends AgentTestRunner {
   }
 
   //Verifies that context is correctly propagated and sql query span has correct parent.
-  //Tests io.opentelemetry.auto.instrumentation.vertx.reactive.VertxRxInstrumentation
+  //Tests io.opentelemetry.instrumentation.auto.vertx.reactive.VertxRxInstrumentation
   def "should propagate context over vert.x rx-java framework"() {
     setup:
     def url = "http://localhost:$port/listProducts"
@@ -86,7 +86,7 @@ class VertxReactivePropagationTest extends AgentTestRunner {
           errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key()}" "hsqldb"
-            "${SemanticAttributes.DB_NAME.key()}" "test?shutdown=true"
+            "${SemanticAttributes.DB_NAME.key()}" "test"
             "${SemanticAttributes.DB_USER.key()}" "SA"
             "${SemanticAttributes.DB_STATEMENT.key()}" "SELECT id, name, price, weight FROM products"
             "${SemanticAttributes.DB_CONNECTION_STRING.key()}" "hsqldb:mem:"

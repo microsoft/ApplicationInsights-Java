@@ -33,12 +33,12 @@ java -version
 and then generate the -all artifact
 
 ```bash
-./gradlew :opentelemetry-javaagent:shadowJar
+./gradlew :javaagent:shadowJar
 ```
 
 and then you can find the java agent artifact at
 
-`opentelemetry-javaagent/build/lib/opentelemetry-javaagent-<version>-all.jar`.
+`javaagent/build/lib/opentelemetry-javaagent-<version>-all.jar`.
 
 ### IntelliJ setup
 

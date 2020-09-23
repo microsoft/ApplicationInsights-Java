@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import static io.opentelemetry.trace.Span.Kind.SERVER
+
 import io.opentelemetry.auto.test.AgentTestRunner
 import io.opentelemetry.auto.test.utils.OkHttpUtils
 import io.opentelemetry.auto.test.utils.PortUtils
@@ -22,8 +24,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import spark.Spark
 import spock.lang.Shared
-
-import static io.opentelemetry.trace.Span.Kind.SERVER
 
 class SparkJavaBasedTest extends AgentTestRunner {
 
@@ -65,7 +65,6 @@ class SparkJavaBasedTest extends AgentTestRunner {
             "${SemanticAttributes.NET_PEER_IP.key()}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key()}" Long
             "${SemanticAttributes.HTTP_URL.key()}" "http://localhost:$port/param/asdf1234"
-            "${SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH.key()}" content.length()
             "${SemanticAttributes.HTTP_METHOD.key()}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key()}" 200
             "${SemanticAttributes.HTTP_FLAVOR.key()}" "HTTP/1.1"

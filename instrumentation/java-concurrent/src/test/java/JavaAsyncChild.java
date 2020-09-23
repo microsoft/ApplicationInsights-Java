@@ -22,8 +22,7 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JavaAsyncChild extends ForkJoinTask implements Runnable, Callable {
-  private static final Tracer TRACER =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.auto");
+  private static final Tracer TRACER = OpenTelemetry.getTracer("io.opentelemetry.auto");
 
   private final AtomicBoolean blockThread;
   private final boolean doTraceableWork;
@@ -39,7 +38,7 @@ public class JavaAsyncChild extends ForkJoinTask implements Runnable, Callable {
   }
 
   @Override
-  protected void setRawResult(final Object value) {}
+  protected void setRawResult(Object value) {}
 
   @Override
   protected boolean exec() {
@@ -47,7 +46,7 @@ public class JavaAsyncChild extends ForkJoinTask implements Runnable, Callable {
     return true;
   }
 
-  public JavaAsyncChild(final boolean doTraceableWork, final boolean blockThread) {
+  public JavaAsyncChild(boolean doTraceableWork, boolean blockThread) {
     this.doTraceableWork = doTraceableWork;
     this.blockThread = new AtomicBoolean(blockThread);
   }

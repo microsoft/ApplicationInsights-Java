@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
+import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.SUCCESS
+import static io.opentelemetry.trace.Span.Kind.SERVER
+
 import io.opentelemetry.auto.test.asserts.TraceAssert
 import io.opentelemetry.auto.test.base.HttpServerTest
 import io.opentelemetry.instrumentation.api.MoreAttributes
@@ -25,16 +29,9 @@ import org.glassfish.embeddable.GlassFishProperties
 import org.glassfish.embeddable.GlassFishRuntime
 import org.glassfish.embeddable.archive.ScatteredArchive
 
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.ERROR
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.NOT_FOUND
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.REDIRECT
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.SUCCESS
-import static io.opentelemetry.trace.Span.Kind.SERVER
-
 /**
  * Unfortunately because we're using an embedded GlassFish instance, we aren't exercising the standard
- * OSGi setup that requires {@link io.opentelemetry.auto.instrumentation.javaclassloader.ClassloadingInstrumentation}.
+ * OSGi setup that requires {@link io.opentelemetry.instrumentation.auto.javaclassloader.ClassloadingInstrumentation}.
  */
 // TODO: Figure out a better way to test with OSGi included.
 class GlassFishServerTest extends HttpServerTest<GlassFish> {
@@ -113,9 +110,6 @@ class GlassFishServerTest extends HttpServerTest<GlassFish> {
         "${SemanticAttributes.HTTP_FLAVOR.key()}" "HTTP/1.1"
         "${SemanticAttributes.HTTP_USER_AGENT.key()}" TEST_USER_AGENT
         "${SemanticAttributes.HTTP_CLIENT_IP.key()}" TEST_CLIENT_IP
-        // exception bodies are not yet recorded
-        // TODO(anuraaga): Bodies do seem to be recorded for these endpoints here, update to make assertion more precise.
-        "${SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH.key()}" { it == responseContentLength || endpoint == EXCEPTION || endpoint == ERROR || endpoint == NOT_FOUND || endpoint == REDIRECT }
         "servlet.context" "/$context"
         "servlet.path" endpoint.path
         if (endpoint.query) {

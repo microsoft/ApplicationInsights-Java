@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
+import static io.opentelemetry.auto.test.utils.TraceUtils.runUnderTrace
+import static io.opentelemetry.trace.Span.Kind.CLIENT
+
 import io.opentelemetry.auto.test.base.HttpClientTest
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Timeout
 import sun.net.www.protocol.https.HttpsURLConnectionImpl
-
-import static io.opentelemetry.auto.test.utils.TraceUtils.runUnderTrace
-import static io.opentelemetry.trace.Span.Kind.CLIENT
 
 @Timeout(5)
 class HttpUrlConnectionTest extends HttpClientTest {
@@ -79,8 +79,8 @@ class HttpUrlConnectionTest extends HttpClientTest {
       connection = url.openConnection()
       connection.useCaches = useCaches
       assert activeSpan() != null
-      assert connection.getResponseCode() == STATUS
       // call before input stream to test alternate behavior
+      assert connection.getResponseCode() == STATUS
       connection.inputStream
       stream = connection.inputStream // one more to ensure state is working
       lines = stream.readLines()
@@ -154,8 +154,8 @@ class HttpUrlConnectionTest extends HttpClientTest {
       connection.useCaches = useCaches
       connection.addRequestProperty("is-test-server", "false")
       assert activeSpan() != null
-      assert connection.getResponseCode() == STATUS
       // call before input stream to test alternate behavior
+      assert connection.getResponseCode() == STATUS
       stream = connection.inputStream
       lines = stream.readLines()
       stream.close()

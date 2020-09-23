@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
+import static io.opentelemetry.trace.Span.Kind.CLIENT
+
 import io.opentelemetry.auto.test.AgentTestRunner
 import io.opentelemetry.auto.test.utils.PortUtils
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import redis.clients.jedis.Jedis
 import redis.embedded.RedisServer
 import spock.lang.Shared
-
-import static io.opentelemetry.trace.Span.Kind.CLIENT
 
 class JedisClientTest extends AgentTestRunner {
 
@@ -67,6 +67,9 @@ class JedisClientTest extends AgentTestRunner {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
             "${SemanticAttributes.DB_CONNECTION_STRING.key()}" "localhost:$port"
             "${SemanticAttributes.DB_STATEMENT.key()}" "SET"
+            "${SemanticAttributes.NET_PEER_IP.key()}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_NAME.key()}" "localhost"
+            "${SemanticAttributes.NET_PEER_PORT.key()}" port
           }
         }
       }
@@ -90,6 +93,9 @@ class JedisClientTest extends AgentTestRunner {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
             "${SemanticAttributes.DB_CONNECTION_STRING.key()}" "localhost:$port"
             "${SemanticAttributes.DB_STATEMENT.key()}" "SET"
+            "${SemanticAttributes.NET_PEER_IP.key()}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_NAME.key()}" "localhost"
+            "${SemanticAttributes.NET_PEER_PORT.key()}" port
           }
         }
       }
@@ -101,6 +107,9 @@ class JedisClientTest extends AgentTestRunner {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
             "${SemanticAttributes.DB_CONNECTION_STRING.key()}" "localhost:$port"
             "${SemanticAttributes.DB_STATEMENT.key()}" "GET"
+            "${SemanticAttributes.NET_PEER_IP.key()}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_NAME.key()}" "localhost"
+            "${SemanticAttributes.NET_PEER_PORT.key()}" port
           }
         }
       }
@@ -124,6 +133,9 @@ class JedisClientTest extends AgentTestRunner {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
             "${SemanticAttributes.DB_CONNECTION_STRING.key()}" "localhost:$port"
             "${SemanticAttributes.DB_STATEMENT.key()}" "SET"
+            "${SemanticAttributes.NET_PEER_IP.key()}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_NAME.key()}" "localhost"
+            "${SemanticAttributes.NET_PEER_PORT.key()}" port
           }
         }
       }
@@ -135,6 +147,9 @@ class JedisClientTest extends AgentTestRunner {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
             "${SemanticAttributes.DB_CONNECTION_STRING.key()}" "localhost:$port"
             "${SemanticAttributes.DB_STATEMENT.key()}" "RANDOMKEY"
+            "${SemanticAttributes.NET_PEER_IP.key()}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_NAME.key()}" "localhost"
+            "${SemanticAttributes.NET_PEER_PORT.key()}" port
           }
         }
       }

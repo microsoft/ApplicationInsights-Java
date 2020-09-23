@@ -9,10 +9,19 @@ apply from: "$rootDir/gradle/checkstyle.gradle"
 apply from: "$rootDir/gradle/codenarc.gradle"
 apply from: "$rootDir/gradle/spotbugs.gradle"
 
+afterEvaluate {
+  if (!archivesBaseName.startsWith('javaagent') &&
+    (group == 'io.opentelemetry.instrumentation.auto' || findProperty('mavenGroupId') == 'io.opentelemetry.instrumentation.auto')) {
+    archivesBaseName = 'opentelemetry-auto-' + archivesBaseName
+  } else {
+    archivesBaseName = 'opentelemetry-' + archivesBaseName
+  }
+}
+
 def applyCodeCoverage = !(
   project.path.startsWith(":smoke-tests") ||
     //TODO why some tests fail on java 11 if jacoco is present?
-    project.path == ":opentelemetry-javaagent" ||
+    project.path == ":javaagent" ||
     project.path == ":load-generator" ||
     project.path.startsWith(":benchmark") ||
     project.path.startsWith(":instrumentation"))
@@ -89,11 +98,28 @@ repositories {
 }
 
 dependencies {
+  testImplementation enforcedPlatform(group: 'org.junit', name: 'junit-bom', version: versions.junit5)
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params'
+  testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+  testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine'
+
   testImplementation deps.spock
   testImplementation deps.groovy
   testImplementation deps.testLogging
   testImplementation group: 'info.solidsoft.spock', name: 'spock-global-unroll', version: '0.5.1'
   testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0'
+
+  constraints {
+    // need to pin the opentelemetry-sdk transitive dependency versions explicitly, otherwise the
+    // latest snapshots are used, because the opentelemetry-sdk snapshot pom references these
+    // transitive dependencies using the generic SNAPSHOT instead of a specific snapshot
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-common', version: versions.opentelemetryAnother
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-correlation-context', version: versions.opentelemetryAnother
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-proto', version: versions.opentelemetryOther
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-metrics', version: versions.opentelemetryAnother
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-tracing', version: versions.opentelemetryAnother
+  }
 }
 
 jar {
@@ -254,9 +280,7 @@ addTestRule("test")
 addTestRule("latestDepTest")
 
 tasks.withType(Test).configureEach {
-  if (project.findProperty("enableJunitPlatform") == true) {
-    useJUnitPlatform()
-  }
+  useJUnitPlatform()
 
   // All tests must complete within 15 minutes.
   // This value is quite big because with lower values (3 mins) we were experiencing large number of false positives
@@ -267,9 +291,16 @@ tasks.withType(Test).configureEach {
   enabled = isJavaVersionAllowed(JavaVersion.current()) && !project.rootProject.hasProperty("skipTests")
 
   retry {
-    // Retry is opt-in - we don't want our tests to be flaky but currently go ahead and retry them to allow CI
-    // to work. Please continue remove this property from as many projects as possible. You can see tests that
-    // were retried by this mechanism in the collected test reports and build scans.
-    maxRetries = findProperty('retryTests') ? 5 : 0
+    // You can see tests that were retried by this mechanism in the collected test reports and build scans.
+    maxRetries = System.getenv("CI") != null ? 5 : 0
   }
+
+  reports {
+    junitXml.outputPerTestCase = true
+  }
+}
+
+tasks.withType(AbstractArchiveTask) {
+  preserveFileTimestamps = false
+  reproducibleFileOrder = true
 }

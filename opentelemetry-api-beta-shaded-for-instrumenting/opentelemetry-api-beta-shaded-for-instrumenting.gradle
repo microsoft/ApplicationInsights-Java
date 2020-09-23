@@ -6,6 +6,7 @@ apply from: "$rootDir/gradle/java.gradle"
 
 dependencies {
   implementation deps.opentelemetryApi
+  implementation deps.opentelemetryContextProp
 }
 
 // OpenTelemetry API shaded so that it can be used in opentelemetry-api-beta instrumentation,
@@ -13,6 +14,6 @@ dependencies {
 // (see more explanation in opentelemetry-api-beta.gradle)
 shadowJar {
 
-  relocate "io.opentelemetry", "unshaded.io.opentelemetry"
-  relocate "io.grpc", "unshaded.io.grpc"
+  relocate "io.opentelemetry", "application.io.opentelemetry"
+  relocate "io.grpc", "application.io.grpc"
 }

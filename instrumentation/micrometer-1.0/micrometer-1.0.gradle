@@ -4,7 +4,6 @@ ext {
 }
 
 apply from: "${rootDir}/gradle/instrumentation.gradle"
-apply plugin: 'org.unbroken-dome.test-sets'
 
 muzzle {
   pass {
@@ -30,15 +29,9 @@ testSets {
 }
 
 dependencies {
-  compileOnly project(':auto-bootstrap')
-  compileOnly group: 'io.micrometer', name: 'micrometer-core', version: '1.4.0'
-  compileOnly group: 'org.springframework.boot', name: 'spring-boot-actuator-autoconfigure', version: '2.2.0.RELEASE'
+  library group: 'io.micrometer', name: 'micrometer-core', version: '1.4.0'
+  library group: 'org.springframework.boot', name: 'spring-boot-actuator-autoconfigure', version: '2.2.0.RELEASE'
+  compileOnly project(':javaagent-bootstrap')
 
-  testCompile group: 'io.micrometer', name: 'micrometer-core', version: '1.4.0'
-  testCompile group: 'org.springframework.boot', name: 'spring-boot-actuator-autoconfigure', version: '2.2.0.RELEASE'
-  testCompile group: 'com.microsoft.azure', name: 'azure-spring-boot-metrics-starter', version: '2.2.3'
-
-  latestDepTestCompile group: 'io.micrometer', name: 'micrometer-core', version: '+'
-  latestDepTestCompile group: 'org.springframework.boot', name: 'spring-boot-actuator-autoconfigure', version: '+'
-  latestDepTestCompile group: 'com.microsoft.azure', name: 'azure-spring-boot-metrics-starter', version: '2.2.3'
+  testImplementation group: 'com.microsoft.azure', name: 'azure-spring-boot-metrics-starter', version: '2.2.3'
 }

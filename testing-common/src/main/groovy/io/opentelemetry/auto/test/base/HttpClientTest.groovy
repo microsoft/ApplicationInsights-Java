@@ -16,21 +16,6 @@
 
 package io.opentelemetry.auto.test.base
 
-import io.opentelemetry.auto.test.AgentTestRunner
-import io.opentelemetry.auto.test.asserts.TraceAssert
-import io.opentelemetry.instrumentation.api.MoreAttributes
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId
-import io.opentelemetry.instrumentation.api.config.Config
-import io.opentelemetry.instrumentation.api.decorator.HttpClientDecorator
-import io.opentelemetry.sdk.trace.data.SpanData
-import io.opentelemetry.trace.attributes.SemanticAttributes
-import spock.lang.AutoCleanup
-import spock.lang.Requires
-import spock.lang.Shared
-import spock.lang.Unroll
-
-import java.util.concurrent.ExecutionException
-
 import static io.opentelemetry.auto.test.server.http.TestHttpServer.httpServer
 import static io.opentelemetry.auto.test.utils.ConfigUtils.withConfigOverride
 import static io.opentelemetry.auto.test.utils.PortUtils.UNUSABLE_PORT
@@ -40,11 +25,25 @@ import static io.opentelemetry.trace.Span.Kind.CLIENT
 import static io.opentelemetry.trace.Span.Kind.SERVER
 import static org.junit.Assume.assumeTrue
 
+import io.opentelemetry.auto.test.AgentTestRunner
+import io.opentelemetry.auto.test.asserts.TraceAssert
+import io.opentelemetry.instrumentation.api.MoreAttributes
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
+import io.opentelemetry.instrumentation.api.config.Config
+import io.opentelemetry.instrumentation.api.tracer.HttpClientTracer
+import io.opentelemetry.sdk.trace.data.SpanData
+import io.opentelemetry.trace.attributes.SemanticAttributes
+import java.util.concurrent.ExecutionException
+import spock.lang.AutoCleanup
+import spock.lang.Requires
+import spock.lang.Shared
+import spock.lang.Unroll
+
 @Unroll
 abstract class HttpClientTest extends AgentTestRunner {
   protected static final BODY_METHODS = ["POST", "PUT"]
   protected static final CONNECT_TIMEOUT_MS = 1000
-  protected static final BASIC_AUTH_KEY = "custom authorization header"
+  protected static final BASIC_AUTH_KEY = "custom-authorization-header"
   protected static final BASIC_AUTH_VAL = "plain text auth token"
 
   @AutoCleanup
@@ -55,6 +54,11 @@ abstract class HttpClientTest extends AgentTestRunner {
         handleDistributedRequest()
         String msg = "Hello."
         response.status(200).send(msg)
+      }
+      prefix("client-error") {
+        handleDistributedRequest()
+        String msg = "Invalid RQ"
+        response.status(400).send(msg)
       }
       prefix("error") {
         handleDistributedRequest()
@@ -301,6 +305,7 @@ abstract class HttpClientTest extends AgentTestRunner {
     def uri = server.address.resolve("/to-secured")
 
     when:
+
     def status = doRequest(method, uri, [(BASIC_AUTH_KEY): BASIC_AUTH_VAL])
 
     then:
@@ -470,7 +475,7 @@ abstract class HttpClientTest extends AgentTestRunner {
   }
 
   String expectedOperationName(String method) {
-    return method != null ? "HTTP $method" : HttpClientDecorator.DEFAULT_SPAN_NAME
+    return method != null ? "HTTP $method" : HttpClientTracer.DEFAULT_SPAN_NAME
   }
 
   int extraClientSpans() {

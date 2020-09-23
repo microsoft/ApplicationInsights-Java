@@ -16,10 +16,9 @@
 
 package io.opentelemetry.instrumentation.gradle;
 
-import static java.util.stream.Collectors.toList;
-
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -27,9 +26,13 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.jvm.tasks.Jar;
+import org.gradle.process.CommandLineArgumentProvider;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * {@link Plugin} to initialize projects that implement auto instrumentation using bytecode
@@ -39,48 +42,47 @@ import org.gradle.jvm.tasks.Jar;
 public class AutoInstrumentationPlugin implements Plugin<Project> {
 
   /**
-   * An exact copy of {@code io.opentelemetry.auto.tooling.Constants#BOOTSTRAP_PACKAGE_PREFIXES}. We
+   * An exact copy of {@code io.opentelemetry.javaagent.tooling.Constants#BOOTSTRAP_PACKAGE_PREFIXES}. We
    * can't reference it directly since this file needs to be compiled before the other packages.
    */
   public static final String[] BOOTSTRAP_PACKAGE_PREFIXES_COPY = {
-    "io.opentelemetry.auto.common.exec",
-    "io.opentelemetry.auto.slf4j",
-    "io.opentelemetry.auto.bootstrap",
-    "io.opentelemetry.auto.shaded",
-    "io.opentelemetry.instrumentation.auto.api",
+      "io.opentelemetry.javaagent.common.exec",
+      "io.opentelemetry.javaagent.slf4j",
+      "io.opentelemetry.javaagent.bootstrap",
+      "io.opentelemetry.javaagent.shaded",
+      "io.opentelemetry.instrumentation.auto.api",
   };
 
   // Aditional classes we need only for tests and aren't shared with the agent business logic.
   private static final String[] TEST_BOOTSTRAP_PREFIXES;
 
   static {
-    final String[] testBS = {
-      "io.opentelemetry.instrumentation.api",
-      "io.opentelemetry.OpenTelemetry", // OpenTelemetry API
-      "io.opentelemetry.common", // OpenTelemetry API
-      "io.opentelemetry.context", // OpenTelemetry API (context prop)
-      "io.opentelemetry.correlationcontext", // OpenTelemetry API
-      "io.opentelemetry.internal", // OpenTelemetry API
-      "io.opentelemetry.metrics", // OpenTelemetry API
-      "io.opentelemetry.trace", // OpenTelemetry API
-      "io.grpc.Context", // OpenTelemetry API dependency
-      "io.grpc.Deadline", // OpenTelemetry API dependency
-      "io.grpc.PersistentHashArrayMappedTrie", // OpenTelemetry API dependency
-      "io.grpc.ThreadLocalContextStorage", // OpenTelemetry API dependency
-      "org.slf4j",
-      "ch.qos.logback",
-      // Tomcat's servlet classes must be on boostrap
-      // when running tomcat test
-      "javax.servlet.ServletContainerInitializer",
-      "javax.servlet.ServletContext"
+    String[] testBS = {
+        "io.opentelemetry.instrumentation.api",
+        "io.opentelemetry.OpenTelemetry", // OpenTelemetry API
+        "io.opentelemetry.common", // OpenTelemetry API
+        "io.opentelemetry.context", // OpenTelemetry API (context prop)
+        "io.opentelemetry.correlationcontext", // OpenTelemetry API
+        "io.opentelemetry.internal", // OpenTelemetry API
+        "io.opentelemetry.metrics", // OpenTelemetry API
+        "io.opentelemetry.trace", // OpenTelemetry API
+        "io.grpc.Context", // OpenTelemetry API dependency
+        "io.grpc.Deadline", // OpenTelemetry API dependency
+        "io.grpc.PersistentHashArrayMappedTrie", // OpenTelemetry API dependency
+        "io.grpc.ThreadLocalContextStorage", // OpenTelemetry API dependency
+        "org.slf4j",
+        "ch.qos.logback",
+        // Tomcat's servlet classes must be on boostrap
+        // when running tomcat test
+        "javax.servlet.ServletContainerInitializer",
+        "javax.servlet.ServletContext"
     };
     TEST_BOOTSTRAP_PREFIXES =
         Arrays.copyOf(
             BOOTSTRAP_PACKAGE_PREFIXES_COPY,
             BOOTSTRAP_PACKAGE_PREFIXES_COPY.length + testBS.length);
-    for (int i = 0; i < testBS.length; ++i) {
-      TEST_BOOTSTRAP_PREFIXES[i + BOOTSTRAP_PACKAGE_PREFIXES_COPY.length] = testBS[i];
-    }
+    System.arraycopy(testBS, 0, TEST_BOOTSTRAP_PREFIXES, BOOTSTRAP_PACKAGE_PREFIXES_COPY.length,
+        testBS.length);
     for (int i = 0; i < TEST_BOOTSTRAP_PREFIXES.length; i++) {
       TEST_BOOTSTRAP_PREFIXES[i] = TEST_BOOTSTRAP_PREFIXES[i].replace('.', '/');
     }
@@ -143,15 +145,32 @@ public class AutoInstrumentationPlugin implements Plugin<Project> {
                   });
 
               task.dependsOn(bootstrapJar);
-              task.jvmArgs(
-                  "-Xbootclasspath/a:"
-                      + new File(project.getBuildDir(), "libs/" + bootstrapJarName));
+              task.getJvmArgumentProviders().add(new BootstrapClasspath(
+                  new File(project.getBuildDir(), "libs/" + bootstrapJarName)));
             });
   }
 
+  private static class BootstrapClasspath implements CommandLineArgumentProvider {
+    private final File bootstrapJar;
+
+    @Internal
+    public File getBootstrapJar() {
+      return bootstrapJar;
+    }
+
+    public BootstrapClasspath(File bootstrapJar) {
+      this.bootstrapJar = bootstrapJar;
+    }
+
+    @Override
+    public Iterable<String> asArguments() {
+      return Collections.singleton("-Xbootclasspath/a:" + bootstrapJar.getAbsolutePath());
+    }
+  }
+
   private static boolean isBootstrapClass(String filePath) {
-    for (int i = 0; i < TEST_BOOTSTRAP_PREFIXES.length; ++i) {
-      if (filePath.startsWith(TEST_BOOTSTRAP_PREFIXES[i])) {
+    for (String testBootstrapPrefix : TEST_BOOTSTRAP_PREFIXES) {
+      if (filePath.startsWith(testBootstrapPrefix)) {
         return true;
       }
     }

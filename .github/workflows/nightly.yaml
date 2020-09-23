@@ -4,38 +4,10 @@ on:
   schedule:
     # strange schedule to reduce the risk of DDOS GitHub infra
     - cron: "24 3 * * *"
+  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11
-      - name: Set current date as env variable
-        run: echo "::set-env name=TODAY::$(date +'%Y-%m-%d')"
-
-      - name: Cache gradle dependencies
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-gradle
-        with:
-          path: ~/.gradle
-          # Every night we refresh cache with dependencies and class compilation results.
-          # Gradle build files can change for a variety of reasons, no need to invalidate cache.
-          # TODO cache test results as well
-          # TODO replace/augment with remote gradle cache
-          key: build-${{ env.cache-name }}-${{ env.TODAY }}
-          restore-keys: |
-            build-${{ env.cache-name }}-
-
-      - name: Build with Gradle
-        run: ./gradlew assemble testClasses --stacktrace
-
   test:
-    needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -56,28 +28,27 @@ jobs:
         with:
           java-version: 11
 
-      - name: Set current date as env variable
-        run: echo "::set-env name=TODAY::$(date +'%Y-%m-%d')"
-
-      - name: Cache gradle dependencies
-        uses: actions/cache@v2
+      - name: Test
+        uses: burrunan/gradle-cache-action@v1.4
         env:
-          cache-name: cache-gradle
+          S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
+          S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
         with:
-          path: ~/.gradle
-          key: build-${{ env.cache-name }}-${{ env.TODAY }}
-          restore-keys: |
-            build-${{ env.cache-name }}-
+          job-id: jdk${{ matrix.java }}
+          arguments: testJava${{ matrix.java }} --stacktrace -Dorg.gradle.caching.debug=true
 
-      - name: Test with Gradle
-        uses: nick-invision/retry@v1
-        with:
-          command: ./gradlew testJava${{ matrix.java }} --stacktrace
-          timeout_minutes: 60
-          max_attempts: 3
+      - name: Aggregate test reports with ciMate
+        if: always()
+        continue-on-error: true
+        env:
+          CIMATE_PROJECT_ID: mz1jo49x
+          CIMATE_CI_KEY: "Night / jdk${{matrix.java}}"
+        run: |
+          wget -q https://get.cimate.io/release/linux/cimate
+          chmod +x cimate
+          ./cimate -v "**/TEST-*.xml"
 
   testLatestDep:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -86,25 +57,25 @@ jobs:
         with:
           java-version: 11
 
-      - name: Set current date as env variable
-        run: echo "::set-env name=TODAY::$(date +'%Y-%m-%d')"
-
-      - name: Cache gradle dependencies
-        uses: actions/cache@v2
+      - name: Test
+        uses: burrunan/gradle-cache-action@v1.4
+        with:
+          job-id: latestDepTest
+          arguments: test -PtestLatestDeps=true --stacktrace
         env:
-          cache-name: cache-gradle
-        with:
-          path: ~/.gradle
-          key: build-${{ env.cache-name }}-${{ env.TODAY }}
-          restore-keys: |
-            build-${{ env.cache-name }}-
+          S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
+          S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
 
-      - name: Test with Gradle
-        uses: nick-invision/retry@v1
-        with:
-          command: ./gradlew latestDepTest --stacktrace
-          timeout_minutes: 60
-          max_attempts: 3
+      - name: Aggregate test reports with ciMate
+        if: always()
+        continue-on-error: true
+        env:
+          CIMATE_PROJECT_ID: mz1jo49x
+          CIMATE_CI_KEY: "Night / latestDep"
+        run: |
+          wget -q https://get.cimate.io/release/linux/cimate
+          chmod +x cimate
+          ./cimate -v "**/TEST-*.xml"
 
   issue:
     name: Open issue on failure

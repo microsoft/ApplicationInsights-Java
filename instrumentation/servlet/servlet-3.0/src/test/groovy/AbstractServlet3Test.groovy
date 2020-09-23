@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-import io.opentelemetry.auto.test.asserts.TraceAssert
-import io.opentelemetry.auto.test.base.HttpServerTest
-import io.opentelemetry.instrumentation.api.MoreAttributes
-import io.opentelemetry.trace.Span
-import io.opentelemetry.trace.attributes.SemanticAttributes
-import okhttp3.Request
-import okhttp3.RequestBody
-
-import javax.servlet.Servlet
-
 import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.AUTH_REQUIRED
 import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.ERROR
 import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.QUERY_PARAM
 import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.REDIRECT
 import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.SUCCESS
+
+import io.opentelemetry.auto.test.asserts.TraceAssert
+import io.opentelemetry.auto.test.base.HttpServerTest
+import io.opentelemetry.instrumentation.api.MoreAttributes
+import io.opentelemetry.trace.Span
+import io.opentelemetry.trace.attributes.SemanticAttributes
+import javax.servlet.Servlet
+import okhttp3.Request
+import okhttp3.RequestBody
 
 abstract class AbstractServlet3Test<SERVER, CONTEXT> extends HttpServerTest<SERVER> {
   @Override
@@ -99,8 +98,6 @@ abstract class AbstractServlet3Test<SERVER, CONTEXT> extends HttpServerTest<SERV
         "${SemanticAttributes.HTTP_FLAVOR.key()}" "HTTP/1.1"
         "${SemanticAttributes.HTTP_USER_AGENT.key()}" TEST_USER_AGENT
         "${SemanticAttributes.HTTP_CLIENT_IP.key()}" TEST_CLIENT_IP
-        // exception bodies are not yet recorded
-        "${SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH.key()}" { it == responseContentLength || it == 0 || endpoint == EXCEPTION }
         // Optional
         if (context) {
           "servlet.context" "/$context"

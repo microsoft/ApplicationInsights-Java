@@ -35,7 +35,7 @@ class ActuatorTest extends AgentTestRunner {
     println list
 
     then:
-    list.contains("io.opentelemetry.auto.instrumentation.micrometer.AzureMonitorAutoConfiguration")
+    list.contains("io.opentelemetry.instrumentation.auto.micrometer.AzureMonitorAutoConfiguration")
     !list.contains("com.microsoft.azure.spring.autoconfigure.metrics.AzureMonitorMetricsExportAutoConfiguration")
   }
 

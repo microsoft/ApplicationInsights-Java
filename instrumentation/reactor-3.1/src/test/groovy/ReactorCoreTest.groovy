@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
+import static io.opentelemetry.auto.test.utils.TraceUtils.basicSpan
+
 import io.opentelemetry.OpenTelemetry
 import io.opentelemetry.auto.test.AgentTestRunner
 import io.opentelemetry.auto.test.utils.TraceUtils
 import io.opentelemetry.trace.DefaultSpan
+import java.time.Duration
 import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import spock.lang.Shared
-
-import java.time.Duration
-
-import static io.opentelemetry.auto.test.utils.TraceUtils.basicSpan
 
 class ReactorCoreTest extends AgentTestRunner {
 
@@ -249,7 +248,7 @@ class ReactorCoreTest extends AgentTestRunner {
       // The "add one" operations in the publisher created here should be children of the publisher-parent
       Publisher<Integer> publisher = publisherSupplier()
 
-      def tracer = OpenTelemetry.getTracerProvider().get("test")
+      def tracer = OpenTelemetry.getTracer("test")
       def intermediate = tracer.spanBuilder("intermediate").startSpan()
       // After this activation, the "add two" operations below should be children of this span
       def scope = tracer.withSpan(intermediate)
@@ -311,7 +310,7 @@ class ReactorCoreTest extends AgentTestRunner {
       Publisher<Integer> publisher = publisherSupplier()
 
       // After this activation, all additions to the assembly will create new traces
-      def tracer = OpenTelemetry.getTracerProvider().get("test")
+      def tracer = OpenTelemetry.getTracer("test")
       def scope = tracer.withSpan(DefaultSpan.getInvalid())
       try {
         if (publisher instanceof Mono) {
@@ -366,7 +365,7 @@ class ReactorCoreTest extends AgentTestRunner {
 
   def runUnderTrace(def publisherSupplier) {
     TraceUtils.runUnderTrace("trace-parent") {
-      def tracer = OpenTelemetry.getTracerProvider().get("test")
+      def tracer = OpenTelemetry.getTracer("test")
       def span = tracer.spanBuilder("publisher-parent").startSpan()
       def scope = tracer.withSpan(span)
       try {
@@ -388,7 +387,7 @@ class ReactorCoreTest extends AgentTestRunner {
 
   def cancelUnderTrace(def publisherSupplier) {
     TraceUtils.runUnderTrace("trace-parent") {
-      def tracer = OpenTelemetry.getTracerProvider().get("test")
+      def tracer = OpenTelemetry.getTracer("test")
       def span = tracer.spanBuilder("publisher-parent").startSpan()
       def scope = tracer.withSpan(span)
 

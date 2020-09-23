@@ -5,7 +5,9 @@ plugins {
 apply from: "$rootDir/gradle/java.gradle"
 
 dependencies {
+  implementation deps.opentelemetryApi
   implementation deps.opentelemetrySdk
+  implementation deps.opentelemetryContextProp
 }
 
 // OpenTelemetry API (and SDK) shaded so that it can be used (and tested) in
@@ -14,7 +16,7 @@ dependencies {
 shadowJar {
 
   mergeServiceFiles()
-  
-  relocate "io.opentelemetry", "unshaded.io.opentelemetry"
-  relocate "io.grpc", "unshaded.io.grpc"
+
+  relocate "io.opentelemetry", "application.io.opentelemetry"
+  relocate "io.grpc", "application.io.grpc"
 }

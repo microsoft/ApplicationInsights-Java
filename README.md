@@ -39,14 +39,14 @@ Configuration parameters are passed as Java system properties (`-D` flags) or
 as environment variables (see below for full list). For example:
 ```
 java -javaagent:path/to/opentelemetry-javaagent-all.jar \
-     -Dotel.exporter=zipkin
+     -Dotel.exporter=zipkin \
      -jar myapp.jar
 ```
 
 External exporter jar can be specified via `otel.exporter.jar` system property:
 ```
 java -javaagent:path/to/opentelemetry-javaagent-all.jar \
-     -Dotel.exporter.jar=path/to/external-exporter.jar
+     -Dotel.exporter.jar=path/to/external-exporter.jar \
      -jar myapp.jar
 ```
 
@@ -167,7 +167,7 @@ The OpenTelemetry API exposes SPI [hooks](https://github.com/open-telemetry/open
 for customizing its behavior, such as the `Resource` attached to spans or the `Sampler`.
 
 Because the auto instrumentation runs in a separate classpath than the instrumented application, it is not possible for customization in the application to take advantage of this customization. In order to provide such customization, you can
-provide the path to a JAR file including an SPI implementation using the system property `otel.initializer.jar`. Note that this JAR will need to shade the OpenTelemetry API in the same way as the agent does. The simplest way to do this is to use the same shading configuration as the agent from [here](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/cfade733b899a2f02cfec7033c6a1efd7c54fd8b/java-agent/java-agent.gradle#L39). In addition, you will have to specify the `io.opentelemetry.auto.shaded.io.opentelemetry.trace.spi.TraceProvider` to the name of the class that implements the SPI.
+provide the path to a JAR file including an SPI implementation using the system property `otel.initializer.jar`. Note that this JAR will need to shade the OpenTelemetry API in the same way as the agent does. The simplest way to do this is to use the same shading configuration as the agent from [here](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/cfade733b899a2f02cfec7033c6a1efd7c54fd8b/java-agent/java-agent.gradle#L39). In addition, you will have to specify the `io.opentelemetry.javaagent.shaded.io.opentelemetry.trace.spi.TraceProvider` to the name of the class that implements the SPI.
 
 ## Supported Java libraries and frameworks
 
@@ -181,7 +181,7 @@ provide the path to a JAR file including an SPI implementation using the system 
 | [Cassandra Driver](https://github.com/datastax/java-driver)                                                                           | 3.0+                           |
 | [Couchbase Client](https://github.com/couchbase/couchbase-java-client)                                                                | 2.0+ (not including 3.x yet)   |
 | [Dropwizard Views](https://www.dropwizard.io/en/latest/manual/views.html)                                                             | 0.7+                           |
-| [Elasticsearch API](https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/index.html)                                 | 2.0+ (not including 7.x yet)   |
+| [Elasticsearch API](https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/index.html)                                 | 5.0+ (not including 7.x yet)   |
 | [Elasticsearch REST Client](https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/index.html)                        | 5.0+                           |
 | [Finatra](https://github.com/twitter/finatra)                                                                                         | 2.9+                           |
 | [Geode Client](https://geode.apache.org/)                                                                                             | 1.4+                           |
@@ -192,7 +192,6 @@ provide the path to a JAR file including an SPI implementation using the system 
 | [Hibernate](https://github.com/hibernate/hibernate-orm)                                                                               | 3.3+                           |
 | [HttpURLConnection](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/net/HttpURLConnection.html)                     | Java 7+                        |
 | [Hystrix](https://github.com/Netflix/Hystrix)                                                                                         | 1.4+                           |
-| [java.util.logging](https://docs.oracle.com/en/java/javase/11/docs/api/java.logging/java/util/logging/package-summary.html)           | Java 7+                        |
 | [JAX-RS](https://javaee.github.io/javaee-spec/javadocs/javax/ws/rs/package-summary.html)                                              | 0.5+                           |
 | [JAX-RS Client](https://javaee.github.io/javaee-spec/javadocs/javax/ws/rs/client/package-summary.html)                                | 2.0+                           |
 | [JDBC](https://docs.oracle.com/en/java/javase/11/docs/api/java.sql/java/sql/package-summary.html)                                     | Java 7+                        |
@@ -204,8 +203,7 @@ provide the path to a JAR file including an SPI implementation using the system 
 | [khttp](https://khttp.readthedocs.io)                                                                                                 | 0.1+                           |
 | [Kubernetes Client](https://github.com/kubernetes-client/java)                                                                        | 7.0+                           |
 | [Lettuce](https://github.com/lettuce-io/lettuce-core)                                                                                 | 4.0+                           |
-| [Log4j](https://logging.apache.org/log4j/2.x/)                                                                                        | 1.1+                           |
-| [Logback](https://github.com/qos-ch/logback)                                                                                          | 1.0+                           |
+| [Logback](http://logback.qos.ch/)                                                                                                     | 1.0+                           |
 | [MongoDB Drivers](https://mongodb.github.io/mongo-java-driver/)                                                                       | 3.3+                           |
 | [Netty](https://github.com/netty/netty)                                                                                               | 3.8+                           |
 | [OkHttp](https://github.com/square/okhttp/)                                                                                           | 3.0+                           |
@@ -260,7 +258,29 @@ only supports manual instrumentation using the `opentelemetry-api` version with 
 number as the Java agent you are using. Starting with 1.0.0, the Java agent will start supporting
 multiple (1.0.0+) versions of `opentelemetry-api`.
 
-You can use the OpenTelemetry `getTracer` or the `@WithSpan` annotation to
+You'll need to add a dependency on the `opentelemetry-api` library to get started.
+
+### Maven
+
+```xml
+  <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+      <version>0.7.0</version>
+    </dependency>
+  </dependencies>
+```
+
+### Gradle
+
+```groovy
+dependencies {
+    compile('io.opentelemetry:opentelemetry-api:0.7.0')
+}
+```
+
+Now you can use the OpenTelemetry `getTracer` or the `@WithSpan` annotation to
 manually instrument your Java application.
 
 ### Configure the OpenTelemetry getTracer
@@ -284,6 +304,28 @@ public class MyClass {
   public void MyLogic() {
       <...>
   }
+}
+```
+
+You'll also need to add a dependency for this annotation:
+
+### Maven
+
+```xml
+  <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-extension-auto-annotations</artifactId>
+      <version>0.7.0</version>
+    </dependency>
+  </dependencies>
+```
+
+### Gradle
+
+```groovy
+dependencies {
+    compile('io.opentelemetry:opentelemetry-extension-auto-annotations:0.7.0')
 }
 ```
 

@@ -6,19 +6,15 @@ apply plugin: 'muzzle'
 
 ext {
   packageInAgentBundle = true
+  mavenGroupId = 'io.opentelemetry.instrumentation.auto'
 }
 
 byteBuddy {
   transformation {
     // Applying NoOp optimizes build by applying bytebuddy plugin to only compileJava task
     tasks = ['compileJava', 'compileScala', 'compileKotlin']
-    plugin = 'io.opentelemetry.auto.tooling.muzzle.MuzzleGradlePlugin$NoOp'
+    plugin = 'io.opentelemetry.javaagent.tooling.muzzle.MuzzleGradlePlugin$NoOp'
   }
-}
-
-// TODO(anuraaga): This needs to be added before adding publish.gradle, clean up this ordering restraint.
-afterEvaluate {
-  archivesBaseName = 'opentelemetry-auto-' + archivesBaseName
 }
 
 apply from: "$rootDir/gradle/java.gradle"
@@ -26,20 +22,26 @@ if (project.ext.find("skipPublish") != true) {
   apply from: "$rootDir/gradle/publish.gradle"
 }
 
+apply from: "$rootDir/gradle/instrumentation-common.gradle"
+
+if (projectDir.name == 'auto') {
+  archivesBaseName = projectDir.parentFile.name
+}
+
 afterEvaluate {
   byteBuddy {
     transformation {
       tasks = ['compileJava', 'compileScala', 'compileKotlin']
-      plugin = 'io.opentelemetry.auto.tooling.muzzle.MuzzleGradlePlugin'
-      classPath = project(':auto-tooling').configurations.instrumentationMuzzle + configurations.runtimeClasspath + sourceSets.main.output
+      plugin = 'io.opentelemetry.javaagent.tooling.muzzle.MuzzleGradlePlugin'
+      classPath = project(':javaagent-tooling').configurations.instrumentationMuzzle + configurations.runtimeClasspath + sourceSets.main.output
     }
   }
 
   dependencies {
-    implementation project(':library-api')
+    implementation project(':instrumentation-api')
     implementation project(':auto-api')
     // Apply common dependencies for instrumentation.
-    implementation(project(':auto-tooling')) {
+    implementation(project(':javaagent-tooling')) {
       // OpenTelemetry SDK is not needed for compilation, and :opentelemetry-sdk-shaded-for-testing
       // is brought in for tests by project(:testing-common) below
       exclude group: 'io.opentelemetry', module: 'opentelemetry-sdk'

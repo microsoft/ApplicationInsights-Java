@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS
+
 import io.micrometer.azuremonitor.AzureMonitorConfig
 import io.micrometer.core.instrument.Clock
 import io.micrometer.core.instrument.Counter
@@ -25,14 +28,11 @@ import io.micrometer.core.instrument.LongTaskTimer
 import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.TimeGauge
 import io.micrometer.core.instrument.Timer
-import io.opentelemetry.auto.instrumentation.micrometer.AzureMonitorMeterRegistry
 import io.opentelemetry.auto.test.AgentTestRunner
 import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil
-import spock.lang.Shared
-
+import io.opentelemetry.instrumentation.auto.micrometer.AzureMonitorMeterRegistry
 import java.util.concurrent.Executors
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS
+import spock.lang.Shared
 
 class MicrometerTest extends AgentTestRunner {
 

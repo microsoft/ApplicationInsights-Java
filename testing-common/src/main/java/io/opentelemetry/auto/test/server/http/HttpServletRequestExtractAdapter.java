@@ -16,7 +16,7 @@
 
 package io.opentelemetry.auto.test.server.http;
 
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -25,13 +25,14 @@ import javax.servlet.http.HttpServletRequest;
  * @author Pavol Loffay
  */
 // FIXME:  This code is duplicated in several places.  Extract to a common dependency.
-public class HttpServletRequestExtractAdapter implements HttpTextFormat.Getter<HttpServletRequest> {
+public class HttpServletRequestExtractAdapter
+    implements TextMapPropagator.Getter<HttpServletRequest> {
 
   public static final HttpServletRequestExtractAdapter GETTER =
       new HttpServletRequestExtractAdapter();
 
   @Override
-  public String get(final HttpServletRequest carrier, final String key) {
+  public String get(HttpServletRequest carrier, String key) {
     return carrier.getHeader(key);
   }
 }

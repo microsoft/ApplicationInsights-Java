@@ -27,7 +27,7 @@ import io.opentelemetry.trace.Tracer;
 public class AdviceUtils {
 
   public static final Tracer TRACER =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.auto.java-concurrent");
+      OpenTelemetry.getTracer("io.opentelemetry.auto.java-concurrent");
 
   /**
    * Start scope for a given task
@@ -37,7 +37,7 @@ public class AdviceUtils {
    * @param <T> task's type
    * @return scope if scope was started, or null
    */
-  public static <T> Scope startTaskScope(final ContextStore<T, State> contextStore, final T task) {
+  public static <T> Scope startTaskScope(ContextStore<T, State> contextStore, T task) {
     State state = contextStore.get(task);
     if (state != null) {
       Context parentContext = state.getAndResetParentContext();

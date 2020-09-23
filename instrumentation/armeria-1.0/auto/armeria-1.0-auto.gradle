@@ -4,9 +4,6 @@ ext {
 
 apply from: "$rootDir/gradle/instrumentation.gradle"
 
-// TODO(anuraaga): Move into instrumentation.gradle
-archivesBaseName = projectDir.parentFile.name
-
 muzzle {
   pass {
     group = "com.linecorp.armeria"
@@ -18,7 +15,7 @@ muzzle {
 dependencies {
   implementation project(':instrumentation:armeria-1.0:library')
 
-  compileOnly group: 'com.linecorp.armeria', name: 'armeria', version: '0.99.8'
+  library group: 'com.linecorp.armeria', name: 'armeria', version: '0.99.8'
 
   testImplementation project(':instrumentation:armeria-1.0:testing')
 }

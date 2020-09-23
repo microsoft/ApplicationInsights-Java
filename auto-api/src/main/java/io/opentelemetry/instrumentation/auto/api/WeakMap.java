@@ -37,6 +37,8 @@ public interface WeakMap<K, V> {
 
   V computeIfAbsent(K key, ValueSupplier<? super K, ? extends V> supplier);
 
+  V remove(K key);
+
   class Provider {
 
     private static final Logger log = LoggerFactory.getLogger(Provider.class);
@@ -44,7 +46,7 @@ public interface WeakMap<K, V> {
     private static final AtomicReference<Implementation> provider =
         new AtomicReference<>(Implementation.DEFAULT);
 
-    public static void registerIfAbsent(final Implementation provider) {
+    public static void registerIfAbsent(Implementation provider) {
       if (provider != null && provider != Implementation.DEFAULT) {
         if (Provider.provider.compareAndSet(Implementation.DEFAULT, provider)) {
           log.debug("Weak map provider set to {}", provider);
@@ -89,7 +91,7 @@ public interface WeakMap<K, V> {
   class MapAdapter<K, V> implements WeakMap<K, V> {
     private final Map<K, V> map;
 
-    public MapAdapter(final Map<K, V> map) {
+    public MapAdapter(Map<K, V> map) {
       this.map = map;
     }
 
@@ -99,22 +101,22 @@ public interface WeakMap<K, V> {
     }
 
     @Override
-    public boolean containsKey(final K key) {
+    public boolean containsKey(K key) {
       return map.containsKey(key);
     }
 
     @Override
-    public V get(final K key) {
+    public V get(K key) {
       return map.get(key);
     }
 
     @Override
-    public void put(final K key, final V value) {
+    public void put(K key, V value) {
       map.put(key, value);
     }
 
     @Override
-    public void putIfAbsent(final K key, final V value) {
+    public void putIfAbsent(K key, V value) {
       // We can't use putIfAbsent since it was added in 1.8.
       // As a result, we must use double check locking.
       if (!map.containsKey(key)) {
@@ -127,7 +129,7 @@ public interface WeakMap<K, V> {
     }
 
     @Override
-    public V computeIfAbsent(final K key, final ValueSupplier<? super K, ? extends V> supplier) {
+    public V computeIfAbsent(K key, ValueSupplier<? super K, ? extends V> supplier) {
       // We can't use computeIfAbsent since it was added in 1.8.
       if (map.containsKey(key)) {
         return map.get(key);
@@ -143,6 +145,11 @@ public interface WeakMap<K, V> {
           return value;
         }
       }
+    }
+
+    @Override
+    public V remove(K key) {
+      return map.remove(key);
     }
 
     @Override

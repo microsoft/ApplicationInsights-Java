@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+
+import static io.opentelemetry.auto.test.server.http.TestHttpServer.httpServer
+import static io.opentelemetry.auto.test.utils.PortUtils.UNUSABLE_PORT
+import static io.opentelemetry.trace.Span.Kind.CLIENT
+
 import com.amazonaws.AmazonClientException
 import com.amazonaws.AmazonWebServiceClient
 import com.amazonaws.ClientConfiguration
@@ -46,16 +51,11 @@ import com.amazonaws.services.sqs.model.CreateQueueRequest
 import com.amazonaws.services.sqs.model.SendMessageRequest
 import io.opentelemetry.auto.test.AgentTestRunner
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId
-import io.opentelemetry.instrumentation.api.decorator.HttpClientDecorator
+import io.opentelemetry.instrumentation.api.tracer.HttpClientTracer
 import io.opentelemetry.trace.attributes.SemanticAttributes
+import java.util.concurrent.atomic.AtomicReference
 import spock.lang.AutoCleanup
 import spock.lang.Shared
-
-import java.util.concurrent.atomic.AtomicReference
-
-import static io.opentelemetry.auto.test.server.http.TestHttpServer.httpServer
-import static io.opentelemetry.auto.test.utils.PortUtils.UNUSABLE_PORT
-import static io.opentelemetry.trace.Span.Kind.CLIENT
 
 class AWS1ClientTest extends AgentTestRunner {
 
@@ -342,6 +342,6 @@ class AWS1ClientTest extends AgentTestRunner {
   }
 
   String expectedOperationName(String method) {
-    return method != null ? "HTTP $method" : HttpClientDecorator.DEFAULT_SPAN_NAME
+    return method != null ? "HTTP $method" : HttpClientTracer.DEFAULT_SPAN_NAME
   }
 }

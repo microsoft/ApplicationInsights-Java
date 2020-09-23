@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import application.io.opentelemetry.sdk.OpenTelemetrySdk
+import application.io.opentelemetry.sdk.trace.TracerSdkProvider
 import io.opentelemetry.auto.test.AgentTestRunner
-import unshaded.io.opentelemetry.sdk.OpenTelemetrySdk
-import unshaded.io.opentelemetry.sdk.trace.TracerSdkProvider
 
 class TracerSdkTest extends AgentTestRunner {
 

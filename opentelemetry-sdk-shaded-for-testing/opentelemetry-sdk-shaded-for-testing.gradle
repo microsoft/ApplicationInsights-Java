@@ -6,13 +6,14 @@ apply from: "$rootDir/gradle/java.gradle"
 
 dependencies {
   implementation deps.opentelemetrySdk
+  implementation deps.opentelemetryContextProp
 }
 
 // OpenTelemetry SDK with shaded dependencies so that they do not conflict with other libraries (in particular guava)
 // when running various instrumentation tests (e.g. datastax-cassandra)
 // TODO this is not ideal because tests are run using this partially shaded OpenTelemetry SDK, while the agent ends up
 // running with unshaded OpenTelemetry SDK (because its in isolated class loader at that point)
-// build auto-tooling-and-instrumentation.isolated and use that in tests, then wouldn't need to shade guava, etc
+// build inst/ and use that in tests, then wouldn't need to shade guava, etc
 shadowJar {
 
   dependencies {
@@ -21,10 +22,10 @@ shadowJar {
 
   mergeServiceFiles()
 
-  relocate "com.google", "io.opentelemetry.auto.shaded.com.google"
-  relocate "javax.annotation", "io.opentelemetry.auto.shaded.javax.annotation"
-  relocate "org.checkerframework", "io.opentelemetry.auto.shaded.org.checkerframework"
-  relocate "org.codehaus", "io.opentelemetry.auto.shaded.org.codehaus"
+  relocate "com.google", "io.opentelemetry.javaagent.shaded.com.google"
+  relocate "javax.annotation", "io.opentelemetry.javaagent.shaded.javax.annotation"
+  relocate "org.checkerframework", "io.opentelemetry.javaagent.shaded.org.checkerframework"
+  relocate "org.codehaus", "io.opentelemetry.javaagent.shaded.org.codehaus"
 
   // this is brought by OpenTelemetry API
   exclude "io/grpc/**"

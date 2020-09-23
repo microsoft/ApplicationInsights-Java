@@ -1,0 +1,131 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+plugins {
+  id "com.github.johnrengelman.shadow"
+}
+
+description = 'OpenTelemetry Javaagent'
+
+apply from: "$rootDir/gradle/java.gradle"
+apply from: "$rootDir/gradle/publish.gradle"
+
+configurations {
+  shadowInclude
+}
+
+jar {
+  manifest {
+    attributes(
+      "Main-Class": "io.opentelemetry.javaagent.OpenTelemetryAgent",
+      "Agent-Class": "io.opentelemetry.javaagent.OpenTelemetryAgent",
+      "Premain-Class": "io.opentelemetry.javaagent.OpenTelemetryAgent",
+      "Can-Redefine-Classes": true,
+      "Can-Retransform-Classes": true,
+    )
+  }
+}
+
+CopySpec isolateSpec(Collection<Project> projectsWithShadowJar) {
+  return copySpec {
+    from({ projectsWithShadowJar.tasks.shadowJar.collect { zipTree(it.archiveFile) } }) {
+      // important to keep prefix 'inst' short, as it is prefixed to lots of strings in runtime mem
+      into 'inst'
+      rename '(^.*)\\.class$', '$1.classdata'
+      // Rename LICENSE file since it clashes with license dir on non-case sensitive FSs (i.e. Mac)
+      rename '^LICENSE$', 'LICENSE.renamed'
+    }
+  }
+}
+
+//Includes everything needed for OOTB experience
+shadowJar {
+  dependsOn ':instrumentation:shadowJar'
+  dependsOn ':javaagent-exporters:shadowJar'
+  def projectsWithShadowJar = [project(':javaagent-exporters'), project(':instrumentation')]
+  with isolateSpec(projectsWithShadowJar)
+
+  // Exclude class files pulled in from the javaagent-exporters project that are also pulled in from the
+  // instrumentation project.
+  // Removing duplicates reduces jar size and can prevent issues when downstream projects repackage
+  // the jar.
+  duplicatesStrategy = 'exclude'
+}
+
+//Includes instrumentations, but not exporters
+task lightShadow(type: ShadowJar) {
+  from sourceSets.main.output
+
+  dependsOn ':instrumentation:shadowJar'
+  def projectsWithShadowJar = [project(':instrumentation')]
+  with isolateSpec(projectsWithShadowJar)
+}
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      artifact lightShadow
+    }
+  }
+}
+
+tasks.withType(ShadowJar).configureEach {
+  configurations = [project.configurations.shadowInclude]
+  mergeServiceFiles()
+
+  manifest {
+    inheritFrom project.tasks.jar.manifest
+  }
+
+  exclude '**/module-info.class'
+
+  // Prevents conflict with other SLF4J instances. Important for premain.
+  relocate 'org.slf4j', 'io.opentelemetry.javaagent.slf4j'
+  // rewrite dependencies calling Logger.getLogger
+  relocate 'java.util.logging.Logger', 'io.opentelemetry.javaagent.bootstrap.PatchLogger'
+
+  // prevents conflict with library instrumentation
+  relocate 'io.opentelemetry.instrumentation.api', 'io.opentelemetry.javaagent.shaded.instrumentation.api'
+
+  // relocate OpenTelemetry API
+  relocate "io.opentelemetry.OpenTelemetry", "io.opentelemetry.javaagent.shaded.io.opentelemetry.OpenTelemetry"
+  relocate "io.opentelemetry.common", "io.opentelemetry.javaagent.shaded.io.opentelemetry.common"
+  relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
+  relocate "io.opentelemetry.correlationcontext", "io.opentelemetry.javaagent.shaded.io.opentelemetry.correlationcontext"
+  relocate "io.opentelemetry.internal", "io.opentelemetry.javaagent.shaded.io.opentelemetry.internal"
+  relocate "io.opentelemetry.metrics", "io.opentelemetry.javaagent.shaded.io.opentelemetry.metrics"
+  relocate "io.opentelemetry.trace", "io.opentelemetry.javaagent.shaded.io.opentelemetry.trace"
+
+  // relocate OpenTelemetry API dependency
+  relocate "io.grpc", "io.opentelemetry.javaagent.shaded.io.grpc"
+}
+
+dependencies {
+  testImplementation project(':javaagent-bootstrap')
+  testImplementation project(':auto-api')
+  testImplementation project(':instrumentation-api')
+  testImplementation project(':utils:test-utils')
+
+  testImplementation deps.testLogging
+  testImplementation deps.guava
+
+  testImplementation 'io.opentracing.contrib.dropwizard:dropwizard-opentracing:0.2.2'
+
+  shadowInclude project(path: ':javaagent-bootstrap')
+}
+
+tasks.withType(Test).configureEach {
+  // Multi-threaded logging seems to be causing deadlocks with Gradle's log capture.
+  //  jvmArgs "-Dio.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel=debug"
+  //  jvmArgs "-Dorg.slf4j.simpleLogger.defaultLogLevel=debug"
+
+  doFirst {
+    // Defining here to allow jacoco to be first on the command line.
+    jvmArgs "-javaagent:${shadowJar.archivePath}"
+  }
+
+  testLogging {
+    events "started"
+  }
+
+  dependsOn shadowJar
+}
