@@ -28,7 +28,6 @@ import io.opentelemetry.instrumentation.api.MoreAttributes;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.instrumentation.api.decorator.HttpStatusConverter;
-import io.opentelemetry.instrumentation.api.tracer.utils.HttpUrlUtils;
 import io.opentelemetry.instrumentation.api.tracer.utils.NetPeerUtils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
@@ -150,7 +149,7 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
             span.setAttribute(SemanticAttributes.NET_PEER_PORT.key(), url.getPort());
           }
         }
-        HttpUrlUtils.setHttpUrl(span, url);
+        SemanticAttributes.HTTP_URL.set(span, url.toString());
         if (Config.get().isHttpClientTagQueryString()) {
           span.setAttribute(MoreAttributes.HTTP_QUERY, url.getQuery());
           span.setAttribute(MoreAttributes.HTTP_FRAGMENT, url.getFragment());
