@@ -37,8 +37,8 @@ def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
 def programFilesX86 = System.env.'ProgramFiles(x86)' ?: 'C:\\Program Files (x86)'
 
 def winSdkDir = "$programFilesX86\\Windows Kits\\8.1"
-if (System.env.APPINSIGHTS_WIN_SDK_PATH) {
-    winSdkDir = System.env.APPINSIGHTS_WIN_SDK_PATH
+if (System.env.APPINSIGHTS_WIN81_SDK_PATH) {
+    winSdkDir = System.env.APPINSIGHTS_WIN81_SDK_PATH
     logger.info "Using custom Windows SDK path: $winSdkDir"
 } else {
     logger.info "Using default Windows SDK path: $winSdkDir"

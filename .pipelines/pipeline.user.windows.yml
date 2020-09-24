@@ -21,18 +21,27 @@ restore:
       command: '.scripts/downloadCollectdJar.cmd'
     - !!defaultcommand
       name: 'Install Windows 8.1 SDK'
-      command: '.scripts/installWindows81SDK.cmd'
+      command: '.scripts/installWindows81Sdk.cmd'
       logs:
         - from: 'WinSdkInstall'
           to: 'WinSdkInstall'
           include:
             - '**/*.log'
     - !!defaultcommand
-      name: 'Install Java 11 JDK'
-      command: '.scripts/installJava11jdk.cmd'
+      name: 'Install Windows 10 SDK'
+      command: '.scripts/installWindows10Sdk.cmd'
+      logs:
+        - from: 'WinSdkInstall'
+          to: 'WinSdkInstall'
+          include:
+            - '**/*.log'
     - !!defaultcommand
-      name: 'Install Java 7 JRE'
-      command: '.scripts/installJava7jre.cmd'
+      name: 'Install Java 8 JDK'
+      command: '.scripts/installJava8jdk.cmd'
+    - !!defaultcommand
+      name: 'Add OpenTelemetry to MavenLocal'
+      command: '.scripts/ot-gradle.cmd'
+      arguments: 'publishToMavenLocal --refresh-dependencies'
     - !!defaultcommand
       name: 'Clean and Resolve Dependencies'
       command: '.scripts/gradle.cmd'

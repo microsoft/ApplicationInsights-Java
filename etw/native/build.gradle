@@ -31,9 +31,9 @@ def programFilesX86 = System.env.'ProgramFiles(x86)' ?: 'C:/Program Files (x86)'
 
 // TraceLoggingProvider.h in Windows 10 SDK
 def winSdkDir = "$programFilesX86/Windows Kits/10"
-if (System.env.APPINSIGHTS_WIN_SDK_PATH) {
-    winSdkDir = System.env.APPINSIGHTS_WIN_SDK_PATH
-    logger.info "Windows SDK path set with environment variable, APPINSIGHTS_WIN_SDK_PATH"
+if (System.env.APPINSIGHTS_WIN10_SDK_PATH) {
+    winSdkDir = System.env.APPINSIGHTS_WIN10_SDK_PATH
+    logger.info "Windows SDK path set with environment variable, APPINSIGHTS_WIN10_SDK_PATH"
 }
 def vsToolsDir = "$programFilesX86/Microsoft Visual Studio 14.0"
 if (System.env.APPINSIGHTS_VS_PATH) {
