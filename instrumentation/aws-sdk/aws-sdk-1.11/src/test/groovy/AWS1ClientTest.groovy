@@ -154,7 +154,7 @@ class AWS1ClientTest extends AgentTestRunner {
           errored false
           parent()
           attributes {
-            "${SemanticAttributes.HTTP_URL.key()}" "$server.address/"
+            "${SemanticAttributes.HTTP_URL.key()}" "$server.address"
             "${SemanticAttributes.HTTP_METHOD.key()}" "$method"
             "${SemanticAttributes.HTTP_STATUS_CODE.key()}" 200
             "${SemanticAttributes.NET_PEER_PORT.key()}" server.address.port
@@ -230,7 +230,7 @@ class AWS1ClientTest extends AgentTestRunner {
           errorEvent SdkClientException, ~/Unable to execute HTTP request/
           parent()
           attributes {
-            "${SemanticAttributes.HTTP_URL.key()}" "http://localhost:${UNUSABLE_PORT}/"
+            "${SemanticAttributes.HTTP_URL.key()}" "http://localhost:${UNUSABLE_PORT}"
             "${SemanticAttributes.HTTP_METHOD.key()}" "$method"
             "${SemanticAttributes.NET_PEER_NAME.key()}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key()}" 61
@@ -276,7 +276,7 @@ class AWS1ClientTest extends AgentTestRunner {
           errorEvent RuntimeException, "bad handler"
           parent()
           attributes {
-            "${SemanticAttributes.HTTP_URL.key()}" "https://s3.amazonaws.com/"
+            "${SemanticAttributes.HTTP_URL.key()}" "https://s3.amazonaws.com"
             "${SemanticAttributes.HTTP_METHOD.key()}" "HEAD"
             "${SemanticAttributes.NET_PEER_NAME.key()}" "s3.amazonaws.com"
             "aws.service" "Amazon S3"
@@ -323,7 +323,7 @@ class AWS1ClientTest extends AgentTestRunner {
           }
           parent()
           attributes {
-            "${SemanticAttributes.HTTP_URL.key()}" "$server.address/"
+            "${SemanticAttributes.HTTP_URL.key()}" "$server.address"
             "${SemanticAttributes.HTTP_METHOD.key()}" "GET"
             "${SemanticAttributes.NET_PEER_PORT.key()}" server.address.port
             "${SemanticAttributes.NET_PEER_NAME.key()}" "localhost"
