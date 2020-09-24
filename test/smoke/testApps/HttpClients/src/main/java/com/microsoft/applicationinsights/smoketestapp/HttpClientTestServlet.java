@@ -75,7 +75,7 @@ public class HttpClientTestServlet extends HttpServlet {
     }
 
     private int apacheHttpClient4() throws IOException {
-        String url = "https://www.bing.com";
+        String url = "https://www.bing.com/search?q=spaces%20test";
         HttpGet get = new HttpGet(url);
         try (CloseableHttpResponse response = httpClient.execute(get)) {
             return response.getStatusLine().getStatusCode();
@@ -83,7 +83,7 @@ public class HttpClientTestServlet extends HttpServlet {
     }
 
     private int apacheHttpClient4WithResponseHandler() throws IOException {
-        String url = "https://www.bing.com";
+        String url = "https://www.bing.com/search?q=spaces%20test";
         HttpGet get = new HttpGet(url);
         return httpClient.execute(get, new ResponseHandler<Integer>() {
             @Override
@@ -97,7 +97,7 @@ public class HttpClientTestServlet extends HttpServlet {
         HttpClient httpClient3 = new org.apache.commons.httpclient.HttpClient();
         CookiePolicy.registerCookieSpec("PermitAllCookiesSpec", PermitAllCookiesSpec.class);
         httpClient3.getParams().setCookiePolicy("PermitAllCookiesSpec");
-        String url = "https://www.bing.com";
+        String url = "https://www.bing.com/search?q=spaces%20test";
         GetMethod httpGet = new GetMethod(url);
         httpClient3.executeMethod(httpGet);
         httpGet.releaseConnection();
@@ -105,7 +105,7 @@ public class HttpClientTestServlet extends HttpServlet {
     }
 
     private int apacheHttpAsyncClient() throws ExecutionException, InterruptedException, IOException {
-        HttpGet get = new HttpGet("https://www.bing.com");
+        HttpGet get = new HttpGet("https://www.bing.com/search?q=spaces%20test");
         HttpResponse httpResponse = httpAsyncClient.execute(get, null).get();
         httpResponse.getEntity().getContent().close();
         return httpResponse.getStatusLine().getStatusCode();
@@ -114,7 +114,7 @@ public class HttpClientTestServlet extends HttpServlet {
     private int okHttp3() throws IOException {
         okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
         okhttp3.Request request = new okhttp3.Request.Builder()
-                .url("https://www.bing.com")
+                .url("https://www.bing.com/search?q=spaces%20test")
                 .build();
         okhttp3.Response response = client.newCall(request).execute();
         response.body().close();
@@ -124,7 +124,7 @@ public class HttpClientTestServlet extends HttpServlet {
     private int okHttp2() throws IOException {
         com.squareup.okhttp.OkHttpClient client = new com.squareup.okhttp.OkHttpClient();
         com.squareup.okhttp.Request request = new com.squareup.okhttp.Request.Builder()
-                .url("https://www.bing.com")
+                .url("https://www.bing.com/search?q=spaces%20test")
                 .build();
         com.squareup.okhttp.Response response = client.newCall(request).execute();
         response.body().close();
@@ -133,14 +133,14 @@ public class HttpClientTestServlet extends HttpServlet {
 
     private int springWebClient() {
         return WebClient.create().get()
-                .uri("https://www.bing.com")
+                .uri("https://www.bing.com/search?q=spaces%20test")
                 .exchange()
                 .map(response -> response.statusCode())
                 .block().value();
     }
 
     private int httpURLConnection() throws IOException {
-        URL obj = new URL("https://www.bing.com");
+        URL obj = new URL("https://www.bing.com/search?q=spaces%20test");
         HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
         // calling getContentType() first, since this triggered a bug previously in the instrumentation previously
         connection.getContentType();
