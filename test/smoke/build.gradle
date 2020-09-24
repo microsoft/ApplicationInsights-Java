@@ -28,10 +28,11 @@ subprojects {
     }
 }
 
+if (!System.env.DOCKER_EXE) {
+    logger.warn 'DOCKER_EXE not set'
+}
+
 def findDockerExe() {
-    if (!System.env.DOCKER_EXE) {
-        logger.warn 'DOCKER_EXE not set'
-    }
     return System.env.DOCKER_EXE
 }
 
