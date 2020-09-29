@@ -53,7 +53,9 @@ public class JdbcTestServlet extends HttpServlet {
             hsqldbPreparedStatement();
         } else if (pathInfo.equals("/hsqldbStatement")) {
             hsqldbStatement();
-        } else if (pathInfo.equals("/hsqldbBatchPreparedStatement")) {
+        } else if (pathInfo.equals("/hsqldbLargeStatement")) {
+            hsqldbLargeStatement();
+        }else if (pathInfo.equals("/hsqldbBatchPreparedStatement")) {
             hsqldbBatchPreparedStatement();
         } else if (pathInfo.equals("/hsqldbBatchStatement")) {
             hsqldbBatchStatement();
@@ -87,6 +89,12 @@ public class JdbcTestServlet extends HttpServlet {
     private void hsqldbStatement() throws Exception {
         Connection connection = getHsqldbConnection();
         executeStatement(connection);
+        connection.close();
+    }
+
+    private void hsqldbLargeStatement() throws Exception {
+        Connection connection = getHsqldbConnection();
+        executeLargeStatement(connection);
         connection.close();
     }
 
@@ -163,6 +171,17 @@ public class JdbcTestServlet extends HttpServlet {
     private void executeStatement(Connection connection) throws SQLException {
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery("select * from abc");
+        while (rs.next()) {
+        }
+        rs.close();
+        statement.close();
+    }
+
+    private void executeLargeStatement(Connection connection) throws SQLException {
+        Statement statement = connection.createStatement();
+        String largeStr = " /*" + Strings.repeat("a", 2000) + "*/";
+        String query = "select * from abc" + largeStr;
+        ResultSet rs = statement.executeQuery(query);
         while (rs.next()) {
         }
         rs.close();
