@@ -8,7 +8,6 @@ import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.Test;
 
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasName;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.*;
 
@@ -19,9 +18,11 @@ public class JmsTest extends AiSmokeTest {
     @TargetUri("/sendMessage")
     public void doMostBasicTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
 
         Envelope rdEnvelope1 = rdList.get(0);
+        String operationId = rdEnvelope1.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
+
         Envelope rdEnvelope2 = rdList.get(1);
         Envelope rddEnvelope1 = rddList.get(0);
         Envelope rddEnvelope2 = rddList.get(1);

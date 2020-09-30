@@ -1,9 +1,7 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
@@ -13,7 +11,6 @@ import com.microsoft.applicationinsights.smoketest.DependencyContainer;
 import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -31,9 +28,11 @@ public class MongoSmokeTest extends AiSmokeTest {
     @TargetUri("/mongo")
     public void mongo() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
         Envelope rddEnvelope = rddList.get(0);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
