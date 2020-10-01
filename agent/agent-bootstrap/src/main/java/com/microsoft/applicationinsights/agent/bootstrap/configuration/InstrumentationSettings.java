@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +47,8 @@ public class InstrumentationSettings {
         public List<JmxMetric> jmxMetrics = Collections.emptyList();
 
         public Map<String, Map<String, Object>> instrumentation = Collections.emptyMap();
+
+        public Map<String, SpanProcessorConfig> spanprocessors = new HashMap<>();
     }
 
     public static class SelfDiagnostics {
@@ -83,4 +86,75 @@ public class InstrumentationSettings {
         public String attribute;
         public String display;
     }
+
+    public static class SpanProcessorConfig {
+        public SpanProcessorIncludeExclude include;
+        public SpanProcessorIncludeExclude exclude;
+        public List<SpanProcessorAction> otherActions;
+        public List<SpanProcessorAction> insertActions;
+    }
+
+    public static class SpanProcessorIncludeExclude {
+        public String match_type;
+        public List<String> span_names;
+        // attributes
+        public List<SpanProcessorAttribute> attributes;
+    }
+
+    public static class SpanProcessorAttribute {
+        public String key;
+        public String value;
+    }
+
+    public static class SpanProcessorAction {
+        public String key;
+        public String action;
+        public String value;
+        public String from_attribute;
+    }
+
+//"spanprocessors": {
+//
+//      # The following demonstrates specifying the set of span properties to
+//      # indicate which spans this processor should be applied to. The `include` of
+//      # properties say which ones should be included and the `exclude` properties
+//      # further filter out spans that shouldn't be processed.
+//      # Ex. The following are spans match the properties and the actions are applied.
+//      # Note this span is processed because the value type of redact_trace is a string instead of a boolean.
+//      # Span1 Name: 'svcB' Attributes: {env: production, test_request: 123, credit_card: 1234, redact_trace: "false"}
+//      # Span2 Name: 'svcA' Attributes: {env: staging, test_request: false, redact_trace: true}
+//      # The following span does not match the include properties and the
+//      # processor actions are not applied.
+//      # Span3 Name: 'svcB' Attributes: {env: production, test_request: true, credit_card: 1234, redact_trace: false}
+//      # Span4 Name: 'svcC' Attributes: {env: dev, test_request: false}
+//
+//        "attributes/selectiveprocessing": {
+//            "include": {
+//                "match_type": "strict",
+//                        "services": [
+//                "svcA",
+//                        "svcB"
+//            ]
+//            },
+//            "exclude": {
+//                "match_type": "strict",
+//                        "attributes": [
+//                {
+//                    "key": "redact_trace",
+//                        "value": false
+//                }
+//            ]
+//            },
+//            "actions": [
+//            {
+//                "key": "credit_card",
+//                    "action": "delete"
+//            },
+//            {
+//                "key": "duplicate_key",
+//                    "action": "delete"
+//            }
+//          ]
+//        },
+
 }

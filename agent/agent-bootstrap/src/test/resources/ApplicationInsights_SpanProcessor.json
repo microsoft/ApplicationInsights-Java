@@ -1,0 +1,66 @@
+{
+  "instrumentationSettings": {
+    "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
+    "preview": {
+      "roleName": "Something Good",
+      "spanprocessors": {
+        "attributes/insert": {
+          "insertActions": [
+            {
+              "key": "attribute1",
+              "value": "123",
+              "action": "insert"
+            },
+            {
+              "key": "string key",
+              "from_attribute": "anotherkey",
+              "action": "insert"
+            }
+          ]
+        },
+        "attributes/update": {
+          "otherActions": [
+            {
+              "key": "boo",
+              "from_attribute": "foo",
+              "action": "update"
+            },
+            {
+              "key": "db.secret",
+              "value": "redacted",
+              "action": "update"
+            }
+          ]
+        },
+        "attributes/selectiveprocessing": {
+          "include":{
+            "match_type":"strict",
+            "span_names":[
+              "svcA",
+              "svcB"
+            ]
+          },
+          "exclude":{
+            "match_type":"strict",
+            "attributes":[
+              {
+                "key":"redact_trace",
+                "value":"false"
+              }
+            ]
+          },
+          "otherActions":[
+            {
+              "key":"credit_card",
+              "action":"delete"
+            },
+            {
+              "key":"duplicate_key",
+              "action":"delete"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
