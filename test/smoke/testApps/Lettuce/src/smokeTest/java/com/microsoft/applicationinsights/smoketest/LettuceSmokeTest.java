@@ -19,9 +19,11 @@ public class LettuceSmokeTest extends AiSmokeTest {
     @TargetUri("/lettuce")
     public void lettuce() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
         Envelope rddEnvelope = rddList.get(0);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
