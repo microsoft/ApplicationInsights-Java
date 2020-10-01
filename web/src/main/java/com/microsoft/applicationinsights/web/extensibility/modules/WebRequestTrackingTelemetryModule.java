@@ -180,7 +180,9 @@ public class WebRequestTrackingTelemetryModule implements WebTelemetryModule, Te
     public void initialize(TelemetryConfiguration configuration) {
         try {
             telemetryClient = new TelemetryClient(configuration);
-            isInitialized = true;
+            if (telemetryClient.getContext().getInstrumentationKey() != null) {
+                isInitialized = true;
+            }
         } catch (Exception e) {
             InternalLogger.INSTANCE.error("Failed to initialize telemetry module %s. Exception: %s.", this.getClass().getSimpleName(), e.toString());
         }
