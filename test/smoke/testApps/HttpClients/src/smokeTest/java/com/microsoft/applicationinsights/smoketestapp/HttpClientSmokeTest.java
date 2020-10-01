@@ -18,72 +18,100 @@ public class HttpClientSmokeTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/apacheHttpClient4")
-    public void testAsyncDependencyCallWithApacheHttpClient4() throws Exception {
+    public void testApacheHttpClient4() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
         Envelope rddEnvelope = rddList.get(0);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("GET /", rdd.getName());
+        assertEquals("GET /search", rdd.getName());
         assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
     @TargetUri("/apacheHttpClient4WithResponseHandler")
-    public void testAsyncDependencyCallWithApacheHttpClient4WithResponseHandler() throws Exception {
+    public void testApacheHttpClient4WithResponseHandler() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
         Envelope rddEnvelope = rddList.get(0);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("GET /", rdd.getName());
+        assertEquals("GET /search", rdd.getName());
         assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
     @TargetUri("/apacheHttpClient3")
-    public void testAsyncDependencyCallWithApacheHttpClient3() throws Exception {
+    public void testApacheHttpClient3() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
         Envelope rddEnvelope = rddList.get(0);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("GET /", rdd.getName());
+        assertEquals("GET /search", rdd.getName());
+        assertEquals("www.bing.com", rdd.getTarget());
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
+    }
+
+    @Test
+    @TargetUri("/apacheHttpAsyncClient")
+    public void testApacheHttpAsyncClient() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+
+        Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
+        Envelope rddEnvelope = rddList.get(0);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+
+        assertTrue(rd.getSuccess());
+        assertEquals("GET /search", rdd.getName());
         assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
     @TargetUri("/okHttp3")
-    public void testAsyncDependencyCallWithOkHttp3() throws Exception {
+    public void testOkHttp3() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
         Envelope rddEnvelope = rddList.get(0);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("GET /", rdd.getName());
+        assertEquals("GET /search", rdd.getName());
         assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
@@ -91,36 +119,40 @@ public class HttpClientSmokeTest extends AiSmokeTest {
     @Ignore // OpenTelemetry Auto-Instrumentation does not support OkHttp 2
     @Test
     @TargetUri("/okHttp2")
-    public void testAsyncDependencyCallWithOkHttp2() throws Exception {
+    public void testOkHttp2() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
         Envelope rddEnvelope = rddList.get(0);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("GET /", rdd.getName());
+        assertEquals("GET /search", rdd.getName());
         assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
     @Test
     @TargetUri("/httpURLConnection")
-    public void testAsyncDependencyCallWithHttpURLConnection() throws Exception {
+    public void testHttpURLConnection() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
         Envelope rddEnvelope = rddList.get(0);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("GET /", rdd.getName());
+        assertEquals("GET /search", rdd.getName());
         assertEquals("www.bing.com", rdd.getTarget());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }

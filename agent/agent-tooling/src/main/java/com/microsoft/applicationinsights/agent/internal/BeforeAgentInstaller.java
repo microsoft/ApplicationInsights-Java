@@ -47,6 +47,7 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Hear
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
@@ -58,7 +59,7 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import io.opentelemetry.auto.config.ConfigOverride;
+import io.opentelemetry.javaagent.config.ConfigOverride;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.config.Config;
 import org.apache.http.HttpHost;
@@ -86,6 +87,7 @@ public class BeforeAgentInstaller {
         instrumentation.addTransformer(new QuickPulseClassFileTransformer());
         instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
         instrumentation.addTransformer(new ApplicationInsightsAppenderClassFileTransformer());
+        instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
     }
 
     private static void start(Instrumentation instrumentation, File agentJarFile) throws Exception {

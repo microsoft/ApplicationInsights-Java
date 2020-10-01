@@ -22,10 +22,10 @@
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
 import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -44,11 +44,9 @@ public class InstrumentationSettings {
         public HttpProxy httpProxy = new HttpProxy();
         public boolean developerMode;
 
-        public List<JmxMetric> jmxMetrics = Collections.emptyList();
-
-        public Map<String, Map<String, Object>> instrumentation = Collections.emptyMap();
-
+        public List<JmxMetric> jmxMetrics = new ArrayList<>();
         public Map<String, SpanProcessorConfig> spanprocessors = new HashMap<>();
+        public Map<String, Map<String, Object>> instrumentation = new HashMap<String, Map<String, Object>>();
     }
 
     public static class SelfDiagnostics {
@@ -61,7 +59,7 @@ public class InstrumentationSettings {
 
     public static class Sampling {
 
-        public FixedRateSampling fixedRate;
+        public FixedRateSampling fixedRate = new FixedRateSampling();
     }
 
     public static class FixedRateSampling {

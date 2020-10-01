@@ -52,6 +52,7 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
@@ -80,16 +81,16 @@ public class Exporter implements SpanExporter {
     }
 
     @Override
-    public ResultCode export(Collection<SpanData> spans) {
+    public CompletableResultCode export(Collection<SpanData> spans) {
         try {
             for (SpanData span : spans) {
                 logger.debug("exporting span: {}", span);
                 export(span);
             }
-            return ResultCode.SUCCESS;
+            return CompletableResultCode.ofSuccess();
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
-            return ResultCode.FAILURE;
+            return CompletableResultCode.ofFailure();
         }
     }
 
@@ -376,16 +377,16 @@ public class Exporter implements SpanExporter {
     }
 
     @Override
-    public ResultCode flush() {
-        return null;
+    public CompletableResultCode flush() {
+        return CompletableResultCode.ofSuccess();
     }
 
     @Override
-    public void shutdown() {
+    public CompletableResultCode shutdown() {
+        return CompletableResultCode.ofSuccess();
     }
 
     private static void setProperties(Map<String, String> properties, long timeEpochNanos, String level, String loggerName, Map<String, AttributeValue> attributes) {
-        properties.put("TimeStamp", getFormattedDate(NANOSECONDS.toMillis(timeEpochNanos)));
         if (level != null) {
             properties.put("SourceType", "Logger");
             properties.put("LoggingLevel", level);
@@ -396,7 +397,37 @@ public class Exporter implements SpanExporter {
 
         if (attributes != null) {
             for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-                properties.put(entry.getKey(), entry.getValue().getStringValue());
+                AttributeValue av = entry.getValue();
+                String stringValue = null;
+                switch(av.getType()) {
+                    case STRING:
+                        stringValue = av.getStringValue();
+                        break;
+                    case BOOLEAN:
+                        stringValue = String.valueOf(av.getBooleanValue());
+                        break;
+                    case LONG:
+                        stringValue = String.valueOf(av.getLongValue());
+                        break;
+                    case DOUBLE:
+                        stringValue = String.valueOf(av.getDoubleValue());
+                        break;
+                    case STRING_ARRAY:
+                        stringValue = String.valueOf(av.getStringArrayValue());
+                        break;
+                    case BOOLEAN_ARRAY:
+                        stringValue = String.valueOf(av.getBooleanArrayValue());
+                        break;
+                    case LONG_ARRAY:
+                        stringValue = String.valueOf(av.getLongArrayValue());
+                        break;
+                    case DOUBLE_ARRAY:
+                        stringValue = String.valueOf(av.getDoubleArrayValue());
+                        break;
+                }
+                if (stringValue != null) {
+                    properties.put(entry.getKey(), stringValue);
+                }
             }
         }
     }
@@ -462,8 +493,6 @@ public class Exporter implements SpanExporter {
                 // TODO this is special case to match 2.x behavior
                 //      because U/X strips off the beginning in E2E tx view
                 telemetry.setTarget("jdbc:" + dbUrl);
-                // TODO another special case to match 2.x behavior until we decide on new behavior
-                telemetry.setName(dbUrl);
             } else {
                 telemetry.setTarget(dbUrl);
             }
@@ -531,7 +560,7 @@ public class Exporter implements SpanExporter {
     }
 
     private static Double removeAttributeDouble(Map<String, AttributeValue> attributes, String attributeName) {
-        AttributeValue attributeValue = attributes.get(attributeName);
+        AttributeValue attributeValue = attributes.remove(attributeName);
         if (attributeValue == null) {
             return null;
         } else if (attributeValue.getType() == AttributeValue.Type.DOUBLE) {
@@ -552,10 +581,6 @@ public class Exporter implements SpanExporter {
             target += ":" + uriObject.getPort();
         }
         return target;
-    }
-
-    private static String getFormattedDate(long dateInMilliseconds) {
-        return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).format(new Date(dateInMilliseconds));
     }
 
     private static String getStringValue(AttributeValue value) {

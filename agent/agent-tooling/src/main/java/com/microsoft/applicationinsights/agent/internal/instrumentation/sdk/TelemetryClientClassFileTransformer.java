@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.instrument.ClassFileTransformer;
+import java.net.MalformedURLException;
 import java.security.ProtectionDomain;
 
 import com.google.common.base.Charsets;
@@ -31,9 +32,11 @@ import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
+import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
@@ -50,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static net.bytebuddy.jar.asm.Opcodes.ACC_PRIVATE;
+import static net.bytebuddy.jar.asm.Opcodes.ACC_PUBLIC;
 import static net.bytebuddy.jar.asm.Opcodes.ACONST_NULL;
 import static net.bytebuddy.jar.asm.Opcodes.ALOAD;
 import static net.bytebuddy.jar.asm.Opcodes.ARETURN;
@@ -72,6 +76,8 @@ import static net.bytebuddy.jar.asm.Opcodes.INVOKESTATIC;
 import static net.bytebuddy.jar.asm.Opcodes.INVOKEVIRTUAL;
 import static net.bytebuddy.jar.asm.Opcodes.IRETURN;
 import static net.bytebuddy.jar.asm.Opcodes.ISTORE;
+import static net.bytebuddy.jar.asm.Opcodes.LLOAD;
+import static net.bytebuddy.jar.asm.Opcodes.LSTORE;
 import static net.bytebuddy.jar.asm.Opcodes.NEW;
 import static net.bytebuddy.jar.asm.Opcodes.RETURN;
 
@@ -163,6 +169,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             writeAgentTrackRemoteDependencyTelemetryMethod();
             writeAgentTrackPageViewTelemetryMethod();
             writeAgentTrackTraceTelemetryMethod();
+            writeAgentTrackRequestTelemetryMethod();
+            writeAgentTrackExceptionTelemetryMethod();
             writeAgentToMillisMethod();
         }
 
@@ -232,15 +240,37 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/TraceTelemetry");
             mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$trackTraceTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/TraceTelemetry;)V", false);
+            mv.visitLabel(l7);
+            mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/RequestTelemetry");
+            Label l8 = new Label();
+            mv.visitJumpInsn(IFEQ, l8);
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/RequestTelemetry");
+            mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$trackRequestTelemetry",
+                    "(L" + unshadedPrefix + "/telemetry/RequestTelemetry;)V", false);
+            mv.visitLabel(l8);
+            mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/ExceptionTelemetry");
+            Label l9 = new Label();
+            mv.visitJumpInsn(IFEQ, l9);
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/ExceptionTelemetry");
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/TelemetryClient", "agent$trackExceptionTelemetry",
+                    "(L" + unshadedPrefix + "/telemetry/ExceptionTelemetry;)V", false);
             mv.visitLabel(l1);
-            mv.visitJumpInsn(GOTO, l7);
+            mv.visitJumpInsn(GOTO, l9);
             mv.visitLabel(l2);
             mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[]{"java/lang/Throwable"});
             mv.visitVarInsn(ASTORE, 2);
             mv.visitVarInsn(ALOAD, 2);
             mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "logErrorOnce", "(Ljava/lang/Throwable;)V",
                     false);
-            mv.visitLabel(l7);
+            mv.visitLabel(l9);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitInsn(RETURN);
             mv.visitMaxs(2, 3);
@@ -430,6 +460,62 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitEnd();
         }
 
+        private void writeAgentTrackRequestTelemetryMethod() {
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackRequestTelemetry", "(L" + unshadedPrefix + "/telemetry/RequestTelemetry;)V", null, null);
+            mv.visitCode();
+            Label label0 = new Label();
+            Label label1 = new Label();
+            Label label2 = new Label();
+            mv.visitTryCatchBlock(label0, label1, label2, "java/net/MalformedURLException");
+            mv.visitLabel(label0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getId", "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getName", "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getUrl", "()Ljava/net/URL;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getTimestamp", "()Ljava/util/Date;", false);
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getDuration", "()L" + unshadedPrefix + "/telemetry/Duration;", false);
+            mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$toMillis", "(L" + unshadedPrefix + "/telemetry/Duration;)Ljava/lang/Long;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getResponseCode", "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "isSuccess", "()Z", false);
+            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agent/bootstrap/BytecodeUtil", "trackRequest", "(Ljava/lang/String;Ljava/lang/String;Ljava/net/URL;Ljava/util/Date;JLjava/lang/String;Z)V", false);
+            mv.visitLabel(label1);
+            Label label3 = new Label();
+            mv.visitJumpInsn(GOTO, label3);
+            mv.visitLabel(label2);
+            mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[] {"java/net/MalformedURLException"});
+            mv.visitVarInsn(ASTORE, 2);
+            mv.visitVarInsn(ALOAD, 2);
+            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agent/bootstrap/BytecodeUtil", "logErrorOnce", "(Ljava/lang/Throwable;)V", false);
+            mv.visitLabel(label3);
+            mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+            mv.visitInsn(RETURN);
+            mv.visitMaxs(8, 3);
+            mv.visitEnd();
+        }
+
+        private void writeAgentTrackExceptionTelemetryMethod() {
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackExceptionTelemetry", "(L" + unshadedPrefix + "/telemetry/ExceptionTelemetry;)V", null, null);
+            mv.visitCode();
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getException", "()Ljava/lang/Exception;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getProperties", "()Ljava/util/Map;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getMetrics", "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agent/bootstrap/BytecodeUtil", "trackException", "(Ljava/lang/Exception;Ljava/util/Map;Ljava/util/Map;)V", false);
+            mv.visitInsn(RETURN);
+            mv.visitMaxs(3, 2);
+            mv.visitEnd();
+        }
+
         private void writeAgentToMillisMethod() {
             MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$toMillis",
                     "(L" + unshadedPrefix + "/telemetry/Duration;)Ljava/lang/Long;", null, null);
@@ -512,6 +598,12 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
                 if (telemetry instanceof TraceTelemetry) {
                     agent$trackTraceTelemetry((TraceTelemetry) telemetry);
                 }
+                if (telemetry instanceof RequestTelemetry) {
+                    agent$trackRequestTelemetry((RequestTelemetry) telemetry);
+                }
+                if (telemetry instanceof ExceptionTelemetry) {
+                    agent$trackExceptionTelemetry((ExceptionTelemetry) telemetry);
+                }
             } catch (Throwable t) {
                 BytecodeUtil.logErrorOnce(t);
             }
@@ -539,6 +631,18 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             SeverityLevel level = t.getSeverityLevel();
             int severityLevel = level != null ? level.getValue(): -1;
             BytecodeUtil.trackTrace(t.getMessage(), severityLevel, t.getProperties());
+        }
+
+        private void agent$trackRequestTelemetry(RequestTelemetry t) {
+            try {
+                BytecodeUtil.trackRequest(t.getId(), t.getName(), t.getUrl(), t.getTimestamp(), agent$toMillis(t.getDuration()), t.getResponseCode(), t.isSuccess());
+            } catch (MalformedURLException e) {
+                BytecodeUtil.logErrorOnce(e);
+            }
+        }
+
+        public void agent$trackExceptionTelemetry(ExceptionTelemetry telemetry) {
+            BytecodeUtil.trackException(telemetry.getException(), telemetry.getProperties(), telemetry.getMetrics());
         }
 
         @Nullable

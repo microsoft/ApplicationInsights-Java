@@ -30,7 +30,7 @@ public class SimpleTestTraceLogBackWithExceptionServlet extends HttpServlet {
             throws ServletException, IOException {
         ServletFuncs.geRrenderHtml(request, response);
 
-        //jbosseap6 and jbosseap7 have error : org.slf4j.impl.Slf4jLogger cannot be cast to ch.qos.logback.classic.Logger
+        //jbosseap7 have error : org.slf4j.impl.Slf4jLogger cannot be cast to ch.qos.logback.classic.Logger
         try {
             Logger logger = (Logger) LoggerFactory.getLogger("root");
             MDC.put("MDC key", "MDC value");

@@ -73,7 +73,7 @@ public class JmxDataFetcher {
                 Collection<Object> resultForAttribute = fetch(server, objects, attribute.name);
                 result.put(attribute.displayName, resultForAttribute);
             } catch (Exception e) {
-                logger.error("Failed to fetch JMX object '{}' with attribute '{}': ", objectName, attribute.name, e);
+                logger.warn("Failed to fetch JMX object '{}' with attribute '{}': ", objectName, attribute.name);
                 throw e;
             }
         }

@@ -4,7 +4,7 @@ If you're interested in contributing, take a look at the general [contributer's 
 
 ## Prerequisites
 
-1.  Java SDK 1.7 or higher
+1.  Java SDK 1.8 or higher
 2.  Sign-in to [Microsoft Azure](https://azure.com)
 
 ### Windows Naitive DLLs
@@ -24,7 +24,3 @@ If you're interested in contributing, take a look at the general [contributer's 
 3.  In build.gradle add line `apply plugin: 'eclipse'`
 4.  In Eclipse used _File -> Import Existing Project_ in a workspace.
 5.  Use `gradle build` to build the project from the command line.
-
-### Notes
-
-* If you are using Java 8+, set JAVA_JRE_7 environment variable to point a Java 7 JRE installation. This will configure the bootstrap classpath to use the Java 7 library jars.

@@ -8,7 +8,7 @@ repositories {
     mavenLocal()
 }
 
-def instrumentationVersion = '0.8.0-SNAPSHOT'
+def instrumentationVersion = '0.8.0'
 
 dependencies {
     compile project(':agent:agent-tooling')
@@ -22,7 +22,7 @@ dependencies {
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-http-url-connection', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-java-classloader', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-java-concurrent', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-java-util-logging', version: instrumentationVersion
+    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-java-util-logging-spans', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jaxrs-1.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jaxrs-2.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jaxrs-2.0-jersey-2.0', version: instrumentationVersion
@@ -38,9 +38,9 @@ dependencies {
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-lettuce-4.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-lettuce-5.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-lettuce-5.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-log4j-1.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-log4j-2.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-logback-1.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-log4j-spans-1.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-log4j-spans-2.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-logback-spans-1.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-micrometer-1.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-mongo-3.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-mongo-3.7', version: instrumentationVersion
@@ -65,7 +65,7 @@ dependencies {
 }
 
 // need to perform shading in two steps in order to avoid shading java.util.logging.Logger
-// in opentelemetry-auto-java-util-logging since that instrumentation needs to
+// in opentelemetry-auto-java-util-logging-spans since that instrumentation needs to
 // reference unshaded java.util.logging.Logger
 // (java.util.logging.Logger shading is not needed in any of the instrumentation modules,
 // but it is needed for the dependencies, e.g. guava, which use java.util.logging.Logger)
@@ -77,10 +77,10 @@ task shadowJarStep1(type: com.github.jengelman.gradle.plugins.shadow.tasks.Shado
     configurations = [project.configurations.runtime]
 
     dependencies {
-        exclude(dependency('io.opentelemetry.instrumentation.auto:opentelemetry-auto-java-util-logging'))
+        exclude(dependency('io.opentelemetry.instrumentation.auto:opentelemetry-auto-java-util-logging-spans'))
 
         // exclude bootstrap dependencies from shadowJar
-        exclude(dependency('io.opentelemetry.instrumentation.auto:opentelemetry-auto-bootstrap'))
+        exclude(dependency('io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-bootstrap'))
         exclude(dependency('io.opentelemetry:opentelemetry-api'))
         exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
         exclude(dependency('io.grpc:grpc-context'))
@@ -88,7 +88,7 @@ task shadowJarStep1(type: com.github.jengelman.gradle.plugins.shadow.tasks.Shado
     }
 
     // rewrite dependencies calling Logger.getLogger
-    relocate 'java.util.logging.Logger', 'io.opentelemetry.auto.bootstrap.PatchLogger'
+    relocate 'java.util.logging.Logger', 'io.opentelemetry.javaagent.bootstrap.PatchLogger'
 }
 
 
@@ -104,7 +104,7 @@ shadowJar {
 
     dependencies {
         // exclude bootstrap dependencies from shadowJar
-        exclude(dependency('io.opentelemetry.instrumentation.auto:opentelemetry-auto-bootstrap'))
+        exclude(dependency('io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-bootstrap'))
         exclude(dependency('io.opentelemetry:opentelemetry-api'))
         exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
         exclude(dependency('io.grpc:grpc-context'))
@@ -116,27 +116,27 @@ shadowJar {
     exclude '**/module-info.class'
 
     // Prevents conflict with other SLF4J instances. Important for premain.
-    relocate 'org.slf4j', 'io.opentelemetry.auto.slf4j'
+    relocate 'org.slf4j', 'io.opentelemetry.javaagent.slf4j'
 
     // rewrite library instrumentation dependencies
-    relocate("io.opentelemetry.instrumentation", "io.opentelemetry.auto.shaded.instrumentation") {
+    relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
         exclude "io.opentelemetry.instrumentation.auto.**"
     }
 
     // prevents conflict with library instrumentation
-    relocate 'io.opentelemetry.instrumentation.api', 'io.opentelemetry.auto.shaded.instrumentation.api'
+    relocate 'io.opentelemetry.instrumentation.api', 'io.opentelemetry.javaagent.shaded.instrumentation.api'
 
     // relocate OpenTelemetry API usage
-    relocate "io.opentelemetry.OpenTelemetry", "io.opentelemetry.auto.shaded.io.opentelemetry.OpenTelemetry"
-    relocate "io.opentelemetry.common", "io.opentelemetry.auto.shaded.io.opentelemetry.common"
-    relocate "io.opentelemetry.context", "io.opentelemetry.auto.shaded.io.opentelemetry.context"
-    relocate "io.opentelemetry.correlationcontext", "io.opentelemetry.auto.shaded.io.opentelemetry.correlationcontext"
-    relocate "io.opentelemetry.internal", "io.opentelemetry.auto.shaded.io.opentelemetry.internal"
-    relocate "io.opentelemetry.metrics", "io.opentelemetry.auto.shaded.io.opentelemetry.metrics"
-    relocate "io.opentelemetry.trace", "io.opentelemetry.auto.shaded.io.opentelemetry.trace"
+    relocate "io.opentelemetry.OpenTelemetry", "io.opentelemetry.javaagent.shaded.io.opentelemetry.OpenTelemetry"
+    relocate "io.opentelemetry.common", "io.opentelemetry.javaagent.shaded.io.opentelemetry.common"
+    relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
+    relocate "io.opentelemetry.correlationcontext", "io.opentelemetry.javaagent.shaded.io.opentelemetry.correlationcontext"
+    relocate "io.opentelemetry.internal", "io.opentelemetry.javaagent.shaded.io.opentelemetry.internal"
+    relocate "io.opentelemetry.metrics", "io.opentelemetry.javaagent.shaded.io.opentelemetry.metrics"
+    relocate "io.opentelemetry.trace", "io.opentelemetry.javaagent.shaded.io.opentelemetry.trace"
 
     // relocate OpenTelemetry API dependency usage
-    relocate "io.grpc.Context", "io.opentelemetry.auto.shaded.io.grpc.Context"
+    relocate "io.grpc.Context", "io.opentelemetry.javaagent.shaded.io.grpc.Context"
 
     // this is for instrumentation on opentelemetry-api itself
     relocate "unshaded.io.opentelemetry", "io.opentelemetry"
