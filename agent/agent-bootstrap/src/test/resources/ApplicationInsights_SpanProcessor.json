@@ -5,7 +5,7 @@
       "roleName": "Something Good",
       "spanprocessors": {
         "attributes/insert": {
-          "insertActions": [
+          "actions": [
             {
               "key": "attribute1",
               "value": "123",
@@ -19,7 +19,7 @@
           ]
         },
         "attributes/update": {
-          "otherActions": [
+          "actions": [
             {
               "key": "boo",
               "from_attribute": "foo",
@@ -49,7 +49,7 @@
               }
             ]
           },
-          "otherActions":[
+          "actions":[
             {
               "key":"credit_card",
               "action":"delete"

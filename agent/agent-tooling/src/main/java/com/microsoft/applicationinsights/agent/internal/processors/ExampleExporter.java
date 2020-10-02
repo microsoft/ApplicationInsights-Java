@@ -18,6 +18,7 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Attributes.Builder;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -28,13 +29,33 @@ public class ExampleExporter implements SpanExporter {
     private final SpanProcessorConfig config;
     private final SpanExporter delegate;
 
-    public ExampleExporter(SpanProcessorConfig config, SpanExporter delegate) {
+    public static ExampleExporter create(SpanProcessorConfig config, SpanExporter delegate) {
+        // optimize data structure
+        optimizeSpanProcessorConfig(config);
+        return new ExampleExporter(config,delegate);
+    }
+
+    private static void optimizeSpanProcessorConfig(SpanProcessorConfig config) {
+        if(config!=null && config.actions!=null && config.actions.size()>0) {
+            config.insertActions = new ArrayList<>();
+            config.otherActions = new ArrayList<>();
+            for(SpanProcessorAction spanProcessorAction:config.actions) {
+                if(spanProcessorAction.action.equals("insert")) {
+                    config.insertActions.add(spanProcessorAction);
+                } else {
+                    config.otherActions.add(spanProcessorAction);
+                }
+            }
+        }
+    }
+
+    private ExampleExporter(SpanProcessorConfig config, SpanExporter delegate) {
         this.config = config;
         this.delegate = delegate;
     }
 
     @Override
-    public ResultCode export(Collection<SpanData> spans) {
+    public CompletableResultCode export(Collection<SpanData> spans) {
         // we need to filter attributes before passing on to delegate
         List<SpanData> copy = new ArrayList<>();
         for (SpanData span : spans) {
@@ -310,12 +331,12 @@ public class ExampleExporter implements SpanExporter {
     }
 
     @Override
-    public ResultCode flush() {
+    public CompletableResultCode flush() {
         return delegate.flush();
     }
 
     @Override
-    public void shutdown() {
-        delegate.shutdown();
+    public CompletableResultCode shutdown() {
+        return delegate.shutdown();
     }
 }

@@ -88,6 +88,7 @@ public class InstrumentationSettings {
     public static class SpanProcessorConfig {
         public SpanProcessorIncludeExclude include;
         public SpanProcessorIncludeExclude exclude;
+        public List<SpanProcessorAction> actions;
         public List<SpanProcessorAction> otherActions;
         public List<SpanProcessorAction> insertActions;
     }
