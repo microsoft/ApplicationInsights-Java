@@ -160,11 +160,11 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private void formatMetrics(QuickPulseDataCollector.FinalCounters counters, StringBuilder sb) {
         sb.append("\"Metrics\":[");
         formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Requests\\/Sec", counters.requests, 1, true);
-        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Request Duration", counters.requestsDuration, 1, true);
+        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Request Duration", counters.requestsDuration, (int)counters.requests, true);
         formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Requests Failed\\/Sec", counters.unsuccessfulRequests, 1, true);
         formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Requests Succeeded\\/Sec", (counters.requests - counters.unsuccessfulRequests), 1, true);
         formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Dependency Calls\\/Sec", counters.rdds, 1, true);
-        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Dependency Call Duration", counters.rddsDuration, 1, true);
+        formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Dependency Call Duration", counters.rddsDuration, (int)counters.rdds, true);
         formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Dependency Calls Failed\\/Sec", counters.unsuccessfulRdds, 1, true);
         formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Dependency Calls Succeeded\\/Sec", counters.rdds - counters.unsuccessfulRdds, 1, true);
         formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Exceptions\\/Sec", counters.exceptions, 1, true);
