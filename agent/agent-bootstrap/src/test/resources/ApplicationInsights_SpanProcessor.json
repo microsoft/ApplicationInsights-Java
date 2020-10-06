@@ -3,18 +3,18 @@
     "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
     "preview": {
       "roleName": "Something Good",
-      "spanprocessors": {
+      "spanProcessors": {
         "attributes/insert": {
           "actions": [
             {
               "key": "attribute1",
               "value": "123",
-              "action": "insert"
+              "action": "INSERT"
             },
             {
               "key": "string key",
-              "from_attribute": "anotherkey",
-              "action": "insert"
+              "fromAttribute": "anotherkey",
+              "action": "INSERT"
             }
           ]
         },
@@ -22,26 +22,26 @@
           "actions": [
             {
               "key": "boo",
-              "from_attribute": "foo",
-              "action": "update"
+              "fromAttribute": "foo",
+              "action": "UPDATE"
             },
             {
               "key": "db.secret",
               "value": "redacted",
-              "action": "update"
+              "action": "UPDATE"
             }
           ]
         },
         "attributes/selectiveprocessing": {
           "include":{
-            "match_type":"strict",
-            "span_names":[
+            "matchType":"STRICT",
+            "spanNames":[
               "svcA",
               "svcB"
             ]
           },
           "exclude":{
-            "match_type":"strict",
+            "matchType":"STRICT",
             "attributes":[
               {
                 "key":"redact_trace",
@@ -52,11 +52,11 @@
           "actions":[
             {
               "key":"credit_card",
-              "action":"delete"
+              "action":"DELETE"
             },
             {
               "key":"duplicate_key",
-              "action":"delete"
+              "action":"DELETE"
             }
           ]
         }

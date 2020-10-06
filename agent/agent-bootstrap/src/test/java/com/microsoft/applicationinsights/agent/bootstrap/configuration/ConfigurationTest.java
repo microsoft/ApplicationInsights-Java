@@ -10,7 +10,9 @@ import com.google.common.io.CharSource;
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorActionType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorConfig;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorMatchType;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
@@ -63,31 +65,31 @@ public class ConfigurationTest {
         PreviewConfiguration preview = instrumentationSettings.preview;
 
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", instrumentationSettings.connectionString);
-        assertEquals(3,preview.spanprocessors.keySet().size());
+        assertEquals(3,preview.spanProcessors.keySet().size());
         // insert config test
-        SpanProcessorConfig insertConfig=preview.spanprocessors.get("attributes/insert");
-        assertEquals("insert", insertConfig.actions.get(0).action);
+        SpanProcessorConfig insertConfig=preview.spanProcessors.get("attributes/insert");
+        assertEquals(SpanProcessorActionType.INSERT, insertConfig.actions.get(0).action);
         assertEquals("123", insertConfig.actions.get(0).value);
         assertEquals("attribute1", insertConfig.actions.get(0).key);
-        assertEquals("anotherkey", insertConfig.actions.get(1).from_attribute);
+        assertEquals("anotherkey", insertConfig.actions.get(1).fromAttribute);
         //update config test
-        SpanProcessorConfig updateConfig=preview.spanprocessors.get("attributes/update");
-        assertEquals("update", updateConfig.actions.get(0).action);
+        SpanProcessorConfig updateConfig=preview.spanProcessors.get("attributes/update");
+        assertEquals(SpanProcessorActionType.UPDATE, updateConfig.actions.get(0).action);
         assertEquals("boo", updateConfig.actions.get(0).key);
-        assertEquals("foo", updateConfig.actions.get(0).from_attribute);
+        assertEquals("foo", updateConfig.actions.get(0).fromAttribute);
         assertEquals("db.secret", updateConfig.actions.get(1).key);
         // selective processing test
-        SpanProcessorConfig selectiveConfig=preview.spanprocessors.get("attributes/selectiveprocessing");
-        assertEquals("strict", selectiveConfig.include.match_type);
-        assertEquals(2, selectiveConfig.include.span_names.size());
-        assertEquals("svcA", selectiveConfig.include.span_names.get(0));
-        assertEquals("strict", selectiveConfig.exclude.match_type);
+        SpanProcessorConfig selectiveConfig=preview.spanProcessors.get("attributes/selectiveprocessing");
+        assertEquals(SpanProcessorMatchType.STRICT, selectiveConfig.include.matchType);
+        assertEquals(2, selectiveConfig.include.spanNames.size());
+        assertEquals("svcA", selectiveConfig.include.spanNames.get(0));
+        assertEquals(SpanProcessorMatchType.STRICT, selectiveConfig.exclude.matchType);
         assertEquals(1, selectiveConfig.exclude.attributes.size());
         assertEquals("redact_trace", selectiveConfig.exclude.attributes.get(0).key);
         assertEquals("false", selectiveConfig.exclude.attributes.get(0).value);
         assertEquals(2, selectiveConfig.actions.size());
         assertEquals("credit_card", selectiveConfig.actions.get(0).key);
-        assertEquals("delete", selectiveConfig.actions.get(0).action);
+        assertEquals(SpanProcessorActionType.DELETE, selectiveConfig.actions.get(0).action);
 
 
     }

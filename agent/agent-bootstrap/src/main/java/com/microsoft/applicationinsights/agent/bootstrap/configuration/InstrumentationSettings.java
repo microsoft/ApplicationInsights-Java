@@ -45,7 +45,7 @@ public class InstrumentationSettings {
         public boolean developerMode;
 
         public List<JmxMetric> jmxMetrics = new ArrayList<>();
-        public Map<String, SpanProcessorConfig> spanprocessors = new HashMap<>();
+        public Map<String, SpanProcessorConfig> spanProcessors = new HashMap<>();
         public Map<String, Map<String, Object>> instrumentation = new HashMap<String, Map<String, Object>>();
     }
 
@@ -85,19 +85,36 @@ public class InstrumentationSettings {
         public String display;
     }
 
+    public enum SpanProcessorMatchType {
+        STRICT,REGEXP
+    }
+
+    public enum SpanProcessorActionType {
+        INSERT,UPDATE,DELETE,HASH
+    }
+
     public static class SpanProcessorConfig {
         public SpanProcessorIncludeExclude include;
         public SpanProcessorIncludeExclude exclude;
         public List<SpanProcessorAction> actions;
-        public List<SpanProcessorAction> otherActions;
-        public List<SpanProcessorAction> insertActions;
     }
 
     public static class SpanProcessorIncludeExclude {
-        public String match_type;
-        public List<String> span_names;
+        public SpanProcessorMatchType matchType;
+        public List<String> spanNames;
         // attributes
         public List<SpanProcessorAttribute> attributes;
+
+        public boolean isValid() {
+            if(this.matchType == null) return false;
+            if(this.spanNames==null && this.attributes==null) return false;
+            if(this.attributes !=null) {
+                for(SpanProcessorAttribute attribute:this.attributes) {
+                    if(attribute.key==null) return false;
+                }
+            }
+            return true;
+        }
     }
 
     public static class SpanProcessorAttribute {
@@ -107,9 +124,18 @@ public class InstrumentationSettings {
 
     public static class SpanProcessorAction {
         public String key;
-        public String action;
+        public SpanProcessorActionType action;
         public String value;
-        public String from_attribute;
+        public String fromAttribute;
+
+        public boolean isValid() {
+            if(this.key == null) return false;
+            if(this.action == null) return false;
+            if(this.action == SpanProcessorActionType.INSERT || this.action == SpanProcessorActionType.UPDATE) {
+                if(this.value == null && this.fromAttribute == null) return false;
+            }
+            return true;
+        }
     }
 
 //"spanprocessors": {
