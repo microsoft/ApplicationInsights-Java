@@ -253,7 +253,7 @@ public class Exporter implements SpanExporter {
                 }
                 telemetry.setType("Microsoft.EventHub");
             } else if ("kafka-clients".equals(stdComponent)) {
-                telemetry.setType("Kafka");
+                telemetry.setType("Queue Message | Kafka");
                 telemetry.setTarget(span.getName()); // destination queue name
             } else if ("jms".equals(stdComponent)) {
                 telemetry.setType("JMS");
