@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorAction;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorActionType;
@@ -25,38 +26,86 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 public class ExampleExporter implements SpanExporter {
 
     private final SpanExporter delegate;
-    private final SpanProcessorIncludeExclude include;
-    private final SpanProcessorIncludeExclude exclude;
-    private final List<SpanProcessorAction> insertActions;
-    private final List<SpanProcessorAction> otherActions;
+    private final boolean validConfigFlag;
+    private SpanProcessorIncludeExclude include;
+    private SpanProcessorIncludeExclude exclude;
+    private List<SpanProcessorAction> insertActions;
+    private List<SpanProcessorAction> otherActions;
+    private List<Pattern> SpanProcessorIncludePatternMatchers;
+    private List<Pattern> SpanProcessorExcludePatternMatchers;
+
 
     public ExampleExporter(SpanProcessorConfig config, SpanExporter delegate) {
-        this.include = config.include != null && config.include.isValid() ? config.include : null;
-        this.exclude = config.exclude != null && config.exclude.isValid() ? config.exclude : null;
-        this.insertActions = new ArrayList<>();
-        this.otherActions = new ArrayList<>();
-        if (config.actions != null) {
-            for (SpanProcessorAction spanProcessorAction : config.actions) {
-                if (spanProcessorAction.isValid()) {
+        this.validConfigFlag = config.isValid();
+        this.delegate = delegate;
+        if (this.validConfigFlag) {
+            this.include = config.include != null ? normalizeSpanProcessorIncludeExclude(config.include) : getDefaultSpanProcessorIncludeExclude();
+            this.exclude = config.exclude != null ? normalizeSpanProcessorIncludeExclude(config.exclude) : getDefaultSpanProcessorIncludeExclude();
+            this.insertActions = new ArrayList<>();
+            this.otherActions = new ArrayList<>();
+            if (config.actions != null) {
+                for (SpanProcessorAction spanProcessorAction : config.actions) {
+
                     if (spanProcessorAction.action == SpanProcessorActionType.INSERT) {
                         this.insertActions.add(spanProcessorAction);
                     } else {
                         this.otherActions.add(spanProcessorAction);
                     }
+
+                }
+            }
+
+            if (this.include.matchType == SpanProcessorMatchType.REGEXP) {
+                this.SpanProcessorIncludePatternMatchers = new ArrayList<>();
+                for (String regex : this.include.spanNames) {
+                    this.SpanProcessorIncludePatternMatchers.add(Pattern.compile(regex));
+                }
+            }
+            if (this.exclude.matchType == SpanProcessorMatchType.REGEXP) {
+                this.SpanProcessorExcludePatternMatchers = new ArrayList<>();
+                for (String regex : this.exclude.spanNames) {
+                    this.SpanProcessorExcludePatternMatchers.add(Pattern.compile(regex));
                 }
             }
         }
-        this.delegate = delegate;
+    }
+
+    private SpanProcessorIncludeExclude getDefaultSpanProcessorIncludeExclude() {
+        SpanProcessorIncludeExclude includeExcludeObj = new SpanProcessorIncludeExclude();
+        includeExcludeObj.matchType = SpanProcessorMatchType.UNDEFINED;
+        includeExcludeObj.spanNames = new ArrayList<>();
+        includeExcludeObj.attributes = new ArrayList<>();
+        return includeExcludeObj;
+    }
+
+    private SpanProcessorIncludeExclude normalizeSpanProcessorIncludeExclude(SpanProcessorIncludeExclude includeExcludeFromConfig) {
+        SpanProcessorIncludeExclude includeExcludeObj = new SpanProcessorIncludeExclude();
+        includeExcludeObj.matchType = includeExcludeFromConfig.matchType;
+        if (includeExcludeFromConfig.spanNames != null) {
+            includeExcludeObj.spanNames = includeExcludeFromConfig.spanNames;
+        } else {
+            includeExcludeObj.spanNames = new ArrayList<>();
+        }
+        if (includeExcludeFromConfig.attributes != null) {
+            includeExcludeObj.attributes = includeExcludeFromConfig.attributes;
+        } else {
+            includeExcludeObj.attributes = new ArrayList<>();
+        }
+        return includeExcludeObj;
     }
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
         // we need to filter attributes before passing on to delegate
-        List<SpanData> copy = new ArrayList<>();
-        for (SpanData span : spans) {
-            copy.add(process(span));
+        if (this.validConfigFlag) {
+            List<SpanData> copy = new ArrayList<>();
+            for (SpanData span : spans) {
+                copy.add(process(span));
+            }
+            return delegate.export(copy);
+        } else {
+            return delegate.export(spans);
         }
-        return delegate.export(copy);
     }
 
     private SpanData process(SpanData span) {
@@ -66,11 +115,17 @@ public class ExampleExporter implements SpanExporter {
         SpanData updatedSpan = null;
         boolean includeFlag = true;//Flag to check if the span is included in processing
         boolean excludeFlag = false;//Flag to check if the span is excluded in processing
-        if (this.include != null) {
-            includeFlag = checkIncludes(this.include, existingSpanAttributes, spanName);
+
+        if (this.include.matchType != SpanProcessorMatchType.UNDEFINED) {
+            //includeFlag = checkIncludes(this.include, existingSpanAttributes, spanName);
+            includeFlag = checkIncludesExcludes(this.include, existingSpanAttributes, spanName, true);
         }
-        if (this.exclude != null) {
-            excludeFlag = checkExcludes(this.exclude, existingSpanAttributes, spanName);
+
+        if (!includeFlag) return span;//If Not included we can skip further processing
+
+        if (this.exclude.matchType != SpanProcessorMatchType.UNDEFINED) {
+            // excludeFlag = checkExcludes(this.exclude, existingSpanAttributes, spanName);
+            excludeFlag = checkIncludesExcludes(this.exclude, existingSpanAttributes, spanName, false);
         }
 
         if (includeFlag && !excludeFlag) {
@@ -174,149 +229,51 @@ public class ExampleExporter implements SpanExporter {
         }
     }
 
-    private boolean checkExcludes(SpanProcessorIncludeExclude excludes, ReadableAttributes existingSpanAttributes, String spanName) {
-
-        if (excludes.matchType == SpanProcessorMatchType.STRICT) {
-            boolean matchFound = false;
-            if (excludes.spanNames != null && !excludes.spanNames.isEmpty()) {
-                if (excludes.spanNames.contains(spanName)) {
-                    //match found
-                    matchFound = true;
+    private boolean checkAttributes(SpanProcessorIncludeExclude includeExclude, ReadableAttributes existingSpanAttributes, String spanName) {
+        for (SpanProcessorAttribute attribute : includeExclude.attributes) {
+            //All of these attributes must match exactly for a match to occur.
+            if (existingSpanAttributes.get(attribute.key) != null) {
+                //found a match
+                if (attribute.value != null) {
+                    AttributeValue existingAttributeValue = existingSpanAttributes.get(attribute.key);
+                    if (existingAttributeValue.getType() != Type.STRING || !existingAttributeValue.getStringValue().equals(attribute.value)) {
+                        return false;
+                        // value mismatch found.
+                    }
                 }
             } else {
-                // if span_names is empty default to true
-                matchFound = true;
+                return false;
             }
+        }
+        return true;
+    }
 
-            if (excludes.attributes != null) {
-                for (SpanProcessorAttribute attribute : excludes.attributes) {
-
-
-                    if (matchFound && existingSpanAttributes.get(attribute.key) != null) {
-                        //found a match
-                        if (attribute.value != null) {
-
-                            AttributeValue existingAttributeValue = existingSpanAttributes.get(attribute.key);
-                            return existingAttributeValue.getType() == Type.STRING && existingAttributeValue.getStringValue().equals(attribute.value);
-                            // found a match with value
-                        } else {
-                            return true;
-                        }
-                    }
-
+    private boolean checkIncludesExcludes(SpanProcessorIncludeExclude includeExclude, ReadableAttributes existingSpanAttributes, String spanName, boolean isIncludeObject) {
+        if (includeExclude.matchType == SpanProcessorMatchType.STRICT) {
+            if (!includeExclude.spanNames.isEmpty()) {
+                if (!includeExclude.spanNames.contains(spanName)) {
+                    //match found
+                    return false;
                 }
             }
-
-            return matchFound;
-
-        } else if (excludes.matchType == SpanProcessorMatchType.REGEXP) {
+            return checkAttributes(includeExclude, existingSpanAttributes, spanName);
+        } else if (includeExclude.matchType == SpanProcessorMatchType.REGEXP) {
             boolean matchFound = false;
-            if (excludes.spanNames != null) {
-                for (String service : excludes.spanNames) {
-                    if (spanName.matches(service)) {
+            List<Pattern> patternMatchers = isIncludeObject ? this.SpanProcessorIncludePatternMatchers : this.SpanProcessorExcludePatternMatchers;
+            if (patternMatchers != null) {
+                for (Pattern pattern : patternMatchers) {
+                    if (pattern.matcher(spanName).find()) {
                         matchFound = true;
                         break;
                     }
                 }
-            } else {
-                matchFound = true;
             }
-
-            if (excludes.attributes != null) {
-                for (SpanProcessorAttribute attribute : excludes.attributes) {
-
-
-                    if (matchFound && existingSpanAttributes.get(attribute.key) != null) {
-                        //found a match
-                        if (attribute.value != null) {
-
-                            AttributeValue existingAttributeValue = existingSpanAttributes.get(attribute.key);
-                            return existingAttributeValue.getType() == Type.STRING && existingAttributeValue.getStringValue().equals(attribute.value);
-                            // found a match with value
-                        } else {
-                            return true;
-                        }
-                    }
-
-                }
-            }
-
-            return matchFound;
+            if (!matchFound) return false;
+            return checkAttributes(includeExclude, existingSpanAttributes, spanName);
         }
-        return false;
+        return isIncludeObject;
     }
 
-    private boolean checkIncludes(SpanProcessorIncludeExclude includes, ReadableAttributes existingSpanAttributes, String spanName) {
-
-        if (includes.matchType == SpanProcessorMatchType.STRICT) {
-            if (includes.spanNames != null) {
-                if (!includes.spanNames.contains(spanName)) {
-                    //did not find a match
-                    return false;
-                }
-            }
-            if (includes.attributes != null) {
-                for (SpanProcessorAttribute attribute : includes.attributes) {
-
-
-                    if (existingSpanAttributes.get(attribute.key) != null) {
-                        //found a match
-                        if (attribute.value != null) {
-
-                            AttributeValue existingAttributeValue = existingSpanAttributes.get(attribute.key);
-                            if (existingAttributeValue.getType() == Type.STRING && existingAttributeValue.getStringValue().equals(attribute.value)) {
-                                // found a match with value
-                                return true;
-                            }
-                        } else {
-                            return true;
-                        }
-                    }
-
-                }
-                //did not find a match
-                return false;
-            }
-
-        } else if (includes.matchType == SpanProcessorMatchType.REGEXP) {
-
-            if (includes.spanNames != null) {
-                boolean foundMatch = false;
-                for (String service : includes.spanNames) {
-                    if (spanName.matches(service)) {
-                        foundMatch = true;
-                        break;
-                    }
-                }
-                // did not find a match
-                if (!foundMatch) return false;
-            }
-            if (includes.attributes != null) {
-                for (SpanProcessorAttribute attribute : includes.attributes) {
-
-
-                    if (existingSpanAttributes.get(attribute.key) != null) {
-                        //found a match
-                        if (attribute.value != null) {
-
-                            AttributeValue existingAttributeValue = existingSpanAttributes.get(attribute.key);
-                            if (existingAttributeValue.getType() == Type.STRING && existingAttributeValue.getStringValue().equals(attribute.value)) {
-                                // found a match with value
-                                return true;
-                            }
-                        } else {
-                            return true;
-                        }
-                    }
-
-                }
-                //did not find a match
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     @Override
     public CompletableResultCode flush() {

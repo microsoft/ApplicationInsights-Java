@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
-import java.util.Collections;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +32,14 @@ public class InstrumentationSettings {
 
     public String connectionString;
     public PreviewConfiguration preview = new PreviewConfiguration();
+
+    public enum SpanProcessorMatchType {
+        STRICT, REGEXP, UNDEFINED
+    }
+
+    public enum SpanProcessorActionType {
+        INSERT, UPDATE, DELETE, HASH
+    }
 
     public static class PreviewConfiguration {
 
@@ -85,32 +92,41 @@ public class InstrumentationSettings {
         public String display;
     }
 
-    public enum SpanProcessorMatchType {
-        STRICT,REGEXP
-    }
-
-    public enum SpanProcessorActionType {
-        INSERT,UPDATE,DELETE,HASH
-    }
-
     public static class SpanProcessorConfig {
         public SpanProcessorIncludeExclude include;
         public SpanProcessorIncludeExclude exclude;
         public List<SpanProcessorAction> actions;
+
+        public boolean isValid() {
+            if (actions == null || actions.isEmpty()) {
+                return false;
+            }
+            if (include != null && !include.isValid()) {
+                return false;
+            }
+            if (exclude != null && !exclude.isValid()) {
+                return false;
+            }
+            for (SpanProcessorAction action : actions) {
+                if (!action.isValid()) return false;
+            }
+            return true;
+        }
     }
 
     public static class SpanProcessorIncludeExclude {
         public SpanProcessorMatchType matchType;
         public List<String> spanNames;
-        // attributes
+        //All of these attributes must match exactly for a match to occur
+        //Only match_type=strict is allowed if "attributes" are specified.
         public List<SpanProcessorAttribute> attributes;
 
         public boolean isValid() {
-            if(this.matchType == null) return false;
-            if(this.spanNames==null && this.attributes==null) return false;
-            if(this.attributes !=null) {
-                for(SpanProcessorAttribute attribute:this.attributes) {
-                    if(attribute.key==null) return false;
+            if (this.matchType == null) return false;
+            if (this.spanNames == null && this.attributes == null) return false;
+            if (this.attributes != null) {
+                for (SpanProcessorAttribute attribute : this.attributes) {
+                    if (attribute.key == null) return false;
                 }
             }
             return true;
@@ -129,10 +145,10 @@ public class InstrumentationSettings {
         public String fromAttribute;
 
         public boolean isValid() {
-            if(this.key == null) return false;
-            if(this.action == null) return false;
-            if(this.action == SpanProcessorActionType.INSERT || this.action == SpanProcessorActionType.UPDATE) {
-                if(this.value == null && this.fromAttribute == null) return false;
+            if (this.key == null) return false;
+            if (this.action == null) return false;
+            if (this.action == SpanProcessorActionType.INSERT || this.action == SpanProcessorActionType.UPDATE) {
+                return this.value != null || this.fromAttribute != null;
             }
             return true;
         }

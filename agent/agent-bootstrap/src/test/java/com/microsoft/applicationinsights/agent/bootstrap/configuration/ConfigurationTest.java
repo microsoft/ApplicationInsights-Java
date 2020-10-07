@@ -28,6 +28,13 @@ public class ConfigurationTest {
     @Rule
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
+    private static Configuration loadConfiguration() throws IOException {
+        CharSource json = Resources.asCharSource(Resources.getResource("ApplicationInsights.json"), Charsets.UTF_8);
+        Moshi moshi = new Moshi.Builder().build();
+        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+        return jsonAdapter.fromJson(json.read());
+    }
+
     @Test
     public void shouldParse() throws IOException {
         Configuration configuration = loadConfiguration();
@@ -65,21 +72,21 @@ public class ConfigurationTest {
         PreviewConfiguration preview = instrumentationSettings.preview;
 
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", instrumentationSettings.connectionString);
-        assertEquals(3,preview.spanProcessors.keySet().size());
+        assertEquals(3, preview.spanProcessors.keySet().size());
         // insert config test
-        SpanProcessorConfig insertConfig=preview.spanProcessors.get("attributes/insert");
+        SpanProcessorConfig insertConfig = preview.spanProcessors.get("attributes/insert");
         assertEquals(SpanProcessorActionType.INSERT, insertConfig.actions.get(0).action);
         assertEquals("123", insertConfig.actions.get(0).value);
         assertEquals("attribute1", insertConfig.actions.get(0).key);
         assertEquals("anotherkey", insertConfig.actions.get(1).fromAttribute);
         //update config test
-        SpanProcessorConfig updateConfig=preview.spanProcessors.get("attributes/update");
+        SpanProcessorConfig updateConfig = preview.spanProcessors.get("attributes/update");
         assertEquals(SpanProcessorActionType.UPDATE, updateConfig.actions.get(0).action);
         assertEquals("boo", updateConfig.actions.get(0).key);
         assertEquals("foo", updateConfig.actions.get(0).fromAttribute);
         assertEquals("db.secret", updateConfig.actions.get(1).key);
         // selective processing test
-        SpanProcessorConfig selectiveConfig=preview.spanProcessors.get("attributes/selectiveprocessing");
+        SpanProcessorConfig selectiveConfig = preview.spanProcessors.get("attributes/selectiveprocessing");
         assertEquals(SpanProcessorMatchType.STRICT, selectiveConfig.include.matchType);
         assertEquals(2, selectiveConfig.include.spanNames.size());
         assertEquals("svcA", selectiveConfig.include.spanNames.get(0));
@@ -93,8 +100,6 @@ public class ConfigurationTest {
 
 
     }
-
-
 
     @Test
     public void shouldUseDefaults() throws IOException {
@@ -157,12 +162,5 @@ public class ConfigurationTest {
         reader.setLenient(true);
         JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
         return jsonAdapter.fromJson(reader);
-    }
-
-    private static Configuration loadConfiguration() throws IOException {
-        CharSource json = Resources.asCharSource(Resources.getResource("ApplicationInsights.json"), Charsets.UTF_8);
-        Moshi moshi = new Moshi.Builder().build();
-        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
-        return jsonAdapter.fromJson(json.read());
     }
 }
