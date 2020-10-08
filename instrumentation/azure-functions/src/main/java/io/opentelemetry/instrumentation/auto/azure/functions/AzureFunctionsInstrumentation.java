@@ -103,7 +103,8 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
           AiConnectionString.setConnectionString(connectionString);
           // TODO to be deleted later once the testing is completed
           log.debug("Lazily set the connection string for Azure Function Linux Consumption Plan" + connectionString);
-        } else { // if connection string is null or empty, we will use the default connection string
+        } else {
+          // if the instrumentation key is neither null nor empty , we will create a default connection string based on the instrumentation key.
           log.warn("Connection string is null or empty for Azure Function Linux Consumption Plan.");
           String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
           if (!Strings.isNullOrEmpty(instrumentationKey)) {
