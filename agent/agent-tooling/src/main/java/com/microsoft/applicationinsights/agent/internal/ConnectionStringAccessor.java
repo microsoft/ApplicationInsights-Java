@@ -21,26 +21,27 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
+import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AppIdSupplier implements AiAppId.Supplier {
+public class ConnectionStringAccessor implements AiConnectionString.Accessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppIdSupplier.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConnectionStringAccessor.class);
 
-    public String get() {
+    @Override public boolean hasValue() {
+        //check for instrumentation key value is sufficient here because it's updated each time when the connection string is updated.
         String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey, TelemetryConfiguration.getActive());
+        logger.debug("check if the instrumentation key has been set or not: [" + instrumentationKey + "]");
+        return !Strings.isNullOrEmpty(instrumentationKey);
+    }
 
-        //it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just
-        //return and let the next request resolve the ikey.
-        if (appId == null) {
-            logger.debug("Application correlation Id could not be retrieved (e.g. task may be pending or failed)");
-            return "";
+    @Override public void setValue(String value) {
+        if (!Strings.isNullOrEmpty(value)) {
+            logger.debug("lazily setting the connection string " + value);
+            TelemetryConfiguration.getActive().setConnectionString(value);
         }
-        return appId;
     }
 }
