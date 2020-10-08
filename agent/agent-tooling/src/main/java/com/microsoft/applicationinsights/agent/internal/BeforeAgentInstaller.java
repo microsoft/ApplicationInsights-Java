@@ -109,7 +109,7 @@ public class BeforeAgentInstaller {
             if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
                 throw new ConfigurationException("No connection string or instrumentation key provided");
             }
-            startupLogger.warn("It's in Azure Function runtime. instrumentation key is null or empty");
+            startupLogger.info("It's in Azure Function runtime. instrumentation key is null or empty");
         }
 
         Properties properties = new Properties();
