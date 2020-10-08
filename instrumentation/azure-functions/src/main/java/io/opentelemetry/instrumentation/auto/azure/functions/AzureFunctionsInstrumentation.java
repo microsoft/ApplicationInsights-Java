@@ -98,6 +98,8 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
      * Need to set this connection string lazily when it becomes available.
      */
     private static void lazilySetConnectionString() {
+      // race condition (two initial requests happening at the same time) is not a worry here
+      // because at worst they both enter the condition below and update the connection string
       if (!AiConnectionString.hasConnectionString()) {
         String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
         if (!Strings.isNullOrEmpty(connectionString)) {
