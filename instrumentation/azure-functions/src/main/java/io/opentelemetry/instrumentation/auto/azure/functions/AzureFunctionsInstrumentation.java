@@ -24,10 +24,10 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
@@ -97,10 +97,10 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
      * Need to set this connection string lazily when it becomes available.
      */
     private static void lazilySetConnectionString() {
-      if (!hasConnectionString()) {
+      if (!AiConnectionString.hasConnectionString()) {
         String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
         if (connectionString != null && !connectionString.isEmpty()) {
-          TelemetryConfiguration.getActive().setConnectionString(connectionString);
+          AiConnectionString.setConnectionString(connectionString);
           // TODO to be deleted later once the testing is completed
           log.debug("Lazily set the connection string for Azure Function Linux Consumption Plan" + connectionString);
         } else {
@@ -110,10 +110,6 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
         // TODO to be deleted later once the testing is completed
         log.debug("Connection string has already been set.");
       }
-    }
-
-    private static boolean hasConnectionString() {
-      return TelemetryConfiguration.getActive().getConnectionString() != null && !TelemetryConfiguration.getActive().getConnectionString().isEmpty();
     }
   }
 }
