@@ -24,6 +24,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
@@ -36,9 +37,13 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoService(Instrumenter.class)
 public class AzureFunctionsInstrumentation extends Instrumenter.Default {
+
+  private static final Logger log = LoggerFactory.getLogger(AzureFunctionsInstrumentation.class);
 
   public AzureFunctionsInstrumentation() {
     super("azure-functions");
@@ -69,7 +74,7 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static Scope methodEnter(@Advice.Argument(0) final Object request)
         throws ReflectiveOperationException {
-
+      lazilySetConnectionString();
       final Object traceContext =
           InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
 
@@ -85,6 +90,30 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
     public static void methodExit(@Advice.Enter final Scope scope) {
       scope.close();
+    }
+
+    /**
+     * Azure Function Linux with consumption plan doesn't come with 'APPLICATIONINSIGHTS_CONNECTION_STRING' env variable during the initialization.
+     * Need to set this connection string lazily when it becomes available.
+     */
+    private static void lazilySetConnectionString() {
+      if (!hasConnectionString()) {
+        String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
+        if (connectionString != null && !connectionString.isEmpty()) {
+          TelemetryConfiguration.getActive().setConnectionString(connectionString);
+          // TODO to be deleted later once the testing is completed
+          log.debug("Lazily set the connection string for Azure Function Linux Consumption Plan" + connectionString);
+        } else {
+          log.warn("Environment variable 'APPLICATIONINSIGHTS_CONNECTION_STRING' is null or empty for Azure Function Linux Consumption Plan.");
+        }
+      } else {
+        // TODO to be deleted later once the testing is completed
+        log.debug("Connection string has already been set.");
+      }
+    }
+
+    private static boolean hasConnectionString() {
+      return TelemetryConfiguration.getActive().getConnectionString() != null && !TelemetryConfiguration.getActive().getConnectionString().isEmpty();
     }
   }
 }
