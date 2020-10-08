@@ -23,30 +23,28 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-public class ExampleExporter implements SpanExporter {
+public class ExporterWithSpanProcessors implements SpanExporter {
 
     private final SpanExporter delegate;
     private final boolean validConfigFlag;
     private SpanProcessorIncludeExclude include;
     private SpanProcessorIncludeExclude exclude;
-    private List<SpanProcessorAction> insertActions;
-    private List<SpanProcessorAction> otherActions;
-    private List<Pattern> SpanProcessorIncludePatternMatchers;
-    private List<Pattern> SpanProcessorExcludePatternMatchers;
+    private final List<SpanProcessorAction> insertActions = new ArrayList<>();
+    private final List<SpanProcessorAction> otherActions = new ArrayList<>();
+    private final List<Pattern> includeSpanNamePatterns = new ArrayList<>();
+    private final List<Pattern> excludeSpanNamePatterns = new ArrayList<>();
 
 
-    public ExampleExporter(SpanProcessorConfig config, SpanExporter delegate) {
+    public ExporterWithSpanProcessors(SpanProcessorConfig config, SpanExporter delegate) {
         this.validConfigFlag = config.isValid();
         this.delegate = delegate;
         if (this.validConfigFlag) {
             this.include = config.include != null ? normalizeSpanProcessorIncludeExclude(config.include) : getDefaultSpanProcessorIncludeExclude();
             this.exclude = config.exclude != null ? normalizeSpanProcessorIncludeExclude(config.exclude) : getDefaultSpanProcessorIncludeExclude();
-            this.insertActions = new ArrayList<>();
-            this.otherActions = new ArrayList<>();
             if (config.actions != null) {
                 for (SpanProcessorAction spanProcessorAction : config.actions) {
 
-                    if (spanProcessorAction.action == SpanProcessorActionType.INSERT) {
+                    if (spanProcessorAction.action == SpanProcessorActionType.insert) {
                         this.insertActions.add(spanProcessorAction);
                     } else {
                         this.otherActions.add(spanProcessorAction);
@@ -55,29 +53,74 @@ public class ExampleExporter implements SpanExporter {
                 }
             }
 
-            if (this.include.matchType == SpanProcessorMatchType.REGEXP) {
-                this.SpanProcessorIncludePatternMatchers = new ArrayList<>();
+            if (this.include.matchType == SpanProcessorMatchType.regexp) {
                 for (String regex : this.include.spanNames) {
-                    this.SpanProcessorIncludePatternMatchers.add(Pattern.compile(regex));
+                    this.includeSpanNamePatterns.add(Pattern.compile(regex));
                 }
             }
-            if (this.exclude.matchType == SpanProcessorMatchType.REGEXP) {
-                this.SpanProcessorExcludePatternMatchers = new ArrayList<>();
+            if (this.exclude.matchType == SpanProcessorMatchType.regexp) {
                 for (String regex : this.exclude.spanNames) {
-                    this.SpanProcessorExcludePatternMatchers.add(Pattern.compile(regex));
+                    this.excludeSpanNamePatterns.add(Pattern.compile(regex));
                 }
             }
         }
     }
 
+    private static boolean checkAttributes(SpanProcessorIncludeExclude includeExclude, SpanData span) {
+        for (SpanProcessorAttribute attribute : includeExclude.attributes) {
+            //All of these attributes must match exactly for a match to occur.
+            if (span.getAttributes().get(attribute.key) != null) {
+                //found a match
+                if (attribute.value != null) {
+                    AttributeValue existingAttributeValue = span.getAttributes().get(attribute.key);
+                    if (existingAttributeValue.getType() != Type.STRING || !existingAttributeValue.getStringValue().equals(attribute.value)) {
+                        return false;
+                        // value mismatch found.
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isMatch(SpanProcessorIncludeExclude includeExclude, SpanData span, List<Pattern> spanNamePatterns) {
+        if (includeExclude.matchType == SpanProcessorMatchType.strict) {
+            if (!includeExclude.spanNames.isEmpty()) {
+                if (!includeExclude.spanNames.contains(span.getName())) {
+                    //match found
+                    return false;
+                }
+            }
+            return checkAttributes(includeExclude, span);
+        } else {
+            boolean matchFound = false;
+            if (!spanNamePatterns.isEmpty()) {
+                for (Pattern pattern : spanNamePatterns) {
+                    if (pattern.matcher(span.getName()).find()) {
+                        matchFound = true;
+                        break;
+                    }
+                }
+            } else {
+                matchFound = true;
+            }
+            if (!matchFound) return false;
+            return checkAttributes(includeExclude, span);
+        }
+
+    }
+
     private SpanProcessorIncludeExclude getDefaultSpanProcessorIncludeExclude() {
         SpanProcessorIncludeExclude includeExcludeObj = new SpanProcessorIncludeExclude();
-        includeExcludeObj.matchType = SpanProcessorMatchType.UNDEFINED;
+        includeExcludeObj.matchType = null;
         includeExcludeObj.spanNames = new ArrayList<>();
         includeExcludeObj.attributes = new ArrayList<>();
         return includeExcludeObj;
     }
 
+    // normalizes null lists to empty lists
     private SpanProcessorIncludeExclude normalizeSpanProcessorIncludeExclude(SpanProcessorIncludeExclude includeExcludeFromConfig) {
         SpanProcessorIncludeExclude includeExcludeObj = new SpanProcessorIncludeExclude();
         includeExcludeObj.matchType = includeExcludeFromConfig.matchType;
@@ -110,31 +153,29 @@ public class ExampleExporter implements SpanExporter {
 
     private SpanData process(SpanData span) {
 
-        String spanName = span.getName();
+
         ReadableAttributes existingSpanAttributes = span.getAttributes();
-        SpanData updatedSpan = null;
         boolean includeFlag = true;//Flag to check if the span is included in processing
         boolean excludeFlag = false;//Flag to check if the span is excluded in processing
 
-        if (this.include.matchType != SpanProcessorMatchType.UNDEFINED) {
-            //includeFlag = checkIncludes(this.include, existingSpanAttributes, spanName);
-            includeFlag = checkIncludesExcludes(this.include, existingSpanAttributes, spanName, true);
+        if (this.include.matchType != null) {
+
+            includeFlag = isMatch(this.include, span, this.includeSpanNamePatterns);
         }
 
         if (!includeFlag) return span;//If Not included we can skip further processing
 
-        if (this.exclude.matchType != SpanProcessorMatchType.UNDEFINED) {
-            // excludeFlag = checkExcludes(this.exclude, existingSpanAttributes, spanName);
-            excludeFlag = checkIncludesExcludes(this.exclude, existingSpanAttributes, spanName, false);
+        if (this.exclude.matchType != null) {
+
+            excludeFlag = isMatch(this.exclude, span, this.excludeSpanNamePatterns);
         }
 
         if (includeFlag && !excludeFlag) {
-            updatedSpan = processOtherActions(span, existingSpanAttributes);
-            updatedSpan = processInsertActions(updatedSpan, existingSpanAttributes);
+            SpanData updatedSpan = processOtherActions(span, existingSpanAttributes);
+            return processInsertActions(updatedSpan, existingSpanAttributes);
+
         }
-        if (updatedSpan != null) {
-            return updatedSpan;
-        }
+
         return span;
     }
 
@@ -177,7 +218,7 @@ public class ExampleExporter implements SpanExporter {
                 for (SpanProcessorAction actionObj : _otherActions) {
                     if (actionObj.key.equals(key)) {
                         switch (actionObj.action) {
-                            case UPDATE:
+                            case update:
                                 if (actionObj.value != null) {
                                     builder.setAttribute(actionObj.key, actionObj.value);
                                     updatedFlag = true;
@@ -189,10 +230,10 @@ public class ExampleExporter implements SpanExporter {
                                     }
                                 }
                                 break;
-                            case DELETE:
+                            case delete:
                                 // Return without copying the existing span attribute
                                 return;
-                            case HASH:
+                            case hash:
                                 AttributeValue existingSpanAttributeValue = existingSpanAttributes.get(actionObj.key);
                                 if (existingSpanAttributeValue != null) {
                                     // Currently we only support String
@@ -228,52 +269,6 @@ public class ExampleExporter implements SpanExporter {
             return value;
         }
     }
-
-    private boolean checkAttributes(SpanProcessorIncludeExclude includeExclude, ReadableAttributes existingSpanAttributes, String spanName) {
-        for (SpanProcessorAttribute attribute : includeExclude.attributes) {
-            //All of these attributes must match exactly for a match to occur.
-            if (existingSpanAttributes.get(attribute.key) != null) {
-                //found a match
-                if (attribute.value != null) {
-                    AttributeValue existingAttributeValue = existingSpanAttributes.get(attribute.key);
-                    if (existingAttributeValue.getType() != Type.STRING || !existingAttributeValue.getStringValue().equals(attribute.value)) {
-                        return false;
-                        // value mismatch found.
-                    }
-                }
-            } else {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean checkIncludesExcludes(SpanProcessorIncludeExclude includeExclude, ReadableAttributes existingSpanAttributes, String spanName, boolean isIncludeObject) {
-        if (includeExclude.matchType == SpanProcessorMatchType.STRICT) {
-            if (!includeExclude.spanNames.isEmpty()) {
-                if (!includeExclude.spanNames.contains(spanName)) {
-                    //match found
-                    return false;
-                }
-            }
-            return checkAttributes(includeExclude, existingSpanAttributes, spanName);
-        } else if (includeExclude.matchType == SpanProcessorMatchType.REGEXP) {
-            boolean matchFound = false;
-            List<Pattern> patternMatchers = isIncludeObject ? this.SpanProcessorIncludePatternMatchers : this.SpanProcessorExcludePatternMatchers;
-            if (patternMatchers != null) {
-                for (Pattern pattern : patternMatchers) {
-                    if (pattern.matcher(spanName).find()) {
-                        matchFound = true;
-                        break;
-                    }
-                }
-            }
-            if (!matchFound) return false;
-            return checkAttributes(includeExclude, existingSpanAttributes, spanName);
-        }
-        return isIncludeObject;
-    }
-
 
     @Override
     public CompletableResultCode flush() {

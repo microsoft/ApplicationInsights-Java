@@ -75,28 +75,28 @@ public class ConfigurationTest {
         assertEquals(3, preview.spanProcessors.keySet().size());
         // insert config test
         SpanProcessorConfig insertConfig = preview.spanProcessors.get("attributes/insert");
-        assertEquals(SpanProcessorActionType.INSERT, insertConfig.actions.get(0).action);
+        assertEquals(SpanProcessorActionType.insert, insertConfig.actions.get(0).action);
         assertEquals("123", insertConfig.actions.get(0).value);
         assertEquals("attribute1", insertConfig.actions.get(0).key);
         assertEquals("anotherkey", insertConfig.actions.get(1).fromAttribute);
         //update config test
         SpanProcessorConfig updateConfig = preview.spanProcessors.get("attributes/update");
-        assertEquals(SpanProcessorActionType.UPDATE, updateConfig.actions.get(0).action);
+        assertEquals(SpanProcessorActionType.update, updateConfig.actions.get(0).action);
         assertEquals("boo", updateConfig.actions.get(0).key);
         assertEquals("foo", updateConfig.actions.get(0).fromAttribute);
         assertEquals("db.secret", updateConfig.actions.get(1).key);
         // selective processing test
         SpanProcessorConfig selectiveConfig = preview.spanProcessors.get("attributes/selectiveprocessing");
-        assertEquals(SpanProcessorMatchType.STRICT, selectiveConfig.include.matchType);
+        assertEquals(SpanProcessorMatchType.strict, selectiveConfig.include.matchType);
         assertEquals(2, selectiveConfig.include.spanNames.size());
         assertEquals("svcA", selectiveConfig.include.spanNames.get(0));
-        assertEquals(SpanProcessorMatchType.STRICT, selectiveConfig.exclude.matchType);
+        assertEquals(SpanProcessorMatchType.strict, selectiveConfig.exclude.matchType);
         assertEquals(1, selectiveConfig.exclude.attributes.size());
         assertEquals("redact_trace", selectiveConfig.exclude.attributes.get(0).key);
         assertEquals("false", selectiveConfig.exclude.attributes.get(0).value);
         assertEquals(2, selectiveConfig.actions.size());
         assertEquals("credit_card", selectiveConfig.actions.get(0).key);
-        assertEquals(SpanProcessorActionType.DELETE, selectiveConfig.actions.get(0).action);
+        assertEquals(SpanProcessorActionType.delete, selectiveConfig.actions.get(0).action);
 
 
     }

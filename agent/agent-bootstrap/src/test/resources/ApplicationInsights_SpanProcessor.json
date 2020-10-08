@@ -9,12 +9,12 @@
             {
               "key": "attribute1",
               "value": "123",
-              "action": "INSERT"
+              "action": "insert"
             },
             {
               "key": "string key",
               "fromAttribute": "anotherkey",
-              "action": "INSERT"
+              "action": "insert"
             }
           ]
         },
@@ -23,25 +23,25 @@
             {
               "key": "boo",
               "fromAttribute": "foo",
-              "action": "UPDATE"
+              "action": "update"
             },
             {
               "key": "db.secret",
               "value": "redacted",
-              "action": "UPDATE"
+              "action": "update"
             }
           ]
         },
         "attributes/selectiveprocessing": {
           "include":{
-            "matchType":"STRICT",
+            "matchType":"strict",
             "spanNames":[
               "svcA",
               "svcB"
             ]
           },
           "exclude":{
-            "matchType":"STRICT",
+            "matchType":"strict",
             "attributes":[
               {
                 "key":"redact_trace",
@@ -52,11 +52,11 @@
           "actions":[
             {
               "key":"credit_card",
-              "action":"DELETE"
+              "action":"delete"
             },
             {
               "key":"duplicate_key",
-              "action":"DELETE"
+              "action":"delete"
             }
           ]
         }

@@ -34,11 +34,13 @@ public class InstrumentationSettings {
     public PreviewConfiguration preview = new PreviewConfiguration();
 
     public enum SpanProcessorMatchType {
-        STRICT, REGEXP, UNDEFINED
+        //Moshi JSON builder donot allow case insensitive mapping
+        strict, regexp
     }
 
     public enum SpanProcessorActionType {
-        INSERT, UPDATE, DELETE, HASH
+        //Moshi JSON builder donot allow case insensitive mapping
+        insert, update, delete, hash
     }
 
     public static class PreviewConfiguration {
@@ -147,55 +149,10 @@ public class InstrumentationSettings {
         public boolean isValid() {
             if (this.key == null) return false;
             if (this.action == null) return false;
-            if (this.action == SpanProcessorActionType.INSERT || this.action == SpanProcessorActionType.UPDATE) {
+            if (this.action == SpanProcessorActionType.insert || this.action == SpanProcessorActionType.update) {
                 return this.value != null || this.fromAttribute != null;
             }
             return true;
         }
     }
-
-//"spanprocessors": {
-//
-//      # The following demonstrates specifying the set of span properties to
-//      # indicate which spans this processor should be applied to. The `include` of
-//      # properties say which ones should be included and the `exclude` properties
-//      # further filter out spans that shouldn't be processed.
-//      # Ex. The following are spans match the properties and the actions are applied.
-//      # Note this span is processed because the value type of redact_trace is a string instead of a boolean.
-//      # Span1 Name: 'svcB' Attributes: {env: production, test_request: 123, credit_card: 1234, redact_trace: "false"}
-//      # Span2 Name: 'svcA' Attributes: {env: staging, test_request: false, redact_trace: true}
-//      # The following span does not match the include properties and the
-//      # processor actions are not applied.
-//      # Span3 Name: 'svcB' Attributes: {env: production, test_request: true, credit_card: 1234, redact_trace: false}
-//      # Span4 Name: 'svcC' Attributes: {env: dev, test_request: false}
-//
-//        "attributes/selectiveprocessing": {
-//            "include": {
-//                "match_type": "strict",
-//                        "services": [
-//                "svcA",
-//                        "svcB"
-//            ]
-//            },
-//            "exclude": {
-//                "match_type": "strict",
-//                        "attributes": [
-//                {
-//                    "key": "redact_trace",
-//                        "value": false
-//                }
-//            ]
-//            },
-//            "actions": [
-//            {
-//                "key": "credit_card",
-//                    "action": "delete"
-//            },
-//            {
-//                "key": "duplicate_key",
-//                    "action": "delete"
-//            }
-//          ]
-//        },
-
 }

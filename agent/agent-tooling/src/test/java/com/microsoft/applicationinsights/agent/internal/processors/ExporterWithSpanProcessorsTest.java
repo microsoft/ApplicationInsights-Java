@@ -19,14 +19,14 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-public class ExampleExporterTest {
+public class ExporterWithSpanProcessorsTest {
 
 
     @Test
     public void noActionTest() {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
@@ -50,15 +50,15 @@ public class ExampleExporterTest {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
         config.include = new SpanProcessorIncludeExclude();
-        config.include.matchType = SpanProcessorMatchType.STRICT;
+        config.include.matchType = SpanProcessorMatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.UPDATE;
+        action.action = SpanProcessorActionType.update;
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
@@ -82,15 +82,15 @@ public class ExampleExporterTest {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
         config.include = new SpanProcessorIncludeExclude();
-        config.include.matchType = SpanProcessorMatchType.STRICT;
+        config.include.matchType = SpanProcessorMatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.UPDATE;
+        action.action = SpanProcessorActionType.update;
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
@@ -116,11 +116,11 @@ public class ExampleExporterTest {
         SpanProcessorConfig config = new SpanProcessorConfig();
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.DELETE;
+        action.action = SpanProcessorActionType.delete;
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
@@ -151,11 +151,11 @@ public class ExampleExporterTest {
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testNewKey";
         action.value = "testNewValue";
-        action.action = SpanProcessorActionType.INSERT;
+        action.action = SpanProcessorActionType.insert;
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
@@ -185,16 +185,16 @@ public class ExampleExporterTest {
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testNewKey";
         action.value = "testNewValue";
-        action.action = SpanProcessorActionType.INSERT;
+        action.action = SpanProcessorActionType.insert;
         SpanProcessorAction updateAction = new SpanProcessorAction();
         updateAction.key = "testKey";
         updateAction.value = "testNewValue2";
-        updateAction.action = SpanProcessorActionType.UPDATE;
+        updateAction.action = SpanProcessorActionType.update;
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         actions.add(updateAction);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
@@ -225,11 +225,11 @@ public class ExampleExporterTest {
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
         action.value = "testNewValue";
-        action.action = SpanProcessorActionType.INSERT;
+        action.action = SpanProcessorActionType.insert;
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
@@ -259,12 +259,12 @@ public class ExampleExporterTest {
         SpanProcessorConfig config = new SpanProcessorConfig();
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.UPDATE;
+        action.action = SpanProcessorActionType.update;
         action.value = "redacted";
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
@@ -291,12 +291,12 @@ public class ExampleExporterTest {
         SpanProcessorConfig config = new SpanProcessorConfig();
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.UPDATE;
+        action.action = SpanProcessorActionType.update;
         action.fromAttribute = "testKey2";
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
@@ -323,16 +323,16 @@ public class ExampleExporterTest {
         SpanProcessorConfig config = new SpanProcessorConfig();
         SpanProcessorAction updateAction = new SpanProcessorAction();
         updateAction.key = "testKey";
-        updateAction.action = SpanProcessorActionType.UPDATE;
+        updateAction.action = SpanProcessorActionType.update;
         updateAction.value = "redacted";
         SpanProcessorAction deleteAction = new SpanProcessorAction();
         deleteAction.key = "testKey2";
-        deleteAction.action = SpanProcessorActionType.DELETE;
+        deleteAction.action = SpanProcessorActionType.delete;
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(updateAction);
         actions.add(deleteAction);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
@@ -359,16 +359,16 @@ public class ExampleExporterTest {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
         config.include = new SpanProcessorIncludeExclude();
-        config.include.matchType = SpanProcessorMatchType.STRICT;
+        config.include.matchType = SpanProcessorMatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.UPDATE;
+        action.action = SpanProcessorActionType.update;
         action.value = "redacted";
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
@@ -416,16 +416,16 @@ public class ExampleExporterTest {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
         config.include = new SpanProcessorIncludeExclude();
-        config.include.matchType = SpanProcessorMatchType.REGEXP;
+        config.include.matchType = SpanProcessorMatchType.regexp;
         config.include.spanNames = Arrays.asList("svc.*", "test.*");
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.UPDATE;
+        action.action = SpanProcessorActionType.update;
         action.value = "redacted";
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
@@ -473,15 +473,15 @@ public class ExampleExporterTest {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
         config.include = new SpanProcessorIncludeExclude();
-        config.include.matchType = SpanProcessorMatchType.STRICT;
+        config.include.matchType = SpanProcessorMatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB", "svcC");
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.HASH;
+        action.action = SpanProcessorActionType.hash;
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
@@ -529,16 +529,16 @@ public class ExampleExporterTest {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
         config.exclude = new SpanProcessorIncludeExclude();
-        config.exclude.matchType = SpanProcessorMatchType.STRICT;
+        config.exclude.matchType = SpanProcessorMatchType.strict;
         config.exclude.spanNames = Arrays.asList("svcA", "svcB");
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.UPDATE;
+        action.action = SpanProcessorActionType.update;
         action.value = "redacted";
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
@@ -586,16 +586,16 @@ public class ExampleExporterTest {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
         config.exclude = new SpanProcessorIncludeExclude();
-        config.exclude.matchType = SpanProcessorMatchType.REGEXP;
+        config.exclude.matchType = SpanProcessorMatchType.regexp;
         config.exclude.spanNames = Arrays.asList("svc.*");
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.UPDATE;
+        action.action = SpanProcessorActionType.update;
         action.value = "redacted";
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
@@ -645,7 +645,7 @@ public class ExampleExporterTest {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
         config.include = new SpanProcessorIncludeExclude();
-        config.include.matchType = SpanProcessorMatchType.STRICT;
+        config.include.matchType = SpanProcessorMatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
         config.include.attributes = new ArrayList<>();
         SpanProcessorAttribute attributeWithValue = new SpanProcessorAttribute();
@@ -657,11 +657,11 @@ public class ExampleExporterTest {
         config.include.attributes.add(attributeWithNoValue);
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.DELETE;
+        action.action = SpanProcessorActionType.delete;
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
@@ -709,7 +709,7 @@ public class ExampleExporterTest {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
         config.exclude = new SpanProcessorIncludeExclude();
-        config.exclude.matchType = SpanProcessorMatchType.STRICT;
+        config.exclude.matchType = SpanProcessorMatchType.strict;
         config.exclude.spanNames = Arrays.asList("svcA", "svcB");
         config.exclude.attributes = new ArrayList<>();
         SpanProcessorAttribute attributeWithValue = new SpanProcessorAttribute();
@@ -721,11 +721,11 @@ public class ExampleExporterTest {
         config.exclude.attributes.add(attributeWithNoValue);
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
-        action.action = SpanProcessorActionType.DELETE;
+        action.action = SpanProcessorActionType.delete;
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
@@ -777,9 +777,9 @@ public class ExampleExporterTest {
         SpanProcessorConfig config = new SpanProcessorConfig();
         config.include = new SpanProcessorIncludeExclude();
         config.exclude = new SpanProcessorIncludeExclude();
-        config.include.matchType = SpanProcessorMatchType.STRICT;
+        config.include.matchType = SpanProcessorMatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
-        config.exclude.matchType = SpanProcessorMatchType.STRICT;
+        config.exclude.matchType = SpanProcessorMatchType.strict;
         config.exclude.attributes = new ArrayList<>();
         SpanProcessorAttribute attributeWithValue = new SpanProcessorAttribute();
         attributeWithValue.key = "testKey";
@@ -787,11 +787,11 @@ public class ExampleExporterTest {
         config.exclude.attributes.add(attributeWithValue);
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey2";
-        action.action = SpanProcessorActionType.DELETE;
+        action.action = SpanProcessorActionType.delete;
         List<SpanProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExampleExporter(config, mockExporter);
+        SpanExporter exampleExporter = new ExporterWithSpanProcessors(config, mockExporter);
 
         Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
