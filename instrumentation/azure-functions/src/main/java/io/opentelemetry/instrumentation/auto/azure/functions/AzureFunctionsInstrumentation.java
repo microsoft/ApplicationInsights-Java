@@ -24,6 +24,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
+import com.google.common.base.Strings;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
