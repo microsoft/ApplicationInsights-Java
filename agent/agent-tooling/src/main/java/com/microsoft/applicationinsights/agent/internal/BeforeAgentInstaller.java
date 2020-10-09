@@ -119,7 +119,7 @@ public class BeforeAgentInstaller {
 
         Properties properties = new Properties();
         properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
-        properties.put("experimental.log.capture.threshold", getLoggingThreshold(config, "INFO"));
+        properties.put("experimental.log.capture.threshold", getLoggingThreshold(config, "DEBUG"));
         properties.put("micrometer.step.millis", Integer.toString(getMicrometerReportingIntervalMillis(config, 60000)));
         if (!isInstrumentationEnabled(config, "micrometer")) {
             properties.put("ota.integration.micrometer.enabled", "false");
