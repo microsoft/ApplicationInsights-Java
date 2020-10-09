@@ -44,8 +44,6 @@ import org.slf4j.LoggerFactory;
 @AutoService(Instrumenter.class)
 public class AzureFunctionsInstrumentation extends Instrumenter.Default {
 
-  private static final Logger log = LoggerFactory.getLogger(AzureFunctionsInstrumentation.class);
-
   public AzureFunctionsInstrumentation() {
     super("azure-functions");
   }
@@ -57,6 +55,7 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
 
   @Override
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
+    System.out.println("######### transformers starts ########");
     return singletonMap(
         isMethod()
             .and(named("execute"))
@@ -75,7 +74,7 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static Scope methodEnter(@Advice.Argument(0) final Object request)
         throws ReflectiveOperationException {
-      log.debug("######### start intercepting AzureFunction specialization request");
+      System.out.println("######### start intercepting AzureFunction specialization request");
       lazilySetConnectionString();
       final Object traceContext =
           InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
@@ -101,16 +100,16 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
     private static void lazilySetConnectionString() {
       // race condition (two initial requests happening at the same time) is not a worry here
       // because at worst they both enter the condition below and update the connection string
-      log.debug("######### start lazilySetConnectionString");
+      System.out.println("######### start lazilySetConnectionString");
       if (!AiConnectionString.hasConnectionString()) {
         String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
         if (!Strings.isNullOrEmpty(connectionString)) {
           AiConnectionString.setConnectionString(connectionString);
           // TODO to be deleted later once the testing is completed
-          log.debug("######### Lazily set the connection string for Azure Function Linux Consumption Plan" + connectionString);
+          System.out.println("######### Lazily set the connection string for Azure Function Linux Consumption Plan" + connectionString);
         } else {
           // if the instrumentation key is neither null nor empty , we will create a default connection string based on the instrumentation key.
-          log.warn("######### Connection string is null or empty for Azure Function Linux Consumption Plan.");
+          System.out.println("######### Connection string is null or empty for Azure Function Linux Consumption Plan.");
           String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
           if (!Strings.isNullOrEmpty(instrumentationKey)) {
             AiConnectionString.setConnectionString("InstrumentationKey=" + instrumentationKey);
@@ -118,10 +117,10 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
         }
       } else {
         // TODO to be deleted later once the testing is completed
-        log.debug("######### Connection string has already been set.");
+        System.out.println("######### Connection string has already been set.");
       }
 
-      log.debug("######### end lazilySetConnectionString");
+      System.out.println("######### end lazilySetConnectionString");
     }
   }
 }
