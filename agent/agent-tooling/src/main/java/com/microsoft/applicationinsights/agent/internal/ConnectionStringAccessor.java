@@ -31,17 +31,23 @@ public class ConnectionStringAccessor implements AiConnectionString.Accessor {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectionStringAccessor.class);
 
+    public ConnectionStringAccessor() {
+        logger.debug("########### create a new instance of ConnectionStringAccessor!!!!");
+    }
+
     @Override public boolean hasValue() {
         //check for instrumentation key value is sufficient here because it's updated each time when the connection string is updated.
         String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        logger.debug("check if the instrumentation key has been set or not: [" + instrumentationKey + "]");
+        logger.debug("########### check if the instrumentation key has been set or not: [" + instrumentationKey + "]");
         return !Strings.isNullOrEmpty(instrumentationKey);
     }
 
     @Override public void setValue(String value) {
         if (!Strings.isNullOrEmpty(value)) {
-            logger.debug("lazily setting the connection string " + value);
+            logger.debug("########### lazily setting the connection string " + value);
             TelemetryConfiguration.getActive().setConnectionString(value);
+        } else {
+            logger.error("###########" + value + " is null or empty");
         }
     }
 }
