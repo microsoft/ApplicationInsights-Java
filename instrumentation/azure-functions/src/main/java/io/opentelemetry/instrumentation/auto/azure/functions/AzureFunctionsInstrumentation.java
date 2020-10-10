@@ -38,8 +38,6 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @AutoService(Instrumenter.class)
 public class AzureFunctionsInstrumentation extends Instrumenter.Default {
@@ -75,29 +73,6 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
     public static Scope methodEnter(@Advice.Argument(0) final Object request)
         throws ReflectiveOperationException {
       System.out.println("######### start intercepting AzureFunction specialization request");
-      lazilySetConnectionString();
-      final Object traceContext =
-          InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
-
-      final Context extractedContext =
-          OpenTelemetry.getPropagators()
-              .getTextMapPropagator()
-              .extract(Context.ROOT, traceContext, GETTER);
-      final SpanContext spanContext = TracingContextUtils.getSpan(extractedContext).getContext();
-
-      return TRACER.withSpan(DefaultSpan.create(spanContext));
-    }
-
-    @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void methodExit(@Advice.Enter final Scope scope) {
-      scope.close();
-    }
-
-    /**
-     * Azure Function Linux with consumption plan doesn't come with 'APPLICATIONINSIGHTS_CONNECTION_STRING' env variable during the initialization.
-     * Need to set this connection string lazily when it becomes available.
-     */
-    private static void lazilySetConnectionString() {
       // race condition (two initial requests happening at the same time) is not a worry here
       // because at worst they both enter the condition below and update the connection string
       System.out.println("######### start lazilySetConnectionString");
@@ -121,6 +96,22 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
       }
 
       System.out.println("######### end lazilySetConnectionString");
+      final Object traceContext =
+          InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
+
+      final Context extractedContext =
+          OpenTelemetry.getPropagators()
+              .getTextMapPropagator()
+              .extract(Context.ROOT, traceContext, GETTER);
+      final SpanContext spanContext = TracingContextUtils.getSpan(extractedContext).getContext();
+
+      return TRACER.withSpan(DefaultSpan.create(spanContext));
     }
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
+    public static void methodExit(@Advice.Enter final Scope scope) {
+      scope.close();
+    }
+
   }
 }
