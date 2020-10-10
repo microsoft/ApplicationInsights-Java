@@ -45,14 +45,29 @@ checkstyle {
     configProperties["rootDir"] = rootProject.projectDir
     showViolations = false
 }
-
 spotbugs {
     effort = 'max'
-    reportLevel = 'medium'
+    reportLevel = 'high'
     ignoreFailures = false
-    sourceSets = [sourceSets.main]
+    //sourceSets = [sourceSets.main]
 }
-spotbugsMain.classpath = configurations.compileOnly + sourceSets.main.runtimeClasspath
+spotbugsTest {
+    reports {
+        html.enabled = true
+        html {
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
+}
+spotbugsMain {
+    //classpath = configurations.compileOnly + sourceSets.main.runtimeClasspath
+    reports {
+        html.enabled = true
+        html {
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
+}
 
 tasks.withType(JavaCompile) {
     dependencies {
