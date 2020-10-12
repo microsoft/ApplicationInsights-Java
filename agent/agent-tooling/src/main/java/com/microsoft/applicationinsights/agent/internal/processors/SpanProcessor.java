@@ -37,11 +37,13 @@ public class SpanProcessor {
         this.isValidConfig = isValidConfig;
     }
 
+    // Get Span Processor with defaults
     private static SpanProcessor getEmptySpanProcessor() {
         IncludeExclude emptyIncludeExclude = new StrictIncludeExclude(new ArrayList<>(), new ArrayList<>());
         return new SpanProcessor(new ArrayList<>(), new ArrayList<>(),
                 emptyIncludeExclude, emptyIncludeExclude, false);
     }
+
 
     private static SpanProcessor getNormalizedSpanProcessor(SpanProcessorConfig config) {
         IncludeExclude normalizedInclude = null;
@@ -65,7 +67,8 @@ public class SpanProcessor {
         return new SpanProcessor(insertActions, otherActions, normalizedInclude, normalizedExclude, true);
     }
 
-    //Copy from existing attribute
+    //Copy from existing attribute.
+    // Returns true if attribute has been found and copied. Else returns false.
     private static boolean copyFromExistingAttribute(Builder insertBuilder, ReadableAttributes existingSpanAttributes, SpanProcessorAction actionObj) {
         AttributeValue existingSpanAttributeValue = existingSpanAttributes.get(actionObj.fromAttribute);
         if (existingSpanAttributeValue != null) {
@@ -75,6 +78,7 @@ public class SpanProcessor {
         return false;
     }
 
+    // Creates Span Processor object
     public static SpanProcessor create(SpanProcessorConfig config) {
         return config.isValid() ? getNormalizedSpanProcessor(config) : getEmptySpanProcessor();
     }
@@ -91,6 +95,7 @@ public class SpanProcessor {
         return isValidConfig;
     }
 
+    // Insert new Attributes
     public SpanData processInsertActions(SpanData span) {
         ReadableAttributes existingSpanAttributes = span.getAttributes();
         final Builder insertBuilder = Attributes.newBuilder();
@@ -117,6 +122,7 @@ public class SpanProcessor {
         return span;
     }
 
+    // Update,delete or calculate Hash values on existing attributes
     public SpanData processOtherActions(SpanData span) {
         ReadableAttributes existingSpanAttributes = span.getAttributes();
         final Builder builder = Attributes.newBuilder();
@@ -174,18 +180,17 @@ public class SpanProcessor {
             this.attributes = attributes;
         }
 
+        // Function to compare span attribute value with user provided value
         private static boolean isAttributeValueMatch(AttributeValue attributeValue, String value) {
             return attributeValue.getType() == Type.STRING && attributeValue.getStringValue().equals(value);
         }
 
+        // Function to compare span with user provided span names or span patterns
         public abstract boolean isMatch(SpanData span);
 
-        public List<SpanProcessorAttribute> getAttributes() {
-            return attributes;
-        }
-
+        // Function to compare span with user provided attributes list
         public boolean checkAttributes(SpanData span) {
-            for (SpanProcessorAttribute attribute : this.getAttributes()) {
+            for (SpanProcessorAttribute attribute : attributes) {
                 //All of these attributes must match exactly for a match to occur.
                 AttributeValue existingAttributeValue = span.getAttributes().get(attribute.key);
                 if (existingAttributeValue == null) {
@@ -223,6 +228,7 @@ public class SpanProcessor {
             return new StrictIncludeExclude(attributes, spanNames);
         }
 
+        // Function to compare span with user provided span names
         public boolean isMatch(SpanData span) {
             if (!spanNames.isEmpty() && !spanNames.contains(span.getName())) {
                 // span name doesn't match
@@ -255,6 +261,7 @@ public class SpanProcessor {
             return new RegexpIncludeExclude(attributes, spanPatterns);
         }
 
+        // Function to compare span with user provided span patterns
         public boolean isMatch(SpanData span) {
             if (!spanPatterns.isEmpty() && !isPatternFound(span)) {
                 return false;
