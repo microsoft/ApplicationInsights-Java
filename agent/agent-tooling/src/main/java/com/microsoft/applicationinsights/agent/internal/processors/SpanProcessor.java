@@ -1,7 +1,5 @@
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -19,51 +17,66 @@ import io.opentelemetry.common.Attributes.Builder;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import org.apache.commons.codec.digest.DigestUtils;
 
 // structure which only allows valid data
 // normalization has to occur before construction
 public class SpanProcessor {
-    private final List<SpanProcessorAction> insertActions = new ArrayList<>();
-    private final List<SpanProcessorAction> otherActions = new ArrayList<>();
-    private IncludeExclude include;
-    private IncludeExclude exclude;
-    private boolean isValidConfig;
+    private final List<SpanProcessorAction> insertActions;
+    private final List<SpanProcessorAction> otherActions;
+    private final IncludeExclude include;
+    private final IncludeExclude exclude;
+    private final boolean isValidConfig;
 
-    private static SpanProcessor getEmptySpanProcessor() {
-        SpanProcessor emptyObj = new SpanProcessor();
-        emptyObj.isValidConfig = false;
-        emptyObj.include = StrictIncludeExclude.getEmptyIncludeExclude();
-        emptyObj.exclude = StrictIncludeExclude.getEmptyIncludeExclude();
-        return emptyObj;
+    public SpanProcessor(List<SpanProcessorAction> insertActions, List<SpanProcessorAction> otherActions, IncludeExclude include,
+                         IncludeExclude exclude, boolean isValidConfig) {
+        this.insertActions = insertActions;
+        this.otherActions = otherActions;
+        this.include = include;
+        this.exclude = exclude;
+        this.isValidConfig = isValidConfig;
     }
 
-    private static SpanProcessor normalize(SpanProcessorConfig config) {
-        SpanProcessor normalizedSpanProcessor = new SpanProcessor();
-        normalizedSpanProcessor.isValidConfig = true;
+    private static SpanProcessor getEmptySpanProcessor() {
+        IncludeExclude emptyIncludeExclude = new StrictIncludeExclude(new ArrayList<>(), new ArrayList<>());
+        return new SpanProcessor(new ArrayList<>(), new ArrayList<>(),
+                emptyIncludeExclude, emptyIncludeExclude, false);
+    }
 
+    private static SpanProcessor getNormalizedSpanProcessor(SpanProcessorConfig config) {
+        IncludeExclude normalizedInclude = null;
+        IncludeExclude normalizedExclude = null;
+        List<SpanProcessorAction> insertActions = new ArrayList<>();
+        List<SpanProcessorAction> otherActions = new ArrayList<>();
         if (config.include != null) {
-            normalizedSpanProcessor.include = config.include.matchType == SpanProcessorMatchType.strict ? StrictIncludeExclude.create(config.include) : RegexpIncludeExclude.create(config.include);
+            normalizedInclude = config.include.matchType == SpanProcessorMatchType.strict ? StrictIncludeExclude.create(config.include) : RegexpIncludeExclude.create(config.include);
         }
-
         if (config.exclude != null) {
-            normalizedSpanProcessor.exclude = config.exclude.matchType == SpanProcessorMatchType.strict ? StrictIncludeExclude.create(config.exclude) : RegexpIncludeExclude.create(config.exclude);
+            normalizedExclude = config.exclude.matchType == SpanProcessorMatchType.strict ? StrictIncludeExclude.create(config.exclude) : RegexpIncludeExclude.create(config.exclude);
         }
-
         for (SpanProcessorAction spanProcessorAction : config.actions) {
 
             if (spanProcessorAction.action == SpanProcessorActionType.insert) {
-                normalizedSpanProcessor.insertActions.add(spanProcessorAction);
+                insertActions.add(spanProcessorAction);
             } else {
-                normalizedSpanProcessor.otherActions.add(spanProcessorAction);
+                otherActions.add(spanProcessorAction);
             }
         }
+        return new SpanProcessor(insertActions, otherActions, normalizedInclude, normalizedExclude, true);
+    }
 
-        return normalizedSpanProcessor;
-
+    //Copy from existing attribute
+    private static boolean copyFromExistingAttribute(Builder insertBuilder, ReadableAttributes existingSpanAttributes, SpanProcessorAction actionObj) {
+        AttributeValue existingSpanAttributeValue = existingSpanAttributes.get(actionObj.fromAttribute);
+        if (existingSpanAttributeValue != null) {
+            insertBuilder.setAttribute(actionObj.key, existingSpanAttributes.get(actionObj.fromAttribute));
+            return true;
+        }
+        return false;
     }
 
     public static SpanProcessor create(SpanProcessorConfig config) {
-        return config.isValid() ? normalize(config) : getEmptySpanProcessor();
+        return config.isValid() ? getNormalizedSpanProcessor(config) : getEmptySpanProcessor();
     }
 
     public IncludeExclude getInclude() {
@@ -74,40 +87,27 @@ public class SpanProcessor {
         return exclude;
     }
 
-    public List<SpanProcessorAction> getInsertActions() {
-        return insertActions;
-    }
-
-    public List<SpanProcessorAction> getOtherActions() {
-        return otherActions;
-    }
-
-    public boolean isValidConfig() {
-        return isValidConfig;
-    }
-
     public boolean hasValidConfig() {
-        return this.isValidConfig;
+        return isValidConfig;
     }
 
     public SpanData processInsertActions(SpanData span) {
         ReadableAttributes existingSpanAttributes = span.getAttributes();
         final Builder insertBuilder = Attributes.newBuilder();
-        boolean insertedFlag = false;
-        for (SpanProcessorAction actionObj : this.getInsertActions()) {
+        boolean insertedFlag = false; // Flag to check if insert operation is successful
+        for (SpanProcessorAction actionObj : insertActions) {
             if (actionObj.value != null) {
+                //Insert new attribute
                 insertBuilder.setAttribute(actionObj.key, actionObj.value);
                 insertedFlag = true;
-            } else {
-                if (existingSpanAttributes.get(actionObj.fromAttribute) != null) {
-                    insertBuilder.setAttribute(actionObj.key, existingSpanAttributes.get(actionObj.fromAttribute));
-                    insertedFlag = true;
-                }
-                insertBuilder.setAttribute(actionObj.key, actionObj.value);
+            } else if (copyFromExistingAttribute(insertBuilder, existingSpanAttributes, actionObj)) {
+                //Copy from existing attribute
+                insertedFlag = true;
             }
         }
         if (insertedFlag) {
-            span.getAttributes().forEach(new KeyValueConsumer<AttributeValue>() {
+            // Copy all existing attributes
+            existingSpanAttributes.forEach(new KeyValueConsumer<AttributeValue>() {
                 public void consume(String key, AttributeValue value) {
                     insertBuilder.setAttribute(key, value);
                 }
@@ -120,26 +120,23 @@ public class SpanProcessor {
     public SpanData processOtherActions(SpanData span) {
         ReadableAttributes existingSpanAttributes = span.getAttributes();
         final Builder builder = Attributes.newBuilder();
-        List<SpanProcessorAction> _otherActions = this.getOtherActions();
         // loop over existing attributes
-        span.getAttributes().forEach(new KeyValueConsumer<AttributeValue>() {
+        existingSpanAttributes.forEach(new KeyValueConsumer<AttributeValue>() {
 
             @Override
-            public void consume(String key, AttributeValue value) {
+            public void consume(String existingKey, AttributeValue existingValue) {
                 boolean updatedFlag = false;// flag to check if a attribute is updated
-                for (SpanProcessorAction actionObj : _otherActions) {
-                    if (actionObj.key.equals(key)) {
+                for (SpanProcessorAction actionObj : otherActions) {
+                    if (actionObj.key.equals(existingKey)) {
                         switch (actionObj.action) {
                             case update:
                                 if (actionObj.value != null) {
+                                    //update to new value
                                     builder.setAttribute(actionObj.key, actionObj.value);
                                     updatedFlag = true;
-                                } else if (actionObj.fromAttribute != null) {
-                                    AttributeValue existingSpanAttributeValue = existingSpanAttributes.get(actionObj.fromAttribute);
-                                    if (existingSpanAttributeValue != null) {
-                                        builder.setAttribute(actionObj.key, existingSpanAttributeValue);
-                                        updatedFlag = true;
-                                    }
+                                } else if (copyFromExistingAttribute(builder, existingSpanAttributes, actionObj)) {
+                                    //Update from existing attribute
+                                    updatedFlag = true;
                                 }
                                 break;
                             case delete:
@@ -150,7 +147,7 @@ public class SpanProcessor {
                                 if (existingSpanAttributeValue != null) {
                                     // Currently we only support String
                                     if (existingSpanAttributeValue.getType() == Type.STRING) {
-                                        builder.setAttribute(actionObj.key, getSHA1(existingSpanAttributeValue.getStringValue()));
+                                        builder.setAttribute(actionObj.key, DigestUtils.sha1Hex(existingSpanAttributeValue.getStringValue()));
                                         updatedFlag = true;
                                     }
                                 }
@@ -159,7 +156,7 @@ public class SpanProcessor {
                     }
                 }
                 if (!updatedFlag) {
-                    builder.setAttribute(key, value);
+                    builder.setAttribute(existingKey, existingValue);
                 }
             }
         });
@@ -167,27 +164,19 @@ public class SpanProcessor {
         return new MySpanData(span, builder.build());
     }
 
-    private String getSHA1(String value) {
-        MessageDigest mDigest = null;
-        try {
-            mDigest = MessageDigest.getInstance("SHA1");
-            byte[] result = mDigest.digest(value.getBytes());
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < result.length; i++) {
-                sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            return value;
-        }
-    }
 
     public static abstract class IncludeExclude {
         //All of these attributes must match exactly for a match to occur
         //Only match_type=strict is allowed if "attributes" are specified.
-        protected final List<SpanProcessorAttribute> attributes = new ArrayList<>();
+        protected final List<SpanProcessorAttribute> attributes;
 
-        protected SpanProcessorMatchType matchType;
+        public IncludeExclude(List<SpanProcessorAttribute> attributes) {
+            this.attributes = attributes;
+        }
+
+        private static boolean isAttributeValueMatch(AttributeValue attributeValue, String value) {
+            return attributeValue.getType() == Type.STRING && attributeValue.getStringValue().equals(value);
+        }
 
         public abstract boolean isMatch(SpanData span);
 
@@ -195,66 +184,49 @@ public class SpanProcessor {
             return attributes;
         }
 
-        public SpanProcessorMatchType getMatchType() {
-            return matchType;
-        }
-
-        public void setMatchType(SpanProcessorMatchType matchType) {
-            this.matchType = matchType;
-        }
-
         public boolean checkAttributes(SpanData span) {
             for (SpanProcessorAttribute attribute : this.getAttributes()) {
                 //All of these attributes must match exactly for a match to occur.
                 AttributeValue existingAttributeValue = span.getAttributes().get(attribute.key);
-                if (existingAttributeValue != null) {
-                    //found a match
-                    if (attribute.value != null) {
-                        if (existingAttributeValue.getType() != Type.STRING || !existingAttributeValue.getStringValue().equals(attribute.value)) {
-                            return false;
-                            // value mismatch found.
-                        }
-                    }
-                } else {
+                if (existingAttributeValue == null) {
+                    // user specified key not found
+                    return false;
+                }
+                if (attribute.value != null && !isAttributeValueMatch(existingAttributeValue, attribute.value)) {
+                    // user specified value doesn't match
                     return false;
                 }
             }
+            // everything matched!!!
             return true;
         }
     }
 
     public static class StrictIncludeExclude extends IncludeExclude {
 
-        private final List<String> spanNames = new ArrayList<>();
+        private final List<String> spanNames;
 
-        public static StrictIncludeExclude getEmptyIncludeExclude() {
-            StrictIncludeExclude emptyObj = new StrictIncludeExclude();
-            emptyObj.setMatchType(SpanProcessorMatchType.strict);
-            return emptyObj;
+        public StrictIncludeExclude(List<SpanProcessorAttribute> attributes, List<String> spanNames) {
+            super(attributes);
+            this.spanNames = spanNames;
         }
 
         public static StrictIncludeExclude create(SpanProcessorIncludeExclude includeExclude) {
-            StrictIncludeExclude strictObj = new StrictIncludeExclude();
-            if (includeExclude.attributes != null) {
-                strictObj.getAttributes().addAll(includeExclude.attributes);
+            List<SpanProcessorAttribute> attributes = includeExclude.attributes;
+            if (attributes == null) {
+                attributes = new ArrayList<>();
             }
-            if (includeExclude.spanNames != null) {
-                strictObj.getSpanNames().addAll(includeExclude.spanNames);
+            List<String> spanNames = includeExclude.spanNames;
+            if (spanNames == null) {
+                spanNames = new ArrayList<>();
             }
-            strictObj.setMatchType(includeExclude.matchType);
-            return strictObj;
-        }
-
-        public List<String> getSpanNames() {
-            return spanNames;
+            return new StrictIncludeExclude(attributes, spanNames);
         }
 
         public boolean isMatch(SpanData span) {
-            if (!this.getSpanNames().isEmpty()) {
-                if (!this.getSpanNames().contains(span.getName())) {
-                    //match found
-                    return false;
-                }
+            if (!spanNames.isEmpty() && !spanNames.contains(span.getName())) {
+                // span name doesn't match
+                return false;
             }
             return this.checkAttributes(span);
         }
@@ -262,46 +234,43 @@ public class SpanProcessor {
 
     public static class RegexpIncludeExclude extends IncludeExclude {
 
-        private final List<Pattern> spanPatterns = new ArrayList<>();
+        private final List<Pattern> spanPatterns;
 
-        public static RegexpIncludeExclude getEmptyIncludeExclude() {
-            RegexpIncludeExclude emptyObj = new RegexpIncludeExclude();
-            emptyObj.setMatchType(SpanProcessorMatchType.regexp);
-            return emptyObj;
+        public RegexpIncludeExclude(List<SpanProcessorAttribute> attributes, List<Pattern> spanPatterns) {
+            super(attributes);
+            this.spanPatterns = spanPatterns;
         }
 
         public static RegexpIncludeExclude create(SpanProcessorIncludeExclude includeExclude) {
-            RegexpIncludeExclude regexObj = new RegexpIncludeExclude();
-            if (includeExclude.attributes != null) {
-                regexObj.getAttributes().addAll(includeExclude.attributes);
+            List<SpanProcessorAttribute> attributes = includeExclude.attributes;
+            if (attributes == null) {
+                attributes = new ArrayList<>();
             }
+            List<Pattern> spanPatterns = new ArrayList<>();
             if (includeExclude.spanNames != null) {
                 for (String regex : includeExclude.spanNames) {
-                    regexObj.getSpanPatterns().add(Pattern.compile(regex));
+                    spanPatterns.add(Pattern.compile(regex));
                 }
             }
-            regexObj.setMatchType(includeExclude.matchType);
-            return regexObj;
-        }
-
-        public List<Pattern> getSpanPatterns() {
-            return spanPatterns;
+            return new RegexpIncludeExclude(attributes, spanPatterns);
         }
 
         public boolean isMatch(SpanData span) {
-            boolean matchFound = false;
-            if (!this.getSpanPatterns().isEmpty()) {
-                for (Pattern pattern : this.getSpanPatterns()) {
-                    if (pattern.matcher(span.getName()).find()) {
-                        matchFound = true;
-                        break;
-                    }
-                }
-            } else {
-                matchFound = true;
+            if (!spanPatterns.isEmpty() && !isPatternFound(span)) {
+                return false;
             }
-            if (!matchFound) return false;
             return checkAttributes(span);
+        }
+
+        private boolean isPatternFound(SpanData span) {
+            for (Pattern pattern : spanPatterns) {
+                if (pattern.matcher(span.getName()).find()) {
+                    // pattern matches the span!!!
+                    return true;
+                }
+            }
+            //no pattern matched
+            return false;
         }
     }
 

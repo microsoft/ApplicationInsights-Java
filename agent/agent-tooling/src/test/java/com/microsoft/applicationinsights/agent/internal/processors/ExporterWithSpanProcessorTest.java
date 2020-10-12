@@ -254,6 +254,42 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
+    public void actionInsertFromAttributeTest() {
+        MockExporter mockExporter = new MockExporter();
+        SpanProcessorConfig config = new SpanProcessorConfig();
+        SpanProcessorAction action = new SpanProcessorAction();
+        action.key = "testKey";
+        action.fromAttribute = "testKey2";
+        action.action = SpanProcessorActionType.insert;
+        List<SpanProcessorAction> actions = new ArrayList<>();
+        actions.add(action);
+        config.actions = actions;
+        SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
+
+        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("TESTKEY", "testValue2")
+                .setAttribute("testKey2","testValue2")
+                .startSpan();
+
+        SpanData spanData = ((ReadableSpan) span).toSpanData();
+
+        List<SpanData> spans = new ArrayList<>();
+        spans.add(spanData);
+        exampleExporter.export(spans);
+
+        // verify that resulting spans are filtered in the way we want
+        List<SpanData> result = mockExporter.getSpans();
+        SpanData resultSpan = result.get(0);
+        assertNotEquals("testValue", resultSpan.getAttributes().get("testKey").getStringValue());
+        assertEquals("testValue2", resultSpan.getAttributes().get("testKey").getStringValue());
+        assertEquals("1", resultSpan.getAttributes().get("one").getStringValue());
+
+    }
+
+    @Test
     public void actionSimpleUpdateTest() {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
