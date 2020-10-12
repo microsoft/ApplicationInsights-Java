@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorConfig;
+import com.microsoft.applicationinsights.agent.internal.processors.SpanProcessor.IncludeExclude;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -14,7 +15,11 @@ public class ExporterWithSpanProcessor implements SpanExporter {
     private final SpanExporter delegate;
     private final SpanProcessor spanProcessor;
 
+    // caller should check config.isValid before creating
     public ExporterWithSpanProcessor(SpanProcessorConfig config, SpanExporter delegate) {
+        if (!config.isValid()) {
+            throw new IllegalArgumentException("User provided span processor config is not valid!!!");
+        }
         this.spanProcessor = SpanProcessor.create(config);
         this.delegate = delegate;
     }
@@ -34,20 +39,18 @@ public class ExporterWithSpanProcessor implements SpanExporter {
     }
 
     private SpanData process(SpanData span) {
-        boolean includeFlag = true;//Flag to check if the span is included in processing
-        boolean excludeFlag = false;//Flag to check if the span is excluded in processing
-        if(spanProcessor.getInclude()!=null) {
-            includeFlag = spanProcessor.getInclude().isMatch(span);
+        IncludeExclude include = spanProcessor.getInclude();
+        if (include != null && !include.isMatch(span)) {
+            //If Not included we can skip further processing
+            return span;
         }
-        if (!includeFlag) return span;//If Not included we can skip further processing
-        if(spanProcessor.getExclude()!=null) {
-            excludeFlag = spanProcessor.getExclude().isMatch(span);
+        IncludeExclude exclude = spanProcessor.getExclude();
+        if (exclude != null && exclude.isMatch(span)) {
+            return span;
         }
-        if (includeFlag && !excludeFlag) {
-            SpanData updatedSpan = spanProcessor.processOtherActions(span);
-            return spanProcessor.processInsertActions(updatedSpan);
-        }
-        return span;
+        // performing insert last, since no need to apply other actions to those inserted attributes
+        SpanData updatedSpan = spanProcessor.processOtherActions(span);
+        return spanProcessor.processInsertActions(updatedSpan);
     }
 
     @Override

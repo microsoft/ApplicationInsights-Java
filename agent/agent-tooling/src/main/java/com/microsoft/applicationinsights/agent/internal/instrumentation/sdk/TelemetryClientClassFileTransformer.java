@@ -550,7 +550,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
     public static void main(String[] args) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream stdout = System.out;
-        System.setOut(new PrintStream(baos, true));
+        System.setOut(new PrintStream(baos, true, "UTF-8"));
         ASMifier.main(new String[]{TC.class.getName()});
         System.setOut(stdout);
         String content = new String(baos.toByteArray(), Charsets.UTF_8);

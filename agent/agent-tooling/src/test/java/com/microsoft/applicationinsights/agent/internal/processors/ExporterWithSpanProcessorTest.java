@@ -2,7 +2,9 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorAction;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorActionType;
@@ -22,7 +24,7 @@ import static org.junit.Assert.*;
 public class ExporterWithSpanProcessorTest {
 
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void noActionTest() {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
@@ -38,14 +40,9 @@ public class ExporterWithSpanProcessorTest {
         List<SpanData> spans = new ArrayList<>();
         spans.add(spanData);
         exampleExporter.export(spans);
-
-        // verify that resulting spans are filtered in the way we want
-        List<SpanData> result = mockExporter.getSpans();
-        SpanData resultSpan = result.get(0);
-        assertEquals("1", resultSpan.getAttributes().get("one").getStringValue());
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void inValidConfigTestWithNoValueInActionTest() {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
@@ -70,14 +67,9 @@ public class ExporterWithSpanProcessorTest {
         List<SpanData> spans = new ArrayList<>();
         spans.add(spanData);
         exampleExporter.export(spans);
-
-        // verify that resulting spans are filtered in the way we want
-        List<SpanData> result = mockExporter.getSpans();
-        SpanData resultSpan = result.get(0);
-        assertEquals("1", resultSpan.getAttributes().get("one").getStringValue());
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void inValidConfigTestWithInvalidIncludeTest() {
         MockExporter mockExporter = new MockExporter();
         SpanProcessorConfig config = new SpanProcessorConfig();
@@ -102,13 +94,7 @@ public class ExporterWithSpanProcessorTest {
         List<SpanData> spans = new ArrayList<>();
         spans.add(spanData);
         exampleExporter.export(spans);
-
-        // verify that resulting spans are filtered in the way we want
-        List<SpanData> result = mockExporter.getSpans();
-        SpanData resultSpan = result.get(0);
-        assertEquals("1", resultSpan.getAttributes().get("one").getStringValue());
     }
-
 
     @Test
     public void actionDeleteTest() {
@@ -174,7 +160,7 @@ public class ExporterWithSpanProcessorTest {
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
         assertNotNull(resultSpan.getAttributes().get("testNewKey"));
-        assertEquals("testNewValue", resultSpan.getAttributes().get("testNewKey").getStringValue());
+        assertEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get("testNewKey")).getStringValue());
 
     }
 
@@ -213,8 +199,8 @@ public class ExporterWithSpanProcessorTest {
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
         assertNotNull(resultSpan.getAttributes().get("testNewKey"));
-        assertEquals("testNewValue", resultSpan.getAttributes().get("testNewKey").getStringValue());
-        assertEquals("testNewValue2", resultSpan.getAttributes().get("testKey").getStringValue());
+        assertEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get("testNewKey")).getStringValue());
+        assertEquals("testNewValue2", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
 
     }
 
@@ -247,9 +233,9 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotEquals("testValue", resultSpan.getAttributes().get("testKey").getStringValue());
-        assertEquals("testNewValue", resultSpan.getAttributes().get("testKey").getStringValue());
-        assertEquals("1", resultSpan.getAttributes().get("one").getStringValue());
+        assertNotEquals("testValue", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
+        assertEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
+        assertEquals("1", Objects.requireNonNull(resultSpan.getAttributes().get("one")).getStringValue());
 
     }
 
@@ -271,7 +257,7 @@ public class ExporterWithSpanProcessorTest {
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("TESTKEY", "testValue2")
-                .setAttribute("testKey2","testValue2")
+                .setAttribute("testKey2", "testValue2")
                 .startSpan();
 
         SpanData spanData = ((ReadableSpan) span).toSpanData();
@@ -283,9 +269,9 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotEquals("testValue", resultSpan.getAttributes().get("testKey").getStringValue());
-        assertEquals("testValue2", resultSpan.getAttributes().get("testKey").getStringValue());
-        assertEquals("1", resultSpan.getAttributes().get("one").getStringValue());
+        assertNotEquals("testValue", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
+        assertEquals("testValue2", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
+        assertEquals("1", Objects.requireNonNull(resultSpan.getAttributes().get("one")).getStringValue());
 
     }
 
@@ -318,7 +304,7 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("redacted", resultSpan.getAttributes().get("testKey").getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
     }
 
     @Test
@@ -350,7 +336,7 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("testValue2", resultSpan.getAttributes().get("testKey").getStringValue());
+        assertEquals("testValue2", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
     }
 
     @Test
@@ -386,7 +372,7 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("redacted", resultSpan.getAttributes().get("testKey").getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
         assertNull(resultSpan.getAttributes().get("testKey2"));
     }
 
@@ -442,9 +428,9 @@ public class ExporterWithSpanProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("redacted", resultSpanA.getAttributes().get("testKey").getStringValue());
-        assertEquals("redacted", resultSpanB.getAttributes().get("testKey").getStringValue());
-        assertEquals("testValue", resultSpanC.getAttributes().get("testKey").getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
     }
 
     @Test
@@ -499,9 +485,9 @@ public class ExporterWithSpanProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("redacted", resultSpanA.getAttributes().get("testKey").getStringValue());
-        assertEquals("redacted", resultSpanB.getAttributes().get("testKey").getStringValue());
-        assertEquals("testValue", resultSpanC.getAttributes().get("testKey").getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
     }
 
     @Test
@@ -555,9 +541,10 @@ public class ExporterWithSpanProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanD = result.get(3);
-        assertNotEquals("HashValue:" + resultSpanA.getAttributes().get("testKey").getStringValue(), "testValue", resultSpanA.getAttributes().get("testKey").getStringValue());
-        assertEquals(2L, resultSpanB.getAttributes().get("testKey").getLongValue());
-        assertEquals("testValue", resultSpanD.getAttributes().get("testKey").getStringValue());
+        assertNotEquals("HashValue:" + Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue(), "testValue", Objects
+                .requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
+        assertEquals(2L, Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getLongValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanD.getAttributes().get("testKey")).getStringValue());
     }
 
     @Test
@@ -612,9 +599,9 @@ public class ExporterWithSpanProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("testValue", resultSpanA.getAttributes().get("testKey").getStringValue());
-        assertEquals("testValue", resultSpanB.getAttributes().get("testKey").getStringValue());
-        assertEquals("redacted", resultSpanC.getAttributes().get("testKey").getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
     }
 
     @Test
@@ -623,7 +610,7 @@ public class ExporterWithSpanProcessorTest {
         SpanProcessorConfig config = new SpanProcessorConfig();
         config.exclude = new SpanProcessorIncludeExclude();
         config.exclude.matchType = SpanProcessorMatchType.regexp;
-        config.exclude.spanNames = Arrays.asList("svc.*");
+        config.exclude.spanNames = Collections.singletonList("svc.*");
         SpanProcessorAction action = new SpanProcessorAction();
         action.key = "testKey";
         action.action = SpanProcessorActionType.update;
@@ -670,10 +657,10 @@ public class ExporterWithSpanProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanD = result.get(3);
-        assertEquals("testValue", resultSpanA.getAttributes().get("testKey").getStringValue());
-        assertEquals("testValue", resultSpanB.getAttributes().get("testKey").getStringValue());
-        assertEquals("redacted", resultSpanC.getAttributes().get("testKey").getStringValue());
-        assertEquals("redacted", resultSpanD.getAttributes().get("testKey").getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpanD.getAttributes().get("testKey")).getStringValue());
     }
 
     @Test
@@ -736,8 +723,8 @@ public class ExporterWithSpanProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         assertNull(resultSpanA.getAttributes().get("testKey"));
-        assertEquals("testValue", resultSpanB.getAttributes().get("testKey").getStringValue());
-        assertEquals("testValue", resultSpanC.getAttributes().get("testKey").getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
     }
 
     @Test
@@ -800,7 +787,7 @@ public class ExporterWithSpanProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanD = result.get(3);
-        assertEquals("testValue", resultSpanA.getAttributes().get("testKey").getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
         assertNull(resultSpanB.getAttributes().get("testKey"));
         assertNull(resultSpanC.getAttributes().get("testKey"));
         assertNull(resultSpanD.getAttributes().get("testKey"));
@@ -865,9 +852,9 @@ public class ExporterWithSpanProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("testValue2", resultSpanA.getAttributes().get("testKey2").getStringValue());
+        assertEquals("testValue2", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey2")).getStringValue());
         assertNull(resultSpanB.getAttributes().get("testKey2"));
-        assertEquals("testValue2", resultSpanC.getAttributes().get("testKey2").getStringValue());
+        assertEquals("testValue2", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey2")).getStringValue());
     }
 
 

@@ -49,7 +49,6 @@ spotbugs {
     effort = 'max'
     reportLevel = 'high'
     ignoreFailures = false
-    //sourceSets = [sourceSets.main]
 }
 spotbugsTest {
     reports {
@@ -60,7 +59,6 @@ spotbugsTest {
     }
 }
 spotbugsMain {
-    //classpath = configurations.compileOnly + sourceSets.main.runtimeClasspath
     reports {
         html.enabled = true
         html {
@@ -75,8 +73,8 @@ tasks.withType(JavaCompile) {
         spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
     }
     def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
-    if (spotbugsExcludeFile.exists() && !spotbugs.excludeFilter) {
-        logger.info "${project} using ${spotbugsExcludeFile.absolutePath}"
+    if (spotbugsExcludeFile.exists()) {
+        logger.info "${project} using spotbugs exclude file ${spotbugsExcludeFile.absolutePath}"
         spotbugs.excludeFilter = spotbugsExcludeFile
     }
 }
