@@ -57,6 +57,7 @@ public abstract class DatabaseClientTracer<CONNECTION, QUERY> extends BaseTracer
     }
     onStatement(span, normalizedQuery);
 
+    System.out.println("######### DatabaseClientTracer::startSpan: " + span);
     return span;
   }
 
