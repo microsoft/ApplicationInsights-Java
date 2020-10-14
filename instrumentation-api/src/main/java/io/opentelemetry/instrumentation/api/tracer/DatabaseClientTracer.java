@@ -91,6 +91,8 @@ public abstract class DatabaseClientTracer<CONNECTION, QUERY> extends BaseTracer
 
   @Override
   public void end(Span span) {
+    // log span.getClass().getName()
+    // log span
     span.end();
   }
 

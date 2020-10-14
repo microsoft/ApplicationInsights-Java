@@ -86,12 +86,15 @@ public final class StatementInstrumentation extends Instrumenter.Default {
         @Advice.Local("otelSpan") Span span,
         @Advice.Local("otelScope") Scope scope,
         @Advice.Local("otelCallDepth") Depth callDepth) {
-
+      System.out.println("######### StatementInstrumentation::StatementAdvice::onEnter");
       callDepth = TRACER.getCallDepth();
       if (callDepth.getAndIncrement() == 0) {
         span = TRACER.startSpan(statement, sql);
         if (span != null) {
+          System.out.println("######### StatementInstrumentation span is NOT null");
           scope = TRACER.startScope(span);
+        } else {
+          System.out.println("######### StatementInstrumentation span is null somehow");
         }
       }
     }
@@ -102,11 +105,15 @@ public final class StatementInstrumentation extends Instrumenter.Default {
         @Advice.Local("otelSpan") Span span,
         @Advice.Local("otelScope") Scope scope,
         @Advice.Local("otelCallDepth") Depth callDepth) {
+      System.out.println("######### StatementInstrumentation::StatementAdvice::stopSpan");
       if (callDepth.decrementAndGet() == 0 && scope != null) {
         scope.close();
         if (throwable == null) {
           TRACER.end(span);
+          System.out.println("######### StatementInstrumentation::tracer.end span: " + span);
+
         } else {
+          System.out.println("######### StatementInstrumentation::tracer.endExceptionally");
           TRACER.endExceptionally(span, throwable);
         }
       }
