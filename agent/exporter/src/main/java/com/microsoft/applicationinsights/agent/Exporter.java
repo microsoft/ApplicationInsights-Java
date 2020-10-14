@@ -256,7 +256,7 @@ public class Exporter implements SpanExporter {
                 telemetry.setType("Kafka");
                 telemetry.setTarget(span.getName()); // destination queue name
             } else if ("jms".equals(stdComponent)) {
-                telemetry.setType("JMS");
+                telemetry.setType("Queue Message | JMS");
                 telemetry.setTarget(span.getName()); // destination queue name
             }
         }
