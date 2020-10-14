@@ -93,6 +93,9 @@ public abstract class DatabaseClientTracer<CONNECTION, QUERY> extends BaseTracer
   public void end(Span span) {
     // log span.getClass().getName()
     // log span
+    System.out.println("#########1 DatabaseClientTracer end");
+    System.out.println("#########1 start ending this span: " + span);
+    System.out.println("#########1 DatabaseClientTracer::end::" + span.getClass().getName());
     span.end();
   }
 
