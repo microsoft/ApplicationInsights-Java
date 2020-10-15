@@ -79,6 +79,7 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
           AiConnectionString.setConnectionString(connectionString);
         } else {
           // if the instrumentation key is neither null nor empty , we will create a default connection string based on the instrumentation key.
+          // this is to support Azure Functions that were created prior to the introduction of connection strings
           String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
           if (!Strings.isNullOrEmpty(instrumentationKey)) {
             AiConnectionString.setConnectionString("InstrumentationKey=" + instrumentationKey);
