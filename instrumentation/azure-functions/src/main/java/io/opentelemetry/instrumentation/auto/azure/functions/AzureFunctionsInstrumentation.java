@@ -53,7 +53,6 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
 
   @Override
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    System.out.println("#########1 transformers starts ########");
     return singletonMap(
         isMethod()
             .and(named("execute"))
@@ -72,30 +71,21 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static Scope methodEnter(@Advice.Argument(0) final Object request)
         throws ReflectiveOperationException {
-      System.out.println("#########1 start intercepting AzureFunction specialization request");
       // race condition (two initial requests happening at the same time) is not a worry here
       // because at worst they both enter the condition below and update the connection string
-      System.out.println("#########1 start lazilySetConnectionString");
       if (!AiConnectionString.hasConnectionString()) {
         String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
         if (!Strings.isNullOrEmpty(connectionString)) {
           AiConnectionString.setConnectionString(connectionString);
-          // TODO to be deleted later once the testing is completed
-          System.out.println("#########1 Lazily set the connection string for Azure Function Linux Consumption Plan" + connectionString);
         } else {
           // if the instrumentation key is neither null nor empty , we will create a default connection string based on the instrumentation key.
-          System.out.println("#########1 Connection string is null or empty for Azure Function Linux Consumption Plan.");
           String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
           if (!Strings.isNullOrEmpty(instrumentationKey)) {
             AiConnectionString.setConnectionString("InstrumentationKey=" + instrumentationKey);
           }
         }
-      } else {
-        // TODO to be deleted later once the testing is completed
-        System.out.println("#########1 Connection string has already been set.");
       }
 
-      System.out.println("#########1 end lazilySetConnectionString");
       final Object traceContext =
           InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
 
@@ -104,7 +94,6 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
               .getTextMapPropagator()
               .extract(Context.ROOT, traceContext, GETTER);
       final SpanContext spanContext = TracingContextUtils.getSpan(extractedContext).getContext();
-      System.out.println("#########1 spancontext.getTraceFlags.isSampled: " + spanContext.getTraceFlags().isSampled());
 
       return TRACER.withSpan(DefaultSpan.create(spanContext));
     }
@@ -113,6 +102,5 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
     public static void methodExit(@Advice.Enter final Scope scope) {
       scope.close();
     }
-
   }
 }

@@ -78,15 +78,12 @@ public class JdbcTracer extends DatabaseClientTracer<DBInfo, String> {
   }
 
   public Span startSpan(Statement statement, String query) {
-    System.out.println("######### JdbcTracer startSpan");
     Connection connection = connectionFromStatement(statement);
     if (connection == null) {
-      System.out.println("#########  JdbcTracer startSpan connection is null somehow");
       return null;
     }
 
     DBInfo dbInfo = extractDbInfo(connection);
-    System.out.println("######### JdbcTracer startSpan connection is not null");
     return startSpan(dbInfo, query);
   }
 

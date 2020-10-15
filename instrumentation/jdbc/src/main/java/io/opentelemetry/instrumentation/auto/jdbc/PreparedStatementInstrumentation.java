@@ -86,15 +86,11 @@ public final class PreparedStatementInstrumentation extends Instrumenter.Default
         @Advice.Local("otelScope") Scope scope,
         @Advice.Local("otelCallDepth") Depth callDepth) {
 
-      System.out.println("#########1 PreparedStatementAdvice onEnter");
       callDepth = TRACER.getCallDepth();
       if (callDepth.getAndIncrement() == 0) {
         span = TRACER.startSpan(statement);
         if (span != null) {
-          System.out.println("#########1 preparedStatement span is not null");
           scope = TRACER.startScope(span);
-        } else {
-          System.out.println("#########1 preparedStatement span is null somehow");
         }
       }
     }

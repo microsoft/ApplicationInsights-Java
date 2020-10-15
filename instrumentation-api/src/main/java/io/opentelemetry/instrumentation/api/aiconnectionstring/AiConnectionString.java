@@ -16,31 +16,21 @@
 
 package io.opentelemetry.instrumentation.api.aiconnectionstring;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class AiConnectionString {
 
   private static Accessor accessor;
-  private static final Logger log = LoggerFactory.getLogger(AiConnectionString.class);
 
   public static void setAccessor(Accessor accessor) {
     AiConnectionString.accessor = accessor;
-    log.debug("######### setting ConnectionString Accessor for AiConnectionString.");
   }
 
   public static boolean hasConnectionString() {
-    log.debug("######### checking AiConnectionString hasConnectionString");
-    log.debug("######### " + String.valueOf("hasConnectionString: " + accessor != null && accessor.hasValue()));
     return accessor != null && accessor.hasValue();
   }
 
   public static void setConnectionString(String connectionString) {
     if (accessor != null) {
       accessor.setValue(connectionString);
-      log.debug(("######### setConnectionString to be " + connectionString));
-    } else {
-      log.debug("######### accessor is null somehow.  Failed to set connection string.");
     }
   }
 
