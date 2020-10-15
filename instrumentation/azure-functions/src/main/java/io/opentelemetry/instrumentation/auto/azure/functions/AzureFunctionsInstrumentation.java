@@ -104,6 +104,7 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
               .getTextMapPropagator()
               .extract(Context.ROOT, traceContext, GETTER);
       final SpanContext spanContext = TracingContextUtils.getSpan(extractedContext).getContext();
+      System.out.println("#########1 spancontext.getTraceFlags.isSampled: " + spanContext.getTraceFlags().isSampled());
 
       return TRACER.withSpan(DefaultSpan.create(spanContext));
     }
