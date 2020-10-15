@@ -84,7 +84,7 @@ public class Exporter implements SpanExporter {
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
         if (Strings.isNullOrEmpty(TelemetryConfiguration.getActive().getInstrumentationKey())) {
-            logger.warn("Instrumentation key is null or empty.");
+            logger.info("Instrumentation key is null or empty.");
             return CompletableResultCode.ofSuccess();
         }
 

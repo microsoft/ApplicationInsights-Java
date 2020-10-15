@@ -106,16 +106,10 @@ public class BeforeAgentInstaller {
 
         InstrumentationSettings config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
-            startupLogger.debug("########### There is no connection string.");
             if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
-                throw new ConfigurationException("########### No connection string or instrumentation key provided");
+                throw new ConfigurationException("No connection string or instrumentation key provided");
             }
-            startupLogger.warn("It's in Azure Function runtime. instrumentation key is null or empty");
-        } else {
-            startupLogger.debug("########### connection string is not null nor empty.");
         }
-
-
 
         Properties properties = new Properties();
         properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
