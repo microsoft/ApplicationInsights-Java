@@ -65,13 +65,9 @@ public class InvocationRequestExtractAdapter implements TextMapPropagator.Getter
       // only supports W3C propagator
       switch (key) {
         case "traceparent":
-          String traceparent = (String) getTraceParentMethod.invoke(carrier);
-          System.out.println("TraceParent: " + traceparent);
-          return traceparent;
+          return (String) getTraceParentMethod.invoke(carrier);
         case "tracestate":
-          String tracestate = (String) getTraceStateMethod.invoke(carrier);
-          System.out.println("tracestate: " + tracestate);
-          return tracestate;
+          return (String) getTraceStateMethod.invoke(carrier);
         default:
           return null;
       }
