@@ -167,7 +167,6 @@ public class BeforeAgentInstaller {
 
         // this is for Azure Function Linux consumption plan support.
         if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-            startupLogger.debug("########### setting connection string for azure function linux consumption plan.");
             AiConnectionString.setAccessor(new ConnectionStringAccessor());
         }
 

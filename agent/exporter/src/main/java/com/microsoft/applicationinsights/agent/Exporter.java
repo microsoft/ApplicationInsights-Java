@@ -88,9 +88,6 @@ public class Exporter implements SpanExporter {
             return CompletableResultCode.ofSuccess();
         }
 
-        logger.debug("######## connection string: " + TelemetryConfiguration.getActive().getConnectionString());
-        logger.debug("######## instrumentation key: " + TelemetryConfiguration.getActive().getInstrumentationKey());
-
         try {
             for (SpanData span : spans) {
                 logger.debug("exporting span: {}", span);
