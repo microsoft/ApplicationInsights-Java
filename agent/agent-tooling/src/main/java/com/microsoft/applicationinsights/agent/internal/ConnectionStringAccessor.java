@@ -40,7 +40,7 @@ public class ConnectionStringAccessor implements AiConnectionString.Accessor {
     @Override public void setValue(String value) {
         if (!Strings.isNullOrEmpty(value)) {
             TelemetryConfiguration.getActive().setConnectionString(value);
-            logger.info("Set connection string lazily for the Azure Function Consumption Plan.");
+            logger.debug("Set connection string lazily for the Azure Function Consumption Plan.");
         }
     }
 }
