@@ -18,7 +18,7 @@ package io.opentelemetry.instrumentation.api.aiconnectionstring;
 
 public class AiConnectionString {
 
-  private static Accessor accessor;
+  private static volatile Accessor accessor;
 
   public static void setAccessor(Accessor accessor) {
     AiConnectionString.accessor = accessor;
