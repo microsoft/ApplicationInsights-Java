@@ -8,7 +8,6 @@ import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.Test;
 
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasName;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.*;
 
@@ -37,9 +36,11 @@ public class KafkaTest extends AiSmokeTest {
     @TargetUri("/sendMessage")
     public void doMostBasicTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 3);
 
         Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
+        String operationId = rdEnvelope1.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
+
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic");
         Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
         Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "mytopic");

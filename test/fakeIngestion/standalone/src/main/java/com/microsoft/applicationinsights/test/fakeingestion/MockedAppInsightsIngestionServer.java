@@ -131,12 +131,12 @@ public class MockedAppInsightsIngestionServer {
     }
 
     public List<Envelope> waitForItems(final String type, final int numItems) throws Exception {
-        return waitForItems(type, numItems, false);
+        return waitForItems(type, numItems, null);
     }
 
     // this is important for Message and Exception types which can also be captured outside of requests
-    public List<Envelope> waitForItemsInRequest(final String type, final int numItems) throws Exception {
-        return waitForItems(type, numItems, true);
+    public List<Envelope> waitForItemsInOperation(final String type, final int numItems, String operationId) throws Exception {
+        return waitForItems(type, numItems, operationId);
     }
 
     // this is used to filter out some sporadic messages that are captured via java.util.logging instrumentation
@@ -157,11 +157,12 @@ public class MockedAppInsightsIngestionServer {
         return items;
     }
 
-    public List<Envelope> waitForItems(final String type, final int numItems, final boolean inRequestOnly) throws Exception {
+    // if operationId is null, then matches all items, otherwise only matches items with that operationId
+    public List<Envelope> waitForItems(final String type, final int numItems, final String operationId) throws Exception {
         List<Envelope> items = waitForItems(new Predicate<Envelope>() {
             @Override public boolean apply(Envelope input) {
                 return input.getData().getBaseType().equals(type)
-                        && (!inRequestOnly || input.getTags().containsKey("ai.operation.id"));
+                        && (operationId == null || operationId.equals(input.getTags().get("ai.operation.id")));
             }
         }, numItems, 10, TimeUnit.SECONDS);
         if (items.size() > numItems) {

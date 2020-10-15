@@ -8,7 +8,6 @@ import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.Test;
 
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasName;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.*;
 
@@ -19,11 +18,14 @@ public class GrpcTest extends AiSmokeTest {
     @TargetUri("/simple")
     public void doSimpleTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
-        // individual messages are captured as events (and exported as traces) on CLIENT/SERVER spans
-        mockedIngestion.waitForItemsInRequest("EventData", 2);
 
         Envelope rdEnvelope1 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
+        String operationId = rdEnvelope1.getTags().get("ai.operation.id");
+
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
+        // individual messages are captured as events (and exported as traces) on CLIENT/SERVER spans
+        mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
+
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "GET /simple");
         Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
         Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "HelloController.simple");
@@ -40,11 +42,14 @@ public class GrpcTest extends AiSmokeTest {
     @TargetUri("/conversation")
     public void doConversationTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
-        List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
-        // individual messages are captured as events on CLIENT/SERVER spans
-        mockedIngestion.waitForItemsInRequest("EventData", 3);
 
         Envelope rdEnvelope1 = getRequestEnvelope(rdList, "example.Greeter/Conversation");
+        String operationId = rdEnvelope1.getTags().get("ai.operation.id");
+
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
+        // individual messages are captured as events on CLIENT/SERVER spans
+        mockedIngestion.waitForItemsInOperation("EventData", 3, operationId);
+
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "GET /conversation");
         Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "example.Greeter/Conversation");
         Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "HelloController.conversation");

@@ -253,7 +253,7 @@ public class Exporter implements SpanExporter {
                 }
                 telemetry.setType("Microsoft.EventHub");
             } else if ("kafka-clients".equals(stdComponent)) {
-                telemetry.setType("Kafka");
+                telemetry.setType("Queue Message | Kafka");
                 telemetry.setTarget(span.getName()); // destination queue name
             } else if ("jms".equals(stdComponent)) {
                 telemetry.setType("Queue Message | JMS");
@@ -493,8 +493,6 @@ public class Exporter implements SpanExporter {
                 // TODO this is special case to match 2.x behavior
                 //      because U/X strips off the beginning in E2E tx view
                 telemetry.setTarget("jdbc:" + dbUrl);
-                // TODO another special case to match 2.x behavior until we decide on new behavior
-                telemetry.setName(dbUrl);
             } else {
                 telemetry.setTarget(dbUrl);
             }
