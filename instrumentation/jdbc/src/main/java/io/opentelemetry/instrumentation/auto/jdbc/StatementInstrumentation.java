@@ -86,6 +86,7 @@ public final class StatementInstrumentation extends Instrumenter.Default {
         @Advice.Local("otelSpan") Span span,
         @Advice.Local("otelScope") Scope scope,
         @Advice.Local("otelCallDepth") Depth callDepth) {
+
       callDepth = TRACER.getCallDepth();
       if (callDepth.getAndIncrement() == 0) {
         span = TRACER.startSpan(statement, sql);
