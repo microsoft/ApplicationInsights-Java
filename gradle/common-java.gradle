@@ -47,25 +47,11 @@ checkstyle {
 }
 spotbugs {
     effort = 'max'
-    reportLevel = 'high'
+    reportLevel = 'medium'
     ignoreFailures = false
+    sourceSets = [sourceSets.main]
 }
-spotbugsTest {
-    reports {
-        html.enabled = true
-        html {
-            stylesheet = 'fancy-hist.xsl'
-        }
-    }
-}
-spotbugsMain {
-    reports {
-        html.enabled = true
-        html {
-            stylesheet = 'fancy-hist.xsl'
-        }
-    }
-}
+spotbugsMain.classpath = configurations.compileOnly + sourceSets.main.runtimeClasspath
 
 tasks.withType(JavaCompile) {
     dependencies {
@@ -73,7 +59,7 @@ tasks.withType(JavaCompile) {
         spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
     }
     def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
-    if (spotbugsExcludeFile.exists()) {
+    if (spotbugsExcludeFile.exists() && !spotbugs.excludeFilter) {
         logger.info "${project} using spotbugs exclude file ${spotbugsExcludeFile.absolutePath}"
         spotbugs.excludeFilter = spotbugsExcludeFile
     }

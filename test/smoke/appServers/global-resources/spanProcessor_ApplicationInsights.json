@@ -1,0 +1,40 @@
+{
+  "instrumentationSettings": {
+    "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
+    "preview": {
+      "roleName": "Something Good",
+      "spanProcessors": {
+        "attributes/insert": {
+          "actions": [
+            {
+              "key": "attribute1",
+              "value": "123",
+              "action": "insert"
+            }
+          ]
+        },
+        "attributes/maskUrl": {
+          "actions":[
+            {
+              "key":"url",
+              "value":"redacted",
+              "action":"update"
+            }
+          ]
+        },
+        "attributes/maskIP": {
+          "actions":[
+            {
+              "key":"http.client_ip",
+              "value":"redacted",
+              "action":"update"
+            }
+          ]
+        }
+      },
+      "selfDiagnostics": {
+        "level": "debug"
+      }
+    }
+  }
+}

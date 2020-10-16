@@ -45,4 +45,11 @@
         <Class name="com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2" />
         <Method name="&lt;clinit&gt;" />
     </Match>
+    <Match>
+        <Bug pattern="WEAK_MESSAGE_DIGEST_SHA1" />
+        <!-- Open Telemetry support SHA1 message digest for hash operation. https://github.com/open-telemetry/opentelemetry-collector/blob/master/processor/attributesprocessor/README.md -->
+        <Class name="com.microsoft.applicationinsights.agent.internal.processors.SpanProcessor" />
+        <Method name="lambda$processOtherActions$0" />
+    </Match>
+
 </FindBugsFilter>

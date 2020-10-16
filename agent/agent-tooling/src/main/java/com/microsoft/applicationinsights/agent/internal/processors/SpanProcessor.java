@@ -111,6 +111,7 @@ public class SpanProcessor {
                             }
                         }
                         break;
+                    default: break; // no action. Added to escape spotbug failures.
                 }
             }
             if (!updatedFlag) {

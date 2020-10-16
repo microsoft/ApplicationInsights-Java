@@ -199,10 +199,7 @@ public class Exporter implements SpanExporter {
 
         Double samplingPercentage = removeAiSamplingPercentage(attributes);
 
-        // for now, only add extra attributes for custom telemetry
-        if (stdComponent == null) {
-            addExtraAttributes(telemetry.getProperties(), attributes);
-        }
+        addExtraAttributes(telemetry.getProperties(), attributes);
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
     }
@@ -279,10 +276,7 @@ public class Exporter implements SpanExporter {
 
         Double samplingPercentage = removeAiSamplingPercentage(attributes);
 
-        // for now, only add extra attributes for custom telemetry
-        if (stdComponent == null) {
-            addExtraAttributes(telemetry.getProperties(), attributes);
-        }
+        addExtraAttributes(telemetry.getProperties(), attributes);
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
     }

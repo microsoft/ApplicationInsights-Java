@@ -39,6 +39,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.FixedRateSampling;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorConfig;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
@@ -106,6 +107,10 @@ public class BeforeAgentInstaller {
         InstrumentationSettings config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
             throw new ConfigurationException("No connection string or instrumentation key provided");
+        }
+
+        if(!hasValidSpanProcessorConfiguration(config)) {
+            throw new ConfigurationException("User provided span processor config is not valid!!!");
         }
 
         Properties properties = new Properties();
@@ -178,6 +183,14 @@ public class BeforeAgentInstaller {
                 }
             }
         });
+    }
+
+    private static boolean hasValidSpanProcessorConfiguration(InstrumentationSettings config) {
+        if(config.preview == null || config.preview.spanProcessors == null) return true;
+        for (Map.Entry<String, SpanProcessorConfig> spanProcessorConfigEntry : config.preview.spanProcessors.entrySet()) {
+            if(!spanProcessorConfigEntry.getValue().isValid()) return false;
+        }
+        return true;
     }
 
     @Nullable
