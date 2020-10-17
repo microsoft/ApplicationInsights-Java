@@ -72,8 +72,6 @@ public class AgentInstaller {
     AgentTooling.registerWeakMapProvider();
     // Instrumentation can use a bounded cache, so register here.
     AgentTooling.registerBoundedCacheProvider();
-    // this needs to be done as early as possible - before the first Config.get() call
-    ConfigInitializer.initialize();
   }
 
   public static void installBytebuddyAgent(Instrumentation inst) throws Exception {
@@ -89,6 +87,9 @@ public class AgentInstaller {
       final Method method = clazz.getMethod("beforeInstallBytebuddyAgent", Instrumentation.class);
       method.invoke(null, inst);
     }
+
+    // this needs to be done as early as possible - before the first Config.get() call
+    ConfigInitializer.initialize();
 
     if (Config.get().getBooleanProperty(JAVAAGENT_ENABLED_CONFIG, true)) {
       Iterable<ComponentInstaller> componentInstallers = loadComponentProviders();
