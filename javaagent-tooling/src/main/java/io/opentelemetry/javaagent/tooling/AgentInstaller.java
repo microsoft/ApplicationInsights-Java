@@ -72,9 +72,6 @@ public class AgentInstaller {
 
     // WeakMap is used by other classes below, so we need to register the provider first.
     AgentTooling.registerWeakMapProvider();
-
-    // this needs to be done as early as possible - before the first Config.get() call
-    ConfigInitializer.initialize();
   }
 
   public static void installBytebuddyAgent(Instrumentation inst) throws Exception {
@@ -89,6 +86,9 @@ public class AgentInstaller {
       final Method method = clazz.getMethod("beforeInstallBytebuddyAgent", Instrumentation.class);
       method.invoke(null, inst);
     }
+
+    // this needs to be done as early as possible - before the first Config.get() call
+    ConfigInitializer.initialize();
 
     if (Config.get().getBooleanProperty(TRACE_ENABLED_CONFIG, true)) {
       installBytebuddyAgent(inst, false, new AgentBuilder.Listener[0]);
