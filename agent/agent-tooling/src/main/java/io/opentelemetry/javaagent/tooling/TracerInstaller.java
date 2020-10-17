@@ -21,17 +21,17 @@ public class TracerInstaller {
         }
 
         OpenTelemetry.setPropagators(
-                DefaultContextPropagators.builder().addTextMapPropagator(new AiHttpTraceContext()).build());
+                DefaultContextPropagators.builder().addTextMapPropagator(AiHttpTraceContext.getInstance()).build());
 
         double fixedRateSamplingPercentage = Global.getFixedRateSamplingPercentage();
         if (fixedRateSamplingPercentage != 100) {
-            OpenTelemetrySdk.getTracerProvider().updateActiveTraceConfig(
+            OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(
                     TraceConfig.getDefault().toBuilder()
                             .setSampler(new FixedRateSampler(fixedRateSamplingPercentage))
                             .build());
         }
         // if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
-        OpenTelemetrySdk.getTracerProvider()
+        OpenTelemetrySdk.getTracerManagement()
                 .addSpanProcessor(SimpleSpanProcessor.newBuilder(new Exporter(telemetryClient)).build());
     }
 
