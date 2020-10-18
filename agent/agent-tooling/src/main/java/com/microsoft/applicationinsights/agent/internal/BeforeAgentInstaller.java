@@ -60,6 +60,7 @@ import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElem
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
+import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.config.Config;
 import org.apache.http.HttpHost;
@@ -146,7 +147,9 @@ public class BeforeAgentInstaller {
         }
 
         if (config.preview.httpProxy.host != null) {
-            ApacheSender43.proxy = new HttpHost(config.preview.httpProxy.host, config.preview.httpProxy.port);
+            HttpHost proxy = new HttpHost(config.preview.httpProxy.host, config.preview.httpProxy.port);
+            ApacheSender43.proxy = proxy;
+            CdsProfileFetcher.proxy = proxy;
         }
 
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
