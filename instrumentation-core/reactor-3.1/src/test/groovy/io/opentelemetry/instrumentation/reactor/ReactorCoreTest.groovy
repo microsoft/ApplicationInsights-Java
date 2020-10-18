@@ -1,27 +1,13 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.instrumentation.reactor
 
-import static io.opentelemetry.auto.test.utils.TraceUtils.basicSpan
-
 import io.opentelemetry.OpenTelemetry
-import io.opentelemetry.auto.test.InstrumentationTestRunner
-import io.opentelemetry.auto.test.utils.TraceUtils
-import io.opentelemetry.trace.DefaultSpan
+import io.opentelemetry.instrumentation.test.InstrumentationTestRunner
+import io.opentelemetry.instrumentation.test.utils.TraceUtils
 import io.opentelemetry.trace.Tracer
 import java.time.Duration
 import org.reactivestreams.Publisher
@@ -31,6 +17,8 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import spock.lang.Shared
 
+import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
+
 class ReactorCoreTest extends InstrumentationTestRunner {
 
   public static final String EXCEPTION_MESSAGE = "test exception"
@@ -39,11 +27,11 @@ class ReactorCoreTest extends InstrumentationTestRunner {
     OpenTelemetry.getTracer("io.opentelemetry.auto.reactor")
 
   def setupSpec() {
-    TracingPublishers.registerOnEachOperator()
+    TracingOperator.registerOnEachOperator()
   }
 
   def cleanupSpec() {
-    TracingPublishers.resetOnEachOperator()
+    TracingOperator.resetOnEachOperator()
   }
 
   @Shared
@@ -70,34 +58,17 @@ class ReactorCoreTest extends InstrumentationTestRunner {
     and:
     assertTraces(1) {
       trace(0, workSpans + 2) {
-        span(0) {
-          operationName "trace-parent"
-          parent()
-          attributes {
-          }
-        }
-        span(1) {
-          operationName "publisher-parent"
-          childOf span(0)
-          attributes {
-          }
-        }
-
+        basicSpan(it, 0, "trace-parent")
         basicSpan(it, 1, "publisher-parent", span(0))
 
         for (int i = 0; i < workSpans; i++) {
-          span(i + 2) {
-            operationName "add one"
-            childOf span(1)
-            attributes {
-            }
-          }
+          basicSpan(it, 2 + i, "add one", span(1))
         }
       }
     }
 
     where:
-    name                  | expected | workSpans | publisherSupplier
+    paramName             | expected | workSpans | publisherSupplier
     "basic mono"          | 2        | 1         | { -> Mono.just(1).map(addOne) }
     "two operations mono" | 4        | 2         | { -> Mono.just(2).map(addOne).map(addOne) }
     "delayed mono"        | 4        | 1         | { ->
@@ -133,10 +104,10 @@ class ReactorCoreTest extends InstrumentationTestRunner {
     assertTraces(1) {
       trace(0, 2) {
         span(0) {
-          operationName "trace-parent"
+          name "trace-parent"
           errored true
           errorEvent(RuntimeException, EXCEPTION_MESSAGE)
-          parent()
+          hasNoParent()
         }
 
         // It's important that we don't attach errors at the Reactor level so that we don't
@@ -148,9 +119,9 @@ class ReactorCoreTest extends InstrumentationTestRunner {
     }
 
     where:
-    name   | publisherSupplier
-    "mono" | { -> Mono.error(new RuntimeException(EXCEPTION_MESSAGE)) }
-    "flux" | { -> Flux.error(new RuntimeException(EXCEPTION_MESSAGE)) }
+    paramName | publisherSupplier
+    "mono"    | { -> Mono.error(new RuntimeException(EXCEPTION_MESSAGE)) }
+    "flux"    | { -> Flux.error(new RuntimeException(EXCEPTION_MESSAGE)) }
   }
 
   def "Publisher step '#name' test"() {
@@ -164,10 +135,10 @@ class ReactorCoreTest extends InstrumentationTestRunner {
     assertTraces(1) {
       trace(0, workSpans + 2) {
         span(0) {
-          operationName "trace-parent"
+          name "trace-parent"
           errored true
           errorEvent(RuntimeException, EXCEPTION_MESSAGE)
-          parent()
+          hasNoParent()
         }
 
         // It's important that we don't attach errors at the Reactor level so that we don't
@@ -178,7 +149,7 @@ class ReactorCoreTest extends InstrumentationTestRunner {
 
         for (int i = 0; i < workSpans; i++) {
           span(i + 2) {
-            operationName "add one"
+            name "add one"
             childOf span(1)
             attributes {
             }
@@ -188,7 +159,7 @@ class ReactorCoreTest extends InstrumentationTestRunner {
     }
 
     where:
-    name                 | workSpans | publisherSupplier
+    paramName            | workSpans | publisherSupplier
     "basic mono failure" | 1         | { -> Mono.just(1).map(addOne).map({ throwException() }) }
     "basic flux failure" | 1         | { ->
       Flux.fromIterable([5, 6]).map(addOne).map({ throwException() })
@@ -203,8 +174,8 @@ class ReactorCoreTest extends InstrumentationTestRunner {
     assertTraces(1) {
       trace(0, 2) {
         span(0) {
-          operationName "trace-parent"
-          parent()
+          name "trace-parent"
+          hasNoParent()
           attributes {
           }
         }
@@ -214,7 +185,7 @@ class ReactorCoreTest extends InstrumentationTestRunner {
     }
 
     where:
-    name         | publisherSupplier
+    paramName    | publisherSupplier
     "basic mono" | { -> Mono.just(1) }
     "basic flux" | { -> Flux.fromIterable([5, 6]) }
   }
@@ -227,8 +198,8 @@ class ReactorCoreTest extends InstrumentationTestRunner {
     assertTraces(1) {
       trace(0, workSpans + 2) {
         span(0) {
-          operationName "trace-parent"
-          parent()
+          name "trace-parent"
+          hasNoParent()
           attributes {
           }
         }
@@ -237,7 +208,7 @@ class ReactorCoreTest extends InstrumentationTestRunner {
 
         for (int i = 0; i < workSpans; i++) {
           span(i + 2) {
-            operationName "add one"
+            name "add one"
             childOf span(1)
             attributes {
             }
@@ -247,7 +218,7 @@ class ReactorCoreTest extends InstrumentationTestRunner {
     }
 
     where:
-    name         | workSpans | publisherSupplier
+    paramName    | workSpans | publisherSupplier
     "basic mono" | 3         | { ->
       Mono.just(1).map(addOne).map(addOne).then(Mono.just(1).map(addOne))
     }
@@ -282,97 +253,19 @@ class ReactorCoreTest extends InstrumentationTestRunner {
     then:
     assertTraces(1) {
       trace(0, (workItems * 2) + 3) {
-        span(0) {
-          operationName "trace-parent"
-          parent()
-          attributes {
-          }
-        }
-
+        basicSpan(it, 0, "trace-parent")
         basicSpan(it, 1, "publisher-parent", span(0))
         basicSpan(it, 2, "intermediate", span(1))
 
-        for (int i = 0; i < workItems; i++) {
-          span(3 + i) {
-            operationName "add two"
-            childOf span(2)
-            attributes {
-            }
-          }
-        }
-        for (int i = 0; i < workItems; i++) {
-          span(3 + workItems + i) {
-            operationName "add one"
-            childOf span(1)
-            attributes {
-            }
-          }
+        for (int i = 0; i < 2 * workItems; i = i + 2) {
+          basicSpan(it, 3 + i, "add one", span(1))
+          basicSpan(it, 3 + i + 1, "add two", span(1))
         }
       }
     }
 
     where:
-    name         | workItems | publisherSupplier
-    "basic mono" | 1         | { -> Mono.just(1).map(addOne) }
-    "basic flux" | 2         | { -> Flux.fromIterable([1, 2]).map(addOne) }
-  }
-
-  def "Publisher chain spans can have the parent removed at assembly time '#name'"() {
-    when:
-    runUnderTrace {
-      // The operations in the publisher created here all end up children of the publisher-parent
-      Publisher<Integer> publisher = publisherSupplier()
-
-      // After this activation, all additions to the assembly will create new traces
-      def tracer = OpenTelemetry.getTracer("test")
-      def scope = tracer.withSpan(DefaultSpan.getInvalid())
-      try {
-        if (publisher instanceof Mono) {
-          return ((Mono) publisher).map(addOne)
-        } else if (publisher instanceof Flux) {
-          return ((Flux) publisher).map(addOne)
-        }
-        throw new IllegalStateException("Unknown publisher type")
-      } finally {
-        scope.close()
-      }
-    }
-
-    then:
-    assertTraces(1 + workItems) {
-      trace(0, 2 + workItems) {
-        span(0) {
-          operationName "trace-parent"
-          parent()
-          attributes {
-          }
-        }
-
-        basicSpan(it, 1, "publisher-parent", span(0))
-
-        for (int i = 0; i < workItems; i++) {
-          span(2 + i) {
-            operationName "add one"
-            childOf span(1)
-            attributes {
-            }
-          }
-        }
-      }
-      for (int i = 0; i < workItems; i++) {
-        trace(i + 1, 1) {
-          span(0) {
-            operationName "add one"
-            parent()
-            attributes {
-            }
-          }
-        }
-      }
-    }
-
-    where:
-    name         | workItems | publisherSupplier
+    paramName    | workItems | publisherSupplier
     "basic mono" | 1         | { -> Mono.just(1).map(addOne) }
     "basic flux" | 2         | { -> Flux.fromIterable([1, 2]).map(addOne) }
   }

@@ -1,17 +1,6 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.javaagent.tooling.bytebuddy.matcher
@@ -19,7 +8,6 @@ package io.opentelemetry.javaagent.tooling.bytebuddy.matcher
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass
 import static net.bytebuddy.matcher.ElementMatchers.named
 
-import io.opentelemetry.auto.util.test.AgentSpecification
 import io.opentelemetry.javaagent.tooling.AgentTooling
 import io.opentelemetry.javaagent.tooling.bytebuddy.matcher.testclasses.A
 import io.opentelemetry.javaagent.tooling.bytebuddy.matcher.testclasses.B
@@ -28,8 +16,9 @@ import io.opentelemetry.javaagent.tooling.bytebuddy.matcher.testclasses.G
 import net.bytebuddy.description.type.TypeDescription
 import net.bytebuddy.jar.asm.Opcodes
 import spock.lang.Shared
+import spock.lang.Specification
 
-class ExtendsClassMatcherTest extends AgentSpecification {
+class ExtendsClassMatcherTest extends Specification {
   @Shared
   def typePool =
     AgentTooling.poolStrategy()

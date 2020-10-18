@@ -1,23 +1,12 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import static io.opentelemetry.trace.Span.Kind.CLIENT
 
-import io.opentelemetry.auto.test.base.HttpClientTest
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId
+import io.opentelemetry.instrumentation.test.base.HttpClientTest
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import java.util.concurrent.TimeUnit
 import javax.ws.rs.client.Client
@@ -68,17 +57,19 @@ abstract class JaxRsClientTest extends HttpClientTest {
     assertTraces(1) {
       trace(0, 2) {
         span(0) {
-          parent()
-          operationName expectedOperationName(method)
-          spanKind CLIENT
+          hasNoParent()
+          name expectedOperationName(method)
+          kind CLIENT
           errored true
           attributes {
+            "${SemanticAttributes.NET_TRANSPORT.key()}" "IP.TCP"
             "${SemanticAttributes.NET_PEER_NAME.key()}" uri.host
             "${SemanticAttributes.NET_PEER_IP.key()}" { it == null || it == "127.0.0.1" }
             "${SemanticAttributes.NET_PEER_PORT.key()}" uri.port > 0 ? uri.port : { it == null || it == 443 }
             "${SemanticAttributes.HTTP_URL.key()}" "${uri}"
             "${SemanticAttributes.HTTP_METHOD.key()}" method
             "${SemanticAttributes.HTTP_STATUS_CODE.key()}" statusCode
+            "${SemanticAttributes.HTTP_FLAVOR.key()}" "1.1"
             "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
           }
         }

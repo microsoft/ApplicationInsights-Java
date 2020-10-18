@@ -10,9 +10,8 @@ apply from: "$rootDir/gradle/codenarc.gradle"
 apply from: "$rootDir/gradle/spotbugs.gradle"
 
 afterEvaluate {
-  if (!archivesBaseName.startsWith('javaagent') &&
-    (group == 'io.opentelemetry.instrumentation.auto' || findProperty('mavenGroupId') == 'io.opentelemetry.instrumentation.auto')) {
-    archivesBaseName = 'opentelemetry-auto-' + archivesBaseName
+  if (findProperty('mavenGroupId') == 'io.opentelemetry.javaagent.instrumentation') {
+    archivesBaseName = 'opentelemetry-javaagent-' + archivesBaseName
   } else {
     archivesBaseName = 'opentelemetry-' + archivesBaseName
   }
@@ -33,7 +32,7 @@ if (applyCodeCoverage) {
 if (project.hasProperty("minJavaVersionForTests")) {
   project.ext.release = project.getProperty("minJavaVersionForTests")
 } else {
-  project.ext.release = JavaVersion.VERSION_1_7
+  project.ext.release = JavaVersion.VERSION_1_8
 }
 
 java {
@@ -98,6 +97,8 @@ repositories {
 }
 
 dependencies {
+  compileOnly group: 'org.checkerframework', name: 'checker-qual', version: versions.checkerFramework
+
   testImplementation enforcedPlatform(group: 'org.junit', name: 'junit-bom', version: versions.junit5)
   testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
   testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params'
@@ -114,11 +115,15 @@ dependencies {
     // need to pin the opentelemetry-sdk transitive dependency versions explicitly, otherwise the
     // latest snapshots are used, because the opentelemetry-sdk snapshot pom references these
     // transitive dependencies using the generic SNAPSHOT instead of a specific snapshot
-    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-common', version: versions.opentelemetryAnother
-    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-correlation-context', version: versions.opentelemetryAnother
-    implementation group: 'io.opentelemetry', name: 'opentelemetry-proto', version: versions.opentelemetryOther
-    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-metrics', version: versions.opentelemetryAnother
-    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-tracing', version: versions.opentelemetryAnother
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: versions.opentelemetry
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-context-prop', version: versions.opentelemetryAnother
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk', version: versions.opentelemetry
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-baggage', version: versions.opentelemetryBaggage
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-common', version: versions.opentelemetry
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-proto', version: versions.opentelemetry
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-otproto', version: versions.opentelemetryOther
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-metrics', version: versions.opentelemetryOther
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-tracing', version: versions.opentelemetry
   }
 }
 
@@ -168,13 +173,6 @@ project.afterEvaluate {
     }
   }
 }
-
-if (project.hasProperty("removeJarVersionNumbers") && removeJarVersionNumbers) {
-  tasks.withType(AbstractArchiveTask).configureEach {
-    version = null
-  }
-}
-
 
 if (!rootProject.ext.has("javaExecutableVersionCache")) {
   rootProject.ext.javaExecutableVersionCache = [:]
@@ -257,10 +255,6 @@ def addTestRule(String testTaskName) {
           tasks.withType(Test).all {
             executable = toExecutable(javaHomeForTests)
             enabled = isJavaVersionAllowed(requestedJavaVersion)
-            if (requestedJavaVersion.isJava7()) {
-              // Disable JIT for this method. Sometimes Java7 JVM crashes trying to compile it.
-              jvmArgs '-XX:CompileCommand=exclude,net.bytebuddy.description.type.TypeDescription$Generic$Visitor$Substitutor::onParameterizedType'
-            }
           }
         } else {
           throw new BuildCancelledException("Requested java version $requestedJavaVersion not found")
@@ -298,9 +292,33 @@ tasks.withType(Test).configureEach {
   reports {
     junitXml.outputPerTestCase = true
   }
+
+  testLogging {
+    exceptionFormat = 'full'
+  }
 }
 
 tasks.withType(AbstractArchiveTask) {
   preserveFileTimestamps = false
   reproducibleFileOrder = true
+}
+
+plugins.withId('net.ltgt.errorprone') {
+  dependencies {
+    annotationProcessor group: "com.uber.nullaway", name: "nullaway", version: versions.nullaway
+    errorprone group: "com.google.errorprone", name: "error_prone_core", version: versions.errorprone
+  }
+
+  tasks.withType(JavaCompile) {
+    if (!name.toLowerCase().contains("test")) {
+      options.errorprone {
+        error("NullAway")
+
+        // Doesn't work well with Java 8
+        disable("FutureReturnValueIgnored")
+
+        option("NullAway:AnnotatedPackages", "io.opentelemetry,com.linecorp.armeria,com.google.common")
+      }
+    }
+  }
 }

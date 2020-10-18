@@ -1,17 +1,6 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.javaagent.tooling;
@@ -46,18 +35,24 @@ public class PropagatorsInitializer {
 
   private static final Map<String, TextMapPropagator> TEXTMAP_PROPAGATORS =
       ImmutableMap.<String, TextMapPropagator>builder()
-          .put(TRACE_CONTEXT, new HttpTraceContext())
+          .put(TRACE_CONTEXT, HttpTraceContext.getInstance())
           .put(B3, B3Propagator.getMultipleHeaderPropagator())
           .put(B3_SINGLE, B3Propagator.getSingleHeaderPropagator())
-          .put(JAEGER, new JaegerPropagator())
+          .put(JAEGER, JaegerPropagator.getInstance())
           .put(OT_TRACER, OtTracerPropagator.getInstance())
-          .put(XRAY, new AwsXRayPropagator())
+          .put(XRAY, AwsXRayPropagator.getInstance())
           .build();
 
   /** Initialize OpenTelemetry global Propagators with propagator list, if any. */
   public static void initializePropagators(List<String> propagators) {
     /* Only override the default propagators *if* the user specified any. */
     if (propagators.size() == 0) {
+      // TODO this is probably temporary until default propagators are supplied by SDK
+      //  https://github.com/open-telemetry/opentelemetry-java/issues/1742
+      OpenTelemetry.setPropagators(
+          DefaultContextPropagators.builder()
+              .addTextMapPropagator(HttpTraceContext.getInstance())
+              .build());
       return;
     }
 

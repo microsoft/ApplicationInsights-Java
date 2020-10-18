@@ -1,25 +1,14 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package muzzle;
 
-import io.opentelemetry.auto.util.gc.GCUtils;
+import io.opentelemetry.instrumentation.util.gc.GCUtils;
 import io.opentelemetry.javaagent.tooling.muzzle.Reference;
-import io.opentelemetry.javaagent.tooling.muzzle.ReferenceCreator;
-import io.opentelemetry.javaagent.tooling.muzzle.ReferenceMatcher;
+import io.opentelemetry.javaagent.tooling.muzzle.collector.ReferenceCollector;
+import io.opentelemetry.javaagent.tooling.muzzle.matcher.ReferenceMatcher;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -34,9 +23,7 @@ public class MuzzleWeakReferenceTest {
     ClassLoader loader = new URLClassLoader(new URL[0], null);
     WeakReference<ClassLoader> clRef = new WeakReference<>(loader);
     Reference[] refs =
-        ReferenceCreator.createReferencesFrom(
-                TestClasses.MethodBodyAdvice.class.getName(),
-                MuzzleWeakReferenceTest.class.getClassLoader())
+        ReferenceCollector.collectReferencesFrom(TestClasses.MethodBodyAdvice.class.getName())
             .values()
             .toArray(new Reference[0]);
     ReferenceMatcher refMatcher = new ReferenceMatcher(refs);

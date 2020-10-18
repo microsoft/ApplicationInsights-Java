@@ -1,17 +1,6 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import static io.opentelemetry.trace.Span.Kind.CONSUMER
@@ -19,8 +8,9 @@ import static io.opentelemetry.trace.Span.Kind.PRODUCER
 import static io.opentelemetry.trace.TracingContextUtils.getSpan
 
 import io.grpc.Context
-import io.opentelemetry.auto.test.AgentTestRunner
+import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.context.propagation.TextMapPropagator
+import io.opentelemetry.trace.attributes.SemanticAttributes
 import io.opentelemetry.trace.propagation.HttpTraceContext
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
@@ -137,20 +127,28 @@ class KafkaStreamsTest extends AgentTestRunner {
       trace(0, 5) {
         // PRODUCER span 0
         span(0) {
-          operationName STREAM_PENDING
-          spanKind PRODUCER
+          name STREAM_PENDING + " send"
+          kind PRODUCER
           errored false
-          parent()
+          hasNoParent()
           attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PENDING
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
           }
         }
         // CONSUMER span 0
         span(1) {
-          operationName STREAM_PENDING
-          spanKind CONSUMER
+          name STREAM_PENDING + " process"
+          kind CONSUMER
           errored false
           childOf span(0)
           attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PENDING
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "process"
+            "${SemanticAttributes.MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES.key}" Long
             "partition" { it >= 0 }
             "offset" 0
             "record.queue_time_ms" { it >= 0 }
@@ -158,11 +156,15 @@ class KafkaStreamsTest extends AgentTestRunner {
         }
         // STREAMING span 1
         span(2) {
-          operationName STREAM_PENDING
-          spanKind CONSUMER
+          name STREAM_PENDING + " process"
+          kind CONSUMER
           errored false
           childOf span(0)
           attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PENDING
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "process"
             "partition" { it >= 0 }
             "offset" 0
             "asdf" "testing"
@@ -170,20 +172,28 @@ class KafkaStreamsTest extends AgentTestRunner {
         }
         // STREAMING span 0
         span(3) {
-          operationName STREAM_PROCESSED
-          spanKind PRODUCER
+          name STREAM_PROCESSED + " send"
+          kind PRODUCER
           errored false
           childOf span(2)
           attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PROCESSED
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
           }
         }
         // CONSUMER span 0
         span(4) {
-          operationName STREAM_PROCESSED
-          spanKind CONSUMER
+          name STREAM_PROCESSED + " process"
+          kind CONSUMER
           errored false
           childOf span(3)
           attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "kafka"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" STREAM_PROCESSED
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "process"
+            "${SemanticAttributes.MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES.key}" Long
             "partition" { it >= 0 }
             "offset" 0
             "record.queue_time_ms" { it >= 0 }
@@ -206,8 +216,8 @@ class KafkaStreamsTest extends AgentTestRunner {
       }
     })
     def spanContext = getSpan(context).getContext()
-    spanContext.traceId == TEST_WRITER.traces[0][3].traceId
-    spanContext.spanId == TEST_WRITER.traces[0][3].spanId
+    spanContext.traceIdAsHexString == TEST_WRITER.traces[0][3].traceId
+    spanContext.spanIdAsHexString == TEST_WRITER.traces[0][3].spanId
 
 
     cleanup:

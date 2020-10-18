@@ -1,25 +1,14 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import static com.netflix.hystrix.HystrixCommandGroupKey.Factory.asKey
-import static io.opentelemetry.auto.test.utils.TraceUtils.runUnderTrace
+import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 
 import com.netflix.hystrix.HystrixCommand
-import io.opentelemetry.auto.test.AgentTestRunner
-import io.opentelemetry.auto.test.utils.ConfigUtils
+import io.opentelemetry.instrumentation.test.AgentTestRunner
+import io.opentelemetry.instrumentation.test.utils.ConfigUtils
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 import spock.lang.Timeout
@@ -29,12 +18,17 @@ class HystrixTest extends AgentTestRunner {
   static {
     // Disable so failure testing below doesn't inadvertently change the behavior.
     System.setProperty("hystrix.command.default.circuitBreaker.enabled", "false")
-    ConfigUtils.updateConfig {
-      System.setProperty("otel.hystrix.tags.enabled", "true")
-    }
 
     // Uncomment for debugging:
     // System.setProperty("hystrix.command.default.execution.timeout.enabled", "false")
+  }
+
+  static final PREVIOUS_CONFIG = ConfigUtils.updateConfig {
+    it.setProperty("otel.hystrix.tags.enabled", "true")
+  }
+
+  def cleanupSpec() {
+    ConfigUtils.setConfig(PREVIOUS_CONFIG)
   }
 
   def "test command #action"() {
@@ -60,14 +54,14 @@ class HystrixTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 3) {
         span(0) {
-          operationName "parent"
-          parent()
+          name "parent"
+          hasNoParent()
           errored false
           attributes {
           }
         }
         span(1) {
-          operationName "ExampleGroup.HystrixTest\$1.execute"
+          name "ExampleGroup.HystrixTest\$1.execute"
           childOf span(0)
           errored false
           attributes {
@@ -77,7 +71,7 @@ class HystrixTest extends AgentTestRunner {
           }
         }
         span(2) {
-          operationName "tracedMethod"
+          name "tracedMethod"
           childOf span(1)
           errored false
           attributes {
@@ -123,14 +117,14 @@ class HystrixTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 3) {
         span(0) {
-          operationName "parent"
-          parent()
+          name "parent"
+          hasNoParent()
           errored false
           attributes {
           }
         }
         span(1) {
-          operationName "ExampleGroup.HystrixTest\$2.execute"
+          name "ExampleGroup.HystrixTest\$2.execute"
           childOf span(0)
           errored true
           errorEvent(IllegalArgumentException)
@@ -141,7 +135,7 @@ class HystrixTest extends AgentTestRunner {
           }
         }
         span(2) {
-          operationName "ExampleGroup.HystrixTest\$2.fallback"
+          name "ExampleGroup.HystrixTest\$2.fallback"
           childOf span(1)
           errored false
           attributes {

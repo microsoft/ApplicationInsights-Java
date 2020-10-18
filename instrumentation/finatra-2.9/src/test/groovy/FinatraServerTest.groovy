@@ -1,21 +1,10 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.PATH_PARAM
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.SUCCESS
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.PATH_PARAM
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.SUCCESS
 import static io.opentelemetry.trace.Span.Kind.INTERNAL
 import static io.opentelemetry.trace.Span.Kind.SERVER
 
@@ -23,9 +12,8 @@ import com.twitter.finatra.http.HttpServer
 import com.twitter.util.Await
 import com.twitter.util.Closable
 import com.twitter.util.Duration
-import io.opentelemetry.auto.test.asserts.TraceAssert
-import io.opentelemetry.auto.test.base.HttpServerTest
-import io.opentelemetry.instrumentation.api.MoreAttributes
+import io.opentelemetry.instrumentation.test.asserts.TraceAssert
+import io.opentelemetry.instrumentation.test.base.HttpServerTest
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import java.util.concurrent.TimeoutException
@@ -90,8 +78,8 @@ class FinatraServerTest extends HttpServerTest<HttpServer> {
   @Override
   void handlerSpan(TraceAssert trace, int index, Object parent, String method = "GET", ServerEndpoint endpoint = SUCCESS) {
     trace.span(index) {
-      operationName "FinatraController"
-      spanKind INTERNAL
+      name "FinatraController"
+      kind INTERNAL
       childOf(parent as SpanData)
       // Finatra doesn't propagate the stack trace or exception to the instrumentation
       // so the normal errorAttributes() method can't be used
@@ -104,14 +92,14 @@ class FinatraServerTest extends HttpServerTest<HttpServer> {
   @Override
   void serverSpan(TraceAssert trace, int index, String traceID = null, String parentID = null, String method = "GET", Long responseContentLength = null, ServerEndpoint endpoint = SUCCESS) {
     trace.span(index) {
-      operationName endpoint == PATH_PARAM ? "/path/:id/param" : endpoint.resolvePath(address).path
-      spanKind SERVER
+      name endpoint == PATH_PARAM ? "/path/:id/param" : endpoint.resolvePath(address).path
+      kind SERVER
       errored endpoint.errored
       if (parentID != null) {
         traceId traceID
-        parentId parentID
+        parentSpanId parentID
       } else {
-        parent()
+        hasNoParent()
       }
       attributes {
         "${SemanticAttributes.NET_PEER_PORT.key()}" Long
@@ -122,10 +110,6 @@ class FinatraServerTest extends HttpServerTest<HttpServer> {
         "${SemanticAttributes.HTTP_FLAVOR.key()}" "HTTP/1.1"
         "${SemanticAttributes.HTTP_USER_AGENT.key()}" TEST_USER_AGENT
         "${SemanticAttributes.HTTP_CLIENT_IP.key()}" TEST_CLIENT_IP
-        // exception bodies are not yet recorded
-        if (endpoint.query) {
-          "$MoreAttributes.HTTP_QUERY" endpoint.query
-        }
       }
     }
   }

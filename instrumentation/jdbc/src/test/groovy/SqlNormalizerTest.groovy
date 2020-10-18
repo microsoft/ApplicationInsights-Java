@@ -1,28 +1,15 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-import io.opentelemetry.auto.test.utils.ConfigUtils
-import io.opentelemetry.auto.util.test.AgentSpecification
-import io.opentelemetry.instrumentation.api.config.Config
-import io.opentelemetry.instrumentation.auto.jdbc.JDBCUtils
-import io.opentelemetry.instrumentation.auto.jdbc.normalizer.SqlNormalizer
+import io.opentelemetry.javaagent.instrumentation.jdbc.JDBCUtils
+import io.opentelemetry.javaagent.instrumentation.jdbc.normalizer.SqlNormalizer
+import spock.lang.Specification
 import spock.lang.Timeout
 
 @Timeout(20)
-class SqlNormalizerTest extends AgentSpecification {
+class SqlNormalizerTest extends Specification {
 
   def "normalize #originalSql"() {
     setup:
@@ -137,21 +124,6 @@ class SqlNormalizerTest extends AgentSpecification {
         sb.append((char) r.nextInt((int) Character.MAX_VALUE))
       }
       JDBCUtils.normalizeSql(sb.toString())
-    }
-  }
-
-  def "config can disable sql normalizer"() {
-    setup:
-    ConfigUtils.updateConfig {
-      System.setProperty("otel." + Config.SQL_NORMALIZER_ENABLED, "false")
-    }
-    try {
-      String s = "SELECT * FROM TABLE WHERE FIELD = 1234"
-      assert s == JDBCUtils.normalizeSql(s)
-    } finally {
-      ConfigUtils.updateConfig {
-        System.setProperty("otel." + Config.SQL_NORMALIZER_ENABLED, "true")
-      }
     }
   }
 }

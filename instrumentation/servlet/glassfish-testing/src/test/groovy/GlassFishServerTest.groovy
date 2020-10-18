@@ -1,26 +1,14 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.SUCCESS
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.SUCCESS
 import static io.opentelemetry.trace.Span.Kind.SERVER
 
-import io.opentelemetry.auto.test.asserts.TraceAssert
-import io.opentelemetry.auto.test.base.HttpServerTest
-import io.opentelemetry.instrumentation.api.MoreAttributes
+import io.opentelemetry.instrumentation.test.asserts.TraceAssert
+import io.opentelemetry.instrumentation.test.base.HttpServerTest
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import org.glassfish.embeddable.BootstrapProperties
 import org.glassfish.embeddable.Deployer
@@ -31,7 +19,7 @@ import org.glassfish.embeddable.archive.ScatteredArchive
 
 /**
  * Unfortunately because we're using an embedded GlassFish instance, we aren't exercising the standard
- * OSGi setup that requires {@link io.opentelemetry.instrumentation.auto.javaclassloader.ClassloadingInstrumentation}.
+ * OSGi setup that requires {@link io.opentelemetry.javaagent.instrumentation.javaclassloader.ClassloadingInstrumentation}.
  */
 // TODO: Figure out a better way to test with OSGi included.
 class GlassFishServerTest extends HttpServerTest<GlassFish> {
@@ -89,14 +77,14 @@ class GlassFishServerTest extends HttpServerTest<GlassFish> {
   @Override
   void serverSpan(TraceAssert trace, int index, String traceID = null, String parentID = null, String method = "GET", Long responseContentLength = null, ServerEndpoint endpoint = SUCCESS) {
     trace.span(index) {
-      operationName entryPointName()
-      spanKind SERVER
+      name entryPointName()
+      kind SERVER
       errored endpoint.errored
       if (parentID != null) {
         traceId traceID
-        parentId parentID
+        parentSpanId parentID
       } else {
-        parent()
+        hasNoParent()
       }
       if (endpoint == EXCEPTION) {
         errorEvent(Exception, EXCEPTION.body)
@@ -110,11 +98,6 @@ class GlassFishServerTest extends HttpServerTest<GlassFish> {
         "${SemanticAttributes.HTTP_FLAVOR.key()}" "HTTP/1.1"
         "${SemanticAttributes.HTTP_USER_AGENT.key()}" TEST_USER_AGENT
         "${SemanticAttributes.HTTP_CLIENT_IP.key()}" TEST_CLIENT_IP
-        "servlet.context" "/$context"
-        "servlet.path" endpoint.path
-        if (endpoint.query) {
-          "$MoreAttributes.HTTP_QUERY" endpoint.query
-        }
       }
     }
   }

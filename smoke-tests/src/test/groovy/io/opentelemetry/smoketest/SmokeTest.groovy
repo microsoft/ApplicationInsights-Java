@@ -1,28 +1,20 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.smoketest
 
+import static java.util.stream.Collectors.toSet
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.protobuf.util.JsonFormat
-import io.opentelemetry.auto.test.utils.OkHttpUtils
+import io.opentelemetry.instrumentation.test.utils.OkHttpUtils
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.proto.common.v1.AnyValue
 import io.opentelemetry.proto.trace.v1.Span
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 import java.util.stream.Stream
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -31,6 +23,7 @@ import org.slf4j.LoggerFactory
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.output.Slf4jLogConsumer
+import org.testcontainers.containers.output.ToStringConsumer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.utility.MountableFile
 import spock.lang.Shared
@@ -38,10 +31,11 @@ import spock.lang.Specification
 
 abstract class SmokeTest extends Specification {
   private static final Logger logger = LoggerFactory.getLogger(SmokeTest)
+  private static final Pattern TRACE_ID_PATTERN = Pattern.compile(".*traceId=(?<traceId>[a-zA-Z0-9]+).*")
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
 
-  protected static OkHttpClient client = OkHttpUtils.client()
+  protected static final OkHttpClient CLIENT = OkHttpUtils.client()
 
   @Shared
   private Network network = Network.newNetwork()
@@ -75,7 +69,7 @@ abstract class SmokeTest extends Specification {
       .withLogConsumer(new Slf4jLogConsumer(logger))
     backend.start()
 
-    collector = new GenericContainer<>("otel/opentelemetry-collector-dev")
+    collector = new GenericContainer<>("otel/opentelemetry-collector-dev:latest")
       .dependsOn(backend)
       .withNetwork(network)
       .withNetworkAliases("collector")
@@ -86,21 +80,24 @@ abstract class SmokeTest extends Specification {
   }
 
   def startTarget(int jdk) {
+    def output = new ToStringConsumer()
     target = new GenericContainer<>(getTargetImage(jdk))
       .withExposedPorts(8080)
       .withNetwork(network)
+      .withLogConsumer(output)
       .withLogConsumer(new Slf4jLogConsumer(logger))
       .withCopyFileToContainer(MountableFile.forHostPath(agentPath), "/opentelemetry-javaagent-all.jar")
       .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/opentelemetry-javaagent-all.jar")
-      .withEnv("OTEL_BSP_MAX_EXPORT_BATCH", "1")
-      .withEnv("OTEL_BSP_SCHEDULE_DELAY", "10")
-      .withEnv("OTEL_OTLP_ENDPOINT", "collector:55680")
+      .withEnv("OTEL_BSP_MAX_EXPORT_BATCH_SIZE", "1")
+      .withEnv("OTEL_BSP_SCHEDULE_DELAY_MILLIS", "10")
+      .withEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "collector:55680")
       .withEnv(extraEnv)
     target.start()
+    output
   }
 
   def cleanup() {
-    client.newCall(new Request.Builder()
+    CLIENT.newCall(new Request.Builder()
       .url("http://localhost:${backend.getMappedPort(8080)}/clear-requests")
       .build())
       .execute()
@@ -152,7 +149,7 @@ abstract class SmokeTest extends Specification {
     long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30)
     String content = "[]"
     while (System.currentTimeMillis() < deadline) {
-      def body = content = client.newCall(new Request.Builder()
+      def body = content = CLIENT.newCall(new Request.Builder()
         .url("http://localhost:${backend.getMappedPort(8080)}/get-requests")
         .build())
         .execute()
@@ -171,5 +168,16 @@ abstract class SmokeTest extends Specification {
     }
 
     return content
+  }
+
+  protected static Set<String> getLoggedTraceIds(ToStringConsumer output) {
+    output.toUtf8String().lines()
+      .flatMap(SmokeTest.&findTraceId)
+      .collect(toSet())
+  }
+
+  private static Stream<String> findTraceId(String log) {
+    def m = TRACE_ID_PATTERN.matcher(log)
+    m.matches() ? Stream.of(m.group("traceId")) : Stream.empty() as Stream<String>
   }
 }

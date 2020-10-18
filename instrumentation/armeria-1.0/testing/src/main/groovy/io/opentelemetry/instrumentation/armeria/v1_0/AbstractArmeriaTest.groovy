@@ -1,17 +1,6 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.instrumentation.armeria.v1_0
@@ -27,7 +16,7 @@ import com.linecorp.armeria.common.HttpResponse
 import com.linecorp.armeria.common.HttpStatus
 import com.linecorp.armeria.server.ServerBuilder
 import com.linecorp.armeria.testing.junit4.server.ServerRule
-import io.opentelemetry.auto.test.InstrumentationSpecification
+import io.opentelemetry.instrumentation.test.InstrumentationSpecification
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import spock.lang.Shared
 import spock.lang.Unroll
@@ -64,11 +53,12 @@ abstract class AbstractArmeriaTest extends InstrumentationSpecification {
     assertTraces(1) {
       trace(0, 2) {
         span(0) {
-          operationName("HTTP ${method}")
-          spanKind CLIENT
+          name("HTTP ${method}")
+          kind CLIENT
           errored code != 200
-          parent()
+          hasNoParent()
           attributes {
+            "${SemanticAttributes.NET_TRANSPORT.key()}" "IP.TCP"
             "${SemanticAttributes.NET_PEER_IP.key()}" "127.0.0.1"
             // TODO(anuraaga): peer name shouldn't be set to IP
             "${SemanticAttributes.NET_PEER_NAME.key()}" "127.0.0.1"
@@ -76,11 +66,12 @@ abstract class AbstractArmeriaTest extends InstrumentationSpecification {
             "${SemanticAttributes.HTTP_URL.key()}" "${server.httpUri()}${path}"
             "${SemanticAttributes.HTTP_METHOD.key()}" method.name()
             "${SemanticAttributes.HTTP_STATUS_CODE.key()}" code
+            "${SemanticAttributes.HTTP_FLAVOR.key()}" "http"
           }
         }
         span(1) {
-          operationName(spanName)
-          spanKind SERVER
+          name(spanName)
+          kind SERVER
           childOf span(0)
           errored code != 200
           if (path == "/exception") {

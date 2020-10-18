@@ -1,3 +1,5 @@
+group = 'io.opentelemetry.javaagent'
+
 apply from: "$rootDir/gradle/java.gradle"
 apply from: "$rootDir/gradle/publish.gradle"
 
@@ -12,7 +14,8 @@ configurations {
 
 dependencies {
   implementation project(':javaagent-bootstrap')
-  implementation project(':auto-api')
+  implementation project(':javaagent-spi')
+  implementation project(':javaagent-api')
   implementation project(':instrumentation-api')
 
   implementation deps.opentelemetryApi

@@ -1,34 +1,26 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.instrumentation.api.tracer;
 
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.InstrumentationVersion;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.lang.reflect.Method;
 import java.util.concurrent.ExecutionException;
 
 public abstract class BaseTracer {
   // Keeps track of the server span for the current trace.
+  // TODO(anuraaga): Should probably be renamed to local root key since it could be a consumer span
+  // or other non-server root.
   public static final Context.Key<Span> CONTEXT_SERVER_SPAN_KEY =
       Context.key("opentelemetry-trace-server-span-key");
 
@@ -61,6 +53,10 @@ public abstract class BaseTracer {
     return tracer.spanBuilder(spanName).setSpanKind(kind).startSpan();
   }
 
+  public Scope startScope(Span span) {
+    return tracer.withSpan(span);
+  }
+
   public Span getCurrentSpan() {
     return tracer.getCurrentSpan();
   }
@@ -75,7 +71,7 @@ public abstract class BaseTracer {
    * This method is used to generate an acceptable span (operation) name based on a given method
    * reference. Anonymous classes are named based on their parent.
    */
-  protected String spanNameForMethod(Method method) {
+  public String spanNameForMethod(Method method) {
     return spanNameForClass(method.getDeclaringClass()) + "." + method.getName();
   }
 
@@ -98,7 +94,7 @@ public abstract class BaseTracer {
    * This method is used to generate an acceptable span (operation) name based on a given class
    * reference. Anonymous classes are named based on their parent.
    */
-  protected String spanNameForClass(Class<?> clazz) {
+  public String spanNameForClass(Class<?> clazz) {
     if (!clazz.isAnonymousClass()) {
       return clazz.getSimpleName();
     }
@@ -129,8 +125,8 @@ public abstract class BaseTracer {
   }
 
   public void endExceptionally(Span span, Throwable throwable, long endTimeNanos) {
+    span.setStatus(StatusCanonicalCode.ERROR);
     onError(span, unwrapThrowable(throwable));
-    span.setStatus(Status.INTERNAL);
     end(span, endTimeNanos);
   }
 

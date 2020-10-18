@@ -1,7 +1,7 @@
 ## Suppressing specific auto-instrumentation
 
 You can suppress auto-instrumentation of specific libraries by using
-`-Dota.integration.[id].enabled=false`.
+`-Dotel.integration.[id].enabled=false`.
 
 where `id` is the instrumentation `id`:
 
@@ -23,4 +23,4 @@ so that we can try to come up with a better solution to address your need.
 
 | System property       | Environment variable  | Purpose                                                                                           |
 |-----------------------|-----------------------|---------------------------------------------------------------------------------------------------|
-| trace.classes.exclude | TRACE_CLASSES_EXCLUDE | Suppresses all instrumentation for specific classes, format is "my.package.MyClass,my.package2.*" |
+| otel.trace.classes.exclude | OTEL_TRACE_CLASSES_EXCLUDE | Suppresses all instrumentation for specific classes, format is "my.package.MyClass,my.package2.*" |

@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [8, 11, 14]
+        java: [8, 11, 15]
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -20,7 +20,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - name: Set JDK ${{ matrix.java }} home
-        run: echo "::set-env name=JAVA_${{ matrix.java }}_HOME::${{ env.JAVA_HOME }}"
+        run: echo JAVA_${{ matrix.java }}_HOME=${{ env.JAVA_HOME }} >> $GITHUB_ENV
 
       - name: Set up JDK 11 for running Gradle
         if: matrix.java != 11
@@ -29,7 +29,7 @@ jobs:
           java-version: 11
 
       - name: Test
-        uses: burrunan/gradle-cache-action@v1.4
+        uses: burrunan/gradle-cache-action@v1.5
         env:
           S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.S3_BUILD_CACHE_ACCESS_KEY_ID }}
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.S3_BUILD_CACHE_SECRET_KEY }}
@@ -58,7 +58,7 @@ jobs:
           java-version: 11
 
       - name: Test
-        uses: burrunan/gradle-cache-action@v1.4
+        uses: burrunan/gradle-cache-action@v1.5
         with:
           job-id: latestDepTest
           arguments: test -PtestLatestDeps=true --stacktrace
