@@ -13,10 +13,37 @@
             }
           ]
         },
-        "attributes/maskUrl": {
+        "attributes/maskSensitiveData": {
+          "include":{
+            "matchType":"regexp",
+            "spanNames":[
+              "sensitivedata"
+            ]
+          },
           "actions":[
             {
-              "key":"url",
+              "key":"net.peer.ip",
+              "value":"redacted",
+              "action":"update"
+            }
+          ]
+        },
+        "attributes/maskSensitiveValueData": {
+          "include":{
+            "matchType":"regexp",
+            "spanNames":[
+              "sensitivedata"
+            ],
+            "attributes" : [
+              {
+                "key": "servlet.path",
+                "value": "sensitivedata.*"
+              }
+            ]
+          },
+          "actions":[
+            {
+              "key":"net.peer.port",
               "value":"redacted",
               "action":"update"
             }

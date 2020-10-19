@@ -25,6 +25,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -120,19 +124,36 @@ public class InstrumentationSettings {
         public SpanProcessorMatchType matchType;
         public List<String> spanNames;
         //All of these attributes must match exactly for a match to occur
-        //Only match_type=strict is allowed if "attributes" are specified.
         public List<SpanProcessorAttribute> attributes;
 
         public boolean isValid() {
             if (this.matchType == null) return false;
             if (this.spanNames == null && this.attributes == null) return false;
+            if (this.spanNames != null && this.matchType == SpanProcessorMatchType.regexp) {
+                for (String spanName : this.spanNames) {
+                    isValidRegex(spanName);
+                }
+            }
             if (this.attributes != null) {
                 for (SpanProcessorAttribute attribute : this.attributes) {
                     if (attribute.key == null) return false;
+                    if (this.matchType == SpanProcessorMatchType.regexp && attribute.value != null) {
+                        isValidRegex(attribute.value);
+                    }
                 }
             }
             return true;
         }
+
+        private void isValidRegex(String value) {
+            try {
+                Pattern.compile(value);
+            } catch (PatternSyntaxException exception) {
+                throw new ConfigurationException("User provided span processor config do not have valid regex:"+value);
+            }
+        }
+
+
     }
 
     public static class SpanProcessorAttribute {

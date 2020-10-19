@@ -16,4 +16,10 @@ public class TestController {
     public String test() {
         return "OK!";
     }
+
+    // span name: GET /sensitivedata
+    @GetMapping("/sensitivedata")
+    public String sensitiveData() {
+        return "some sensitive data!";
+    }
 }

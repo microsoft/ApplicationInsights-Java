@@ -24,13 +24,13 @@ public class SpringBootAutoTest extends AiSmokeTest {
     }
 
     @Test
-    @TargetUri("/path?pii=userName")
+    @TargetUri("/sensitivedata")
     public void doSimpleTestPiiData() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
         Envelope rdEnvelope = rdList.get(0);
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         System.out.println(rd.getUrl());
-        //assertEquals("redacted", rd.getProperties().get("url"));
-
+        assertEquals("redacted", rd.getProperties().get("net.peer.ip"));
+        assertEquals("redacted", rd.getProperties().get("net.peer.port"));
     }
 }

@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.agent.internal.processors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -151,38 +152,15 @@ public class SpanProcessor {
 
     public static abstract class IncludeExclude {
         //All of these attributes must match exactly for a match to occur
-        //Only match_type=strict is allowed if "attributes" are specified.
         protected final List<SpanProcessorAttribute> attributes;
 
         public IncludeExclude(List<SpanProcessorAttribute> attributes) {
             this.attributes = attributes;
         }
 
-        // Function to compare span attribute value with user provided value
-        private static boolean isAttributeValueMatch(AttributeValue attributeValue, String value) {
-            return attributeValue.getType() == Type.STRING && attributeValue.getStringValue().equals(value);
-        }
-
         // Function to compare span with user provided span names or span patterns
         public abstract boolean isMatch(SpanData span);
 
-        // Function to compare span with user provided attributes list
-        public boolean checkAttributes(SpanData span) {
-            for (SpanProcessorAttribute attribute : attributes) {
-                //All of these attributes must match exactly for a match to occur.
-                AttributeValue existingAttributeValue = span.getAttributes().get(attribute.key);
-                if (existingAttributeValue == null) {
-                    // user specified key not found
-                    return false;
-                }
-                if (attribute.value != null && !isAttributeValueMatch(existingAttributeValue, attribute.value)) {
-                    // user specified value doesn't match
-                    return false;
-                }
-            }
-            // everything matched!!!
-            return true;
-        }
     }
 
     public static class StrictIncludeExclude extends IncludeExclude {
@@ -206,6 +184,11 @@ public class SpanProcessor {
             return new StrictIncludeExclude(attributes, spanNames);
         }
 
+        // Function to compare span attribute value with user provided value
+        private static boolean isAttributeValueMatch(AttributeValue attributeValue, String value) {
+            return attributeValue.getType() == Type.STRING && attributeValue.getStringValue().equals(value);
+        }
+
         // Function to compare span with user provided span names
         public boolean isMatch(SpanData span) {
             if (!spanNames.isEmpty() && !spanNames.contains(span.getName())) {
@@ -214,21 +197,46 @@ public class SpanProcessor {
             }
             return this.checkAttributes(span);
         }
+
+        // Function to compare span with user provided attributes list
+        private boolean checkAttributes(SpanData span) {
+            for (SpanProcessorAttribute attribute : attributes) {
+                //All of these attributes must match exactly for a match to occur.
+                AttributeValue existingAttributeValue = span.getAttributes().get(attribute.key);
+                if (existingAttributeValue == null) {
+                    // user specified key not found
+                    return false;
+                }
+                if (attribute.value != null && !isAttributeValueMatch(existingAttributeValue, attribute.value)) {
+                    // user specified value doesn't match
+                    return false;
+                }
+            }
+            // everything matched!!!
+            return true;
+        }
     }
 
     public static class RegexpIncludeExclude extends IncludeExclude {
 
         private final List<Pattern> spanPatterns;
+        private final HashMap<String,Pattern> attributeValuePatterns;
 
-        public RegexpIncludeExclude(List<SpanProcessorAttribute> attributes, List<Pattern> spanPatterns) {
+        public RegexpIncludeExclude(List<SpanProcessorAttribute> attributes, List<Pattern> spanPatterns, HashMap<String,Pattern> attributeValuePatterns) {
             super(attributes);
             this.spanPatterns = spanPatterns;
+            this.attributeValuePatterns = attributeValuePatterns;
         }
 
         public static RegexpIncludeExclude create(SpanProcessorIncludeExclude includeExclude) {
             List<SpanProcessorAttribute> attributes = includeExclude.attributes;
+            HashMap<String,Pattern> attributeKeyValuePatterns = new HashMap<>();
             if (attributes == null) {
                 attributes = new ArrayList<>();
+            } else {
+                for (SpanProcessorAttribute attribute: attributes) {
+                    attributeKeyValuePatterns.put(attribute.key,Pattern.compile(attribute.value));
+                }
             }
             List<Pattern> spanPatterns = new ArrayList<>();
             if (includeExclude.spanNames != null) {
@@ -236,15 +244,8 @@ public class SpanProcessor {
                     spanPatterns.add(Pattern.compile(regex));
                 }
             }
-            return new RegexpIncludeExclude(attributes, spanPatterns);
-        }
 
-        // Function to compare span with user provided span patterns
-        public boolean isMatch(SpanData span) {
-            if (!spanPatterns.isEmpty() && !isPatternFound(span)) {
-                return false;
-            }
-            return checkAttributes(span);
+            return new RegexpIncludeExclude(attributes, spanPatterns, attributeKeyValuePatterns);
         }
 
         private boolean isPatternFound(SpanData span) {
@@ -257,6 +258,38 @@ public class SpanProcessor {
             //no pattern matched
             return false;
         }
+
+        // Function to compare span with user provided span patterns
+        public boolean isMatch(SpanData span) {
+            if (!spanPatterns.isEmpty() && !isPatternFound(span)) {
+                return false;
+            }
+            return checkAttributes(span);
+        }
+
+        // Function to compare span attribute value with user provided value
+        private static boolean isAttributeValueMatch(AttributeValue attributeValue, Pattern valuePattern) {
+            return attributeValue.getType() == Type.STRING && valuePattern.matcher(attributeValue.getStringValue()).find();
+        }
+
+        // Function to compare span with user provided attributes list
+        private boolean checkAttributes(SpanData span) {
+            for (SpanProcessorAttribute attribute : attributes) {
+                //All of these attributes must match exactly for a match to occur.
+                AttributeValue existingAttributeValue = span.getAttributes().get(attribute.key);
+                if (existingAttributeValue == null) {
+                    // user specified key not found
+                    return false;
+                }
+                if (attribute.value != null && !isAttributeValueMatch(existingAttributeValue, attributeValuePatterns.get(attribute.key))) {
+                    // user specified value doesn't match
+                    return false;
+                }
+            }
+            // everything matched!!!
+            return true;
+        }
+
     }
 
 
