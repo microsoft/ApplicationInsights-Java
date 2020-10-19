@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorAction;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorActionType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorAttribute;
@@ -488,6 +489,54 @@ public class ExporterWithSpanProcessorTest {
         assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
         assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
         assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
+    }
+
+    @Test(expected = ConfigurationException.class)
+    public void invalidRegexTest() {
+        MockExporter mockExporter = new MockExporter();
+        SpanProcessorConfig config = new SpanProcessorConfig();
+        config.include = new SpanProcessorIncludeExclude();
+        config.include.matchType = SpanProcessorMatchType.regexp;
+        config.include.spanNames = Arrays.asList("***");
+        SpanProcessorAction action = new SpanProcessorAction();
+        action.key = "testKey";
+        action.action = SpanProcessorActionType.update;
+        action.value = "redacted";
+        List<SpanProcessorAction> actions = new ArrayList<>();
+        actions.add(action);
+        config.actions = actions;
+        SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
+
+        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("svcB")
+                .setAttribute("one", "1")
+                .setAttribute("testKey", "testValue")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        Span spanC = OpenTelemetry.getTracer("test").spanBuilder("serviceC")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        Span spanD = OpenTelemetry.getTracer("test").spanBuilder("serviceD")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+
+        List<SpanData> spans = new ArrayList<>();
+        spans.add(((ReadableSpan) spanA).toSpanData());
+        spans.add(((ReadableSpan) spanB).toSpanData());
+        spans.add(((ReadableSpan) spanC).toSpanData());
+        spans.add(((ReadableSpan) spanD).toSpanData());
+
+        exampleExporter.export(spans);
     }
 
     @Test
