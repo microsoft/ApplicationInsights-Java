@@ -31,9 +31,9 @@ public class TracerInstaller {
                             .setSampler(new FixedRateSampler(fixedRateSamplingPercentage))
                             .build());
         } else {
-            // TODO will revisit to delete DefaultSpan
-            // For the case of AzureFunctionInstrumentation, TraceParent comes in this format: 00-ea5a92ef3cf03649acf1b89c2b5d4211-b70350d129319a4b-00
-            // Sampling is always off.  We need to use AlwaysOnSampler.
+            // OpenTelemetry default sampling is "parent based", which means don't sample if remote traceparent sampled flag was not set,
+            // and Azure Functions is not setting the sampled flag on traceparent currently, so we can't use the default currently, and instead default to "always on" in this case
+            // TODO revisit using "parent based" both for 100% and fixed-rate sampler above
             OpenTelemetrySdk.getTracerProvider().updateActiveTraceConfig(
                     TraceConfig.getDefault().toBuilder()
                             .setSampler(Samplers.alwaysOn())
