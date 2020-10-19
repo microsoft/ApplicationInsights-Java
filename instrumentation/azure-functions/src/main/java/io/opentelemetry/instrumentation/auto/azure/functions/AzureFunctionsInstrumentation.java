@@ -24,9 +24,11 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
+import com.google.common.base.Strings;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
@@ -69,6 +71,21 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static Scope methodEnter(@Advice.Argument(0) final Object request)
         throws ReflectiveOperationException {
+      // race condition (two initial requests happening at the same time) is not a worry here
+      // because at worst they both enter the condition below and update the connection string
+      if (!AiConnectionString.hasConnectionString()) {
+        String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
+        if (!Strings.isNullOrEmpty(connectionString)) {
+          AiConnectionString.setConnectionString(connectionString);
+        } else {
+          // if the instrumentation key is neither null nor empty , we will create a default connection string based on the instrumentation key.
+          // this is to support Azure Functions that were created prior to the introduction of connection strings
+          String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
+          if (!Strings.isNullOrEmpty(instrumentationKey)) {
+            AiConnectionString.setConnectionString("InstrumentationKey=" + instrumentationKey);
+          }
+        }
+      }
 
       final Object traceContext =
           InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
