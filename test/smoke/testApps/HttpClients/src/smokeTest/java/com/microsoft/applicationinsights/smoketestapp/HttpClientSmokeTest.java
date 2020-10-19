@@ -157,6 +157,26 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
+    @Test
+    @TargetUri("/springWebClient")
+    public void testSpringWebClient() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+
+        Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
+        Envelope rddEnvelope = rddList.get(0);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+
+        assertTrue(rd.getSuccess());
+        assertEquals("GET /search", rdd.getName());
+        assertEquals("www.bing.com", rdd.getTarget());
+        assertParentChild(rd, rdEnvelope, rddEnvelope);
+    }
+
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         assertNotNull(operationId);
