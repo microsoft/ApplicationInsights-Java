@@ -59,6 +59,7 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.javaagent.config.ConfigOverride;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.config.Config;
@@ -105,7 +106,9 @@ public class BeforeAgentInstaller {
 
         InstrumentationSettings config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
-            throw new ConfigurationException("No connection string or instrumentation key provided");
+            if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
+                throw new ConfigurationException("No connection string or instrumentation key provided");
+            }
         }
 
         Properties properties = new Properties();
@@ -161,6 +164,12 @@ public class BeforeAgentInstaller {
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
         AiAppId.setSupplier(new AppIdSupplier());
+
+        // this is for Azure Function Linux consumption plan support.
+        if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+            AiConnectionString.setAccessor(new ConnectionStringAccessor());
+        }
+
         // this is currently used by Micrometer instrumentation in addition to 2.x SDK
         BytecodeUtil.setDelegate(new BytecodeUtilImpl());
         Runtime.getRuntime().addShutdownHook(new Thread() {

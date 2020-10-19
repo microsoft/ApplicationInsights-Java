@@ -37,6 +37,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -82,6 +83,11 @@ public class Exporter implements SpanExporter {
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
+        if (Strings.isNullOrEmpty(TelemetryConfiguration.getActive().getInstrumentationKey())) {
+            logger.debug("Instrumentation key is null or empty.");
+            return CompletableResultCode.ofSuccess();
+        }
+
         try {
             for (SpanData span : spans) {
                 logger.debug("exporting span: {}", span);

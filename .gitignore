@@ -100,3 +100,4 @@ Backend/OrderService/OrderService.iml
 
 # Visual Studio
 .vs
+.idea/.name
