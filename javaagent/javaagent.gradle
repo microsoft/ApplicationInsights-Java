@@ -6,6 +6,8 @@ plugins {
 
 description = 'OpenTelemetry Javaagent'
 
+group = 'io.opentelemetry.javaagent'
+
 apply from: "$rootDir/gradle/java.gradle"
 apply from: "$rootDir/gradle/publish.gradle"
 
@@ -89,8 +91,8 @@ tasks.withType(ShadowJar).configureEach {
   // relocate OpenTelemetry API
   relocate "io.opentelemetry.OpenTelemetry", "io.opentelemetry.javaagent.shaded.io.opentelemetry.OpenTelemetry"
   relocate "io.opentelemetry.common", "io.opentelemetry.javaagent.shaded.io.opentelemetry.common"
+  relocate "io.opentelemetry.baggage", "io.opentelemetry.javaagent.shaded.io.opentelemetry.baggage"
   relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
-  relocate "io.opentelemetry.correlationcontext", "io.opentelemetry.javaagent.shaded.io.opentelemetry.correlationcontext"
   relocate "io.opentelemetry.internal", "io.opentelemetry.javaagent.shaded.io.opentelemetry.internal"
   relocate "io.opentelemetry.metrics", "io.opentelemetry.javaagent.shaded.io.opentelemetry.metrics"
   relocate "io.opentelemetry.trace", "io.opentelemetry.javaagent.shaded.io.opentelemetry.trace"
@@ -101,7 +103,7 @@ tasks.withType(ShadowJar).configureEach {
 
 dependencies {
   testImplementation project(':javaagent-bootstrap')
-  testImplementation project(':auto-api')
+  testImplementation project(':javaagent-api')
   testImplementation project(':instrumentation-api')
   testImplementation project(':utils:test-utils')
 

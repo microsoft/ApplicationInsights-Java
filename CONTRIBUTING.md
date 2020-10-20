@@ -60,24 +60,10 @@ See [Writing instrumentation](docs/contributing/writing-instrumentation.md)
 
 See [Understanding the javaagent components](docs/contributing/javaagent-jar-components.md)
 
-### Maintainers, Approvers and Triagers
+### Debugging
 
-Maintainers:
+See [Debugging](docs/contributing/debugging.md)
 
-- [Anuraag Agrawal](https://github.com/anuraaga), AWS
-- [Nikita Salnikov-Tarnovski](https://github.com/iNikem), Splunk
-- [Trask Stalnaker](https://github.com/trask), Microsoft
-- [Tyler Benson](https://github.com/tylerbenson), DataDog
+### Understanding Muzzle
 
-Approvers:
-
-- [John Watson](https://github.com/jkwatson), New Relic
-
-Triagers:
-
-- [Sergei Malafeev](https://github.com/malafeev), Lightstep
-
-#### Become a Triager, Approver or Maintainer
-
-See the [community membership document](https://github.com/open-telemetry/community/blob/master/community-membership.md)
-in OpenTelemetry community repo.
+See [Understanding Muzzle](docs/contributing/muzzle.md)

@@ -1,17 +1,6 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.javaagent.tooling;
@@ -28,8 +17,8 @@ import io.opentelemetry.javaagent.tooling.bytebuddy.ExceptionHandlers;
 import io.opentelemetry.javaagent.tooling.context.FieldBackedProvider;
 import io.opentelemetry.javaagent.tooling.context.InstrumentationContextProvider;
 import io.opentelemetry.javaagent.tooling.context.NoopContextProvider;
-import io.opentelemetry.javaagent.tooling.muzzle.Reference;
-import io.opentelemetry.javaagent.tooling.muzzle.ReferenceMatcher;
+import io.opentelemetry.javaagent.tooling.muzzle.matcher.Mismatch;
+import io.opentelemetry.javaagent.tooling.muzzle.matcher.ReferenceMatcher;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,9 +51,19 @@ public interface Instrumenter {
    */
   AgentBuilder instrument(AgentBuilder agentBuilder);
 
+  /**
+   * Order of adding instrumentation to ByteBuddy. For example instrumentation with order 1 runs
+   * after an instrumentation with order 0 (default) matched on the same API.
+   *
+   * @return the order of adding an instrumentation to ByteBuddy. Default value is 0 - no order.
+   */
+  int getOrder();
+
   abstract class Default implements Instrumenter {
 
     private static final Logger log = LoggerFactory.getLogger(Default.class);
+
+    private static final String[] EMPTY = new String[0];
 
     // Added here instead of AgentInstaller's ignores because it's relatively
     // expensive. https://github.com/DataDog/dd-trace-java/pull/1045
@@ -123,10 +122,14 @@ public interface Instrumenter {
     private AgentBuilder.Identified.Extendable injectHelperClasses(
         AgentBuilder.Identified.Extendable agentBuilder) {
       String[] helperClassNames = helperClassNames();
-      if (helperClassNames.length > 0) {
+      String[] helperResourceNames = helperResourceNames();
+      if (helperClassNames.length > 0 || helperResourceNames.length > 0) {
         agentBuilder =
             agentBuilder.transform(
-                new HelperInjector(getClass().getSimpleName(), helperClassNames));
+                new HelperInjector(
+                    getClass().getSimpleName(),
+                    Arrays.asList(helperClassNames),
+                    Arrays.asList(helperResourceNames)));
       }
       return agentBuilder;
     }
@@ -144,7 +147,17 @@ public interface Instrumenter {
       return agentBuilder;
     }
 
-    /** Matches classes for which instrumentation is not muzzled. */
+    /** @return 0 - default order. */
+    @Override
+    public int getOrder() {
+      return 0;
+    }
+
+    /**
+     * A ByteBuddy matcher that decides whether this instrumentation should be applied. Calls
+     * generated {@link ReferenceMatcher}: if any mismatch with the passed {@code classLoader} is
+     * found this instrumentation is skipped.
+     */
     private class MuzzleMatcher implements AgentBuilder.RawMatcher {
       @Override
       public boolean matches(
@@ -153,30 +166,26 @@ public interface Instrumenter {
           JavaModule module,
           Class<?> classBeingRedefined,
           ProtectionDomain protectionDomain) {
-        /* Optimization: calling getInstrumentationMuzzle() inside this method
+        /* Optimization: calling getMuzzleReferenceMatcher() inside this method
          * prevents unnecessary loading of muzzle references during agentBuilder
          * setup.
          */
-        ReferenceMatcher muzzle = getInstrumentationMuzzle();
-        if (null != muzzle) {
+        ReferenceMatcher muzzle = getMuzzleReferenceMatcher();
+        if (muzzle != null) {
           boolean isMatch = muzzle.matches(classLoader);
-          if (!isMatch) {
-            if (log.isDebugEnabled()) {
-              List<Reference.Mismatch> mismatches =
-                  muzzle.getMismatchedReferenceSources(classLoader);
-              if (log.isDebugEnabled()) {
-                log.debug(
-                    "Instrumentation muzzled: {} -- {} on {}",
-                    instrumentationNames,
-                    Instrumenter.Default.this.getClass().getName(),
-                    classLoader);
-              }
-              for (Reference.Mismatch mismatch : mismatches) {
+
+          if (log.isDebugEnabled()) {
+            if (!isMatch) {
+              log.debug(
+                  "Instrumentation skipped, mismatched references were found: {} -- {} on {}",
+                  instrumentationNames,
+                  Instrumenter.Default.this.getClass().getName(),
+                  classLoader);
+              List<Mismatch> mismatches = muzzle.getMismatchedReferenceSources(classLoader);
+              for (Mismatch mismatch : mismatches) {
                 log.debug("-- {}", mismatch);
               }
-            }
-          } else {
-            if (log.isDebugEnabled()) {
+            } else {
               log.debug(
                   "Applying instrumentation: {} -- {} on {}",
                   instrumentationPrimaryName,
@@ -184,6 +193,7 @@ public interface Instrumenter {
                   classLoader);
             }
           }
+
           return isMatch;
         }
         return true;
@@ -191,17 +201,22 @@ public interface Instrumenter {
     }
 
     /**
-     * This method is implemented dynamically by compile-time bytecode transformations.
-     *
-     * <p>{@see io.opentelemetry.javaagent.tooling.muzzle.MuzzleGradlePlugin}
+     * The actual implementation of this method is generated automatically during compilation by the
+     * {@link io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin}
+     * ByteBuddy plugin.
      */
-    protected ReferenceMatcher getInstrumentationMuzzle() {
+    protected ReferenceMatcher getMuzzleReferenceMatcher() {
       return null;
     }
 
     /** @return Class names of helpers to inject into the user's classloader */
     public String[] helperClassNames() {
-      return new String[0];
+      return EMPTY;
+    }
+
+    /** @return Resource names to inject into the user's classloader */
+    public String[] helperResourceNames() {
+      return EMPTY;
     }
 
     /** @return A type matcher used to match the classloader under transform */
@@ -226,7 +241,7 @@ public interface Instrumenter {
     }
 
     protected boolean defaultEnabled() {
-      return Config.get().isIntegrationsEnabled();
+      return Config.get().getBooleanProperty("otel.integrations.enabled", true);
     }
   }
 }

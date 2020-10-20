@@ -1,27 +1,16 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.auto.test.utils.TraceUtils.runUnderTrace
+import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 import static io.opentelemetry.trace.Span.Kind.CLIENT
 import static net.spy.memcached.ConnectionFactoryBuilder.Protocol.BINARY
 
 import com.google.common.util.concurrent.MoreExecutors
-import io.opentelemetry.auto.test.AgentTestRunner
-import io.opentelemetry.auto.test.asserts.TraceAssert
-import io.opentelemetry.instrumentation.auto.spymemcached.CompletionListener
+import io.opentelemetry.instrumentation.test.AgentTestRunner
+import io.opentelemetry.instrumentation.test.asserts.TraceAssert
+import io.opentelemetry.javaagent.instrumentation.spymemcached.CompletionListener
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import java.time.Duration
 import java.util.concurrent.ArrayBlockingQueue
@@ -37,11 +26,8 @@ import net.spy.memcached.internal.CheckedOperationTimeoutException
 import net.spy.memcached.ops.Operation
 import net.spy.memcached.ops.OperationQueueFactory
 import org.testcontainers.containers.GenericContainer
-import spock.lang.Requires
 import spock.lang.Shared
 
-// Do not run tests on Java7 since testcontainers are not compatible with Java7
-@Requires({ jvm.java8Compatible })
 class SpymemcachedTest extends AgentTestRunner {
 
   @Shared
@@ -619,8 +605,8 @@ class SpymemcachedTest extends AgentTestRunner {
 
   def getParentSpan(TraceAssert trace, int index) {
     return trace.span(index) {
-      operationName parentOperation
-      parent()
+      name parentOperation
+      hasNoParent()
       errored false
       attributes {
       }
@@ -633,8 +619,8 @@ class SpymemcachedTest extends AgentTestRunner {
         childOf(trace.span(0))
       }
 
-      operationName operation
-      spanKind CLIENT
+      name operation
+      kind CLIENT
       errored(error != null && error != "canceled")
 
       if (error == "timeout") {
@@ -651,6 +637,7 @@ class SpymemcachedTest extends AgentTestRunner {
 
       attributes {
         "${SemanticAttributes.DB_SYSTEM.key()}" "memcached"
+        "${SemanticAttributes.DB_OPERATION.key()}" operation
 
         if (error == "canceled") {
           "${CompletionListener.DB_COMMAND_CANCELLED}" true

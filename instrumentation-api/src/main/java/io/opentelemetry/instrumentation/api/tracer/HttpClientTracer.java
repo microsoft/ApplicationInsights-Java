@@ -1,17 +1,6 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.instrumentation.api.tracer;
@@ -24,19 +13,17 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
-import io.opentelemetry.instrumentation.api.MoreAttributes;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
-import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.instrumentation.api.decorator.HttpStatusConverter;
 import io.opentelemetry.instrumentation.api.tracer.utils.NetPeerUtils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,12 +37,21 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
 
   protected abstract String method(REQUEST request);
 
+  @Nullable
   protected abstract URI url(REQUEST request) throws URISyntaxException;
+
+  @Nullable
+  protected String flavor(REQUEST request) {
+    // This is de facto standard nowadays, so let us use it, unless overridden
+    return "1.1";
+  }
 
   protected abstract Integer status(RESPONSE response);
 
+  @Nullable
   protected abstract String requestHeader(REQUEST request, String name);
 
+  @Nullable
   protected abstract String responseHeader(RESPONSE response, String name);
 
   protected abstract TextMapPropagator.Setter<CARRIER> getSetter();
@@ -121,8 +117,7 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
       return DefaultSpan.getInvalid();
     }
 
-    Span current = TracingContextUtils.getSpan(context);
-    Span.Builder spanBuilder = tracer.spanBuilder(name).setSpanKind(Kind.CLIENT).setParent(current);
+    Span.Builder spanBuilder = tracer.spanBuilder(name).setSpanKind(Kind.CLIENT).setParent(context);
     if (startTimeNanos > 0) {
       spanBuilder.setStartTimestamp(startTimeNanos);
     }
@@ -134,31 +129,40 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
   protected Span onRequest(Span span, REQUEST request) {
     assert span != null;
     if (request != null) {
-      span.setAttribute(SemanticAttributes.HTTP_METHOD.key(), method(request));
+      span.setAttribute(SemanticAttributes.NET_TRANSPORT, "IP.TCP");
+      span.setAttribute(SemanticAttributes.HTTP_METHOD, method(request));
+      span.setAttribute(SemanticAttributes.HTTP_USER_AGENT, requestHeader(request, USER_AGENT));
 
-      String userAgent = requestHeader(request, USER_AGENT);
-      if (userAgent != null) {
-        SemanticAttributes.HTTP_USER_AGENT.set(span, userAgent);
-      }
-
-      try {
-        URI url = url(request);
-        if (url != null && url.getHost() != null) {
-          NetPeerUtils.setNetPeer(span, url.getHost(), null);
-          if (url.getPort() > 0) {
-            span.setAttribute(SemanticAttributes.NET_PEER_PORT.key(), url.getPort());
-          }
-        }
-        SemanticAttributes.HTTP_URL.set(span, url.toString());
-        if (Config.get().isHttpClientTagQueryString()) {
-          span.setAttribute(MoreAttributes.HTTP_QUERY, url.getQuery());
-          span.setAttribute(MoreAttributes.HTTP_FRAGMENT, url.getFragment());
-        }
-      } catch (Exception e) {
-        log.debug("Error tagging url", e);
-      }
+      setFlavor(span, request);
+      setUrl(span, request);
     }
     return span;
+  }
+
+  private void setFlavor(Span span, REQUEST request) {
+    String flavor = flavor(request);
+    if (flavor == null) {
+      return;
+    }
+
+    String httpProtocolPrefix = "HTTP/";
+    if (flavor.startsWith(httpProtocolPrefix)) {
+      flavor = flavor.substring(httpProtocolPrefix.length());
+    }
+
+    span.setAttribute(SemanticAttributes.HTTP_FLAVOR, flavor);
+  }
+
+  private void setUrl(Span span, REQUEST request) {
+    try {
+      URI url = url(request);
+      if (url != null) {
+        NetPeerUtils.setNetPeer(span, url.getHost(), null, url.getPort());
+        span.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
+      }
+    } catch (Exception e) {
+      log.debug("Error tagging url", e);
+    }
   }
 
   protected Span onResponse(Span span, RESPONSE response) {
@@ -166,7 +170,7 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
     if (response != null) {
       Integer status = status(response);
       if (status != null) {
-        span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE.key(), status);
+        span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, (long) status);
         span.setStatus(HttpStatusConverter.statusFromHttpStatus(status));
       }
       final String responseHeader = responseHeader(response, AiAppId.RESPONSE_HEADER_NAME);

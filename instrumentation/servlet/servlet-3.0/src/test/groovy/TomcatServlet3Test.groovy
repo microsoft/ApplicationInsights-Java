@@ -1,25 +1,14 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.AUTH_REQUIRED
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.ERROR
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.QUERY_PARAM
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.REDIRECT
-import static io.opentelemetry.auto.test.base.HttpServerTest.ServerEndpoint.SUCCESS
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.AUTH_REQUIRED
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.ERROR
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.QUERY_PARAM
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.REDIRECT
+import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.SUCCESS
 
 import com.google.common.io.Files
 import javax.servlet.Servlet
@@ -134,8 +123,8 @@ abstract class TomcatServlet3Test extends AbstractServlet3Test<Tomcat, Context> 
           controllerSpan(it, 1, span(0))
         }
 
-        assert loggedTraces.contains(traces[it][0].traceId.toLowerBase16())
-        assert loggedSpans.contains(traces[it][0].spanId.toLowerBase16())
+        assert loggedTraces.contains(traces[it][0].traceId)
+        assert loggedSpans.contains(traces[it][0].spanId)
       }
     }
 
@@ -162,8 +151,8 @@ abstract class TomcatServlet3Test extends AbstractServlet3Test<Tomcat, Context> 
       }
 
       def (String traceId, String spanId) = accessLogValue.loggedIds[0]
-      assert traces[0][0].traceId.toLowerBase16() == traceId
-      assert traces[0][0].spanId.toLowerBase16() == spanId
+      assert traces[0][0].traceId == traceId
+      assert traces[0][0].spanId == spanId
     }
 
     where:

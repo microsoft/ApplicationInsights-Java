@@ -1,17 +1,6 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import static io.opentelemetry.trace.Span.Kind.CLIENT
@@ -21,8 +10,8 @@ import com.lambdaworks.redis.RedisClient
 import com.lambdaworks.redis.RedisConnectionException
 import com.lambdaworks.redis.api.StatefulConnection
 import com.lambdaworks.redis.api.sync.RedisCommands
-import io.opentelemetry.auto.test.AgentTestRunner
-import io.opentelemetry.auto.test.utils.PortUtils
+import io.opentelemetry.instrumentation.test.AgentTestRunner
+import io.opentelemetry.instrumentation.test.utils.PortUtils
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import redis.embedded.RedisServer
 import spock.lang.Shared
@@ -108,8 +97,8 @@ class LettuceSyncClientTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          operationName "CONNECT"
-          spanKind CLIENT
+          name "CONNECT"
+          kind CLIENT
           errored false
           attributes {
             "${SemanticAttributes.NET_PEER_NAME.key()}" HOST
@@ -117,7 +106,6 @@ class LettuceSyncClientTest extends AgentTestRunner {
             "${SemanticAttributes.NET_PEER_PORT.key()}" port
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
             "${SemanticAttributes.DB_STATEMENT.key()}" "CONNECT"
-            "db.redis.dbIndex" 0
           }
         }
       }
@@ -140,8 +128,8 @@ class LettuceSyncClientTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          operationName "CONNECT"
-          spanKind CLIENT
+          name "CONNECT"
+          kind CLIENT
           errored true
           errorEvent RedisConnectionException, String
           attributes {
@@ -150,7 +138,6 @@ class LettuceSyncClientTest extends AgentTestRunner {
             "${SemanticAttributes.NET_PEER_PORT.key()}" incorrectPort
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
             "${SemanticAttributes.DB_STATEMENT.key()}" "CONNECT"
-            "db.redis.dbIndex" 0
           }
         }
       }
@@ -166,8 +153,8 @@ class LettuceSyncClientTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          operationName "SET"
-          spanKind CLIENT
+          name "SET"
+          kind CLIENT
           errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
@@ -187,8 +174,8 @@ class LettuceSyncClientTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          operationName "GET"
-          spanKind CLIENT
+          name "GET"
+          kind CLIENT
           errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
@@ -208,8 +195,8 @@ class LettuceSyncClientTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          operationName "GET"
-          spanKind CLIENT
+          name "GET"
+          kind CLIENT
           errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
@@ -229,8 +216,8 @@ class LettuceSyncClientTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          operationName "RANDOMKEY"
-          spanKind CLIENT
+          name "RANDOMKEY"
+          kind CLIENT
           errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
@@ -250,8 +237,8 @@ class LettuceSyncClientTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          operationName "LPUSH"
-          spanKind CLIENT
+          name "LPUSH"
+          kind CLIENT
           errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
@@ -271,8 +258,8 @@ class LettuceSyncClientTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          operationName "HMSET"
-          spanKind CLIENT
+          name "HMSET"
+          kind CLIENT
           errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
@@ -292,8 +279,8 @@ class LettuceSyncClientTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          operationName "HGETALL"
-          spanKind CLIENT
+          name "HGETALL"
+          kind CLIENT
           errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
@@ -312,8 +299,8 @@ class LettuceSyncClientTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          operationName "DEBUG"
-          spanKind CLIENT
+          name "DEBUG"
+          kind CLIENT
           errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"
@@ -332,8 +319,8 @@ class LettuceSyncClientTest extends AgentTestRunner {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          operationName "SHUTDOWN"
-          spanKind CLIENT
+          name "SHUTDOWN"
+          kind CLIENT
           errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key()}" "redis"

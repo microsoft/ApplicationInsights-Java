@@ -1,23 +1,11 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.instrumentation.api.tracer
 
-import static io.opentelemetry.auto.test.utils.ConfigUtils.withConfigOverride
-
+import io.opentelemetry.instrumentation.test.utils.ConfigUtils
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.instrumentation.api.decorator.HttpStatusConverter
 import io.opentelemetry.trace.Span
@@ -25,9 +13,21 @@ import io.opentelemetry.trace.attributes.SemanticAttributes
 import spock.lang.Shared
 
 class HttpClientTracerTest extends BaseTracerTest {
+  static final PREVIOUS_CONFIG = ConfigUtils.updateConfig {
+    it.setProperty(
+      "otel.endpoint.peer.service.mapping",
+      "1.2.3.4=catservice,dogs.com=dogsservice")
+  }
+
+  def cleanupSpec() {
+    ConfigUtils.setConfig(PREVIOUS_CONFIG)
+  }
 
   @Shared
   def testUrl = new URI("http://myhost:123/somepath")
+
+  @Shared
+  def testUrlMapped = new URI("http://dogs.com:123/somepath")
 
   @Shared
   def testUserAgent = "Apache HttpClient"
@@ -41,11 +41,13 @@ class HttpClientTracerTest extends BaseTracerTest {
 
     then:
     if (req) {
-      1 * span.setAttribute(SemanticAttributes.HTTP_METHOD.key(), req.method)
-      1 * span.setAttribute(SemanticAttributes.HTTP_URL.key(), "$req.url")
-      1 * span.setAttribute(SemanticAttributes.NET_PEER_NAME.key(), req.url.host)
-      1 * span.setAttribute(SemanticAttributes.NET_PEER_PORT.key(), req.url.port)
-      1 * span.setAttribute(SemanticAttributes.HTTP_USER_AGENT.key(), req["User-Agent"])
+      1 * span.setAttribute(SemanticAttributes.NET_TRANSPORT, "IP.TCP")
+      1 * span.setAttribute(SemanticAttributes.HTTP_METHOD, req.method)
+      1 * span.setAttribute(SemanticAttributes.HTTP_URL, "$req.url")
+      1 * span.setAttribute(SemanticAttributes.NET_PEER_NAME, req.url.host)
+      1 * span.setAttribute(SemanticAttributes.NET_PEER_PORT, req.url.port)
+      1 * span.setAttribute(SemanticAttributes.HTTP_USER_AGENT, req["User-Agent"])
+      1 * span.setAttribute(SemanticAttributes.HTTP_FLAVOR, "1.1")
     }
     0 * _
 
@@ -59,23 +61,21 @@ class HttpClientTracerTest extends BaseTracerTest {
   def "test onRequest with mapped peer"() {
     setup:
     def tracer = newTracer()
-    def req = [method: "test-method", url: testUrl, "User-Agent": testUserAgent]
+    def req = [method: "test-method", url: testUrlMapped, "User-Agent": testUserAgent]
 
     when:
-    withConfigOverride(
-      "endpoint.peer.service.mapping",
-      "myhost=reservation-service") {
-      tracer.onRequest(span, req)
-    }
+    tracer.onRequest(span, req)
 
     then:
     if (req) {
-      1 * span.setAttribute(SemanticAttributes.HTTP_METHOD.key(), req.method)
-      1 * span.setAttribute(SemanticAttributes.HTTP_URL.key(), "$req.url")
-      1 * span.setAttribute(SemanticAttributes.NET_PEER_NAME.key(), req.url.host)
-      1 * span.setAttribute(SemanticAttributes.NET_PEER_PORT.key(), req.url.port)
-      1 * span.setAttribute("peer.service", "reservation-service")
-      1 * span.setAttribute(SemanticAttributes.HTTP_USER_AGENT.key(), req["User-Agent"])
+      1 * span.setAttribute(SemanticAttributes.NET_TRANSPORT, "IP.TCP")
+      1 * span.setAttribute(SemanticAttributes.HTTP_METHOD, req.method)
+      1 * span.setAttribute(SemanticAttributes.HTTP_URL, "$req.url")
+      1 * span.setAttribute(SemanticAttributes.NET_PEER_NAME, req.url.host)
+      1 * span.setAttribute(SemanticAttributes.NET_PEER_PORT, req.url.port)
+      1 * span.setAttribute(SemanticAttributes.PEER_SERVICE, "dogsservice")
+      1 * span.setAttribute(SemanticAttributes.HTTP_USER_AGENT, req["User-Agent"])
+      1 * span.setAttribute(SemanticAttributes.HTTP_FLAVOR, "1.1")
     }
     0 * _
   }
@@ -85,24 +85,21 @@ class HttpClientTracerTest extends BaseTracerTest {
     def tracer = newTracer()
 
     when:
-    withConfigOverride(io.opentelemetry.instrumentation.api.config.Config.HTTP_CLIENT_TAG_QUERY_STRING, "$tagQueryString") {
-      tracer.onRequest(span, req)
-    }
+    tracer.onRequest(span, req)
 
     then:
+    1 * span.setAttribute(SemanticAttributes.NET_TRANSPORT, "IP.TCP")
     if (expectedUrl != null) {
-      1 * span.setAttribute(SemanticAttributes.HTTP_URL.key(), expectedUrl)
+      1 * span.setAttribute(SemanticAttributes.HTTP_URL, expectedUrl)
     }
-    if (expectedUrl && tagQueryString) {
-      1 * span.setAttribute(io.opentelemetry.instrumentation.api.MoreAttributes.HTTP_QUERY, expectedQuery)
-      1 * span.setAttribute(io.opentelemetry.instrumentation.api.MoreAttributes.HTTP_FRAGMENT, expectedFragment)
-    }
-    1 * span.setAttribute(SemanticAttributes.HTTP_METHOD.key(), null)
+    1 * span.setAttribute(SemanticAttributes.HTTP_METHOD, null)
+    1 * span.setAttribute(SemanticAttributes.HTTP_FLAVOR, "1.1")
+    1 * span.setAttribute(SemanticAttributes.HTTP_USER_AGENT, null)
     if (hostname) {
-      1 * span.setAttribute(SemanticAttributes.NET_PEER_NAME.key(), hostname)
+      1 * span.setAttribute(SemanticAttributes.NET_PEER_NAME, hostname)
     }
     if (port) {
-      1 * span.setAttribute(SemanticAttributes.NET_PEER_PORT.key(), port)
+      1 * span.setAttribute(SemanticAttributes.NET_PEER_PORT, port)
     }
     0 * _
 
@@ -127,7 +124,7 @@ class HttpClientTracerTest extends BaseTracerTest {
 
     then:
     if (status) {
-      1 * span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE.key(), status)
+      1 * span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, status)
       1 * span.setStatus(HttpStatusConverter.statusFromHttpStatus(status))
     }
     0 * _

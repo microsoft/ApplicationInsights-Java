@@ -1,17 +1,6 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.javaagent.tooling;
@@ -47,11 +36,11 @@ public class ExporterClassLoader extends URLClassLoader {
               "#io.opentelemetry.common",
               "#io.opentelemetry.javaagent.shaded.io.opentelemetry.common"),
           rule(
+              "#io.opentelemetry.baggage",
+              "#io.opentelemetry.javaagent.shaded.io.opentelemetry.baggage"),
+          rule(
               "#io.opentelemetry.context",
               "#io.opentelemetry.javaagent.shaded.io.opentelemetry.context"),
-          rule(
-              "#io.opentelemetry.correlationcontext",
-              "#io.opentelemetry.javaagent.shaded.io.opentelemetry.correlationcontext"),
           rule(
               "#io.opentelemetry.internal",
               "#io.opentelemetry.javaagent.shaded.io.opentelemetry.internal"),
@@ -75,10 +64,9 @@ public class ExporterClassLoader extends URLClassLoader {
   public Enumeration<URL> getResources(String name) throws IOException {
     // A small hack to prevent other exporters from being loaded by this classloader if they
     // should happen to appear on the classpath.
-    if (name.equals(
-            "META-INF/services/io.opentelemetry.javaagent.tooling.exporter.SpanExporterFactory")
+    if (name.equals("META-INF/services/io.opentelemetry.javaagent.spi.exporter.SpanExporterFactory")
         || name.equals(
-            "META-INF/services/io.opentelemetry.javaagent.tooling.exporter.MetricExporterFactory")) {
+            "META-INF/services/io.opentelemetry.javaagent.spi.exporter.MetricExporterFactory")) {
       return findResources(name);
     }
     return super.getResources(name);

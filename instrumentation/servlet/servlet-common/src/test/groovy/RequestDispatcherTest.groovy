@@ -1,27 +1,16 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.auto.test.utils.TraceUtils.basicSpan
-import static io.opentelemetry.auto.test.utils.TraceUtils.runUnderTrace
+import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
+import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 import static io.opentelemetry.instrumentation.api.tracer.HttpServerTracer.CONTEXT_ATTRIBUTE
 import static io.opentelemetry.trace.TracingContextUtils.getSpan
 import static io.opentelemetry.trace.TracingContextUtils.withSpan
 
 import io.grpc.Context
-import io.opentelemetry.auto.test.AgentTestRunner
+import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.trace.Span
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
@@ -66,11 +55,8 @@ class RequestDispatcherTest extends AgentTestRunner {
       trace(0, 3) {
         basicSpan(it, 0, "parent")
         span(1) {
-          operationName "servlet.$operation"
+          name "TestDispatcher.$operation"
           childOf span(0)
-          attributes {
-            "dispatcher.target" target
-          }
         }
         basicSpan(it, 2, "$operation-child", span(1))
       }
@@ -79,9 +65,53 @@ class RequestDispatcherTest extends AgentTestRunner {
     then:
     1 * request.getAttribute(CONTEXT_ATTRIBUTE) >> mockContext
     then:
-    1 * request.setAttribute(CONTEXT_ATTRIBUTE, { getSpan(it).name == "servlet.$operation" })
+    1 * request.setAttribute(CONTEXT_ATTRIBUTE, { getSpan(it).name == "TestDispatcher.$operation" })
     then:
     1 * request.setAttribute(CONTEXT_ATTRIBUTE, mockContext)
+    0 * _
+
+    where:
+    operation | method
+    "forward" | "forward"
+    "forward" | "forwardNamed"
+    "include" | "include"
+    "include" | "includeNamed"
+
+    target = "test-$method"
+  }
+
+  def "test dispatcher #method with parent from request attribute"() {
+    setup:
+    def mockContext = null
+    runUnderTrace("parent") {
+      mockContext = Context.current()
+    }
+
+    when:
+    runUnderTrace("notParent") {
+      dispatcher."$method"(target)
+    }
+
+    then:
+    1 * request.getAttribute(CONTEXT_ATTRIBUTE) >> mockContext
+    assertTraces(2) {
+      trace(0, 3) {
+        basicSpan(it, 0, "parent")
+        span(1) {
+          name "TestDispatcher.$operation"
+          childOf span(0)
+        }
+        basicSpan(it, 2, "$operation-child", span(1))
+      }
+      trace(1, 1) {
+        basicSpan(it, 0, "notParent")
+      }
+    }
+
+    then:
+    1 * request.getAttribute(CONTEXT_ATTRIBUTE) >> mockContext
+    1 * request.setAttribute(CONTEXT_ATTRIBUTE, { getSpan(it).name == "TestDispatcher.$operation" })
+    1 * request.setAttribute(CONTEXT_ATTRIBUTE, { getSpan(it).name == "parent" })
     0 * _
 
     where:
@@ -113,13 +143,10 @@ class RequestDispatcherTest extends AgentTestRunner {
       trace(0, 3) {
         basicSpan(it, 0, "parent", null, ex)
         span(1) {
-          operationName "servlet.$operation"
+          name "TestDispatcher.$operation"
           childOf span(0)
           errored true
           errorEvent(ex.class, ex.message)
-          attributes {
-            "dispatcher.target" target
-          }
         }
         basicSpan(it, 2, "$operation-child", span(1))
       }
@@ -128,7 +155,7 @@ class RequestDispatcherTest extends AgentTestRunner {
     then:
     1 * request.getAttribute(CONTEXT_ATTRIBUTE) >> mockContext
     then:
-    1 * request.setAttribute(CONTEXT_ATTRIBUTE, { getSpan(it).name == "servlet.$operation" })
+    1 * request.setAttribute(CONTEXT_ATTRIBUTE, { getSpan(it).name == "TestDispatcher.$operation" })
     then:
     1 * request.setAttribute(CONTEXT_ATTRIBUTE, mockContext)
     0 * _

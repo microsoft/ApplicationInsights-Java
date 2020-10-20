@@ -1,23 +1,12 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.instrumentation.api.typedspan;
 
+import io.grpc.Context;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
 
 public class MessagingSpan extends DelegatingSpan implements MessagingSemanticConvention {
@@ -276,14 +265,8 @@ public class MessagingSpan extends DelegatingSpan implements MessagingSemanticCo
     }
 
     /** sets the {@link Span} parent. */
-    public MessagingSpanBuilder setParent(Span parent) {
-      this.internalBuilder.setParent(parent);
-      return this;
-    }
-
-    /** sets the {@link Span} parent. */
-    public MessagingSpanBuilder setParent(SpanContext remoteParent) {
-      this.internalBuilder.setParent(remoteParent);
+    public MessagingSpanBuilder setParent(Context context) {
+      this.internalBuilder.setParent(context);
       return this;
     }
 

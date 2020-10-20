@@ -1,22 +1,14 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.instrumentation.log4j.v2_13_2;
 
-import com.google.auto.service.AutoService;
+import static io.opentelemetry.instrumentation.api.log.LoggingContextConstants.SAMPLED;
+import static io.opentelemetry.instrumentation.api.log.LoggingContextConstants.SPAN_ID;
+import static io.opentelemetry.instrumentation.api.log.LoggingContextConstants.TRACE_ID;
+
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -29,7 +21,6 @@ import org.apache.logging.log4j.core.util.ContextDataProvider;
  * Implementation of Log4j 2's {@link ContextDataProvider} which is loaded via SPI. {@link
  * #supplyContextData()} is called when a log entry is created.
  */
-@AutoService(ContextDataProvider.class)
 public class OpenTelemetryContextDataProvider implements ContextDataProvider {
 
   /**
@@ -47,9 +38,9 @@ public class OpenTelemetryContextDataProvider implements ContextDataProvider {
 
     Map<String, String> contextData = new HashMap<>();
     SpanContext spanContext = currentSpan.getContext();
-    contextData.put("traceId", spanContext.getTraceId().toLowerBase16());
-    contextData.put("spanId", spanContext.getSpanId().toLowerBase16());
-    contextData.put("traceFlags", spanContext.getTraceFlags().toLowerBase16());
+    contextData.put(TRACE_ID, spanContext.getTraceIdAsHexString());
+    contextData.put(SPAN_ID, spanContext.getSpanIdAsHexString());
+    contextData.put(SAMPLED, Boolean.toString(spanContext.isSampled()));
     return contextData;
   }
 }

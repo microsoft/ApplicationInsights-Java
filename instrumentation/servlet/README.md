@@ -8,7 +8,7 @@ They are divided into 3 sub-modules:
 
 `servlet-common` contains instrumentations applicable to all API versions that we support.
 
-`servlet-2.2` contains instrumentations applicable to Servlet API 2.2, but not to to 3+.
+`servlet-2.2` contains instrumentations applicable to Servlet API 2.2, but not to 3+.
 
 `servlet-3.0` contains instrumentations that require Servlet API 3.0 or newer.
 
@@ -42,7 +42,7 @@ at java.base/java.lang.Thread.run(Thread.java:834)
 Everything starts when HTTP request processing reaches the first class from Servlet specification.
 In the example above this is `ApplicationFilterChain.doFilter(ServletRequest, ServletResponse)` method.
 Let us call this first servlet specific method an "entry point".
-This is the main target for `Servlet3Instrumentation` and `Servlet2Instrumentation` instrumenters:
+This is the main target for `Servlet3Instrumentation` and `Servlet2Instrumentation` instruments:
 
 `public void javax.servlet.FilterChain#doFilter(ServletRequest, ServletResponse)`
 
@@ -67,9 +67,9 @@ In rare cases when you need it, you can enable it using configuration property `
 
 In exactly the same situation are all other Servlet filters beyond the initial entry point.
 Usually unimportant, they may be sometimes of interest during troubleshooting.
-They are instrumented by `FilterInstrumentation` which is too disabled by default.
+They are instrumented by `FilterInstrumentation` which is also disabled by default.
 You can enable it with the configuration property `otel.integration.servlet-filter.enabled`.
-At last, request processing may reach the specific framework that you application uses.
+At last, request processing may reach the specific framework that your application uses.
 In this case Spring MVC and `OwnerController.initCreationForm`.
 
 If all instrumentations are enabled, then a new span will be created for every highlighted frame.
@@ -91,11 +91,6 @@ Of course, still adhering to OpenTelemetry
 `RequestDispatcherInstrumentation` instruments `javax.servlet.RequestDispatcher.forward` and
 `javax.servlet.RequestDispatcher.include` methods to create new `INTERNAL` spans around their
 invocations.
-
-`ServletContextInstrumentation` instruments `javax.servlet.ServletContext.getRequestDispatcher` and
-`javax.servlet.ServletContext.getNamedDispatcher`. The only job of this instrumentation is to
-preserve the input parameter of those methods and to make that available for `RequestDispatcherInstrumentation`
-described above. The latter uses that name for `dispatcher.target` span attribute.
 
 `HttpServletResponseInstrumentation` instruments `javax.servlet.http.HttpServletResponse.sendError`
 and `javax.servlet.http.HttpServletResponse.sendRedirect` methods to create new `INTERNAL` spans

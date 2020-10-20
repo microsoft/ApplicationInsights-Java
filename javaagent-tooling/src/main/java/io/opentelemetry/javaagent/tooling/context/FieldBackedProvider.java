@@ -1,17 +1,6 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.javaagent.tooling.context;
@@ -21,10 +10,10 @@ import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementM
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.instrumentation.auto.api.ContextStore;
-import io.opentelemetry.instrumentation.auto.api.InstrumentationContext;
-import io.opentelemetry.instrumentation.auto.api.WeakMap;
 import io.opentelemetry.javaagent.bootstrap.FieldBackedContextStoreAppliedMarker;
+import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
+import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
 import io.opentelemetry.javaagent.tooling.HelperInjector;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
 import io.opentelemetry.javaagent.tooling.Instrumenter.Default;
@@ -115,6 +104,9 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
     }
   }
 
+  private static final boolean FIELD_INJECTION_ENABLED =
+      Config.get().getBooleanProperty("otel.trace.runtime.context.field.injection", true);
+
   private final Instrumenter.Default instrumenter;
   private final ByteBuddy byteBuddy;
   private final Map<String, String> contextStore;
@@ -129,8 +121,6 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
 
   private final AgentBuilder.Transformer contextStoreImplementationsInjector;
 
-  private final boolean fieldInjectionEnabled;
-
   public FieldBackedProvider(Instrumenter.Default instrumenter, Map<String, String> contextStore) {
     this.instrumenter = instrumenter;
     this.contextStore = contextStore;
@@ -140,7 +130,6 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
     contextStoreImplementations = generateContextStoreImplementationClasses();
     contextStoreImplementationsInjector =
         bootstrapHelperInjector(contextStoreImplementations.values());
-    fieldInjectionEnabled = Config.get().isRuntimeContextFieldInjection();
   }
 
   @Override
@@ -374,7 +363,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
   public AgentBuilder.Identified.Extendable additionalInstrumentation(
       AgentBuilder.Identified.Extendable builder) {
 
-    if (fieldInjectionEnabled) {
+    if (FIELD_INJECTION_ENABLED) {
       for (Map.Entry<String, String> entry : contextStore.entrySet()) {
         /*
          * For each context store defined in a current instrumentation we create an agent builder

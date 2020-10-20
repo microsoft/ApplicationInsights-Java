@@ -1,29 +1,27 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.instrumentation.api.decorator
 
-import io.opentelemetry.auto.test.utils.ConfigUtils
-import io.opentelemetry.auto.util.test.AgentSpecification
+import io.opentelemetry.instrumentation.test.utils.ConfigUtils
 import io.opentelemetry.trace.Span
-import io.opentelemetry.trace.Status
+import io.opentelemetry.trace.StatusCanonicalCode
 import io.opentelemetry.trace.attributes.SemanticAttributes
 import spock.lang.Shared
+import spock.lang.Specification
 
-class BaseDecoratorTest extends AgentSpecification {
+class BaseDecoratorTest extends Specification {
+  static final PREVIOUS_CONFIG = ConfigUtils.updateConfig {
+    it.setProperty(
+      "otel.endpoint.peer.service.mapping",
+      "1.2.3.4=catservice,dogs.com=dogsservice")
+  }
+
+  def cleanupSpec() {
+    ConfigUtils.setConfig(PREVIOUS_CONFIG)
+  }
 
   @Shared
   def decorator = newDecorator()
@@ -48,35 +46,31 @@ class BaseDecoratorTest extends AgentSpecification {
 
     then:
     if (expectedPeerName) {
-      1 * span.setAttribute(SemanticAttributes.NET_PEER_NAME.key(), expectedPeerName)
+      1 * span.setAttribute(SemanticAttributes.NET_PEER_NAME, expectedPeerName)
     }
     if (expectedPeerIp) {
-      1 * span.setAttribute(SemanticAttributes.NET_PEER_IP.key(), expectedPeerIp)
+      1 * span.setAttribute(SemanticAttributes.NET_PEER_IP, expectedPeerIp)
     }
-    1 * span.setAttribute(SemanticAttributes.NET_PEER_PORT.key(), connection.port)
+    1 * span.setAttribute(SemanticAttributes.NET_PEER_PORT, connection.port)
     0 * _
 
     where:
     connection                                      | expectedPeerName    | expectedPeerIp
     new InetSocketAddress("localhost", 888)         | "localhost"         | "127.0.0.1"
-    new InetSocketAddress("1.2.3.4", 888)           | null                | "1.2.3.4"
+    new InetSocketAddress("1.2.1.2", 888)           | null                | "1.2.1.2"
     resolvedAddress                                 | "github.com"        | resolvedAddress.address.hostAddress
     new InetSocketAddress("bad.address.local", 999) | "bad.address.local" | null
   }
 
   def "test onPeerConnection with mapped peer"() {
     when:
-    ConfigUtils.withConfigOverride(
-      "endpoint.peer.service.mapping",
-      "1.2.3.4=catservice,dogs.com=dogsservice,opentelemetry.io=specservice") {
-      decorator.onPeerConnection(span, connection)
-    }
+    decorator.onPeerConnection(span, connection)
 
     then:
     if (expectedPeerService) {
-      1 * span.setAttribute("peer.service", expectedPeerService)
+      1 * span.setAttribute(SemanticAttributes.PEER_SERVICE, expectedPeerService)
     } else {
-      0 * span.setAttribute("peer.service", _)
+      0 * span.setAttribute(SemanticAttributes.PEER_SERVICE, _)
     }
 
     where:
@@ -93,7 +87,7 @@ class BaseDecoratorTest extends AgentSpecification {
 
     then:
     if (error) {
-      1 * span.setStatus(Status.UNKNOWN)
+      1 * span.setStatus(StatusCanonicalCode.ERROR)
       1 * span.recordException(error)
     }
     0 * _
@@ -115,8 +109,8 @@ class BaseDecoratorTest extends AgentSpecification {
 
     where:
     error           | status
-    new Exception() | Status.INTERNAL
-    null            | Status.OK
+    new Exception() | StatusCanonicalCode.ERROR
+    null            | StatusCanonicalCode.OK
   }
 
   def "test beforeFinish"() {

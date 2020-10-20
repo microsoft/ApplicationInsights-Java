@@ -1,17 +1,6 @@
 /*
  * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.instrumentation.api.tracer;
@@ -19,30 +8,25 @@ package io.opentelemetry.instrumentation.api.tracer;
 import static io.opentelemetry.OpenTelemetry.getPropagators;
 import static io.opentelemetry.context.ContextUtils.withScopedContext;
 import static io.opentelemetry.trace.Span.Kind.SERVER;
-import static io.opentelemetry.trace.TracingContextUtils.getSpan;
 import static io.opentelemetry.trace.TracingContextUtils.withSpan;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.instrumentation.api.MoreAttributes;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
-import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.instrumentation.api.context.ContextPropagationDebug;
 import io.opentelemetry.instrumentation.api.decorator.HttpStatusConverter;
-import io.opentelemetry.instrumentation.api.tracer.utils.HttpUrlUtils;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracingContextUtils;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,23 +147,20 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
   /**
    * Returns context stored to the given request-response-loop storage by {@link
    * #attachServerContext(Context, STORAGE)}.
-   *
-   * <p>May be null.
    */
+  @Nullable
   public abstract Context getServerContext(STORAGE storage);
 
   protected void onConnection(Span span, CONNECTION connection) {
-    SemanticAttributes.NET_PEER_IP.set(span, peerHostIP(connection));
+    span.setAttribute(SemanticAttributes.NET_PEER_IP, peerHostIP(connection));
     Integer port = peerPort(connection);
     // Negative or Zero ports might represent an unset/null value for an int type.  Skip setting.
     if (port != null && port > 0) {
-      SemanticAttributes.NET_PEER_PORT.set(span, port);
+      span.setAttribute(SemanticAttributes.NET_PEER_PORT, (long) port);
     }
   }
 
-  // TODO use semantic attributes
   protected void onRequest(Span span, REQUEST request) {
-
     final String sourceAppId = span.getContext().getTraceState().get(AiAppId.TRACESTATE_KEY);
     if (sourceAppId != null && !sourceAppId.isEmpty()) {
       span.setAttribute(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME, sourceAppId);
@@ -194,34 +175,38 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
       }
     }
 
-    SemanticAttributes.HTTP_METHOD.set(span, method(request));
-    String userAgent = requestHeader(request, USER_AGENT);
-    if (userAgent != null) {
-      SemanticAttributes.HTTP_USER_AGENT.set(span, userAgent);
-    }
+    span.setAttribute(SemanticAttributes.HTTP_METHOD, method(request));
+    span.setAttribute(SemanticAttributes.HTTP_USER_AGENT, requestHeader(request, USER_AGENT));
 
-    try {
-      URI url = url(request);
-      HttpUrlUtils.setHttpUrl(span, url);
-      if (Config.get().isHttpServerTagQueryString()) {
-        span.setAttribute(MoreAttributes.HTTP_QUERY, url.getQuery());
-        span.setAttribute(MoreAttributes.HTTP_FRAGMENT, url.getFragment());
-      }
-    } catch (Exception e) {
-      log.debug("Error tagging url", e);
-    }
+    setUrl(span, request);
+
     // TODO set resource name from URL.
+  }
+
+  /*
+  https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions/http.md
+
+  HTTP semantic convention recommends setting http.scheme, http.host, http.target attributes
+  instead of http.url because it "is usually not readily available on the server side but would have
+  to be assembled in a cumbersome and sometimes lossy process from other information".
+
+  But in Java world there is no standard way to access "The full request target as passed in a HTTP request line or equivalent"
+  which is the recommended value for http.target attribute. Therefore we cannot use any of the
+  recommended combinations of attributes and are forced to use http.url.
+   */
+  private void setUrl(Span span, REQUEST request) {
+    span.setAttribute(SemanticAttributes.HTTP_URL, url(request));
   }
 
   protected void onConnectionAndRequest(Span span, CONNECTION connection, REQUEST request) {
     String flavor = flavor(connection, request);
     if (flavor != null) {
-      SemanticAttributes.HTTP_FLAVOR.set(span, flavor);
+      span.setAttribute(SemanticAttributes.HTTP_FLAVOR, flavor);
     }
-    SemanticAttributes.HTTP_CLIENT_IP.set(span, clientIP(connection, request));
+    span.setAttribute(SemanticAttributes.HTTP_CLIENT_IP, clientIP(connection, request));
   }
 
-  protected String clientIP(CONNECTION connection, REQUEST request) {
+  private String clientIP(CONNECTION connection, REQUEST request) {
     // try Forwarded
     String forwarded = requestHeader(request, "Forwarded");
     if (forwarded != null) {
@@ -270,17 +255,14 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     return forwarded.substring(start);
   }
 
-  private <C> SpanContext extract(C carrier, TextMapPropagator.Getter<C> getter) {
-    if (Config.THREAD_PROPAGATION_DEBUGGER) {
+  private <C> Context extract(C carrier, TextMapPropagator.Getter<C> getter) {
+    if (ContextPropagationDebug.isThreadPropagationDebuggerEnabled()) {
       debugContextLeak();
     }
     // Using Context.ROOT here may be quite unexpected, but the reason is simple.
     // We want either span context extracted from the carrier or invalid one.
     // We DO NOT want any span context potentially lingering in the current context.
-    Context context =
-        getPropagators().getTextMapPropagator().extract(Context.ROOT, carrier, getter);
-    Span span = getSpan(context);
-    return span.getContext();
+    return getPropagators().getTextMapPropagator().extract(Context.ROOT, carrier, getter);
   }
 
   private void debugContextLeak() {
@@ -291,10 +273,10 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
       if (currentSpan != null) {
         log.error("It contains this span: {}", currentSpan);
       }
-      List<StackTraceElement[]> location = Config.THREAD_PROPAGATION_LOCATIONS.get(current);
-      if (location != null) {
+      List<StackTraceElement[]> locations = ContextPropagationDebug.getLocations(current);
+      if (locations != null) {
         StringBuilder sb = new StringBuilder();
-        Iterator<StackTraceElement[]> i = location.iterator();
+        Iterator<StackTraceElement[]> i = locations.iterator();
         while (i.hasNext()) {
           for (StackTraceElement ste : i.next()) {
             sb.append("\n");
@@ -314,8 +296,9 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
   }
 
   private static void setStatus(Span span, int status) {
-    SemanticAttributes.HTTP_STATUS_CODE.set(span, status);
+    span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, (long) status);
     // TODO status_message
+    // See https://github.com/open-telemetry/opentelemetry-specification/issues/950
     span.setStatus(HttpStatusConverter.statusFromHttpStatus(status));
   }
 
@@ -327,18 +310,21 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     }
   }
 
+  @Nullable
   protected abstract Integer peerPort(CONNECTION connection);
 
+  @Nullable
   protected abstract String peerHostIP(CONNECTION connection);
 
   protected abstract String flavor(CONNECTION connection, REQUEST request);
 
   protected abstract TextMapPropagator.Getter<REQUEST> getGetter();
 
-  protected abstract URI url(REQUEST request) throws URISyntaxException;
+  protected abstract String url(REQUEST request);
 
   protected abstract String method(REQUEST request);
 
+  @Nullable
   protected abstract String requestHeader(REQUEST request, String name);
 
   protected abstract int responseStatus(RESPONSE response);
@@ -347,6 +333,13 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
    * Stores given context in the given request-response-loop storage in implementation specific way.
    */
   protected abstract void attachServerContext(Context context, STORAGE storage);
+
+  /*
+  We are making quite simple check by just verifying the presence of schema.
+   */
+  protected boolean isRelativeUrl(String url) {
+    return !(url.startsWith("http://") || url.startsWith("https://"));
+  }
 
   protected String aiRequestContext(final REQUEST request) {
     return null;
