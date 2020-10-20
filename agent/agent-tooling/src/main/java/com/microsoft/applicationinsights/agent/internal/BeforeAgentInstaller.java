@@ -50,6 +50,7 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Tele
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
+import com.microsoft.applicationinsights.extensibility.initializer.ResourceAttributesContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
 import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
@@ -63,6 +64,7 @@ import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionStrin
 import io.opentelemetry.javaagent.config.ConfigOverride;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -156,6 +158,7 @@ public class BeforeAgentInstaller {
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
+        configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.preview.resourceAttributes));
 
         FixedRateSampling fixedRateSampling = config.preview.sampling.fixedRate;
         if (fixedRateSampling != null && fixedRateSampling.percentage != null) {
