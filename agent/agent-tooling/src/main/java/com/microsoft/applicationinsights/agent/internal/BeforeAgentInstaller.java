@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +49,7 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Tele
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
+import com.microsoft.applicationinsights.extensibility.initializer.ResourceAttributesContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
 import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
@@ -59,6 +59,7 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.config.Config;
 import org.apache.http.HttpHost;
@@ -104,7 +105,9 @@ public class BeforeAgentInstaller {
 
         InstrumentationSettings config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
-            throw new ConfigurationException("No connection string or instrumentation key provided");
+            if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
+                throw new ConfigurationException("No connection string or instrumentation key provided");
+            }
         }
 
         Map<String, String> properties = new HashMap<>();
@@ -150,6 +153,7 @@ public class BeforeAgentInstaller {
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
+        configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.preview.resourceAttributes));
 
         FixedRateSampling fixedRateSampling = config.preview.sampling.fixedRate;
         if (fixedRateSampling != null && fixedRateSampling.percentage != null) {
@@ -158,6 +162,12 @@ public class BeforeAgentInstaller {
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
         AiAppId.setSupplier(new AppIdSupplier());
+
+        // this is for Azure Function Linux consumption plan support.
+        if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+            AiConnectionString.setAccessor(new ConnectionStringAccessor());
+        }
+
         // this is currently used by Micrometer instrumentation in addition to 2.x SDK
         BytecodeUtil.setDelegate(new BytecodeUtilImpl());
         Runtime.getRuntime().addShutdownHook(new Thread() {
