@@ -166,7 +166,7 @@ abstract class JaxRsHttpServerTest<S> extends HttpServerTest<S> {
                   int statusCode,
                   String query) {
     trace.span(index) {
-      name method + " /" + path
+      name path
       kind SERVER
       errored isError
       if (parentID != null) {
