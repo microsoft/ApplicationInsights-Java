@@ -34,8 +34,8 @@ public class Log4jSpans {
 
     Span.Builder builder =
         TRACER
-            .spanBuilder("log.message")
-            .setAttribute("message", message.getFormattedMessage())
+            .spanBuilder(message.getFormattedMessage())
+            .setAttribute("ai.internal.log", true)
             .setAttribute("level", level.toString())
             .setAttribute("loggerName", logger.getName());
     for (Map.Entry<String, String> entry : ThreadContext.getImmutableContext().entrySet()) {

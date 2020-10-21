@@ -40,8 +40,8 @@ public class JavaUtilLoggingSpans {
     Throwable t = logRecord.getThrown();
     Span span =
         TRACER
-            .spanBuilder("log.message")
-            .setAttribute("message", FORMATTER.formatMessage(logRecord))
+            .spanBuilder(FORMATTER.formatMessage(logRecord))
+            .setAttribute("ai.internal.log", true)
             .setAttribute("level", level.getName())
             .setAttribute("loggerName", logger.getName())
             .startSpan();
