@@ -73,6 +73,8 @@ public class Exporter implements SpanExporter {
 
     private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("ai.sampling.percentage");
 
+    private static final AttributeKey<Boolean> AI_INTERNAL_LOG = AttributeKey.booleanKey("ai.internal.log");
+
     private static final AttributeKey<String> SPAN_SOURCE_ATTRIBUTE_NAME = AttributeKey.stringKey(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME);
     private static final AttributeKey<String> SPAN_TARGET_ATTRIBUTE_NAME = AttributeKey.stringKey(AiAppId.SPAN_TARGET_ATTRIBUTE_NAME);
 
@@ -115,34 +117,34 @@ public class Exporter implements SpanExporter {
             // where we capture them
             return;
         }
+        Map<AttributeKey<?>, Object> attributes = getAttributesCopy(span.getAttributes());
         if (kind == Kind.INTERNAL) {
-            if (span.getName().equals("log.message")) {
-                exportLogSpan(span);
+            Boolean isLog = removeAttributeBoolean(attributes, AI_INTERNAL_LOG);
+            if (isLog != null && isLog) {
+                exportLogSpan(span, attributes);
             } else if (!SpanId.isValid(span.getParentSpanId())) {
                 // TODO revisit this decision
                 // maybe user-generated telemetry?
                 // otherwise this top-level span won't show up in Performance blade
-                exportRequest(stdComponent, span);
+                exportRequest(stdComponent, span, attributes);
             } else if (span.getName().equals("EventHubs.message")) {
                 // TODO eventhubs should use PRODUCER instead of INTERNAL
-                exportRemoteDependency(stdComponent, span, false);
+                exportRemoteDependency(stdComponent, span, attributes, false);
             } else {
-                exportRemoteDependency(stdComponent, span, true);
+                exportRemoteDependency(stdComponent, span, attributes, true);
             }
         } else if (kind == Kind.CLIENT || kind == Kind.PRODUCER) {
-            exportRemoteDependency(stdComponent, span, false);
+            exportRemoteDependency(stdComponent, span, attributes, false);
         } else if (kind == Kind.SERVER || kind == Kind.CONSUMER) {
-            exportRequest(stdComponent, span);
+            exportRequest(stdComponent, span, attributes);
         } else {
             throw new UnsupportedOperationException(kind.name());
         }
     }
 
-    private void exportRequest(String stdComponent, SpanData span) {
+    private void exportRequest(String stdComponent, SpanData span, Map<AttributeKey<?>, Object> attributes) {
 
         RequestTelemetry telemetry = new RequestTelemetry();
-
-        Map<AttributeKey<?>, Object> attributes = getAttributesCopy(span.getAttributes());
 
         String sourceAppId = removeAttributeString(attributes, SPAN_SOURCE_ATTRIBUTE_NAME);
         if (!AiAppId.getAppId().equals(sourceAppId)) {
@@ -223,7 +225,7 @@ public class Exporter implements SpanExporter {
         return copy;
     }
 
-    private void exportRemoteDependency(String stdComponent, SpanData span, boolean inProc) {
+    private void exportRemoteDependency(String stdComponent, SpanData span, Map<AttributeKey<?>, Object> attributes, boolean inProc) {
 
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
 
@@ -232,8 +234,6 @@ public class Exporter implements SpanExporter {
         telemetry.setName(span.getName());
 
         span.getInstrumentationLibraryInfo().getName();
-
-        Map<AttributeKey<?>, Object> attributes = getAttributesCopy(span.getAttributes());
 
         if (inProc) {
             telemetry.setType("InProc");
@@ -292,14 +292,12 @@ public class Exporter implements SpanExporter {
         trackEvents(span, samplingPercentage);
     }
 
-    private static final AttributeKey<String> LOGGER_MESSAGE = AttributeKey.stringKey("message");
     private static final AttributeKey<String> LOGGER_LEVEL = AttributeKey.stringKey("level");
     private static final AttributeKey<String> LOGGER_LOGGER_NAME = AttributeKey.stringKey("loggerName");
     private static final AttributeKey<String> LOGGER_ERROR_STACK = AttributeKey.stringKey("error.stack");
 
-    private void exportLogSpan(SpanData span) {
-        Map<AttributeKey<?>, Object> attributes = getAttributesCopy(span.getAttributes());
-        String message = removeAttributeString(attributes, LOGGER_MESSAGE);
+    private void exportLogSpan(SpanData span, Map<AttributeKey<?>, Object> attributes) {
+        String message = span.getName();
         String level = removeAttributeString(attributes, LOGGER_LEVEL);
         String loggerName = removeAttributeString(attributes, LOGGER_LOGGER_NAME);
         String errorStack = removeAttributeString(attributes, LOGGER_ERROR_STACK);
@@ -541,6 +539,15 @@ public class Exporter implements SpanExporter {
         Object value = attributes.remove(attributeKey);
         if (value instanceof Double) {
             return (Double) value;
+        } else {
+            return null;
+        }
+    }
+
+    private static Boolean removeAttributeBoolean(Map<AttributeKey<?>, Object> attributes, AttributeKey<Boolean> attributeKey) {
+        Object value = attributes.remove(attributeKey);
+        if (value instanceof Boolean) {
+            return (Boolean) value;
         } else {
             return null;
         }
