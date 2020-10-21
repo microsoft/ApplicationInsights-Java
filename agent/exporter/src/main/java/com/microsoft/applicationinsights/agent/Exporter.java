@@ -119,8 +119,8 @@ public class Exporter implements SpanExporter {
         }
         Map<AttributeKey<?>, Object> attributes = getAttributesCopy(span.getAttributes());
         if (kind == Kind.INTERNAL) {
-            Boolean isLog = removeAttributeBoolean(attributes, AI_INTERNAL_LOG);
-            if (isLog != null && isLog) {
+            boolean isLog = removeAttributeBoolean(attributes, AI_INTERNAL_LOG);
+            if (isLog) {
                 exportLogSpan(span, attributes);
             } else if (!SpanId.isValid(span.getParentSpanId())) {
                 // TODO revisit this decision
@@ -544,12 +544,12 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static Boolean removeAttributeBoolean(Map<AttributeKey<?>, Object> attributes, AttributeKey<Boolean> attributeKey) {
+    private static boolean removeAttributeBoolean(Map<AttributeKey<?>, Object> attributes, AttributeKey<Boolean> attributeKey) {
         Object value = attributes.remove(attributeKey);
         if (value instanceof Boolean) {
             return (Boolean) value;
         } else {
-            return null;
+            return false;
         }
     }
 
