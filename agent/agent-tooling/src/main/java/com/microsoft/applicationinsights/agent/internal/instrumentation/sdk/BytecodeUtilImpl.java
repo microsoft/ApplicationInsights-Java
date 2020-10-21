@@ -204,8 +204,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     private static void track(Telemetry telemetry) {
         SpanContext context = tracer.getCurrentSpan().getContext();
         if (context.isValid()) {
-            String traceId = context.getTraceId().toLowerBase16();
-            String spanId = context.getSpanId().toLowerBase16();
+            String traceId = context.getTraceIdAsHexString();
+            String spanId = context.getSpanIdAsHexString();
             telemetry.getContext().getOperation().setId(traceId);
             telemetry.getContext().getOperation().setParentId(spanId);
         }

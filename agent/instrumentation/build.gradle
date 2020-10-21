@@ -8,55 +8,55 @@ repositories {
     mavenLocal()
 }
 
-def instrumentationVersion = '0.8.0'
+def instrumentationVersion = '0.9.0+ai.patch.1'
 
 dependencies {
     compile project(':agent:agent-tooling')
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-apache-httpasyncclient-4.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-apache-httpclient-2.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-apache-httpclient-4.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-azure-functions', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-cassandra-3.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-cassandra-4.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-grpc-1.5', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-http-url-connection', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-java-classloader', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-java-concurrent', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-java-util-logging-spans', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jaxrs-1.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jaxrs-2.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jaxrs-2.0-jersey-2.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jaxrs-2.0-resteasy-3.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jaxrs-2.0-resteasy-3.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jdbc', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jedis-1.4', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jedis-3.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jetty-8.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-jms-1.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-kafka-clients-0.11', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-kafka-streams-0.11', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-lettuce-4.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-lettuce-5.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-lettuce-5.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-log4j-spans-1.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-log4j-spans-2.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-logback-spans-1.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-micrometer-1.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-mongo-3.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-mongo-3.7', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-mongo-async-3.3', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-netty-4.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-netty-4.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-okhttp-3.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-opentelemetry-api-0.2.4', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-opentelemetry-api-beta', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-reactor-3.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-servlet-common', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-servlet-2.2', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-servlet-3.0', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-spring-scheduling-3.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-spring-webmvc-3.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.instrumentation.auto', name: 'opentelemetry-auto-spring-webflux-5.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpasyncclient-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-2.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-azure-functions', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-cassandra-3.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-cassandra-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-grpc-1.5', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-http-url-connection', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-java-classloader', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-java-concurrent', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-java-util-logging-spans', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-1.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-common', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-jersey-2.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-resteasy-3.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-resteasy-3.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jdbc', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jedis-1.4', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jedis-3.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jetty-8.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jms-1.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-kafka-clients-0.11', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-kafka-streams-0.11', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-5.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-5.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-log4j-spans-1.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-log4j-spans-2.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-logback-spans-1.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-micrometer-1.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-mongo-3.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-mongo-3.7', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-mongo-async-3.3', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-netty-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-netty-4.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-okhttp-3.0', version: instrumentationVersion
+    //compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-opentelemetry-api-0.2.4', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-opentelemetry-api-beta', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-reactor-3.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-servlet-common', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-servlet-2.2', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-servlet-3.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-spring-scheduling-3.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-spring-webmvc-3.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-spring-webflux-5.0', version: instrumentationVersion
 
     // also: jaxrs, spring, struts
 
@@ -65,7 +65,7 @@ dependencies {
 }
 
 // need to perform shading in two steps in order to avoid shading java.util.logging.Logger
-// in opentelemetry-auto-java-util-logging-spans since that instrumentation needs to
+// in opentelemetry-javaagent-java-util-logging-spans since that instrumentation needs to
 // reference unshaded java.util.logging.Logger
 // (java.util.logging.Logger shading is not needed in any of the instrumentation modules,
 // but it is needed for the dependencies, e.g. guava, which use java.util.logging.Logger)
@@ -77,10 +77,10 @@ task shadowJarStep1(type: com.github.jengelman.gradle.plugins.shadow.tasks.Shado
     configurations = [project.configurations.runtime]
 
     dependencies {
-        exclude(dependency('io.opentelemetry.instrumentation.auto:opentelemetry-auto-java-util-logging-spans'))
+        exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans'))
 
         // exclude bootstrap dependencies from shadowJar
-        exclude(dependency('io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-bootstrap'))
+        exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-bootstrap'))
         exclude(dependency('io.opentelemetry:opentelemetry-api'))
         exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
         exclude(dependency('io.grpc:grpc-context'))
@@ -104,7 +104,7 @@ shadowJar {
 
     dependencies {
         // exclude bootstrap dependencies from shadowJar
-        exclude(dependency('io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-bootstrap'))
+        exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-bootstrap'))
         exclude(dependency('io.opentelemetry:opentelemetry-api'))
         exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
         exclude(dependency('io.grpc:grpc-context'))
@@ -120,7 +120,7 @@ shadowJar {
 
     // rewrite library instrumentation dependencies
     relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
-        exclude "io.opentelemetry.instrumentation.auto.**"
+        exclude "io.opentelemetry.javaagent.instrumentation.**"
     }
 
     // prevents conflict with library instrumentation
@@ -128,6 +128,7 @@ shadowJar {
 
     // relocate OpenTelemetry API usage
     relocate "io.opentelemetry.OpenTelemetry", "io.opentelemetry.javaagent.shaded.io.opentelemetry.OpenTelemetry"
+    relocate "io.opentelemetry.baggage", "io.opentelemetry.javaagent.shaded.io.opentelemetry.baggage"
     relocate "io.opentelemetry.common", "io.opentelemetry.javaagent.shaded.io.opentelemetry.common"
     relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
     relocate "io.opentelemetry.correlationcontext", "io.opentelemetry.javaagent.shaded.io.opentelemetry.correlationcontext"
