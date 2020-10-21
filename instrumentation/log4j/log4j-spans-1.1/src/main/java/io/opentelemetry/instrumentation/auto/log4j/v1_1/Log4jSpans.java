@@ -46,8 +46,8 @@ public class Log4jSpans {
 
     Span.Builder builder =
         TRACER
-            .spanBuilder("log.message")
-            .setAttribute("message", String.valueOf(message))
+            .spanBuilder(String.valueOf(message))
+            .setAttribute("ai.internal.log", true)
             .setAttribute("level", level.toString())
             .setAttribute("loggerName", logger.getName());
     Hashtable<?, ?> context = MDC.getContext();

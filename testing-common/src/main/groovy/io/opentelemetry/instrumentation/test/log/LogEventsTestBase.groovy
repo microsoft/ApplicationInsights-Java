@@ -51,9 +51,9 @@ abstract class LogEventsTestBase extends AgentTestRunner {
         }
         if (capture) {
           span(1) {
-            name "log.message"
+            name "xyz"
             attributes {
-              "message" "xyz"
+              "ai.internal.log" true
               "level" testMethod.toUpperCase()
               "loggerName" "abc"
             }
@@ -79,9 +79,9 @@ abstract class LogEventsTestBase extends AgentTestRunner {
       assertTraces(1) {
         trace(0, 1) {
           span(0) {
-            name "log.message"
+            name "xyz"
             attributes {
-              "message" "xyz"
+              "ai.internal.log" true
               "level" testMethod.toUpperCase()
               "loggerName" "abc"
             }

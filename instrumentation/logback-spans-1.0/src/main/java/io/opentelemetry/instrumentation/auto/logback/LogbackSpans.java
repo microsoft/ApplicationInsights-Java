@@ -43,8 +43,8 @@ public class LogbackSpans {
 
     Span.Builder builder =
         TRACER
-            .spanBuilder("log.message")
-            .setAttribute("message", event.getFormattedMessage())
+            .spanBuilder(event.getFormattedMessage())
+            .setAttribute("ai.internal.log", true)
             .setAttribute("level", level.toString())
             .setAttribute("loggerName", event.getLoggerName());
     for (Map.Entry<String, String> entry : event.getMDCPropertyMap().entrySet()) {
