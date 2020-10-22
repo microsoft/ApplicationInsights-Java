@@ -32,7 +32,7 @@ public class LettuceSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getSuccess());
         assertEquals("redis", rdd.getType());
         assertEquals("redis", rdd.getTarget());
-        assertEquals("redis", rdd.getName());
+        assertEquals("GET", rdd.getName());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }

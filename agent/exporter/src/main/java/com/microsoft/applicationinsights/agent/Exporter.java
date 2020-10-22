@@ -301,6 +301,7 @@ public class Exporter implements SpanExporter {
     }
 
     private void trackEvents(SpanData span, Double samplingPercentage) {
+        boolean foundException = false;
         for (Event event : span.getEvents()) {
             EventTelemetry telemetry = new EventTelemetry(event.getName());
             telemetry.getContext().getOperation().setId(span.getTraceId());
@@ -310,12 +311,16 @@ public class Exporter implements SpanExporter {
 
             if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
                     || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE) != null) {
-                // TODO map OpenTelemetry exception to Application Insights exception better
-                String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
-                if (stacktrace != null) {
-                    trackException(stacktrace, span, telemetry, span.getSpanId(), samplingPercentage);
+                // TODO Remove this boolean after we can confirm that the exception duplicate is a bug from the opentelmetry-java-instrumentation
+                //  tested 10/22, and SpringBootTest smoke test
+                if (!foundException) {
+                    // TODO map OpenTelemetry exception to Application Insights exception better
+                    String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+                    if (stacktrace != null) {
+                        trackException(stacktrace, span, telemetry, span.getSpanId(), samplingPercentage);
+                    }
                 }
-                // TODO capture something if stacktrace is null
+                foundException = true;
             } else {
                 track(telemetry, samplingPercentage);
             }
@@ -467,6 +472,7 @@ public class Exporter implements SpanExporter {
         if (target != null) {
             telemetry.setTarget(target);
         } else {
+            // TODO fall back to PEER_SERVICE/NET_PEER_NAME/NET_PEER_IP (e.g. for Redis)?
             telemetry.setTarget(dbSystem);
         }
     }
