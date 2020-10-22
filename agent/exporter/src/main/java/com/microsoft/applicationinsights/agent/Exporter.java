@@ -142,7 +142,7 @@ public class Exporter implements SpanExporter {
         RequestTelemetry telemetry = new RequestTelemetry();
 
         String sourceAppId = removeAttributeString(attributes, SPAN_SOURCE_ATTRIBUTE_NAME);
-        if (!AiAppId.getAppId().equals(sourceAppId)) {
+        if (sourceAppId != null && !AiAppId.getAppId().equals(sourceAppId)) {
             telemetry.setSource(sourceAppId);
         } else if (attributes.containsKey(SemanticAttributes.MESSAGING_SYSTEM)) {
             String destination = removeAttributeString(attributes, SemanticAttributes.MESSAGING_DESTINATION);
@@ -442,12 +442,11 @@ public class Exporter implements SpanExporter {
 
     private static void applyRpcRequestSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String rpcSystem) {
         telemetry.setType(rpcSystem);
-        String target = removeAttributeString(attributes, SemanticAttributes.PEER_SERVICE);
+        // TODO is this too fine-grained (e.g. many grpc service name = class name)
+        //  maybe better to use net.peer like in http but those are not implemented for grpc client spans yet
+        String target = removeAttributeString(attributes, SemanticAttributes.RPC_SERVICE);
         if (target == null) {
-            target = removeAttributeString(attributes, SemanticAttributes.NET_PEER_NAME);
-        }
-        if (target == null) {
-            target = removeAttributeString(attributes, SemanticAttributes.NET_PEER_IP);
+            target = rpcSystem;
         }
         telemetry.setTarget(target);
     }
