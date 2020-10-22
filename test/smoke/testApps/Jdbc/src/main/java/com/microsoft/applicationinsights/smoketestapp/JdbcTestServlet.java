@@ -277,7 +277,7 @@ public class JdbcTestServlet extends HttpServlet {
     }
 
     private static Connection getHsqldbConnection() throws Exception {
-        return JDBCDriver.getConnection("jdbc:hsqldb:mem:test", null);
+        return JDBCDriver.getConnection("jdbc:hsqldb:mem:testdb", null);
     }
 
     private static Connection getMysqlConnection() throws Exception {
