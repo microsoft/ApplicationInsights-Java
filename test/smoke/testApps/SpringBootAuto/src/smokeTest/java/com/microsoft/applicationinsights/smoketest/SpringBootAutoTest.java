@@ -40,17 +40,19 @@ public class SpringBootAutoTest extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
 
+        assertTrue(rdList.size() >= 20);
         for (int i = 0; i < rdList.size(); i++) {
             Envelope envelope = rdList.get(i);
             String operationName = envelope.getTags().get("ai.operation.name");
             RequestData rd = (RequestData) ((Data) envelope.getData()).getBaseData();
             if (operationName.equals("SpringBootApp.fixedRateScheduler") && rd.getName().equals("SpringBootApp.fixedRateScheduler")) {
                 Envelope rddEnvelope = findRemoteDependencyData(rd.getId(), new ArrayList<>(rddList));
-                assertNotNull(rddEnvelope);
-                RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
-                assertEquals("GET /search", rdd.getName());
-                assertEquals("www.bing.com", rdd.getTarget());
-                assertEquals(rd.getId(), rddEnvelope.getTags().get("ai.operation.parentId"));
+                if (rddEnvelope != null) {
+                    RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+                    assertEquals("GET /search", rdd.getName());
+                    assertEquals("www.bing.com", rdd.getTarget());
+                    assertEquals(rd.getId(), rddEnvelope.getTags().get("ai.operation.parentId"));
+                }
             }
         }
     }

@@ -21,7 +21,7 @@ public class SpringBootApp extends SpringBootServletInitializer {
         return applicationBuilder.sources(SpringBootApp.class);
     }
 
-    @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedRate = 100)
     public int fixedRateScheduler() throws IOException {
         URL obj = new URL("https://www.bing.com/search?q=spaces%20test");
         HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
