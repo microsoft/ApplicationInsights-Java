@@ -29,7 +29,7 @@ public class SpringSchedulerTest extends AiSmokeTest {
         List<Envelope> schedulerRequestList = new ArrayList<>();
         groupRequestList(httpRequestList, schedulerRequestList, rdList);
         assertEquals(1, httpRequestList.size());
-        assertTrue(schedulerRequestList.size() >= 20);
+        assertTrue(schedulerRequestList.size() >= 19);
 
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
 
