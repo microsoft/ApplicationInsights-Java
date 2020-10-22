@@ -41,6 +41,7 @@ public class CassandraSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("cassandra", rdd.getType());
+        assertEquals("cassandra", rdd.getTarget());
         assertEquals("select * from test.test", rdd.getName());
         assertTrue(rdd.getSuccess());
 

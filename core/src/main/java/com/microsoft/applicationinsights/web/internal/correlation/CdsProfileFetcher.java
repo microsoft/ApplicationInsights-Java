@@ -27,10 +27,12 @@ import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.ssl.SSLContexts;
@@ -51,6 +53,8 @@ import java.util.concurrent.TimeUnit;
 public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
 
     private static final Logger logger = LoggerFactory.getLogger(CdsProfileFetcher.class);
+
+    public static volatile HttpHost proxy;
 
     private CloseableHttpAsyncClient httpClient;
     private static final String PROFILE_QUERY_ENDPOINT_APP_ID_FORMAT = "%s/api/profiles/%s/appId";
@@ -79,12 +83,15 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
                 .build();
 
         final String[] allowedProtocols = SSLOptionsUtil.getAllowedProtocols();
-        setHttpClient(HttpAsyncClients.custom()
+        HttpAsyncClientBuilder builder = HttpAsyncClients.custom()
                 .setDefaultRequestConfig(requestConfig)
                 .setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(CdsProfileFetcher.class))
                 .setSSLStrategy(new SSLIOSessionStrategy(SSLContexts.createDefault(), allowedProtocols, null, SSLIOSessionStrategy.getDefaultHostnameVerifier()))
-                .useSystemProperties()
-                .build());
+                .useSystemProperties();
+        if (proxy != null) {
+            builder.setProxy(proxy);
+        }
+        setHttpClient(builder.build());
 
         long resetInterval = retryPolicy.getResetPeriodInMinutes();
         PeriodicTaskPool.PeriodicRunnableTask cdsRetryClearTask = PeriodicTaskPool.PeriodicRunnableTask.createTask(new CachePurgingRunnable(),

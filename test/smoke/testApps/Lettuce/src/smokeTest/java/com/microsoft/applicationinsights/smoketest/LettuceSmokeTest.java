@@ -29,8 +29,10 @@ public class LettuceSmokeTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
-        assertEquals("redis", rdd.getType());
         assertTrue(rdd.getSuccess());
+        assertEquals("redis", rdd.getType());
+        assertEquals("redis", rdd.getTarget());
+        assertEquals("GET", rdd.getName());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
