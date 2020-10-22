@@ -416,6 +416,10 @@ public class Exporter implements SpanExporter {
         if (target == null) {
             target = removeAttributeString(attributes, SemanticAttributes.NET_PEER_IP);
         }
+        Long port = removeAttributeLong(attributes, SemanticAttributes.NET_PEER_PORT);
+        if (target != null && port != null && port != 443 && port != 80) {
+            target += ":" + port;
+        }
         String targetAppId = removeAttributeString(attributes, SPAN_TARGET_ATTRIBUTE_NAME);
         if (targetAppId == null || AiAppId.getAppId().equals(targetAppId)) {
             telemetry.setType("HTTP");
@@ -538,6 +542,15 @@ public class Exporter implements SpanExporter {
         Object value = attributes.remove(attributeKey);
         if (value instanceof String) {
             return (String) value;
+        } else {
+            return null;
+        }
+    }
+
+    private static Long removeAttributeLong(Map<AttributeKey<?>, Object> attributes, AttributeKey<Long> attributeKey) {
+        Object value = attributes.remove(attributeKey);
+        if (value instanceof Long) {
+            return (Long) value;
         } else {
             return null;
         }
