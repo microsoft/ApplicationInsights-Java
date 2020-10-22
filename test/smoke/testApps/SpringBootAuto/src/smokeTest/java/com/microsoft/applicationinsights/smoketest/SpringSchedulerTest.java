@@ -68,10 +68,6 @@ public class SpringSchedulerTest extends AiSmokeTest {
     }
 
     private void groupRequestList(List<Envelope> httpRequestList, List<Envelope> schedulerRequestList, List<Envelope> rdList) {
-        if (httpRequestList == null || schedulerRequestList == null || rdList == null) {
-            return;
-        }
-
         for (Envelope envelope : rdList) {
             RequestData rd = (RequestData) ((Data) envelope.getData()).getBaseData();
             if (rd.getName().equals("GET /scheduler")) {
