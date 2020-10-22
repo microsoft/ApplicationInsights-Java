@@ -5,7 +5,7 @@ import org.junit.*;
 @UseAgent
 public class SpringBootAutoTest extends AiSmokeTest {
 
-    @Ignore
+    @Test
     @TargetUri("/test")
     public void doMostBasicTest() throws Exception {
         mockedIngestion.waitForItems("RequestData", 1);
