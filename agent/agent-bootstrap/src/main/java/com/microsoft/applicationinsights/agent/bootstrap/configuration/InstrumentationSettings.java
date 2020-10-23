@@ -37,14 +37,19 @@ public class InstrumentationSettings {
     public String connectionString;
     public PreviewConfiguration preview = new PreviewConfiguration();
 
-    public enum SpanProcessorMatchType {
+    public enum ProcessorMatchType {
         //Moshi JSON builder donot allow case insensitive mapping
         strict, regexp
     }
 
-    public enum SpanProcessorActionType {
+    public enum ProcessorActionType {
         //Moshi JSON builder donot allow case insensitive mapping
         insert, update, delete, hash
+    }
+
+    public enum ProcessorType {
+        //Moshi JSON builder donot allow case insensitive mapping
+        attribute, log, span
     }
 
     public static class PreviewConfiguration {
@@ -58,7 +63,7 @@ public class InstrumentationSettings {
         public boolean developerMode;
 
         public List<JmxMetric> jmxMetrics = new ArrayList<>();
-        public Map<String, SpanProcessorConfig> spanProcessors = new HashMap<>();
+        public List<ProcessorConfig> processors = new ArrayList<>();
         public Map<String, Map<String, Object>> instrumentation = new HashMap<String, Map<String, Object>>();
     }
 
@@ -98,79 +103,154 @@ public class InstrumentationSettings {
         public String display;
     }
 
-    public static class SpanProcessorConfig {
-        public SpanProcessorIncludeExclude include;
-        public SpanProcessorIncludeExclude exclude;
-        public List<SpanProcessorAction> actions;
+    public static class ProcessorConfig {
+        public ProcessorType type;
+        public String processorName;
+        public ProcessorIncludeExclude include;
+        public ProcessorIncludeExclude exclude;
+        public List<ProcessorAction> actions; // specific for processor type "attributes"
+        public NameConfig name; // specific for processor types "log" and "span"
 
-        public boolean isValid() {
-            if (actions == null || actions.isEmpty()) {
-                return false;
-            }
-            if (include != null && !include.isValid()) {
-                return false;
-            }
-            if (exclude != null && !exclude.isValid()) {
-                return false;
-            }
-            for (SpanProcessorAction action : actions) {
-                if (!action.isValid()) return false;
-            }
-            return true;
-        }
-    }
-
-    public static class SpanProcessorIncludeExclude {
-        public SpanProcessorMatchType matchType;
-        public List<String> spanNames;
-        //All of these attributes must match exactly for a match to occur
-        public List<SpanProcessorAttribute> attributes;
-
-        public boolean isValid() {
-            if (this.matchType == null) return false;
-            if (this.spanNames == null && this.attributes == null) return false;
-            if (this.spanNames != null && this.matchType == SpanProcessorMatchType.regexp) {
-                for (String spanName : this.spanNames) {
-                    isValidRegex(spanName);
-                }
-            }
-            if (this.attributes != null) {
-                for (SpanProcessorAttribute attribute : this.attributes) {
-                    if (attribute.key == null) return false;
-                    if (this.matchType == SpanProcessorMatchType.regexp && attribute.value != null) {
-                        isValidRegex(attribute.value);
-                    }
-                }
-            }
-            return true;
-        }
-
-        private void isValidRegex(String value) {
+        private static void isValidRegex(String value) {
             try {
                 Pattern.compile(value);
             } catch (PatternSyntaxException exception) {
-                throw new ConfigurationException("User provided span processor config do not have valid regex:"+value);
+                throw new ConfigurationException("User provided processor config do not have valid regex:" + value);
             }
+        }
+
+        public boolean isValid() {
+            if (type == null) return false;
+            //if (processorName == null || processorName.length() == 0) return false;
+            if (include != null && !include.isValid(type)) {
+                return false;
+            }
+            if (exclude != null && !exclude.isValid(type)) {
+                return false;
+            }
+            return hasValidAttributeProcessorConfig() && hasValidLogOrSpanProcessorConfig();
+        }
+
+        public boolean hasValidAttributeProcessorConfig() {
+            if (type == ProcessorType.attribute) {
+                if (actions == null || actions.isEmpty()) {
+                    return false;
+                }
+                for (ProcessorAction action : actions) {
+                    if (!action.isValid()) return false;
+                }
+            }
+            return true;
+        }
+
+        public boolean hasValidLogOrSpanProcessorConfig() {
+            if (type == ProcessorType.log || type == ProcessorType.span) {
+                if (name == null) return false;
+                return name.isValid();
+            }
+            return true;
+        }
+    }
+
+    public static class NameConfig {
+        public List<String> fromAttributes;
+        public ToAttributeConfig toAttributes;
+        public String separator;
+
+        public boolean isValid() {
+            if (fromAttributes == null && toAttributes == null) return false;
+            if (toAttributes != null) return toAttributes.isValid();
+            return separator == null || separator.length() != 0;
+        }
+    }
+
+    public static class ToAttributeConfig {
+        public List<String> rules;
+
+        public boolean isValid() {
+            if(rules==null || rules.isEmpty()) return false;
+            for (String rule : rules) {
+                ProcessorConfig.isValidRegex(rule);
+            }
+            return true;
+        }
+    }
+
+
+    public static class ProcessorIncludeExclude {
+        public ProcessorMatchType matchType;
+        public List<String> spanNames;
+        public List<String> logNames;
+        public List<ProcessorAttribute> attributes;
+
+        public boolean isValid(ProcessorType processorType) {
+            if (this.matchType == null) return false;
+            if (this.attributes != null) {
+                for (ProcessorAttribute attribute : this.attributes) {
+                    if (attribute.key == null) return false;
+                    if (this.matchType == ProcessorMatchType.regexp && attribute.value != null) {
+                        ProcessorConfig.isValidRegex(attribute.value);
+                    }
+                }
+            }
+
+            if (processorType == ProcessorType.attribute) {
+                return hasValidAttributeProcessorIncludeExclude();
+            } else if (processorType == ProcessorType.log) {
+                return hasValidLogProcessorIncludeExclude();
+            } else {
+                return hasValidSpanProcessorIncludeExclude();
+            }
+        }
+
+        private boolean hasValidAttributeProcessorIncludeExclude() {
+            if (this.spanNames == null && this.attributes == null) return false;
+            if (this.spanNames != null && this.matchType == ProcessorMatchType.regexp) {
+                for (String spanName : this.spanNames) {
+                    ProcessorConfig.isValidRegex(spanName);
+                }
+            }
+            return true;
+        }
+
+        private boolean hasValidLogProcessorIncludeExclude() {
+            if (this.logNames == null && this.attributes == null) return false;
+            if (this.logNames != null && this.matchType == ProcessorMatchType.regexp) {
+                for (String logName : this.logNames) {
+                    ProcessorConfig.isValidRegex(logName);
+                }
+            }
+            return true;
+        }
+
+        private boolean hasValidSpanProcessorIncludeExclude() {
+            if (this.spanNames == null && this.attributes == null) return false;
+            if (this.spanNames != null && this.matchType == ProcessorMatchType.regexp) {
+                for (String logName : this.logNames) {
+                    ProcessorConfig.isValidRegex(logName);
+                }
+            }
+            return true;
         }
 
 
     }
 
-    public static class SpanProcessorAttribute {
+    public static class ProcessorAttribute {
         public String key;
         public String value;
     }
 
-    public static class SpanProcessorAction {
+    public static class ProcessorAction {
         public String key;
-        public SpanProcessorActionType action;
+        public ProcessorActionType action;
         public String value;
         public String fromAttribute;
 
         public boolean isValid() {
             if (this.key == null) return false;
             if (this.action == null) return false;
-            if (this.action == SpanProcessorActionType.insert || this.action == SpanProcessorActionType.update) {
+            if (this.action == ProcessorActionType.insert || this.action == ProcessorActionType.update) {
                 return this.value != null || this.fromAttribute != null;
             }
             return true;

@@ -3,8 +3,10 @@
     "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
     "preview": {
       "roleName": "Something Good",
-      "spanProcessors": {
-        "attributes/insert": {
+      "processors": [
+        {
+          "type": "attribute",
+          "processorName": "attributes/insert",
           "actions": [
             {
               "key": "attribute1",
@@ -13,12 +15,14 @@
             },
             {
               "key": "string key",
-              "fromAttribute": "anotherkey",
+              "fromAttribute": "anotherKey",
               "action": "insert"
             }
           ]
         },
-        "attributes/update": {
+        {
+          "type": "attribute",
+          "processorName": "attributes/update",
           "actions": [
             {
               "key": "boo",
@@ -32,35 +36,91 @@
             }
           ]
         },
-        "attributes/selectiveprocessing": {
-          "include":{
-            "matchType":"strict",
-            "spanNames":[
+        {
+          "type": "attribute",
+          "processorName": "attributes/selectiveProcessing",
+          "include": {
+            "matchType": "strict",
+            "spanNames": [
               "svcA",
               "svcB"
             ]
           },
-          "exclude":{
-            "matchType":"strict",
-            "attributes":[
+          "exclude": {
+            "matchType": "strict",
+            "attributes": [
               {
-                "key":"redact_trace",
-                "value":"false"
+                "key": "redact_trace",
+                "value": "false"
               }
             ]
           },
-          "actions":[
+          "actions": [
             {
-              "key":"credit_card",
-              "action":"delete"
+              "key": "credit_card",
+              "action": "delete"
             },
             {
-              "key":"duplicate_key",
-              "action":"delete"
+              "key": "duplicate_key",
+              "action": "delete"
             }
           ]
+        },
+        {
+          "type": "log",
+          "processorName": "log/updateName",
+          "include":{
+            "matchType":"regexp",
+            "logNames":[
+              ".*password.*"
+            ]
+          },
+          "name": {
+            "fromAttributes": [
+              "loggerName"
+            ],
+            "separator": "::"
+          }
+        },
+        {
+          "type": "log",
+          "processorName": "log/extractAttributes",
+          "name": {
+            "toAttributes": {
+              "rules": [
+                "^/api/v1/document/(?<documentId>.*)/update$"
+              ]
+            }
+          }
+        },
+        {
+          "type": "span",
+          "processorName": "span/updateName",
+          "include":{
+            "matchType":"regexp",
+            "spanNames":[
+              ".*password.*"
+            ]
+          },
+          "name": {
+            "fromAttributes": [
+              "loggerName"
+            ],
+            "separator": "::"
+          }
+        },
+        {
+          "type": "span",
+          "processorName": "span/extractAttributes",
+          "name": {
+            "toAttributes": {
+              "rules": [
+                "^/api/v1/document/(?<documentId>.*)/update$"
+              ]
+            }
+          }
         }
-      }
+      ]
     }
   }
 }

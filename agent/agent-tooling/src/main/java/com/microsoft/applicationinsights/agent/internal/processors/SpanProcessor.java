@@ -1,296 +1,147 @@
 package com.microsoft.applicationinsights.agent.internal.processors;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorAction;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorActionType;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorAttribute;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorConfig;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorIncludeExclude;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorMatchType;
-import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.AttributeValue.Type;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorConfig;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.Attributes.Builder;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// structure which only allows valid data
-// normalization has to occur before construction
-public class SpanProcessor {
-    private final List<SpanProcessorAction> insertActions;
-    private final List<SpanProcessorAction> otherActions;
-    private final @Nullable IncludeExclude include;
-    private final @Nullable IncludeExclude exclude;
-    private final boolean isValidConfig;
 
-    private SpanProcessor(List<SpanProcessorAction> insertActions, List<SpanProcessorAction> otherActions, @Nullable IncludeExclude include,
-                          @Nullable IncludeExclude exclude, boolean isValidConfig) {
-        this.insertActions = insertActions;
-        this.otherActions = otherActions;
-        this.include = include;
-        this.exclude = exclude;
-        this.isValidConfig = isValidConfig;
+public class SpanProcessor extends AgentProcessor {
+    private static final Pattern capturingGroupNames = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>");
+    private final List<String> fromAttributes;
+    private final List<String> toAttributeRules;
+    private final List<Pattern> toAttributeRulePatterns;
+    private final List<List<String>> groupNames;
+    private final String separator;
+
+    public SpanProcessor(@Nullable IncludeExclude include,
+                         @Nullable IncludeExclude exclude,
+                         boolean isValidConfig,
+                         List<String> fromAttributes,
+                         List<String> toAttributeRules,
+                         List<Pattern> toAttributeRulePatterns,
+                         List<List<String>> groupNames,
+                         String separator) {
+        super(include, exclude, isValidConfig);
+        this.fromAttributes = fromAttributes;
+        this.toAttributeRules = toAttributeRules;
+        this.toAttributeRulePatterns = toAttributeRulePatterns;
+        this.groupNames = groupNames;
+        this.separator = separator;
     }
 
-    // Creates a Span Processor object
-    public static SpanProcessor create(SpanProcessorConfig config) {
+    public static SpanProcessor create(ProcessorConfig config) {
         IncludeExclude normalizedInclude = config.include != null ? getNormalizedIncludeExclude(config.include) : null;
         IncludeExclude normalizedExclude = config.exclude != null ? getNormalizedIncludeExclude(config.exclude) : null;
-        List<SpanProcessorAction> insertActions = new ArrayList<>();
-        List<SpanProcessorAction> otherActions = new ArrayList<>();
-        for (SpanProcessorAction spanProcessorAction : config.actions) {
-
-            if (spanProcessorAction.action == SpanProcessorActionType.insert) {
-                insertActions.add(spanProcessorAction);
-            } else {
-                otherActions.add(spanProcessorAction);
+        List<String> fromAttributes = new ArrayList<>();
+        if (config.name.fromAttributes != null) {
+            fromAttributes.addAll(config.name.fromAttributes);
+        }
+        List<String> toAttributeRules = new ArrayList<>();
+        if (config.name.toAttributes != null) {
+            toAttributeRules.addAll(config.name.toAttributes.rules);
+        }
+        List<Pattern> toAttributeRulePatterns = new ArrayList<>();
+        if (config.name.toAttributes != null) {
+            for (String rule : config.name.toAttributes.rules) {
+                toAttributeRulePatterns.add(Pattern.compile(rule));
             }
         }
-        return new SpanProcessor(insertActions, otherActions, normalizedInclude, normalizedExclude, true);
+        List<List<String>> groupNames = getGroupNames(toAttributeRules);
+        String separator = config.name.separator != null ? config.name.separator : "";
+        return new SpanProcessor(normalizedInclude, normalizedExclude, true,
+                fromAttributes, toAttributeRules, toAttributeRulePatterns, groupNames, separator);
     }
 
-    // Copy from existing attribute.
-    // Returns true if attribute has been found and copied. Else returns false.
-    private static boolean copyFromExistingAttribute(Attributes.Builder insertBuilder, ReadableAttributes existingSpanAttributes, SpanProcessorAction actionObj) {
-        AttributeValue existingSpanAttributeValue = existingSpanAttributes.get(actionObj.fromAttribute);
-        if (existingSpanAttributeValue != null) {
-            insertBuilder.setAttribute(actionObj.key, existingSpanAttributes.get(actionObj.fromAttribute));
-            return true;
+    private static List<List<String>> getGroupNames(List<String> toAttributeRules) {
+        List<List<String>> groupNames = new ArrayList<>();
+        for (String rule : toAttributeRules) {
+            List<String> subGroupList = new ArrayList<>();
+            Matcher matcher = capturingGroupNames.matcher(rule);
+            while (matcher.find()) {
+                subGroupList.add(matcher.group(1));
+            }
+            groupNames.add(subGroupList);
         }
-        return false;
+        return groupNames;
     }
 
-    private static SpanProcessor.IncludeExclude getNormalizedIncludeExclude(SpanProcessorIncludeExclude includeExclude) {
-        return includeExclude.matchType == SpanProcessorMatchType.strict ? StrictIncludeExclude.create(includeExclude) : RegexpIncludeExclude.create(includeExclude);
-    }
-
-    public @Nullable IncludeExclude getInclude() {
-        return include;
-    }
-
-    public @Nullable IncludeExclude getExclude() {
-        return exclude;
-    }
-
-    public boolean hasValidConfig() {
-        return isValidConfig;
-    }
-
-    // Update,delete or calculate Hash values on existing attributes
-    public SpanData processOtherActions(SpanData span) {
-        ReadableAttributes existingSpanAttributes = span.getAttributes();
-        final Attributes.Builder builder = Attributes.newBuilder();
-        // loop over existing attributes
-        existingSpanAttributes.forEach((existingKey, existingValue) -> {
-            boolean updatedFlag = false;// flag to check if a attribute is updated
-            for (SpanProcessorAction actionObj : otherActions) {
-                if (!actionObj.key.equals(existingKey)) {
-                    continue;
-                }
-                switch (actionObj.action) {
-                    case update:
-                        if (applyUpdateAction(actionObj, existingSpanAttributes, builder)) {
-                            updatedFlag = true;
-                        }
-                        break;
-                    case delete:
-                        // Return without copying the existing span attribute
-                        return;
-                    case hash:
-                        AttributeValue existingSpanAttributeValue = existingSpanAttributes.get(actionObj.key);
-                        if (existingSpanAttributeValue != null) {
-                            // Currently we only support String
-                            if (existingSpanAttributeValue.getType() == Type.STRING) {
-                                builder.setAttribute(actionObj.key, DigestUtils.sha1Hex(existingSpanAttributeValue.getStringValue()));
-                                updatedFlag = true;
-                            }
-                        }
-                        break;
-                    default: break; // no action. Added to escape spotbug failures.
-                }
+    //fromAttributes represents the attribute keys to pull the values from to generate the new span name.
+    public SpanData processFromAttributes(SpanData span) {
+        if (spanHasAllFromAttributeKeys(span)) {
+            StringBuffer updatedSpanBuffer = new StringBuffer();
+            ReadableAttributes existingSpanAttributes = span.getAttributes();
+            for (String attributeKey : fromAttributes) {
+                updatedSpanBuffer.append(existingSpanAttributes.get(attributeKey));
+                updatedSpanBuffer.append(separator);
             }
-            if (!updatedFlag) {
-                builder.setAttribute(existingKey, existingValue);
+            // Removing the last appended separator
+            if (separator.length() > 0) {
+                updatedSpanBuffer.setLength(updatedSpanBuffer.length() - 1);
             }
-        });
-        // loop through insert actions, if key is not in keys set then call builder.setAttribute()
-        return new MySpanData(span, builder.build());
-    }
-
-    private boolean applyUpdateAction(SpanProcessorAction actionObj, ReadableAttributes existingSpanAttributes, Attributes.Builder builder) {
-        //Update from existing attribute
-        if (actionObj.value != null) {
-            //update to new value
-            builder.setAttribute(actionObj.key, actionObj.value);
-            return true;
-        } else return copyFromExistingAttribute(builder, existingSpanAttributes, actionObj);
-    }
-
-    // Insert new Attributes
-    public SpanData processInsertActions(SpanData span) {
-        ReadableAttributes existingSpanAttributes = span.getAttributes();
-        final Builder insertBuilder = Attributes.newBuilder();
-        boolean insertedFlag = false; // Flag to check if insert operation is successful
-        for (SpanProcessorAction actionObj : insertActions) {
-            if (applyUpdateAction(actionObj, existingSpanAttributes, insertBuilder)) {
-                insertedFlag = true;
-            }
-        }
-        if (insertedFlag) {
-            // Copy all existing attributes
-            existingSpanAttributes.forEach(insertBuilder::setAttribute);
-            return new MySpanData(span, insertBuilder.build());
+            return new MySpanData(span, span.getAttributes(), new String(updatedSpanBuffer));
         }
         return span;
     }
 
-    public static abstract class IncludeExclude {
-        //All of these attributes must match exactly for a match to occur
-        protected final List<SpanProcessorAttribute> attributes;
-
-        public IncludeExclude(List<SpanProcessorAttribute> attributes) {
-            this.attributes = attributes;
+    private boolean spanHasAllFromAttributeKeys(SpanData span) {
+        if (fromAttributes.isEmpty()) return false;
+        ReadableAttributes existingSpanAttributes = span.getAttributes();
+        for (String attributeKey : fromAttributes) {
+            if (existingSpanAttributes.get(attributeKey) == null) return false;
         }
+        return true;
+    }
 
-        // Function to compare span with user provided span names or span patterns
-        public abstract boolean isMatch(SpanData span);
+    public SpanData processToAttributes(SpanData span) {
+        if (toAttributeRules.isEmpty()) {
+            return span;
+        }
+        String existingSpanName = span.getName();
+        String updatedSpanName = span.getName();
+        final Attributes.Builder builder = Attributes.newBuilder();
+        for (int i = 0; i < groupNames.size(); i++) {
+            updatedSpanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), span, updatedSpanName, builder);
+        }
+        if (existingSpanName.equals(updatedSpanName)) {
+            return span;
+        }
+        //copy existing attributes
+        span.getAttributes().forEach(builder::setAttribute);
+        return new MySpanData(span, builder.build(), updatedSpanName);
 
     }
 
-    public static class StrictIncludeExclude extends IncludeExclude {
-
-        private final List<String> spanNames;
-
-        public StrictIncludeExclude(List<SpanProcessorAttribute> attributes, List<String> spanNames) {
-            super(attributes);
-            this.spanNames = spanNames;
-        }
-
-        public static StrictIncludeExclude create(SpanProcessorIncludeExclude includeExclude) {
-            List<SpanProcessorAttribute> attributes = includeExclude.attributes;
-            if (attributes == null) {
-                attributes = new ArrayList<>();
+    private String applyRule(List<String> groupNamesList, Pattern pattern,
+                             SpanData span, String spanName, Attributes.Builder builder) {
+        if (groupNamesList.isEmpty()) return spanName;
+        Matcher matcher = pattern.matcher(spanName);
+        StringBuilder sb = new StringBuilder();
+        int lastEnd = 0;
+        while (matcher.find()) {
+            sb.append(spanName, lastEnd, matcher.start());
+            int innerLastEnd = matcher.start();
+            for (int i = 1; i <= groupNames.size(); i++) {
+                sb.append(spanName, innerLastEnd, matcher.start(i));
+                sb.append("{");
+                sb.append(groupNames.get(i - 1));
+                // add attribute key=groupNames.get(i-1), value=matcher.group(i)
+                builder.setAttribute(groupNamesList.get(i - 1), matcher.group(i));
+                sb.append("}");
+                innerLastEnd = matcher.end(i);
             }
-            List<String> spanNames = includeExclude.spanNames;
-            if (spanNames == null) {
-                spanNames = new ArrayList<>();
-            }
-            return new StrictIncludeExclude(attributes, spanNames);
+            sb.append(spanName, innerLastEnd, matcher.end());
+            lastEnd = matcher.end();
         }
+        sb.append(spanName, lastEnd, spanName.length());
 
-        // Function to compare span attribute value with user provided value
-        private static boolean isAttributeValueMatch(AttributeValue attributeValue, String value) {
-            return attributeValue.getType() == Type.STRING && attributeValue.getStringValue().equals(value);
-        }
-
-        // Function to compare span with user provided span names
-        public boolean isMatch(SpanData span) {
-            if (!spanNames.isEmpty() && !spanNames.contains(span.getName())) {
-                // span name doesn't match
-                return false;
-            }
-            return this.checkAttributes(span);
-        }
-
-        // Function to compare span with user provided attributes list
-        private boolean checkAttributes(SpanData span) {
-            for (SpanProcessorAttribute attribute : attributes) {
-                //All of these attributes must match exactly for a match to occur.
-                AttributeValue existingAttributeValue = span.getAttributes().get(attribute.key);
-                if (existingAttributeValue == null) {
-                    // user specified key not found
-                    return false;
-                }
-                if (attribute.value != null && !isAttributeValueMatch(existingAttributeValue, attribute.value)) {
-                    // user specified value doesn't match
-                    return false;
-                }
-            }
-            // everything matched!!!
-            return true;
-        }
+        return sb.toString();
     }
-
-    public static class RegexpIncludeExclude extends IncludeExclude {
-
-        private final List<Pattern> spanPatterns;
-        private final HashMap<String,Pattern> attributeValuePatterns;
-
-        public RegexpIncludeExclude(List<SpanProcessorAttribute> attributes, List<Pattern> spanPatterns, HashMap<String,Pattern> attributeValuePatterns) {
-            super(attributes);
-            this.spanPatterns = spanPatterns;
-            this.attributeValuePatterns = attributeValuePatterns;
-        }
-
-        public static RegexpIncludeExclude create(SpanProcessorIncludeExclude includeExclude) {
-            List<SpanProcessorAttribute> attributes = includeExclude.attributes;
-            HashMap<String,Pattern> attributeKeyValuePatterns = new HashMap<>();
-            if (attributes == null) {
-                attributes = new ArrayList<>();
-            } else {
-                for (SpanProcessorAttribute attribute: attributes) {
-                    attributeKeyValuePatterns.put(attribute.key,Pattern.compile(attribute.value));
-                }
-            }
-            List<Pattern> spanPatterns = new ArrayList<>();
-            if (includeExclude.spanNames != null) {
-                for (String regex : includeExclude.spanNames) {
-                    spanPatterns.add(Pattern.compile(regex));
-                }
-            }
-
-            return new RegexpIncludeExclude(attributes, spanPatterns, attributeKeyValuePatterns);
-        }
-
-        private boolean isPatternFound(SpanData span) {
-            for (Pattern pattern : spanPatterns) {
-                if (pattern.matcher(span.getName()).find()) {
-                    // pattern matches the span!!!
-                    return true;
-                }
-            }
-            //no pattern matched
-            return false;
-        }
-
-        // Function to compare span with user provided span patterns
-        public boolean isMatch(SpanData span) {
-            if (!spanPatterns.isEmpty() && !isPatternFound(span)) {
-                return false;
-            }
-            return checkAttributes(span);
-        }
-
-        // Function to compare span attribute value with user provided value
-        private static boolean isAttributeValueMatch(AttributeValue attributeValue, Pattern valuePattern) {
-            return attributeValue.getType() == Type.STRING && valuePattern.matcher(attributeValue.getStringValue()).find();
-        }
-
-        // Function to compare span with user provided attributes list
-        private boolean checkAttributes(SpanData span) {
-            for (SpanProcessorAttribute attribute : attributes) {
-                //All of these attributes must match exactly for a match to occur.
-                AttributeValue existingAttributeValue = span.getAttributes().get(attribute.key);
-                if (existingAttributeValue == null) {
-                    // user specified key not found
-                    return false;
-                }
-                if (attribute.value != null && !isAttributeValueMatch(existingAttributeValue, attributeValuePatterns.get(attribute.key))) {
-                    // user specified value doesn't match
-                    return false;
-                }
-            }
-            // everything matched!!!
-            return true;
-        }
-
-    }
-
-
 }
+

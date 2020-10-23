@@ -10,24 +10,24 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-public class ExporterWithSpanProcessor implements SpanExporter {
+public class ExporterWithAttributeProcessor implements SpanExporter {
 
     private final SpanExporter delegate;
-    private final SpanProcessor spanProcessor;
+    private final AttributeProcessor attributeProcessor;
 
     // caller should check config.isValid before creating
-    public ExporterWithSpanProcessor(ProcessorConfig config, SpanExporter delegate) {
+    public ExporterWithAttributeProcessor(ProcessorConfig config, SpanExporter delegate) {
         if (!config.isValid()) {
             throw new IllegalArgumentException("User provided span processor config is not valid!!!");
         }
-        spanProcessor = SpanProcessor.create(config);
+        attributeProcessor = AttributeProcessor.create(config);
         this.delegate = delegate;
     }
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
         // we need to filter attributes before passing on to delegate
-        if (!spanProcessor.hasValidConfig()) {
+        if (!attributeProcessor.hasValidConfig()) {
             return delegate.export(spans);
         } else {
             List<SpanData> copy = new ArrayList<>();
@@ -39,18 +39,18 @@ public class ExporterWithSpanProcessor implements SpanExporter {
     }
 
     private SpanData process(SpanData span) {
-        IncludeExclude include = spanProcessor.getInclude();
+        IncludeExclude include = attributeProcessor.getInclude();
         if (include != null && !include.isMatch(span)) {
             //If Not included we can skip further processing
             return span;
         }
-        IncludeExclude exclude = spanProcessor.getExclude();
+        IncludeExclude exclude = attributeProcessor.getExclude();
         if (exclude != null && exclude.isMatch(span)) {
             return span;
         }
         // performing insert last, since no need to apply other actions to those inserted attributes
-        SpanData updatedSpan = spanProcessor.processFromAttributes(span);
-        return spanProcessor.processToAttributes(updatedSpan);
+        SpanData updatedSpan = attributeProcessor.processOtherActions(span);
+        return attributeProcessor.processInsertActions(updatedSpan);
     }
 
     @Override

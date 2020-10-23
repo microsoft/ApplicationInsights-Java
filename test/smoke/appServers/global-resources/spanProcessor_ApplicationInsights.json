@@ -3,8 +3,10 @@
     "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
     "preview": {
       "roleName": "Something Good",
-      "spanProcessors": {
-        "attributes/insert": {
+      "processors" : [
+        {
+          "type": "attribute",
+          "processorName": "attributes/insert",
           "actions": [
             {
               "key": "attribute1",
@@ -13,7 +15,9 @@
             }
           ]
         },
-        "attributes/maskSensitiveData": {
+        {
+          "type": "attribute",
+          "processorName": "attributes/maskSensitiveData",
           "include":{
             "matchType":"regexp",
             "spanNames":[
@@ -28,7 +32,9 @@
             }
           ]
         },
-        "attributes/maskSensitiveValueData": {
+        {
+          "type": "attribute",
+          "processorName": "attributes/maskSensitiveValueData",
           "include":{
             "matchType":"regexp",
             "spanNames":[
@@ -49,7 +55,9 @@
             }
           ]
         },
-        "attributes/maskIP": {
+        {
+          "type": "attribute",
+          "processorName": "attributes/maskIP",
           "actions":[
             {
               "key":"http.client_ip",
@@ -58,7 +66,7 @@
             }
           ]
         }
-      },
+      ],
       "selfDiagnostics": {
         "level": "debug"
       }

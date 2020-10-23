@@ -17,10 +17,16 @@ public class MySpanData implements SpanData {
 
   private final SpanData delegate;
   private final ReadableAttributes attributes;
+  private final String spanName;
 
   public MySpanData(SpanData delegate, ReadableAttributes attributes) {
+    this(delegate, attributes, delegate.getName());
+  }
+
+  public MySpanData(SpanData delegate, ReadableAttributes attributes, String spanName) {
     this.delegate = delegate;
     this.attributes = attributes;
+    this.spanName = spanName;
   }
 
   @Override public TraceId getTraceId() {
@@ -52,7 +58,8 @@ public class MySpanData implements SpanData {
   }
 
   @Override public String getName() {
-    return delegate.getName();
+    return spanName;
+    //return delegate.getName();
   }
 
   @Override public Kind getKind() {

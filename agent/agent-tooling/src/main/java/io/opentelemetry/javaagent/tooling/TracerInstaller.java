@@ -1,15 +1,16 @@
 package io.opentelemetry.javaagent.tooling;
 
-import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SpanProcessorConfig;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.Global;
-import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
+import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.FixedRateSampler;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
@@ -22,8 +23,8 @@ public class TracerInstaller {
 
     public static void installAgentTracer() {
         TelemetryClient telemetryClient = Global.getTelemetryClient();
-        InstrumentationSettings config = MainEntryPoint.getConfiguration();
-        Map<String, SpanProcessorConfig> spanProcessors = config.preview.spanProcessors;
+        final InstrumentationSettings config = MainEntryPoint.getConfiguration();
+        final List<ProcessorConfig> spanProcessors = config.preview.processors.stream().filter(processorConfig -> processorConfig.type == ProcessorType.attribute).collect(Collectors.toList());
         if (telemetryClient == null) {
             // agent failed during startup
             return;
@@ -42,20 +43,19 @@ public class TracerInstaller {
         // if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
 
         if (!spanProcessors.isEmpty()) {
-            ExporterWithSpanProcessor currExporterWithSpanProcessor = null;
-            ExporterWithSpanProcessor prevExporterWithSpanProcessor = null;
-            for (Map.Entry<String, SpanProcessorConfig> spanProcessorConfigEntry : spanProcessors.entrySet()) {
-                SpanProcessorConfig spanProcessorConfig = spanProcessorConfigEntry.getValue();
-                if (prevExporterWithSpanProcessor == null) {
-                    currExporterWithSpanProcessor = new ExporterWithSpanProcessor(spanProcessorConfig, new Exporter(telemetryClient));
+            ExporterWithAttributeProcessor currExporterWithAttributeProcessor = null;
+            ExporterWithAttributeProcessor prevExporterWithAttributeProcessor = null;
+            for (ProcessorConfig processorConfig : spanProcessors) {
+                if (prevExporterWithAttributeProcessor == null) {
+                    currExporterWithAttributeProcessor = new ExporterWithAttributeProcessor(processorConfig, new Exporter(telemetryClient));
 
                 } else {
-                    currExporterWithSpanProcessor = new ExporterWithSpanProcessor(spanProcessorConfig, prevExporterWithSpanProcessor);
+                    currExporterWithAttributeProcessor = new ExporterWithAttributeProcessor(processorConfig, prevExporterWithAttributeProcessor);
                 }
-                prevExporterWithSpanProcessor = currExporterWithSpanProcessor;
+                prevExporterWithAttributeProcessor = currExporterWithAttributeProcessor;
             }
 
-            OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(currExporterWithSpanProcessor).build());
+            OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(currExporterWithAttributeProcessor).build());
 
         } else {
             OpenTelemetrySdk.getTracerProvider()
