@@ -37,14 +37,14 @@ public class KafkaTest extends AiSmokeTest {
     public void doMostBasicTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
 
-        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "/sendMessage");
         String operationId = rdEnvelope1.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
 
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic process");
         Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
         Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "mytopic send");
-        Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "GET /");
+        Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "/");
 
         RequestData rd1 = (RequestData) ((Data) rdEnvelope1.getData()).getBaseData();
         RequestData rd2 = (RequestData) ((Data) rdEnvelope2.getData()).getBaseData();
@@ -53,7 +53,7 @@ public class KafkaTest extends AiSmokeTest {
         RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
         RemoteDependencyData rdd3 = (RemoteDependencyData) ((Data) rddEnvelope3.getData()).getBaseData();
 
-        assertEquals("GET /sendMessage", rd1.getName());
+        assertEquals("/sendMessage", rd1.getName());
         assertEquals("HelloController.sendMessage", rdd1.getName());
 
         assertEquals("Queue Message | kafka", rdd2.getType());
@@ -63,7 +63,7 @@ public class KafkaTest extends AiSmokeTest {
         assertEquals("mytopic", rd2.getSource());
         assertEquals("mytopic process", rd2.getName());
 
-        assertEquals("GET /", rdd3.getName());
+        assertEquals("/", rdd3.getName());
 
         assertParentChild(rdd1.getId(), rdEnvelope1, rddEnvelope2);
         assertParentChild(rdd2.getId(), rddEnvelope1, rdEnvelope2);
