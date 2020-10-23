@@ -35,9 +35,9 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.FixedRateSampling;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.FixedRateSampling;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
@@ -103,7 +103,7 @@ public class BeforeAgentInstaller {
             throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
         }
 
-        InstrumentationSettings config = MainEntryPoint.getConfiguration();
+        Configuration config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
             if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
                 throw new ConfigurationException("No connection string or instrumentation key provided");
@@ -213,13 +213,13 @@ public class BeforeAgentInstaller {
         return sdkNamePrefix.toString();
     }
 
-    private static boolean hasConnectionStringOrInstrumentationKey(InstrumentationSettings config) {
+    private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
         return !Strings.isNullOrEmpty(config.connectionString)
                 || !Strings.isNullOrEmpty(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
                 || !Strings.isNullOrEmpty(System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
     }
 
-    private static String getLoggingThreshold(InstrumentationSettings config, String defaultValue) {
+    private static String getLoggingThreshold(Configuration config, String defaultValue) {
         Map<String, Object> logging = config.preview.instrumentation.get("logging");
         if (logging == null) {
             return defaultValue;
@@ -239,7 +239,7 @@ public class BeforeAgentInstaller {
         return threshold;
     }
 
-    private static boolean isInstrumentationEnabled(InstrumentationSettings config, String instrumentationName) {
+    private static boolean isInstrumentationEnabled(Configuration config, String instrumentationName) {
         Map<String, Object> properties = config.preview.instrumentation.get(instrumentationName);
         if (properties == null) {
             return true;
@@ -255,7 +255,7 @@ public class BeforeAgentInstaller {
         return (Boolean) value;
     }
 
-    private static int getMicrometerReportingIntervalMillis(InstrumentationSettings config, int defaultValue) {
+    private static int getMicrometerReportingIntervalMillis(Configuration config, int defaultValue) {
         Map<String, Object> micrometer = config.preview.instrumentation.get("micrometer");
         if (micrometer == null) {
             return defaultValue;
@@ -271,7 +271,7 @@ public class BeforeAgentInstaller {
         return ((Number) value).intValue();
     }
 
-    private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(InstrumentationSettings config) {
+    private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(Configuration config) {
 
         ApplicationInsightsXmlConfiguration xmlConfiguration = new ApplicationInsightsXmlConfiguration();
 

@@ -21,7 +21,67 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 public class Configuration {
 
-    public InstrumentationSettings instrumentationSettings = new InstrumentationSettings();
+    public String connectionString;
+    public PreviewConfiguration preview = new PreviewConfiguration();
+
+    public static class PreviewConfiguration {
+
+        public String roleName;
+        public String roleInstance;
+        public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
+        public Sampling sampling = new Sampling();
+        public Heartbeat heartbeat = new Heartbeat();
+        public HttpProxy httpProxy = new HttpProxy();
+        public Map<String, String> resourceAttributes = new HashMap<>();
+        public boolean developerMode;
+
+        public List<JmxMetric> jmxMetrics = new ArrayList<>();
+
+        public Map<String, Map<String, Object>> instrumentation = new HashMap<String, Map<String, Object>>();
+    }
+
+    public static class SelfDiagnostics {
+
+        public String destination;
+        public String directory;
+        public String level = "error";
+        public int maxSizeMB = 10;
+    }
+
+    public static class Sampling {
+
+        public FixedRateSampling fixedRate = new FixedRateSampling();
+    }
+
+    public static class FixedRateSampling {
+
+        public Double percentage;
+    }
+
+    public static class Heartbeat {
+
+        public long intervalSeconds = MINUTES.toSeconds(15);
+    }
+
+    public static class HttpProxy {
+
+        public String host;
+        public int port = 80;
+    }
+
+    public static class JmxMetric {
+
+        public String objectName;
+        public String attribute;
+        public String display;
+    }
 }

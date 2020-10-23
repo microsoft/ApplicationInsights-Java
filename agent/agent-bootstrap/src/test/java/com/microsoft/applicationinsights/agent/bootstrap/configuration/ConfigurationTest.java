@@ -8,8 +8,8 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharSource;
 import com.google.common.io.Resources;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.PreviewConfiguration;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
@@ -28,10 +28,9 @@ public class ConfigurationTest {
     @Test
     public void shouldParse() throws IOException {
         Configuration configuration = loadConfiguration();
-        InstrumentationSettings instrumentationSettings = configuration.instrumentationSettings;
-        PreviewConfiguration preview = instrumentationSettings.preview;
+        PreviewConfiguration preview = configuration.preview;
 
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", instrumentationSettings.connectionString);
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
         assertEquals("Something Good", preview.roleName);
         assertEquals("xyz123", preview.roleInstance);
         assertEquals((Double) 10.0, preview.sampling.fixedRate.percentage);
@@ -53,10 +52,9 @@ public class ConfigurationTest {
     @Test
     public void shouldUseDefaults() throws IOException {
         Configuration configuration = loadConfiguration();
-        InstrumentationSettings instrumentationSettings = configuration.instrumentationSettings;
-        PreviewConfiguration preview = instrumentationSettings.preview;
+        PreviewConfiguration preview = configuration.preview;
 
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", instrumentationSettings.connectionString);
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
         assertEquals("Something Good", preview.roleName);
         assertEquals("xyz123", preview.roleInstance);
         assertEquals(60, preview.heartbeat.intervalSeconds);
@@ -73,7 +71,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertTrue(configuration.instrumentationSettings.preview.sampling.fixedRate.percentage == 25);
+        assertTrue(configuration.preview.sampling.fixedRate.percentage == 25);
     }
 
     @Test
@@ -83,8 +81,8 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("TRACE", configuration.instrumentationSettings.preview.instrumentation.get("logging").get("threshold"));
-        assertEquals("true", configuration.instrumentationSettings.preview.instrumentation.get("logging").get("enabled"));
+        assertEquals("TRACE", configuration.preview.instrumentation.get("logging").get("threshold"));
+        assertEquals("true", configuration.preview.instrumentation.get("logging").get("enabled"));
     }
 
     @Test
@@ -98,10 +96,10 @@ public class ConfigurationTest {
 
         List<JmxMetric> jmxMetrics = parseJmxMetricsJson(jmxMetricsJson);
         assertEquals(2, jmxMetrics.size());
-        assertEquals(3, configuration.instrumentationSettings.preview.jmxMetrics.size());
-        assertEquals(jmxMetrics.get(0).display, configuration.instrumentationSettings.preview.jmxMetrics.get(0).display); // class count is overridden by the env var
-        assertEquals(jmxMetrics.get(1).display, configuration.instrumentationSettings.preview.jmxMetrics.get(1).display); // code cache is overridden by the env var
-        assertEquals(configuration.instrumentationSettings.preview.jmxMetrics.get(2).display, "Current Thread Count");
+        assertEquals(3, configuration.preview.jmxMetrics.size());
+        assertEquals(jmxMetrics.get(0).display, configuration.preview.jmxMetrics.get(0).display); // class count is overridden by the env var
+        assertEquals(jmxMetrics.get(1).display, configuration.preview.jmxMetrics.get(1).display); // code cache is overridden by the env var
+        assertEquals(configuration.preview.jmxMetrics.get(2).display, "Current Thread Count");
     }
 
     private List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {

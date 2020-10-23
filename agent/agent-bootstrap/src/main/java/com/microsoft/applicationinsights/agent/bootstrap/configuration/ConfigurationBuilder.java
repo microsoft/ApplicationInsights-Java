@@ -32,8 +32,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.PreviewConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
@@ -108,7 +108,7 @@ public class ConfigurationBuilder {
         }
     }
 
-    private static boolean jmxMetricExisted(List<InstrumentationSettings.JmxMetric> jmxMetrics, String objectName, String attribute) {
+    private static boolean jmxMetricExisted(List<Configuration.JmxMetric> jmxMetrics, String objectName, String attribute) {
         for (JmxMetric metric : jmxMetrics) {
             if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
                 return true;
@@ -181,7 +181,7 @@ public class ConfigurationBuilder {
     }
 
     static void overlayEnvVars(Configuration config) throws IOException {
-        PreviewConfiguration preview = config.instrumentationSettings.preview;
+        PreviewConfiguration preview = config.preview;
         preview.roleName = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
         preview.roleInstance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
         preview.sampling.fixedRate.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, preview.sampling.fixedRate.percentage);
