@@ -69,7 +69,7 @@ public class Exporter implements SpanExporter {
 
     private static final Joiner JOINER = Joiner.on(", ");
 
-    private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("ai.sampling.percentage");
+    private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("ai.internal.sampling.percentage");
 
     private static final AttributeKey<Boolean> AI_INTERNAL_LOG = AttributeKey.booleanKey("ai.internal.log");
 
