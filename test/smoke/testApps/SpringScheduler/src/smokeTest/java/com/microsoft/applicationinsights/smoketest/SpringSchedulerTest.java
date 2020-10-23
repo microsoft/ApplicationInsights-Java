@@ -29,7 +29,7 @@ public class SpringSchedulerTest extends AiSmokeTest {
         List<Envelope> schedulerRequestList = new ArrayList<>();
         groupRequestList(httpRequestList, schedulerRequestList, rdList);
         assertEquals(1, httpRequestList.size());
-        assertTrue(schedulerRequestList.size() >= 20);
+        assertTrue(schedulerRequestList.size() >= 19);
 
         List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
 
@@ -46,7 +46,7 @@ public class SpringSchedulerTest extends AiSmokeTest {
 
         for (Envelope envelope : schedulerRequestList) {
             RequestData rd = (RequestData) ((Data) envelope.getData()).getBaseData();
-            assertEquals("SpringBootApp.fixedRateScheduler", rd.getName());
+            assertEquals("SpringSchedulerApp.fixedRateScheduler", rd.getName());
             Envelope rddEnvelope = findRemoteDependencyData(rd.getId(), new ArrayList<>(rddList));
             if (rddEnvelope != null) {
                 RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
@@ -68,15 +68,11 @@ public class SpringSchedulerTest extends AiSmokeTest {
     }
 
     private void groupRequestList(List<Envelope> httpRequestList, List<Envelope> schedulerRequestList, List<Envelope> rdList) {
-        if (httpRequestList == null || schedulerRequestList == null || rdList == null) {
-            return;
-        }
-
         for (Envelope envelope : rdList) {
             RequestData rd = (RequestData) ((Data) envelope.getData()).getBaseData();
             if (rd.getName().equals("GET /scheduler")) {
                 httpRequestList.add(envelope);
-            } else if (rd.getName().equals("SpringBootApp.fixedRateScheduler")) {
+            } else if (rd.getName().equals("SpringSchedulerApp.fixedRateScheduler")) {
                 schedulerRequestList.add(envelope);
             }
         }

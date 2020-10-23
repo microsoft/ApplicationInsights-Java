@@ -16,14 +16,6 @@ public class SpringBootAutoTest extends AiSmokeTest {
     @Test
     @TargetUri("/test")
     public void doMostBasicTest() throws Exception {
-        List<Envelope> rdList = mockedIngestion.getItemsEnvelopeDataType("RequestData");
-        List<Envelope> httpRequestList = new ArrayList<>();
-        for (Envelope envelope : rdList) {
-            RequestData rd = (RequestData) ((Data) envelope.getData()).getBaseData();
-            if (rd.getName().equals("GET /test")) {
-                httpRequestList.add(envelope);
-            }
-        }
-        assertEquals(1, httpRequestList.size());
+        mockedIngestion.waitForItems("RequestData", 1);
     }
 }
