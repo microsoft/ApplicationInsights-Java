@@ -34,7 +34,7 @@ public class JmsTest extends AiSmokeTest {
         RemoteDependencyData rdd2 =
                 (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
 
-        assertEquals("GET /sendMessage", rd1.getName());
+        assertEquals("/sendMessage", rd1.getName());
         assertEquals("HelloController.sendMessage", rdd2.getName());
 
         assertEquals("Queue Message | jms", rdd1.getType());
