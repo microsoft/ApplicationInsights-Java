@@ -34,7 +34,6 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.CompositeDataSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,10 +69,10 @@ public class JmxDataFetcher {
 
         for (JmxAttributeData attribute : attributes) {
             try {
-                Collection<Object> resultForAttribute = fetch(server, objects, attribute.name);
-                result.put(attribute.displayName, resultForAttribute);
+                Collection<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
+                result.put(attribute.metricName, resultForAttribute);
             } catch (Exception e) {
-                logger.warn("Failed to fetch JMX object '{}' with attribute '{}': ", objectName, attribute.name);
+                logger.warn("Failed to fetch JMX object '{}' with attribute '{}': ", objectName, attribute.attribute);
                 throw e;
             }
         }

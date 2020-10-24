@@ -30,11 +30,11 @@ package com.microsoft.applicationinsights.internal.jmx;
  * Created by gupele on 3/15/2015.
  */
 public final class JmxAttributeData {
-    public final String displayName;
-    public final String name;
+    public final String metricName;
+    public final String attribute;
 
-    public JmxAttributeData(String displayName, String name) {
-        this.name = name;
-        this.displayName = displayName;
+    public JmxAttributeData(String metricName, String attribute) {
+        this.attribute = attribute;
+        this.metricName = metricName;
     }
 }

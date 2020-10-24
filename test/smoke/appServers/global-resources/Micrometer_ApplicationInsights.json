@@ -1,10 +1,8 @@
 {
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
-  "preview": {
-    "instrumentation": {
-      "micrometer": {
-        "reportingIntervalMillis": 5000
-      }
+  "instrumentation": {
+    "micrometer": {
+      "reportingIntervalMillis": 5000
     }
   }
 }

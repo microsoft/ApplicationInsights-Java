@@ -26,27 +26,60 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.squareup.moshi.Json;
+
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class Configuration {
 
     public String connectionString;
+    public Role role = new Role();
+    public Map<String, String> customDimensions = new HashMap<>();
+    public Sampling sampling = new Sampling();
+    public List<JmxMetric> jmxMetrics = new ArrayList<>();
+    public Map<String, Map<String, Object>> instrumentation = new HashMap<String, Map<String, Object>>();
+    public Heartbeat heartbeat = new Heartbeat();
+    public Proxy proxy = new Proxy();
     public PreviewConfiguration preview = new PreviewConfiguration();
+
+    public static class Role {
+
+        public String name;
+        public String instance;
+    }
+
+    public static class Sampling {
+
+        public TraceIdBased traceIdBased = new TraceIdBased();
+    }
+
+    public static class TraceIdBased {
+
+        public Double probability;
+    }
+
+    public static class JmxMetric {
+
+        public String name;
+        public String objectName;
+        public String attribute;
+    }
+
+    public static class Heartbeat {
+
+        public long intervalSeconds = MINUTES.toSeconds(15);
+    }
+
+    public static class Proxy {
+
+        public String host;
+        public int port = 80;
+    }
 
     public static class PreviewConfiguration {
 
-        public String roleName;
-        public String roleInstance;
         public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
-        public Sampling sampling = new Sampling();
-        public Heartbeat heartbeat = new Heartbeat();
-        public HttpProxy httpProxy = new HttpProxy();
-        public Map<String, String> resourceAttributes = new HashMap<>();
         public boolean developerMode;
-
-        public List<JmxMetric> jmxMetrics = new ArrayList<>();
-
-        public Map<String, Map<String, Object>> instrumentation = new HashMap<String, Map<String, Object>>();
     }
 
     public static class SelfDiagnostics {
@@ -55,33 +88,5 @@ public class Configuration {
         public String directory;
         public String level = "error";
         public int maxSizeMB = 10;
-    }
-
-    public static class Sampling {
-
-        public FixedRateSampling fixedRate = new FixedRateSampling();
-    }
-
-    public static class FixedRateSampling {
-
-        public Double percentage;
-    }
-
-    public static class Heartbeat {
-
-        public long intervalSeconds = MINUTES.toSeconds(15);
-    }
-
-    public static class HttpProxy {
-
-        public String host;
-        public int port = 80;
-    }
-
-    public static class JmxMetric {
-
-        public String objectName;
-        public String attribute;
-        public String display;
     }
 }

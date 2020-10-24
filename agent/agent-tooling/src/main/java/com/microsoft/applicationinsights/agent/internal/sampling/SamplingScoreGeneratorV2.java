@@ -29,7 +29,7 @@ public class SamplingScoreGeneratorV2 {
             samplingScore =  random.nextDouble(); // [0,1)
         }
 
-        return samplingScore * 100.0; // always < 100.0
+        return samplingScore; // always < 1.0
     }
 
     /**

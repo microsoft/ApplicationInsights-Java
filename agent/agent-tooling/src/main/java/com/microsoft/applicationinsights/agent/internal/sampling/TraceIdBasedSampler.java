@@ -13,9 +13,9 @@ import io.opentelemetry.trace.SpanContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class FixedRateSampler implements Sampler {
+public final class TraceIdBasedSampler implements Sampler {
 
-    private static final Logger logger = LoggerFactory.getLogger(FixedRateSampler.class);
+    private static final Logger logger = LoggerFactory.getLogger(TraceIdBasedSampler.class);
 
     private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("ai.internal.sampling.percentage");
 
@@ -23,14 +23,14 @@ public final class FixedRateSampler implements Sampler {
     // e.g. 50 for 1/2 or 33.33 for 1/3
     //
     // failure to follow this pattern can result in unexpected / incorrect computation of values in the portal
-    private final double samplingPercentage;
+    private final double samplingProbability;
 
     private final SamplingResult alwaysOnDecision;
     private final SamplingResult alwaysOffDecision;
 
-    public FixedRateSampler(double samplingPercentage) {
-        this.samplingPercentage = samplingPercentage;
-        Attributes attributes = Attributes.of(AI_SAMPLING_PERCENTAGE, samplingPercentage);
+    public TraceIdBasedSampler(double samplingProbability) {
+        this.samplingProbability = samplingProbability;
+        Attributes attributes = Attributes.of(AI_SAMPLING_PERCENTAGE, 100 * samplingProbability);
         alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, attributes);
         alwaysOffDecision= new FixedRateSamplerDecision(Decision.DROP, Attributes.empty());
     }
@@ -42,7 +42,7 @@ public final class FixedRateSampler implements Sampler {
                                  Span.Kind spanKind,
                                  ReadableAttributes attributes,
                                  List<SpanData.Link> parentLinks) {
-        if (SamplingScoreGeneratorV2.getSamplingScore(traceId) >= samplingPercentage) {
+        if (SamplingScoreGeneratorV2.getSamplingScore(traceId) >= samplingProbability) {
             logger.debug("Item {} sampled out", name);
             return alwaysOffDecision;
         }
@@ -51,7 +51,7 @@ public final class FixedRateSampler implements Sampler {
 
     @Override
     public String getDescription() {
-        return "fixed rate sampler: " + samplingPercentage;
+        return "ApplicationInsights-specific trace id based sampler, with probability: " + samplingProbability;
     }
 
     private static final class FixedRateSamplerDecision implements SamplingResult {

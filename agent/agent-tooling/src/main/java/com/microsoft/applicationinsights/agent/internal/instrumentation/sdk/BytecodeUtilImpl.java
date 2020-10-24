@@ -216,7 +216,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     private static boolean sample(Telemetry telemetry) {
-        double fixedRateSamplingPercentage = Global.getFixedRateSamplingPercentage();
+        double fixedRateSamplingPercentage = Global.getTraceIdBasedSamplingProbability();
         if (fixedRateSamplingPercentage == 100) {
             return true;
         }
