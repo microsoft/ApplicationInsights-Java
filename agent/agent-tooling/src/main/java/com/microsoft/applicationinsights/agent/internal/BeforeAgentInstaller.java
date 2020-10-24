@@ -23,10 +23,9 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -51,6 +50,7 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Tele
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
+import com.microsoft.applicationinsights.extensibility.initializer.ResourceAttributesContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
 import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
@@ -60,7 +60,8 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import io.opentelemetry.javaagent.config.ConfigOverride;
+import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
+import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.config.Config;
 import org.apache.http.HttpHost;
@@ -77,10 +78,9 @@ public class BeforeAgentInstaller {
     private BeforeAgentInstaller() {
     }
 
-    public static void beforeInstallBytebuddyAgent(Instrumentation instrumentation, URL bootstrapURL) throws Exception {
-        File agentJarFile = new File(bootstrapURL.toURI());
+    public static void beforeInstallBytebuddyAgent(Instrumentation instrumentation) throws Exception {
         instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
-        start(instrumentation, agentJarFile);
+        start(instrumentation);
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
         instrumentation.addTransformer(new DependencyTelemetryClassFileTransformer());
@@ -91,7 +91,7 @@ public class BeforeAgentInstaller {
         instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
     }
 
-    private static void start(Instrumentation instrumentation, File agentJarFile) throws Exception {
+    private static void start(Instrumentation instrumentation) throws Exception {
 
         String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
         if (codelessSdkNamePrefix != null) {
@@ -106,14 +106,16 @@ public class BeforeAgentInstaller {
 
         InstrumentationSettings config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
-            throw new ConfigurationException("No connection string or instrumentation key provided");
+            if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
+                throw new ConfigurationException("No connection string or instrumentation key provided");
+            }
         }
-
+        
         if(!hasValidProcessorConfiguration(config)) {
             throw new ConfigurationException("User provided span processor config is not valid!!!");
         }
 
-        Properties properties = new Properties();
+        Map<String, String> properties = new HashMap<>();
         properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
         properties.put("experimental.log.capture.threshold", getLoggingThreshold(config, "INFO"));
         properties.put("micrometer.step.millis", Integer.toString(getMicrometerReportingIntervalMillis(config, 60000)));
@@ -128,10 +130,8 @@ public class BeforeAgentInstaller {
             properties.put("ota.integration.java-util-logging.enabled", "false");
             properties.put("ota.integration.logback.enabled", "false");
         }
-        properties.put("experimental.controller-and-view.spans.enabled", "false");
-        properties.put("http.server.error.statuses", "400-599");
-        ConfigOverride.set(properties);
-        if (Config.get().getAdditionalBootstrapPackagePrefixes().isEmpty()) {
+        Config.internalInitializeConfig(Config.create(properties));
+        if (Config.get().getListProperty("additional.bootstrap.package.prefixes").isEmpty()) {
             throw new IllegalStateException("underlying config not initialized in time");
         }
 
@@ -152,12 +152,15 @@ public class BeforeAgentInstaller {
         }
 
         if (config.preview.httpProxy.host != null) {
-            ApacheSender43.proxy = new HttpHost(config.preview.httpProxy.host, config.preview.httpProxy.port);
+            HttpHost proxy = new HttpHost(config.preview.httpProxy.host, config.preview.httpProxy.port);
+            ApacheSender43.proxy = proxy;
+            CdsProfileFetcher.proxy = proxy;
         }
 
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
+        configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.preview.resourceAttributes));
 
         FixedRateSampling fixedRateSampling = config.preview.sampling.fixedRate;
         if (fixedRateSampling != null && fixedRateSampling.percentage != null) {
@@ -166,6 +169,12 @@ public class BeforeAgentInstaller {
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
         AiAppId.setSupplier(new AppIdSupplier());
+
+        // this is for Azure Function Linux consumption plan support.
+        if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+            AiConnectionString.setAccessor(new ConnectionStringAccessor());
+        }
+
         // this is currently used by Micrometer instrumentation in addition to 2.x SDK
         BytecodeUtil.setDelegate(new BytecodeUtilImpl());
         Runtime.getRuntime().addShutdownHook(new Thread() {

@@ -60,6 +60,7 @@ public class InstrumentationSettings {
         public Sampling sampling = new Sampling();
         public Heartbeat heartbeat = new Heartbeat();
         public HttpProxy httpProxy = new HttpProxy();
+        public Map<String, String> resourceAttributes = new HashMap<>();
         public boolean developerMode;
 
         public List<JmxMetric> jmxMetrics = new ArrayList<>();

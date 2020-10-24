@@ -5,8 +5,6 @@ com/microsoft/applicationinsights/agent/.*
 io/
 io/opentelemetry/
 io/opentelemetry/javaagent/.*
-io/opentelemetry/instrumentation/
-io/opentelemetry/instrumentation/auto/.*
 META-INF/
 META-INF/MANIFEST\.MF
 LICENSE

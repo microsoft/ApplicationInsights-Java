@@ -19,28 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.web.internal.correlation.InstrumentationKeyResolver;
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package com.microsoft.applicationinsights.extensibility.initializer;
 
-public class AppIdSupplier implements AiAppId.Supplier {
+import java.util.Map;
 
-    private static final Logger logger = LoggerFactory.getLogger(AppIdSupplier.class);
+import org.apache.commons.text.StringSubstitutor;
+import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 
-    public String get() {
-        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey, TelemetryConfiguration.getActive());
+/**
+ * Initializer for SDK version.
+ */
+public final class ResourceAttributesContextInitializer implements ContextInitializer {
 
-        //it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just
-        //return and let the next request resolve the ikey.
-        if (appId == null) {
-            logger.debug("Application correlation Id could not be retrieved (e.g. task may be pending or failed)");
-            return "";
+    private final Map<String, String> resourceAttributes;
+    private final StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
+
+    public ResourceAttributesContextInitializer(Map<String, String> resourceAttributes) {
+        this.resourceAttributes = resourceAttributes;
+    }
+
+    @Override
+    public void initialize(TelemetryContext context) {
+        for (Map.Entry<String, String> entry: resourceAttributes.entrySet()) {
+            context.getProperties().put(entry.getKey(), substitutor.replace(entry.getValue()));
         }
-        return appId;
     }
 }
