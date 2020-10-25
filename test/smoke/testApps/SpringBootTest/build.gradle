@@ -35,5 +35,11 @@ configurations {
     smokeTestRuntime.exclude group:'org.springframework.boot'
 }
 
+bootWar {
+    // this is done to remove the version from the archive file name
+    // to make span name verification simpler
+    archiveFileName = project.name + '.war'
+}
+
 ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = war.archiveFileName.get()
+ext.testAppArtifactFilename = project.name + '.war'
