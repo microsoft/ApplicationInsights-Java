@@ -49,7 +49,7 @@ public class SpringCloudStreamTest extends AiSmokeTest {
         RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
 
-        assertEquals("/sendMessage", rd1.getName());
+        assertEquals("/SpringCloudStream/sendMessage", rd1.getName());
         assertEquals("GreetingsController.sendMessage", rdd1.getName());
 
         assertEquals("Queue Message | kafka", rdd2.getType());

@@ -53,7 +53,7 @@ public class KafkaTest extends AiSmokeTest {
         RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
         RemoteDependencyData rdd3 = (RemoteDependencyData) ((Data) rddEnvelope3.getData()).getBaseData();
 
-        assertEquals("/sendMessage", rd1.getName());
+        assertEquals("/Kafka/sendMessage", rd1.getName());
         assertEquals("HelloController.sendMessage", rdd1.getName());
 
         assertEquals("Queue Message | kafka", rdd2.getType());
