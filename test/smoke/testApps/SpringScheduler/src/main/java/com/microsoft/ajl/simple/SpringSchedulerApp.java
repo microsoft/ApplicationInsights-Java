@@ -23,12 +23,6 @@ public class SpringSchedulerApp extends SpringBootServletInitializer {
 
     @Scheduled(fixedRate = 100)
     public int fixedRateScheduler() throws IOException {
-        URL obj = new URL("https://www.bing.com/search?q=spaces%20test");
-        HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
-        connection.getContentType();
-        InputStream content = connection.getInputStream();
-        ByteStreams.exhaust(content);
-        content.close();
-        return connection.getResponseCode();
+        return 0;
     }
 }

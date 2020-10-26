@@ -31,40 +31,12 @@ public class SpringSchedulerTest extends AiSmokeTest {
         assertEquals(1, httpRequestList.size());
         assertTrue(schedulerRequestList.size() >= 19);
 
-        List<Envelope> rddList = mockedIngestion.getItemsEnvelopeDataType("RemoteDependencyData");
-
-        for (Envelope envelope : httpRequestList) {
-            RequestData rd = (RequestData) ((Data) envelope.getData()).getBaseData();
-            assertEquals("GET /scheduler", rd.getName());
-            Envelope rddEnvelope = findRemoteDependencyData(rd.getId(), new ArrayList<>(rddList));
-            if (rddEnvelope != null) {
-                RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
-                assertEquals("TestController.scheduler", rdd.getName());
-                assertEquals(rd.getId(), rddEnvelope.getTags().get("ai.operation.parentId"));
-            }
-        }
+        RequestData rd = (RequestData) ((Data) httpRequestList.get(0).getData()).getBaseData();
+        assertEquals("GET /scheduler", rd.getName());
 
         for (Envelope envelope : schedulerRequestList) {
-            RequestData rd = (RequestData) ((Data) envelope.getData()).getBaseData();
-            assertEquals("SpringSchedulerApp.fixedRateScheduler", rd.getName());
-            Envelope rddEnvelope = findRemoteDependencyData(rd.getId(), new ArrayList<>(rddList));
-            if (rddEnvelope != null) {
-                RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
-                assertEquals("GET /search", rdd.getName());
-                assertEquals("www.bing.com", rdd.getTarget());
-                assertEquals(rd.getId(), rddEnvelope.getTags().get("ai.operation.parentId"));
-            }
+            assertEquals("SpringSchedulerApp.fixedRateScheduler", ((RequestData) ((Data) envelope.getData()).getBaseData()).getName());
         }
-    }
-
-    private Envelope findRemoteDependencyData(String parentId, List<Envelope> rddList) {
-        for (Envelope envelope : rddList) {
-            if (envelope.getTags().get("ai.operation.parentId").equals(parentId)) {
-                return envelope;
-            }
-        }
-
-        return null;
     }
 
     private void groupRequestList(List<Envelope> httpRequestList, List<Envelope> schedulerRequestList, List<Envelope> rdList) {
