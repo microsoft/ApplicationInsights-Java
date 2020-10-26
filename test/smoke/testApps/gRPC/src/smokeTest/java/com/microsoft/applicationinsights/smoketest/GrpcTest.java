@@ -19,23 +19,26 @@ public class GrpcTest extends AiSmokeTest {
     public void doSimpleTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
 
-        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /simple");
+        Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
         String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
         // individual messages are captured as events (and exported as traces) on CLIENT/SERVER spans
         mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
 
-        Envelope rdEnvelope2 = getRequestEnvelope(rdList, "GET /simple");
-        Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
-        Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "HelloController.simple");
+        Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.simple");
+        Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
 
         RequestData rd1 = (RequestData) ((Data) rdEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
 
-        assertParentChild(rdd2.getId(), rdEnvelope2, rddEnvelope1);
-        assertParentChild(rdd1.getId(), rddEnvelope2, rdEnvelope1);
+        assertEquals("example.Greeter", rdd2.getTarget());
+
+        assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
+        assertParentChild(rdd1.getId(), rddEnvelope1, rddEnvelope2);
+        assertParentChild(rdd2.getId(), rddEnvelope2, rdEnvelope2);
     }
 
     @Test
@@ -43,23 +46,26 @@ public class GrpcTest extends AiSmokeTest {
     public void doConversationTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
 
-        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "example.Greeter/Conversation");
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /conversation");
+        Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/Conversation");
         String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
         // individual messages are captured as events on CLIENT/SERVER spans
         mockedIngestion.waitForItemsInOperation("EventData", 3, operationId);
 
-        Envelope rdEnvelope2 = getRequestEnvelope(rdList, "GET /conversation");
-        Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "example.Greeter/Conversation");
-        Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "HelloController.conversation");
+        Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.conversation");
+        Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "example.Greeter/Conversation");
 
         RequestData rd1 = (RequestData) ((Data) rdEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
 
-        assertParentChild(rdd2.getId(), rdEnvelope2, rddEnvelope1);
-        assertParentChild(rdd1.getId(), rddEnvelope2, rdEnvelope1);
+        assertEquals("example.Greeter", rdd2.getTarget());
+
+        assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
+        assertParentChild(rdd1.getId(), rddEnvelope1, rddEnvelope2);
+        assertParentChild(rdd2.getId(), rddEnvelope2, rdEnvelope2);
     }
 
     private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {

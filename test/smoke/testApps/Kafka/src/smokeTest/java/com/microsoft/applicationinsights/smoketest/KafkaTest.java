@@ -55,9 +55,14 @@ public class KafkaTest extends AiSmokeTest {
 
         assertEquals("GET /sendMessage", rd1.getName());
         assertEquals("HelloController.sendMessage", rdd1.getName());
-        assertEquals("Queue Message | Kafka", rdd2.getType());
+
+        assertEquals("Queue Message | kafka", rdd2.getType());
+        assertEquals("mytopic", rdd2.getTarget());
         assertEquals("mytopic send", rdd2.getName());
+
+        assertEquals("mytopic", rd2.getSource());
         assertEquals("mytopic process", rd2.getName());
+
         assertEquals("GET /", rdd3.getName());
 
         assertParentChild(rdd1.getId(), rdEnvelope1, rddEnvelope2);

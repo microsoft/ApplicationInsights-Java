@@ -51,7 +51,12 @@ public class SpringCloudStreamTest extends AiSmokeTest {
 
         assertEquals("GET /sendMessage", rd1.getName());
         assertEquals("GreetingsController.sendMessage", rdd1.getName());
+
+        assertEquals("Queue Message | kafka", rdd2.getType());
+        assertEquals("greetings", rdd2.getTarget());
         assertEquals("greetings send", rdd2.getName());
+
+        assertEquals("greetings", rd2.getSource());
         assertEquals("greetings process", rd2.getName());
 
         assertParentChild(rdd1.getId(), rdEnvelope1, rddEnvelope2);
