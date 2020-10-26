@@ -23,6 +23,6 @@ public class SpringSchedulerApp extends SpringBootServletInitializer {
 
     @Scheduled(fixedRate = 100)
     public void fixedRateScheduler() throws IOException {
-        return 0;
+        System.out.println("Hello world.");
     }
 }
