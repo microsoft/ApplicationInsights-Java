@@ -142,18 +142,7 @@ public class ConfigurationBuilder {
         }
 
         if (Files.exists(configPath)) {
-            try (InputStream in = Files.newInputStream(configPath)) {
-                Moshi moshi = new Moshi.Builder().build();
-                JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
-                Buffer buffer = new Buffer();
-                buffer.readFrom(in);
-                try {
-                    return jsonAdapter.fromJson(buffer);
-                } catch (Exception e) {
-                    throw new ConfigurationException(
-                            "Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
-                }
-            }
+            return loadJsonConfigFile(configPath);
         } else {
             if (warnIfMissing) {
                 configurationMessages.add(new ConfigurationMessage("could not find configuration file: {}", configPathStr));
@@ -290,6 +279,23 @@ public class ConfigurationBuilder {
 
         private void log(Logger logger) {
             logger.warn(message, args);
+        }
+    }
+
+    public static Configuration loadJsonConfigFile(Path configPath) throws IOException{
+        assert(Files.exists(configPath));
+        try (InputStream in = Files.newInputStream(configPath)) {
+            Moshi moshi = new Moshi.Builder().build();
+            JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+            Buffer buffer = new Buffer();
+            buffer.readFrom(in);
+            try {
+                Configuration configuration = jsonAdapter.fromJson(buffer);
+                configuration.configPath = configPath;
+                return configuration;
+            } catch (Exception e) {
+                throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
+            }
         }
     }
 }

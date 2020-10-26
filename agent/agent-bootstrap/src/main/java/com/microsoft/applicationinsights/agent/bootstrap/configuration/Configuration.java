@@ -21,7 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
+import java.nio.file.Path;
+
 public class Configuration {
 
     public InstrumentationSettings instrumentationSettings = new InstrumentationSettings();
+
+    public transient Path configPath;
 }
