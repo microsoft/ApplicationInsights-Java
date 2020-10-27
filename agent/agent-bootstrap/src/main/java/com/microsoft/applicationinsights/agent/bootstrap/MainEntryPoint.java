@@ -29,8 +29,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.SelfDiagnostics;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.SelfDiagnostics;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import io.opentelemetry.javaagent.bootstrap.ConfigureLogging;
@@ -42,14 +42,14 @@ import org.slf4j.MDC;
 // this class has one purpose, start diagnostics before passing control to opentelemetry-auto-instr-java
 public class MainEntryPoint {
 
-    private static InstrumentationSettings configuration;
+    private static Configuration configuration;
     private static Path configPath;
     private static Long lastModifiedTime;
 
     private MainEntryPoint() {
     }
 
-    public static InstrumentationSettings getConfiguration() {
+    public static Configuration getConfiguration() {
         return configuration;
     }
 
@@ -68,10 +68,9 @@ public class MainEntryPoint {
             File agentJarFile = new File(bootstrapURL.toURI());
             DiagnosticsHelper.setAgentJarFile(agentJarFile);
             // configuration is only read this early in order to extract logging configuration
-            Configuration config = ConfigurationBuilder.create(agentJarFile.toPath());
-            configuration = config.instrumentationSettings;
-            configPath = config.configPath;
-            lastModifiedTime = config.lastModifiedTime;
+            configuration = ConfigurationBuilder.create(agentJarFile.toPath());
+            configPath = configuration.configPath;
+            lastModifiedTime = configuration.lastModifiedTime;
             startupLogger = configureLogging(configuration.preview.selfDiagnostics);
             ConfigurationBuilder.logConfigurationMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");

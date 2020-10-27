@@ -43,7 +43,6 @@ import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -344,12 +343,12 @@ public enum TelemetryConfigurationFactory {
                     continue;
                 }
 
-                if (Strings.isNullOrEmpty(jmxElement.getDisplayName())) {
-                    logger.error("JMX display name is empty for '{}', will be ignored", jmxElement.getObjectName());
+                if (Strings.isNullOrEmpty(jmxElement.getName())) {
+                    logger.error("JMX name is empty for '{}', will be ignored", jmxElement.getObjectName());
                     continue;
                 }
 
-                collection.add(new JmxAttributeData(jmxElement.getDisplayName(), jmxElement.getAttribute()));
+                collection.add(new JmxAttributeData(jmxElement.getName(), jmxElement.getAttribute()));
             }
 
             // Register each entry in the performance container

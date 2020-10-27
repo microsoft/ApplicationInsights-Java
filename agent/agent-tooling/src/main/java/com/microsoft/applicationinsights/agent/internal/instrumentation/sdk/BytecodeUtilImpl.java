@@ -39,6 +39,7 @@ import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
+import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import io.opentelemetry.OpenTelemetry;
@@ -209,19 +210,22 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             telemetry.getContext().getOperation().setId(traceId);
             telemetry.getContext().getOperation().setParentId(spanId);
         }
-        if (sample(telemetry)) {
+        double samplingPercentage = Global.getSamplingPercentage();
+        if (sample(telemetry, samplingPercentage)) {
+            if (telemetry instanceof SupportSampling && samplingPercentage != 100) {
+                ((SupportSampling) telemetry).setSamplingPercentage(samplingPercentage);
+            }
             // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
             checkNotNull(Global.getTelemetryClient()).track(telemetry);
         }
     }
 
-    private static boolean sample(Telemetry telemetry) {
-        double fixedRateSamplingPercentage = Global.getFixedRateSamplingPercentage();
-        if (fixedRateSamplingPercentage == 100) {
+    private static boolean sample(Telemetry telemetry, double samplingPercentage) {
+        if (samplingPercentage == 100) {
             return true;
         }
         if (SamplingScoreGeneratorV2.getSamplingScore(telemetry.getContext().getOperation().getId()) >=
-                fixedRateSamplingPercentage) {
+                samplingPercentage) {
             logger.debug("Item {} sampled out", telemetry.getClass().getSimpleName());
             return false;
         }

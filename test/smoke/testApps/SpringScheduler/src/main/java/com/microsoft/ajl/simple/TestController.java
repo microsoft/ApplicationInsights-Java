@@ -11,8 +11,8 @@ public class TestController {
         return "OK";
     }
 
-    @GetMapping("/test")
-    public String test() {
+    @GetMapping("/scheduler")
+    public String scheduler() {
         return "OK!";
     }
 }

@@ -34,9 +34,8 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.FixedRateSampling;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
@@ -103,7 +102,7 @@ public class BeforeAgentInstaller {
             throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
         }
 
-        InstrumentationSettings config = MainEntryPoint.getConfiguration();
+        Configuration config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
             if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
                 throw new ConfigurationException("No connection string or instrumentation key provided");
@@ -112,8 +111,9 @@ public class BeforeAgentInstaller {
 
         Map<String, String> properties = new HashMap<>();
         properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
-        properties.put("experimental.log.capture.threshold", getLoggingThreshold(config, "INFO"));
-        properties.put("micrometer.step.millis", Integer.toString(getMicrometerReportingIntervalMillis(config, 60000)));
+        properties.put("experimental.log.capture.threshold", getLoggingFrameworksThreshold(config, "INFO"));
+        int reportingIntervalSeconds = getMicrometerReportingIntervalSeconds(config, 60);
+        properties.put("micrometer.step.millis", Long.toString(SECONDS.toMillis(reportingIntervalSeconds)));
         if (!isInstrumentationEnabled(config, "micrometer")) {
             properties.put("ota.integration.micrometer.enabled", "false");
         }
@@ -146,8 +146,8 @@ public class BeforeAgentInstaller {
             instrumentation.addTransformer(new JulListeningClassFileTransformer(ApacheSender43.safeToInitLatch));
         }
 
-        if (config.preview.httpProxy.host != null) {
-            HttpHost proxy = new HttpHost(config.preview.httpProxy.host, config.preview.httpProxy.port);
+        if (config.proxy.host != null) {
+            HttpHost proxy = new HttpHost(config.proxy.host, config.proxy.port);
             ApacheSender43.proxy = proxy;
             CdsProfileFetcher.proxy = proxy;
         }
@@ -155,12 +155,9 @@ public class BeforeAgentInstaller {
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
-        configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.preview.resourceAttributes));
+        configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
-        FixedRateSampling fixedRateSampling = config.preview.sampling.fixedRate;
-        if (fixedRateSampling != null && fixedRateSampling.percentage != null) {
-            Global.setFixedRateSamplingPercentage(fixedRateSampling.percentage);
-        }
+        Global.setSamplingPercentage(config.sampling.percentage);
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
         AiAppId.setSupplier(new AppIdSupplier());
@@ -215,14 +212,14 @@ public class BeforeAgentInstaller {
         return sdkNamePrefix.toString();
     }
 
-    private static boolean hasConnectionStringOrInstrumentationKey(InstrumentationSettings config) {
+    private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
         return !Strings.isNullOrEmpty(config.connectionString)
                 || !Strings.isNullOrEmpty(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
                 || !Strings.isNullOrEmpty(System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
     }
 
-    private static String getLoggingThreshold(InstrumentationSettings config, String defaultValue) {
-        Map<String, Object> logging = config.preview.instrumentation.get("logging");
+    private static String getLoggingFrameworksThreshold(Configuration config, String defaultValue) {
+        Map<String, Object> logging = config.instrumentation.get("logging");
         if (logging == null) {
             return defaultValue;
         }
@@ -241,8 +238,8 @@ public class BeforeAgentInstaller {
         return threshold;
     }
 
-    private static boolean isInstrumentationEnabled(InstrumentationSettings config, String instrumentationName) {
-        Map<String, Object> properties = config.preview.instrumentation.get(instrumentationName);
+    private static boolean isInstrumentationEnabled(Configuration config, String instrumentationName) {
+        Map<String, Object> properties = config.instrumentation.get(instrumentationName);
         if (properties == null) {
             return true;
         }
@@ -257,34 +254,34 @@ public class BeforeAgentInstaller {
         return (Boolean) value;
     }
 
-    private static int getMicrometerReportingIntervalMillis(InstrumentationSettings config, int defaultValue) {
-        Map<String, Object> micrometer = config.preview.instrumentation.get("micrometer");
+    private static int getMicrometerReportingIntervalSeconds(Configuration config, int defaultValue) {
+        Map<String, Object> micrometer = config.instrumentation.get("micrometer");
         if (micrometer == null) {
             return defaultValue;
         }
-        Object value = micrometer.get("reportingIntervalMillis");
+        Object value = micrometer.get("reportingIntervalSeconds");
         if (value == null) {
             return defaultValue;
         }
         if (!(value instanceof Number)) {
-            startupLogger.warn("micrometer reportingIntervalMillis must be a number, but found: {}", value.getClass());
+            startupLogger.warn("micrometer reportingIntervalSeconds must be a number, but found: {}", value.getClass());
             return defaultValue;
         }
         return ((Number) value).intValue();
     }
 
-    private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(InstrumentationSettings config) {
+    private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(Configuration config) {
 
         ApplicationInsightsXmlConfiguration xmlConfiguration = new ApplicationInsightsXmlConfiguration();
 
         if (!Strings.isNullOrEmpty(config.connectionString)) {
             xmlConfiguration.setConnectionString(config.connectionString);
         }
-        if (!Strings.isNullOrEmpty(config.preview.roleName)) {
-            xmlConfiguration.setRoleName(config.preview.roleName);
+        if (!Strings.isNullOrEmpty(config.role.name)) {
+            xmlConfiguration.setRoleName(config.role.name);
         }
-        if (!Strings.isNullOrEmpty(config.preview.roleInstance)) {
-            xmlConfiguration.setRoleInstance(config.preview.roleInstance);
+        if (!Strings.isNullOrEmpty(config.role.instance)) {
+            xmlConfiguration.setRoleInstance(config.role.instance);
         } else {
             String hostname = CommonUtils.getHostName();
             xmlConfiguration.setRoleInstance(hostname == null ? "unknown" : hostname);
@@ -294,7 +291,7 @@ public class BeforeAgentInstaller {
         AddTypeXmlElement heartbeatModule = new AddTypeXmlElement();
         heartbeatModule.setType("com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule");
         // do not allow interval longer than 15 minutes, since we use the heartbeat data for usage telemetry
-        long intervalSeconds = Math.min(config.preview.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
+        long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
         heartbeatModule.getParameters().add(newParamXml("HeartBeatInterval", Long.toString(intervalSeconds)));
         ArrayList<AddTypeXmlElement> modules = new ArrayList<>();
         modules.add(heartbeatModule);
@@ -304,11 +301,11 @@ public class BeforeAgentInstaller {
 
         // configure custom jmx metrics
         ArrayList<JmxXmlElement> jmxXmls = new ArrayList<>();
-        for (JmxMetric jmxMetric : config.preview.jmxMetrics) {
+        for (JmxMetric jmxMetric : config.jmxMetrics) {
             JmxXmlElement jmxXml = new JmxXmlElement();
+            jmxXml.setName(jmxMetric.name);
             jmxXml.setObjectName(jmxMetric.objectName);
             jmxXml.setAttribute(jmxMetric.attribute);
-            jmxXml.setDisplayName(jmxMetric.display);
             jmxXmls.add(jmxXml);
         }
         xmlConfiguration.getPerformance().setJmxXmlElements(jmxXmls);

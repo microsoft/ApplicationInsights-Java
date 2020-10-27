@@ -23,7 +23,7 @@ public class WebFluxTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("GET /test/**", rd.getName());
+        assertEquals("/test/**", rd.getName());
         assertEquals("200", rd.getResponseCode());
     }
 

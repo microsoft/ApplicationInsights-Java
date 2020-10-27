@@ -13,11 +13,11 @@ import io.opentelemetry.trace.SpanContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class FixedRateSampler implements Sampler {
+public final class TraceIdBasedSampler implements Sampler {
 
-    private static final Logger logger = LoggerFactory.getLogger(FixedRateSampler.class);
+    private static final Logger logger = LoggerFactory.getLogger(TraceIdBasedSampler.class);
 
-    private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("ai.sampling.percentage");
+    private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("ai.internal.sampling.percentage");
 
     // all sampling percentage must be in a ratio of 100/N where N is a whole number (2, 3, 4, …)
     // e.g. 50 for 1/2 or 33.33 for 1/3
@@ -28,10 +28,15 @@ public final class FixedRateSampler implements Sampler {
     private final SamplingResult alwaysOnDecision;
     private final SamplingResult alwaysOffDecision;
 
-    public FixedRateSampler(double samplingPercentage) {
+    public TraceIdBasedSampler(double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
-        Attributes attributes = Attributes.of(AI_SAMPLING_PERCENTAGE, samplingPercentage);
-        alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, attributes);
+        Attributes alwaysOnAttributes;
+        if (samplingPercentage != 100) {
+            alwaysOnAttributes = Attributes.of(AI_SAMPLING_PERCENTAGE, samplingPercentage);
+        } else {
+            alwaysOnAttributes = Attributes.empty();
+        }
+        alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, alwaysOnAttributes);
         alwaysOffDecision= new FixedRateSamplerDecision(Decision.DROP, Attributes.empty());
     }
 
@@ -42,6 +47,9 @@ public final class FixedRateSampler implements Sampler {
                                  Span.Kind spanKind,
                                  ReadableAttributes attributes,
                                  List<SpanData.Link> parentLinks) {
+        if (samplingPercentage == 100) {
+            return alwaysOnDecision;
+        }
         if (SamplingScoreGeneratorV2.getSamplingScore(traceId) >= samplingPercentage) {
             logger.debug("Item {} sampled out", name);
             return alwaysOffDecision;
@@ -51,7 +59,7 @@ public final class FixedRateSampler implements Sampler {
 
     @Override
     public String getDescription() {
-        return "fixed rate sampler: " + samplingPercentage;
+        return "ApplicationInsights-specific trace id based sampler, with sampling percentage: " + samplingPercentage;
     }
 
     private static final class FixedRateSamplerDecision implements SamplingResult {
