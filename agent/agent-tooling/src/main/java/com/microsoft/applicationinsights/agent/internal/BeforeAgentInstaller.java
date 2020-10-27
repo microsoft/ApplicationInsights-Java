@@ -66,6 +66,7 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
@@ -201,9 +202,8 @@ public class BeforeAgentInstaller {
 
     private static volatile Long lastModifiedTime;
     private static void pollJsonConfigEveryMinute() {
-        Thread pollingThread = new Thread(new JsonConfigPolling());
-        pollingThread.setDaemon(true);
-        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(pollingThread, 60, 60, SECONDS);
+        Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(JsonConfigPolling.class))
+                .scheduleWithFixedDelay(new JsonConfigPolling(), 60, 60, SECONDS);
     }
 
     private static class JsonConfigPolling implements Runnable {
