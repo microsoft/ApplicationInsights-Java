@@ -32,8 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
@@ -45,14 +44,15 @@ import org.slf4j.LoggerFactory;
 
 public class ConfigurationBuilder {
 
-    private static final String APPLICATIONINSIGHTS_CONFIGURATION_CONTENT = "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT";
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_CONFIGURATION_FILE";
-    private static final String APPLICATIONINSIGHTS_JMX_METRICS = "APPLICATIONINSIGHTS_JMX_METRICS";
-    private static final String APPLICATIONINSIGHTS_LOGGING_THRESHOLD = "APPLICATIONINSIGHTS_LOGGING_THRESHOLD";
-    private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE = "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
+
+    private static final String APPLICATIONINSIGHTS_JMX_METRICS = "APPLICATIONINSIGHTS_JMX_METRICS";
+    private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE = "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
+
+    private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL = "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL";
 
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
@@ -67,20 +67,20 @@ public class ConfigurationBuilder {
         return config;
     }
 
-    private static void loadLogCaptureEnvVar(PreviewConfiguration preview) {
-        Map<String, Object> logging = preview.instrumentation.get("logging");
+    private static void loadLogCaptureEnvVar(Configuration config) {
+        Map<String, Object> logging = config.instrumentation.get("logging");
         if (logging == null) {
             logging = new HashMap<>();
-            preview.instrumentation.put("logging", logging);
+            config.instrumentation.put("logging", logging);
         }
 
-        final String loggingEnvVar = overlayWithEnvVar(APPLICATIONINSIGHTS_LOGGING_THRESHOLD, (String)null);
+        final String loggingEnvVar = overlayWithEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL, (String)null);
         if (loggingEnvVar != null) {
-            logging.put("threshold", loggingEnvVar);
+            logging.put("level", loggingEnvVar);
         }
     }
 
-    private static void loadJmxMetrics(PreviewConfiguration preview) throws IOException {
+    private static void loadJmxMetrics(Configuration config) throws IOException {
         String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, (String)null);
 
         // JmxMetrics env variable has higher precedence over jmxMetrics config from ApplicationInsights.json
@@ -90,25 +90,25 @@ public class ConfigurationBuilder {
             JsonReader reader = JsonReader.of(new Buffer().writeUtf8(jmxMetricsEnvVarJson));
             reader.setLenient(true);
             JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
-            preview.jmxMetrics = jsonAdapter.fromJson(reader);
+            config.jmxMetrics = jsonAdapter.fromJson(reader);
         }
-        if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
+        if (!jmxMetricExisted(config.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
             JmxMetric threadCountJmxMetric = new JmxMetric();
+            threadCountJmxMetric.name = "Current Thread Count";
             threadCountJmxMetric.objectName = "java.lang:type=Threading";
             threadCountJmxMetric.attribute = "ThreadCount";
-            threadCountJmxMetric.display = "Current Thread Count";
-            preview.jmxMetrics.add(threadCountJmxMetric);
+            config.jmxMetrics.add(threadCountJmxMetric);
         }
-        if (!jmxMetricExisted(preview.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
+        if (!jmxMetricExisted(config.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
             JmxMetric classCountJmxMetric = new JmxMetric();
+            classCountJmxMetric.name = "Loaded Class Count";
             classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
             classCountJmxMetric.attribute = "LoadedClassCount";
-            classCountJmxMetric.display = "Loaded Class Count";
-            preview.jmxMetrics.add(classCountJmxMetric);
+            config.jmxMetrics.add(classCountJmxMetric);
         }
     }
 
-    private static boolean jmxMetricExisted(List<InstrumentationSettings.JmxMetric> jmxMetrics, String objectName, String attribute) {
+    private static boolean jmxMetricExisted(List<Configuration.JmxMetric> jmxMetrics, String objectName, String attribute) {
         for (JmxMetric metric : jmxMetrics) {
             if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
                 return true;
@@ -118,13 +118,6 @@ public class ConfigurationBuilder {
     }
 
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
-        String configurationContent = System.getenv(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
-        if (configurationContent != null && !configurationContent.isEmpty()) {
-            Moshi moshi = new Moshi.Builder().build();
-            JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
-            return jsonAdapter.fromJson(configurationContent);
-        }
-
         if (DiagnosticsHelper.isAnyCodelessAttach()) {
             // codeless attach only supports configuration via environment variables (for now at least)
             return new Configuration();
@@ -132,7 +125,7 @@ public class ConfigurationBuilder {
 
         Path configPath;
         boolean warnIfMissing;
-        String configPathStr = getEnvVarOrProperty(APPLICATIONINSIGHTS_CONFIGURATION_FILE, "applicationinsights.configurationFile");
+        String configPathStr = getEnvVarOrProperty(APPLICATIONINSIGHTS_CONFIGURATION_FILE, "applicationinsights.configuration.file");
         if (configPathStr == null) {
             configPath = agentJarPath.resolveSibling("ApplicationInsights.json");
             warnIfMissing = false;
@@ -181,13 +174,13 @@ public class ConfigurationBuilder {
     }
 
     static void overlayEnvVars(Configuration config) throws IOException {
-        PreviewConfiguration preview = config.instrumentationSettings.preview;
-        preview.roleName = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, preview.roleName);
-        preview.roleInstance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, preview.roleInstance);
-        preview.sampling.fixedRate.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, preview.sampling.fixedRate.percentage);
+        config.role.name = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.role.name);
+        config.role.instance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.role.instance);
 
-        loadLogCaptureEnvVar(preview);
-        loadJmxMetrics(preview);
+        config.sampling.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
+
+        loadLogCaptureEnvVar(config);
+        loadJmxMetrics(config);
     }
 
     // visible for testing

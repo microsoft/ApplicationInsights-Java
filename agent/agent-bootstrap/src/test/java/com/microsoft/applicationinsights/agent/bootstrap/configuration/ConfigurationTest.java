@@ -8,8 +8,8 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharSource;
 import com.google.common.io.Resources;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.JmxMetric;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.PreviewConfiguration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.PreviewConfiguration;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
@@ -28,21 +28,24 @@ public class ConfigurationTest {
     @Test
     public void shouldParse() throws IOException {
         Configuration configuration = loadConfiguration();
-        InstrumentationSettings instrumentationSettings = configuration.instrumentationSettings;
-        PreviewConfiguration preview = instrumentationSettings.preview;
 
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", instrumentationSettings.connectionString);
-        assertEquals("Something Good", preview.roleName);
-        assertEquals("xyz123", preview.roleInstance);
-        assertEquals((Double) 10.0, preview.sampling.fixedRate.percentage);
-        assertEquals(60, preview.heartbeat.intervalSeconds);
-        assertEquals(3, preview.jmxMetrics.size());
-        assertEquals("java.lang:type=Threading", preview.jmxMetrics.get(0).objectName);
-        assertEquals("ThreadCount", preview.jmxMetrics.get(0).attribute);
-        assertEquals("Thread Count", preview.jmxMetrics.get(0).display);
-        assertEquals(ImmutableMap.of("threshold", "error", "enabled", "true"), preview.instrumentation.get("logging"));
-        assertEquals("myproxy", preview.httpProxy.host);
-        assertEquals(8080, preview.httpProxy.port);
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
+        assertEquals("Something Good", configuration.role.name);
+        assertEquals("xyz123", configuration.role.instance);
+        assertEquals(2, configuration.customDimensions.size());
+        assertEquals("abc", configuration.customDimensions.get("some key"));
+        assertEquals("def", configuration.customDimensions.get("another key"));
+        assertEquals(10.0, configuration.sampling.percentage, 0);
+        assertEquals(3, configuration.jmxMetrics.size());
+        assertEquals("Thread Count", configuration.jmxMetrics.get(0).name);
+        assertEquals("java.lang:type=Threading", configuration.jmxMetrics.get(0).objectName);
+        assertEquals("ThreadCount", configuration.jmxMetrics.get(0).attribute);
+        assertEquals(ImmutableMap.of("level", "error", "enabled", true), configuration.instrumentation.get("logging"));
+        assertEquals(60, configuration.heartbeat.intervalSeconds);
+        assertEquals("myproxy", configuration.proxy.host);
+        assertEquals(8080, configuration.proxy.port);
+
+        PreviewConfiguration preview = configuration.preview;
 
         assertEquals("file", preview.selfDiagnostics.destination);
         assertEquals("/var/log/applicationinsights", preview.selfDiagnostics.directory);
@@ -53,38 +56,36 @@ public class ConfigurationTest {
     @Test
     public void shouldUseDefaults() throws IOException {
         Configuration configuration = loadConfiguration();
-        InstrumentationSettings instrumentationSettings = configuration.instrumentationSettings;
-        PreviewConfiguration preview = instrumentationSettings.preview;
 
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", instrumentationSettings.connectionString);
-        assertEquals("Something Good", preview.roleName);
-        assertEquals("xyz123", preview.roleInstance);
-        assertEquals(60, preview.heartbeat.intervalSeconds);
-        assertEquals(3, preview.jmxMetrics.size());
-        assertEquals("error", preview.instrumentation.get("logging").get("threshold"));
-        assertEquals("true", preview.instrumentation.get("micrometer").get("enabled"));
-        assertEquals("true", preview.instrumentation.get("logging").get("enabled"));
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
+        assertEquals("Something Good", configuration.role.name);
+        assertEquals("xyz123", configuration.role.instance);
+        assertEquals(3, configuration.jmxMetrics.size());
+        assertEquals("error", configuration.instrumentation.get("logging").get("level"));
+        assertEquals(true, configuration.instrumentation.get("micrometer").get("enabled"));
+        assertEquals(true, configuration.instrumentation.get("logging").get("enabled"));
+        assertEquals(60, configuration.heartbeat.intervalSeconds);
     }
 
     @Test
-    public void shouldOverrideSamplingRate() throws IOException {
-        envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "25");
+    public void shouldOverrideSamplingPercentage() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "0.25");
 
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertTrue(configuration.instrumentationSettings.preview.sampling.fixedRate.percentage == 25);
+        assertTrue(configuration.sampling.percentage == 0.25);
     }
 
     @Test
     public void shouldOverrideLogCaptureThreshold() throws IOException {
-        envVars.set("APPLICATIONINSIGHTS_LOGGING_THRESHOLD", "TRACE");
+        envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL", "TRACE");
 
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("TRACE", configuration.instrumentationSettings.preview.instrumentation.get("logging").get("threshold"));
-        assertEquals("true", configuration.instrumentationSettings.preview.instrumentation.get("logging").get("enabled"));
+        assertEquals("TRACE", configuration.instrumentation.get("logging").get("level"));
+        assertEquals(true, configuration.instrumentation.get("logging").get("enabled"));
     }
 
     @Test
@@ -98,10 +99,10 @@ public class ConfigurationTest {
 
         List<JmxMetric> jmxMetrics = parseJmxMetricsJson(jmxMetricsJson);
         assertEquals(2, jmxMetrics.size());
-        assertEquals(3, configuration.instrumentationSettings.preview.jmxMetrics.size());
-        assertEquals(jmxMetrics.get(0).display, configuration.instrumentationSettings.preview.jmxMetrics.get(0).display); // class count is overridden by the env var
-        assertEquals(jmxMetrics.get(1).display, configuration.instrumentationSettings.preview.jmxMetrics.get(1).display); // code cache is overridden by the env var
-        assertEquals(configuration.instrumentationSettings.preview.jmxMetrics.get(2).display, "Current Thread Count");
+        assertEquals(3, configuration.jmxMetrics.size());
+        assertEquals(jmxMetrics.get(0).name, configuration.jmxMetrics.get(0).name); // class count is overridden by the env var
+        assertEquals(jmxMetrics.get(1).name, configuration.jmxMetrics.get(1).name); // code cache is overridden by the env var
+        assertEquals(configuration.jmxMetrics.get(2).name, "Current Thread Count");
     }
 
     private List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {
