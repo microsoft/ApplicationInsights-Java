@@ -69,6 +69,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class BeforeAgentInstaller {
 
@@ -113,7 +114,8 @@ public class BeforeAgentInstaller {
         Map<String, String> properties = new HashMap<>();
         properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
         properties.put("experimental.log.capture.threshold", getLoggingFrameworksThreshold(config, "INFO"));
-        properties.put("micrometer.step.millis", Integer.toString(getMicrometerReportingIntervalMillis(config, 60000)));
+        int reportingIntervalSeconds = getMicrometerReportingIntervalSeconds(config, 60);
+        properties.put("micrometer.step.millis", Long.toString(SECONDS.toMillis(reportingIntervalSeconds)));
         if (!isInstrumentationEnabled(config, "micrometer")) {
             properties.put("ota.integration.micrometer.enabled", "false");
         }
@@ -255,17 +257,17 @@ public class BeforeAgentInstaller {
         return (Boolean) value;
     }
 
-    private static int getMicrometerReportingIntervalMillis(Configuration config, int defaultValue) {
+    private static int getMicrometerReportingIntervalSeconds(Configuration config, int defaultValue) {
         Map<String, Object> micrometer = config.instrumentation.get("micrometer");
         if (micrometer == null) {
             return defaultValue;
         }
-        Object value = micrometer.get("reportingIntervalMillis");
+        Object value = micrometer.get("reportingIntervalSeconds");
         if (value == null) {
             return defaultValue;
         }
         if (!(value instanceof Number)) {
-            startupLogger.warn("micrometer reportingIntervalMillis must be a number, but found: {}", value.getClass());
+            startupLogger.warn("micrometer reportingIntervalSeconds must be a number, but found: {}", value.getClass());
             return defaultValue;
         }
         return ((Number) value).intValue();
