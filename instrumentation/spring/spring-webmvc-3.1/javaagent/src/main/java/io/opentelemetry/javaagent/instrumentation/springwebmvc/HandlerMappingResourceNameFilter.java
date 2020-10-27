@@ -7,7 +7,7 @@ package io.opentelemetry.javaagent.instrumentation.springwebmvc;
 
 import static io.opentelemetry.javaagent.instrumentation.springwebmvc.SpringWebMvcTracer.TRACER;
 
-import io.opentelemetry.context.Context;
+import io.grpc.Context;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
 import io.opentelemetry.trace.Span;
 import java.io.IOException;
