@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -81,7 +80,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class BeforeAgentInstaller {
 
-    private static Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
+    private static final Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
     private BeforeAgentInstaller() {
     }
@@ -202,38 +201,48 @@ public class BeforeAgentInstaller {
 
     private static volatile Long lastModifiedTime;
     private static void pollJsonConfigEveryMinute() {
-        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(new Runnable() {
-            @Override public void run() {
-                Path path = MainEntryPoint.getConfigPath();
-                if (path != null) {
-                    if (Files.exists(path)) {
-                        try {
-                            BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
-                            FileTime fileTime = attributes.lastModifiedTime();
-                            if (lastModifiedTime == null) {
-                                lastModifiedTime = attributes.lastModifiedTime().toMillis();
-                            } else if (lastModifiedTime != fileTime.toMillis()) {
-                                lastModifiedTime = fileTime.toMillis();
-                                Configuration configuration = ConfigurationBuilder.loadJsonConfigFile(path);
-                                if (!configuration.instrumentationSettings.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
-                                    startupLogger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
-                                    TelemetryConfiguration.getActive().setConnectionString(configuration.instrumentationSettings.connectionString);
-                                }
+        Thread pollingThread = new Thread(new JsonConfigPolling());
+        pollingThread.setDaemon(true);
+        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(pollingThread, 60, 60, SECONDS);
+    }
 
-                                FixedRateSampling fixedRateSampling = configuration.instrumentationSettings.preview.sampling.fixedRate;
-                                if (fixedRateSampling != null && fixedRateSampling.percentage != null && fixedRateSampling.percentage != Global.getFixedRateSamplingPercentage()) {
-                                    startupLogger.debug("Override fixed rate sampling percentage from " + Global.getFixedRateSamplingPercentage() + " to " + fixedRateSampling.percentage + " ");
-                                    Global.setFixedRateSamplingPercentage(fixedRateSampling.percentage);
-                                }
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            startupLogger.error("Error occurred when polling json config file: " + e.toString());
-                        }
+    private static class JsonConfigPolling implements Runnable {
+        @Override public void run() {
+            Path path = MainEntryPoint.getConfigPath();
+            if (path == null) {
+                startupLogger.warn("JSON config path is null.");
+                return;
+            }
+
+            if (!Files.exists(path)) {
+                startupLogger.warn(path + " doesn't exist.");
+                return;
+            }
+
+            try {
+                BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+                FileTime fileTime = attributes.lastModifiedTime();
+                if (lastModifiedTime == null) {
+                    lastModifiedTime = attributes.lastModifiedTime().toMillis();
+                } else if (lastModifiedTime != fileTime.toMillis()) {
+                    lastModifiedTime = fileTime.toMillis();
+                    Configuration configuration = ConfigurationBuilder.loadJsonConfigFile(path);
+                    if (!configuration.instrumentationSettings.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
+                        startupLogger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
+                        TelemetryConfiguration.getActive().setConnectionString(configuration.instrumentationSettings.connectionString);
+                    }
+
+                    FixedRateSampling fixedRateSampling = configuration.instrumentationSettings.preview.sampling.fixedRate;
+                    if (fixedRateSampling != null && fixedRateSampling.percentage != null && fixedRateSampling.percentage != Global.getFixedRateSamplingPercentage()) {
+                        startupLogger.debug("Override fixed rate sampling percentage from " + Global.getFixedRateSamplingPercentage() + " to " + fixedRateSampling.percentage + " ");
+                        Global.setFixedRateSamplingPercentage(fixedRateSampling.percentage);
                     }
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+                startupLogger.error("Error occurred when polling json config file: " + e.toString());
             }
-        }, 60, 60, SECONDS);
+        }
     }
 
     @Nullable
