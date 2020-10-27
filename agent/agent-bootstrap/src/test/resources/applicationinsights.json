@@ -9,9 +9,7 @@
     "another key": "def"
   },
   "sampling": {
-    "traceIdBased": {
-      "probability": 0.1
-    }
+    "probability": 0.1
   },
   "instrumentation": {
     "jdbc": {

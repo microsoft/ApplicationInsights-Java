@@ -178,7 +178,7 @@ public class ConfigurationBuilder {
         config.role.name = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.role.name);
         config.role.instance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.role.instance);
 
-        config.sampling.traceIdBased.probability = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PROBABILITY, config.sampling.traceIdBased.probability);
+        config.sampling.probability = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PROBABILITY, config.sampling.probability);
 
         loadLogCaptureEnvVar(config);
         loadJmxMetrics(config);

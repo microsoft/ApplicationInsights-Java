@@ -24,11 +24,11 @@ public class TracerInstaller {
         OpenTelemetry.setPropagators(
                 DefaultContextPropagators.builder().addTextMapPropagator(AiHttpTraceContext.getInstance()).build());
 
-        double traceIdBasedSamplingProbability = Global.getTraceIdBasedSamplingProbability();
-        if (traceIdBasedSamplingProbability != 1) {
+        double samplingProbability = Global.getSamplingProbability();
+        if (samplingProbability != 1) {
             OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(
                     TraceConfig.getDefault().toBuilder()
-                            .setSampler(new TraceIdBasedSampler(traceIdBasedSamplingProbability))
+                            .setSampler(new TraceIdBasedSampler(samplingProbability))
                             .build());
         } else {
             // OpenTelemetry default sampling is "parent based", which means don't sample if remote traceparent sampled flag was not set,

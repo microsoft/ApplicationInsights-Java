@@ -1,8 +1,6 @@
 {
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
   "sampling": {
-    "traceIdRatio": {
-      "ratio": 0.5
-    }
+    "probability": 0.5
   }
 }

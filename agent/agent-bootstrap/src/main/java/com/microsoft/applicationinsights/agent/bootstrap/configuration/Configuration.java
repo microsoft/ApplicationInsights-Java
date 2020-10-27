@@ -50,11 +50,6 @@ public class Configuration {
 
     public static class Sampling {
 
-        public TraceIdBased traceIdBased = new TraceIdBased();
-    }
-
-    public static class TraceIdBased {
-
         public Double probability;
     }
 

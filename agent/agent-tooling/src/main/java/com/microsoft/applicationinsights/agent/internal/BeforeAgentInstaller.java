@@ -34,7 +34,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.TraceIdBased;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
@@ -159,9 +158,9 @@ public class BeforeAgentInstaller {
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
-        TraceIdBased traceIdBased = config.sampling.traceIdBased;
-        if (traceIdBased != null && traceIdBased.probability != null) {
-            Global.setTraceIdBasedSamplingProbability(traceIdBased.probability);
+        Double samplingProbability = config.sampling.probability;
+        if (samplingProbability != null) {
+            Global.setSamplingProbability(samplingProbability);
         }
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
