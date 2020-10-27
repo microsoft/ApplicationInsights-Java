@@ -158,10 +158,7 @@ public class BeforeAgentInstaller {
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
-        Double samplingPercentage = config.sampling.percentage;
-        if (samplingPercentage != null) {
-            Global.setSamplingPercentage(samplingPercentage);
-        }
+        Global.setSamplingPercentage(config.sampling.percentage);
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
         AiAppId.setSupplier(new AppIdSupplier());

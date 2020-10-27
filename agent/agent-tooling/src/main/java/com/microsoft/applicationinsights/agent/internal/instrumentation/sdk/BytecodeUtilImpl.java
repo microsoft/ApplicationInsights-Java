@@ -212,7 +212,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         double samplingPercentage = Global.getSamplingPercentage();
         if (sample(telemetry, samplingPercentage)) {
-            if (samplingPercentage != 100 && telemetry instanceof SupportSampling) {
+            if (telemetry instanceof SupportSampling && samplingPercentage != 100) {
                 ((SupportSampling) telemetry).setSamplingPercentage(samplingPercentage);
             }
             // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called

@@ -48,7 +48,7 @@ public class Configuration {
 
     public static class Sampling {
 
-        public Double percentage;
+        public double percentage = 100;
     }
 
     public static class JmxMetric {

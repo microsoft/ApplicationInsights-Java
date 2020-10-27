@@ -30,12 +30,13 @@ public final class TraceIdBasedSampler implements Sampler {
 
     public TraceIdBasedSampler(double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
-        if (samplingPercentage == 100) {
-            alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, Attributes.empty());
+        Attributes alwaysOnAttributes;
+        if (samplingPercentage != 100) {
+            alwaysOnAttributes = Attributes.of(AI_SAMPLING_PERCENTAGE, samplingPercentage);
         } else {
-            Attributes attributes = Attributes.of(AI_SAMPLING_PERCENTAGE, samplingPercentage);
-            alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, attributes);
+            alwaysOnAttributes = Attributes.empty();
         }
+        alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, alwaysOnAttributes);
         alwaysOffDecision= new FixedRateSamplerDecision(Decision.DROP, Attributes.empty());
     }
 
@@ -58,7 +59,7 @@ public final class TraceIdBasedSampler implements Sampler {
 
     @Override
     public String getDescription() {
-        return "ApplicationInsights-specific trace id based sampler, with probability: " + samplingPercentage;
+        return "ApplicationInsights-specific trace id based sampler, with sampling percentage: " + samplingPercentage;
     }
 
     private static final class FixedRateSamplerDecision implements SamplingResult {

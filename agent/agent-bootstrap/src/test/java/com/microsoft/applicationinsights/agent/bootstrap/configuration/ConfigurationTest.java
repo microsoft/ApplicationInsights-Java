@@ -35,7 +35,7 @@ public class ConfigurationTest {
         assertEquals(2, configuration.customDimensions.size());
         assertEquals("abc", configuration.customDimensions.get("some key"));
         assertEquals("def", configuration.customDimensions.get("another key"));
-        assertEquals((Double) 10.0, configuration.sampling.percentage);
+        assertEquals(10.0, configuration.sampling.percentage, 0);
         assertEquals(3, configuration.jmxMetrics.size());
         assertEquals("Thread Count", configuration.jmxMetrics.get(0).name);
         assertEquals("java.lang:type=Threading", configuration.jmxMetrics.get(0).objectName);
