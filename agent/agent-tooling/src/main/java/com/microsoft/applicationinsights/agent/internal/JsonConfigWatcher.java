@@ -31,8 +31,8 @@ import java.util.concurrent.Executors;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.Sampling;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.FixedRateSampling;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,15 +68,15 @@ public final class JsonConfigWatcher {
                 if (lastModifiedTime != fileTime.toMillis()) {
                     lastModifiedTime = fileTime.toMillis();
                     Configuration configuration = ConfigurationBuilder.loadJsonConfigFile(path);
-                    if (!configuration.instrumentationSettings.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
+                    if (!configuration.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
                         logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
-                        TelemetryConfiguration.getActive().setConnectionString(configuration.instrumentationSettings.connectionString);
+                        TelemetryConfiguration.getActive().setConnectionString(configuration.connectionString);
                     }
 
-                    FixedRateSampling fixedRateSampling = configuration.instrumentationSettings.preview.sampling.fixedRate;
-                    if (fixedRateSampling != null && fixedRateSampling.percentage != null && fixedRateSampling.percentage != Global.getFixedRateSamplingPercentage()) {
-                        logger.debug("Override fixed rate sampling percentage from " + Global.getFixedRateSamplingPercentage() + " to " + fixedRateSampling.percentage + " ");
-                        Global.setFixedRateSamplingPercentage(fixedRateSampling.percentage);
+                    Sampling sampling = configuration.sampling;
+                    if (sampling != null && sampling.percentage != Global.getSamplingPercentage()) {
+                        logger.debug("Override fixed rate sampling percentage from " + Global.getSamplingPercentage() + " to " + sampling.percentage + " ");
+                        Global.setSamplingPercentage(sampling.percentage);
                     }
                 }
             } catch (IOException e) {
