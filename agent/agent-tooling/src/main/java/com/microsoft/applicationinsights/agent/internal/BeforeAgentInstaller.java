@@ -22,25 +22,17 @@
 package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.instrument.Instrumentation;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.FixedRateSampling;
@@ -66,7 +58,6 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
@@ -197,52 +188,7 @@ public class BeforeAgentInstaller {
             }
         });
 
-        pollJsonConfigEveryMinute();
-    }
-
-    private static volatile Long lastModifiedTime;
-    private static void pollJsonConfigEveryMinute() {
-        Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(JsonConfigPolling.class))
-                .scheduleWithFixedDelay(new JsonConfigPolling(), 60, 60, SECONDS);
-    }
-
-    private static class JsonConfigPolling implements Runnable {
-        @Override public void run() {
-            Path path = MainEntryPoint.getConfigPath();
-            if (path == null) {
-                startupLogger.warn("JSON config path is null.");
-                return;
-            }
-
-            if (!Files.exists(path)) {
-                startupLogger.warn(path + " doesn't exist.");
-                return;
-            }
-
-            try {
-                BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
-                FileTime fileTime = attributes.lastModifiedTime();
-                if (lastModifiedTime == null) {
-                    lastModifiedTime = attributes.lastModifiedTime().toMillis();
-                } else if (lastModifiedTime != fileTime.toMillis()) {
-                    lastModifiedTime = fileTime.toMillis();
-                    Configuration configuration = ConfigurationBuilder.loadJsonConfigFile(path);
-                    if (!configuration.instrumentationSettings.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
-                        startupLogger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
-                        TelemetryConfiguration.getActive().setConnectionString(configuration.instrumentationSettings.connectionString);
-                    }
-
-                    FixedRateSampling fixedRateSampling = configuration.instrumentationSettings.preview.sampling.fixedRate;
-                    if (fixedRateSampling != null && fixedRateSampling.percentage != null && fixedRateSampling.percentage != Global.getFixedRateSamplingPercentage()) {
-                        startupLogger.debug("Override fixed rate sampling percentage from " + Global.getFixedRateSamplingPercentage() + " to " + fixedRateSampling.percentage + " ");
-                        Global.setFixedRateSamplingPercentage(fixedRateSampling.percentage);
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                startupLogger.error("Error occurred when polling json config file: " + e.toString());
-            }
-        }
+        JsonConfigWatcher.pollJsonConfigEveryMinute();
     }
 
     @Nullable

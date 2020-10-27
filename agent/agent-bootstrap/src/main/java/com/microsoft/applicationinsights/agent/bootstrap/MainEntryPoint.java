@@ -23,7 +23,9 @@ package com.microsoft.applicationinsights.agent.bootstrap;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
@@ -42,6 +44,7 @@ public class MainEntryPoint {
 
     private static InstrumentationSettings configuration;
     private static Path configPath;
+    private static Long lastModifiedTime;
 
     private MainEntryPoint() {
     }
@@ -54,6 +57,10 @@ public class MainEntryPoint {
         return configPath;
     }
 
+    public static Long getLastModifiedTime() {
+        return lastModifiedTime;
+    }
+
     public static void start(Instrumentation instrumentation, URL bootstrapURL) {
         boolean success = false;
         Logger startupLogger = null;
@@ -64,6 +71,8 @@ public class MainEntryPoint {
             Configuration config = ConfigurationBuilder.create(agentJarFile.toPath());
             configuration = config.instrumentationSettings;
             configPath = config.configPath;
+            BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
+            lastModifiedTime = attributes.lastModifiedTime().toMillis();
             startupLogger = configureLogging(configuration.preview.selfDiagnostics);
             ConfigurationBuilder.logConfigurationMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
