@@ -39,50 +39,48 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-public final class JsonConfigWatcher {
+public class JsonConfigPolling implements Runnable {
 
-    private static volatile Long lastModifiedTime = MainEntryPoint.getLastModifiedTime();
-    private static final Logger logger = LoggerFactory.getLogger(JsonConfigWatcher.class);
+    private volatile Long lastModifiedTime = MainEntryPoint.getLastModifiedTime();
+    private static final Logger logger = LoggerFactory.getLogger(JsonConfigPolling.class);
 
     public static void pollJsonConfigEveryMinute() {
         Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(JsonConfigPolling.class))
                 .scheduleWithFixedDelay(new JsonConfigPolling(), 60, 60, SECONDS);
     }
 
-    private static class JsonConfigPolling implements Runnable {
-        @Override public void run() {
-            Path path = MainEntryPoint.getConfigPath();
-            if (path == null) {
-                logger.warn("JSON config path is null.");
-                return;
-            }
+    @Override public void run() {
+        Path path = MainEntryPoint.getConfigPath();
+        if (path == null) {
+            logger.warn("JSON config path is null.");
+            return;
+        }
 
-            if (!Files.exists(path)) {
-                logger.warn(path + " doesn't exist.");
-                return;
-            }
+        if (!Files.exists(path)) {
+            logger.warn(path + " doesn't exist.");
+            return;
+        }
 
-            try {
-                BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
-                FileTime fileTime = attributes.lastModifiedTime();
-                if (lastModifiedTime != fileTime.toMillis()) {
-                    lastModifiedTime = fileTime.toMillis();
-                    Configuration configuration = ConfigurationBuilder.loadJsonConfigFile(path);
-                    if (!configuration.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
-                        logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
-                        TelemetryConfiguration.getActive().setConnectionString(configuration.connectionString);
-                    }
-
-                    Sampling sampling = configuration.sampling;
-                    if (sampling != null && sampling.percentage != Global.getSamplingPercentage()) {
-                        logger.debug("Override fixed rate sampling percentage from " + Global.getSamplingPercentage() + " to " + sampling.percentage + " ");
-                        Global.setSamplingPercentage(sampling.percentage);
-                    }
+        try {
+            BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+            FileTime fileTime = attributes.lastModifiedTime();
+            if (lastModifiedTime != fileTime.toMillis()) {
+                lastModifiedTime = fileTime.toMillis();
+                Configuration configuration = ConfigurationBuilder.loadJsonConfigFile(path);
+                if (!configuration.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
+                    logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
+                    TelemetryConfiguration.getActive().setConnectionString(configuration.connectionString);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                logger.error("Error occurred when polling json config file: " + e.toString());
+
+                Sampling sampling = configuration.sampling;
+                if (sampling != null && sampling.percentage != Global.getSamplingPercentage()) {
+                    logger.debug("Override fixed rate sampling percentage from " + Global.getSamplingPercentage() + " to " + sampling.percentage + " ");
+                    Global.setSamplingPercentage(sampling.percentage);
+                }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("Error occurred when polling json config file: " + e.toString());
         }
     }
 }

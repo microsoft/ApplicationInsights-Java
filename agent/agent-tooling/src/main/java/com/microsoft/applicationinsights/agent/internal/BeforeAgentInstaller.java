@@ -185,7 +185,7 @@ public class BeforeAgentInstaller {
             }
         });
 
-        JsonConfigWatcher.pollJsonConfigEveryMinute();
+        JsonConfigPolling.pollJsonConfigEveryMinute();
     }
 
     @Nullable
