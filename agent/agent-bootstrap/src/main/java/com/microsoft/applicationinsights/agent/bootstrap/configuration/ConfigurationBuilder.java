@@ -283,7 +283,9 @@ public class ConfigurationBuilder {
     }
 
     public static Configuration loadJsonConfigFile(Path configPath) throws IOException{
-        assert(Files.exists(configPath));
+        if (!Files.exists(configPath)) {
+            throw new IllegalStateException("config file does not exist: " + configPath);
+        }
         try (InputStream in = Files.newInputStream(configPath)) {
             Moshi moshi = new Moshi.Builder().build();
             JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
