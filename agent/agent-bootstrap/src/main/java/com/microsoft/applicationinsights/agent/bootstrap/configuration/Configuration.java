@@ -27,5 +27,6 @@ public class Configuration {
 
     public InstrumentationSettings instrumentationSettings = new InstrumentationSettings();
 
+    // transient so that Moshi will ignore when binding from json
     public transient Path configPath;
 }
