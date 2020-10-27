@@ -118,7 +118,7 @@ class Netty40ServerTest extends HttpServerTest<EventLoopGroup> {
   }
 
   @Override
-  String expectedServerSpanName(String method, ServerEndpoint endpoint) {
+  String expectedServerSpanName(ServerEndpoint endpoint) {
     return "netty.request"
   }
 

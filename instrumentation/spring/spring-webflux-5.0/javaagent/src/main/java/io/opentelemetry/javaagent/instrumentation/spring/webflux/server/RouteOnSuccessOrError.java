@@ -6,6 +6,7 @@
 package io.opentelemetry.javaagent.instrumentation.spring.webflux.server;
 
 import io.grpc.Context;
+import io.opentelemetry.instrumentation.api.servlet.ServletContextPath;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -42,7 +43,7 @@ public class RouteOnSuccessOrError implements BiConsumer<HandlerFunction<?>, Thr
 
           Span serverSpan = BaseTracer.CONTEXT_SERVER_SPAN_KEY.get(context);
           if (serverSpan != null) {
-            serverSpan.updateName(parseRoute(predicateString));
+            serverSpan.updateName(ServletContextPath.prepend(context, parseRoute(predicateString)));
           }
         }
       }
@@ -61,7 +62,7 @@ public class RouteOnSuccessOrError implements BiConsumer<HandlerFunction<?>, Thr
     }
   }
 
-  private String parseRoute(String routerString) {
+  private static String parseRoute(String routerString) {
     return METHOD_REGEX
         .matcher(
             SPACES_REGEX
