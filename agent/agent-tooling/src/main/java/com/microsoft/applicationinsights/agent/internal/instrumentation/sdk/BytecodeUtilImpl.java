@@ -212,10 +212,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         double samplingPercentage = Global.getSamplingPercentage();
         if (sample(telemetry, samplingPercentage)) {
-            // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
-            if (telemetry instanceof SupportSampling) {
+            if (samplingPercentage != 100 && telemetry instanceof SupportSampling) {
                 ((SupportSampling) telemetry).setSamplingPercentage(samplingPercentage);
             }
+            // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
             checkNotNull(Global.getTelemetryClient()).track(telemetry);
         }
     }

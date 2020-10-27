@@ -35,7 +35,7 @@ public class ConfigurationTest {
         assertEquals(2, configuration.customDimensions.size());
         assertEquals("abc", configuration.customDimensions.get("some key"));
         assertEquals("def", configuration.customDimensions.get("another key"));
-        assertEquals((Double) 0.1, configuration.sampling.percentage);
+        assertEquals((Double) 10.0, configuration.sampling.percentage);
         assertEquals(3, configuration.jmxMetrics.size());
         assertEquals("Thread Count", configuration.jmxMetrics.get(0).name);
         assertEquals("java.lang:type=Threading", configuration.jmxMetrics.get(0).objectName);
@@ -68,8 +68,8 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideSamplingRate() throws IOException {
-        envVars.set("APPLICATIONINSIGHTS_SAMPLING_PROBABILITY", "0.25");
+    public void shouldOverrideSamplingPercentage() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "0.25");
 
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);

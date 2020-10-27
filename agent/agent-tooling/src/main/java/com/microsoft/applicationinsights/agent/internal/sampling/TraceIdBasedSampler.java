@@ -30,8 +30,12 @@ public final class TraceIdBasedSampler implements Sampler {
 
     public TraceIdBasedSampler(double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
-        Attributes attributes = Attributes.of(AI_SAMPLING_PERCENTAGE, samplingPercentage);
-        alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, attributes);
+        if (samplingPercentage == 100) {
+            alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, Attributes.empty());
+        } else {
+            Attributes attributes = Attributes.of(AI_SAMPLING_PERCENTAGE, samplingPercentage);
+            alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, attributes);
+        }
         alwaysOffDecision= new FixedRateSamplerDecision(Decision.DROP, Attributes.empty());
     }
 
@@ -42,6 +46,9 @@ public final class TraceIdBasedSampler implements Sampler {
                                  Span.Kind spanKind,
                                  ReadableAttributes attributes,
                                  List<SpanData.Link> parentLinks) {
+        if (samplingPercentage == 100) {
+            return alwaysOnDecision;
+        }
         if (SamplingScoreGeneratorV2.getSamplingScore(traceId) >= samplingPercentage) {
             logger.debug("Item {} sampled out", name);
             return alwaysOffDecision;
