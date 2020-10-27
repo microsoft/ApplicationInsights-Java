@@ -71,8 +71,7 @@ public class MainEntryPoint {
             Configuration config = ConfigurationBuilder.create(agentJarFile.toPath());
             configuration = config.instrumentationSettings;
             configPath = config.configPath;
-            BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
-            lastModifiedTime = attributes.lastModifiedTime().toMillis();
+            lastModifiedTime = config.lastModifiedTime;
             startupLogger = configureLogging(configuration.preview.selfDiagnostics);
             ConfigurationBuilder.logConfigurationMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");

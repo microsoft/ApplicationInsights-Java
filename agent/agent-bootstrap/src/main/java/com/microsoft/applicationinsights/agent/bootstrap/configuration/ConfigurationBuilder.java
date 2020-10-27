@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -294,6 +295,8 @@ public class ConfigurationBuilder {
             try {
                 Configuration configuration = jsonAdapter.fromJson(buffer);
                 configuration.configPath = configPath;
+                BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
+                configuration.lastModifiedTime = attributes.lastModifiedTime().toMillis();
                 return configuration;
             } catch (Exception e) {
                 throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
