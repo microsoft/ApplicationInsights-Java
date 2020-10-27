@@ -50,9 +50,8 @@ public class ConfigurationBuilder {
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
 
     private static final String APPLICATIONINSIGHTS_JMX_METRICS = "APPLICATIONINSIGHTS_JMX_METRICS";
-    private static final String APPLICATIONINSIGHTS_SAMPLING_PROBABILITY = "APPLICATIONINSIGHTS_SAMPLING_PROBABILITY";
+    private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE = "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
-    private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_ENABLED = "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_ENABLED";
     private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL = "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL";
 
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
@@ -178,7 +177,7 @@ public class ConfigurationBuilder {
         config.role.name = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.role.name);
         config.role.instance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.role.instance);
 
-        config.sampling.probability = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PROBABILITY, config.sampling.probability);
+        config.sampling.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
         loadLogCaptureEnvVar(config);
         loadJmxMetrics(config);

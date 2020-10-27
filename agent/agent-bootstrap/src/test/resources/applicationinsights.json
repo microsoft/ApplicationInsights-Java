@@ -9,7 +9,7 @@
     "another key": "def"
   },
   "sampling": {
-    "probability": 0.1
+    "percentage": 10
   },
   "instrumentation": {
     "jdbc": {

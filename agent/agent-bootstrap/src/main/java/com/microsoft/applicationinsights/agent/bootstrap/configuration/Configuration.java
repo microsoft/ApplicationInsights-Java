@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.squareup.moshi.Json;
-
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class Configuration {
@@ -50,7 +48,7 @@ public class Configuration {
 
     public static class Sampling {
 
-        public Double probability;
+        public Double percentage;
     }
 
     public static class JmxMetric {

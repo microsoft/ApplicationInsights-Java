@@ -23,14 +23,14 @@ public final class TraceIdBasedSampler implements Sampler {
     // e.g. 50 for 1/2 or 33.33 for 1/3
     //
     // failure to follow this pattern can result in unexpected / incorrect computation of values in the portal
-    private final double samplingProbability;
+    private final double samplingPercentage;
 
     private final SamplingResult alwaysOnDecision;
     private final SamplingResult alwaysOffDecision;
 
-    public TraceIdBasedSampler(double samplingProbability) {
-        this.samplingProbability = samplingProbability;
-        Attributes attributes = Attributes.of(AI_SAMPLING_PERCENTAGE, 100 * samplingProbability);
+    public TraceIdBasedSampler(double samplingPercentage) {
+        this.samplingPercentage = samplingPercentage;
+        Attributes attributes = Attributes.of(AI_SAMPLING_PERCENTAGE, samplingPercentage);
         alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, attributes);
         alwaysOffDecision= new FixedRateSamplerDecision(Decision.DROP, Attributes.empty());
     }
@@ -42,7 +42,7 @@ public final class TraceIdBasedSampler implements Sampler {
                                  Span.Kind spanKind,
                                  ReadableAttributes attributes,
                                  List<SpanData.Link> parentLinks) {
-        if (SamplingScoreGeneratorV2.getSamplingScore(traceId) >= samplingProbability) {
+        if (SamplingScoreGeneratorV2.getSamplingScore(traceId) >= samplingPercentage) {
             logger.debug("Item {} sampled out", name);
             return alwaysOffDecision;
         }
@@ -51,7 +51,7 @@ public final class TraceIdBasedSampler implements Sampler {
 
     @Override
     public String getDescription() {
-        return "ApplicationInsights-specific trace id based sampler, with probability: " + samplingProbability;
+        return "ApplicationInsights-specific trace id based sampler, with probability: " + samplingPercentage;
     }
 
     private static final class FixedRateSamplerDecision implements SamplingResult {

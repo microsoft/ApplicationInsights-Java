@@ -8,7 +8,7 @@ public class Global {
     @Nullable
     private static volatile TelemetryClient telemetryClient;
 
-    private static volatile double samplingProbability = 1;
+    private static volatile double samplingPercentage = 100;
 
     // this can be null if agent failed during startup
     @Nullable
@@ -16,15 +16,15 @@ public class Global {
         return telemetryClient;
     }
 
-    public static double getSamplingProbability() {
-        return samplingProbability;
+    public static double getSamplingPercentage() {
+        return samplingPercentage;
     }
 
     public static void setTelemetryClient(TelemetryClient telemetryClient) {
         Global.telemetryClient = telemetryClient;
     }
 
-    public static void setSamplingProbability(double samplingProbability) {
-        Global.samplingProbability = samplingProbability;
+    public static void setSamplingPercentage(double samplingPercentage) {
+        Global.samplingPercentage = samplingPercentage;
     }
 }
