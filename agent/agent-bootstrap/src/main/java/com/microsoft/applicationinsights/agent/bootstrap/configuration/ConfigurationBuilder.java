@@ -287,6 +287,9 @@ public class ConfigurationBuilder {
         if (!Files.exists(configPath)) {
             throw new IllegalStateException("config file does not exist: " + configPath);
         }
+        
+        BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
+        Long lastModifiedTime = attributes.lastModifiedTime().toMillis();
         try (InputStream in = Files.newInputStream(configPath)) {
             Moshi moshi = new Moshi.Builder().build();
             JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
@@ -295,8 +298,7 @@ public class ConfigurationBuilder {
             try {
                 Configuration configuration = jsonAdapter.fromJson(buffer);
                 configuration.configPath = configPath;
-                BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
-                configuration.lastModifiedTime = attributes.lastModifiedTime().toMillis();
+                configuration.lastModifiedTime = lastModifiedTime;
                 return configuration;
             } catch (Exception e) {
                 throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
