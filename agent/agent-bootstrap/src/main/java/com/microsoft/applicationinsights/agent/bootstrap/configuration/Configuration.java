@@ -29,7 +29,4 @@ public class Configuration {
 
     // transient so that Moshi will ignore when binding from json
     public transient Path configPath;
-
-    // transient so that Moshi will ignore when binding from json
-    public transient Long lastModifiedTime;
 }
