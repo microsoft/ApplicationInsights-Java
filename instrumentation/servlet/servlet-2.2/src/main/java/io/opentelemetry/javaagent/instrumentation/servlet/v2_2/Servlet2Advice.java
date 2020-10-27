@@ -11,7 +11,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.trace.Span;
-import java.lang.reflect.Method;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -22,7 +21,6 @@ import net.bytebuddy.implementation.bytecode.assign.Assigner;
 public class Servlet2Advice {
   @Advice.OnMethodEnter(suppress = Throwable.class)
   public static void onEnter(
-      @Advice.Origin Method method,
       @Advice.Argument(0) ServletRequest request,
       @Advice.Argument(value = 1, typing = Assigner.Typing.DYNAMIC) ServletResponse response,
       @Advice.Local("otelSpan") Span span,
@@ -43,7 +41,7 @@ public class Servlet2Advice {
       ((HttpServletResponse) response).setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
-    span = TRACER.startSpan(httpServletRequest, httpServletRequest, method);
+    span = TRACER.startSpan(httpServletRequest);
     scope = TRACER.startScope(span, httpServletRequest);
   }
 

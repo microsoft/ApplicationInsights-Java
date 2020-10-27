@@ -9,6 +9,7 @@ import static io.opentelemetry.context.ContextUtils.withScopedContext;
 import static io.opentelemetry.javaagent.instrumentation.spring.webflux.server.SpringWebfluxHttpServerTracer.TRACER;
 
 import io.grpc.Context;
+import io.opentelemetry.instrumentation.api.servlet.ServletContextPath;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
 import io.opentelemetry.javaagent.instrumentation.api.SpanWithScope;
 import io.opentelemetry.trace.Span;
@@ -53,7 +54,8 @@ public class HandlerAdapterAdvice {
       PathPattern bestPattern =
           exchange.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
       if (serverSpan != null && bestPattern != null) {
-        serverSpan.updateName(bestPattern.getPatternString());
+        serverSpan.updateName(
+            ServletContextPath.prepend(Context.current(), bestPattern.toString()));
       }
     }
 

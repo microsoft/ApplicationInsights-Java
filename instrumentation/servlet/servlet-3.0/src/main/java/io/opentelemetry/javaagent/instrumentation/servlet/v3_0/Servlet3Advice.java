@@ -12,7 +12,6 @@ import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.trace.Span;
-import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -24,7 +23,6 @@ public class Servlet3Advice {
 
   @Advice.OnMethodEnter(suppress = Throwable.class)
   public static void onEnter(
-      @Advice.Origin Method method,
       @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
       @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
       @Advice.Local("otelSpan") Span span,
@@ -40,6 +38,7 @@ public class Servlet3Advice {
       if (TRACER.needsRescoping(attachedContext)) {
         scope = withScopedContext(attachedContext);
       }
+
       // We are inside nested servlet/filter, don't create new span
       return;
     }
@@ -49,7 +48,7 @@ public class Servlet3Advice {
       ((HttpServletResponse) response).setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
-    span = TRACER.startSpan(httpServletRequest, httpServletRequest, method);
+    span = TRACER.startSpan(httpServletRequest);
     scope = TRACER.startScope(span, httpServletRequest);
   }
 
