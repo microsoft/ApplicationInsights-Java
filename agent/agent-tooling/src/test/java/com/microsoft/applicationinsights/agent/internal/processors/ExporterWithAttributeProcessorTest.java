@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Instrumen
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorMatchType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorType;
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -134,9 +135,9 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNull(resultSpan.getAttributes().get("testKey"));
-        assertNotNull(resultSpan.getAttributes().get("one"));
-        assertNotNull(resultSpan.getAttributes().get("TESTKEY"));
+        assertNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey")));
+        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("one")));
+        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("TESTKEY")));
 
     }
 
@@ -171,8 +172,8 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotNull(resultSpan.getAttributes().get("testNewKey"));
-        assertEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get("testNewKey")).getStringValue());
+        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey")));
+        assertEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))));
 
     }
 
@@ -212,9 +213,9 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotNull(resultSpan.getAttributes().get("testNewKey"));
-        assertEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get("testNewKey")).getStringValue());
-        assertEquals("testNewValue2", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
+        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey")));
+        assertEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))));
+        assertEquals("testNewValue2", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
 
     }
 
@@ -249,9 +250,9 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotEquals("testValue", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
-        assertEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
-        assertEquals("1", Objects.requireNonNull(resultSpan.getAttributes().get("one")).getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertNotEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("1", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("one"))));
 
     }
 
@@ -262,7 +263,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.processorName = "actionInsertFromAttribute";
         ProcessorAction action = new ProcessorAction();
-        action.key = "testKey";
+        action.key = "testKey3";
         action.fromAttribute = "testKey2";
         action.action = ProcessorActionType.insert;
         List<ProcessorAction> actions = new ArrayList<>();
@@ -287,9 +288,9 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotEquals("testValue", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
-        assertEquals("testValue2", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
-        assertEquals("1", Objects.requireNonNull(resultSpan.getAttributes().get("one")).getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("testValue2", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey3"))));
+        assertEquals("1", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("one"))));
 
     }
 
@@ -324,7 +325,7 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("redacted", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
     }
 
     @Test
@@ -358,7 +359,7 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("testValue2", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
+        assertEquals("testValue2", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
     }
 
     @Test
@@ -396,8 +397,8 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("redacted", Objects.requireNonNull(resultSpan.getAttributes().get("testKey")).getStringValue());
-        assertNull(resultSpan.getAttributes().get("testKey2"));
+        assertEquals("redacted", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey2")));
     }
 
     @Test
@@ -454,9 +455,9 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
-        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
-        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
     }
 
     @Test
@@ -513,9 +514,9 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
-        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
-        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
     }
 
     @Test(expected = ConfigurationException.class)
@@ -634,10 +635,10 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanE = result.get(4);
-        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
-        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
-        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
-        assertEquals("testV1", Objects.requireNonNull(resultSpanE.getAttributes().get("testKey")).getStringValue());
+        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("testV1", Objects.requireNonNull(resultSpanE.getAttributes().get(AttributeKey.stringKey("testKey"))));
     }
 
     @Test
@@ -693,10 +694,10 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanD = result.get(3);
-        assertNotEquals("HashValue:" + Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue(), "testValue", Objects
-                .requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
-        assertEquals(2L, Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getLongValue());
-        assertEquals("testValue", Objects.requireNonNull(resultSpanD.getAttributes().get("testKey")).getStringValue());
+        assertNotEquals("HashValue:" + Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))), "testValue", Objects
+                .requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("testValue2", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey2"))));
+        assertEquals("testValue", Objects.requireNonNull(resultSpanD.getAttributes().get(AttributeKey.stringKey("testKey"))));
     }
 
     @Test
@@ -753,9 +754,9 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
-        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
-        assertEquals("redacted", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("redacted", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
     }
 
     @Test
@@ -813,10 +814,10 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanD = result.get(3);
-        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
-        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
-        assertEquals("redacted", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
-        assertEquals("redacted", Objects.requireNonNull(resultSpanD.getAttributes().get("testKey")).getStringValue());
+        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("redacted", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("redacted", Objects.requireNonNull(resultSpanD.getAttributes().get(AttributeKey.stringKey("testKey"))));
     }
 
     @Test
@@ -880,9 +881,9 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertNull(resultSpanA.getAttributes().get("testKey"));
-        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get("testKey")).getStringValue());
-        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey")).getStringValue());
+        assertNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey")));
+        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
     }
 
     @Test
@@ -947,10 +948,10 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanD = result.get(3);
-        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey")).getStringValue());
-        assertNull(resultSpanB.getAttributes().get("testKey"));
-        assertNull(resultSpanC.getAttributes().get("testKey"));
-        assertNull(resultSpanD.getAttributes().get("testKey"));
+        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey")));
+        assertNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey")));
+        assertNull(resultSpanD.getAttributes().get(AttributeKey.stringKey("testKey")));
 
     }
 
@@ -1014,9 +1015,9 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("testValue2", Objects.requireNonNull(resultSpanA.getAttributes().get("testKey2")).getStringValue());
-        assertNull(resultSpanB.getAttributes().get("testKey2"));
-        assertEquals("testValue2", Objects.requireNonNull(resultSpanC.getAttributes().get("testKey2")).getStringValue());
+        assertEquals("testValue2", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey2"))));
+        assertNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey2")));
+        assertEquals("testValue2", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey2"))));
     }
 
 

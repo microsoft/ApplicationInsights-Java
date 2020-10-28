@@ -205,9 +205,9 @@ public class InstrumentationSettings {
         }
 
         private boolean hasValidAttributeProcessorIncludeExclude() {
-            if (this.spanNames == null && this.attributes == null) return false;
-            if (this.spanNames != null && this.matchType == ProcessorMatchType.regexp) {
-                for (String spanName : this.spanNames) {
+            if (spanNames == null && attributes == null) return false;
+            if (spanNames != null && matchType == ProcessorMatchType.regexp) {
+                for (String spanName : spanNames) {
                     ProcessorConfig.isValidRegex(spanName);
                 }
             }
@@ -215,9 +215,9 @@ public class InstrumentationSettings {
         }
 
         private boolean hasValidLogProcessorIncludeExclude() {
-            if (this.logNames == null && this.attributes == null) return false;
-            if (this.logNames != null && this.matchType == ProcessorMatchType.regexp) {
-                for (String logName : this.logNames) {
+            if (logNames == null && attributes == null) return false;
+            if (logNames != null && matchType == ProcessorMatchType.regexp) {
+                for (String logName : logNames) {
                     ProcessorConfig.isValidRegex(logName);
                 }
             }
@@ -225,10 +225,10 @@ public class InstrumentationSettings {
         }
 
         private boolean hasValidSpanProcessorIncludeExclude() {
-            if (this.spanNames == null && this.attributes == null) return false;
-            if (this.spanNames != null && this.matchType == ProcessorMatchType.regexp) {
-                for (String logName : this.logNames) {
-                    ProcessorConfig.isValidRegex(logName);
+            if (spanNames == null && attributes == null) return false;
+            if (spanNames != null && matchType == ProcessorMatchType.regexp) {
+                for (String spanName : spanNames) {
+                    ProcessorConfig.isValidRegex(spanName);
                 }
             }
             return true;

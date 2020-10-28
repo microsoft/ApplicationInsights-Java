@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorConfig;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -78,12 +79,12 @@ public class SpanProcessor extends AgentProcessor {
             StringBuffer updatedSpanBuffer = new StringBuffer();
             ReadableAttributes existingSpanAttributes = span.getAttributes();
             for (String attributeKey : fromAttributes) {
-                updatedSpanBuffer.append(existingSpanAttributes.get(attributeKey));
+                updatedSpanBuffer.append(existingSpanAttributes.get(AttributeKey.stringKey(attributeKey)));
                 updatedSpanBuffer.append(separator);
             }
             // Removing the last appended separator
             if (separator.length() > 0) {
-                updatedSpanBuffer.setLength(updatedSpanBuffer.length() - 1);
+                updatedSpanBuffer.setLength(updatedSpanBuffer.length() - separator.length());
             }
             return new MySpanData(span, span.getAttributes(), new String(updatedSpanBuffer));
         }
@@ -94,27 +95,28 @@ public class SpanProcessor extends AgentProcessor {
         if (fromAttributes.isEmpty()) return false;
         ReadableAttributes existingSpanAttributes = span.getAttributes();
         for (String attributeKey : fromAttributes) {
-            if (existingSpanAttributes.get(attributeKey) == null) return false;
+            if (existingSpanAttributes.get(AttributeKey.stringKey(attributeKey)) == null) return false;
         }
         return true;
     }
 
+    //The following function extracts attributes from span name and replaces extracted parts with attribute names
     public SpanData processToAttributes(SpanData span) {
         if (toAttributeRules.isEmpty()) {
             return span;
         }
-        String existingSpanName = span.getName();
-        String updatedSpanName = span.getName();
+
+        String spanName = span.getName();
         final Attributes.Builder builder = Attributes.newBuilder();
-        for (int i = 0; i < groupNames.size(); i++) {
-            updatedSpanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), span, updatedSpanName, builder);
-        }
-        if (existingSpanName.equals(updatedSpanName)) {
-            return span;
-        }
-        //copy existing attributes
+        // copy existing attributes.
+        // According to Collector docs, The matched portion
+        // in the span name is replaced by extracted attribute name. If the attributes exist
+        // they will be overwritten. Need a way to optimize this.
         span.getAttributes().forEach(builder::setAttribute);
-        return new MySpanData(span, builder.build(), updatedSpanName);
+        for (int i = 0; i < groupNames.size(); i++) {
+            spanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), span, spanName, builder);
+        }
+        return new MySpanData(span, builder.build(), spanName);
 
     }
 
@@ -124,13 +126,14 @@ public class SpanProcessor extends AgentProcessor {
         Matcher matcher = pattern.matcher(spanName);
         StringBuilder sb = new StringBuilder();
         int lastEnd = 0;
-        while (matcher.find()) {
+        // As of now we are considering only first match.
+        if (matcher.find()) {
             sb.append(spanName, lastEnd, matcher.start());
             int innerLastEnd = matcher.start();
-            for (int i = 1; i <= groupNames.size(); i++) {
+            for (int i = 1; i <= groupNamesList.size(); i++) {
                 sb.append(spanName, innerLastEnd, matcher.start(i));
                 sb.append("{");
-                sb.append(groupNames.get(i - 1));
+                sb.append(groupNamesList.get(i - 1));
                 // add attribute key=groupNames.get(i-1), value=matcher.group(i)
                 builder.setAttribute(groupNamesList.get(i - 1), matcher.group(i));
                 sb.append("}");

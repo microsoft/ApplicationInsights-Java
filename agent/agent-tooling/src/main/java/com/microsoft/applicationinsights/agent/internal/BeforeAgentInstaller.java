@@ -110,11 +110,10 @@ public class BeforeAgentInstaller {
                 throw new ConfigurationException("No connection string or instrumentation key provided");
             }
         }
-        
         if(!hasValidProcessorConfiguration(config)) {
             throw new ConfigurationException("User provided span processor config is not valid!!!");
         }
-
+        
         Map<String, String> properties = new HashMap<>();
         properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
         properties.put("experimental.log.capture.threshold", getLoggingThreshold(config, "INFO"));

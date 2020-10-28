@@ -10,7 +10,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
-public class ExporterWithSpanProcessor implements SpanExporter {
+public class ExporterWithSpanProcessor extends CustomExporter {
 
     private final SpanExporter delegate;
     private final SpanProcessor spanProcessor;

@@ -2,15 +2,18 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorAction;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorActionType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorConfig;
-import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.AttributeValue.Type;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Attributes.Builder;
 import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -51,9 +54,9 @@ public class AttributeProcessor extends AgentProcessor {
     // Copy from existing attribute.
     // Returns true if attribute has been found and copied. Else returns false.
     private static boolean copyFromExistingAttribute(Attributes.Builder insertBuilder, ReadableAttributes existingSpanAttributes, ProcessorAction actionObj) {
-        AttributeValue existingSpanAttributeValue = existingSpanAttributes.get(actionObj.fromAttribute);
-        if (existingSpanAttributeValue != null) {
-            insertBuilder.setAttribute(actionObj.key, existingSpanAttributes.get(actionObj.fromAttribute));
+        Object existingSpanAttributeValue = existingSpanAttributes.get(AttributeKey.stringKey(actionObj.fromAttribute));
+        if (existingSpanAttributeValue instanceof String) {
+            insertBuilder.setAttribute(actionObj.key, String.valueOf(existingSpanAttributeValue));
             return true;
         }
         return false;
@@ -64,39 +67,41 @@ public class AttributeProcessor extends AgentProcessor {
         ReadableAttributes existingSpanAttributes = span.getAttributes();
         final Attributes.Builder builder = Attributes.newBuilder();
         // loop over existing attributes
-        existingSpanAttributes.forEach((existingKey, existingValue) -> {
-            boolean updatedFlag = false;// flag to check if a attribute is updated
-            for (ProcessorAction actionObj : otherActions) {
-                if (!actionObj.key.equals(existingKey)) {
-                    continue;
-                }
-                switch (actionObj.action) {
-                    case update:
-                        if (applyUpdateAction(actionObj, existingSpanAttributes, builder)) {
-                            updatedFlag = true;
-                        }
-                        break;
-                    case delete:
-                        // Return without copying the existing span attribute
-                        return;
-                    case hash:
-                        AttributeValue existingSpanAttributeValue = existingSpanAttributes.get(actionObj.key);
-                        if (existingSpanAttributeValue != null) {
-                            // Currently we only support String
-                            if (existingSpanAttributeValue.getType() == Type.STRING) {
-                                builder.setAttribute(actionObj.key, DigestUtils.sha1Hex(existingSpanAttributeValue.getStringValue()));
-                                updatedFlag = true;
+        existingSpanAttributes.forEach(
+                // TODO optomize this further
+                new AttributeConsumer() {
+                    @Override
+                    public <T> void consume(AttributeKey<T> key, T value) {
+                        boolean updatedFlag = false;// flag to check if a attribute is updated
+                        for (ProcessorAction actionObj : otherActions) {
+                            if (!key.getKey().equals(actionObj.key)) {
+                                continue;
+                            }
+                            switch (actionObj.action) {
+                                case update:
+                                    if (applyUpdateAction(actionObj, existingSpanAttributes, builder)) {
+                                        updatedFlag = true;
+                                    }
+                                    break;
+                                case delete:
+                                    // Return without copying the existing span attribute
+                                    return;
+                                case hash:
+                                    if (value instanceof String) {
+                                        // Currently we only support String
+                                        builder.setAttribute(actionObj.key, DigestUtils.sha1Hex(String.valueOf(value)));
+                                        updatedFlag = true;
+                                    }
+                                    break;
+                                default:
+                                    break; // no action. Added to escape spotbug failures.
                             }
                         }
-                        break;
-                    default:
-                        break; // no action. Added to escape spotbug failures.
-                }
-            }
-            if (!updatedFlag) {
-                builder.setAttribute(existingKey, existingValue);
-            }
-        });
+                        if (!updatedFlag) {
+                            builder.setAttribute(key, value);
+                        }
+                    }
+                });
         // loop through insert actions, if key is not in keys set then call builder.setAttribute()
         return new MySpanData(span, builder.build());
     }

@@ -7,10 +7,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 
 public class MySpanData implements SpanData {
@@ -29,23 +25,23 @@ public class MySpanData implements SpanData {
     this.spanName = spanName;
   }
 
-  @Override public TraceId getTraceId() {
+  @Override public String getTraceId() {
     return delegate.getTraceId();
   }
 
-  @Override public SpanId getSpanId() {
+  @Override public String getSpanId() {
     return delegate.getSpanId();
   }
 
-  @Override public TraceFlags getTraceFlags() {
-    return delegate.getTraceFlags();
+  @Override public boolean isSampled() {
+    return delegate.isSampled();
   }
 
   @Override public TraceState getTraceState() {
     return delegate.getTraceState();
   }
 
-  @Override public SpanId getParentSpanId() {
+  @Override public String getParentSpanId() {
     return delegate.getParentSpanId();
   }
 

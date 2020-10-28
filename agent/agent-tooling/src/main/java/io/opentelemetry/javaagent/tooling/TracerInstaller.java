@@ -10,7 +10,9 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Instrumen
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.Global;
+import com.microsoft.applicationinsights.agent.internal.processors.CustomExporter;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
+import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.FixedRateSampler;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
@@ -25,7 +27,7 @@ public class TracerInstaller {
     public static void installAgentTracer() {
         TelemetryClient telemetryClient = Global.getTelemetryClient();
         final InstrumentationSettings config = MainEntryPoint.getConfiguration();
-        final List<ProcessorConfig> spanProcessors = config.preview.processors.stream().filter(processorConfig -> processorConfig.type == ProcessorType.attribute).collect(Collectors.toList());
+        final List<ProcessorConfig> processors = config.preview.processors;
         if (telemetryClient == null) {
             // agent failed during startup
             return;
@@ -50,20 +52,24 @@ public class TracerInstaller {
                             .build());
         }
         // if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
-        if (!spanProcessors.isEmpty()) {
-            ExporterWithAttributeProcessor currExporterWithAttributeProcessor = null;
-            ExporterWithAttributeProcessor prevExporterWithAttributeProcessor = null;
-            for (ProcessorConfig processorConfig : spanProcessors) {
-                if (prevExporterWithAttributeProcessor == null) {
-                    currExporterWithAttributeProcessor = new ExporterWithAttributeProcessor(processorConfig, new Exporter(telemetryClient));
+        if (!processors.isEmpty()) {
+            CustomExporter currExporter = null;
+            CustomExporter prevExporter = null;
+            for (ProcessorConfig processorConfig : processors) {
+                if (prevExporter == null) {
+                    currExporter = processorConfig.type == ProcessorType.attribute ?
+                            new ExporterWithAttributeProcessor(processorConfig, new Exporter(telemetryClient)) :
+                            new ExporterWithSpanProcessor(processorConfig, new Exporter(telemetryClient));
 
                 } else {
-                    currExporterWithAttributeProcessor = new ExporterWithAttributeProcessor(processorConfig, prevExporterWithAttributeProcessor);
+                    currExporter = processorConfig.type == ProcessorType.attribute ?
+                            new ExporterWithAttributeProcessor(processorConfig, prevExporter) :
+                            new ExporterWithSpanProcessor(processorConfig, prevExporter);
                 }
-                prevExporterWithAttributeProcessor = currExporterWithAttributeProcessor;
+                prevExporter = currExporter;
             }
 
-            OpenTelemetrySdk.getTracerManagement().addSpanProcessor(SimpleSpanProcessor.newBuilder(currExporterWithAttributeProcessor).build());
+            OpenTelemetrySdk.getTracerManagement().addSpanProcessor(SimpleSpanProcessor.newBuilder(currExporter).build());
 
         } else {
             OpenTelemetrySdk.getTracerManagement()

@@ -13,6 +13,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Instrumen
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ToAttributeConfig;
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -256,6 +257,7 @@ public class ExporterWithSpanProcessorTest {
         ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
         toAttributeConfig.rules = new ArrayList<>();
         toAttributeConfig.rules.add("***");
+        config.name.toAttributes = toAttributeConfig;
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("/api/v1/document/12345678/update")
@@ -275,8 +277,8 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotNull(Objects.requireNonNull(resultSpan.getAttributes().get("documentId")));
-        assertEquals("12345678", Objects.requireNonNull(resultSpan.getAttributes().get("documentId")).getStringValue());
+        assertNotNull(Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))));
+        assertEquals("12345678", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))));
         assertEquals("/api/v1/document/{documentId}/update", resultSpan.getName());
     }
 
@@ -290,6 +292,7 @@ public class ExporterWithSpanProcessorTest {
         ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
         toAttributeConfig.rules = new ArrayList<>();
         toAttributeConfig.rules.add("^/api/v1/document/(?<documentId>.*)/update$");
+        config.name.toAttributes = toAttributeConfig;
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
         Span span = OpenTelemetry.getTracer("test").spanBuilder("/api/v1/document/12345678/update")
@@ -309,8 +312,8 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotNull(Objects.requireNonNull(resultSpan.getAttributes().get("documentId")));
-        assertEquals("12345678", Objects.requireNonNull(resultSpan.getAttributes().get("documentId")).getStringValue());
+        assertNotNull(Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))));
+        assertEquals("12345678", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))));
         assertEquals("/api/v1/document/{documentId}/update", resultSpan.getName());
     }
 
@@ -325,30 +328,45 @@ public class ExporterWithSpanProcessorTest {
         toAttributeConfig.rules = new ArrayList<>();
         toAttributeConfig.rules.add("Password=(?<password1>[^ ]+)");
         toAttributeConfig.rules.add("Pass=(?<password2>[^ ]+)");
+        config.name.toAttributes = toAttributeConfig;
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
+        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("db.svc", "location")
                 .setAttribute("operation", "get")
                 .setAttribute("id", "1234")
                 .startSpan();
+        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("yyyPassword=**** aba")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("db.svc", "location")
+                .setAttribute("operation", "get")
+                .setAttribute("id", "1234")
+                .setAttribute("password","234")
+                .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+        SpanData spanAData = ((ReadableSpan) spanA).toSpanData();
+        SpanData spanBData = ((ReadableSpan) spanB).toSpanData();
 
         List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
+        spans.add(spanAData);
+        spans.add(spanBData);
         exampleExporter.export(spans);
 
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
-        SpanData resultSpan = result.get(0);
-        assertNotNull(Objects.requireNonNull(resultSpan.getAttributes().get("password1")));
-        assertEquals("123", Objects.requireNonNull(resultSpan.getAttributes().get("password1")).getStringValue());
-        assertNotNull(Objects.requireNonNull(resultSpan.getAttributes().get("password2")));
-        assertEquals("777", Objects.requireNonNull(resultSpan.getAttributes().get("password2")).getStringValue());
-        assertEquals("yyyPassword={password1} aba Pass={password2} xyx Pass={password2} zzz", resultSpan.getName());
+        SpanData resultSpanA = result.get(0);
+        SpanData resultSpanB = result.get(1);
+        assertNotNull(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password1"))));
+        assertEquals("123", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password1"))));
+        assertNotNull(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password2"))));
+        assertEquals("555", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password2"))));
+        assertEquals("yyyPassword={password1} aba Pass={password2} xyx Pass=777 zzz", resultSpanA.getName());
+        assertNotNull(Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("password1"))));
+        assertEquals("****", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("password1"))));
+        assertEquals("yyyPassword={password1} aba", resultSpanB.getName());
     }
 
     @Test
@@ -365,7 +383,7 @@ public class ExporterWithSpanProcessorTest {
         config.exclude.matchType = ProcessorMatchType.strict;
         config.exclude.spanNames = Arrays.asList("donot/change");
         config.name.toAttributes = new ToAttributeConfig();
-        config.name.toAttributes.rules = Arrays.asList("(?<operation_website>.*?)$");
+        config.name.toAttributes.rules = Arrays.asList("(?<operationwebsite>.*?)$");
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
         Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA/test")
@@ -414,12 +432,12 @@ public class ExporterWithSpanProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanD = result.get(3);
-        assertEquals("{operation_website}", resultSpanA.getName());
-        assertNotNull(resultSpanA.getAttributes().get("operation_website"));
-        assertEquals("svcA/test", Objects.requireNonNull(resultSpanA.getAttributes().get("operation_website")).getStringValue());
-        assertEquals("{operation_website}", resultSpanB.getName());
-        assertNotNull(resultSpanB.getAttributes().get("operation_website"));
-        assertEquals("svcB/test", Objects.requireNonNull(resultSpanA.getAttributes().get("operation_website")).getStringValue());
+        assertEquals("{operationwebsite}", resultSpanA.getName());
+        assertNotNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("operationwebsite")));
+        assertEquals("svcA/test", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("operationwebsite"))));
+        assertEquals("{operationwebsite}", resultSpanB.getName());
+        assertNotNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("operationwebsite")));
+        assertEquals("svcB/test", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("operationwebsite"))));
         assertEquals("svcC", resultSpanC.getName());
         assertEquals("donot/change", resultSpanD.getName());
 
