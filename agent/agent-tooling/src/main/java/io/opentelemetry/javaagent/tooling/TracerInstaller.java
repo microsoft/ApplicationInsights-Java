@@ -53,7 +53,7 @@ public class TracerInstaller {
         }
         // if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         if (!processors.isEmpty()) {
-            CustomExporter currExporter = null;
+            CustomExporter currExporter;
             CustomExporter prevExporter = null;
             for (ProcessorConfig processorConfig : processors) {
                 if (prevExporter == null) {
@@ -69,7 +69,7 @@ public class TracerInstaller {
                 prevExporter = currExporter;
             }
 
-            OpenTelemetrySdk.getTracerManagement().addSpanProcessor(SimpleSpanProcessor.newBuilder(currExporter).build());
+            OpenTelemetrySdk.getTracerManagement().addSpanProcessor(SimpleSpanProcessor.newBuilder(prevExporter).build());
 
         } else {
             OpenTelemetrySdk.getTracerManagement()

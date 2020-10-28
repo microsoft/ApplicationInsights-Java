@@ -220,6 +220,47 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
+    public void actionInsertAndUpdateSameAttributeTest() {
+        MockExporter mockExporter = new MockExporter();
+        ProcessorConfig config = new ProcessorConfig();
+        config.type = ProcessorType.attribute;
+        config.processorName = "actionInsertAndUpdate";
+        ProcessorAction action = new ProcessorAction();
+        action.key = "testNewKey";
+        action.value = "testNewValue";
+        action.action = ProcessorActionType.insert;
+        ProcessorAction updateAction = new ProcessorAction();
+        updateAction.key = "testNewKey";
+        updateAction.value = "testNewValue2";
+        updateAction.action = ProcessorActionType.update;
+        List<ProcessorAction> actions = new ArrayList<>();
+        actions.add(action);
+        actions.add(updateAction);
+        config.actions = actions;
+        SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
+
+        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("TESTKEY", "testValue2")
+                .startSpan();
+
+        SpanData spanData = ((ReadableSpan) span).toSpanData();
+
+        List<SpanData> spans = new ArrayList<>();
+        spans.add(spanData);
+        exampleExporter.export(spans);
+
+        // verify that resulting spans are filtered in the way we want
+        List<SpanData> result = mockExporter.getSpans();
+        SpanData resultSpan = result.get(0);
+        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey")));
+        assertEquals("testNewValue2", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))));
+
+    }
+
+    @Test
     public void actionInsertWithDuplicateTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();

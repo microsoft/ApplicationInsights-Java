@@ -33,8 +33,7 @@ public class AttributeProcessor extends AgentProcessor {
     public static AttributeProcessor create(ProcessorConfig config) {
         IncludeExclude normalizedInclude = config.include != null ? getNormalizedIncludeExclude(config.include) : null;
         IncludeExclude normalizedExclude = config.exclude != null ? getNormalizedIncludeExclude(config.exclude) : null;
-        List<ProcessorAction> actions = new ArrayList<>();
-        actions.addAll(config.actions);
+        List<ProcessorAction> actions = new ArrayList<>(config.actions);
         return new AttributeProcessor(actions ,normalizedInclude, normalizedExclude, true);
     }
 
@@ -53,7 +52,7 @@ public class AttributeProcessor extends AgentProcessor {
     public SpanData processActions(SpanData span) {
         SpanData prevSpan = span;
         SpanData updatedSpan;
-        for(ProcessorAction actionObj: this.actions) {
+        for(ProcessorAction actionObj: actions) {
             updatedSpan = actionObj.action == ProcessorActionType.insert ? processInsertActions(prevSpan, actionObj) : processOtherActions(prevSpan, actionObj);
             prevSpan = updatedSpan;
         }
@@ -104,11 +103,7 @@ public class AttributeProcessor extends AgentProcessor {
     private SpanData processInsertActions(SpanData span, ProcessorAction actionObj) {
         ReadableAttributes existingSpanAttributes = span.getAttributes();
         final Builder insertBuilder = Attributes.newBuilder();
-        boolean insertedFlag = false; // Flag to check if insert operation is successful
         if (applyUpdateAction(actionObj, existingSpanAttributes, insertBuilder)) {
-            insertedFlag = true;
-        }
-        if (insertedFlag) {
             // Copy all existing attributes
             existingSpanAttributes.forEach(insertBuilder::setAttribute);
             return new MySpanData(span, insertBuilder.build());
