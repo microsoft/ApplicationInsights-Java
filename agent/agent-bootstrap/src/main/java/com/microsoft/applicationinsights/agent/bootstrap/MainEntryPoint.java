@@ -41,7 +41,7 @@ public class MainEntryPoint {
 
     private static Configuration configuration;
     private static Path configPath;
-    private static Long lastModifiedTime;
+    private static long lastModifiedTime;
 
     private MainEntryPoint() {
     }
@@ -54,7 +54,7 @@ public class MainEntryPoint {
         return configPath;
     }
 
-    public static Long getLastModifiedTime() {
+    public static long getLastModifiedTime() {
         return lastModifiedTime;
     }
 

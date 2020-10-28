@@ -88,5 +88,5 @@ public class Configuration {
     public transient Path configPath;
 
     // transient so that Moshi will ignore when binding from json
-    public transient Long lastModifiedTime;
+    public transient long lastModifiedTime;
 }

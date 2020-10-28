@@ -285,7 +285,7 @@ public class ConfigurationBuilder {
         // important to read last modified before reading the file, to prevent possible race condition
         // where file is updated after reading it but before reading last modified, and then since
         // last modified doesn't change after that, the new updated file will not be read afterwards
-        Long lastModifiedTime = attributes.lastModifiedTime().toMillis();
+        long lastModifiedTime = attributes.lastModifiedTime().toMillis();
         try (InputStream in = Files.newInputStream(configPath)) {
             Moshi moshi = new Moshi.Builder().build();
             JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
