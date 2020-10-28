@@ -49,9 +49,7 @@ public class ExporterWithAttributeProcessor extends CustomExporter {
         if (exclude != null && exclude.isMatch(span)) {
             return span;
         }
-        // performing insert last, since no need to apply other actions to those inserted attributes
-        SpanData updatedSpan = attributeProcessor.processOtherActions(span);
-        return attributeProcessor.processInsertActions(updatedSpan);
+        return attributeProcessor.processActions(span);
     }
 
     @Override
