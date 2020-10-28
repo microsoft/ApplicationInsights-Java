@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -135,18 +136,7 @@ public class ConfigurationBuilder {
         }
 
         if (Files.exists(configPath)) {
-            try (InputStream in = Files.newInputStream(configPath)) {
-                Moshi moshi = new Moshi.Builder().build();
-                JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
-                Buffer buffer = new Buffer();
-                buffer.readFrom(in);
-                try {
-                    return jsonAdapter.fromJson(buffer);
-                } catch (Exception e) {
-                    throw new ConfigurationException(
-                            "Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
-                }
-            }
+            return loadJsonConfigFile(configPath);
         } else {
             if (warnIfMissing) {
                 configurationMessages.add(new ConfigurationMessage("could not find configuration file: {}", configPathStr));
@@ -283,6 +273,32 @@ public class ConfigurationBuilder {
 
         private void log(Logger logger) {
             logger.warn(message, args);
+        }
+    }
+
+    public static Configuration loadJsonConfigFile(Path configPath) throws IOException{
+        if (!Files.exists(configPath)) {
+            throw new IllegalStateException("config file does not exist: " + configPath);
+        }
+        
+        BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
+        // important to read last modified before reading the file, to prevent possible race condition
+        // where file is updated after reading it but before reading last modified, and then since
+        // last modified doesn't change after that, the new updated file will not be read afterwards
+        long lastModifiedTime = attributes.lastModifiedTime().toMillis();
+        try (InputStream in = Files.newInputStream(configPath)) {
+            Moshi moshi = new Moshi.Builder().build();
+            JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+            Buffer buffer = new Buffer();
+            buffer.readFrom(in);
+            try {
+                Configuration configuration = jsonAdapter.fromJson(buffer);
+                configuration.configPath = configPath;
+                configuration.lastModifiedTime = lastModifiedTime;
+                return configuration;
+            } catch (Exception e) {
+                throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
+            }
         }
     }
 }

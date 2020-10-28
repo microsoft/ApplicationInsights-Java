@@ -23,11 +23,11 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -72,7 +72,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class BeforeAgentInstaller {
 
-    private static Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
+    private static final Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
     private BeforeAgentInstaller() {
     }
@@ -176,7 +176,7 @@ public class BeforeAgentInstaller {
                 startupLogger.debug("running shutdown hook");
                 try {
                     telemetryClient.flush();
-                    telemetryClient.shutdown(5, TimeUnit.SECONDS);
+                    telemetryClient.shutdown(5, SECONDS);
                     startupLogger.debug("completed shutdown hook");
                 } catch (InterruptedException e) {
                     startupLogger.debug("interrupted while flushing telemetry during shutdown");
@@ -185,6 +185,11 @@ public class BeforeAgentInstaller {
                 }
             }
         });
+
+        Path configPath = MainEntryPoint.getConfigPath();
+        if (configPath != null) {
+            JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime());
+        }
     }
 
     @Nullable
