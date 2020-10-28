@@ -9,8 +9,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-@UseAgent("ResourceAttributes")
-public class ResourceAttributesTest extends AiSmokeTest {
+@UseAgent("CustomDimensions")
+public class CustomDimensionsTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/test")

@@ -20,8 +20,6 @@
  */
 package com.microsoft.applicationinsights.agent;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -71,7 +69,7 @@ public class Exporter implements SpanExporter {
 
     private static final Joiner JOINER = Joiner.on(", ");
 
-    private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("ai.sampling.percentage");
+    private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("ai.internal.sampling.percentage");
 
     private static final AttributeKey<Boolean> AI_INTERNAL_LOG = AttributeKey.booleanKey("ai.internal.log");
 
@@ -166,11 +164,7 @@ public class Exporter implements SpanExporter {
             telemetry.setUrl(httpUrl);
         }
 
-        String httpMethod = removeAttributeString(attributes, SemanticAttributes.HTTP_METHOD);
         String name = span.getName();
-        if (httpMethod != null && name.startsWith("/")) {
-            name = httpMethod + " " + name;
-        }
         telemetry.setName(name);
         telemetry.getContext().getOperation().setName(name);
 
@@ -240,10 +234,6 @@ public class Exporter implements SpanExporter {
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
 
         telemetry.setSuccess(span.getStatus().isOk());
-        String description = span.getStatus().getDescription();
-        if (description != null) {
-            telemetry.getProperties().put("statusDescription", description);
-        }
 
         Double samplingPercentage = removeAiSamplingPercentage(attributes);
 
@@ -255,17 +245,17 @@ public class Exporter implements SpanExporter {
     private void applySemanticConventions(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry) {
         String httpMethod = removeAttributeString(attributes, SemanticAttributes.HTTP_METHOD);
         if (httpMethod != null) {
-            applyHttpRequestSpan(attributes, telemetry, httpMethod);
+            applyHttpClientSpan(attributes, telemetry, httpMethod);
             return;
         }
         String rpcSystem = removeAttributeString(attributes, SemanticAttributes.RPC_SYSTEM);
         if (rpcSystem != null) {
-            applyRpcRequestSpan(attributes, telemetry, rpcSystem);
+            applyRpcClientSpan(attributes, telemetry, rpcSystem);
             return;
         }
         String dbSystem = removeAttributeString(attributes, SemanticAttributes.DB_SYSTEM);
         if (dbSystem != null) {
-            applyDatabaseQuerySpan(attributes, telemetry, dbSystem);
+            applyDatabaseClientSpan(attributes, telemetry, dbSystem);
             return;
         }
         String messagingSystem = removeAttributeString(attributes, SemanticAttributes.MESSAGING_SYSTEM);
@@ -336,7 +326,8 @@ public class Exporter implements SpanExporter {
             telemetry.getContext().getOperation().setParentId(parentSpanId);
         }
 
-        setProperties(telemetry.getProperties(), timeEpochNanos, level, loggerName, attributes);
+        setProperties(telemetry.getProperties(), level, loggerName, attributes);
+        telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(timeEpochNanos)));
         track(telemetry, samplingPercentage);
     }
 
@@ -344,6 +335,8 @@ public class Exporter implements SpanExporter {
                                        String errorStack, String traceId, String parentSpanId,
                                        Double samplingPercentage, Map<AttributeKey<?>, Object> attributes) {
         ExceptionTelemetry telemetry = new ExceptionTelemetry();
+
+        telemetry.setTimestamp(new Date());
 
         if (SpanId.isValid(parentSpanId)) {
             telemetry.getContext().getOperation().setId(traceId);
@@ -353,7 +346,8 @@ public class Exporter implements SpanExporter {
         telemetry.getData().setExceptions(Exceptions.minimalParse(errorStack));
         telemetry.setSeverityLevel(toSeverityLevel(level));
         telemetry.getProperties().put("Logger Message", message);
-        setProperties(telemetry.getProperties(), timeEpochNanos, level, loggerName, attributes);
+        setProperties(telemetry.getProperties(), level, loggerName, attributes);
+        telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(timeEpochNanos)));
         track(telemetry, samplingPercentage);
     }
 
@@ -384,7 +378,7 @@ public class Exporter implements SpanExporter {
         return CompletableResultCode.ofSuccess();
     }
 
-    private static void setProperties(Map<String, String> properties, long timeEpochNanos, String level, String loggerName, Map<AttributeKey<?>, Object> attributes) {
+    private static void setProperties(Map<String, String> properties, String level, String loggerName, Map<AttributeKey<?>, Object> attributes) {
         if (level != null) {
             properties.put("SourceType", "Logger");
             properties.put("LoggingLevel", level);
@@ -402,12 +396,7 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static void applyHttpRequestSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String httpMethod) {
-
-        Object httpStatusCode = attributes.remove(SemanticAttributes.HTTP_STATUS_CODE);
-        if (httpStatusCode instanceof Long) {
-            telemetry.setResultCode(Long.toString((Long) httpStatusCode));
-        }
+    private static void applyHttpClientSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String httpMethod) {
 
         String target = removeAttributeString(attributes, SemanticAttributes.PEER_SERVICE);
         if (target == null) {
@@ -422,7 +411,7 @@ public class Exporter implements SpanExporter {
         }
         String targetAppId = removeAttributeString(attributes, SPAN_TARGET_ATTRIBUTE_NAME);
         if (targetAppId == null || AiAppId.getAppId().equals(targetAppId)) {
-            telemetry.setType("HTTP");
+            telemetry.setType("Http");
             telemetry.setTarget(target);
         } else {
             // using "Http (tracked component)" is important for dependencies that go cross-component (have an appId in their target field)
@@ -431,25 +420,16 @@ public class Exporter implements SpanExporter {
             telemetry.setTarget(target + " | " + targetAppId);
         }
 
-        String url = removeAttributeString(attributes, SemanticAttributes.HTTP_URL);
-        if (url != null) {
-            try {
-                URI uriObject = new URI(url);
-                // TODO is this right, overwriting name to include the full path?
-                String path = uriObject.getPath();
-                if (Strings.isNullOrEmpty(path)) {
-                    telemetry.setName(httpMethod + " /");
-                } else {
-                    telemetry.setName(httpMethod + " " + path);
-                }
-            } catch (URISyntaxException e) {
-                logger.error(e.getMessage());
-                logger.debug(e.getMessage(), e);
-            }
+        Object httpStatusCode = attributes.remove(SemanticAttributes.HTTP_STATUS_CODE);
+        if (httpStatusCode instanceof Long) {
+            telemetry.setResultCode(Long.toString((Long) httpStatusCode));
         }
+
+        String url = removeAttributeString(attributes, SemanticAttributes.HTTP_URL);
+        telemetry.setCommandName(url);
     }
 
-    private static void applyRpcRequestSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String rpcSystem) {
+    private static void applyRpcClientSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String rpcSystem) {
         telemetry.setType(rpcSystem);
         // TODO is this too fine-grained (e.g. many grpc service name = class name)
         //  maybe better to use net.peer like in http but those are not implemented for grpc client spans yet
@@ -462,7 +442,7 @@ public class Exporter implements SpanExporter {
 
     private static final Set<String> SQL_DB_SYSTEMS = ImmutableSet.of("db2", "derby", "mariadb", "mssql", "mysql", "oracle", "postgresql", "sqlite", "other_sql", "hsqldb", "h2");
 
-    private static void applyDatabaseQuerySpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String dbSystem) {
+    private static void applyDatabaseClientSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String dbSystem) {
         String type;
         if (SQL_DB_SYSTEMS.contains(dbSystem)) {
             type = "SQL";

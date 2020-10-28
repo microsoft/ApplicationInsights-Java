@@ -8,7 +8,7 @@ public class Global {
     @Nullable
     private static volatile TelemetryClient telemetryClient;
 
-    private static volatile double fixedRateSamplingPercentage = 100;
+    private static volatile double samplingPercentage = 100;
 
     // this can be null if agent failed during startup
     @Nullable
@@ -16,15 +16,15 @@ public class Global {
         return telemetryClient;
     }
 
-    public static double getFixedRateSamplingPercentage() {
-        return fixedRateSamplingPercentage;
+    public static double getSamplingPercentage() {
+        return samplingPercentage;
     }
 
     public static void setTelemetryClient(TelemetryClient telemetryClient) {
         Global.telemetryClient = telemetryClient;
     }
 
-    public static void setFixedRateSamplingPercentage(double fixedRateSamplingPercentage) {
-        Global.fixedRateSamplingPercentage = fixedRateSamplingPercentage;
+    public static void setSamplingPercentage(double samplingPercentage) {
+        Global.samplingPercentage = samplingPercentage;
     }
 }

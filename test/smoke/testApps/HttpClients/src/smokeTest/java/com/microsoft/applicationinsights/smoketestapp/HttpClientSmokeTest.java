@@ -31,9 +31,10 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("HTTP", rdd.getType());
+        assertEquals("Http", rdd.getType());
         assertEquals("www.bing.com", rdd.getTarget());
-        assertEquals("GET /search", rdd.getName());
+        assertEquals("HTTP GET", rdd.getName());
+        assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -52,9 +53,10 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("HTTP", rdd.getType());
+        assertEquals("Http", rdd.getType());
         assertEquals("www.bing.com", rdd.getTarget());
-        assertEquals("GET /search", rdd.getName());
+        assertEquals("HTTP GET", rdd.getName());
+        assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -73,9 +75,10 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("HTTP", rdd.getType());
+        assertEquals("Http", rdd.getType());
         assertEquals("www.bing.com", rdd.getTarget());
-        assertEquals("GET /search", rdd.getName());
+        assertEquals("HTTP GET", rdd.getName());
+        assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -94,9 +97,10 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("HTTP", rdd.getType());
+        assertEquals("Http", rdd.getType());
         assertEquals("www.bing.com", rdd.getTarget());
-        assertEquals("GET /search", rdd.getName());
+        assertEquals("HTTP GET", rdd.getName());
+        assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -115,9 +119,10 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("HTTP", rdd.getType());
+        assertEquals("Http", rdd.getType());
         assertEquals("www.bing.com", rdd.getTarget());
-        assertEquals("GET /search", rdd.getName());
+        assertEquals("HTTP GET", rdd.getName());
+        assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -137,9 +142,10 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("HTTP", rdd.getType());
+        assertEquals("Http", rdd.getType());
         assertEquals("www.bing.com", rdd.getTarget());
-        assertEquals("GET /search", rdd.getName());
+        assertEquals("HTTP GET", rdd.getName());
+        assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -158,9 +164,10 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("HTTP", rdd.getType());
+        assertEquals("Http", rdd.getType());
         assertEquals("www.bing.com", rdd.getTarget());
-        assertEquals("GET /search", rdd.getName());
+        assertEquals("HTTP GET", rdd.getName());
+        assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 
@@ -179,9 +186,11 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("HTTP", rdd.getType());
+        assertEquals("Http", rdd.getType());
         assertEquals("www.bing.com", rdd.getTarget());
-        assertEquals("GET /search", rdd.getName());
+        assertEquals("HTTP GET", rdd.getName());
+        // TODO investigate why %2520 is captured instead of %20
+        assertEquals("https://www.bing.com/search?q=spaces%2520test", rdd.getData());
         assertParentChild(rd, rdEnvelope, rddEnvelope);
     }
 

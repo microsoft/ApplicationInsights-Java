@@ -6,14 +6,14 @@ import java.util.stream.Collectors;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorType;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.processors.CustomExporter;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
-import com.microsoft.applicationinsights.agent.internal.sampling.FixedRateSampler;
+import com.microsoft.applicationinsights.agent.internal.sampling.TraceIdBasedSampler;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.instrumentation.api.aiappid.AiHttpTraceContext;
@@ -26,7 +26,7 @@ public class TracerInstaller {
 
     public static void installAgentTracer() {
         TelemetryClient telemetryClient = Global.getTelemetryClient();
-        final InstrumentationSettings config = MainEntryPoint.getConfiguration();
+        final Configuration config = MainEntryPoint.getConfiguration();
         final List<ProcessorConfig> processors = config.preview.processors;
         if (telemetryClient == null) {
             // agent failed during startup
@@ -36,16 +36,16 @@ public class TracerInstaller {
         OpenTelemetry.setPropagators(
                 DefaultContextPropagators.builder().addTextMapPropagator(AiHttpTraceContext.getInstance()).build());
 
-        double fixedRateSamplingPercentage = Global.getFixedRateSamplingPercentage();
-        if (fixedRateSamplingPercentage != 100) {
+        double samplingPercentage = Global.getSamplingPercentage();
+        if (samplingPercentage != 1) {
             OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(
                     TraceConfig.getDefault().toBuilder()
-                            .setSampler(new FixedRateSampler(fixedRateSamplingPercentage))
+                            .setSampler(new TraceIdBasedSampler(samplingPercentage))
                             .build());
         } else {
             // OpenTelemetry default sampling is "parent based", which means don't sample if remote traceparent sampled flag was not set,
-            // and Azure Functions is not setting the sampled flag on traceparent currently, so we can't use the default currently, and instead default to "always on" in this case
-            // TODO revisit using "parent based" both for 100% and fixed-rate sampler above
+            // but Application Insights SDKs do not send the sampled flag (since they perform sampling during export instead of head-based sampling)
+            // so need to use "always on" in this case
             OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(
                     TraceConfig.getDefault().toBuilder()
                             .setSampler(Samplers.alwaysOn())

@@ -26,18 +26,18 @@ package com.microsoft.applicationinsights.internal.config;
  */
 public class JmxXmlElement {
 
-    private String displayName;
+    private String name;
 
     private String objectName;
 
     private String attribute;
 
-    public String getDisplayName() {
-        return displayName;
+    public String getName() {
+        return name;
     }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getObjectName() {
