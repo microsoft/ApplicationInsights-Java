@@ -126,6 +126,9 @@ public class BeforeAgentInstaller {
             properties.put("ota.integration.java-util-logging.enabled", "false");
             properties.put("ota.integration.logback.enabled", "false");
         }
+        if (!config.preview.openTelemetryApiSupport) {
+            properties.put("ota.integration.opentelemetry-api.enabled", "false");
+        }
         Config.internalInitializeConfig(Config.create(properties));
         if (Config.get().getListProperty("additional.bootstrap.package.prefixes").isEmpty()) {
             throw new IllegalStateException("underlying config not initialized in time");

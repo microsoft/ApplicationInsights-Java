@@ -74,6 +74,7 @@ public class Configuration {
 
         public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
         public boolean developerMode;
+        public boolean openTelemetryApiSupport;
     }
 
     public static class SelfDiagnostics {
