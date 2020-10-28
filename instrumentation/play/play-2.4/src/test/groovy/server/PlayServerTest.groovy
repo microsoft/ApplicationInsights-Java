@@ -88,7 +88,7 @@ class PlayServerTest extends HttpServerTest<Server> {
   }
 
   @Override
-  String expectedServerSpanName(String method, ServerEndpoint endpoint) {
+  String expectedServerSpanName(ServerEndpoint endpoint) {
     return "netty.request"
   }
 

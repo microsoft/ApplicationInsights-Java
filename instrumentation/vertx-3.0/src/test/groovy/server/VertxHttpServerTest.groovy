@@ -13,7 +13,6 @@ import io.vertx.core.DeploymentOptions
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
 import io.vertx.core.json.JsonObject
-
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -77,7 +76,7 @@ class VertxHttpServerTest extends HttpServerTest<Vertx> {
   }
 
   @Override
-  String expectedServerSpanName(String method, ServerEndpoint endpoint) {
+  String expectedServerSpanName(ServerEndpoint endpoint) {
     return endpoint == PATH_PARAM ? "/path/:id/param" : endpoint.getPath()
   }
 
