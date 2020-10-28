@@ -29,7 +29,6 @@ import java.nio.file.attribute.FileTime;
 import java.util.concurrent.Executors;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.Sampling;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
@@ -41,20 +40,21 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class JsonConfigPolling implements Runnable {
 
-    private volatile Long lastModifiedTime;
+    private final Path path;
+    private volatile long lastModifiedTime;
     private static final Logger logger = LoggerFactory.getLogger(JsonConfigPolling.class);
 
-    public JsonConfigPolling(Long lastModifiedTime) {
+    private JsonConfigPolling(Path path, long lastModifiedTime) {
+        this.path = path;
         this.lastModifiedTime = lastModifiedTime;
     }
 
-    public static void pollJsonConfigEveryMinute() {
+    public static void pollJsonConfigEveryMinute(Path path, long lastModifiedTime) {
         Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(JsonConfigPolling.class))
-                .scheduleWithFixedDelay(new JsonConfigPolling(MainEntryPoint.getLastModifiedTime()), 60, 60, SECONDS);
+                .scheduleWithFixedDelay(new JsonConfigPolling(path, lastModifiedTime), 60, 60, SECONDS);
     }
 
     @Override public void run() {
-        Path path = MainEntryPoint.getConfigPath();
         if (path == null) {
             logger.warn("JSON config path is null.");
             return;

@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -185,7 +186,10 @@ public class BeforeAgentInstaller {
             }
         });
 
-        JsonConfigPolling.pollJsonConfigEveryMinute();
+        Path configPath = MainEntryPoint.getConfigPath();
+        if (configPath != null) {
+            JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime());
+        }
     }
 
     @Nullable
