@@ -53,6 +53,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
@@ -118,15 +119,18 @@ public class Exporter implements SpanExporter {
             boolean isLog = removeAttributeBoolean(attributes, AI_INTERNAL_LOG);
             if (isLog) {
                 exportLogSpan(span, attributes);
-            } else if (!SpanId.isValid(span.getParentSpanId())) {
-                // TODO revisit this decision
-                // maybe user-generated telemetry?
-                // otherwise this top-level span won't show up in Performance blade
+            } else if ("spring-scheduling".equals(stdComponent) && !SpanId.isValid(span.getParentSpanId())) {
+                // TODO need semantic convention for determining whether to map INTERNAL to request or dependency
+                //  (or need clarification to use SERVER for this)
                 exportRequest(span, attributes);
             } else {
                 exportRemoteDependency(span, attributes, true);
             }
         } else if (kind == Kind.CLIENT || kind == Kind.PRODUCER) {
+            exportRemoteDependency(span, attributes, false);
+        } else if (kind == Kind.CONSUMER && !span.getHasRemoteParent()) {
+            // TODO need spec clarification, but it seems polling for messages can be CONSUMER also
+            //  in which case the span will not have a remote parent and should be treated as a dependency instead of a request
             exportRemoteDependency(span, attributes, false);
         } else if (kind == Kind.SERVER || kind == Kind.CONSUMER) {
             exportRequest(span, attributes);
@@ -220,7 +224,7 @@ public class Exporter implements SpanExporter {
         if (inProc) {
             telemetry.setType("InProc");
         } else {
-            applySemanticConventions(attributes, telemetry);
+            applySemanticConventions(attributes, telemetry, span.getKind());
         }
 
         telemetry.setId(span.getSpanId());
@@ -242,7 +246,7 @@ public class Exporter implements SpanExporter {
         trackEvents(span, samplingPercentage);
     }
 
-    private void applySemanticConventions(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry) {
+    private void applySemanticConventions(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, Span.Kind spanKind) {
         String httpMethod = removeAttributeString(attributes, SemanticAttributes.HTTP_METHOD);
         if (httpMethod != null) {
             applyHttpClientSpan(attributes, telemetry, httpMethod);
@@ -260,7 +264,12 @@ public class Exporter implements SpanExporter {
         }
         String messagingSystem = removeAttributeString(attributes, SemanticAttributes.MESSAGING_SYSTEM);
         if (messagingSystem != null) {
-            telemetry.setType("Queue Message | " + messagingSystem);
+            if (spanKind == Kind.PRODUCER) {
+                telemetry.setType("Queue Message | " + messagingSystem);
+            } else {
+                // e.g. CONSUMER kind (without remote parent) and CLIENT kind
+                telemetry.setType(messagingSystem);
+            }
             String destination = removeAttributeString(attributes, SemanticAttributes.MESSAGING_DESTINATION);
             if (destination != null) {
                 telemetry.setTarget(destination);
