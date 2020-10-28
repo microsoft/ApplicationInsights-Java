@@ -23,9 +23,10 @@ package com.microsoft.applicationinsights.agent.bootstrap;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
+import java.nio.file.Path;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.SelfDiagnostics;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
@@ -39,12 +40,22 @@ import org.slf4j.MDC;
 public class MainEntryPoint {
 
     private static Configuration configuration;
+    private static Path configPath;
+    private static long lastModifiedTime;
 
     private MainEntryPoint() {
     }
 
     public static Configuration getConfiguration() {
         return configuration;
+    }
+
+    public static Path getConfigPath() {
+        return configPath;
+    }
+
+    public static long getLastModifiedTime() {
+        return lastModifiedTime;
     }
 
     public static void start(Instrumentation instrumentation, URL bootstrapURL) {
@@ -55,6 +66,8 @@ public class MainEntryPoint {
             DiagnosticsHelper.setAgentJarFile(agentJarFile);
             // configuration is only read this early in order to extract logging configuration
             configuration = ConfigurationBuilder.create(agentJarFile.toPath());
+            configPath = configuration.configPath;
+            lastModifiedTime = configuration.lastModifiedTime;
             startupLogger = configureLogging(configuration.preview.selfDiagnostics);
             ConfigurationBuilder.logConfigurationMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");

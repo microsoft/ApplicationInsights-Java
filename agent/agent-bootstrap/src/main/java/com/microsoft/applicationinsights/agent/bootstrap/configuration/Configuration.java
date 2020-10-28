@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -256,4 +257,11 @@ public class Configuration {
             return true;
         }
     }
+
+    // transient so that Moshi will ignore when binding from json
+    public transient Path configPath;
+
+    // transient so that Moshi will ignore when binding from json
+    public transient long lastModifiedTime;
+
 }
