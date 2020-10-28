@@ -41,12 +41,16 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class JsonConfigPolling implements Runnable {
 
-    private volatile Long lastModifiedTime = MainEntryPoint.getLastModifiedTime();
+    private volatile Long lastModifiedTime;
     private static final Logger logger = LoggerFactory.getLogger(JsonConfigPolling.class);
+
+    public JsonConfigPolling(Long lastModifiedTime) {
+        this.lastModifiedTime = lastModifiedTime;
+    }
 
     public static void pollJsonConfigEveryMinute() {
         Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(JsonConfigPolling.class))
-                .scheduleWithFixedDelay(new JsonConfigPolling(), 60, 60, SECONDS);
+                .scheduleWithFixedDelay(new JsonConfigPolling(MainEntryPoint.getLastModifiedTime()), 60, 60, SECONDS);
     }
 
     @Override public void run() {
@@ -79,8 +83,7 @@ public class JsonConfigPolling implements Runnable {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            logger.error("Error occurred when polling json config file: " + e.toString());
+            logger.error("Error occurred when polling json config file: {}", e.getMessage(), e);
         }
     }
 }
