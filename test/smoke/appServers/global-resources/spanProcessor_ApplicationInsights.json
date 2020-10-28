@@ -9,8 +9,24 @@
           "actions": [
             {
               "key": "attribute1",
-              "value": "123",
+              "value": "testValue",
               "action": "insert"
+            },
+            {
+              "key": "sensitiveAttribute1",
+              "value": "sensitiveData1",
+              "action": "insert"
+            }
+          ]
+        },
+        {
+          "type": "attribute",
+          "processorName": "attributes/update",
+          "actions": [
+            {
+              "key": "attribute1",
+              "value": "testValue2",
+              "action": "update"
             }
           ]
         },
@@ -18,52 +34,28 @@
           "type": "attribute",
           "processorName": "attributes/maskSensitiveData",
           "include":{
-            "matchType":"regexp",
+            "matchType":"strict",
             "spanNames":[
-              "sensitivedata"
+              "/sensitivedata"
             ]
           },
           "actions":[
             {
-              "key":"net.peer.ip",
+              "key":"sensitiveAttribute1",
               "value":"redacted",
               "action":"update"
             }
           ]
         },
         {
-          "type": "attribute",
-          "processorName": "attributes/maskSensitiveValueData",
-          "include":{
-            "matchType":"regexp",
-            "spanNames":[
-              "sensitivedata"
+          "type": "span",
+          "processorName": "attributes/fromAttributeTest",
+          "name": {
+            "fromAttributes": [
+              "attribute1"
             ],
-            "attributes" : [
-              {
-                "key": "servlet.path",
-                "value": "sensitivedata.*"
-              }
-            ]
-          },
-          "actions":[
-            {
-              "key":"net.peer.port",
-              "value":"redacted",
-              "action":"update"
-            }
-          ]
-        },
-        {
-          "type": "attribute",
-          "processorName": "attributes/maskIP",
-          "actions":[
-            {
-              "key":"http.client_ip",
-              "value":"redacted",
-              "action":"update"
-            }
-          ]
+            "separator": "::"
+          }
         }
       ],
       "selfDiagnostics": {
