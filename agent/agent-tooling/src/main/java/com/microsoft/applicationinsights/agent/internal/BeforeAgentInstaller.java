@@ -158,7 +158,12 @@ public class BeforeAgentInstaller {
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
-        Global.setSamplingPercentage(config.sampling.percentage);
+        double samplingPercentage = SamplingPercentage.roundToNearest(config.sampling.percentage);
+        if (SamplingPercentage.significantlyRounded(samplingPercentage, config.sampling.percentage)) {
+            // TODO include link to docs in this warning message
+            startupLogger.warn("the requested sampling percentage {} was rounded to nearest 1/N: {}", config.sampling.percentage, samplingPercentage);
+        }
+        Global.setSamplingPercentage(samplingPercentage);
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
         AiAppId.setSupplier(new AppIdSupplier());
