@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorConfig;
+
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.processors.AgentProcessor.IncludeExclude;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;

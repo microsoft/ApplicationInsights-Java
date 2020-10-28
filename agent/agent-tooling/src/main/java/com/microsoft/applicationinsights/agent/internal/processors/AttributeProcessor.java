@@ -2,12 +2,10 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorAction;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorActionType;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAction;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorActionType;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;

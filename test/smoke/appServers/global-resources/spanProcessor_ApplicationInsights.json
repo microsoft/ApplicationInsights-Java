@@ -1,5 +1,4 @@
 {
-  "instrumentationSettings": {
     "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
     "preview": {
       "roleName": "Something Good",
@@ -72,4 +71,4 @@
       }
     }
   }
-}
+

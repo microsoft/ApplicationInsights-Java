@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorAttribute;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorIncludeExclude;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.InstrumentationSettings.ProcessorMatchType;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAttribute;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorIncludeExclude;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import org.checkerframework.checker.nullness.qual.Nullable;
