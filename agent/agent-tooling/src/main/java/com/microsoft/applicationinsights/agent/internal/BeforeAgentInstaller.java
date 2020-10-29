@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
@@ -109,7 +110,10 @@ public class BeforeAgentInstaller {
                 throw new ConfigurationException("No connection string or instrumentation key provided");
             }
         }
+        // Function to validate user provided processor configuration
+        validateProcessorConfiguration(config);
 
+        
         Map<String, String> properties = new HashMap<>();
         properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
         properties.put("experimental.log.capture.threshold", getLoggingFrameworksThreshold(config, "INFO"));
@@ -197,6 +201,13 @@ public class BeforeAgentInstaller {
         Path configPath = MainEntryPoint.getConfigPath();
         if (configPath != null) {
             JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime());
+        }
+    }
+
+    private static void validateProcessorConfiguration(Configuration config) {
+        if(config.preview == null || config.preview.processors == null) return;
+        for (ProcessorConfig processorConfig : config.preview.processors) {
+            processorConfig.validate();
         }
     }
 

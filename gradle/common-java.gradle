@@ -45,7 +45,6 @@ checkstyle {
     configProperties["rootDir"] = rootProject.projectDir
     showViolations = false
 }
-
 spotbugs {
     effort = 'max'
     reportLevel = 'medium'
@@ -61,7 +60,7 @@ tasks.withType(JavaCompile) {
     }
     def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
     if (spotbugsExcludeFile.exists() && !spotbugs.excludeFilter) {
-        logger.info "${project} using ${spotbugsExcludeFile.absolutePath}"
+        logger.info "${project} using spotbugs exclude file ${spotbugsExcludeFile.absolutePath}"
         spotbugs.excludeFilter = spotbugsExcludeFile
     }
 }
