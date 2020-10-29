@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 public class ExporterWithAttributeProcessorTest {
 
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ConfigurationException.class)
     public void noActionTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
@@ -47,7 +47,7 @@ public class ExporterWithAttributeProcessorTest {
         exampleExporter.export(spans);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ConfigurationException.class)
     public void inValidConfigTestWithNoValueInActionTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
@@ -76,7 +76,7 @@ public class ExporterWithAttributeProcessorTest {
         exampleExporter.export(spans);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ConfigurationException.class)
     public void inValidConfigTestWithInvalidIncludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();

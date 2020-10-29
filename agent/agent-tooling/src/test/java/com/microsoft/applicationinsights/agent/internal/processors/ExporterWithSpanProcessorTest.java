@@ -23,7 +23,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 public class ExporterWithSpanProcessorTest {
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ConfigurationException.class)
     public void noNameObjectTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
@@ -43,7 +43,7 @@ public class ExporterWithSpanProcessorTest {
         exampleExporter.export(spans);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ConfigurationException.class)
     public void inValidConfigTestWithNoFromOrToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
@@ -64,7 +64,7 @@ public class ExporterWithSpanProcessorTest {
         exampleExporter.export(spans);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ConfigurationException.class)
     public void inValidConfigTestWithToAttributesNoRulesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();

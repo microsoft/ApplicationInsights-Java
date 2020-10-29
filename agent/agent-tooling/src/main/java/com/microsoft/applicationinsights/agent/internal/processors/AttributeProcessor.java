@@ -21,11 +21,10 @@ public class AttributeProcessor extends AgentProcessor {
     private final List<ProcessorAction> actions;
 
     private AttributeProcessor(
-                               List<ProcessorAction> actions,
-                               @Nullable IncludeExclude include,
-                               @Nullable IncludeExclude exclude,
-                               boolean isValidConfig) {
-        super(include, exclude, isValidConfig);
+            List<ProcessorAction> actions,
+            @Nullable IncludeExclude include,
+            @Nullable IncludeExclude exclude) {
+        super(include, exclude);
         this.actions = actions;
     }
 
@@ -33,16 +32,16 @@ public class AttributeProcessor extends AgentProcessor {
     public static AttributeProcessor create(ProcessorConfig config) {
         IncludeExclude normalizedInclude = config.include != null ? getNormalizedIncludeExclude(config.include) : null;
         IncludeExclude normalizedExclude = config.exclude != null ? getNormalizedIncludeExclude(config.exclude) : null;
-        List<ProcessorAction> actions = new ArrayList<>(config.actions);
-        return new AttributeProcessor(actions ,normalizedInclude, normalizedExclude, true);
+        return new AttributeProcessor(config.actions, normalizedInclude, normalizedExclude);
     }
 
     // Copy from existing attribute.
     // Returns true if attribute has been found and copied. Else returns false.
+    // ToDo store fromAttribute as AttributeKey<?> to avoid creating AttributeKey each time
     private static boolean copyFromExistingAttribute(Attributes.Builder insertBuilder, ReadableAttributes existingSpanAttributes, ProcessorAction actionObj) {
         Object existingSpanAttributeValue = existingSpanAttributes.get(AttributeKey.stringKey(actionObj.fromAttribute));
         if (existingSpanAttributeValue instanceof String) {
-            insertBuilder.setAttribute(actionObj.key, String.valueOf(existingSpanAttributeValue));
+            insertBuilder.setAttribute(actionObj.key, (String) existingSpanAttributeValue);
             return true;
         }
         return false;
@@ -50,54 +49,51 @@ public class AttributeProcessor extends AgentProcessor {
 
     // Function to process actions
     public SpanData processActions(SpanData span) {
-        SpanData prevSpan = span;
-        SpanData updatedSpan;
-        for(ProcessorAction actionObj: actions) {
-            updatedSpan = actionObj.action == ProcessorActionType.insert ? processInsertActions(updatedSpan, actionObj) : processOtherActions(updatedSpan, actionObj);
-            prevSpan = updatedSpan;
+        SpanData updatedSpan = span;
+        for (ProcessorAction actionObj : actions) {
+            updatedSpan = actionObj.action == ProcessorActionType.insert ? processInsertAction(updatedSpan, actionObj) : processOtherAction(updatedSpan, actionObj);
         }
-        return prevSpan;
+        return updatedSpan;
     }
 
     private SpanData processOtherAction(SpanData span, ProcessorAction actionObj) {
         ReadableAttributes existingSpanAttributes = span.getAttributes();
         final Attributes.Builder builder = Attributes.newBuilder();
         final boolean[] spanUpdateFlag = new boolean[1]; // This is for optimization. If none of the attributes are updated, we can skip the attributes.build step
-        existingSpanAttributes.forEach(// TODO optomize this further
-                new AttributeConsumer() {
-                    @Override
-                    public <T> void consume(AttributeKey<T> key, T value) {
-                        boolean attributeUpdatedFlag = false;// flag to check if a attribute is updated
-                            if (key.getKey().equals(actionObj.key)) {
-                                switch (actionObj.action) {
-                                    case update:
-                                        if (applyUpdateAction(actionObj, existingSpanAttributes, builder)) {
-                                            attributeUpdatedFlag = true;
-                                        }
-                                        break;
-                                    case delete:
-                                        // Return without copying the existing span attribute, but still update spanUpdateFlag
-                                        spanUpdateFlag[0] = true;
-                                        return;
-                                    case hash:
-                                        if (value instanceof String) {
-                                            // Currently we only support String
-                                            builder.setAttribute(actionObj.key, DigestUtils.sha1Hex(String.valueOf(value)));
-                                            attributeUpdatedFlag = true;
-                                        }
-                                        break;
-                                    default:
-                                        break; // no action. Added to escape spotbug failures.
-                                }
+        existingSpanAttributes.forEach(new AttributeConsumer() {
+            @Override
+            public <T> void consume(AttributeKey<T> key, T value) {
+                boolean attributeUpdatedFlag = false;// flag to check if a attribute is updated
+                if (key.getKey().equals(actionObj.key)) {
+                    switch (actionObj.action) {
+                        case update:
+                            if (applyUpdateAction(actionObj, existingSpanAttributes, builder)) {
+                                attributeUpdatedFlag = true;
                             }
-                        if (!attributeUpdatedFlag) {
-                            builder.setAttribute(key, value);
-                        } else {
+                            break;
+                        case delete:
+                            // Return without copying the existing span attribute, but still update spanUpdateFlag
                             spanUpdateFlag[0] = true;
-                        }
+                            return;
+                        case hash:
+                            if (value instanceof String) {
+                                // Currently we only support String
+                                builder.setAttribute(actionObj.key, DigestUtils.sha1Hex((String) value));
+                                attributeUpdatedFlag = true;
+                            }
+                            break;
+                        default:
+                            break; // no action. Added to escape spotbug failures.
                     }
-                });
-        return spanUpdateFlag[0] ?  new MySpanData(span, builder.build()) : span;
+                }
+                if (!attributeUpdatedFlag) {
+                    builder.setAttribute(key, value);
+                } else {
+                    spanUpdateFlag[0] = true;
+                }
+            }
+        });
+        return spanUpdateFlag[0] ? new MySpanData(span, builder.build()) : span;
     }
 
     private SpanData processInsertAction(SpanData span, ProcessorAction actionObj) {

@@ -15,23 +15,19 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class SpanProcessor extends AgentProcessor {
     private static final Pattern capturingGroupNames = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>");
-    private final List<String> fromAttributes;
-    private final List<String> toAttributeRules;
+    private final List<AttributeKey<?>> fromAttributes;
     private final List<Pattern> toAttributeRulePatterns;
     private final List<List<String>> groupNames;
     private final String separator;
 
     public SpanProcessor(@Nullable IncludeExclude include,
                          @Nullable IncludeExclude exclude,
-                         boolean isValidConfig,
-                         List<String> fromAttributes,
-                         List<String> toAttributeRules,
+                         List<AttributeKey<?>> fromAttributes,
                          List<Pattern> toAttributeRulePatterns,
                          List<List<String>> groupNames,
                          String separator) {
-        super(include, exclude, isValidConfig);
+        super(include, exclude);
         this.fromAttributes = fromAttributes;
-        this.toAttributeRules = toAttributeRules;
         this.toAttributeRulePatterns = toAttributeRulePatterns;
         this.groupNames = groupNames;
         this.separator = separator;
@@ -40,9 +36,11 @@ public class SpanProcessor extends AgentProcessor {
     public static SpanProcessor create(ProcessorConfig config) {
         IncludeExclude normalizedInclude = config.include != null ? getNormalizedIncludeExclude(config.include) : null;
         IncludeExclude normalizedExclude = config.exclude != null ? getNormalizedIncludeExclude(config.exclude) : null;
-        List<String> fromAttributes = new ArrayList<>();
+        List<AttributeKey<?>> fromAttributes = new ArrayList<>();
         if (config.name.fromAttributes != null) {
-            fromAttributes.addAll(config.name.fromAttributes);
+            for (String attribute : config.name.fromAttributes) {
+                fromAttributes.add(AttributeKey.stringKey(attribute));
+            }
         }
         List<String> toAttributeRules = new ArrayList<>();
         if (config.name.toAttributes != null) {
@@ -56,8 +54,8 @@ public class SpanProcessor extends AgentProcessor {
         }
         List<List<String>> groupNames = getGroupNames(toAttributeRules);
         String separator = config.name.separator != null ? config.name.separator : "";
-        return new SpanProcessor(normalizedInclude, normalizedExclude, true,
-                fromAttributes, toAttributeRules, toAttributeRulePatterns, groupNames, separator);
+        return new SpanProcessor(normalizedInclude, normalizedExclude,
+                fromAttributes, toAttributeRulePatterns, groupNames, separator);
     }
 
     private static List<List<String>> getGroupNames(List<String> toAttributeRules) {
@@ -78,8 +76,8 @@ public class SpanProcessor extends AgentProcessor {
         if (spanHasAllFromAttributeKeys(span)) {
             StringBuffer updatedSpanBuffer = new StringBuffer();
             ReadableAttributes existingSpanAttributes = span.getAttributes();
-            for (String attributeKey : fromAttributes) {
-                updatedSpanBuffer.append(existingSpanAttributes.get(AttributeKey.stringKey(attributeKey)));
+            for (AttributeKey<?> attributeKey : fromAttributes) {
+                updatedSpanBuffer.append(existingSpanAttributes.get(attributeKey));
                 updatedSpanBuffer.append(separator);
             }
             // Removing the last appended separator
@@ -94,15 +92,15 @@ public class SpanProcessor extends AgentProcessor {
     private boolean spanHasAllFromAttributeKeys(SpanData span) {
         if (fromAttributes.isEmpty()) return false;
         ReadableAttributes existingSpanAttributes = span.getAttributes();
-        for (String attributeKey : fromAttributes) {
-            if (existingSpanAttributes.get(AttributeKey.stringKey(attributeKey)) == null) return false;
+        for (AttributeKey<?> attributeKey : fromAttributes) {
+            if (existingSpanAttributes.get(attributeKey) == null) return false;
         }
         return true;
     }
 
     //The following function extracts attributes from span name and replaces extracted parts with attribute names
     public SpanData processToAttributes(SpanData span) {
-        if (toAttributeRules.isEmpty()) {
+        if (toAttributeRulePatterns.isEmpty()) {
             return span;
         }
 

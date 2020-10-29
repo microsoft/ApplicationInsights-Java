@@ -18,9 +18,7 @@ public class ExporterWithAttributeProcessor implements SpanExporter {
 
     // caller should check config.isValid before creating
     public ExporterWithAttributeProcessor(ProcessorConfig config, SpanExporter delegate) {
-        if (!config.isValid()) {
-            throw new IllegalArgumentException("User provided span processor config is not valid!!!");
-        }
+        config.validate();
         attributeProcessor = AttributeProcessor.create(config);
         this.delegate = delegate;
     }
@@ -28,15 +26,11 @@ public class ExporterWithAttributeProcessor implements SpanExporter {
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
         // we need to filter attributes before passing on to delegate
-        if (!attributeProcessor.hasValidConfig()) {
-            return delegate.export(spans);
-        } else {
             List<SpanData> copy = new ArrayList<>();
             for (SpanData span : spans) {
                 copy.add(process(span));
             }
             return delegate.export(copy);
-        }
     }
 
     private SpanData process(SpanData span) {

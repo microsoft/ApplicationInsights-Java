@@ -110,9 +110,9 @@ public class BeforeAgentInstaller {
                 throw new ConfigurationException("No connection string or instrumentation key provided");
             }
         }
-        if(!hasValidProcessorConfiguration(config)) {
-            throw new ConfigurationException("User provided span processor config is not valid!!!");
-        }
+        // Function to validate user provided processor configuration
+        validateProcessorConfiguration(config);
+
         
         Map<String, String> properties = new HashMap<>();
         properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
@@ -196,12 +196,11 @@ public class BeforeAgentInstaller {
         }
     }
 
-    private static boolean hasValidProcessorConfiguration(Configuration config) {
-        if(config.preview == null || config.preview.processors == null) return true;
+    private static void validateProcessorConfiguration(Configuration config) {
+        if(config.preview == null || config.preview.processors == null) return;
         for (ProcessorConfig processorConfig : config.preview.processors) {
-            if(!processorConfig.isValid()) return false;
+            processorConfig.validate();
         }
-        return true;
     }
 
     @Nullable

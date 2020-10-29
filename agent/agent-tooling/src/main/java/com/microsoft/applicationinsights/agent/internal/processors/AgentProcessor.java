@@ -3,6 +3,8 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAttribute;
@@ -12,21 +14,18 @@ import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class AgentProcessor {
+public abstract class AgentProcessor {
     private final @Nullable IncludeExclude include;
     private final @Nullable IncludeExclude exclude;
-    private final boolean isValidConfig;
 
     public AgentProcessor(@Nullable IncludeExclude include,
-                          @Nullable IncludeExclude exclude,
-                          boolean isValidConfig) {
+                          @Nullable IncludeExclude exclude) {
         this.include = include;
         this.exclude = exclude;
-        this.isValidConfig = isValidConfig;
     }
 
     protected static AttributeProcessor.IncludeExclude getNormalizedIncludeExclude(ProcessorIncludeExclude includeExclude) {
-        return includeExclude.matchType == ProcessorMatchType.strict ? AttributeProcessor.StrictIncludeExclude.create(includeExclude) : AttributeProcessor.RegexpIncludeExclude.create(includeExclude);
+        return includeExclude.matchType == ProcessorMatchType.strict ? AgentProcessor.StrictIncludeExclude.create(includeExclude) : AgentProcessor.RegexpIncludeExclude.create(includeExclude);
     }
 
     public @Nullable IncludeExclude getInclude() {
@@ -37,18 +36,7 @@ public class AgentProcessor {
         return exclude;
     }
 
-    public boolean hasValidConfig() {
-        return isValidConfig;
-    }
-
     public static abstract class IncludeExclude {
-        //All of these attributes must match exactly for a match to occur
-        protected final List<ProcessorAttribute> attributes;
-
-        public IncludeExclude(List<ProcessorAttribute> attributes) {
-            this.attributes = attributes;
-        }
-
         // Function to compare span with user provided span names or span patterns
         public abstract boolean isMatch(SpanData span);
 
@@ -56,11 +44,11 @@ public class AgentProcessor {
 
     // ok to have this class cover both spanNames and logNames
     public static class StrictIncludeExclude extends IncludeExclude {
-
+        private final List<ProcessorAttribute> attributes;
         private final List<String> spanNames;
 
         public StrictIncludeExclude(List<ProcessorAttribute> attributes, List<String> spanNames) {
-            super(attributes);
+            this.attributes = attributes;
             this.spanNames = spanNames;
         }
 
@@ -97,7 +85,7 @@ public class AgentProcessor {
                     // user specified key not found
                     return false;
                 }
-                if (attribute.value != null && !String.valueOf(existingAttributeValue).equals(attribute.value)) {
+                if (attribute.value != null && !((String)existingAttributeValue).equals(attribute.value)) {
                     // user specified value doesn't match
                     return false;
                 }
@@ -110,10 +98,9 @@ public class AgentProcessor {
     public static class RegexpIncludeExclude extends IncludeExclude {
 
         private final List<Pattern> spanPatterns;
-        private final HashMap<String, Pattern> attributeValuePatterns;
+        private final Map<AttributeKey<?>, Pattern> attributeValuePatterns;
 
-        public RegexpIncludeExclude(List<ProcessorAttribute> attributes, List<Pattern> spanPatterns, HashMap<String, Pattern> attributeValuePatterns) {
-            super(attributes);
+        public RegexpIncludeExclude(List<Pattern> spanPatterns, Map<AttributeKey<?>, Pattern> attributeValuePatterns) {
             this.spanPatterns = spanPatterns;
             this.attributeValuePatterns = attributeValuePatterns;
         }
@@ -121,11 +108,9 @@ public class AgentProcessor {
         public static RegexpIncludeExclude create(ProcessorIncludeExclude includeExclude) {
             List<ProcessorAttribute> attributes = includeExclude.attributes;
             Map<AttributeKey<?>, Pattern> attributeKeyValuePatterns = new HashMap<>();
-            if (attributes == null) {
-                attributes = new ArrayList<>();
-            } else {
+            if (attributes != null) {
                 for (ProcessorAttribute attribute : attributes) {
-                    attributeKeyValuePatterns.put(attribute.key, Pattern.compile(attribute.value));
+                    attributeKeyValuePatterns.put(AttributeKey.stringKey(attribute.key), Pattern.compile(attribute.value));
                 }
             }
             List<Pattern> spanPatterns = new ArrayList<>();
@@ -135,7 +120,7 @@ public class AgentProcessor {
                 }
             }
 
-            return new RegexpIncludeExclude(attributes, spanPatterns, attributeKeyValuePatterns);
+            return new RegexpIncludeExclude(spanPatterns, attributeKeyValuePatterns);
         }
 
         // Function to compare span attribute value with user provided value
@@ -164,14 +149,14 @@ public class AgentProcessor {
 
         // Function to compare span with user provided attributes list
         private boolean checkAttributes(SpanData span) {
-            for (ProcessorAttribute attribute : attributes) {
+            for (Entry<AttributeKey<?>, Pattern> attributeEntry : attributeValuePatterns.entrySet()) {
                 //All of these attributes must match exactly for a match to occur.
-                Object existingAttributeValue = span.getAttributes().get(AttributeKey.stringKey(attribute.key));
+                Object existingAttributeValue = span.getAttributes().get(attributeEntry.getKey());
                 if (!(existingAttributeValue instanceof String)) {
                     // user specified key not found
                     return false;
                 }
-                if (attribute.value != null && !isAttributeValueMatch(String.valueOf(existingAttributeValue), attributeValuePatterns.get(attribute.key))) {
+                if (attributeEntry.getValue() != null && !isAttributeValueMatch((String) existingAttributeValue, attributeEntry.getValue())) {
                     // user specified value doesn't match
                     return false;
                 }
