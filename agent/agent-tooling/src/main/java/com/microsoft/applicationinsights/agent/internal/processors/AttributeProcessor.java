@@ -53,7 +53,7 @@ public class AttributeProcessor extends AgentProcessor {
         SpanData prevSpan = span;
         SpanData updatedSpan;
         for(ProcessorAction actionObj: actions) {
-            updatedSpan = actionObj.action == ProcessorActionType.insert ? processInsertActions(prevSpan, actionObj) : processOtherActions(prevSpan, actionObj);
+            updatedSpan = actionObj.action == ProcessorActionType.insert ? processInsertActions(updatedSpan, actionObj) : processOtherActions(updatedSpan, actionObj);
             prevSpan = updatedSpan;
         }
         return prevSpan;
