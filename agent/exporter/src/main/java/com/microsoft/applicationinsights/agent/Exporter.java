@@ -20,6 +20,8 @@
  */
 package com.microsoft.applicationinsights.agent;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -143,18 +145,19 @@ public class Exporter implements SpanExporter {
 
         RequestTelemetry telemetry = new RequestTelemetry();
 
+        String source = null;
         String sourceAppId = removeAttributeString(attributes, SPAN_SOURCE_ATTRIBUTE_NAME);
         if (sourceAppId != null && !AiAppId.getAppId().equals(sourceAppId)) {
-            telemetry.setSource(sourceAppId);
-        } else if (attributes.containsKey(SemanticAttributes.MESSAGING_SYSTEM)) {
-            String destination = removeAttributeString(attributes, SemanticAttributes.MESSAGING_DESTINATION);
-            if (destination != null) {
-                telemetry.setSource(destination);
-            } else {
-                String messagingSystem = removeAttributeString(attributes, SemanticAttributes.MESSAGING_SYSTEM);
-                telemetry.setSource(messagingSystem);
+            source = sourceAppId;
+        }
+        if (source == null && attributes.containsKey(SemanticAttributes.MESSAGING_SYSTEM)) {
+            source = nullAwareConcat(getTargetFromPeerAttributes(attributes),
+                    removeAttributeString(attributes, SemanticAttributes.MESSAGING_DESTINATION), "/");
+            if (source == null) {
+                source = removeAttributeString(attributes, SemanticAttributes.MESSAGING_SYSTEM);
             }
         }
+        telemetry.setSource(source);
 
         addLinks(telemetry.getProperties(), span.getLinks());
 
@@ -249,7 +252,7 @@ public class Exporter implements SpanExporter {
     private void applySemanticConventions(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, Span.Kind spanKind) {
         String httpMethod = removeAttributeString(attributes, SemanticAttributes.HTTP_METHOD);
         if (httpMethod != null) {
-            applyHttpClientSpan(attributes, telemetry, httpMethod);
+            applyHttpClientSpan(attributes, telemetry);
             return;
         }
         String rpcSystem = removeAttributeString(attributes, SemanticAttributes.RPC_SYSTEM);
@@ -264,18 +267,7 @@ public class Exporter implements SpanExporter {
         }
         String messagingSystem = removeAttributeString(attributes, SemanticAttributes.MESSAGING_SYSTEM);
         if (messagingSystem != null) {
-            if (spanKind == Kind.PRODUCER) {
-                telemetry.setType("Queue Message | " + messagingSystem);
-            } else {
-                // e.g. CONSUMER kind (without remote parent) and CLIENT kind
-                telemetry.setType(messagingSystem);
-            }
-            String destination = removeAttributeString(attributes, SemanticAttributes.MESSAGING_DESTINATION);
-            if (destination != null) {
-                telemetry.setTarget(destination);
-            } else {
-                telemetry.setTarget(messagingSystem);
-            }
+            applyMessagingClientSpan(attributes, telemetry, messagingSystem, spanKind);
             return;
         }
     }
@@ -405,19 +397,38 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static void applyHttpClientSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String httpMethod) {
+    private static void applyHttpClientSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry) {
 
-        String target = removeAttributeString(attributes, SemanticAttributes.PEER_SERVICE);
+        // from the spec, at least one of the following sets of attributes is required:
+        // * http.url
+        // * http.scheme, http.host, http.target
+        // * http.scheme, net.peer.name, net.peer.port, http.target
+        // * http.scheme, net.peer.ip, net.peer.port, http.target
+        String target = getTargetFromPeerAttributes(attributes);
         if (target == null) {
-            target = removeAttributeString(attributes, SemanticAttributes.NET_PEER_NAME);
+            target = removeAttributeString(attributes, SemanticAttributes.HTTP_HOST);
         }
         if (target == null) {
-            target = removeAttributeString(attributes, SemanticAttributes.NET_PEER_IP);
+            String url = removeAttributeString(attributes, SemanticAttributes.HTTP_URL);
+            if (url != null) {
+                try {
+                    URI uri = new URI(url);
+                    target = uri.getHost();
+                    if (uri.getPort() != 80 && uri.getPort() != 443 && uri.getPort() != -1) {
+                        target += ":" + uri.getPort();
+                    }
+                } catch (URISyntaxException e) {
+                    // TODO "log once"
+                    logger.error(e.getMessage());
+                    logger.debug(e.getMessage(), e);
+                }
+            }
         }
-        Long port = removeAttributeLong(attributes, SemanticAttributes.NET_PEER_PORT);
-        if (target != null && port != null && port != 443 && port != 80) {
-            target += ":" + port;
+        if (target == null) {
+            // this should not happen, just a failsafe
+            target = "http";
         }
+
         String targetAppId = removeAttributeString(attributes, SPAN_TARGET_ATTRIBUTE_NAME);
         if (targetAppId == null || AiAppId.getAppId().equals(targetAppId)) {
             telemetry.setType("Http");
@@ -440,9 +451,8 @@ public class Exporter implements SpanExporter {
 
     private static void applyRpcClientSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String rpcSystem) {
         telemetry.setType(rpcSystem);
-        // TODO is this too fine-grained (e.g. many grpc service name = class name)
-        //  maybe better to use net.peer like in http but those are not implemented for grpc client spans yet
-        String target = removeAttributeString(attributes, SemanticAttributes.RPC_SERVICE);
+        String target = getTargetFromPeerAttributes(attributes);
+        // not appending /rpc.service for now since that seems too fine-grained
         if (target == null) {
             target = rpcSystem;
         }
@@ -459,14 +469,53 @@ public class Exporter implements SpanExporter {
             type = dbSystem;
         }
         telemetry.setType(type);
-        // TODO should still capture db.statement?
+        // capturing db.statement, which is the full (sanitized) statement
+        // while span name is a much more truncated version of the statement
+        // (or at least will be in the future, see
+        // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1409)
         telemetry.setCommandName(removeAttributeString(attributes, SemanticAttributes.DB_STATEMENT));
-        String target = removeAttributeString(attributes, SemanticAttributes.DB_NAME);
-        if (target != null) {
-            telemetry.setTarget(target);
+        String target = nullAwareConcat(getTargetFromPeerAttributes(attributes),
+                removeAttributeString(attributes, SemanticAttributes.DB_NAME), "/");
+        if (target == null) {
+            target = dbSystem;
+        }
+        telemetry.setTarget(target);
+    }
+
+    private void applyMessagingClientSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String messagingSystem, Kind spanKind) {
+        if (spanKind == Kind.PRODUCER) {
+            telemetry.setType("Queue Message | " + messagingSystem);
         } else {
-            // TODO fall back to PEER_SERVICE/NET_PEER_NAME/NET_PEER_IP (e.g. for Redis)?
-            telemetry.setTarget(dbSystem);
+            // e.g. CONSUMER kind (without remote parent) and CLIENT kind
+            telemetry.setType(messagingSystem);
+        }
+        String destination = removeAttributeString(attributes, SemanticAttributes.MESSAGING_DESTINATION);
+        if (destination != null) {
+            telemetry.setTarget(destination);
+        } else {
+            telemetry.setTarget(messagingSystem);
+        }
+    }
+
+    private static String getTargetFromPeerAttributes(Map<AttributeKey<?>, Object> attributes) {
+        String target = removeAttributeString(attributes, SemanticAttributes.PEER_SERVICE);
+        if (target != null) {
+            // do not append port if peer.service is provided
+            return target;
+        }
+        target = removeAttributeString(attributes, SemanticAttributes.NET_PEER_NAME);
+        if (target == null) {
+            target = removeAttributeString(attributes, SemanticAttributes.NET_PEER_IP);
+        }
+        if (target == null) {
+            return null;
+        }
+        // append net.peer.port to target
+        Long port = removeAttributeLong(attributes, SemanticAttributes.NET_PEER_PORT);
+        if (port != null && port != 443 && port != 80) {
+            return target + ":" + port;
+        } else {
+            return target;
         }
     }
 
@@ -608,5 +657,15 @@ public class Exporter implements SpanExporter {
                 logger.error("Unexpected level {}, using TRACE level as default", level);
                 return SeverityLevel.Verbose;
         }
+    }
+
+    private static String nullAwareConcat(String str1, String str2, String separator) {
+        if (str1 == null) {
+            return str2;
+        }
+        if (str2 == null) {
+            return str1;
+        }
+        return str1 + separator + str2;
     }
 }
