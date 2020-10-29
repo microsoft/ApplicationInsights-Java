@@ -100,7 +100,7 @@ public class AttributeProcessor extends AgentProcessor {
         return spanUpdateFlag[0] ?  new MySpanData(span, builder.build()) : span;
     }
 
-    private SpanData processInsertActions(SpanData span, ProcessorAction actionObj) {
+    private SpanData processInsertAction(SpanData span, ProcessorAction actionObj) {
         ReadableAttributes existingSpanAttributes = span.getAttributes();
         final Builder insertBuilder = Attributes.newBuilder();
         if (applyUpdateAction(actionObj, existingSpanAttributes, insertBuilder)) {
