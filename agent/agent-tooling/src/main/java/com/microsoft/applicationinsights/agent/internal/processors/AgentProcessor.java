@@ -120,7 +120,7 @@ public class AgentProcessor {
 
         public static RegexpIncludeExclude create(ProcessorIncludeExclude includeExclude) {
             List<ProcessorAttribute> attributes = includeExclude.attributes;
-            HashMap<String, Pattern> attributeKeyValuePatterns = new HashMap<>();
+            Map<AttributeKey<?>, Pattern> attributeKeyValuePatterns = new HashMap<>();
             if (attributes == null) {
                 attributes = new ArrayList<>();
             } else {
