@@ -86,5 +86,6 @@ include ':test:smoke:testApps:SystemExit'
 include ':test:smoke:testApps:VerifyShading'
 include ':test:smoke:testApps:VerifyJava7'
 include ':test:smoke:testApps:JettyNativeHandler'
+include ':test:smoke:testApps:DataScrubbing'
 
 

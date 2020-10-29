@@ -19,8 +19,9 @@ public class SpringBootAutoTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         assertNotNull(rd.getProperties().get("attribute1"));
-        assertEquals("123", rd.getProperties().get("attribute1"));
-        //assertEquals("redacted", rd.getProperties().get("http.client_ip"));
+        assertEquals("testValue1", rd.getProperties().get("attribute1"));
+        assertEquals("testValue2", rd.getProperties().get("attribute2"));
+
     }
 
     @Test
@@ -29,8 +30,8 @@ public class SpringBootAutoTest extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
         Envelope rdEnvelope = rdList.get(0);
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        System.out.println(rd.getUrl());
-      //  assertEquals("redacted", rd.getProperties().get("net.peer.ip"));
-      //  assertEquals("redacted", rd.getProperties().get("net.peer.port"));
+        assertEquals("testValue1::testValue2", rd.getName());
+        assertEquals("redacted", rd.getProperties().get("sensitiveAttribute1"));
     }
+
 }

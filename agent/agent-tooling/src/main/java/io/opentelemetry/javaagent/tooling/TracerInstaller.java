@@ -1,5 +1,7 @@
 package io.opentelemetry.javaagent.tooling;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,7 +12,6 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.Global;
-import com.microsoft.applicationinsights.agent.internal.processors.CustomExporter;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.TraceIdBasedSampler;
@@ -21,13 +22,16 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 public class TracerInstaller {
 
     public static void installAgentTracer() {
         TelemetryClient telemetryClient = Global.getTelemetryClient();
-        final Configuration config = MainEntryPoint.getConfiguration();
-        final List<ProcessorConfig> processors = config.preview.processors;
+        Configuration config = MainEntryPoint.getConfiguration();
+        List<ProcessorConfig> processors = new ArrayList<>(config.preview.processors);
+        // Reversing the order of processors before passing it to SpanProcessor
+        Collections.reverse(processors);
         if (telemetryClient == null) {
             // agent failed during startup
             return;
@@ -53,9 +57,9 @@ public class TracerInstaller {
         }
         // if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         if (!processors.isEmpty()) {
-            CustomExporter currExporter;
-            CustomExporter prevExporter = null;
+            SpanExporter prevExporter = null;
             for (ProcessorConfig processorConfig : processors) {
+                SpanExporter currExporter;
                 if (prevExporter == null) {
                     currExporter = processorConfig.type == ProcessorType.attribute ?
                             new ExporterWithAttributeProcessor(processorConfig, new Exporter(telemetryClient)) :

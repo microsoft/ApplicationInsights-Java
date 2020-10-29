@@ -13,6 +13,11 @@
               "action": "insert"
             },
             {
+              "key": "attribute2",
+              "value": "testValue2",
+              "action": "insert"
+            },
+            {
               "key": "sensitiveAttribute1",
               "value": "sensitiveData1",
               "action": "insert"
@@ -25,7 +30,7 @@
           "actions": [
             {
               "key": "attribute1",
-              "value": "testValue2",
+              "value": "testValue1",
               "action": "update"
             }
           ]
@@ -34,7 +39,7 @@
           "type": "attribute",
           "processorName": "attributes/maskSensitiveData",
           "include":{
-            "matchType":"strict",
+            "matchType":"regexp",
             "spanNames":[
               "/sensitivedata"
             ]
@@ -50,9 +55,15 @@
         {
           "type": "span",
           "processorName": "attributes/fromAttributeTest",
+          "include":{
+            "matchType":"regexp",
+            "spanNames":[
+              "/sensitivedata"
+            ]
+          },
           "name": {
             "fromAttributes": [
-              "attribute1"
+              "attribute1","attribute2"
             ],
             "separator": "::"
           }

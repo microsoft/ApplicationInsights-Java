@@ -54,6 +54,7 @@ public class AgentProcessor {
 
     }
 
+    // ok to have this class cover both spanNames and logNames
     public static class StrictIncludeExclude extends IncludeExclude {
 
         private final List<String> spanNames;
