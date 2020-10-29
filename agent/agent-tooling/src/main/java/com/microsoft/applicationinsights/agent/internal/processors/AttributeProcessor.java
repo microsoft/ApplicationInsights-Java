@@ -59,7 +59,7 @@ public class AttributeProcessor extends AgentProcessor {
         return prevSpan;
     }
 
-    private SpanData processOtherActions(SpanData span, ProcessorAction actionObj) {
+    private SpanData processOtherAction(SpanData span, ProcessorAction actionObj) {
         ReadableAttributes existingSpanAttributes = span.getAttributes();
         final Attributes.Builder builder = Attributes.newBuilder();
         final boolean[] spanUpdateFlag = new boolean[1]; // This is for optimization. If none of the attributes are updated, we can skip the attributes.build step
