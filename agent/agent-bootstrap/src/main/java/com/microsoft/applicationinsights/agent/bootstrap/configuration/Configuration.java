@@ -94,6 +94,7 @@ public class Configuration {
         public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
         public boolean developerMode;
         public List<ProcessorConfig> processors = new ArrayList<>();
+        public boolean openTelemetryApiSupport;
     }
 
     public static class SelfDiagnostics {

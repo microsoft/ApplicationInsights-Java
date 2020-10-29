@@ -130,6 +130,9 @@ public class BeforeAgentInstaller {
             properties.put("ota.integration.java-util-logging.enabled", "false");
             properties.put("ota.integration.logback.enabled", "false");
         }
+        if (!config.preview.openTelemetryApiSupport) {
+            properties.put("ota.integration.opentelemetry-api.enabled", "false");
+        }
         Config.internalInitializeConfig(Config.create(properties));
         if (Config.get().getListProperty("additional.bootstrap.package.prefixes").isEmpty()) {
             throw new IllegalStateException("underlying config not initialized in time");
@@ -162,7 +165,12 @@ public class BeforeAgentInstaller {
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
-        Global.setSamplingPercentage(config.sampling.percentage);
+        double samplingPercentage = SamplingPercentage.roundToNearest(config.sampling.percentage);
+        if (SamplingPercentage.significantlyRounded(samplingPercentage, config.sampling.percentage)) {
+            // TODO include link to docs in this warning message
+            startupLogger.warn("the requested sampling percentage {} was rounded to nearest 1/N: {}", config.sampling.percentage, samplingPercentage);
+        }
+        Global.setSamplingPercentage(samplingPercentage);
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
         AiAppId.setSupplier(new AppIdSupplier());
