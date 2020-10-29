@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.smoketest;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Base;
+import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
@@ -40,7 +41,7 @@ public class PerfCountersDataTest extends AiSmokeTest {
         Envelope totalCpu = mockedIngestion.waitForItem(getPerfCounterPredicate("Processor", "% Processor Time", "_Total"), 150, TimeUnit.SECONDS);
 
         Envelope processIo = mockedIngestion.waitForItem(getPerfCounterPredicate("Process", "IO Data Bytes/sec"), 150, TimeUnit.SECONDS);
-        Envelope processMemUsed = mockedIngestion.waitForItem(getPerfCounterPredicate("Process", "Private Bytes"), 150, TimeUnit.SECONDS);
+        Envelope processMemUsed = mockedIngestion.waitForItem(getPerfMetricPredicate("Private Bytes"), 150, TimeUnit.SECONDS);
         Envelope processCpu = mockedIngestion.waitForItem(getPerfCounterPredicate("Process", "% Processor Time"), 150, TimeUnit.SECONDS);
         System.out.println("PerformanceCounterData are good: " + (System.currentTimeMillis() - start));
 
@@ -53,10 +54,9 @@ public class PerfCountersDataTest extends AiSmokeTest {
         assertEquals("_Total", pdCpu.getInstanceName());
 
         assertPerfCounter(getBaseData(processIo));
-        assertPerfCounter(getBaseData(processMemUsed));
+        assertPerfMetric(getBaseData(processMemUsed));
         assertPerfCounter(getBaseData(processCpu));
-        assertSameInstanceName(processIo, processMemUsed, processCpu);
-
+        assertSameInstanceName(processIo, processCpu);
 
         start = System.currentTimeMillis();
         System.out.println("Waiting for metric data...");
@@ -102,7 +102,6 @@ public class PerfCountersDataTest extends AiSmokeTest {
     }
 
     private void assertPerfMetric(MetricData perfMetric) {
-        assertEquals("true", perfMetric.getProperties().get("CustomPerfCounter"));
         List<DataPoint> metrics = perfMetric.getMetrics();
         assertEquals(1, metrics.size());
         DataPoint dp = metrics.get(0);
