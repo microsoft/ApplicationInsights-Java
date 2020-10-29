@@ -78,10 +78,6 @@ public final class GCPerformanceCounter implements PerformanceCounter {
 
             MetricTelemetry mtTotalCount = new MetricTelemetry(GC_TOTAL_COUNT, countToReport);
             MetricTelemetry mtTotalTime = new MetricTelemetry(GC_TOTAL_TIME, timeToReport);
-
-            mtTotalCount.markAsCustomPerfCounter();
-            mtTotalTime.markAsCustomPerfCounter();
-
             telemetryClient.track(mtTotalCount);
             telemetryClient.track(mtTotalTime);
         }
