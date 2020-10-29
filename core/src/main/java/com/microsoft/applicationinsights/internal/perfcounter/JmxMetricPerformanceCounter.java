@@ -51,12 +51,6 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
         MetricTelemetry telemetry = new MetricTelemetry();
         telemetry.setName(displayName);
         telemetry.setValue(value);
-
-        // keep "Available Bytes" under PerformanceCounter to prevent breaking performance blade on the ApplicationInsights Portal
-        if (displayName.equals(TOTAL_MEMORY_PC_COUNTER_NAME)) {
-            telemetry.markAsCustomPerfCounter();
-        }
-
         telemetryClient.track(telemetry);
     }
 }
