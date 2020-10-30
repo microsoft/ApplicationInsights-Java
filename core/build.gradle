@@ -36,6 +36,17 @@ clean {
     delete "${System.properties['java.io.tmpdir']}/AISDK/native" // see JniPCConnector.java for jni directory
 }
 
+// CURRENTLY the DLL being built on CI is not working, leading to this error on startup:
+//
+// ERROR c.m.a.i.perfcounter.JniPCConnector - Unexpected error initializing JNI Performance Counter library. Windows performance counters will not be used
+// java.lang.UnsatisfiedLinkError: C:\Users\trstalna\AppData\Local\Temp\AISDK\native\3.0.0-PREVIEW.7-SNAPSHOT\applicationinsights-core-native-win64.dll: Can't find dependent libraries
+//
+// and native windows perf counters do not get collected
+//
+// so instead of building the DLLs, we are currently just copying the previously built DLLs from 2.6.2 which work fine
+// (see copyTheDLL task below)
+
+/*
 import org.apache.tools.ant.taskdefs.condition.Os
 
 boolean skipWinNative = (System.properties['skipWinNative'] ?: 'false').toBoolean()
@@ -52,12 +63,17 @@ if (skipWinNative) {
         logger.warn("Native binaries build is only supported on Windows systems; native components will not be built.")
     }
 }
+*/
 
 import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
 archivesBaseName = 'applicationinsights-core'
 
 apply from: "$buildScriptsDir/provided-configuration.gradle"
+
+configurations {
+    forTheDLL { transitive = false }
+}
 
 dependencies {
     compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
@@ -77,7 +93,18 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
     testCompile group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0'
+
+    forTheDLL 'com.microsoft.azure:applicationinsights-core:2.6.2'
 }
+
+task copyTheDLL(type: Copy) {
+    from zipTree(configurations.forTheDLL.singleFile).matching {
+        include '*.dll'
+    }
+    into "$buildDir/resources/main"
+}
+
+processResources.dependsOn copyTheDLL
 
 task generateVersionProperties(type: PropsFileGen) {
     targetFile = new File(sdkVersionFileDir, "sdk-version.properties")
