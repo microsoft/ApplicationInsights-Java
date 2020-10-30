@@ -16,11 +16,22 @@ import org.apache.http.util.EntityUtils;
 
 public class HttpHelper {
 
+    public static String getAndEnsureSampled(String url) throws UnsupportedOperationException, IOException {
+        HttpGet httpGet = new HttpGet(url);
+        // traceId=27272727272727272727272727272727 is known to produce a score of 0.66 (out of 100)
+        // so will be sampled as long as samplingPercentage > 1%
+        httpGet.setHeader("traceparent", "00-27272727272727272727272727272727-1111111111111111-01");
+        return get(httpGet);
+    }
+
     public static String get(String url) throws UnsupportedOperationException, IOException {
+        return get(new HttpGet(url));
+    }
+
+    private static String get(HttpGet httpGet) throws UnsupportedOperationException, IOException {
         CloseableHttpClient client = getHttpClient();
         try {
-            HttpGet get = new HttpGet(url);
-            CloseableHttpResponse resp1 = client.execute(get);
+            CloseableHttpResponse resp1 = client.execute(httpGet);
             return extractResponseBody(resp1);
         }
         finally {
