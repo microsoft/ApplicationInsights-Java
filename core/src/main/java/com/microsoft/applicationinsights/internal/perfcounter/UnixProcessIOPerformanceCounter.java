@@ -26,10 +26,13 @@ import java.io.FileReader;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.microsoft.applicationinsights.internal.perfcounter.Constants.PROCESS_IO_PC_METRIC_NAME;
 
 /**
  * The class knows how to supply the io usage of the current process under the Unix OS.
@@ -75,13 +78,8 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
             double value = (processIO - prevProcessIO) / timeElapsedInSeconds;
             prevProcessIO = processIO;
 
-            logger.trace("Sending Performance Counter: {} {}: {}", getProcessCategoryName(), Constants.PROCESS_IO_PC_COUNTER_NAME, value);
-            Telemetry telemetry = new PerformanceCounterTelemetry(
-                    getProcessCategoryName(),
-                    Constants.PROCESS_IO_PC_COUNTER_NAME,
-                    SystemInformation.INSTANCE.getProcessId(),
-                    value);
-
+            logger.trace("Sending Performance Counter: {} {}: {}", getProcessCategoryName(), PROCESS_IO_PC_METRIC_NAME, value);
+            MetricTelemetry telemetry = new MetricTelemetry(PROCESS_IO_PC_METRIC_NAME, value);
             telemetryClient.track(telemetry);
         }
 
