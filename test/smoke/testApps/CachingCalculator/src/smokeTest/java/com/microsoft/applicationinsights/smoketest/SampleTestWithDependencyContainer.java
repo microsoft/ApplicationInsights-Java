@@ -32,7 +32,7 @@ public class SampleTestWithDependencyContainer extends AiSmokeTest {
 
         assertTrue(rdd.getSuccess());
         assertEquals("redis", rdd.getType());
-        assertTrue(rdd.getTarget().matches("dependency[0-9]+:6379"));
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
         assertEquals("EXISTS", rdd.getName());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope);

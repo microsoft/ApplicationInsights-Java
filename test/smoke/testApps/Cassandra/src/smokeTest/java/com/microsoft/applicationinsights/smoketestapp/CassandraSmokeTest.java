@@ -41,7 +41,7 @@ public class CassandraSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("cassandra", rdd.getType());
-        assertTrue(rdd.getTarget().matches("dependency[0-9]+:9042"));
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
         assertEquals("select * from test.test", rdd.getName());
         assertTrue(rdd.getSuccess());
 

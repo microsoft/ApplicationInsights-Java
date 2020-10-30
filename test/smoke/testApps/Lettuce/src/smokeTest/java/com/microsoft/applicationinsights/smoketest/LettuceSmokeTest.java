@@ -31,7 +31,7 @@ public class LettuceSmokeTest extends AiSmokeTest {
 
         assertTrue(rdd.getSuccess());
         assertEquals("redis", rdd.getType());
-        assertTrue(rdd.getTarget().matches("dependency[0-9]+:6379"));
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
         assertEquals("GET", rdd.getName());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope);

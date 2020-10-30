@@ -40,7 +40,7 @@ public class MongoSmokeTest extends AiSmokeTest {
 
         assertTrue(rd.getSuccess());
         assertEquals("mongodb", rdd.getType());
-        assertTrue(rdd.getTarget().matches("dependency[0-9]+:27017/testdb"));
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+/testdb"));
         assertEquals("{\"find\": \"test\", \"$db\": \"?\"}", rdd.getName());
         assertTrue(rdd.getSuccess());
 
