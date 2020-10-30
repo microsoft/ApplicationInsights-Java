@@ -434,7 +434,7 @@ public class Exporter implements SpanExporter {
         }
         if (target == null) {
             // this should not happen, just a failsafe
-            target = "http";
+            target = "Http";
         }
 
         String targetAppId = removeAttributeString(attributes, SPAN_TARGET_ATTRIBUTE_NAME);
@@ -521,15 +521,15 @@ public class Exporter implements SpanExporter {
         Long port = removeAttributeLong(attributes, SemanticAttributes.NET_PEER_PORT);
         if (port != null && port != defaultPort) {
             return target + ":" + port;
-        } else {
-            return target;
         }
+        return target;
     }
 
     private static int getDefaultPortForDbSystem(String dbSystem) {
         switch (dbSystem) {
             // TODO replace these with constants from OpenTelemetry API after upgrading to 0.10.0
             // TODO add these default ports to the OpenTelemetry database semantic conventions spec
+            // TODO need to add more default ports once jdbc instrumentation reports net.peer.*
             case "mongodb":
                 return 27017;
             case "cassandra":
