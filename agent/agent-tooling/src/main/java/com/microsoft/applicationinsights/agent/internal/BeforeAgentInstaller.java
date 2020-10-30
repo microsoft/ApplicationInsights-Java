@@ -34,9 +34,10 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
@@ -46,9 +47,10 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Perf
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.ResourceAttributesContextInitializer;
+import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
 import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
@@ -58,9 +60,9 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
+import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.instrumentation.api.config.Config;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -109,6 +111,9 @@ public class BeforeAgentInstaller {
                 throw new ConfigurationException("No connection string or instrumentation key provided");
             }
         }
+        // Function to validate user provided processor configuration
+        validateProcessorConfiguration(config);
+
 
         Map<String, String> properties = new HashMap<>();
         properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
@@ -125,6 +130,9 @@ public class BeforeAgentInstaller {
             properties.put("ota.integration.log4j.enabled", "false");
             properties.put("ota.integration.java-util-logging.enabled", "false");
             properties.put("ota.integration.logback.enabled", "false");
+        }
+        if (!config.preview.openTelemetryApiSupport) {
+            properties.put("ota.integration.opentelemetry-api.enabled", "false");
         }
         Config.internalInitializeConfig(Config.create(properties));
         if (Config.get().getListProperty("additional.bootstrap.package.prefixes").isEmpty()) {
@@ -158,7 +166,7 @@ public class BeforeAgentInstaller {
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
-        Global.setSamplingPercentage(config.sampling.percentage);
+        Global.setSamplingPercentage(SamplingPercentage.roundToNearest(config.sampling.percentage));
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
         AiAppId.setSupplier(new AppIdSupplier());
@@ -188,7 +196,14 @@ public class BeforeAgentInstaller {
 
         Path configPath = MainEntryPoint.getConfigPath();
         if (configPath != null) {
-            JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime());
+            JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime(), config.sampling.percentage);
+        }
+    }
+
+    private static void validateProcessorConfiguration(Configuration config) {
+        if (config.preview == null || config.preview.processors == null) return;
+        for (ProcessorConfig processorConfig : config.preview.processors) {
+            processorConfig.validate();
         }
     }
 

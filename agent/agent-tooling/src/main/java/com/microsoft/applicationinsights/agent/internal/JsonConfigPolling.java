@@ -32,7 +32,10 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.Sampling;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
+import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,19 +45,22 @@ public class JsonConfigPolling implements Runnable {
 
     private final Path path;
     private volatile long lastModifiedTime;
+    private volatile double lastReadSamplingPercentage;
     private static final Logger logger = LoggerFactory.getLogger(JsonConfigPolling.class);
 
-    private JsonConfigPolling(Path path, long lastModifiedTime) {
+    private JsonConfigPolling(Path path, long lastModifiedTime, double lastReadSamplingPercentage) {
         this.path = path;
         this.lastModifiedTime = lastModifiedTime;
+        this.lastReadSamplingPercentage = lastReadSamplingPercentage;
     }
 
-    public static void pollJsonConfigEveryMinute(Path path, long lastModifiedTime) {
+    public static void pollJsonConfigEveryMinute(Path path, long lastModifiedTime, double lastReadSamplingPercentage) {
         Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(JsonConfigPolling.class))
-                .scheduleWithFixedDelay(new JsonConfigPolling(path, lastModifiedTime), 60, 60, SECONDS);
+                .scheduleWithFixedDelay(new JsonConfigPolling(path, lastModifiedTime, lastReadSamplingPercentage), 60, 60, SECONDS);
     }
 
-    @Override public void run() {
+    @Override
+    public void run() {
         if (path == null) {
             logger.warn("JSON config path is null.");
             return;
@@ -71,15 +77,25 @@ public class JsonConfigPolling implements Runnable {
             if (lastModifiedTime != fileTime.toMillis()) {
                 lastModifiedTime = fileTime.toMillis();
                 Configuration configuration = ConfigurationBuilder.loadJsonConfigFile(path);
+
+                // TODO only want to update connectionString with value from configuration file if original value
+                //  is from configuration file (not if original value is from APPLICATIONINSIGHTS_CONNECTION_STRING env var)
                 if (!configuration.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
                     logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
                     TelemetryConfiguration.getActive().setConnectionString(configuration.connectionString);
                 }
 
-                Sampling sampling = configuration.sampling;
-                if (sampling != null && sampling.percentage != Global.getSamplingPercentage()) {
-                    logger.debug("Override fixed rate sampling percentage from " + Global.getSamplingPercentage() + " to " + sampling.percentage + " ");
-                    Global.setSamplingPercentage(sampling.percentage);
+                // TODO only want to update sampling percentage with value from configuration file if original value
+                //  is from configuration file (not if original value is from APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE env var)
+                if (configuration.sampling.percentage != lastReadSamplingPercentage) {
+                    logger.debug("Updating sampling percentage from {} to {}", lastReadSamplingPercentage, configuration.sampling.percentage);
+                    double roundedSamplingPercentage = SamplingPercentage.roundToNearest(configuration.sampling.percentage);
+                    OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(
+                            OpenTelemetrySdk.getTracerManagement().getActiveTraceConfig().toBuilder()
+                                    .setSampler(Samplers.getSampler(roundedSamplingPercentage))
+                                    .build());
+                    Global.setSamplingPercentage(roundedSamplingPercentage);
+                    lastReadSamplingPercentage = configuration.sampling.percentage;
                 }
             }
         } catch (IOException e) {

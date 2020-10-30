@@ -742,7 +742,7 @@ public abstract class AiSmokeTest {
 
             try {
                 TimeUnit.MILLISECONDS.sleep(250);
-                rval = HttpHelper.get(url);
+                rval = HttpHelper.getAndEnsureSampled(url);
             }
             catch (InterruptedException ie) {
                 throw ie;
@@ -757,7 +757,7 @@ public abstract class AiSmokeTest {
         assertFalse(String.format("Empty response from '%s'. Health check urls should return something non-empty", url), rval.isEmpty());
     }
 
-    protected static void waitForUrlWithRetries(String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries) throws IOException {
+    protected static void waitForUrlWithRetries(String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries) {
         Preconditions.checkArgument(numberOfRetries >= 0, "numberOfRetries must be non-negative");
         int triedCount = 0;
         boolean success = false;

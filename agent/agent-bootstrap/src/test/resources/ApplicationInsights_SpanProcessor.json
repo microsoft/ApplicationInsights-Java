@@ -1,0 +1,125 @@
+{
+    "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
+    "roleName": "Something Good",
+    "preview": {
+      "processors": [
+        {
+          "type": "attribute",
+          "processorName": "attributes/insert",
+          "actions": [
+            {
+              "key": "attribute1",
+              "value": "123",
+              "action": "insert"
+            },
+            {
+              "key": "string key",
+              "fromAttribute": "anotherKey",
+              "action": "insert"
+            }
+          ]
+        },
+        {
+          "type": "attribute",
+          "processorName": "attributes/update",
+          "actions": [
+            {
+              "key": "boo",
+              "fromAttribute": "foo",
+              "action": "update"
+            },
+            {
+              "key": "db.secret",
+              "value": "redacted",
+              "action": "update"
+            }
+          ]
+        },
+        {
+          "type": "attribute",
+          "processorName": "attributes/selectiveProcessing",
+          "include": {
+            "matchType": "strict",
+            "spanNames": [
+              "svcA",
+              "svcB"
+            ]
+          },
+          "exclude": {
+            "matchType": "strict",
+            "attributes": [
+              {
+                "key": "redact_trace",
+                "value": "false"
+              }
+            ]
+          },
+          "actions": [
+            {
+              "key": "credit_card",
+              "action": "delete"
+            },
+            {
+              "key": "duplicate_key",
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "type": "log",
+          "processorName": "log/updateName",
+          "include":{
+            "matchType":"regexp",
+            "logNames":[
+              ".*password.*"
+            ]
+          },
+          "name": {
+            "fromAttributes": [
+              "loggerName"
+            ],
+            "separator": "::"
+          }
+        },
+        {
+          "type": "log",
+          "processorName": "log/extractAttributes",
+          "name": {
+            "toAttributes": {
+              "rules": [
+                "^/api/v1/document/(?<documentId>.*)/update$"
+              ]
+            }
+          }
+        },
+        {
+          "type": "span",
+          "processorName": "span/updateName",
+          "include":{
+            "matchType":"regexp",
+            "spanNames":[
+              ".*password.*"
+            ]
+          },
+          "name": {
+            "fromAttributes": [
+              "loggerName"
+            ],
+            "separator": "::"
+          }
+        },
+        {
+          "type": "span",
+          "processorName": "span/extractAttributes",
+          "name": {
+            "toAttributes": {
+              "rules": [
+                "^/api/v1/document/(?<documentId>.*)/update$"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+

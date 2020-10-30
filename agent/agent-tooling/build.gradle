@@ -59,6 +59,7 @@ dependencies {
     compile(project(':agent:exporter'))
 
     compileOnly(project(':agent:agent-bootstrap'))
+    testCompile(project(':agent:agent-bootstrap'))
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-core:1.3'

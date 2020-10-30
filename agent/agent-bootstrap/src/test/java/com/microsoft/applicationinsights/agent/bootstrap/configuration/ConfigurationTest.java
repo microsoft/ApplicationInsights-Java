@@ -10,6 +10,10 @@ import com.google.common.io.CharSource;
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.PreviewConfiguration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorActionType;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
@@ -24,6 +28,13 @@ public class ConfigurationTest {
 
     @Rule
     public EnvironmentVariables envVars = new EnvironmentVariables();
+
+    private static Configuration loadConfiguration() throws IOException {
+        CharSource json = Resources.asCharSource(Resources.getResource("ApplicationInsights.json"), Charsets.UTF_8);
+        Moshi moshi = new Moshi.Builder().build();
+        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+        return jsonAdapter.fromJson(json.read());
+    }
 
     @Test
     public void shouldParse() throws IOException {
@@ -51,6 +62,83 @@ public class ConfigurationTest {
         assertEquals("/var/log/applicationinsights", preview.selfDiagnostics.directory);
         assertEquals("error", preview.selfDiagnostics.level);
         assertEquals(10, preview.selfDiagnostics.maxSizeMB);
+    }
+
+    @Test
+    public void shouldParseProcessorConfiguration() throws IOException {
+
+        CharSource json = Resources.asCharSource(Resources.getResource("ApplicationInsights_SpanProcessor.json"), Charsets.UTF_8);
+        Moshi moshi = new Moshi.Builder().build();
+        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+        Configuration configuration = jsonAdapter.fromJson(json.read());
+        PreviewConfiguration preview = configuration.preview;
+
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
+        assertEquals(7, preview.processors.size());
+        // insert config test
+        ProcessorConfig insertConfig = preview.processors.get(0);
+        assertEquals("attributes/insert", insertConfig.processorName);
+        assertEquals(ProcessorType.attribute, insertConfig.type);
+        assertEquals(ProcessorActionType.insert, insertConfig.actions.get(0).action);
+        assertEquals("123", insertConfig.actions.get(0).value);
+        assertEquals("attribute1", insertConfig.actions.get(0).key);
+        assertEquals("anotherKey", insertConfig.actions.get(1).fromAttribute);
+        //update config test
+        ProcessorConfig updateConfig = preview.processors.get(1);
+        assertEquals("attributes/update", updateConfig.processorName);
+        assertEquals(ProcessorType.attribute, updateConfig.type);
+        assertEquals(ProcessorActionType.update, updateConfig.actions.get(0).action);
+        assertEquals("boo", updateConfig.actions.get(0).key);
+        assertEquals("foo", updateConfig.actions.get(0).fromAttribute);
+        assertEquals("db.secret", updateConfig.actions.get(1).key);
+        // selective processing test
+        ProcessorConfig selectiveConfig = preview.processors.get(2);
+        assertEquals(ProcessorType.attribute, selectiveConfig.type);
+        assertEquals("attributes/selectiveProcessing", selectiveConfig.processorName);
+        assertEquals(ProcessorMatchType.strict, selectiveConfig.include.matchType);
+        assertEquals(2, selectiveConfig.include.spanNames.size());
+        assertEquals("svcA", selectiveConfig.include.spanNames.get(0));
+        assertEquals(ProcessorMatchType.strict, selectiveConfig.exclude.matchType);
+        assertEquals(1, selectiveConfig.exclude.attributes.size());
+        assertEquals("redact_trace", selectiveConfig.exclude.attributes.get(0).key);
+        assertEquals("false", selectiveConfig.exclude.attributes.get(0).value);
+        assertEquals(2, selectiveConfig.actions.size());
+        assertEquals("credit_card", selectiveConfig.actions.get(0).key);
+        assertEquals(ProcessorActionType.delete, selectiveConfig.actions.get(0).action);
+        // log/update name test
+        ProcessorConfig logUpdateNameConfig = preview.processors.get(3);
+        assertEquals(ProcessorType.log, logUpdateNameConfig.type);
+        assertEquals("log/updateName", logUpdateNameConfig.processorName);
+        assertEquals(ProcessorMatchType.regexp, logUpdateNameConfig.include.matchType);
+        assertEquals(1, logUpdateNameConfig.include.logNames.size());
+        assertEquals(".*password.*", logUpdateNameConfig.include.logNames.get(0));
+        assertEquals(1, logUpdateNameConfig.name.fromAttributes.size());
+        assertEquals("loggerName", logUpdateNameConfig.name.fromAttributes.get(0));
+        assertEquals("::", logUpdateNameConfig.name.separator);
+        // log/extractAttributes
+        ProcessorConfig logExtractAttributesConfig = preview.processors.get(4);
+        assertEquals(ProcessorType.log, logExtractAttributesConfig.type);
+        assertEquals("log/extractAttributes", logExtractAttributesConfig.processorName);
+        assertEquals(1, logExtractAttributesConfig.name.toAttributes.rules.size());
+        assertEquals("^/api/v1/document/(?<documentId>.*)/update$", logExtractAttributesConfig.name.toAttributes.rules.get(0));
+        // span/update name test
+        ProcessorConfig spanUpdateNameConfig = preview.processors.get(5);
+        assertEquals(ProcessorType.span, spanUpdateNameConfig.type);
+        assertEquals("span/updateName", spanUpdateNameConfig.processorName);
+        assertEquals(ProcessorMatchType.regexp, spanUpdateNameConfig.include.matchType);
+        assertEquals(1, spanUpdateNameConfig.include.spanNames.size());
+        assertEquals(".*password.*", spanUpdateNameConfig.include.spanNames.get(0));
+        assertEquals(1, spanUpdateNameConfig.name.fromAttributes.size());
+        assertEquals("loggerName", spanUpdateNameConfig.name.fromAttributes.get(0));
+        assertEquals("::", spanUpdateNameConfig.name.separator);
+        // span/extractAttributes
+        ProcessorConfig spanExtractAttributesConfig = preview.processors.get(6);
+        assertEquals(ProcessorType.span, spanExtractAttributesConfig.type);
+        assertEquals("span/extractAttributes", spanExtractAttributesConfig.processorName);
+        assertEquals(1, spanExtractAttributesConfig.name.toAttributes.rules.size());
+        assertEquals("^/api/v1/document/(?<documentId>.*)/update$", spanExtractAttributesConfig.name.toAttributes.rules.get(0));
+
+
     }
 
     @Test
@@ -112,12 +200,5 @@ public class ConfigurationTest {
         reader.setLenient(true);
         JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
         return jsonAdapter.fromJson(reader);
-    }
-
-    private static Configuration loadConfiguration() throws IOException {
-        CharSource json = Resources.asCharSource(Resources.getResource("ApplicationInsights.json"), Charsets.UTF_8);
-        Moshi moshi = new Moshi.Builder().build();
-        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
-        return jsonAdapter.fromJson(json.read());
     }
 }
