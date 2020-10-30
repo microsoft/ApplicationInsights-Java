@@ -151,7 +151,8 @@ public class Exporter implements SpanExporter {
             source = sourceAppId;
         }
         if (source == null && attributes.containsKey(SemanticAttributes.MESSAGING_SYSTEM)) {
-            source = nullAwareConcat(getTargetFromPeerAttributes(attributes),
+            // TODO should this pass default port for messaging.system?
+            source = nullAwareConcat(getTargetFromPeerAttributes(attributes, 0),
                     removeAttributeString(attributes, SemanticAttributes.MESSAGING_DESTINATION), "/");
             if (source == null) {
                 source = removeAttributeString(attributes, SemanticAttributes.MESSAGING_SYSTEM);
@@ -404,29 +405,36 @@ public class Exporter implements SpanExporter {
         // * http.scheme, http.host, http.target
         // * http.scheme, net.peer.name, net.peer.port, http.target
         // * http.scheme, net.peer.ip, net.peer.port, http.target
-        String target = getTargetFromPeerAttributes(attributes);
+        String scheme = removeAttributeString(attributes, SemanticAttributes.HTTP_SCHEME);
+        int defaultPort;
+        if ("http".equals(scheme)) {
+            defaultPort = 80;
+        } else if ("https".equals(scheme)) {
+            defaultPort = 443;
+        } else {
+            defaultPort = 0;
+        }
+        String target = getTargetFromPeerAttributes(attributes, defaultPort);
         if (target == null) {
             target = removeAttributeString(attributes, SemanticAttributes.HTTP_HOST);
         }
-        if (target == null) {
-            String url = removeAttributeString(attributes, SemanticAttributes.HTTP_URL);
-            if (url != null) {
-                try {
-                    URI uri = new URI(url);
-                    target = uri.getHost();
-                    if (uri.getPort() != 80 && uri.getPort() != 443 && uri.getPort() != -1) {
-                        target += ":" + uri.getPort();
-                    }
-                } catch (URISyntaxException e) {
-                    // TODO "log once"
-                    logger.error(e.getMessage());
-                    logger.debug(e.getMessage(), e);
+        String url = removeAttributeString(attributes, SemanticAttributes.HTTP_URL);
+        if (target == null && url != null) {
+            try {
+                URI uri = new URI(url);
+                target = uri.getHost();
+                if (uri.getPort() != 80 && uri.getPort() != 443 && uri.getPort() != -1) {
+                    target += ":" + uri.getPort();
                 }
+            } catch (URISyntaxException e) {
+                // TODO "log once"
+                logger.error(e.getMessage());
+                logger.debug(e.getMessage(), e);
             }
         }
         if (target == null) {
             // this should not happen, just a failsafe
-            target = "http";
+            target = "Http";
         }
 
         String targetAppId = removeAttributeString(attributes, SPAN_TARGET_ATTRIBUTE_NAME);
@@ -445,13 +453,12 @@ public class Exporter implements SpanExporter {
             telemetry.setResultCode(Long.toString((Long) httpStatusCode));
         }
 
-        String url = removeAttributeString(attributes, SemanticAttributes.HTTP_URL);
         telemetry.setCommandName(url);
     }
 
     private static void applyRpcClientSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String rpcSystem) {
         telemetry.setType(rpcSystem);
-        String target = getTargetFromPeerAttributes(attributes);
+        String target = getTargetFromPeerAttributes(attributes, 0);
         // not appending /rpc.service for now since that seems too fine-grained
         if (target == null) {
             target = rpcSystem;
@@ -474,7 +481,7 @@ public class Exporter implements SpanExporter {
         // (or at least will be in the future, see
         // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1409)
         telemetry.setCommandName(removeAttributeString(attributes, SemanticAttributes.DB_STATEMENT));
-        String target = nullAwareConcat(getTargetFromPeerAttributes(attributes),
+        String target = nullAwareConcat(getTargetFromPeerAttributes(attributes, getDefaultPortForDbSystem(dbSystem)),
                 removeAttributeString(attributes, SemanticAttributes.DB_NAME), "/");
         if (target == null) {
             target = dbSystem;
@@ -497,7 +504,7 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static String getTargetFromPeerAttributes(Map<AttributeKey<?>, Object> attributes) {
+    private static String getTargetFromPeerAttributes(Map<AttributeKey<?>, Object> attributes, int defaultPort) {
         String target = removeAttributeString(attributes, SemanticAttributes.PEER_SERVICE);
         if (target != null) {
             // do not append port if peer.service is provided
@@ -512,10 +519,25 @@ public class Exporter implements SpanExporter {
         }
         // append net.peer.port to target
         Long port = removeAttributeLong(attributes, SemanticAttributes.NET_PEER_PORT);
-        if (port != null && port != 443 && port != 80) {
+        if (port != null && port != defaultPort) {
             return target + ":" + port;
-        } else {
-            return target;
+        }
+        return target;
+    }
+
+    private static int getDefaultPortForDbSystem(String dbSystem) {
+        switch (dbSystem) {
+            // TODO replace these with constants from OpenTelemetry API after upgrading to 0.10.0
+            // TODO add these default ports to the OpenTelemetry database semantic conventions spec
+            // TODO need to add more default ports once jdbc instrumentation reports net.peer.*
+            case "mongodb":
+                return 27017;
+            case "cassandra":
+                return 9042;
+            case "redis":
+                return 6379;
+            default:
+                return 0;
         }
     }
 
