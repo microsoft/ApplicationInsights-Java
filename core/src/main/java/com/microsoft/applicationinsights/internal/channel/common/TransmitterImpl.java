@@ -130,6 +130,8 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
 
     private final Semaphore semaphore;
 
+    private volatile boolean shutdown;
+
     private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
 
     public TransmitterImpl(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, TransmissionsLoader transmissionsLoader) {
@@ -184,8 +186,10 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
         } catch (Throwable t) {
             try {
                 semaphore.release();
-                logger.error("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetriesFetcher.fetch().size());
-                logger.trace("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetriesFetcher.fetch().size(), t);
+                if (!shutdown) {
+                    logger.error("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetriesFetcher.fetch().size());
+                    logger.debug("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetriesFetcher.fetch().size(), t);
+                }
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -233,8 +237,10 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
         } catch (Throwable t) {
             try {
                 semaphore.release();
-                logger.error("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetries.size());
-                logger.trace("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetries.size(), t);
+                if (!shutdown) {
+                    logger.error("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetries.size());
+                    logger.debug("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetries.size(), t);
+                }
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -247,6 +253,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
 
     @Override
     public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        shutdown = true;
         Stopwatch stopwatch = Stopwatch.createStarted();
         transmissionsLoader.shutdown();
         threadPool.shutdown();

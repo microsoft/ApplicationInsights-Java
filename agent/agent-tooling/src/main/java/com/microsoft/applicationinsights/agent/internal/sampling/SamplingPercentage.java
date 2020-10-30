@@ -19,19 +19,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal;
+package com.microsoft.applicationinsights.agent.internal.sampling;
 
-class SamplingPercentage {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    static double roundToNearest(double samplingPercentage) {
+public class SamplingPercentage {
+
+    private static final Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
+
+    public static double roundToNearest(double samplingPercentage) {
         if (samplingPercentage == 0) {
             return 0;
         }
         double itemCount = 100 / samplingPercentage;
-        return 100.0 / Math.round(itemCount);
-    }
+        double rounded = 100.0 / Math.round(itemCount);
 
-    static boolean significantlyRounded(double rounded, double original) {
-        return Math.abs(original - rounded) >= 1;
+        if (Math.abs(samplingPercentage - rounded) >= 1) {
+            // TODO include link to docs in this warning message
+            startupLogger.warn("the requested sampling percentage {} was rounded to nearest 1/N: {}", samplingPercentage, rounded);
+        }
+
+        return rounded;
     }
 }
