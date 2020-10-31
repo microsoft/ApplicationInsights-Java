@@ -27,8 +27,6 @@ import java.io.FileReader;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,7 +104,7 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
             result = parser.getValue();
         } catch (Exception e) {
             result = null;
-            logPerfCounterErrorError("Error while parsing file: '{}'", getId(), e);
+            logPerfCounterErrorError("Error while parsing file: '{}'", PROCESS_IO_PC_METRIC_NAME, e);
         } finally {
             if (bufferedReader != null ) {
                 try {
