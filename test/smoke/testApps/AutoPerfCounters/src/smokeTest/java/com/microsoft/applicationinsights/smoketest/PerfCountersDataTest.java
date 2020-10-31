@@ -2,13 +2,10 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.microsoft.applicationinsights.internal.schemav2.Base;
-import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
-import com.microsoft.applicationinsights.internal.schemav2.PerformanceCounterData;
 import org.junit.*;
 
 import javax.annotation.Nullable;
@@ -26,37 +23,25 @@ public class PerfCountersDataTest extends AiSmokeTest {
         System.out.println("Waiting for performance data...");
         long start = System.currentTimeMillis();
 
-        // we should get these envelopes:
-        //      MetricData, metrics.name="Suspected Deadlocked Threads"
-        //      MetricData, metrics.name="Heap Memory Used (MB)"
-        //      MetricData, metrics.name="GC Total Count"
-        //      MetricData, metrics.name="GC Total Time"
-        //      PerformanceCounterData, categoryName=Memory, counterName=Available Bytes
-        //      PerformanceCounterData, category=Process, counter="IO Data Bytes/sec"
-        //      PerformanceCounterData, category=Processor, counter="% Processor Time", instance="_Total"
-        //      PerformanceCounterData, category=Process, counter=Private Bytes
-        //      PerformanceCounterData, Process, "% Processor Time"
+        Envelope availableMem = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Memory\\Available Bytes"), 150, TimeUnit.SECONDS);
+        Envelope totalCpu = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Processor(_Total)\\% Processor Time"), 150, TimeUnit.SECONDS);
 
-        Envelope availableMem = mockedIngestion.waitForItem(getPerfCounterPredicate("Memory", "Available Bytes"), 150, TimeUnit.SECONDS);
-        Envelope totalCpu = mockedIngestion.waitForItem(getPerfCounterPredicate("Processor", "% Processor Time", "_Total"), 150, TimeUnit.SECONDS);
-
-        Envelope processIo = mockedIngestion.waitForItem(getPerfCounterPredicate("Process", "IO Data Bytes/sec"), 150, TimeUnit.SECONDS);
-        Envelope processMemUsed = mockedIngestion.waitForItem(getPerfMetricPredicate("Private Bytes"), 150, TimeUnit.SECONDS);
-        Envelope processCpu = mockedIngestion.waitForItem(getPerfCounterPredicate("Process", "% Processor Time"), 150, TimeUnit.SECONDS);
+        Envelope processIo = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\IO Data Bytes/sec"), 150, TimeUnit.SECONDS);
+        Envelope processMemUsed = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\Private Bytes"), 150, TimeUnit.SECONDS);
+        Envelope processCpu = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\% Processor Time"), 150, TimeUnit.SECONDS);
         System.out.println("PerformanceCounterData are good: " + (System.currentTimeMillis() - start));
 
-        PerformanceCounterData pdMem = getBaseData(availableMem);
-        assertPerfCounter(pdMem);
-        assertNull(pdMem.getInstanceName());
+        MetricData metricMem = getBaseData(availableMem);
+        assertPerfMetric(metricMem);
+        assertEquals("\\Memory\\Available Bytes", metricMem.getMetrics().get(0).getName());
 
-        PerformanceCounterData pdCpu = getBaseData(totalCpu);
-        assertPerfCounter(pdCpu);
-        assertEquals("_Total", pdCpu.getInstanceName());
+        MetricData pdCpu = getBaseData(totalCpu);
+        assertPerfMetric(pdCpu);
+        assertEquals("\\Processor(_Total)\\% Processor Time", pdCpu.getMetrics().get(0).getName());
 
-        assertPerfCounter(getBaseData(processIo));
+        assertPerfMetric(getBaseData(processIo));
         assertPerfMetric(getBaseData(processMemUsed));
-        assertPerfCounter(getBaseData(processCpu));
-        assertSameInstanceName(processIo, processCpu);
+        assertPerfMetric(getBaseData(processCpu));
 
         start = System.currentTimeMillis();
         System.out.println("Waiting for metric data...");
@@ -83,50 +68,11 @@ public class PerfCountersDataTest extends AiSmokeTest {
         assertPerfMetric(mdGcTotalTime);
     }
 
-    private void assertSameInstanceName(Envelope... envelopes) {
-        Preconditions.checkArgument(envelopes.length > 0);
-        PerformanceCounterData firstOne = getBaseData(envelopes[0]);
-        String instanceName = firstOne.getInstanceName();
-        assertNotNull(instanceName);
-        if (envelopes.length == 1) {
-            return;
-        }
-        for (int i = 1; i < envelopes.length; i++) {
-            PerformanceCounterData pcd = getBaseData(envelopes[i]);
-            assertEquals(instanceName, pcd.getInstanceName());
-        }
-    }
-
-    private void assertPerfCounter(PerformanceCounterData perfCounter) {
-        assertTrue(perfCounter.getValue() > 0.0);
-    }
-
     private void assertPerfMetric(MetricData perfMetric) {
         List<DataPoint> metrics = perfMetric.getMetrics();
         assertEquals(1, metrics.size());
         DataPoint dp = metrics.get(0);
         assertEquals(DataPointType.Measurement, dp.getKind());
-    }
-
-    private static Predicate<Envelope> getPerfCounterPredicate(String category, String counter) {
-        return getPerfCounterPredicate(category, counter, null);
-    }
-
-    private static Predicate<Envelope> getPerfCounterPredicate(String category, String counter, String instance) {
-        Preconditions.checkNotNull(category, "category");
-        Preconditions.checkNotNull(counter, "counter");
-        return new Predicate<Envelope>() {
-            @Override
-            public boolean apply(@Nullable Envelope input) {
-                Base data = input.getData();
-                if (!data.getBaseType().equals("PerformanceCounterData")) {
-                    return false;
-                }
-                PerformanceCounterData pcd = getBaseData(input);
-                return category.equals(pcd.getCategoryName()) && counter.equals(pcd.getCounterName())
-                        && (instance == null || instance.equals(pcd.getInstanceName()));
-            }
-        };
     }
 
     private static Predicate<Envelope> getPerfMetricPredicate(String name) {
