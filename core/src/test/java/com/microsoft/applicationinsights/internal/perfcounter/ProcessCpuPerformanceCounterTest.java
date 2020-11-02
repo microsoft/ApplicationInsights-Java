@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.perfcounter;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.junit.Test;
@@ -37,14 +38,12 @@ public final class ProcessCpuPerformanceCounterTest {
         }
 
         public void track(Telemetry telemetry) {
-            if (!(telemetry instanceof PerformanceCounterTelemetry)) {
+            if (!(telemetry instanceof MetricTelemetry)) {
                 assertFalse(true);
             }
 
-            PerformanceCounterTelemetry pct = (PerformanceCounterTelemetry)telemetry;
-            assertTrue(pct.getCategoryName().startsWith("Process("));
-            assertEquals(Constants.PROCESS_MEM_PC_COUNTER_NAME, pct.getCounterName());
-            assertEquals("", pct.getInstanceName());
+            MetricTelemetry pct = (MetricTelemetry) telemetry;
+            assertEquals(Constants.PROCESS_MEM_PC_METRICS_NAME, pct.getName());
         }
     }
 
