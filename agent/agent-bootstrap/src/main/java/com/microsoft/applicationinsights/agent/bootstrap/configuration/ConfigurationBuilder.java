@@ -84,7 +84,7 @@ public class ConfigurationBuilder {
     private static void loadJmxMetrics(Configuration config) throws IOException {
         String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, (String)null);
 
-        // JmxMetrics env variable has higher precedence over jmxMetrics config from ApplicationInsights.json
+        // JmxMetrics env variable has higher precedence over jmxMetrics config from applicationinsights.json
         if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
             Moshi moshi = new Moshi.Builder().build();
             Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
@@ -124,25 +124,28 @@ public class ConfigurationBuilder {
             return new Configuration();
         }
 
-        Path configPath;
-        boolean warnIfMissing;
         String configPathStr = getEnvVarOrProperty(APPLICATIONINSIGHTS_CONFIGURATION_FILE, "applicationinsights.configuration.file");
-        if (configPathStr == null) {
-            configPath = agentJarPath.resolveSibling("ApplicationInsights.json");
-            warnIfMissing = false;
-        } else {
-            configPath = agentJarPath.resolveSibling(configPathStr);
-            warnIfMissing = true;
+        if (configPathStr != null) {
+            Path configPath = agentJarPath.resolveSibling(configPathStr);
+            if (Files.exists(configPath)) {
+                return loadJsonConfigFile(configPath);
+            } else {
+                // fail fast any time configuration is invalid
+                throw new IllegalStateException("could not find requested configuration file: " + configPathStr);
+            }
         }
 
+        Path configPath = agentJarPath.resolveSibling("applicationinsights.json");
         if (Files.exists(configPath)) {
             return loadJsonConfigFile(configPath);
-        } else {
-            if (warnIfMissing) {
-                configurationMessages.add(new ConfigurationMessage("could not find configuration file: {}", configPathStr));
-            }
-            return new Configuration();
         }
+
+        if (Files.exists(agentJarPath.resolveSibling("ApplicationInsights.json"))) {
+            throw new IllegalStateException("found ApplicationInsights.json, but it should be lowercase: applicationinsights.json");
+        }
+
+        // json configuration file is not required, ok to configure via env var alone
+        return new Configuration();
     }
 
     public static void logConfigurationMessages() {

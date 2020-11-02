@@ -30,7 +30,7 @@ public class ConfigurationTest {
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
     private static Configuration loadConfiguration() throws IOException {
-        CharSource json = Resources.asCharSource(Resources.getResource("ApplicationInsights.json"), Charsets.UTF_8);
+        CharSource json = Resources.asCharSource(Resources.getResource("applicationinsights.json"), Charsets.UTF_8);
         Moshi moshi = new Moshi.Builder().build();
         JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
         return jsonAdapter.fromJson(json.read());

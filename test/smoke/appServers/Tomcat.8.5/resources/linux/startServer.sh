@@ -8,7 +8,7 @@ fi
 if [ ! -z "$AI_AGENT_MODE" ]; then
 
     echo "AI_AGENT_MODE=$AI_AGENT_MODE"
-    cp -f ./${AI_AGENT_MODE}_ApplicationInsights.json ./aiagent/ApplicationInsights.json
+    cp -f ./${AI_AGENT_MODE}_applicationinsights.json ./aiagent/applicationinsights.json
 
     export CATALINA_OPTS="-javaagent:/root/docker-stage/aiagent/$AGENT_JAR_NAME $CATALINA_OPTS"
 fi

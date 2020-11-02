@@ -9,7 +9,7 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
-@UseAgent("Micrometer")
+@UseAgent("micrometer")
 public class MicrometerTest extends AiSmokeTest {
 
     @Test
