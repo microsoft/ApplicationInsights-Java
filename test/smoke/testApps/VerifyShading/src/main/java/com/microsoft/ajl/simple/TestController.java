@@ -57,7 +57,12 @@ public class TestController {
         expectedEntries.add("applicationinsights\\.appsvc\\.logback\\.xml");
         expectedEntries.add("applicationinsights\\.console\\.logback\\.xml");
         expectedEntries.add("applicationinsights\\.file\\.logback\\.xml");
+        expectedEntries.add("applicationinsights\\.file-and-console\\.logback\\.xml");
         expectedEntries.add("ai\\.sdk-version\\.properties");
+        expectedEntries.add("logger-config/");
+        expectedEntries.add("logger-config/common\\.xml");
+        expectedEntries.add("logger-config/console\\.appender\\.xml");
+        expectedEntries.add("logger-config/file\\.appender\\.xml");
         expectedEntries.add("rp-logger-config/");
         expectedEntries.add("rp-logger-config/user-logfile\\.appender\\.xml");
         expectedEntries.add("rp-logger-config/diagnostics\\.appender\\.xml");

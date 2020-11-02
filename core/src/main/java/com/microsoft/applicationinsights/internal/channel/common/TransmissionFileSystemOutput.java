@@ -160,7 +160,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
             return false;
         }
 
-        logger.info("Data persisted to file. To be sent when the network is available.");
+        logger.debug("Data persisted to file. To be sent when the network is available.");
         return true;
     }
 

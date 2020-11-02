@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-@UseAgent("CustomDimensions")
+@UseAgent("customdimensions")
 public class CustomDimensionsTest extends AiSmokeTest {
 
     @Test

@@ -7,7 +7,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-@UseAgent("Sampling")
+@UseAgent("sampling")
 public class SamplingTest extends AiSmokeTest {
 
     @Test

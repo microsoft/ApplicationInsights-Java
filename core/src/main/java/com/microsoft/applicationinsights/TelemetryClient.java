@@ -390,7 +390,7 @@ public class TelemetryClient {
     public void track(Telemetry telemetry) {
 
         if (generateCounter.incrementAndGet() % 10000 == 0) {
-            logger.info("Total events generated till now {}", generateCounter.get());
+            logger.debug("Total events generated till now {}", generateCounter.get());
         }
 
         if (telemetry == null) {

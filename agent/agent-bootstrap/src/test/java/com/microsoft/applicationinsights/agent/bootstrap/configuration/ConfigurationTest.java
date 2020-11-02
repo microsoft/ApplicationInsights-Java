@@ -30,7 +30,7 @@ public class ConfigurationTest {
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
     private static Configuration loadConfiguration() throws IOException {
-        CharSource json = Resources.asCharSource(Resources.getResource("ApplicationInsights.json"), Charsets.UTF_8);
+        CharSource json = Resources.asCharSource(Resources.getResource("applicationinsights.json"), Charsets.UTF_8);
         Moshi moshi = new Moshi.Builder().build();
         JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
         return jsonAdapter.fromJson(json.read());
@@ -56,12 +56,12 @@ public class ConfigurationTest {
         assertEquals("myproxy", configuration.proxy.host);
         assertEquals(8080, configuration.proxy.port);
 
-        PreviewConfiguration preview = configuration.preview;
+        assertEquals("debug", configuration.selfDiagnostics.level);
+        assertEquals("file", configuration.selfDiagnostics.destination);
 
-        assertEquals("file", preview.selfDiagnostics.destination);
-        assertEquals("/var/log/applicationinsights", preview.selfDiagnostics.directory);
-        assertEquals("error", preview.selfDiagnostics.level);
-        assertEquals(10, preview.selfDiagnostics.maxSizeMB);
+        assertEquals("/var/log/applicationinsights/abc.log", configuration.selfDiagnostics.file.path);
+        assertEquals(10, configuration.selfDiagnostics.file.maxSizeMb);
+        assertEquals(2, configuration.selfDiagnostics.file.maxHistory);
     }
 
     @Test
