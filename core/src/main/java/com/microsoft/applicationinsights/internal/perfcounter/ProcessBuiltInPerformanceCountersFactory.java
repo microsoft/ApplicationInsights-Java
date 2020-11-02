@@ -34,11 +34,9 @@ import org.slf4j.LoggerFactory;
  *
  * Created by gupele on 3/3/2015.
  */
-final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCountersFactory, WindowsPerformanceCountersFactory {
+final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCountersFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(ProcessBuiltInPerformanceCountersFactory.class);
-
-    private Iterable<WindowsPerformanceCounterData> windowsPCsData;
 
     /**
      * Creates the {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter} that are
@@ -54,14 +52,13 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
                 return getWindowsPerformanceCounters();
             } else if (SystemInformation.INSTANCE.isUnix()) {
                 return getUnixPerformanceCounters();
-            } else {
-                logger.error("Unknown OS, performance counters are not created.");
             }
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             try {
-                logger.error("Error while creating performance counters: '{}'", t.toString());            } catch (ThreadDeath td) {
+                logger.error("Error while creating performance counters: '{}'", t.toString());
+            } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
                 // chomp
@@ -105,24 +102,6 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
         ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
 
         try {
-            if (windowsPCsData != null) {
-                WindowsPerformanceCounterAsMetric pcWindowsMetric = new WindowsPerformanceCounterAsMetric(windowsPCsData);
-                performanceCounters.add(pcWindowsMetric);
-                windowsPCsData = null;
-            }
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable e) {
-            try {
-                logger.error("Failed to create WindowsPerformanceCounterAsMetric: '{}'", e.toString());
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-
-        try {
             WindowsPerformanceCounterAsPC pcWindowsPCs = new WindowsPerformanceCounterAsPC();
             performanceCounters.add(pcWindowsPCs);
         } catch (ThreadDeath td) {
@@ -138,10 +117,5 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
         }
 
         return performanceCounters;
-    }
-
-    @Override
-    public void setWindowsPCs(Iterable<WindowsPerformanceCounterData> windowsPCsData) {
-        this.windowsPCsData = windowsPCsData;
     }
 }
