@@ -71,6 +71,6 @@ public final class ProcessPerformanceCountersModule extends AbstractPerformanceC
             return;
         }
 
-        throw new IllegalStateException("Custom Performance Counter metrics is not enabled in Java 3.0 Agent.");
+        throw new IllegalStateException("Custom performance counter metrics have been disabled for Java 3.0+ Agent.");
     }
 }
