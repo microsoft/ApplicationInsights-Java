@@ -27,6 +27,7 @@ import java.util.Map;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 
 import com.google.common.base.Strings;
@@ -56,8 +57,9 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
     public WindowsPerformanceCounterAsPC() throws Throwable {
         Preconditions.checkState(SystemInformation.INSTANCE.isWindows(), "Must be used under Windows OS.");
 
-        register(Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, Constants.INSTANCE_NAME_TOTAL);
-        register(Constants.PROCESS_CATEGORY, Constants.PROCESS_IO_PC_COUNTER_NAME, JniPCConnector.translateInstanceName(JniPCConnector.PROCESS_SELF_INSTANCE_NAME));
+        register(Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, Constants.INSTANCE_NAME_TOTAL, Constants.TOTAL_CPU_PC_METRIC_NAME);
+        register(Constants.PROCESS_CATEGORY, Constants.PROCESS_IO_PC_COUNTER_NAME, JniPCConnector.translateInstanceName(JniPCConnector.PROCESS_SELF_INSTANCE_NAME),
+                Constants.PROCESS_IO_PC_METRIC_NAME);
 
         if (pcs.isEmpty()) {
             // Failed to register, the performance counter is not needed.
@@ -100,7 +102,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
     }
 
     private void send(TelemetryClient telemetryClient, double value, WindowsPerformanceCounterData data) {
-        PerformanceCounterTelemetry telemetry = new PerformanceCounterTelemetry(data.categoryName, data.counterName, data.instanceName, value);
+        MetricTelemetry telemetry = new MetricTelemetry(data.getDisplayName(), value);
         telemetryClient.track(telemetry);
     }
 
@@ -111,7 +113,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
      * @param counter The counter
      * @param instance The instnace
      */
-    private void register(String category, String counter, String instance) {
+    private void register(String category, String counter, String instance, String metricName) {
         String key = JniPCConnector.addPerformanceCounter(category, counter, instance);
         if (!Strings.isNullOrEmpty(key)) {
             try {
@@ -119,7 +121,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                         setCategoryName(category).
                         setCounterName(counter).
                         setInstanceName(instance).
-                        setDisplayName(category + " " + counter);
+                        setDisplayName(metricName);
                 pcs.put(key, data);
             } catch (ThreadDeath td) {
                 throw td;

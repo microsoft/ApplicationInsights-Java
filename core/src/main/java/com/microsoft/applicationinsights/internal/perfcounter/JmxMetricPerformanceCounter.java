@@ -29,8 +29,6 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_MEMORY_PC_COUNTER_NAME;
-
 /**
  * A performance counter that sends {@link com.microsoft.applicationinsights.telemetry.MetricTelemetry}
  *
@@ -48,15 +46,7 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
     protected void send(TelemetryClient telemetryClient, String displayName, double value) {
         logger.trace("Metric JMX: {}, {}", displayName, value);
 
-        MetricTelemetry telemetry = new MetricTelemetry();
-        telemetry.setName(displayName);
-        telemetry.setValue(value);
-
-        // keep "Available Bytes" under PerformanceCounter to prevent breaking performance blade on the ApplicationInsights Portal
-        if (displayName.equals(TOTAL_MEMORY_PC_COUNTER_NAME)) {
-            telemetry.markAsCustomPerfCounter();
-        }
-
+        MetricTelemetry telemetry = new MetricTelemetry(displayName, value);
         telemetryClient.track(telemetry);
     }
 }

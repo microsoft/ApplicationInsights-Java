@@ -38,7 +38,7 @@ public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
 
     public final static String NAME = "MemoryUsage";
 
-        private final static String HEAP_MEM_USED = "Heap Memory Used (MB)";
+    private final static String HEAP_MEM_USED = "Heap Memory Used (MB)";
 
     private static final long Megabyte = 1024 * 1024;
 

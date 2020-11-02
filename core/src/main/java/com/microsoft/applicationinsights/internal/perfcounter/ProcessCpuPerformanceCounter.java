@@ -22,11 +22,11 @@
 package com.microsoft.applicationinsights.internal.perfcounter;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
-import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.microsoft.applicationinsights.internal.perfcounter.Constants.PROCESS_CPU_PC_METRIC_NAME;
 
 /**
  * The class supplies the cpu usage of the Java process the SDK is in.
@@ -72,12 +72,8 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
             return;
         }
 
-        logger.trace("Performance Counter: {} {}: {}", getProcessCategoryName(), Constants.CPU_PC_COUNTER_NAME, processCpuUsage);
-        Telemetry telemetry = new PerformanceCounterTelemetry(
-                getProcessCategoryName(),
-                Constants.CPU_PC_COUNTER_NAME,
-                SystemInformation.INSTANCE.getProcessId(),
-                processCpuUsage);
+        logger.trace("Performance Counter: {}: {}", PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
+        MetricTelemetry telemetry = new MetricTelemetry(PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
         telemetryClient.track(telemetry);
     }
 }

@@ -26,12 +26,13 @@ import java.io.FileReader;
 import java.util.ArrayList;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 
 /**
  * The class supplies the overall cpu usage of the machine.
@@ -83,13 +84,8 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
 
             double totalCpuUsage = calculateTotalCpuUsage(array);
 
-            logger.trace("Sending Performance Counter: {} {} {}: {}", Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, Constants.INSTANCE_NAME_TOTAL, totalCpuUsage);
-            Telemetry telemetry = new PerformanceCounterTelemetry(
-                    Constants.TOTAL_CPU_PC_CATEGORY_NAME,
-                    Constants.CPU_PC_COUNTER_NAME,
-                    Constants.INSTANCE_NAME_TOTAL,
-                    totalCpuUsage);
-
+            logger.trace("Sending Performance Counter: {}: {}", TOTAL_CPU_PC_METRIC_NAME, totalCpuUsage);
+            MetricTelemetry telemetry = new MetricTelemetry(TOTAL_CPU_PC_METRIC_NAME, totalCpuUsage);
             telemetryClient.track(telemetry);
         }
     }
