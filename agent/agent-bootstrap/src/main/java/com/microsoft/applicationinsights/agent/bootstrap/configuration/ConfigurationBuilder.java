@@ -293,6 +293,11 @@ public class ConfigurationBuilder {
             buffer.readFrom(in);
             try {
                 Configuration configuration = jsonAdapter.fromJson(buffer);
+                if (configuration.instrumentationSettings != null) {
+                    throw new IllegalStateException("It looks like you are using an old applicationinsights.json file" +
+                            " which still has \"instrumentationSettings\", please see the docs for the new format:" +
+                            " https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+                }
                 configuration.configPath = configPath;
                 configuration.lastModifiedTime = lastModifiedTime;
                 return configuration;

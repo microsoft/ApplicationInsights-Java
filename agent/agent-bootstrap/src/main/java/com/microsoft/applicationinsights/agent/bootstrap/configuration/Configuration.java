@@ -46,6 +46,9 @@ public class Configuration {
     public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
     public PreviewConfiguration preview = new PreviewConfiguration();
 
+    // this is just here to detect if using old format in order to give a helpful error message
+    public Map<String, Object> instrumentationSettings;
+
     public enum ProcessorMatchType {
         //Moshi JSON builder donot allow case insensitive mapping
         strict, regexp
