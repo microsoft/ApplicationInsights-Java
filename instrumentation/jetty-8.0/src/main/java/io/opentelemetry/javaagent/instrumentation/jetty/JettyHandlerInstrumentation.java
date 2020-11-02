@@ -9,6 +9,7 @@ import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNa
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
+import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
@@ -35,7 +36,19 @@ public final class JettyHandlerInstrumentation extends Instrumenter.Default {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return not(named("org.eclipse.jetty.server.handler.HandlerWrapper"))
+    // skipping built-in handlers, so that for servlets there will be no span started by jetty.
+    // this is so that the servlet instrumentation will capture contextPath and servletPath
+    // normally, which the jetty instrumentation does not capture since jetty doesn't populate
+    // contextPath and servletPath until right before calling the servlet
+    // (another option is to instrument ServletHolder.handle() to capture those fields)
+    //
+    // using nameStartsWith() as there are many built-in handlers, e.g.
+    // org.eclipse.jetty.server.handler.HandlerWrapper
+    // org.eclipse.jetty.server.handler.ScopedHandler
+    // org.eclipse.jetty.server.handler.ContextHandler
+    // org.eclipse.jetty.security.SecurityHandler
+    // org.eclipse.jetty.servlet.ServletHandler
+    return not(nameStartsWith("org.eclipse.jetty."))
         .and(implementsInterface(named("org.eclipse.jetty.server.Handler")));
   }
 
@@ -56,6 +69,8 @@ public final class JettyHandlerInstrumentation extends Instrumenter.Default {
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
     return singletonMap(
         named("handle")
+            // need to capture doHandle() for handlers that extend built-in handlers excluded above
+            .or(named("doHandle"))
             .and(takesArgument(0, named("java.lang.String")))
             .and(takesArgument(1, named("org.eclipse.jetty.server.Request")))
             .and(takesArgument(2, named("javax.servlet.http.HttpServletRequest")))

@@ -82,13 +82,22 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
   }
 
   /**
-   * Creates new scoped context with the given span.
+   * Creates new scoped context, based on the current context, with the given span.
    *
    * <p>Attaches new context to the request to avoid creating duplicate server spans.
    */
   public Scope startScope(Span span, STORAGE storage) {
+    return startScope(span, storage, Context.current());
+  }
+
+  /**
+   * Creates new scoped context, based on the given context, with the given span.
+   *
+   * <p>Attaches new context to the request to avoid creating duplicate server spans.
+   */
+  public Scope startScope(Span span, STORAGE storage, Context context) {
     // TODO we could do this in one go, but TracingContextUtils.CONTEXT_SPAN_KEY is private
-    Context newContext = withSpan(span, Context.current().withValue(CONTEXT_SERVER_SPAN_KEY, span));
+    Context newContext = withSpan(span, context.withValue(CONTEXT_SERVER_SPAN_KEY, span));
     attachServerContext(newContext, storage);
     return withScopedContext(newContext);
   }

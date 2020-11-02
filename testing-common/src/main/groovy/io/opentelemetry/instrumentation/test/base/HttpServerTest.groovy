@@ -64,11 +64,11 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     port = PortUtils.randomOpenPort()
     address = buildAddress()
     server = startServer(port)
-    println getClass().name + " http server started at: http://localhost:$port/"
+    println getClass().name + " http server started at: http://localhost:$port" + getContextPath()
   }
 
   URI buildAddress() {
-    return new URI("http://localhost:$port/")
+    return new URI("http://localhost:$port" + getContextPath() + "/")
   }
 
   abstract SERVER startServer(int port)
@@ -85,8 +85,12 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
 
   abstract void stopServer(SERVER server)
 
-  String expectedServerSpanName(String method, ServerEndpoint endpoint) {
-    return endpoint == PATH_PARAM ? "/path/:id/param" : endpoint.resolvePath(address).path
+  String expectedServerSpanName(ServerEndpoint endpoint) {
+    return endpoint == PATH_PARAM ? getContextPath() + "/path/:id/param" : endpoint.resolvePath(address).path
+  }
+
+  String getContextPath() {
+    return ""
   }
 
   boolean hasHandlerSpan() {
@@ -455,7 +459,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
   // parent span must be cast otherwise it breaks debugging classloading (junit loads it early)
   void serverSpan(TraceAssert trace, int index, String traceID = null, String parentID = null, String method = "GET", Long responseContentLength = null, ServerEndpoint endpoint = SUCCESS) {
     trace.span(index) {
-      name expectedServerSpanName(method, endpoint)
+      name expectedServerSpanName(endpoint)
       kind Span.Kind.SERVER // can't use static import because of SERVER type parameter
       errored endpoint.errored
       if (parentID != null) {
