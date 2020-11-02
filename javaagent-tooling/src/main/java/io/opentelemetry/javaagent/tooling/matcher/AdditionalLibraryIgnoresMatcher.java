@@ -130,6 +130,10 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
             || name.equals("org.springframework.core.OverridingClassLoader")) {
           return false;
         }
+        // Spring boot actuator / micrometer instrumentation
+        if (name.equals("org.springframework.core.io.ClassPathResource")) {
+          return false;
+        }
         return true;
       }
 
@@ -306,7 +310,7 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
     return false;
   }
 
-  private static Set<String> INSTRUMENTED_SPRING_BOOT_CLASSES =
+  private static final Set<String> INSTRUMENTED_SPRING_BOOT_CLASSES =
       Sets.newHashSet(
           "org.springframework.boot.autoconfigure.BackgroundPreinitializer$",
           "org.springframework.boot.autoconfigure.condition.OnClassCondition$",
@@ -319,7 +323,9 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
           "org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext",
           "org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext",
           "org.springframework.boot.web.embedded.tomcat.TomcatWebServer$",
-          "org.springframework.boot.web.embedded.tomcat.TomcatEmbeddedWebappClassLoader");
+          "org.springframework.boot.web.embedded.tomcat.TomcatEmbeddedWebappClassLoader",
+          // Spring boot actuator / micrometer instrumentation
+          "org.springframework.boot.autoconfigure.AutoConfigurationImportSelector");
 
   private static String outerClassName(final String name) {
     int separator = name.indexOf('$');
