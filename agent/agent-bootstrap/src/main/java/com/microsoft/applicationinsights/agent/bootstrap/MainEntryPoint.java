@@ -21,17 +21,21 @@
 package com.microsoft.applicationinsights.agent.bootstrap;
 
 import java.io.File;
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.nio.file.Path;
+import java.security.ProtectionDomain;
 
+import ch.qos.logback.classic.Level;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.SelfDiagnostics;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
-import io.opentelemetry.javaagent.bootstrap.ConfigureLogging;
 import io.opentelemetry.javaagent.bootstrap.AgentInitializer;
+import io.opentelemetry.javaagent.bootstrap.ConfigureLogging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -62,16 +66,17 @@ public class MainEntryPoint {
         boolean success = false;
         Logger startupLogger = null;
         try {
-            File agentJarFile = new File(bootstrapURL.toURI());
-            DiagnosticsHelper.setAgentJarFile(agentJarFile);
+            Path agentPath = new File(bootstrapURL.toURI()).toPath();
+            DiagnosticsHelper.setAgentJarFile(agentPath);
             // configuration is only read this early in order to extract logging configuration
-            configuration = ConfigurationBuilder.create(agentJarFile.toPath());
+            configuration = ConfigurationBuilder.create(agentPath);
             configPath = configuration.configPath;
             lastModifiedTime = configuration.lastModifiedTime;
-            startupLogger = configureLogging(configuration.preview.selfDiagnostics);
+            startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
             ConfigurationBuilder.logConfigurationMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
             AgentInitializer.start(instrumentation, bootstrapURL, false);
+            startupLogger.info("ApplicationInsights Java Agent started successfully");
             success = true;
             LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
                     .info("Application Insights Codeless Agent Attach Successful");
@@ -79,24 +84,27 @@ public class MainEntryPoint {
             throw td;
         } catch (Throwable t) {
             if (startupLogger != null) {
-                startupLogger.error("Agent failed to start.", t);
+                startupLogger.error("ApplicationInsights Java Agent failed to start", t);
             } else {
                 t.printStackTrace();
             }
         } finally {
             try {
-                StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success);
+                StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
             } catch (Exception e) {
-                startupLogger.error("Error writing status.json", e); // lgtm[java/dereferenced-value-may-be-null]
+                if (startupLogger != null) {
+                    startupLogger.error("Error writing status.json", e);
+                } else {
+                    e.printStackTrace();
+                }
             }
             MDC.clear();
         }
     }
 
-    private static Logger configureLogging(SelfDiagnostics selfDiagnostics) {
+    private static Logger configureLogging(SelfDiagnostics selfDiagnostics, Path agentPath) {
         String logbackXml;
         String destination = selfDiagnostics.destination;
-        boolean logUnknownDestination = false;
         if (DiagnosticsHelper.isAppServiceCodeless()) {
             // User-accessible IPA log file. Enabled by default.
             if ("false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_LOG_FILE_ENABLED_ENV_VAR))) {
@@ -114,56 +122,78 @@ public class MainEntryPoint {
                 System.setProperty("ai.config.appender.etw.location", "");
             }
             logbackXml = "applicationinsights.appsvc.logback.xml";
-        } else if (destination == null || destination.equalsIgnoreCase("console")) {
-            logbackXml = "applicationinsights.console.logback.xml";
+        } else if (destination == null || destination.equalsIgnoreCase("file+console")) {
+            logbackXml = "applicationinsights.file-and-console.logback.xml";
         } else if (destination.equalsIgnoreCase("file")) {
             logbackXml = "applicationinsights.file.logback.xml";
-        } else {
-            logUnknownDestination = true;
+        } else if (destination.equalsIgnoreCase("console")) {
             logbackXml = "applicationinsights.console.logback.xml";
+        } else {
+            throw new IllegalStateException("Unknown self-diagnostics destination: " + destination);
         }
         ClassLoader cl = ConfigureLogging.class.getClassLoader();
         if (cl == null) {
             cl = ClassLoader.getSystemClassLoader();
         }
         final URL configurationFile = cl.getResource(logbackXml);
-        System.setProperty("applicationinsights.logback.configurationFile", configurationFile.toString());
 
-        String logbackDirectory = selfDiagnostics.directory;
-        String logbackLevel = selfDiagnostics.level;
-        int logbackMaxFileSizeMB = selfDiagnostics.maxSizeMB;
+        Level level = getLevel(selfDiagnostics.level);
 
-        if (logbackDirectory == null) {
-            logbackDirectory = System.getProperty("java.io.tmpdir");
+        Path logFilePath = agentPath.resolveSibling(selfDiagnostics.file.path);
+        Path logFileNamePath = logFilePath.getFileName();
+        if (logFileNamePath == null) {
+            throw new IllegalStateException("Unexpected empty self-diagnostics file path");
         }
-        if (logbackDirectory == null) {
-            // this should never get to here, but just in case, otherwise setProperty() will fail below
-            logbackDirectory = ".";
-        }
-        System.setProperty("applicationinsights.logback.directory", logbackDirectory);
-        System.setProperty("applicationinsights.logback.level", logbackLevel);
-        System.setProperty("applicationinsights.logback.maxFileSize", logbackMaxFileSizeMB + "MB");
-        System.setProperty("applicationinsights.logback.totalSizeCap", logbackMaxFileSizeMB * 2 + "MB");
-        if (isDebugOrLower(logbackLevel)) {
-            // never want to log apache http at trace or debug, it's just way to verbose
-            System.setProperty("applicationinsights.logback.level.org.apache.http", "info");
+        String logFileName = logFileNamePath.toString();
+        String rollingFileName;
+        int index = logFileName.lastIndexOf('.');
+        if (index != -1) {
+            rollingFileName = logFileName.substring(0, index) + ".%i" + logFileName.substring(index);
         } else {
-            System.setProperty("applicationinsights.logback.level.org.apache.http", logbackLevel);
+            rollingFileName = logFileName + ".%i";
         }
+        Path rollingFilePath = logFilePath.resolveSibling(rollingFileName);
+
+        // never want to log apache http at trace or debug, it's just way to verbose
+        Level atLeastInfoLevel = getMaxLevel(level, Level.INFO);
+
+        Level otherLibsLevel = level == Level.INFO ? Level.WARN : level;
+
         try {
-            Logger logger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
-            if (logUnknownDestination) {
-                logger.error("Unknown self-diagnostics destination: {}", destination);
-            }
-            return logger;
+            System.setProperty("applicationinsights.logback.configurationFile", configurationFile.toString());
+
+            System.setProperty("applicationinsights.logback.file.path", logFilePath.toString());
+            System.setProperty("applicationinsights.logback.file.rollingPath", rollingFilePath.toString());
+            System.setProperty("applicationinsights.logback.file.maxSize", selfDiagnostics.file.maxSizeMb + "MB");
+            System.setProperty("applicationinsights.logback.file.maxIndex", Integer.toString(selfDiagnostics.file.maxHistory));
+
+            System.setProperty("applicationinsights.logback.level.other", otherLibsLevel.toString());
+            System.setProperty("applicationinsights.logback.level", level.levelStr);
+
+            System.setProperty("applicationinsights.logback.level.atLeastInfo", atLeastInfoLevel.levelStr);
+
+            return LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
         } finally {
             System.clearProperty("applicationinsights.logback.configurationFile");
-            System.clearProperty("applicationinsights.logback.directory");
+            System.clearProperty("applicationinsights.logback.file.path");
+            System.clearProperty("applicationinsights.logback.file.rollingPath");
+            System.clearProperty("applicationinsights.logback.file.maxSize");
+            System.clearProperty("applicationinsights.logback.file.maxIndex");
             System.clearProperty("applicationinsights.logback.level");
-            System.clearProperty("applicationinsights.logback.maxFileSize");
-            System.clearProperty("applicationinsights.logback.totalSizeCap");
             System.clearProperty("applicationinsights.logback.level.org.apache.http");
         }
+    }
+
+    private static Level getMaxLevel(Level level1, Level level2) {
+        return level1.isGreaterOrEqual(level2) ? level1 : level2;
+    }
+
+    private static Level getLevel(String levelStr) {
+        Level level = Level.valueOf(levelStr);
+        if (!level.levelStr.equalsIgnoreCase(levelStr)) {
+            throw new IllegalStateException("Unexpected self-diagnostic level: " + levelStr);
+        }
+        return level;
     }
 
     private static boolean isDebugOrLower(String level) {

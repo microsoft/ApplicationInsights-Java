@@ -43,7 +43,11 @@ public class Configuration {
     public Map<String, Map<String, Object>> instrumentation = new HashMap<String, Map<String, Object>>();
     public Heartbeat heartbeat = new Heartbeat();
     public Proxy proxy = new Proxy();
+    public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
     public PreviewConfiguration preview = new PreviewConfiguration();
+
+    // this is just here to detect if using old format in order to give a helpful error message
+    public Map<String, Object> instrumentationSettings;
 
     public enum ProcessorMatchType {
         //Moshi JSON builder donot allow case insensitive mapping
@@ -91,7 +95,6 @@ public class Configuration {
 
     public static class PreviewConfiguration {
 
-        public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
         public boolean developerMode;
         public List<ProcessorConfig> processors = new ArrayList<>();
         public boolean openTelemetryApiSupport;
@@ -99,10 +102,16 @@ public class Configuration {
 
     public static class SelfDiagnostics {
 
-        public String destination;
-        public String directory;
-        public String level = "error";
-        public int maxSizeMB = 10;
+        public String level = "info";
+        public String destination = "file+console";
+        public DestinationFile file = new DestinationFile();
+    }
+
+    public static class DestinationFile {
+
+        public String path = "applicationinsights.log"; // relative to the directory where agent jar is located
+        public int maxSizeMb = 5;
+        public int maxHistory = 1;
     }
 
     public static class ProcessorConfig {

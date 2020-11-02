@@ -69,7 +69,7 @@ public final class ConfigurationFileLocator {
 
             inputStream = ConfigurationFileLocator.class.getClassLoader().getResourceAsStream(configurationFileName);
             if (inputStream != null) {
-                logger.info("Configuration file has been successfully found as resource");
+                logger.debug("Configuration file has been successfully found as resource");
                 return inputStream;
             }
 
@@ -88,7 +88,7 @@ public final class ConfigurationFileLocator {
         }
 
         if (configurationFile != null) {
-            logger.info("Configuration file has been successfully found in: '{}'", configurationFile);
+            logger.debug("Configuration file has been successfully found in: '{}'", configurationFile);
             try {
                 return new FileInputStream(configurationFile);
             } catch (FileNotFoundException e) {
@@ -118,7 +118,7 @@ public final class ConfigurationFileLocator {
                 }
             }
 
-            logger.info(
+            logger.debug(
                     "Configuration file '{}' was {} found by default class loader",
                     configurationFileName,
                     configurationFile == null ? "NOT " : "");
@@ -230,7 +230,7 @@ public final class ConfigurationFileLocator {
             return configFile.getAbsolutePath();
         }
 
-        logger.info("Did not find configuration file '{}' in '{}'", configurationFileName, path);
+        logger.debug("Did not find configuration file '{}' in '{}'", configurationFileName, path);
 
 
         return null;

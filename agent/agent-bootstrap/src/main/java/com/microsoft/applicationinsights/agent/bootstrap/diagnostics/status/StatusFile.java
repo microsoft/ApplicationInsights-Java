@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 
 public class StatusFile {
 
-    private static final Logger logger = LoggerFactory.getLogger(StatusFile.class);
-
     private static final List<DiagnosticsValueFinder> VALUE_FINDERS = new ArrayList<>();
 
     // visible for testing
@@ -131,11 +129,15 @@ public class StatusFile {
     }
 
     public static <T> void putValueAndWrite(String key, T value) {
+        putValueAndWrite(key, value, true);
+    }
+
+    public static <T> void putValueAndWrite(String key, T value, boolean loggingInitialized) {
         if (!shouldWrite()) {
             return;
         }
         CONSTANT_VALUES.put(key, value);
-        write();
+        write(loggingInitialized);
     }
 
     public static <T> void putValue(String key, T value) {
@@ -146,6 +148,10 @@ public class StatusFile {
     }
 
     public static void write() {
+        write(false);
+    }
+
+    private static void write(boolean loggingInitialized) {
         if (!shouldWrite()) {
             return;
         }
@@ -161,15 +167,26 @@ public class StatusFile {
                 synchronized (lock) {
                     final File file = new File(directory, fileName);
                     boolean dirsWereCreated = file.getParentFile().mkdirs();
+
+                    Logger logger = loggingInitialized ? LoggerFactory.getLogger(StatusFile.class) : null;
+
                     if (dirsWereCreated || file.getParentFile().exists()) {
                         BufferedSink b = null;
                         try {
                             b = getBuffer(file);
                             new Moshi.Builder().build().adapter(Map.class).indent(" ").nullSafe().toJson(b, map);
                             b.flush();
-                            logger.info("Wrote status to file: {}", file.getAbsolutePath());
+                            if (logger != null) {
+                                logger.info("Wrote status to file: {}", file.getAbsolutePath());
+                            } else {
+                                System.out.println("Wrote status to file: " + file.getAbsolutePath());
+                            }
                         } catch (Exception e) {
-                            logger.error("Error writing {}", file.getAbsolutePath(), e);
+                            if (logger != null) {
+                                logger.error("Error writing {}", file.getAbsolutePath(), e);
+                            } else {
+                                e.printStackTrace();
+                            }
                             if (b != null) {
                                 try {
                                     b.close();
@@ -179,8 +196,13 @@ public class StatusFile {
                             }
                         }
                     } else {
-                        logger.error("Parent directories for status file could not be created: {}",
-                                file.getAbsolutePath());
+                        if (logger != null) {
+                            logger.error("Parent directories for status file could not be created: {}",
+                                    file.getAbsolutePath());
+                        } else {
+                            System.err.println("Parent directories for status file could not be created: "
+                                    + file.getAbsolutePath());
+                        }
                     }
                 }
             }

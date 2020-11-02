@@ -63,7 +63,7 @@ public class CommonUtils {
       Class.forName(classSignature, false, classLoader);
       return true;
     } catch (ClassNotFoundException e) {
-      logger.info(
+      logger.debug(
           "Specified class {} is not present on the classpath", classSignature);
       return false;
     }

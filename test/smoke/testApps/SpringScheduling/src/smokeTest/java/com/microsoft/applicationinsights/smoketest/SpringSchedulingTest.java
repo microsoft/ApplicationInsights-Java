@@ -9,7 +9,7 @@ import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.*;
 
 @UseAgent
-public class SpringSchedulerTest extends AiSmokeTest {
+public class SpringSchedulingTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/scheduler")
@@ -23,7 +23,7 @@ public class SpringSchedulerTest extends AiSmokeTest {
                     return false;
                 }
                 RequestData data = (RequestData) ((Data) input.getData()).getBaseData();
-                return data.getName().equals("/SpringScheduler/scheduler");
+                return data.getName().equals("/SpringScheduling/scheduler");
             }
         }, 10, TimeUnit.SECONDS);
 
@@ -35,7 +35,7 @@ public class SpringSchedulerTest extends AiSmokeTest {
                     return false;
                 }
                 RequestData data = (RequestData) ((Data) input.getData()).getBaseData();
-                return data.getName().equals("SpringSchedulerApp.fixedRateScheduler");
+                return data.getName().equals("SpringSchedulingApp.fixedRateScheduler");
             }
         }, 2, 10, TimeUnit.SECONDS);
     }

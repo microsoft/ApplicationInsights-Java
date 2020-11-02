@@ -62,7 +62,7 @@ public final class LimitsEnforcer {
             case CLOSEST_LIMIT_ON_ERROR:
                 if (value == null) {
                     currentValue = defaultValue;
-                    logger.info("'{}': null value is replaced with '{}'", propertyName, defaultValue);
+                    logger.debug("'{}': null value is replaced with '{}'", propertyName, defaultValue);
                 } else if (value < minimum) {
                     currentValue = minimum;
                     logger.warn("'{}': value is under the minimum, therefore is replaced with '{}'", propertyName, minimum);

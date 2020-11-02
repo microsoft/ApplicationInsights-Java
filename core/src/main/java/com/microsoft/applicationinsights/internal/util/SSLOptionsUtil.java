@@ -75,8 +75,8 @@ public class SSLOptionsUtil {
             return defaultSupportedProtocols();
         }
 
-        if (logger.isInfoEnabled()) {
-            logger.info("Found {}='{}'; HTTP client will allow only these protocols", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, Arrays.toString(customProtocols));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Found {}='{}'; HTTP client will allow only these protocols", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, Arrays.toString(customProtocols));
         }
         return customProtocols;
     }

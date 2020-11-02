@@ -175,7 +175,7 @@ public class HeartBeatModule implements TelemetryModule {
       synchronized (lock) {
         if (!isInitialized && isHeartBeatEnabled()) {
           this.heartBeatProviderInterface.initialize(configuration);
-          logger.info("heartbeat is enabled");
+          logger.debug("heartbeat is enabled");
           isInitialized = true;
         }
       }

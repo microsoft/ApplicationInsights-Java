@@ -68,7 +68,7 @@ public enum SystemInformation {
                 String processIdAsString = rawName.substring(0, i);
                 try {
                     Integer.parseInt(processIdAsString);
-                    SystemInfoLogger.logger.info("Current PID: "+processIdAsString);
+                    SystemInfoLogger.logger.debug("Current PID: "+processIdAsString);
                     return processIdAsString;
                 } catch (Exception e) {
                     e.printStackTrace();

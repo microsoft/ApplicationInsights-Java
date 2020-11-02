@@ -9,7 +9,7 @@ import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-@UseAgent("spanProcessor")
+@UseAgent("spanprocessor")
 public class SpringBootAutoTest extends AiSmokeTest {
 
     @Test
