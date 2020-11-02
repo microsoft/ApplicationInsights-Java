@@ -37,7 +37,6 @@ public abstract class Config {
    */
   public static void internalInitializeConfig(Config config) {
     if (INSTANCE != DEFAULT) {
-      log.warn("Config#INSTANCE was already set earlier");
       return;
     }
     INSTANCE = requireNonNull(config);
