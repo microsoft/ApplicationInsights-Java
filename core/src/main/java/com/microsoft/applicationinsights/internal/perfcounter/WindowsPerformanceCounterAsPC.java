@@ -75,6 +75,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
                     reportError(value, entry.getValue());
                 } else {
                     send(telemetryClient, value, entry.getValue());
+                    logger.trace("Sent performance counter for '{}': '{}'", entry.getValue(), value);
                 }
             } catch (ThreadDeath td) {
                 throw td;
