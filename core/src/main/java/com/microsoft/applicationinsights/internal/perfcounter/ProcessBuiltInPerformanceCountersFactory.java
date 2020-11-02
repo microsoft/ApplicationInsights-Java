@@ -52,6 +52,8 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
                 return getWindowsPerformanceCounters();
             } else if (SystemInformation.INSTANCE.isUnix()) {
                 return getUnixPerformanceCounters();
+            } else {
+                logger.error("Unknown OS, performance counters are not created.");
             }
         } catch (ThreadDeath td) {
             throw td;
