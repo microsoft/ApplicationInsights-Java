@@ -97,7 +97,7 @@ class DllFileUtils {
                 }
             }
         }
-        LOGGER.info("Successfully extracted '{}' to local folder", libraryToLoad);
+        LOGGER.debug("Successfully extracted '{}' to local folder", libraryToLoad);
     }
 
     private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES = Collections.unmodifiableList(Arrays.asList("USER", "LOGNAME", "USERNAME"));

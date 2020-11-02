@@ -125,7 +125,7 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
 
         // check if we have tried resolving this ikey too many times. If so, quit to save on perf.
         if (failureCounters.containsKey(instrumentationKey) && failureCounters.get(instrumentationKey) >= retryPolicy.getMaxInstantRetries()) {
-            logger.info("The profile fetch task will not execute for next {} minutes. Max number of retries reached.", retryPolicy.getResetPeriodInMinutes());
+            logger.debug("The profile fetch task will not execute for next {} minutes. Max number of retries reached.", retryPolicy.getResetPeriodInMinutes());
             return result;
         }
 

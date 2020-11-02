@@ -47,12 +47,13 @@
     "host": "myproxy",
     "port": 8080
   },
-  "preview": {
-    "selfDiagnostics": {
-      "destination": "file",
-      "directory": "/var/log/applicationinsights",
-      "level": "error",
-      "maxSizeMb": 10
+  "selfDiagnostics": {
+    "level": "debug",
+    "destination": "file",
+    "file": {
+      "path": "/var/log/applicationinsights/abc.log",
+      "maxSizeMb": 10,
+      "maxHistory": 2
     }
   }
 }

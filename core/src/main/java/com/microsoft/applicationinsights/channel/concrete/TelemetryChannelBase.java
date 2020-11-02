@@ -314,7 +314,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         }
 
         if (itemsSent.incrementAndGet() % LOG_TELEMETRY_ITEMS_MODULUS == 0) {
-            logger.info("items sent till now: {}", itemsSent.get());
+            logger.debug("items sent till now: {}", itemsSent.get());
         }
 
         if (isDeveloperMode()) {

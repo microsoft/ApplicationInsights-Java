@@ -40,7 +40,7 @@ public class EtwProvider {
             File dllPath = null;
             try {
                 dllPath = loadLibrary(sdkVersion);
-                LOGGER.info("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
+                LOGGER.debug("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t) {

@@ -121,7 +121,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
         if (backOffMillis > 0)
         {
             long backOffSeconds = backOffMillis / 1000;
-            logger.info("App is throttled, telemetry will be blocked for {} seconds.", backOffSeconds);
+            logger.debug("App is throttled, telemetry will be blocked for {} seconds.", backOffSeconds);
             this.suspendInSeconds(TransmissionPolicy.BACKOFF, backOffSeconds);
         }
     }
@@ -191,7 +191,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
             policyState.setCurrentState(policy);
             suspensionDate = date;
 
-            logger.info("App is throttled, telemetries are blocked from now, for {} seconds", suspendInSeconds);
+            logger.debug("App is throttled, telemetries are blocked from now, for {} seconds", suspendInSeconds);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {

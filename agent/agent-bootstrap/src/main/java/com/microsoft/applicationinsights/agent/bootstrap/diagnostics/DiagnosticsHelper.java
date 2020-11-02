@@ -45,8 +45,7 @@ public class DiagnosticsHelper {
         isWindows = osName != null && osName.startsWith("Windows");
     }
 
-    public static void setAgentJarFile(File agentJarFile) {
-        Path agentPath = agentJarFile.toPath();
+    public static void setAgentJarFile(Path agentPath) {
         if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
             appServiceCodeless = true;
         } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
