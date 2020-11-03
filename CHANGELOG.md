@@ -1,7 +1,38 @@
 # CHANGELOG
 
-# Version 2.6.2-BETA.3
+# Version 3.0.0 GA
+* Config changes
+	- Change json config file name from ApplicationInsights.json to applicationinsights.json
+	- Redesign json config structure ([Java Standalone Config](https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config))
+* Send JMX metrics to CustomMetrics instead of PerformanceCounter ([Default Mettrics Captured by Java 3.0 Agent](https://github.com/microsoft/ApplicationInsights-Java/wiki/Default-Metrics-Captured-by-Java-3.0-Agent))
+* Telemetry processor for requests, dependencies, and traces
+* Attach custom dimensions to all telemetries
+* Fix QuickPulse bug ([Live Metrics are showing incorrect results](https://portal.microsofticm.com/imp/v3/incidents/details/206218273/home))
+* Fix URL with spaces (https://github.com/microsoft/ApplicationInsights-Java/issues/1290)
+* Improve overall logging
+
+# Version 3.0.0 Preview.7
+* Dropped Java 7 support
+* Supported boolean JMX metrics ([#1235](https://github.com/microsoft/ApplicationInsights-Java/issues/1235))
+* Added support for JMX metrics environment variable APPLICATIONINSIGHTS_JMX_METRICS
+* Added two default JMX metrics for thread count and class count
+* Changed default logging capture from WARN to INFO
+* Added support for logging capture environment variable APPLICATIONINSIGHTS_LOGGING_THRESHOLD
+* Added support for sampling percentage environment variable APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
+* Added auto-collection for 2.x SDK trackTrace, trackRequest and trackException
+* Added capturing MDC logging properties
+* Added support for Jetty Native Handler
+* Fixed JMX metrics which aren't available initially are never recorded ([#1233](https://github.com/microsoft/ApplicationInsights-Java/issues/1233))
+* Fixed capturing JMX metrics inside of CompositeData ([#952](https://github.com/microsoft/ApplicationInsights-Java/issues/952))
+* Fixed HTTP request header to use X-Forwarded-For as Client IP when present ([#404](https://github.com/microsoft/ApplicationInsights-Java/issues/404))
+* Fixed URLs with spaces ([#1290](https://github.com/microsoft/ApplicationInsights-Java/issues/1290))
+
+# Version 2.6.2
 * Fixed NullPointer when testing with MockMvc ([#1281](https://github.com/microsoft/ApplicationInsights-Java/issues/1281))
+
+# Version 3.0.0 Preview.6
+* Fixed client_Browser data populated incorrectly
+* Fixed non-daemon thread pool so that it won't prevent app from shutting down
 
 # Version 2.6.2-BETA.2
 * Fixed retry transmission on client side exception
