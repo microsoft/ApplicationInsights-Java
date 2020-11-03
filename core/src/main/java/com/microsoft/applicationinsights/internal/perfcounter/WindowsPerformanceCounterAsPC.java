@@ -28,14 +28,13 @@ import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry;
 
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Built-in Windows performance counters that are sent as {@link com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry}
+ * Built-in Windows performance counters that are sent as {@link com.microsoft.applicationinsights.telemetry.MetricTelemetry}
  *
  * Created by gupele on 3/30/2015.
  */
@@ -45,8 +44,8 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
 
     private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "WindowsPerformanceCounterAsPC";
 
-    // Performance counter key and its data that is relevant when sending.
-    private final HashMap<String, WindowsPerformanceCounterData> pcs = new HashMap<String, WindowsPerformanceCounterData>();
+    // Performance counter key and its metric name that is relevant when sending.
+    private final HashMap<String, String> pcs = new HashMap<String, String>();
 
     /**
      * Registers the 'built-in' Windows performance counters that are not fetched from the JVM JMX.
@@ -69,23 +68,21 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
 
     @Override
     public void report(TelemetryClient telemetryClient) {
-        for (Map.Entry<String, WindowsPerformanceCounterData> entry : pcs.entrySet()) {
+        for (Map.Entry<String, String> entry : pcs.entrySet()) {
             try {
                 double value = JniPCConnector.getValueOfPerformanceCounter(entry.getKey());
                 if (value < 0) {
-                    reportError(value, entry.getValue().getDisplayName());
+                    reportError(value, entry.getValue());
                 } else {
                     send(telemetryClient, value, entry.getValue());
-                    WindowsPerformanceCounterData pcData = entry.getValue();
-                    logger.trace("Sent performance counter for '{}'({}, {}, {}): '{}'",
-                            pcData.getDisplayName(), pcData.getCategoryName(), pcData.getCounterName(), pcData.getInstanceName(), value);
+                    logger.trace("Sent performance counter for '{}': '{}'", entry.getValue(), value);
                 }
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable e) {
                 try {
                     if (logger.isErrorEnabled()) {
-                        logger.error("Failed to send performance counter for '{}'", entry.getValue().getDisplayName(), e);
+                        logger.error("Failed to send performance counter for '{}'", entry.getValue(), e);
                     }
                 } catch (ThreadDeath td) {
                     throw td;
@@ -101,8 +98,8 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
         return ID;
     }
 
-    private void send(TelemetryClient telemetryClient, double value, WindowsPerformanceCounterData data) {
-        MetricTelemetry telemetry = new MetricTelemetry(data.getDisplayName(), value);
+    private void send(TelemetryClient telemetryClient, double value, String metricName) {
+        MetricTelemetry telemetry = new MetricTelemetry(metricName, value);
         telemetryClient.track(telemetry);
     }
 
@@ -117,12 +114,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
         String key = JniPCConnector.addPerformanceCounter(category, counter, instance);
         if (!Strings.isNullOrEmpty(key)) {
             try {
-                WindowsPerformanceCounterData data = new WindowsPerformanceCounterData().
-                        setCategoryName(category).
-                        setCounterName(counter).
-                        setInstanceName(instance).
-                        setDisplayName(metricName);
-                pcs.put(key, data);
+                pcs.put(key, metricName);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable e) {

@@ -44,10 +44,6 @@ public final class ProcessPerformanceCountersModule extends AbstractPerformanceC
 
     public ProcessPerformanceCountersModule(PerformanceCountersFactory factory) throws Exception {
         super(factory);
-
-        if (!(factory instanceof WindowsPerformanceCountersFactory)) {
-            throw new Exception("Factory must implement windows capabilities.");
-        }
     }
 
     /**
@@ -75,34 +71,6 @@ public final class ProcessPerformanceCountersModule extends AbstractPerformanceC
             return;
         }
 
-        ArrayList<WindowsPerformanceCounterData> configurationRequests = new ArrayList<WindowsPerformanceCounterData>();
-        for (WindowsPerformanceCounterXmlElement element : windowsPCs) {
-            try {
-                WindowsPerformanceCounterData data =
-                        new WindowsPerformanceCounterData().
-                                setDisplayName(element.getDisplayName()).
-                                setCategoryName(element.getCategoryName()).
-                                setCounterName(element.getCounterName()).
-                                setInstanceName(element.getInstanceName());
-
-                configurationRequests.add(data);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                try {
-                    logger.error("Failed to initialize Windows performance counter '{}'.", e.toString());
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            }
-        }
-
-        if (configurationRequests.isEmpty()) {
-            logger.error("Failed to initialize Windows performance counters: All requested performance counters are not valid.");
-        } else {
-            ((WindowsPerformanceCountersFactory)factory).setWindowsPCs(configurationRequests);
-        }
+        throw new IllegalStateException("Custom performance counter metrics have been disabled for Java 3.0+ Agent.");
     }
 }
