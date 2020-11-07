@@ -57,44 +57,32 @@ jar {
 
 shadowJar {
     configurations = [project.configurations.shadowInclude]
-
-    archiveClassifier = ''
-
+    archiveClassifier.set('')
     mergeServiceFiles()
 
-    exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
-    exclude 'META-INF/proguard/**'
-    //exclude 'module-info.class'
+    exclude '**/module-info.class'
 
     // Prevents conflict with other SLF4J instances. Important for premain.
     relocate 'org.slf4j', 'io.opentelemetry.javaagent.slf4j'
-
-    def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
-
-    relocate 'ch.qos.logback', "${shadowPrefix}.ch.qos.logback"
-    relocate 'com.squareup.moshi', "${shadowPrefix}.com.squareup.moshi"
-    relocate 'okio', "${shadowPrefix}.okio"
-
     // rewrite dependencies calling Logger.getLogger
-    // this shades internal use of java util logging which is needed to prevent java util logging from being initialized
-    // early (e.g. in the case of jboss which wants to do some setup before jul is initialized)
     relocate 'java.util.logging.Logger', 'io.opentelemetry.javaagent.bootstrap.PatchLogger'
 
     // prevents conflict with library instrumentation
     relocate 'io.opentelemetry.instrumentation.api', 'io.opentelemetry.javaagent.shaded.instrumentation.api'
 
     // relocate OpenTelemetry API
-    relocate "io.opentelemetry.OpenTelemetry", "io.opentelemetry.javaagent.shaded.io.opentelemetry.OpenTelemetry"
-    relocate "io.opentelemetry.baggage", "io.opentelemetry.javaagent.shaded.io.opentelemetry.baggage"
-    relocate "io.opentelemetry.common", "io.opentelemetry.javaagent.shaded.io.opentelemetry.common"
+    relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
     relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
-    relocate "io.opentelemetry.correlationcontext", "io.opentelemetry.javaagent.shaded.io.opentelemetry.correlationcontext"
-    relocate "io.opentelemetry.internal", "io.opentelemetry.javaagent.shaded.io.opentelemetry.internal"
-    relocate "io.opentelemetry.metrics", "io.opentelemetry.javaagent.shaded.io.opentelemetry.metrics"
-    relocate "io.opentelemetry.trace", "io.opentelemetry.javaagent.shaded.io.opentelemetry.trace"
 
-    // relocate OpenTelemetry API dependency
-    relocate "io.grpc", "io.opentelemetry.javaagent.shaded.io.grpc"
+    // ApplicationInsights shading
+    exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
+    exclude 'META-INF/proguard/**'
+
+    def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
+
+    relocate 'ch.qos.logback', "${shadowPrefix}.ch.qos.logback"
+    relocate 'com.squareup.moshi', "${shadowPrefix}.com.squareup.moshi"
+    relocate 'okio', "${shadowPrefix}.okio"
 
     relocate('logback.configurationFile', 'applicationinsights.logback.configurationFile')
     relocate('logback.xml', 'applicationinsights.logback.xml')
@@ -124,7 +112,7 @@ whenPomConfigured = { p ->
  * For building -devtest JAR which contains classes for calling internal code for graybox testing.
  */
 task devtestJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-    archiveClassifier = 'devtest'
+    archiveClassifier.set('devtest')
     dependsOn devtestClasses, assemble
 
     // shadowJar.archiveFile doesn't work

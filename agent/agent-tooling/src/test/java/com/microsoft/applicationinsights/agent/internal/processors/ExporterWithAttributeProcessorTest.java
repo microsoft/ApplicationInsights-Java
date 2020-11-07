@@ -14,12 +14,12 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.api.trace.Span;
 import org.junit.*;
 
 import static org.junit.Assert.*;
@@ -35,7 +35,7 @@ public class ExporterWithAttributeProcessorTest {
         config.processorName = "noAction";
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .startSpan();
@@ -64,7 +64,7 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .startSpan();
@@ -93,7 +93,7 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .startSpan();
@@ -119,7 +119,7 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -156,7 +156,7 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -197,7 +197,7 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -239,7 +239,7 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -275,7 +275,7 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -312,7 +312,7 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -350,7 +350,7 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -384,7 +384,7 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -422,7 +422,7 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = OpenTelemetry.getTracer("test").spanBuilder("my span")
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -460,23 +460,23 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span spanA = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("svcB")
+        Span spanB = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcB")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanC = OpenTelemetry.getTracer("test").spanBuilder("svcC")
+        Span spanC = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanD = OpenTelemetry.getTracer("test").spanBuilder("svcD")
+        Span spanD = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcD")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -519,23 +519,23 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span spanA = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("svcB")
+        Span spanB = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcB")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanC = OpenTelemetry.getTracer("test").spanBuilder("serviceC")
+        Span spanC = OpenTelemetry.getGlobalTracer("test").spanBuilder("serviceC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanD = OpenTelemetry.getTracer("test").spanBuilder("serviceD")
+        Span spanD = OpenTelemetry.getGlobalTracer("test").spanBuilder("serviceD")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -578,23 +578,23 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span spanA = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("svcB")
+        Span spanB = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcB")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanC = OpenTelemetry.getTracer("test").spanBuilder("serviceC")
+        Span spanC = OpenTelemetry.getGlobalTracer("test").spanBuilder("serviceC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanD = OpenTelemetry.getTracer("test").spanBuilder("serviceD")
+        Span spanD = OpenTelemetry.getGlobalTracer("test").spanBuilder("serviceD")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -633,29 +633,29 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span spanA = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue1")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("svcB")
+        Span spanB = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcB")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", "testValue2")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanC = OpenTelemetry.getTracer("test").spanBuilder("serviceC")
+        Span spanC = OpenTelemetry.getGlobalTracer("test").spanBuilder("serviceC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanD = OpenTelemetry.getTracer("test").spanBuilder("serviceD")
+        Span spanD = OpenTelemetry.getGlobalTracer("test").spanBuilder("serviceD")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanE = OpenTelemetry.getTracer("test").spanBuilder("svcE")
+        Span spanE = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcE")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testV1")
@@ -699,23 +699,23 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span spanA = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("svcB")
+        Span spanB = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcB")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", 2L)
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanC = OpenTelemetry.getTracer("test").spanBuilder("svcC")
+        Span spanC = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", 123)
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanD = OpenTelemetry.getTracer("test").spanBuilder("svcD")
+        Span spanD = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcD")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -759,23 +759,23 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span spanA = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("svcB")
+        Span spanB = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcB")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanC = OpenTelemetry.getTracer("test").spanBuilder("svcC")
+        Span spanC = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanD = OpenTelemetry.getTracer("test").spanBuilder("svcD")
+        Span spanD = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcD")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -818,23 +818,23 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span spanA = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("svcB")
+        Span spanB = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcB")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanC = OpenTelemetry.getTracer("test").spanBuilder("serviceC")
+        Span spanC = OpenTelemetry.getGlobalTracer("test").spanBuilder("serviceC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanD = OpenTelemetry.getTracer("test").spanBuilder("serviceD")
+        Span spanD = OpenTelemetry.getGlobalTracer("test").spanBuilder("serviceD")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -886,23 +886,23 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span spanA = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("svcB")
+        Span spanB = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcB")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey3", "testValue3")
                 .startSpan();
-        Span spanC = OpenTelemetry.getTracer("test").spanBuilder("svcC")
+        Span spanC = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanD = OpenTelemetry.getTracer("test").spanBuilder("svcD")
+        Span spanD = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcD")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -952,23 +952,23 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span spanA = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("svcB")
+        Span spanB = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcB")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey3", "testValue2")
                 .startSpan();
-        Span spanC = OpenTelemetry.getTracer("test").spanBuilder("svcC")
+        Span spanC = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanD = OpenTelemetry.getTracer("test").spanBuilder("svcD")
+        Span spanD = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcD")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -1020,23 +1020,23 @@ public class ExporterWithAttributeProcessorTest {
         config.actions = actions;
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span spanA = OpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span spanA = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanB = OpenTelemetry.getTracer("test").spanBuilder("svcB")
+        Span spanB = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcB")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", "testValue1")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanC = OpenTelemetry.getTracer("test").spanBuilder("svcC")
+        Span spanC = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
                 .startSpan();
-        Span spanD = OpenTelemetry.getTracer("test").spanBuilder("svcD")
+        Span spanD = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcD")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")

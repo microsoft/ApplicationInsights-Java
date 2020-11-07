@@ -90,8 +90,8 @@ public class JsonConfigPolling implements Runnable {
                 if (configuration.sampling.percentage != lastReadSamplingPercentage) {
                     logger.debug("Updating sampling percentage from {} to {}", lastReadSamplingPercentage, configuration.sampling.percentage);
                     double roundedSamplingPercentage = SamplingPercentage.roundToNearest(configuration.sampling.percentage);
-                    OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(
-                            OpenTelemetrySdk.getTracerManagement().getActiveTraceConfig().toBuilder()
+                    OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(
+                            OpenTelemetrySdk.getGlobalTracerManagement().getActiveTraceConfig().toBuilder()
                                     .setSampler(Samplers.getSampler(roundedSamplingPercentage))
                                     .build());
                     Global.setSamplingPercentage(roundedSamplingPercentage);

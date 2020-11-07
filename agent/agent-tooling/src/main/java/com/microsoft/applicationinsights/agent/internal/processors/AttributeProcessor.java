@@ -1,16 +1,15 @@
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAction;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorActionType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.Attributes.Builder;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Attributes.Builder;
+import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -41,7 +40,7 @@ public class AttributeProcessor extends AgentProcessor {
     private static boolean copyFromExistingAttribute(Attributes.Builder insertBuilder, ReadableAttributes existingSpanAttributes, ProcessorAction actionObj) {
         Object existingSpanAttributeValue = existingSpanAttributes.get(AttributeKey.stringKey(actionObj.fromAttribute));
         if (existingSpanAttributeValue instanceof String) {
-            insertBuilder.setAttribute(actionObj.key, (String) existingSpanAttributeValue);
+            insertBuilder.put(actionObj.key, (String) existingSpanAttributeValue);
             return true;
         }
         return false;
@@ -58,11 +57,11 @@ public class AttributeProcessor extends AgentProcessor {
 
     private SpanData processOtherAction(SpanData span, ProcessorAction actionObj) {
         ReadableAttributes existingSpanAttributes = span.getAttributes();
-        final Attributes.Builder builder = Attributes.newBuilder();
+        final Attributes.Builder builder = Attributes.builder();
         final boolean[] spanUpdateFlag = new boolean[1]; // This is for optimization. If none of the attributes are updated, we can skip the attributes.build step
         existingSpanAttributes.forEach(new AttributeConsumer() {
             @Override
-            public <T> void consume(AttributeKey<T> key, T value) {
+            public <T> void accept(AttributeKey<T> key, T value) {
                 boolean attributeUpdatedFlag = false;// flag to check if a attribute is updated
                 if (key.getKey().equals(actionObj.key)) {
                     switch (actionObj.action) {
@@ -78,7 +77,7 @@ public class AttributeProcessor extends AgentProcessor {
                         case hash:
                             if (value instanceof String) {
                                 // Currently we only support String
-                                builder.setAttribute(actionObj.key, DigestUtils.sha1Hex((String) value));
+                                builder.put(actionObj.key, DigestUtils.sha1Hex((String) value));
                                 attributeUpdatedFlag = true;
                             }
                             break;
@@ -87,7 +86,7 @@ public class AttributeProcessor extends AgentProcessor {
                     }
                 }
                 if (!attributeUpdatedFlag) {
-                    builder.setAttribute(key, value);
+                    builder.put(key, value);
                 } else {
                     spanUpdateFlag[0] = true;
                 }
@@ -98,10 +97,15 @@ public class AttributeProcessor extends AgentProcessor {
 
     private SpanData processInsertAction(SpanData span, ProcessorAction actionObj) {
         ReadableAttributes existingSpanAttributes = span.getAttributes();
-        final Builder insertBuilder = Attributes.newBuilder();
+        if (existingSpanAttributes.get(AttributeKey.stringKey(actionObj.key)) != null) {
+            // this check is needed due to https://github.com/open-telemetry/opentelemetry-java/issues/2043
+            // TODO once the above issue is fixed in OpenTelemetry, then we can remove this condition
+            return span;
+        }
+        final Builder insertBuilder = Attributes.builder();
         if (applyUpdateAction(actionObj, existingSpanAttributes, insertBuilder)) {
             // Copy all existing attributes
-            existingSpanAttributes.forEach(insertBuilder::setAttribute);
+            existingSpanAttributes.forEach(insertBuilder::put);
             return new MySpanData(span, insertBuilder.build());
         }
         return span;
@@ -112,7 +116,7 @@ public class AttributeProcessor extends AgentProcessor {
         //Update from existing attribute
         if (actionObj.value != null) {
             //update to new value
-            builder.setAttribute(actionObj.key, actionObj.value);
+            builder.put(actionObj.key, actionObj.value);
             return true;
         } else return copyFromExistingAttribute(builder, existingSpanAttributes, actionObj);
     }
