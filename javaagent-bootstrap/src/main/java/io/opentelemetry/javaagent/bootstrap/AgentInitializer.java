@@ -42,7 +42,7 @@ public class AgentInitializer {
   }
 
   // fields must be managed under class lock
-  private static ClassLoader AGENT_CLASSLOADER = null;
+  public static ClassLoader AGENT_CLASSLOADER = null;
 
   public static void initialize(Instrumentation inst, URL bootstrapURL) {
     startAgent(inst, bootstrapURL);
