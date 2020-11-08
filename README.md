@@ -1,4 +1,6 @@
 # Application Insights for Java
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fmicrosoft%2FApplicationInsights-Java&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=PAGE+VIEWS&edge_flat=false)](https://hits.seeyoufarm.com)
+
 | Build & Unit Tests | Smoke Tests |
 :-:|:-:
 | ![Build + Unit Tests](https://mseng.visualstudio.com/_apis/public/build/definitions/96a62c4a-58c2-4dbb-94b6-5979ebc7f2af/5311/badge "Build & Unit Tests' Status") | ![Smoke Tests](https://mseng.visualstudio.com/_apis/public/build/definitions/96a62c4a-58c2-4dbb-94b6-5979ebc7f2af/6159/badge "Smoke Tests' Status") |
