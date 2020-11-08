@@ -7,12 +7,12 @@ package io.opentelemetry.javaagent.instrumentation.jaxrs.v2_0;
 
 import static io.opentelemetry.javaagent.instrumentation.api.WeakMap.Provider.newWeakMap;
 
-import io.grpc.Context;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.servlet.ServletContextPath;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
 import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
 import io.opentelemetry.javaagent.tooling.ClassHierarchyIterable;
-import io.opentelemetry.trace.Span;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -26,7 +26,11 @@ public class JaxRsAnnotationsTracer extends BaseTracer {
   public static final String ABORT_HANDLED =
       "io.opentelemetry.javaagent.instrumentation.jaxrs2.filter.abort.handled";
 
-  public static final JaxRsAnnotationsTracer TRACER = new JaxRsAnnotationsTracer();
+  private static final JaxRsAnnotationsTracer TRACER = new JaxRsAnnotationsTracer();
+
+  public static JaxRsAnnotationsTracer tracer() {
+    return TRACER;
+  }
 
   private final WeakMap<Class<?>, Map<Method, String>> spanNames = newWeakMap();
 
@@ -47,7 +51,7 @@ public class JaxRsAnnotationsTracer extends BaseTracer {
       updateSpanName(span, pathBasedSpanName);
     } else {
       updateSpanName(serverSpan, pathBasedSpanName);
-      updateSpanName(span, TRACER.spanNameForMethod(target, method));
+      updateSpanName(span, tracer().spanNameForMethod(target, method));
     }
   }
 
@@ -190,6 +194,6 @@ public class JaxRsAnnotationsTracer extends BaseTracer {
 
   @Override
   protected String getInstrumentationName() {
-    return "io.opentelemetry.auto.jaxrs-2.0";
+    return "io.opentelemetry.auto.jaxrs";
   }
 }

@@ -39,7 +39,7 @@ import org.glassfish.grizzly.utils.IdleTimeoutFilter
 class GrizzlyFilterchainServerTest extends HttpServerTest<HttpServer> {
 
   static {
-    System.setProperty("otel.integration.grizzly.enabled", "true")
+    System.setProperty("otel.instrumentation.grizzly.enabled", "true")
   }
 
   private TCPNIOTransport transport

@@ -5,18 +5,17 @@
 
 package io.opentelemetry.instrumentation.api.aiappid;
 
-import static io.opentelemetry.internal.Utils.checkArgument;
+import static io.opentelemetry.api.internal.Utils.checkArgument;
 
-import io.grpc.Context;
+import io.opentelemetry.api.internal.TemporaryBuffers;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.internal.TemporaryBuffers;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -94,7 +93,7 @@ public class AiHttpTraceContext implements TextMapPropagator {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    SpanContext spanContext = Span.fromContext(context).getSpanContext();
     if (!spanContext.isValid()) {
       return;
     }
@@ -134,8 +133,8 @@ public class AiHttpTraceContext implements TextMapPropagator {
       }
     }
 
-    final List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
-    if (entries.isEmpty() && appId.isEmpty()) {
+    TraceState traceState = spanContext.getTraceState();
+    if (traceState.isEmpty() && appId.isEmpty()) {
       // No need to add an empty "tracestate" header.
       return;
     }
@@ -146,15 +145,15 @@ public class AiHttpTraceContext implements TextMapPropagator {
           .append(TRACESTATE_KEY_VALUE_DELIMITER)
           .append(appId);
     }
-    for (TraceState.Entry entry : entries) {
-      if (stringBuilder.length() != 0) {
-        stringBuilder.append(TRACESTATE_ENTRY_DELIMITER);
-      }
-      String key = entry.getKey();
-      if (!AiAppId.TRACESTATE_KEY.equals(key)) {
-        stringBuilder.append(key).append(TRACESTATE_KEY_VALUE_DELIMITER).append(entry.getValue());
-      }
-    }
+    traceState.forEach(
+        (key, value) -> {
+          if (stringBuilder.length() != 0) {
+            stringBuilder.append(TRACESTATE_ENTRY_DELIMITER);
+          }
+          if (!AiAppId.TRACESTATE_KEY.equals(key)) {
+            stringBuilder.append(key).append(TRACESTATE_KEY_VALUE_DELIMITER).append(value);
+          }
+        });
     setter.set(carrier, TRACE_STATE, stringBuilder.toString());
   }
 
@@ -170,7 +169,7 @@ public class AiHttpTraceContext implements TextMapPropagator {
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return context.with(Span.wrap(spanContext));
   }
 
   private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {

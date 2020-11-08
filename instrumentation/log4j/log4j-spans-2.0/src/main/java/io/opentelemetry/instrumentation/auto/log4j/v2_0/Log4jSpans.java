@@ -5,10 +5,10 @@
 
 package io.opentelemetry.instrumentation.auto.log4j.v2_0;
 
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class Log4jSpans {
   private static final org.slf4j.Logger log = LoggerFactory.getLogger(Log4jSpans.class);
 
   private static final Tracer TRACER =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.auto.log4j-2.0");
+      OpenTelemetry.getGlobalTracer("io.opentelemetry.auto.log4j-2.0");
 
   public static void capture(
       final Logger logger, final Level level, final Message message, final Throwable t) {

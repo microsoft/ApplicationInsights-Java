@@ -24,8 +24,9 @@ def awsAccessKeyId = System.getenv("S3_BUILD_CACHE_ACCESS_KEY_ID")
 buildCache {
   remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
     region = 'us-west-2'
-    bucket = 'opentelemetry-java-instrumentation-gradle-test1'
+    bucket = 'opentelemetry-java-instrumentation-gradle-cache'
     push = isCI && awsAccessKeyId != null && !awsAccessKeyId.isEmpty()
+    lookupDefaultAwsCredentials = true
   }
 }
 
@@ -52,6 +53,7 @@ include ':utils:test-utils'
 
 include ':instrumentation:akka-context-propagation-2.5'
 include ':instrumentation:akka-http-10.0'
+include ':instrumentation:apache-camel-2.20'
 include ':instrumentation:apache-httpasyncclient-4.0'
 include ':instrumentation:apache-httpclient:apache-httpclient-2.0'
 include ':instrumentation:apache-httpclient:apache-httpclient-4.0'
@@ -124,6 +126,7 @@ include ':instrumentation:kafka-streams-0.11'
 include ':instrumentation:khttp-0.1'
 include ':instrumentation:kotlin-coroutines'
 include ':instrumentation:kubernetes-client-7.0'
+include ':instrumentation:lettuce:lettuce-common'
 include ':instrumentation:lettuce:lettuce-4.0'
 include ':instrumentation:lettuce:lettuce-5.0'
 include ':instrumentation:lettuce:lettuce-5.1'
@@ -137,7 +140,7 @@ include ':instrumentation:log4j:log4j-spans-2.0'
 include ':instrumentation:logback:logback-1.0.0:javaagent'
 include ':instrumentation:logback:logback-1.0.0:library'
 include ':instrumentation:logback:logback-1.0.0:testing'
-include ':instrumentation:logback-spans-1.0'
+include ':instrumentation:logback:logback-spans-1.0'
 include ':instrumentation:micrometer-1.0'
 include ':instrumentation:mongo:mongo-3.1'
 include ':instrumentation:mongo:mongo-3.7'
@@ -150,6 +153,8 @@ include ':instrumentation:netty:netty-4.1'
 include ':instrumentation:okhttp:okhttp-2.2'
 include ':instrumentation:okhttp:okhttp-3.0'
 include ':instrumentation:opentelemetry-api-beta'
+include ':instrumentation:oshi:javaagent'
+include ':instrumentation:oshi:library'
 include ':instrumentation:play:play-2.3'
 include ':instrumentation:play:play-2.4'
 include ':instrumentation:play:play-2.6'

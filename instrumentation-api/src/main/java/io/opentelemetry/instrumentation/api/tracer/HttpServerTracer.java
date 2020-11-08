@@ -5,22 +5,18 @@
 
 package io.opentelemetry.instrumentation.api.tracer;
 
-import static io.opentelemetry.OpenTelemetry.getPropagators;
-import static io.opentelemetry.context.ContextUtils.withScopedContext;
-import static io.opentelemetry.trace.Span.Kind.SERVER;
-import static io.opentelemetry.trace.TracingContextUtils.withSpan;
+import static io.opentelemetry.api.OpenTelemetry.getGlobalPropagators;
+import static io.opentelemetry.api.trace.Span.Kind.SERVER;
 
-import io.grpc.Context;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.attributes.SemanticAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.context.ContextPropagationDebug;
 import io.opentelemetry.instrumentation.api.decorator.HttpStatusConverter;
-import io.opentelemetry.trace.EndSpanOptions;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
-import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,19 +51,20 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     super(tracer);
   }
 
-  public Span startSpan(REQUEST request, CONNECTION connection, Method origin) {
+  public Context startSpan(REQUEST request, CONNECTION connection, Method origin) {
     String spanName = spanNameForMethod(origin);
     return startSpan(request, connection, spanName);
   }
 
-  public Span startSpan(REQUEST request, CONNECTION connection, String spanName) {
+  public Context startSpan(REQUEST request, CONNECTION connection, String spanName) {
     return startSpan(request, connection, spanName, -1);
   }
 
-  public Span startSpan(
+  public Context startSpan(
       REQUEST request, CONNECTION connection, String spanName, long startTimestamp) {
+    Context parentContext = extract(request, getGetter());
     Span.Builder builder =
-        tracer.spanBuilder(spanName).setSpanKind(SERVER).setParent(extract(request, getGetter()));
+        tracer.spanBuilder(spanName).setSpanKind(SERVER).setParent(parentContext);
 
     if (startTimestamp >= 0) {
       builder.setStartTimestamp(startTimestamp);
@@ -78,7 +75,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     onRequest(span, request);
     onConnectionAndRequest(span, connection, request);
 
-    return span;
+    return parentContext.with(span);
   }
 
   /**
@@ -97,9 +94,9 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
    */
   public Scope startScope(Span span, STORAGE storage, Context context) {
     // TODO we could do this in one go, but TracingContextUtils.CONTEXT_SPAN_KEY is private
-    Context newContext = withSpan(span, context.withValue(CONTEXT_SERVER_SPAN_KEY, span));
+    Context newContext = context.with(CONTEXT_SERVER_SPAN_KEY, span).with(span);
     attachServerContext(newContext, storage);
-    return withScopedContext(newContext);
+    return newContext.makeCurrent();
   }
 
   /**
@@ -118,7 +115,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
   }
 
   /**
-   * Convenience method. Delegates to {@link #endExceptionally(Span, Throwable, RESPONSE)}, passing
+   * Convenience method. Delegates to {@link #endExceptionally(Span, Throwable, Object)}, passing
    * {@code response} value of {@code null}.
    */
   @Override
@@ -127,7 +124,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
   }
 
   /**
-   * Convenience method. Delegates to {@link #endExceptionally(Span, Throwable, RESPONSE, long)},
+   * Convenience method. Delegates to {@link #endExceptionally(Span, Throwable, Object, long)},
    * passing {@code timestamp} value of {@code -1}.
    */
   public void endExceptionally(Span span, Throwable throwable, RESPONSE response) {
@@ -136,7 +133,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
 
   /**
    * If {@code response} is {@code null}, the {@code http.status_code} will be set to {@code 500}
-   * and the {@link Span} status will be set to {@link io.opentelemetry.trace.Status#INTERNAL}.
+   * and the {@link Span} status will be set to {@link io.opentelemetry.api.trace.StatusCode#ERROR}.
    */
   public void endExceptionally(Span span, Throwable throwable, RESPONSE response, long timestamp) {
     onError(span, unwrapThrowable(throwable));
@@ -150,12 +147,12 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
 
   public Span getServerSpan(STORAGE storage) {
     Context attachedContext = getServerContext(storage);
-    return attachedContext == null ? null : CONTEXT_SERVER_SPAN_KEY.get(attachedContext);
+    return attachedContext == null ? null : attachedContext.get(CONTEXT_SERVER_SPAN_KEY);
   }
 
   /**
    * Returns context stored to the given request-response-loop storage by {@link
-   * #attachServerContext(Context, STORAGE)}.
+   * #attachServerContext(Context, Object)}.
    */
   @Nullable
   public abstract Context getServerContext(STORAGE storage);
@@ -170,7 +167,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
   }
 
   protected void onRequest(Span span, REQUEST request) {
-    final String sourceAppId = span.getContext().getTraceState().get(AiAppId.TRACESTATE_KEY);
+    final String sourceAppId = span.getSpanContext().getTraceState().get(AiAppId.TRACESTATE_KEY);
     if (sourceAppId != null && !sourceAppId.isEmpty()) {
       span.setAttribute(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME, sourceAppId);
     } else if (AI_BACK_COMPAT) {
@@ -271,14 +268,14 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     // Using Context.ROOT here may be quite unexpected, but the reason is simple.
     // We want either span context extracted from the carrier or invalid one.
     // We DO NOT want any span context potentially lingering in the current context.
-    return getPropagators().getTextMapPropagator().extract(Context.ROOT, carrier, getter);
+    return getGlobalPropagators().getTextMapPropagator().extract(Context.root(), carrier, getter);
   }
 
   private void debugContextLeak() {
     Context current = Context.current();
-    if (current != Context.ROOT) {
+    if (current != Context.root()) {
       log.error("Unexpected non-root current context found when extracting remote context!");
-      Span currentSpan = TracingContextUtils.getSpanWithoutDefault(current);
+      Span currentSpan = Span.fromContextOrNull(current);
       if (currentSpan != null) {
         log.error("It contains this span: {}", currentSpan);
       }
@@ -313,7 +310,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
 
   private static void endSpan(Span span, long timestamp) {
     if (timestamp >= 0) {
-      span.end(EndSpanOptions.builder().setEndTimestamp(timestamp).build());
+      span.end(timestamp);
     } else {
       span.end();
     }

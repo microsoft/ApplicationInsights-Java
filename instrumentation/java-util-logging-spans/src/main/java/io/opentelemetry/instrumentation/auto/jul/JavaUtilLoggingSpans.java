@@ -5,10 +5,10 @@
 
 package io.opentelemetry.instrumentation.auto.jul;
 
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Formatter;
@@ -22,7 +22,7 @@ public class JavaUtilLoggingSpans {
   private static final org.slf4j.Logger log = LoggerFactory.getLogger(JavaUtilLoggingSpans.class);
 
   private static final Tracer TRACER =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.auto.java-util-logging");
+      OpenTelemetry.getGlobalTracer("io.opentelemetry.auto.java-util-logging");
 
   private static final Formatter FORMATTER = new AccessibleFormatter();
 

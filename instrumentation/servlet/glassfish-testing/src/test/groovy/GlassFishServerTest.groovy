@@ -64,9 +64,6 @@ class GlassFishServerTest extends HttpServerTest<GlassFish> {
     true
   }
 
-  // Simple class name plus method name of the entry point of the given servlet container.
-  // "Entry point" here means the first filter or servlet that accepts incoming requests.
-  // This will serve as a default name of the SERVER span created for this request.
   @Override
   boolean sendsBackAiTargetAppId() {
     true

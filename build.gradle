@@ -23,7 +23,7 @@ plugins {
 allprojects {
   ext.isCI = System.getenv("CI") != null
 
-  version = '0.9.0+ai.patch.1'
+  version = '0.10.0+ai.patch.1'
 
   if (isCI) {
     buildDir = "$rootDir/workspace/${projectDir.path.replace(rootDir.path, '')}/build/"
@@ -35,8 +35,8 @@ allprojects {
 
 repositories {
   mavenLocal()
-  jcenter()
   mavenCentral()
+  jcenter()
 }
 
 description = 'OpenTelemetry instrumentations for Java'

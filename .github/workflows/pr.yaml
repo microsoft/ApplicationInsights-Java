@@ -3,11 +3,44 @@ name: PR build
 on: pull_request
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 11 for running checks
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Restore cache
+        uses: burrunan/gradle-cache-action@v1.5
+        with:
+          job-id: jdk11
+
+      - name: Build
+        uses: nick-invision/retry@v1
+        with:
+          command: ./gradlew check --stacktrace -x :smoke-tests:test
+          timeout_minutes: 90
+          max_attempts: 3
+
+      - name: Aggregate test reports with ciMate
+        if: always()
+        continue-on-error: true
+        env:
+          CIMATE_PROJECT_ID: mz1jo49x
+          CIMATE_CI_KEY: "PR / jdk11"
+        run: |
+          wget -q https://get.cimate.io/release/linux/cimate
+          chmod +x cimate
+          ./cimate -v "**/TEST-*.xml"
+
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ 8, 11, 15 ]
+        java: [ 8, 15 ]
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -16,22 +49,24 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - name: Set JDK ${{ matrix.java }} home
-        run: echo "::set-env name=JAVA_${{ matrix.java }}_HOME::${{ env.JAVA_HOME }}"
+        run: echo JAVA_${{ matrix.java }}_HOME=${{ env.JAVA_HOME }} >> $GITHUB_ENV
 
       - name: Set up JDK 11 for running Gradle
-        if: matrix.java != 11
         uses: actions/setup-java@v1
         with:
           java-version: 11
 
-      - name: Debug space
-        run: df -h
-
-      - name: Test
+      - name: Restore cache
         uses: burrunan/gradle-cache-action@v1.5
         with:
           job-id: jdk${{ matrix.java }}
-          arguments: testJava${{ matrix.java }} --stacktrace -x :smoke-tests:test
+
+      - name: Test
+        uses: nick-invision/retry@v1
+        with:
+          command: ./gradlew testJava${{ matrix.java }} --stacktrace -x :smoke-tests:test
+          timeout_minutes: 90
+          max_attempts: 3
 
       - name: Aggregate test reports with ciMate
         if: always()
@@ -54,11 +89,17 @@ jobs:
         with:
           java-version: 11
 
-      - name: Test
+      - name: Restore cache
         uses: burrunan/gradle-cache-action@v1.5
         with:
-          job-id: jdk11
-          arguments: :smoke-tests:test
+          job-id: smokeTests
+
+      - name: Test
+        uses: nick-invision/retry@v1
+        with:
+          command: ./gradlew :smoke-tests:test
+          timeout_minutes: 90
+          max_attempts: 3
 
       - name: Aggregate test reports with ciMate
         if: always()
@@ -102,8 +143,13 @@ jobs:
         run: ./gradlew ${{ matrix.module }}:muzzle --no-daemon
 
   accept-pr:
-    needs: [ test, smoke-test, muzzle ]
+    needs: [ build, test, smoke-test, muzzle ]
     runs-on: ubuntu-latest
+    if: always()
     steps:
-      - name: Success
-        run: echo Build successful
+      # run this action to get workflow conclusion
+      # You can get conclusion by env (env.WORKFLOW_CONCLUSION)
+      - uses: technote-space/workflow-conclusion-action@v1
+      - name: Fail build
+        if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure
+        run: exit 1
