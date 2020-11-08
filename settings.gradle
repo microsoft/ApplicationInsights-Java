@@ -51,9 +51,6 @@ include ':javaagent-api'
 include ':testing-common'
 include ':utils:test-utils'
 
-// smoke tests
-include ':smoke-tests'
-
 include ':instrumentation:akka-context-propagation-2.5'
 include ':instrumentation:akka-http-10.0'
 include ':instrumentation:apache-camel-2.20'
@@ -106,7 +103,6 @@ include ':instrumentation:java-classloader:jboss-testing'
 include ':instrumentation:java-classloader:osgi-testing'
 include ':instrumentation:java-classloader:tomcat-testing'
 include ':instrumentation:java-concurrent'
-include ':instrumentation:java-httpclient'
 include ':instrumentation:java-util-logging-spans'
 include ':instrumentation:jaxrs:jaxrs-1.0'
 include ':instrumentation:jaxrs:jaxrs-2.0:jaxrs-2.0-common'
