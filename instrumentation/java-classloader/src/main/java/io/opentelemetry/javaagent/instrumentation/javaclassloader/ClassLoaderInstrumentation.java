@@ -91,7 +91,7 @@ public final class ClassLoaderInstrumentation extends Instrumenter.Default {
       }
 
       try {
-        for (String prefix : BootstrapPackagePrefixesHolder.getBoostrapPackagePrefixes()) {
+        for (String prefix : Constants.BOOTSTRAP_PACKAGE_PREFIXES) {
           if (name.startsWith(prefix)) {
             try {
               return Class.forName(name, false, null);
