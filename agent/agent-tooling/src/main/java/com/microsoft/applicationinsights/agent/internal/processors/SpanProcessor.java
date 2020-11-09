@@ -6,9 +6,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -105,12 +105,12 @@ public class SpanProcessor extends AgentProcessor {
         }
 
         String spanName = span.getName();
-        final Attributes.Builder builder = Attributes.newBuilder();
+        final Attributes.Builder builder = Attributes.builder();
         // copy existing attributes.
         // According to Collector docs, The matched portion
         // in the span name is replaced by extracted attribute name. If the attributes exist
         // they will be overwritten. Need a way to optimize this.
-        span.getAttributes().forEach(builder::setAttribute);
+        span.getAttributes().forEach(builder::put);
         for (int i = 0; i < groupNames.size(); i++) {
             spanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), span, spanName, builder);
         }
@@ -133,7 +133,7 @@ public class SpanProcessor extends AgentProcessor {
                 sb.append("{");
                 sb.append(groupNamesList.get(i - 1));
                 // add attribute key=groupNames.get(i-1), value=matcher.group(i)
-                builder.setAttribute(groupNamesList.get(i - 1), matcher.group(i));
+                builder.put(groupNamesList.get(i - 1), matcher.group(i));
                 sb.append("}");
                 innerLastEnd = matcher.end(i);
             }

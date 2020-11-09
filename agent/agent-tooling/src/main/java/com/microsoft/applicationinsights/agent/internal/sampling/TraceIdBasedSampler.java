@@ -3,13 +3,16 @@ package com.microsoft.applicationinsights.agent.internal.sampling;
 import java.util.List;
 import javax.annotation.Nullable;
 
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.sdk.trace.Sampler;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult.Decision;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +44,7 @@ public final class TraceIdBasedSampler implements Sampler {
     }
 
     @Override
-    public SamplingResult shouldSample(@Nullable SpanContext parentContext,
+    public SamplingResult shouldSample(@Nullable Context parentContext,
                                  String traceId,
                                  String name,
                                  Span.Kind spanKind,

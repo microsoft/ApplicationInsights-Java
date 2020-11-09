@@ -42,9 +42,10 @@ import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.Tracer;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 // supporting all properties of event, metric, remove dependency and page view telemetry
 public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
-    private static final Tracer tracer = OpenTelemetry.getTracerProvider().get("");
+    private static final Tracer tracer = OpenTelemetry.getGlobalTracer("");
 
     private static final Logger logger = LoggerFactory.getLogger(BytecodeUtilImpl.class);
 
@@ -203,7 +204,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     private static void track(Telemetry telemetry) {
-        SpanContext context = tracer.getCurrentSpan().getContext();
+        SpanContext context = Span.current().getSpanContext();
         if (context.isValid()) {
             String traceId = context.getTraceIdAsHexString();
             String spanId = context.getSpanIdAsHexString();

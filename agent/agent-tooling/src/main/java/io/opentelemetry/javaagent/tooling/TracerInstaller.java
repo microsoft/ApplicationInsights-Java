@@ -14,7 +14,7 @@ import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.instrumentation.api.aiappid.AiHttpTraceContext;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -35,10 +35,10 @@ public class TracerInstaller {
             return;
         }
 
-        OpenTelemetry.setPropagators(
+        OpenTelemetry.setGlobalPropagators(
                 DefaultContextPropagators.builder().addTextMapPropagator(AiHttpTraceContext.getInstance()).build());
 
-        OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(
+        OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(
                 TraceConfig.getDefault().toBuilder()
                         .setSampler(Samplers.getSampler(Global.getSamplingPercentage()))
                         .build());
@@ -59,11 +59,11 @@ public class TracerInstaller {
                 }
             }
 
-            OpenTelemetrySdk.getTracerManagement().addSpanProcessor(SimpleSpanProcessor.newBuilder(currExporter).build());
+            OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(SimpleSpanProcessor.builder(currExporter).build());
 
         } else {
-            OpenTelemetrySdk.getTracerManagement()
-                    .addSpanProcessor(SimpleSpanProcessor.newBuilder(new Exporter(telemetryClient)).build());
+            OpenTelemetrySdk.getGlobalTracerManagement()
+                    .addSpanProcessor(SimpleSpanProcessor.builder(new Exporter(telemetryClient)).build());
         }
     }
 

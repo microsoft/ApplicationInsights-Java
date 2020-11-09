@@ -2,12 +2,12 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import java.util.List;
 
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.TraceState;
 
 public class MySpanData implements SpanData {
 
@@ -55,7 +55,6 @@ public class MySpanData implements SpanData {
 
   @Override public String getName() {
     return spanName;
-    //return delegate.getName();
   }
 
   @Override public Kind getKind() {
@@ -86,12 +85,12 @@ public class MySpanData implements SpanData {
     return delegate.getEndEpochNanos();
   }
 
-  @Override public boolean getHasRemoteParent() {
-    return delegate.getHasRemoteParent();
+  @Override public boolean hasRemoteParent() {
+    return delegate.hasRemoteParent();
   }
 
-  @Override public boolean getHasEnded() {
-    return delegate.getHasEnded();
+  @Override public boolean hasEnded() {
+    return delegate.hasEnded();
   }
 
   @Override public int getTotalRecordedEvents() {
