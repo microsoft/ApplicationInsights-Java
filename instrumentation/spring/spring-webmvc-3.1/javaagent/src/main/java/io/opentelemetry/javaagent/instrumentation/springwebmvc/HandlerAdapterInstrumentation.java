@@ -5,11 +5,9 @@
 
 package io.opentelemetry.javaagent.instrumentation.springwebmvc;
 
-import static io.opentelemetry.context.ContextUtils.withScopedContext;
-import static io.opentelemetry.javaagent.instrumentation.springwebmvc.SpringWebMvcTracer.TRACER;
+import static io.opentelemetry.javaagent.instrumentation.springwebmvc.SpringWebMvcTracer.tracer;
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
-import static io.opentelemetry.trace.TracingContextUtils.withSpan;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
@@ -18,12 +16,12 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
-import com.google.auto.service.AutoService;
-import io.grpc.Context;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
+import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.api.SpanWithScope;
-import io.opentelemetry.javaagent.tooling.Instrumenter;
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import net.bytebuddy.asm.Advice;
@@ -31,12 +29,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
-@AutoService(Instrumenter.class)
-public final class HandlerAdapterInstrumentation extends Instrumenter.Default {
-
-  public HandlerAdapterInstrumentation() {
-    super("spring-web");
-  }
+final class HandlerAdapterInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<ClassLoader> classLoaderMatcher() {
@@ -47,11 +40,6 @@ public final class HandlerAdapterInstrumentation extends Instrumenter.Default {
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
     return implementsInterface(named("org.springframework.web.servlet.HandlerAdapter"));
-  }
-
-  @Override
-  public String[] helperClassNames() {
-    return new String[] {packageName + ".SpringWebMvcTracer"};
   }
 
   @Override
@@ -69,15 +57,15 @@ public final class HandlerAdapterInstrumentation extends Instrumenter.Default {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanWithScope nameResourceAndStartSpan(
         @Advice.Argument(0) HttpServletRequest request, @Advice.Argument(2) Object handler) {
-      Context context = Context.current();
+      Context context = Java8BytecodeBridge.currentContext();
       Span serverSpan = BaseTracer.getCurrentServerSpan(context);
       if (serverSpan != null) {
         // Name the parent span based on the matching pattern
-        TRACER.onRequest(context, serverSpan, request);
+        tracer().onRequest(context, serverSpan, request);
         // Now create a span for handler/controller execution.
-        Span span = TRACER.startHandlerSpan(handler);
+        Span span = tracer().startHandlerSpan(handler);
 
-        return new SpanWithScope(span, withScopedContext(withSpan(span, context)));
+        return new SpanWithScope(span, context.with(span).makeCurrent());
       } else {
         return null;
       }
@@ -91,9 +79,9 @@ public final class HandlerAdapterInstrumentation extends Instrumenter.Default {
       }
       Span span = spanWithScope.getSpan();
       if (throwable == null) {
-        TRACER.end(span);
+        tracer().end(span);
       } else {
-        TRACER.endExceptionally(span, throwable);
+        tracer().endExceptionally(span, throwable);
       }
       spanWithScope.closeScope();
     }

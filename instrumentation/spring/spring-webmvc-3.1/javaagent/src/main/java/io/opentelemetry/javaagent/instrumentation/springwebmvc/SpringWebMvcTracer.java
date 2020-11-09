@@ -5,10 +5,10 @@
 
 package io.opentelemetry.javaagent.instrumentation.springwebmvc;
 
-import io.grpc.Context;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.servlet.ServletContextPath;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
-import io.opentelemetry.trace.Span;
 import java.lang.reflect.Method;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +21,11 @@ import org.springframework.web.servlet.mvc.Controller;
 
 public class SpringWebMvcTracer extends BaseTracer {
 
-  public static final SpringWebMvcTracer TRACER = new SpringWebMvcTracer();
+  private static final SpringWebMvcTracer TRACER = new SpringWebMvcTracer();
+
+  public static SpringWebMvcTracer tracer() {
+    return TRACER;
+  }
 
   public Span startHandlerSpan(Object handler) {
     return tracer.spanBuilder(spanNameOnHandle(handler)).startSpan();
@@ -96,6 +100,6 @@ public class SpringWebMvcTracer extends BaseTracer {
 
   @Override
   protected String getInstrumentationName() {
-    return "io.opentelemetry.auto.spring-webmvc-3.1";
+    return "io.opentelemetry.auto.spring-webmvc";
   }
 }

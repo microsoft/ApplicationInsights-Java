@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse
 
 class HttpServletTest extends AgentTestRunner {
   static final PREVIOUS_CONFIG = ConfigUtils.updateConfigAndResetInstrumentation {
-    it.setProperty("otel.integration.servlet-service.enabled", "true")
+    it.setProperty("otel.instrumentation.servlet-service.enabled", "true")
   }
 
   def specCleanup() {

@@ -5,13 +5,13 @@
 
 package io.opentelemetry.instrumentation.servlet;
 
-import io.grpc.Context;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.attributes.SemanticAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
-import io.opentelemetry.instrumentation.api.MoreAttributes;
 import io.opentelemetry.instrumentation.api.servlet.ServletContextPath;
 import io.opentelemetry.instrumentation.api.tracer.HttpServerTracer;
-import io.opentelemetry.trace.Span;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.Principal;
@@ -25,7 +25,7 @@ public abstract class ServletHttpServerTracer<RESPONSE>
 
   private static final Logger log = LoggerFactory.getLogger(ServletHttpServerTracer.class);
 
-  public Span startSpan(HttpServletRequest request) {
+  public Context startSpan(HttpServletRequest request) {
     return startSpan(request, request, getSpanName(request));
   }
 
@@ -36,7 +36,7 @@ public abstract class ServletHttpServerTracer<RESPONSE>
     // (https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1481)
     String contextPath = request.getContextPath();
     if (contextPath != null && !contextPath.isEmpty() && !contextPath.equals("/")) {
-      context = context.withValue(ServletContextPath.CONTEXT_KEY, contextPath);
+      context = context.with(ServletContextPath.CONTEXT_KEY, contextPath);
     }
     return super.startScope(span, request, context);
   }
@@ -89,8 +89,8 @@ public abstract class ServletHttpServerTracer<RESPONSE>
   @Override
   public void onRequest(Span span, HttpServletRequest request) {
     // we do this e.g. so that servlet containers can use these values in their access logs
-    request.setAttribute("traceId", span.getContext().getTraceIdAsHexString());
-    request.setAttribute("spanId", span.getContext().getSpanIdAsHexString());
+    request.setAttribute("traceId", span.getSpanContext().getTraceIdAsHexString());
+    request.setAttribute("spanId", span.getSpanContext().getSpanIdAsHexString());
 
     super.onRequest(span, request);
   }
@@ -112,7 +112,7 @@ public abstract class ServletHttpServerTracer<RESPONSE>
   public void setPrincipal(Span span, HttpServletRequest request) {
     Principal principal = request.getUserPrincipal();
     if (principal != null) {
-      span.setAttribute(MoreAttributes.USER_NAME, principal.getName());
+      span.setAttribute(SemanticAttributes.ENDUSER_ID, principal.getName());
     }
   }
 
@@ -126,11 +126,6 @@ public abstract class ServletHttpServerTracer<RESPONSE>
     return httpServletRequest.getHeader(name);
   }
 
-  @Override
-  protected String aiRequestContext(final HttpServletRequest request) {
-    return request.getHeader(AI_REQUEST_CONTEXT_HEADER_NAME);
-  }
-
   private static String getSpanName(HttpServletRequest request) {
     String spanName = request.getServletPath();
     String contextPath = request.getContextPath();
@@ -138,5 +133,10 @@ public abstract class ServletHttpServerTracer<RESPONSE>
       spanName = contextPath + spanName;
     }
     return spanName;
+  }
+
+  @Override
+  protected String aiRequestContext(final HttpServletRequest request) {
+    return request.getHeader(AI_REQUEST_CONTEXT_HEADER_NAME);
   }
 }

@@ -89,44 +89,53 @@ behavior you may find.
 
 The following configuration properties are common to all exporters:
 
-| System property          | Environment variable     | Purpose                                                                                            |
-|--------------------------|--------------------------|----------------------------------------------------------------------------------------------------|
-| otel.exporter            | OTEL_EXPORTER            | To select exporter e.g. `otlp,jaeger`. Defaults to `otlp`                                          |
+| System property | Environment variable | Purpose                                                                                                                                                 |
+|-----------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| otel.exporter   | OTEL_EXPORTER        | Exporter to be used, can be a comma-separated list to use multiple exporters. Currently does not support multiple metric exporters. Defaults to `otlp`. |
+
+##### OTLP exporter (both span and metric exporters)
+
+A simple wrapper for the OTLP span and metric exporters of opentelemetry-java.
+
+| System property              | Environment variable        | Purpose                                                               |
+|------------------------------|-----------------------------|-----------------------------------------------------------------------|
+| otel.exporter=otlp (default) | OTEL_EXPORTER=otlp          | To select OpenTelemetry exporter (default)                            |
+| otel.exporter.otlp.endpoint  | OTEL_EXPORTER_OTLP_ENDPOINT | The OTLP endpoint to connect to, default is "localhost:55680"         |
+| otel.exporter.otlp.insecure  | OTEL_EXPORTER_OTLP_INSECURE | Whether to enable client transport security for the connection        |
+| otel.exporter.otlp.headers   | OTEL_EXPORTER_OTLP_HEADERS  | The key-value pairs separated by semicolon to pass as request headers |
+| otel.exporter.otlp.timeout   | OTEL_EXPORTER_OTLP_TIMEOUT  | The max waiting time allowed to send each batch, default is 1000      |
+
+In order to configure the service name for the OTLP exporter, you must add `service.name` key
+to the OpenTelemetry Resource ([see below](#opentelemetry-resource)), e.g. `OTEL_RESOURCE_ATTRIBUTES=service.name=myservice`.
 
 ##### Jaeger exporter
 
 A simple wrapper for the Jaeger exporter of opentelemetry-java. It currently
 only supports gRPC as its communications protocol.
 
-| System property          | Environment variable     | Purpose                                                                                            |
-|--------------------------|--------------------------|----------------------------------------------------------------------------------------------------|
-| otel.exporter=jaeger     | OTEL_EXPORTER=jaeger     | To select Jaeger exporter                                                                          |
-| otel.jaeger.endpoint     | OTEL_JAEGER_ENDPOINT     | The Jaeger endpoint to connect to, default is "localhost:14250", currently only gRPC is supported. |
-| otel.jaeger.service.name | OTEL_JAEGER_SERVICE_NAME | The service name of this JVM instance, default is "unknown".                                       |
+| System property                   | Environment variable              | Purpose                                                                                            |
+|-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------|
+| otel.exporter=jaeger              | OTEL_EXPORTER=jaeger              | To select Jaeger exporter                                                                          |
+| otel.exporter.jaeger.endpoint     | OTEL_EXPORTER_JAEGER_ENDPOINT     | The Jaeger endpoint to connect to, default is "localhost:14250", currently only gRPC is supported. |
+| otel.exporter.jaeger.service.name | OTEL_EXPORTER_JAEGER_SERVICE_NAME | The service name of this JVM instance, default is "unknown".                                       |
 
 ##### Zipkin exporter
 A simple wrapper for the Zipkin exporter of opentelemetry-java. It POSTs json in [Zipkin format](https://zipkin.io/zipkin-api/#/default/post_spans) to a specified HTTP URL.
 
-| System property          | Environment variable     | Purpose                                                                                                               |
-|--------------------------|--------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| otel.exporter=zipkin     | OTEL_EXPORTER=zipkin     | To select Zipkin exporter                                                                                             |
-| otel.zipkin.endpoint     | OTEL_ZIPKIN_ENDPOINT     | The Zipkin endpoint to connect to, default is "http://localhost:9411/api/v2/spans". Currently only HTTP is supported. |
-| otel.zipkin.service.name | OTEL_ZIPKIN_SERVICE_NAME | The service name of this JVM instance, default is "unknown".                                                          |
+| System property                   | Environment variable              | Purpose                                                                                                               |
+|-----------------------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| otel.exporter=zipkin              | OTEL_EXPORTER=zipkin              | To select Zipkin exporter                                                                                             |
+| otel.exporter.zipkin.endpoint     | OTEL_EXPORTER_ZIPKIN_ENDPOINT     | The Zipkin endpoint to connect to, default is "http://localhost:9411/api/v2/spans". Currently only HTTP is supported. |
+| otel.exporter.zipkin.service.name | OTEL_EXPORTER_ZIPKIN_SERVICE_NAME | The service name of this JVM instance, default is "unknown".                                                          |
 
-##### OTLP exporter
+##### Prometheus exporter
+A simple wrapper for the Prometheus exporter of opentelemetry-java.
 
-A simple wrapper for the OTLP exporter of opentelemetry-java.
-
-| System property                  | Environment variable             | Purpose                                                                 |
-|----------------------------------|----------------------------------|-------------------------------------------------------------------------|
-| otel.exporter=otlp (default)     | OTEL_EXPORTER=otlp               | To select OpenTelemetry exporter (default)                              |
-| otel.otlp.endpoint               | OTEL_OTLP_ENDPOINT               | The OTLP endpoint to connect to, default is "localhost:55680"           |
-| otel.otlp.use.tls                | OTEL_OTLP_USE_TLS                | To use or not TLS, default is false.                                    |
-| otel.otlp.metadata               | OTEL_OTLP_METADATA               | The key-value pairs separated by semicolon to pass as request metadata. |
-| otel.otlp.span.timeout           | OTEL_OTLP_SPAN_TIMEOUT           | The max waiting time allowed to send each span batch, default is 1000.  |
-
-In order to configure the service name for the OTLP exporter, you must add `service.name` key
-to the OpenTelemetry Resource ([see below](#opentelemetry-resource)), e.g. `OTEL_RESOURCE_ATTRIBUTES=service.name=myservice`.
+| System property               | Environment variable          | Purpose                                                                            |
+|-------------------------------|-------------------------------|------------------------------------------------------------------------------------|
+| otel.exporter=prometheus      | OTEL_EXPORTER=prometheus      | To select Prometheus exporter                                                      |
+| otel.exporter.prometheus.port | OTEL_EXPORTER_PROMETHEUS_PORT | The local port used to bind the prometheus metric server, defaults to 9464         |
+| otel.exporter.prometheus.host | OTEL_EXPORTER_PROMETHEUS_HOST | The local address used to bind the prometheus metric server, defaults to "0.0.0.0" |
 
 ##### Logging exporter
 
@@ -204,7 +213,7 @@ The OpenTelemetry API exposes SPI [hooks](https://github.com/open-telemetry/open
 for customizing its behavior, such as the `Resource` attached to spans or the `Sampler`.
 
 Because the auto instrumentation runs in a separate classpath than the instrumented application, it is not possible for customization in the application to take advantage of this customization. In order to provide such customization, you can
-provide the path to a JAR file including an SPI implementation using the system property `otel.initializer.jar`. Note that this JAR will need to shade the OpenTelemetry API in the same way as the agent does. The simplest way to do this is to use the same shading configuration as the agent from [here](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/cfade733b899a2f02cfec7033c6a1efd7c54fd8b/java-agent/java-agent.gradle#L39). In addition, you will have to specify the `io.opentelemetry.javaagent.shaded.io.opentelemetry.trace.spi.TraceProvider` to the name of the class that implements the SPI.
+provide the path to a JAR file including an SPI implementation using the system property `otel.initializer.jar`. Note that this JAR will need to shade the OpenTelemetry API in the same way as the agent does. The simplest way to do this is to use the same shading configuration as the agent from [here](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/cfade733b899a2f02cfec7033c6a1efd7c54fd8b/java-agent/java-agent.gradle#L39). In addition, you will have to specify the `io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.spi.TraceProvider` to the name of the class that implements the SPI.
 
 ## Supported Java libraries and frameworks
 
@@ -253,6 +262,7 @@ provide the path to a JAR file including an SPI implementation using the system 
 | [Ratpack](https://github.com/ratpack/ratpack)                                                                                         | 1.4+                           |
 | [Reactor](https://github.com/reactor/reactor-core)                                                                                    | 3.1+                           |
 | [Rediscala](https://github.com/etaty/rediscala)                                                                                       | 1.8+                           |
+| [Redisson](https://github.com/redisson/redisson)                                                                                      | 3.0+                           |
 | [RMI](https://docs.oracle.com/en/java/javase/11/docs/api/java.rmi/java/rmi/package-summary.html)                                      | Java 7+                        |
 | [RxJava](https://github.com/ReactiveX/RxJava)                                                                                         | 1.0+                           |
 | [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)                                           | 2.2+                           |

@@ -16,9 +16,9 @@
 
 package io.opentelemetry.instrumentation.auto.azure.functions;
 
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.Tracer;
 import java.lang.reflect.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class InvocationRequestExtractAdapter implements TextMapPropagator.Getter
   private static final Logger log = LoggerFactory.getLogger(InvocationRequestExtractAdapter.class);
 
   public static final Tracer TRACER =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.auto.azure-functions");
+      OpenTelemetry.getGlobalTracer("io.opentelemetry.auto.azure-functions");
 
   public static final InvocationRequestExtractAdapter GETTER =
       new InvocationRequestExtractAdapter();
@@ -57,6 +57,11 @@ public class InvocationRequestExtractAdapter implements TextMapPropagator.Getter
     getTraceContextMethod = getTraceContextMethodLocal;
     getTraceParentMethod = getTraceParentMethodLocal;
     getTraceStateMethod = getTraceStateMethodLocal;
+  }
+
+  @Override
+  public Iterable<String> keys(Object carrier) {
+    return null;
   }
 
   @Override

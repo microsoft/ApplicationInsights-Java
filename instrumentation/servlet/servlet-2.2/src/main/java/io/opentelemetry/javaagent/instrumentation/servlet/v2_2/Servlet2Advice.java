@@ -5,12 +5,14 @@
 
 package io.opentelemetry.javaagent.instrumentation.servlet.v2_2;
 
-import static io.opentelemetry.javaagent.instrumentation.servlet.v2_2.Servlet2HttpServerTracer.TRACER;
+import static io.opentelemetry.javaagent.instrumentation.servlet.v2_2.Servlet2HttpServerTracer.tracer;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +34,7 @@ public class Servlet2Advice {
 
     HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 
-    if (TRACER.getServerContext(httpServletRequest) != null) {
+    if (tracer().getServerContext(httpServletRequest) != null) {
       return;
     }
 
@@ -41,8 +43,9 @@ public class Servlet2Advice {
       ((HttpServletResponse) response).setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
-    span = TRACER.startSpan(httpServletRequest);
-    scope = TRACER.startScope(span, httpServletRequest);
+    Context ctx = tracer().startSpan(httpServletRequest);
+    span = Java8BytecodeBridge.spanFromContext(ctx);
+    scope = tracer().startScope(span, httpServletRequest);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
@@ -57,7 +60,7 @@ public class Servlet2Advice {
     }
     scope.close();
 
-    TRACER.setPrincipal(span, (HttpServletRequest) request);
+    tracer().setPrincipal(span, (HttpServletRequest) request);
 
     Integer responseStatus =
         InstrumentationContext.get(ServletResponse.class, Integer.class).get(response);
@@ -65,9 +68,9 @@ public class Servlet2Advice {
     ResponseWithStatus responseWithStatus =
         new ResponseWithStatus((HttpServletResponse) response, responseStatus);
     if (throwable == null) {
-      TRACER.end(span, responseWithStatus);
+      tracer().end(span, responseWithStatus);
     } else {
-      TRACER.endExceptionally(span, throwable, responseWithStatus);
+      tracer().endExceptionally(span, throwable, responseWithStatus);
     }
   }
 }

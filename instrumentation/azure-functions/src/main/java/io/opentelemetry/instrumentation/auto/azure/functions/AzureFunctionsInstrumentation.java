@@ -17,7 +17,6 @@
 package io.opentelemetry.instrumentation.auto.azure.functions;
 
 import static io.opentelemetry.instrumentation.auto.azure.functions.InvocationRequestExtractAdapter.GETTER;
-import static io.opentelemetry.instrumentation.auto.azure.functions.InvocationRequestExtractAdapter.TRACER;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -25,14 +24,13 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
 import com.google.common.base.Strings;
-import io.grpc.Context;
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
@@ -78,8 +76,10 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
         if (!Strings.isNullOrEmpty(connectionString)) {
           AiConnectionString.setConnectionString(connectionString);
         } else {
-          // if the instrumentation key is neither null nor empty , we will create a default connection string based on the instrumentation key.
-          // this is to support Azure Functions that were created prior to the introduction of connection strings
+          // if the instrumentation key is neither null nor empty , we will create a default
+          // connection string based on the instrumentation key.
+          // this is to support Azure Functions that were created prior to the introduction of
+          // connection strings
           String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
           if (!Strings.isNullOrEmpty(instrumentationKey)) {
             AiConnectionString.setConnectionString("InstrumentationKey=" + instrumentationKey);
@@ -91,12 +91,12 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
           InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
 
       final Context extractedContext =
-          OpenTelemetry.getPropagators()
+          OpenTelemetry.getGlobalPropagators()
               .getTextMapPropagator()
-              .extract(Context.ROOT, traceContext, GETTER);
-      final SpanContext spanContext = TracingContextUtils.getSpan(extractedContext).getContext();
+              .extract(Context.root(), traceContext, GETTER);
+      final SpanContext spanContext = Span.fromContext(extractedContext).getSpanContext();
 
-      return TRACER.withSpan(DefaultSpan.create(spanContext));
+      return Context.current().with(Span.wrap(spanContext)).makeCurrent();
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)

@@ -5,15 +5,15 @@
 
 package io.opentelemetry.instrumentation.spring.autoconfigure.exporters.zipkin;
 
-import static io.opentelemetry.exporters.zipkin.ZipkinSpanExporter.DEFAULT_ENDPOINT;
-import static io.opentelemetry.exporters.zipkin.ZipkinSpanExporter.DEFAULT_SERVICE_NAME;
+import static io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.DEFAULT_ENDPOINT;
+import static io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.DEFAULT_SERVICE_NAME;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Configuration for {@link ZipkinSpanExporter}
+ * Configuration for {@link io.opentelemetry.exporters.zipkin.ZipkinSpanExporter}
  *
- * <p>Get Exporter Service Name {@link getServiceName()}
+ * <p>Get Exporter Service Name {@link #getServiceName()}
  *
  * <p>Get Exporter Endpoint
  */

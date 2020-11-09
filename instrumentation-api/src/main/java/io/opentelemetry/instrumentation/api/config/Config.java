@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -128,20 +127,21 @@ public abstract class Config {
     }
   }
 
-  // some integrations have '-' or '_' character in their names -- this does not work well with
+  // some instrumentation names have '-' or '_' character -- this does not work well with
   // environment variables (where we replace every non-alphanumeric character with '.'), so we're
   // replacing those with a dot
   public static String normalizePropertyName(String propertyName) {
     return PROPERTY_NAME_REPLACEMENTS.matcher(propertyName.toLowerCase()).replaceAll(".");
   }
 
-  public boolean isIntegrationEnabled(SortedSet<String> integrationNames, boolean defaultEnabled) {
+  public boolean isInstrumentationEnabled(
+      Iterable<String> instrumentationNames, boolean defaultEnabled) {
     // If default is enabled, we want to enable individually,
     // if default is disabled, we want to disable individually.
     boolean anyEnabled = defaultEnabled;
-    for (String name : integrationNames) {
+    for (String name : instrumentationNames) {
       boolean configEnabled =
-          getBooleanProperty("otel.integration." + name + ".enabled", defaultEnabled);
+          getBooleanProperty("otel.instrumentation." + name + ".enabled", defaultEnabled);
 
       if (defaultEnabled) {
         anyEnabled &= configEnabled;

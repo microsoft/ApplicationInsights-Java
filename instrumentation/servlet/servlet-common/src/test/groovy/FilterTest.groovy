@@ -17,7 +17,7 @@ import javax.servlet.ServletResponse
 
 class FilterTest extends AgentTestRunner {
   static final PREVIOUS_CONFIG = ConfigUtils.updateConfigAndResetInstrumentation {
-    it.setProperty("otel.integration.servlet-filter.enabled", "true")
+    it.setProperty("otel.instrumentation.servlet-filter.enabled", "true")
   }
 
   def cleanupSpec() {
