@@ -70,7 +70,6 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
       AzureFunctionsInstrumentationHelper.lazilySetConnectionString();
 
       final Object traceContext = InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
-
       final Context extractedContext =
           OpenTelemetry.getGlobalPropagators()
               .getTextMapPropagator()
