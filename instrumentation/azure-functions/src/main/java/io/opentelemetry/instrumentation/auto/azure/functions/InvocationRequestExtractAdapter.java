@@ -66,6 +66,7 @@ public class InvocationRequestExtractAdapter implements TextMapPropagator.Getter
 
   @Override
   public String get(final Object carrier, final String key) {
+    log.debug("################################### InvocationRequestExtractAdapter::key: " + key);
     try {
       // only supports W3C propagator
       switch (key) {

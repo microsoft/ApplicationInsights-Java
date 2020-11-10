@@ -60,7 +60,9 @@ public class AzureFunctionsInstrumentation extends Instrumenter.Default {
 
   @Override
   public String[] helperClassNames() {
-    return new String[] {packageName + ".InvocationRequestExtractAdapter", packageName + ".AzureFunctionsInstrumentationHelper"};
+    return new String[] {
+        packageName + ".InvocationRequestExtractAdapter",
+        packageName + ".AzureFunctionsInstrumentationHelper"};
   }
 
   public static class InvocationRequestAdvice {
