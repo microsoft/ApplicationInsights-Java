@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import java.util.Collection;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -157,6 +158,10 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
         if (!semaphore.tryAcquire()) {
             return false;
         }
+        if (shutdown) {
+            // returning true so that the caller will not log an error
+            return true;
+        }
 
         try {
             final ScheduledSendHandler command = new ScheduledSendHandler(transmissionDispatcher, telemetriesFetcher, serializer);
@@ -186,7 +191,9 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
         } catch (Throwable t) {
             try {
                 semaphore.release();
-                if (!shutdown) {
+                // this conditional is to suppress logging error on race condition when shutdown occurs after check at top of method
+                // but before passing the runnable to the thread pool
+                if (!shutdown || !(t instanceof RejectedExecutionException)) {
                     logger.error("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetriesFetcher.fetch().size());
                     logger.debug("Error in scheduledSend of telemetry items failed. {} items were not sent", telemetriesFetcher.fetch().size(), t);
                 }
