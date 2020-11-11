@@ -91,10 +91,10 @@ public class TelemetryClient {
      * application session.
      */
     public TelemetryContext getContext() {
-        if (context == null || !context.getInstrumentationKey().equals(configuration.getInstrumentationKey())) {
+        if (context == null || (context.getInstrumentationKey() != null &&  !context.getInstrumentationKey().equals(configuration.getInstrumentationKey()))) {
             // lock and recheck there is still no initialized context. If so, create one.
             synchronized (TELEMETRY_CONTEXT_LOCK) {
-                if (context==null || !context.getInstrumentationKey().equals(configuration.getInstrumentationKey())) {
+                if (context==null || (context.getInstrumentationKey() != null && !context.getInstrumentationKey().equals(configuration.getInstrumentationKey()))) {
                     context = createInitializedContext();
                 }
             }
