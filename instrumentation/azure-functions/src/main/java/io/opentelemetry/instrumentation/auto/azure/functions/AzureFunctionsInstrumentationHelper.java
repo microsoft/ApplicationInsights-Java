@@ -21,15 +21,15 @@ public class AzureFunctionsInstrumentationHelper {
     if (!AiConnectionString.hasConnectionString()) {
       if (!Strings.isNullOrEmpty(connectionString)) {
         setConnectionString(lazySetOptIn, enableAgent, connectionString);
-      }
-    } else {
-      // if the instrumentation key is neither null nor empty , we will create a default
-      // connection string based on the instrumentation key.
-      // this is to support Azure Functions that were created prior to the introduction of
-      // connection strings
-      String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
-      if (!Strings.isNullOrEmpty(instrumentationKey)) {
-        setConnectionString(lazySetOptIn, enableAgent, instrumentationKey);
+      } else {
+        // if the instrumentation key is neither null nor empty , we will create a default
+        // connection string based on the instrumentation key.
+        // this is to support Azure Functions that were created prior to the introduction of
+        // connection strings
+        String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
+        if (!Strings.isNullOrEmpty(instrumentationKey)) {
+          setConnectionString(lazySetOptIn, enableAgent, "InstrumentationKey=" + instrumentationKey);
+        }
       }
     }
   }
