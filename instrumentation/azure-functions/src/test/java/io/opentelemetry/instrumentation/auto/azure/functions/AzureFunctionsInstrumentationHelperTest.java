@@ -64,7 +64,7 @@ public class AzureFunctionsInstrumentationHelperTest {
   }
 
   @Test
-  @DisplayName("LazySetOptIn is FALSE, ConnectionString is null, InstrumentationKey is null, and EnableAgent is TRUE")
+  @DisplayName("LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is TRUE")
   public void disableLazySetWithLazySetOptInOffConnectionStringNullAndInstrumentationKeyNull() {
     assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
     MockedAccessor accessor = new MockedAccessor();
@@ -74,7 +74,7 @@ public class AzureFunctionsInstrumentationHelperTest {
   }
 
   @Test
-  @DisplayName("LazySetOptIn is FALSE, ConnectionString is null, InstrumentationKey is valid, and EnableAgent is TRUE")
+  @DisplayName("LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE")
   public void enableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNotNull() {
     assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
     MockedAccessor accessor = new MockedAccessor();
@@ -96,13 +96,13 @@ public class AzureFunctionsInstrumentationHelperTest {
   }
 
   @Test
-  @DisplayName("LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is FALSE")
+  @DisplayName("LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is NULL")
   public void enableLazySetWithLazySetOptInOnEnableAgentNull() {
     assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(true, null));
   }
 
   @Test
-  @DisplayName("LazySetOptIn is TRUE, ConnectionString is null, InstrumentationKey is null, and EnableAgent is TRUE")
+  @DisplayName("LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is TRUE")
   public void disableLazySetWithLazySetOptInOnConnectionStringNullAndInstrumentationKeyNull() {
     assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(true, "true"));
     MockedAccessor accessor = new MockedAccessor();
@@ -112,7 +112,7 @@ public class AzureFunctionsInstrumentationHelperTest {
   }
 
   @Test
-  @DisplayName("LazySetOptIn is TRUE, ConnectionString is null, InstrumentationKey is valid, and EnableAgent is TRUE")
+  @DisplayName("LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE")
   public void enableLazySetWithLazySetOptInOnConnectionStringNullInstrumentationKeyNotNull() {
     assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
     MockedAccessor accessor = new MockedAccessor();
