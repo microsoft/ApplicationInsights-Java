@@ -54,6 +54,9 @@ public class JsonConfigPolling implements Runnable {
         this.lastReadSamplingPercentage = lastReadSamplingPercentage;
     }
 
+    // passing in lastReadSamplingPercentage instead of using the real samplingPercentage, because the real
+    // samplingPercentage is rounded to nearest 100/N, and we want to know specifically when the underlying config value changes
+    // which is lastReadSamplingPercentage
     public static void pollJsonConfigEveryMinute(Path path, long lastModifiedTime, double lastReadSamplingPercentage) {
         Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(JsonConfigPolling.class))
                 .scheduleWithFixedDelay(new JsonConfigPolling(path, lastModifiedTime, lastReadSamplingPercentage), 60, 60, SECONDS);
