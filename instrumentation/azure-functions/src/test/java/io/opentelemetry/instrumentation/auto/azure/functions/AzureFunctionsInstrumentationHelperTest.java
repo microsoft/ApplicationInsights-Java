@@ -47,7 +47,7 @@ public class AzureFunctionsInstrumentationHelperTest {
 
   @Test
   @DisplayName("LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is TRUE")
-  public void enableLazySetWithLazySetOptInOffEnableAgentON() {
+  public void enableLazySetWithLazySetOptInOffEnableAgentOn() {
     assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
   }
 
@@ -65,7 +65,7 @@ public class AzureFunctionsInstrumentationHelperTest {
 
   @Test
   @DisplayName("LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is TRUE")
-  public void disableLazySetWithLazySetOptInOffConnectionStringNullAndInstrumentationKeyNull() {
+  public void disableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNull() {
     assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
     MockedAccessor accessor = new MockedAccessor();
     AiConnectionString.setAccessor(accessor);
