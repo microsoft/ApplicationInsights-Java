@@ -1,14 +1,13 @@
 package io.opentelemetry.instrumentation.auto.azure.functions;
 
-import com.google.common.base.Strings;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AzureFunctionsInstrumentationHelper {
 
-  private static final Logger logger = LoggerFactory
-      .getLogger(AzureFunctionsInstrumentationHelper.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(AzureFunctionsInstrumentationHelper.class);
 
   public static void lazilySetConnectionString() {
     // race condition (two initial requests happening at the same time) is not a worry here
@@ -32,14 +31,14 @@ public class AzureFunctionsInstrumentationHelper {
   }
 
   static void setConnectionString(String connectionString, String instrumentationKey) {
-    if (!Strings.isNullOrEmpty(connectionString)) {
+    if (connectionString != null && !connectionString.isEmpty()) {
       AiConnectionString.setConnectionString(connectionString);
     } else {
       // if the instrumentation key is neither null nor empty , we will create a default
       // connection string based on the instrumentation key.
       // this is to support Azure Functions that were created prior to the introduction of
       // connection strings
-      if (!Strings.isNullOrEmpty(instrumentationKey)) {
+      if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
         AiConnectionString.setConnectionString("InstrumentationKey=" + instrumentationKey);
       }
     }
