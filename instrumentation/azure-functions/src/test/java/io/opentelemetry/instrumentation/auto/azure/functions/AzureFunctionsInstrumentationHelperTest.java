@@ -16,7 +16,6 @@
 
 package io.opentelemetry.instrumentation.auto.azure.functions;
 
-import com.google.common.base.Strings;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -74,6 +73,16 @@ public class AzureFunctionsInstrumentationHelperTest {
   }
 
   @Test
+  @DisplayName("LazySetOptIn is FALSE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent is TRUE")
+  public void disableLazySetWithLazySetOptInOffConnectionStringNotNullInstrumentationKeyNull() {
+    assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
+    MockedAccessor accessor = new MockedAccessor();
+    AiConnectionString.setAccessor(accessor);
+    AzureFunctionsInstrumentationHelper.setConnectionString(CONNECTION_STRING, null);
+    assertEquals(accessor.connectionString, CONNECTION_STRING);
+  }
+
+  @Test
   @DisplayName("LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE")
   public void enableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNotNull() {
     assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
@@ -112,6 +121,16 @@ public class AzureFunctionsInstrumentationHelperTest {
   }
 
   @Test
+  @DisplayName("LazySetOptIn is TRUE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent is TRUE")
+  public void enableLazySetWithLazySetOptInOnConnectionStringNotNullInstrumentationKeyNull() {
+    assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
+    MockedAccessor accessor = new MockedAccessor();
+    AiConnectionString.setAccessor(accessor);
+    AzureFunctionsInstrumentationHelper.setConnectionString(CONNECTION_STRING, null);
+    assertEquals(accessor.connectionString, CONNECTION_STRING);
+  }
+
+  @Test
   @DisplayName("LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE")
   public void enableLazySetWithLazySetOptInOnConnectionStringNullInstrumentationKeyNotNull() {
     assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
@@ -126,7 +145,7 @@ public class AzureFunctionsInstrumentationHelperTest {
 
     @Override
     public boolean hasValue() {
-      return !Strings.isNullOrEmpty(connectionString);
+      return connectionString != null;
     }
 
     @Override
@@ -135,4 +154,3 @@ public class AzureFunctionsInstrumentationHelperTest {
     }
   }
 }
-
