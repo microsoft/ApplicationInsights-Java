@@ -55,6 +55,7 @@ import java.net.UnknownHostException;
 public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionNetworkOutput.class);
+    private static volatile boolean friendlyExceptionThrown = false;
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String CONTENT_ENCODING_HEADER = "Content-Encoding";
@@ -188,7 +189,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 logger.error("Failed to send", ioe);
             } catch (FriendlyException e) {
                 ex = e;
-                logger.error(e.getMessage());
+                if(!friendlyExceptionThrown) {
+                    logger.error(e.getMessage());
+                    friendlyExceptionThrown = true;
+                }
             } catch (Exception e) {
                 ex = e;
                 logger.error("Failed to send, unexpected exception", e);
