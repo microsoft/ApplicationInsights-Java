@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
@@ -99,6 +100,8 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
                         break;
                 }
             }
+        } catch (FriendlyException e) {
+            // chomp
         } catch (IOException e) {
             // chomp
         } finally {

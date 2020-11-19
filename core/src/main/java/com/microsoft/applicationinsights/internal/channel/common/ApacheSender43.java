@@ -26,7 +26,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.concurrent.GuardedBy;
+import javax.net.ssl.SSLHandshakeException;
 
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -71,8 +73,14 @@ public final class ApacheSender43 implements ApacheSender {
     }
 
     @Override
-    public HttpResponse sendPostRequest(HttpPost post) throws IOException {
-        return getHttpClient().execute(post);
+    public HttpResponse sendPostRequest(HttpPost post) throws IOException, FriendlyException {
+        try {
+            return getHttpClient().execute(post);
+        } catch (SSLHandshakeException e) {
+            throw new FriendlyException("ApplicationInsights Java Agent failed to send telemetry data.",
+                    "Unable to find valid certification path to requested target",
+                    "Please import the Breeze certificate into the java key store.");
+        }
     }
 
     @Override

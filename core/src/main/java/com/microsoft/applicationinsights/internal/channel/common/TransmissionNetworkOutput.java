@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
@@ -185,6 +186,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
             } catch (IOException ioe) {
                 ex = ioe;
                 logger.error("Failed to send", ioe);
+            } catch (FriendlyException e) {
+                ex = e;
+                logger.error(e.getMessage());
             } catch (Exception e) {
                 ex = e;
                 logger.error("Failed to send, unexpected exception", e);
