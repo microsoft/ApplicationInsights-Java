@@ -23,6 +23,9 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.instrumentation.api.aiappid.AiHttpTraceContext;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,15 +34,20 @@ public class ConnectionStringAccessor implements AiConnectionString.Accessor {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectionStringAccessor.class);
 
-    @Override public boolean hasValue() {
-        //check for instrumentation key value is sufficient here because it's updated each time when the connection string is updated.
+    @Override
+    public boolean hasValue() {
+        // check for instrumentation key value is sufficient here because it's updated each time when the connection string is updated.
         String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
         return !Strings.isNullOrEmpty(instrumentationKey);
     }
 
-    @Override public void setValue(String value) {
+    @Override
+    public void setValue(String value) {
         if (!Strings.isNullOrEmpty(value)) {
             TelemetryConfiguration.getActive().setConnectionString(value);
+            // now that we know user has opted in to tracing, need to set up propagator
+            OpenTelemetry.setGlobalPropagators(
+                    DefaultContextPropagators.builder().addTextMapPropagator(AiHttpTraceContext.getInstance()).build());
             logger.info("Set connection string lazily for the Azure Function Consumption Plan.");
         }
     }
