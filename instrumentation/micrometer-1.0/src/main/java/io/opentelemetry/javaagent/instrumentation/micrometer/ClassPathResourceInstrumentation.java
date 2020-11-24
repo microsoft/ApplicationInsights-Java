@@ -3,16 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.auto.micrometer;
+package io.opentelemetry.javaagent.instrumentation.micrometer;
 
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
-import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.bootstrap.AgentInitializer;
-import io.opentelemetry.javaagent.tooling.Instrumenter;
+import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.InputStream;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
@@ -23,12 +22,7 @@ import org.springframework.core.io.ClassPathResource;
 
 // TODO consider applying this instrumentation more generally on ClassLoaders
 // TODO cannot test this currently since AGENT_CLASSLOADER is not set in AgentTestRunner
-@AutoService(Instrumenter.class)
-public final class ClassPathResourceInstrumentation extends Instrumenter.Default {
-
-  public ClassPathResourceInstrumentation() {
-    super("micrometer-actuator");
-  }
+public final class ClassPathResourceInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
@@ -45,11 +39,11 @@ public final class ClassPathResourceInstrumentation extends Instrumenter.Default
   public static class GetInputStreamAdvice {
     @Advice.OnMethodEnter(skipOn = Advice.OnNonDefaultValue.class)
     public static InputStream onEnter(@Advice.This final ClassPathResource resource) {
-      if ("io/opentelemetry/instrumentation/auto/micrometer/AzureMonitorAutoConfiguration.class"
+      if ("io/opentelemetry/javaagent/instrumentation/micrometer/AzureMonitorAutoConfiguration.class"
           .equals(resource.getPath())) {
         if (AgentInitializer.AGENT_CLASSLOADER != null) {
           return AgentInitializer.AGENT_CLASSLOADER.getResourceAsStream(
-              "io/opentelemetry/instrumentation/auto/micrometer/AzureMonitorAutoConfiguration.class");
+              "io/opentelemetry/javaagent/instrumentation/micrometer/AzureMonitorAutoConfiguration.class");
         }
       }
       return null;

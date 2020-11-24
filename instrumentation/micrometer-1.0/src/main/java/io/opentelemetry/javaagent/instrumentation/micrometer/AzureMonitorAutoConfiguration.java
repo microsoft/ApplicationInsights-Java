@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.auto.micrometer;
+package io.opentelemetry.javaagent.instrumentation.micrometer;
 
 import io.micrometer.core.instrument.Clock;
 import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;

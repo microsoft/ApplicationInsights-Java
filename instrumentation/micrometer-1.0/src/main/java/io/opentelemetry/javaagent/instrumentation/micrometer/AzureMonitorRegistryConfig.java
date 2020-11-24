@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.auto.micrometer;
+package io.opentelemetry.javaagent.instrumentation.micrometer;
 
 import io.micrometer.core.instrument.step.StepRegistryConfig;
 import io.opentelemetry.instrumentation.api.config.Config;
