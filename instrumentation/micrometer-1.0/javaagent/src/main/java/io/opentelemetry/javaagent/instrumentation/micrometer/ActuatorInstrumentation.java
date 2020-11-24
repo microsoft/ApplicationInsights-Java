@@ -3,14 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.instrumentation.auto.micrometer;
+package io.opentelemetry.javaagent.instrumentation.micrometer;
 
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 
-import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.tooling.Instrumenter;
+import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,27 +18,11 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
-@AutoService(Instrumenter.class)
-public final class ActuatorInstrumentation extends Instrumenter.Default {
-
-  public ActuatorInstrumentation() {
-    super("micrometer-actuator");
-  }
+public final class ActuatorInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
     return named("org.springframework.boot.autoconfigure.AutoConfigurationImportSelector");
-  }
-
-  @Override
-  public String[] helperClassNames() {
-    return new String[] {
-      packageName + ".AzureMonitorAutoConfiguration",
-      packageName + ".AzureMonitorMeterRegistry",
-      packageName + ".AzureMonitorNamingConvention",
-      packageName + ".AzureMonitorRegistryConfig",
-      packageName + ".DaemonThreadFactory"
-    };
   }
 
   @Override
