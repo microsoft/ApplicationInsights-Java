@@ -35,8 +35,13 @@ public class TracerInstaller {
             return;
         }
 
-        OpenTelemetry.setGlobalPropagators(
-                DefaultContextPropagators.builder().addTextMapPropagator(AiHttpTraceContext.getInstance()).build());
+        if (config.connectionString != null) {
+            OpenTelemetry.setGlobalPropagators(
+                    DefaultContextPropagators.builder().addTextMapPropagator(AiHttpTraceContext.getInstance()).build());
+        } else {
+            // in Azure Functions, need to set lazy once we know user has opted in to tracing
+            OpenTelemetry.setGlobalPropagators(DefaultContextPropagators.builder().build());
+        }
 
         OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(
                 TraceConfig.getDefault().toBuilder()
