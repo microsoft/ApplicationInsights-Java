@@ -5,19 +5,19 @@ public class FriendlyException extends Exception {
         super();
     }
 
-    public FriendlyException(String banner, String message, String action, Throwable cause) {
-        super(populateFriendlyMessage(banner, message, action), cause);
+    public FriendlyException(String banner, String message, String action, String note, Throwable cause) {
+        super(populateFriendlyMessage(banner, message, action, note), cause);
     }
 
-    public FriendlyException(String banner, String message, String action) {
-        super(populateFriendlyMessage(banner, message, action));
+    public FriendlyException(String banner, String message, String action, String note) {
+        super(populateFriendlyMessage(banner, message, action, note));
     }
 
     public FriendlyException(String banner, String action, Throwable cause) {
-        super(populateFriendlyMessage(banner, "",action), cause);
+        super(populateFriendlyMessage(banner, "", action, ""), cause);
     }
 
-    private static String populateFriendlyMessage(String banner, String description, String action) {
+    private static String populateFriendlyMessage(String banner, String description, String action, String note) {
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder.append(System.lineSeparator());
         messageBuilder.append("*************************").append(System.lineSeparator());
@@ -29,6 +29,10 @@ public class FriendlyException extends Exception {
         messageBuilder.append(System.lineSeparator());
         messageBuilder.append("Action:").append(System.lineSeparator());
         messageBuilder.append(action).append(System.lineSeparator());
+        if (!note.isEmpty()) {
+            messageBuilder.append("Note:").append(System.lineSeparator());
+            messageBuilder.append(note).append(System.lineSeparator());
+        }
         return new String(messageBuilder);
     }
 }

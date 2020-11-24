@@ -78,8 +78,9 @@ public final class ApacheSender43 implements ApacheSender {
             return getHttpClient().execute(post);
         } catch (SSLHandshakeException e) {
             throw new FriendlyException("ApplicationInsights Java Agent failed to send telemetry data.",
-                    "Unable to find valid certification path to requested target",
-                    "Please import the Breeze certificate into the java key store.");
+                    "Unable to find valid certification path to requested target.",
+                    "Please import the Breeze certificate from "+post.getURI().getHost()+", into the java key store.",
+                    "This message is only logged the first time it occurs after startup.");
         }
     }
 

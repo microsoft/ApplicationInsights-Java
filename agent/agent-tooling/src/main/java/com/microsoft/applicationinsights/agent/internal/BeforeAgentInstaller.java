@@ -110,7 +110,7 @@ public class BeforeAgentInstaller {
             if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
                                             "No connection string or instrumentation key provided",
-                                            "Please provide connection string or instrumentation key.");
+                                            "Please provide connection string or instrumentation key.","");
                 //throw new ConfigurationException("No connection string or instrumentation key provided");
             }
         }
