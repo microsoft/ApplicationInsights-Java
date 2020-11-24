@@ -17,8 +17,8 @@ import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.TimeGauge
 import io.micrometer.core.instrument.Timer
 import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil
-import io.opentelemetry.instrumentation.auto.micrometer.AzureMonitorMeterRegistry
 import io.opentelemetry.instrumentation.test.AgentTestRunner
+import io.opentelemetry.javaagent.instrumentation.micrometer.AzureMonitorMeterRegistry
 import java.util.concurrent.Executors
 import spock.lang.Shared
 
@@ -178,7 +178,7 @@ class MicrometerTest extends AgentTestRunner {
         Thread.sleep(Long.MAX_VALUE)
       })
     })
-    Thread.sleep(100)
+    Thread.sleep(1000)
     registry.publish()
 
     then:
