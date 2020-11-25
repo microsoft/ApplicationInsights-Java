@@ -1,5 +1,6 @@
 package io.opentelemetry.javaagent.tooling;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,8 @@ import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.instrumentation.api.aiappid.AiHttpTraceContext;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -36,11 +39,11 @@ public class TracerInstaller {
         }
 
         if (config.connectionString != null) {
-            OpenTelemetry.setGlobalPropagators(
+            setGlobalPropagators(
                     DefaultContextPropagators.builder().addTextMapPropagator(AiHttpTraceContext.getInstance()).build());
         } else {
             // in Azure Functions, need to set lazy once we know user has opted in to tracing
-            OpenTelemetry.setGlobalPropagators(DefaultContextPropagators.builder().build());
+            setGlobalPropagators(DefaultContextPropagators.builder().build());
         }
 
         OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(
@@ -69,6 +72,31 @@ public class TracerInstaller {
         } else {
             OpenTelemetrySdk.getGlobalTracerManagement()
                     .addSpanProcessor(SimpleSpanProcessor.builder(new Exporter(telemetryClient)).build());
+        }
+    }
+
+    // Workaround https://github.com/open-telemetry/opentelemetry-java/pull/2096
+    public static void setGlobalPropagators(ContextPropagators propagators) {
+        OpenTelemetry.set(
+                OpenTelemetrySdk.builder()
+                        .setResource(OpenTelemetrySdk.get().getResource())
+                        .setClock(OpenTelemetrySdk.get().getClock())
+                        .setMeterProvider(OpenTelemetry.getGlobalMeterProvider())
+                        .setTracerProvider(unobfuscate(OpenTelemetry.getGlobalTracerProvider()))
+                        .setPropagators(propagators)
+                        .build());
+    }
+
+    private static TracerProvider unobfuscate(TracerProvider tracerProvider) {
+        if (tracerProvider.getClass().getName().endsWith("TracerSdkProvider")) {
+            return tracerProvider;
+        }
+        try {
+            Method unobfuscate = tracerProvider.getClass().getDeclaredMethod("unobfuscate");
+            unobfuscate.setAccessible(true);
+            return (TracerProvider) unobfuscate.invoke(tracerProvider);
+        } catch (Throwable t) {
+            return tracerProvider;
         }
     }
 
