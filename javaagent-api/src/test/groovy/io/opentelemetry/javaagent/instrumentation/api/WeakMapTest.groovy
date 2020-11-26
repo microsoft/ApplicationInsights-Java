@@ -57,12 +57,12 @@ class WeakMapTest extends Specification {
     weakMap.size() == 0
   }
 
-  class CounterSupplier implements WeakMap.ValueSupplier<String, Integer> {
+  static class CounterSupplier implements WeakMap.ValueSupplier<String, Integer> {
 
     def counter = 0
 
     @Override
-    Integer get(String ignored) {
+    Integer get(String key) {
       counter = counter + 1
       return counter
     }

@@ -40,7 +40,7 @@ public class AgentInitializer {
     Class<?> clazz = null;
     try {
       clazz = Class.forName("io.opentelemetry.javaagent.bootstrap.ConfigureLogging");
-    } catch (final ClassNotFoundException e) {
+    } catch (final ClassNotFoundException ignored) {
     }
     if (clazz != null) {
       // exceptions in this code should be propagated up so that agent startup fails
@@ -59,23 +59,23 @@ public class AgentInitializer {
   // fields must be managed under class lock
   public static ClassLoader AGENT_CLASSLOADER = null;
 
-  public static void start(
-      final Instrumentation inst, final URL bootstrapURL, final boolean catchAndLogException)
+  public static void initialize(
+      final Instrumentation inst, final URL bootstrapUrl, final boolean catchAndLogException)
       throws Exception {
     if (catchAndLogException) {
       try {
-        start(inst, bootstrapURL);
+        initialize(inst, bootstrapUrl);
       } catch (final Throwable t) {
         log.error("Error starting the agent", t);
       }
     } else {
       // allow exception to bubble up
-      start(inst, bootstrapURL);
+      initialize(inst, bootstrapUrl);
     }
   }
 
-  private static void start(Instrumentation inst, URL bootstrapURL) throws Exception {
-    startAgent(inst, bootstrapURL);
+  private static void initialize(Instrumentation inst, URL bootstrapUrl) throws Exception {
+    startAgent(inst, bootstrapUrl);
 
     boolean appUsingCustomLogManager = isAppUsingCustomLogManager();
 
@@ -98,7 +98,7 @@ public class AgentInitializer {
      * events which in turn loads LogManager. This is not a problem on newer JDKs because there JFR uses different
      * logging facility.
      */
-    if (isJavaBefore9WithJFR() && appUsingCustomLogManager) {
+    if (isJavaBefore9WithJfr() && appUsingCustomLogManager) {
       log.debug("Custom logger detected. Delaying Agent Tracer initialization.");
       registerLogManagerCallback(new InstallAgentTracerCallback());
     } else {
@@ -162,10 +162,10 @@ public class AgentInitializer {
     }
   }
 
-  private static synchronized void startAgent(Instrumentation inst, URL bootstrapURL)
+  private static synchronized void startAgent(Instrumentation inst, URL bootstrapUrl)
       throws Exception {
     if (AGENT_CLASSLOADER == null) {
-      ClassLoader agentClassLoader = createAgentClassLoader("inst", bootstrapURL);
+      ClassLoader agentClassLoader = createAgentClassLoader("inst", bootstrapUrl);
       Class<?> agentInstallerClass =
           agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
       Method agentInstallerMethod =
@@ -215,7 +215,7 @@ public class AgentInitializer {
    *     classloader
    * @return Agent Classloader
    */
-  private static ClassLoader createAgentClassLoader(String innerJarFilename, URL bootstrapURL)
+  private static ClassLoader createAgentClassLoader(String innerJarFilename, URL bootstrapUrl)
       throws Exception {
     ClassLoader agentParent;
     if (isJavaBefore9()) {
@@ -230,7 +230,7 @@ public class AgentInitializer {
             .loadClass("io.opentelemetry.javaagent.bootstrap.AgentClassLoader");
     Constructor constructor =
         loaderClass.getDeclaredConstructor(URL.class, String.class, ClassLoader.class);
-    return (ClassLoader) constructor.newInstance(bootstrapURL, innerJarFilename, agentParent);
+    return (ClassLoader) constructor.newInstance(bootstrapUrl, innerJarFilename, agentParent);
   }
 
   private static ClassLoader getPlatformClassLoader()
@@ -244,12 +244,12 @@ public class AgentInitializer {
   }
 
   /**
-   * Determine if we should log in debug level according to otel.trace.debug
+   * Determine if we should log in debug level according to otel.javaagent.debug
    *
    * @return true if we should
    */
   private static boolean isDebugMode() {
-    String tracerDebugLevelSysprop = "otel.trace.debug";
+    String tracerDebugLevelSysprop = "otel.javaagent.debug";
     String tracerDebugLevelProp = System.getProperty(tracerDebugLevelSysprop);
 
     if (tracerDebugLevelProp != null) {
@@ -315,7 +315,7 @@ public class AgentInitializer {
     return System.getProperty("java.version").startsWith("1.");
   }
 
-  private static boolean isJavaBefore9WithJFR() {
+  private static boolean isJavaBefore9WithJfr() {
     if (!isJavaBefore9()) {
       return false;
     }

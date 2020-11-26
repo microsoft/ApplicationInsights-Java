@@ -12,7 +12,7 @@ import io.opentelemetry.instrumentation.test.InstrumentationTestTrait
 
 class AwsLambdaSqsHandlerTest extends AbstractAwsLambdaSqsHandlerTest implements InstrumentationTestTrait {
 
-  class TestHandler extends TracingSQSEventHandler {
+  static class TestHandler extends TracingSqsEventHandler {
     @Override
     protected void handleEvent(SQSEvent event, Context context) {
     }

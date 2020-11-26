@@ -16,15 +16,24 @@
 apply from: "$rootDir/gradle/instrumentation-library.gradle"
 
 dependencies {
-  library group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.0.0'
   compileOnly deps.opentelemetrySdk
 
+  library group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.0.0'
   // First version to includes support for SQSEvent, currently the most popular message queue used
   // with lambda.
   // NB: 2.2.0 includes a class called SQSEvent but isn't usable due to it returning private classes
   // in public API.
   library group: 'com.amazonaws', name: 'aws-lambda-java-events', version: '2.2.1'
+
+  compile(
+    'com.fasterxml.jackson.core:jackson-databind:2.10.3',
+    'com.fasterxml.jackson.module:jackson-module-afterburner:2.9.10',
+    'commons-io:commons-io:2.2')
+  implementation deps.slf4j
+
   testImplementation deps.opentelemetryTraceProps
 
   testImplementation project(':instrumentation:aws-lambda-1.0:testing')
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
+  testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.18.1'
 }

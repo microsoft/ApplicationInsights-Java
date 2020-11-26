@@ -10,6 +10,7 @@ import static io.opentelemetry.instrumentation.test.server.http.HttpServletReque
 
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanBuilder
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.instrumentation.api.decorator.BaseDecorator
@@ -219,7 +220,7 @@ class TestHttpServer implements AutoCloseable {
     }
   }
 
-  class HandlerApi {
+  static class HandlerApi {
     private final Request req
     private final HttpServletResponse resp
 
@@ -248,7 +249,7 @@ class TestHttpServer implements AutoCloseable {
         isTestServer = Boolean.parseBoolean(request.getHeader("is-test-server"))
       }
       if (isTestServer) {
-        final Span.Builder spanBuilder = tracer.spanBuilder("test-http-server").setSpanKind(SERVER)
+        final SpanBuilder spanBuilder = tracer.spanBuilder("test-http-server").setSpanKind(SERVER)
         spanBuilder.setParent(BaseDecorator.extract(req, GETTER))
         final Span span = spanBuilder.startSpan()
         span.end()

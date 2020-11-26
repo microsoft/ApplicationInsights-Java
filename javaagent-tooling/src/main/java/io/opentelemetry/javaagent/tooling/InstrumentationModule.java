@@ -19,6 +19,7 @@ import io.opentelemetry.javaagent.tooling.bytebuddy.ExceptionHandlers;
 import io.opentelemetry.javaagent.tooling.context.FieldBackedProvider;
 import io.opentelemetry.javaagent.tooling.context.InstrumentationContextProvider;
 import io.opentelemetry.javaagent.tooling.context.NoopContextProvider;
+import io.opentelemetry.javaagent.tooling.muzzle.InstrumentationClassPredicate;
 import io.opentelemetry.javaagent.tooling.muzzle.matcher.Mismatch;
 import io.opentelemetry.javaagent.tooling.muzzle.matcher.ReferenceMatcher;
 import java.security.ProtectionDomain;
@@ -55,12 +56,49 @@ public abstract class InstrumentationModule {
   private final Set<String> instrumentationNames;
   protected final boolean enabled;
 
+  /**
+   * Deprecated, will be removed.
+   *
+   * @deprecated Will be removed together with {@link #helperClassNames()}
+   */
+  @Deprecated
   protected final String packageName =
       getClass().getPackage() == null ? "" : getClass().getPackage().getName();
 
+  /**
+   * Creates an instrumentation module. Note that all implementations of {@link
+   * InstrumentationModule} must have a default constructor (for SPI), so they have to pass the
+   * instrumentation names to the super class constructor.
+   *
+   * <p>The instrumentation names should follow several rules:
+   *
+   * <ul>
+   *   <li>Instrumentation names should consist of hyphen-separated words, e.g. {@code
+   *       instrumented-library};
+   *   <li>In general, instrumentation names should be the as close as possible to the gradle module
+   *       name - which in turn should be as close as possible to the instrumented library name;
+   *   <li>The main instrumentation name should be the same as the gradle module name, minus the
+   *       version if it's a part of the module name. When several versions of a library are
+   *       instrumented they should all share the same main instrumentation name so that it's easy
+   *       to enable/disable the instrumentation regardless of the runtime library version;
+   *   <li>If the gradle module has a version as a part of its name, an additional instrumentation
+   *       name containing the version should be passed, e.g. {@code instrumented-library-1.0}.
+   * </ul>
+   */
   public InstrumentationModule(
-      String mainInstrumentationName, String... otherInstrumentationNames) {
-    this(toList(mainInstrumentationName, otherInstrumentationNames));
+      String mainInstrumentationName, String... additionalInstrumentationNames) {
+    this(toList(mainInstrumentationName, additionalInstrumentationNames));
+  }
+
+  /**
+   * Creates an instrumentation module.
+   *
+   * @see #InstrumentationModule(String, String...)
+   */
+  public InstrumentationModule(List<String> instrumentationNames) {
+    checkArgument(instrumentationNames.size() > 0, "InstrumentationModules must be named");
+    this.instrumentationNames = new LinkedHashSet<>(instrumentationNames);
+    enabled = Config.get().isInstrumentationEnabled(this.instrumentationNames, defaultEnabled());
   }
 
   private static List<String> toList(String first, String[] rest) {
@@ -68,12 +106,6 @@ public abstract class InstrumentationModule {
     instrumentationNames.add(first);
     instrumentationNames.addAll(asList(rest));
     return instrumentationNames;
-  }
-
-  public InstrumentationModule(List<String> instrumentationNames) {
-    checkArgument(instrumentationNames.size() > 0, "InstrumentationModules must be named");
-    this.instrumentationNames = new LinkedHashSet<>(instrumentationNames);
-    enabled = Config.get().isInstrumentationEnabled(this.instrumentationNames, defaultEnabled());
   }
 
   /**
@@ -84,19 +116,31 @@ public abstract class InstrumentationModule {
    */
   public final AgentBuilder instrument(AgentBuilder parentAgentBuilder) {
     if (!enabled) {
-      log.debug("Instrumentation {} is disabled", instrumentationNames.iterator().next());
+      log.debug("Instrumentation {} is disabled", mainInstrumentationName());
+      return parentAgentBuilder;
+    }
+
+    List<String> helperClassNames = getAllHelperClassNames();
+    List<String> helperResourceNames = asList(helperResourceNames());
+    List<TypeInstrumentation> typeInstrumentations = typeInstrumentations();
+    if (typeInstrumentations.isEmpty()) {
+      if (!helperClassNames.isEmpty() || !helperResourceNames.isEmpty()) {
+        log.warn(
+            "Helper classes and resources won't be injected if no types are instrumented: {}",
+            mainInstrumentationName());
+      }
+
       return parentAgentBuilder;
     }
 
     ElementMatcher.Junction<ClassLoader> moduleClassLoaderMatcher = classLoaderMatcher();
     MuzzleMatcher muzzleMatcher = new MuzzleMatcher();
     HelperInjector helperInjector =
-        new HelperInjector(
-            getClass().getSimpleName(), asList(helperClassNames()), asList(helperResourceNames()));
+        new HelperInjector(mainInstrumentationName(), helperClassNames, helperResourceNames);
     InstrumentationContextProvider contextProvider = getContextProvider();
 
     AgentBuilder agentBuilder = parentAgentBuilder;
-    for (TypeInstrumentation typeInstrumentation : typeInstrumentations()) {
+    for (TypeInstrumentation typeInstrumentation : typeInstrumentations) {
       AgentBuilder.Identified.Extendable extendableAgentBuilder =
           agentBuilder
               .type(
@@ -104,7 +148,7 @@ public abstract class InstrumentationModule {
                       typeInstrumentation.typeMatcher(),
                       "Instrumentation type matcher unexpected exception: " + getClass().getName()),
                   failSafe(
-                      moduleClassLoaderMatcher.and(typeInstrumentation.classLoaderMatcher()),
+                      moduleClassLoaderMatcher.and(typeInstrumentation.classLoaderOptimization()),
                       "Instrumentation class loader matcher unexpected exception: "
                           + getClass().getName()))
               .and(NOT_DECORATOR_MATCHER)
@@ -121,6 +165,17 @@ public abstract class InstrumentationModule {
     }
 
     return agentBuilder;
+  }
+
+  /**
+   * Returns all helper classes that will be injected into the application classloader, both ones
+   * provided by the implementation and ones that were collected by muzzle during compilation.
+   */
+  public final List<String> getAllHelperClassNames() {
+    List<String> helperClassNames = new ArrayList<>();
+    helperClassNames.addAll(asList(additionalHelperClassNames()));
+    helperClassNames.addAll(asList(getMuzzleHelperClassNames()));
+    return helperClassNames;
   }
 
   private AgentBuilder.Identified.Extendable applyInstrumentationTransformers(
@@ -172,7 +227,7 @@ public abstract class InstrumentationModule {
           if (!isMatch) {
             log.debug(
                 "Instrumentation skipped, mismatched references were found: {} -- {} on {}",
-                instrumentationNames.iterator().next(),
+                mainInstrumentationName(),
                 InstrumentationModule.this.getClass().getName(),
                 classLoader);
             List<Mismatch> mismatches = muzzle.getMismatchedReferenceSources(classLoader);
@@ -182,7 +237,7 @@ public abstract class InstrumentationModule {
           } else {
             log.debug(
                 "Applying instrumentation: {} -- {} on {}",
-                instrumentationNames.iterator().next(),
+                mainInstrumentationName(),
                 InstrumentationModule.this.getClass().getName(),
                 classLoader);
           }
@@ -192,6 +247,10 @@ public abstract class InstrumentationModule {
       }
       return true;
     }
+  }
+
+  private String mainInstrumentationName() {
+    return instrumentationNames.iterator().next();
   }
 
   /**
@@ -206,6 +265,30 @@ public abstract class InstrumentationModule {
   }
 
   /**
+   * Returns a list of instrumentation helper classes, automatically detected by muzzle during
+   * compilation. Those helpers will be injected into the application classloader.
+   *
+   * <p>The actual implementation of this method is generated automatically during compilation by
+   * the {@link io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin}
+   * ByteBuddy plugin.
+   *
+   * <p><b>This method is generated automatically, do not override it.</b>
+   */
+  protected String[] getMuzzleHelperClassNames() {
+    return EMPTY;
+  }
+
+  /**
+   * Instrumentation modules can override this method to provide additional helper classes that are
+   * not located in instrumentation packages described in {@link InstrumentationClassPredicate} (and
+   * not automatically detected by muzzle). These additional classes will be injected into the
+   * application classloader first.
+   */
+  protected String[] additionalHelperClassNames() {
+    return EMPTY;
+  }
+
+  /**
    * Order of adding instrumentation to ByteBuddy. For example instrumentation with order 1 runs
    * after an instrumentation with order 0 (default) matched on the same API.
    *
@@ -215,12 +298,18 @@ public abstract class InstrumentationModule {
     return 0;
   }
 
-  /** @return Class names of helpers to inject into the user's classloader */
+  /**
+   * Deprecated, will be removed.
+   *
+   * @deprecated This method is replaced by {@link #getMuzzleHelperClassNames()} and {@link
+   *     #additionalHelperClassNames()}, extending it provides no effect.
+   */
+  @Deprecated
   public String[] helperClassNames() {
     return EMPTY;
   }
 
-  /** @return Resource names to inject into the user's classloader */
+  /** Returns resource names to inject into the user's classloader. */
   public String[] helperResourceNames() {
     return EMPTY;
   }
@@ -240,7 +329,7 @@ public abstract class InstrumentationModule {
     return any();
   }
 
-  /** @return A list of all individual type instrumentation in this module. */
+  /** Returns a list of all individual type instrumentation in this module. */
   public abstract List<TypeInstrumentation> typeInstrumentations();
 
   /**
@@ -254,6 +343,6 @@ public abstract class InstrumentationModule {
   }
 
   protected boolean defaultEnabled() {
-    return Config.get().getBooleanProperty("otel.instrumentations.enabled", true);
+    return Config.get().getBooleanProperty("otel.instrumentation.defaultEnabled", true);
   }
 }

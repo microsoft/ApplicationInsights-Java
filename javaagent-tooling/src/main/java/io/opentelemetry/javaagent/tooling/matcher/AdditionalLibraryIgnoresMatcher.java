@@ -102,7 +102,9 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
       }
 
       if (name.startsWith("org.springframework.boot.")) {
-        return !instrumentedSpringBootClasses(name);
+        return !instrumentedSpringBootClasses(name)
+            && !name.startsWith("org.springframework.boot.web.filter.")
+            && !name.startsWith("org.springframework.boot.web.servlet.");
       }
 
       if (name.startsWith("org.springframework.cglib.")) {
@@ -171,6 +173,7 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
 
       if (name.startsWith("org.springframework.web.")) {
         if (name.startsWith("org.springframework.web.servlet.")
+            || name.startsWith("org.springframework.web.filter.")
             || name.startsWith("org.springframework.web.reactive.")
             || name.startsWith("org.springframework.web.context.request.async.")
             || name.equals(
@@ -223,7 +226,7 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
 
     if (name.startsWith("com.couchbase.client.deps.")) {
       // Couchbase library includes some packaged dependencies, unfortunately some of them are
-      // instrumented by java-concurrent instrumentation
+      // instrumented by executors instrumentation
       if (name.startsWith("com.couchbase.client.deps.io.netty.")
           || name.startsWith("com.couchbase.client.deps.org.LatencyUtils.")
           || name.startsWith("com.couchbase.client.deps.com.lmax.disruptor.")) {
@@ -324,6 +327,7 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
           "org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext",
           "org.springframework.boot.web.embedded.tomcat.TomcatWebServer$",
           "org.springframework.boot.web.embedded.tomcat.TomcatEmbeddedWebappClassLoader",
+          "org.springframework.boot.web.servlet.DelegatingFilterProxyRegistrationBean$",
           // Spring boot actuator / micrometer instrumentation
           "org.springframework.boot.autoconfigure.AutoConfigurationImportSelector");
 
@@ -343,16 +347,9 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (!super.equals(other)) {
-      return false;
-    } else if (this == other) {
-      return true;
-    } else if (other == null) {
-      return false;
-    } else {
-      return getClass() == other.getClass();
-    }
+  public boolean equals(Object obj) {
+    // all instances are the same
+    return obj instanceof AdditionalLibraryIgnoresMatcher;
   }
 
   @Override

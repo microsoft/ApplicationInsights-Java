@@ -5,17 +5,20 @@
 
 package io.opentelemetry.instrumentation.awslambda.v1_0
 
-import static io.opentelemetry.api.trace.Span.Kind.SERVER
-
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler
+import io.opentelemetry.api.trace.attributes.SemanticAttributes
+import io.opentelemetry.context.propagation.DefaultContextPropagators
+import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.instrumentation.test.InstrumentationSpecification
 import io.opentelemetry.instrumentation.test.InstrumentationTestTrait
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
-import java.nio.charset.Charset
 import org.junit.Rule
 import org.junit.contrib.java.lang.system.EnvironmentVariables
 import spock.lang.Shared
+
+import java.nio.charset.Charset
+
+import static io.opentelemetry.api.trace.Span.Kind.SERVER
 
 class TracingRequestStreamWrapperTest extends InstrumentationSpecification implements InstrumentationTestTrait {
 
@@ -44,8 +47,15 @@ class TracingRequestStreamWrapperTest extends InstrumentationSpecification imple
   TracingRequestStreamWrapper wrapper
 
   def childSetup() {
+    // no propagators
+    AgentTestRunner.setGlobalPropagators(DefaultContextPropagators.builder().build())
     environmentVariables.set(WrappedLambda.OTEL_LAMBDA_HANDLER_ENV_KEY, "io.opentelemetry.instrumentation.awslambda.v1_0.TracingRequestStreamWrapperTest\$TestRequestHandler::handleRequest")
+    TracingRequestStreamWrapper.WRAPPED_LAMBDA = WrappedLambda.fromConfiguration()
     wrapper = new TracingRequestStreamWrapper()
+  }
+
+  def cleanup() {
+    environmentVariables.clear(WrappedLambda.OTEL_LAMBDA_HANDLER_ENV_KEY)
   }
 
   def "handler traced"() {
