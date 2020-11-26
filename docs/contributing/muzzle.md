@@ -12,7 +12,7 @@ Muzzle will prevent loading an instrumentation if it detects any mismatch or con
 ## How it works
 
 Muzzle has two phases:
-* at compile time it collects references to the third-party symbols;
+* at compile time it collects references to the third-party symbols and used helper classes;
 * at runtime it compares those references to the actual API symbols on the classpath.
 
 ### Compile-time reference collection
@@ -20,30 +20,36 @@ Muzzle has two phases:
 The compile-time reference collection and code generation process is implemented using a ByteBuddy
 plugin (called `MuzzleCodeGenerationPlugin`).
 
-For each instrumentation the ByteBuddy plugin collects symbols referring to both internal and third
-party APIs used by the currently processed instrumentation. The reference collection process starts
-from advice classes (values of the map returned by the `Instrumenter.Default#transformers()` method)
-and traverses the class graph until it encounters a reference to a non-instrumentation class.
+For each instrumentation module the ByteBuddy plugin collects symbols referring to both internal and
+third party APIs used by the currently processed module's type instrumentations (`InstrumentationModule#typeInstrumentations()`).
+The reference collection process starts from advice classes (values of the map returned by the
+`TypeInstrumentation#transformers()`method) and traverses the class graph until it encounters
+a reference to a non-instrumentation class (determined by `InstrumentationClassPredicate`).
+Aside from references, the collection process also builds a graph of dependencies between internal
+instrumentation helper classes - this dependency graph is later used to construct a list of helper
+classes that will be injected to the application classloader (`InstrumentationModule#getMuzzleHelperClassNames()`).
 
 All collected references are then used to create a `ReferenceMatcher` instance. This matcher
-is stored in the instrumentation class in the method `Instrumenter.Default#getMuzzleReferenceMatcher()`.
-The bytecode of this method (basically an array of `Reference` builder calls) is generated
-automatically by the ByteBuddy plugin using an ASM code visitor.
+is stored in the instrumentation module class in the method `InstrumentationModule#getMuzzleReferenceMatcher()`
+and is shared between all type instrumentations. The bytecode of this method (basically an array of
+`Reference` builder calls) and the `getMuzzleHelperClassNames()` is generated automatically by the
+ByteBuddy plugin using an ASM code visitor.
 
 The source code of the compile-time plugin is located in the `javaagent-tooling` module,
 package `io.opentelemetry.javaagent.tooling.muzzle.collector`.
 
 ### Runtime reference matching
 
-The runtime reference matching process is implemented as a ByteBuddy matcher in `Instrumenter.Default`.
+The runtime reference matching process is implemented as a ByteBuddy matcher in `InstrumentationModule`.
 `MuzzleMatcher` uses the `getMuzzleReferenceMatcher()` method generated during the compilation phase
 to verify that the class loader of the instrumented type has all necessary symbols (classes,
 methods, fields). If the `ReferenceMatcher` finds any mismatch between collected references and the
 actual application classpath types the whole instrumentation is discarded.
 
 It is worth noting that because the muzzle check is expensive, it is only performed after a match
-has been made by the `InstrumenterDefault#classLoaderMatcher()` and `Instrumenter.Default#typeMatcher()`
-matchers.
+has been made by the `InstrumentationModule#classLoaderMatcher()` and `TypeInstrumentation#typeMatcher()`
+matchers. The result of muzzle matcher is cached per classloader, so that it is only executed
+once for the whole instrumentation module.
 
 The source code of the runtime muzzle matcher is located in the `javaagent-tooling` module,
 in the class `Instrumenter.Default` and under the package `io.opentelemetry.javaagent.tooling.muzzle`.

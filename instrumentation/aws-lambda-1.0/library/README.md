@@ -4,8 +4,12 @@ This package contains libraries to help instrument AWS lambda functions in your 
 
 ## Using wrappers
 To use the instrumentation, configure `OTEL_LAMBDA_HANDLER` env property to your lambda handler method in following format `package.ClassName::methodName`
-and use `io.opentelemetry.instrumentation.awslambda.v1_0.TracingRequestWrapper` (or `io.opentelemetry.instrumentation.awslambda.v1_0.TracingRequestStreamWrapper`) as
-your `Handler`.
+and use one of wrappers as your lambda `Handler`.
+
+Available wrappers:
+- `io.opentelemetry.instrumentation.awslambda.v1_0.TracingRequestWrapper` - for wrapping regular handlers (implementing `RequestHandler`)
+- `io.opentelemetry.instrumentation.awslambda.v1_0.TracingRequestApiGatewayWrapper` - for wrapping regular handlers (implementing `RequestHandler`) proxied through API Gateway, enabling HTTP context propagation
+- `io.opentelemetry.instrumentation.awslambda.v1_0.TracingRequestStreamWrapper` - for wrapping streaming handlers (implementing `RequestStreamHandler`), enabling HTTP context propagation for HTTP requests
 
 ## Using handlers
 To use the instrumentation, replace your function classes that implement `RequestHandler` (or `RequestStreamHandler`) with those
@@ -26,7 +30,7 @@ public class MyRequestHandler extends TracingRequestHandler<String, String> {
 
 A `SERVER` span will be created with the name you specify for the function when deploying it.
 
-In addition, it is recommended to setup X-Ray trace propagation to be able to
+In addition, it is recommended to set up X-Ray trace propagation to be able to
 link to tracing information provided by Lambda itself. To do so, add a dependency on
 `opentelemetry-extension-tracepropagators`. Make sure the version matches the version of the SDK
 you use.
@@ -81,6 +85,7 @@ public class MyBatchHandler extends TracingSQSEventHandler {
 
 ## Trace propagation
 
+### X-Ray propagation
 This instrumentation supports propagating traces using the `X-Amzn-Trace-Id` format for both normal
 requests and SQS requests. To enable this propagation, in your code as early as possible,
 configure the `AwsXrayPropagator` along with any other propagators you use. If in doubt, you can
@@ -110,3 +115,20 @@ allow linking between messages in a backend-agnostic way.
 Otherwise, only enable the above if you are using AWS X-Ray as your tracing backend. You should not
 enable the X-Ray propagator if you are not using X-Ray as it will cause the spans in Lambda to not
 have the correct parent/child connection between client and server spans.
+
+### HTTP headers based propagation
+For API Gateway (HTTP) requests instrumented by using one of following methods:
+- extending `TracingRequestStreamHandler` or `TracingRequestHandler`
+- wrapping with `TracingRequestStreamWrapper` or `TracingRequestApiGatewayWrapper`
+traces can be propagated with supported HTTP headers (see https://github.com/open-telemetry/opentelemetry-java/tree/master/extensions/trace_propagators).
+
+In order to enable requested propagation, configure it in your code as early as possible. For example B3 propagation configuration would look like as follows:
+
+```java
+  static {
+    OpenTelemetry.setGlobalPropagators(
+      DefaultContextPropagators.builder()
+        .addTextMapPropagator(B3Propagator.getInstance())
+        .build());
+  }
+```

@@ -121,6 +121,10 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     false
   }
 
+  boolean testErrorBody() {
+    return true
+  }
+
   boolean testExceptionBody() {
     true
   }
@@ -213,7 +217,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
   }
 
   static <T> T controller(ServerEndpoint endpoint, Callable<T> closure) {
-    assert io.opentelemetry.api.trace.Span.current().getSpanContext().isValid(): "Controller should have a parent span."
+    assert Span.current().getSpanContext().isValid(): "Controller should have a parent span."
     if (endpoint == NOT_FOUND) {
       return closure.call()
     }
@@ -311,7 +315,9 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
 
     expect:
     response.code() == ERROR.status
-    response.body().string() == ERROR.body
+    if (testErrorBody()) {
+      response.body().string() == ERROR.body
+    }
     assertRequestContextHeader(response)
 
     and:

@@ -14,6 +14,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.TraceStateBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
@@ -181,7 +182,7 @@ public class AiHttpTraceContext implements TextMapPropagator {
           // see behavior specified at
           // https://github.com/microsoft/ApplicationInsights-Java/issues/1174
           final String legacyOperationId = aiExtractRootId(aiRequestId);
-          final TraceState.Builder traceState =
+          final TraceStateBuilder traceState =
               TraceState.builder().set("ai-legacy-parent-id", aiRequestId);
           final ThreadLocalRandom random = ThreadLocalRandom.current();
           String traceIdHex;
@@ -265,7 +266,7 @@ public class AiHttpTraceContext implements TextMapPropagator {
   }
 
   private static TraceState extractTraceState(String traceStateHeader) {
-    TraceState.Builder traceStateBuilder = TraceState.builder();
+    TraceStateBuilder traceStateBuilder = TraceState.builder();
     String[] listMembers = TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(traceStateHeader);
     checkArgument(
         listMembers.length <= TRACESTATE_MAX_MEMBERS, "TraceState has too many elements.");

@@ -24,8 +24,7 @@ import reactor.util.context.Context;
 
 public class AdviceUtils {
 
-  public static final String CONTEXT_ATTRIBUTE =
-      "io.opentelemetry.javaagent.instrumentation.springwebflux.Context";
+  public static final String CONTEXT_ATTRIBUTE = AdviceUtils.class.getName() + ".Context";
 
   public static String parseOperationName(Object handler) {
     String className = tracer().spanNameForClass(handler.getClass());
@@ -68,14 +67,6 @@ public class AdviceUtils {
     }
   }
 
-  private static void finishSpanIfPresentInAttributes(
-      Map<String, Object> attributes, Throwable throwable) {
-
-    io.opentelemetry.context.Context context =
-        (io.opentelemetry.context.Context) attributes.remove(CONTEXT_ATTRIBUTE);
-    finishSpanIfPresent(context, throwable);
-  }
-
   static void finishSpanIfPresent(io.opentelemetry.context.Context context, Throwable throwable) {
     if (context != null) {
       Span span = Span.fromContext(context);
@@ -85,6 +76,14 @@ public class AdviceUtils {
       }
       span.end();
     }
+  }
+
+  private static void finishSpanIfPresentInAttributes(
+      Map<String, Object> attributes, Throwable throwable) {
+
+    io.opentelemetry.context.Context context =
+        (io.opentelemetry.context.Context) attributes.remove(CONTEXT_ATTRIBUTE);
+    finishSpanIfPresent(context, throwable);
   }
 
   public static class SpanFinishingSubscriber<T> implements CoreSubscriber<T> {

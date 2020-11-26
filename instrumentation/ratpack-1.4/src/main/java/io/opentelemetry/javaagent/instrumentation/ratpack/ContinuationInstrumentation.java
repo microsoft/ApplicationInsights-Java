@@ -12,26 +12,18 @@ import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
-import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.tooling.Instrumenter;
+import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import ratpack.func.Block;
-import ratpack.path.PathBinding;
 
-@AutoService(Instrumenter.class)
-public final class ContinuationInstrumentation extends Instrumenter.Default {
-
-  public ContinuationInstrumentation() {
-    super("ratpack");
-  }
+final class ContinuationInstrumentation implements TypeInstrumentation {
 
   @Override
-  public ElementMatcher<ClassLoader> classLoaderMatcher() {
-    // Optimization for expensive typeMatcher.
+  public ElementMatcher<ClassLoader> classLoaderOptimization() {
     return hasClassesNamed("ratpack.exec.internal.Continuation");
   }
 
@@ -39,11 +31,6 @@ public final class ContinuationInstrumentation extends Instrumenter.Default {
   public ElementMatcher<? super TypeDescription> typeMatcher() {
     return nameStartsWith("ratpack.exec.")
         .<TypeDescription>and(implementsInterface(named("ratpack.exec.internal.Continuation")));
-  }
-
-  @Override
-  public String[] helperClassNames() {
-    return new String[] {packageName + ".BlockWrapper"};
   }
 
   @Override
@@ -58,11 +45,6 @@ public final class ContinuationInstrumentation extends Instrumenter.Default {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void wrap(@Advice.Argument(value = 0, readOnly = false) Block block) {
       block = BlockWrapper.wrapIfNeeded(block);
-    }
-
-    public void muzzleCheck(PathBinding binding) {
-      // This was added in 1.4.  Added here to ensure consistency with other instrumentation.
-      binding.getDescription();
     }
   }
 }
