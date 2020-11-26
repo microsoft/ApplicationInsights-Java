@@ -68,7 +68,7 @@ public class Exporter implements SpanExporter {
 
     private static final Logger logger = LoggerFactory.getLogger(Exporter.class);
 
-    private static final Pattern COMPONENT_PATTERN = Pattern.compile("io\\.opentelemetry\\.auto\\.([^0-9]*)(-[0-9.]*)?");
+    private static final Pattern COMPONENT_PATTERN = Pattern.compile("io\\.opentelemetry\\.javaagent\\.([^0-9]*)(-[0-9.]*)?");
 
     private static final Joiner JOINER = Joiner.on(", ");
 
