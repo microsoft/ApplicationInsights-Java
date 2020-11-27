@@ -53,9 +53,9 @@ abstract class LogEventsTestBase extends AgentTestRunner {
           span(1) {
             name "xyz"
             attributes {
-              "ai.internal.log" true
-              "level" testMethod.toUpperCase()
-              "loggerName" "abc"
+              "applicationinsights.internal.log" true
+              "applicationinsights.internal.log_level" testMethod.toUpperCase()
+              "applicationinsights.internal.logger_name" "abc"
             }
           }
         }
@@ -81,9 +81,9 @@ abstract class LogEventsTestBase extends AgentTestRunner {
           span(0) {
             name "xyz"
             attributes {
-              "ai.internal.log" true
-              "level" testMethod.toUpperCase()
-              "loggerName" "abc"
+              "applicationinsights.internal.log" true
+              "applicationinsights.internal.log_level" testMethod.toUpperCase()
+              "applicationinsights.internal.logger_name" "abc"
             }
           }
         }
