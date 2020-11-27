@@ -74,6 +74,7 @@ public class Exporter implements SpanExporter {
 
     private static final AttributeKey<Boolean> AI_INTERNAL_LOG = AttributeKey.booleanKey("ai.internal.log");
 
+    // TODO rename these to "ai.internal..."
     private static final AttributeKey<String> SPAN_SOURCE_ATTRIBUTE_KEY = AttributeKey.stringKey(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME);
     private static final AttributeKey<String> SPAN_TARGET_ATTRIBUTE_NAME = AttributeKey.stringKey(AiAppId.SPAN_TARGET_ATTRIBUTE_NAME);
 
@@ -268,9 +269,10 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static final AttributeKey<String> LOGGER_LEVEL = AttributeKey.stringKey("ai.internal.logger.level");
-    private static final AttributeKey<String> LOGGER_LOGGER_NAME = AttributeKey.stringKey("ai.internal.logger.loggerName");
-    private static final AttributeKey<String> LOGGER_ERROR_STACK = AttributeKey.stringKey("ai.internal.logger.error.stack");
+    // TODO rename these to "ai.internal..."
+    private static final AttributeKey<String> LOGGER_LEVEL = AttributeKey.stringKey("level");
+    private static final AttributeKey<String> LOGGER_LOGGER_NAME = AttributeKey.stringKey("loggerName");
+    private static final AttributeKey<String> LOGGER_ERROR_STACK = AttributeKey.stringKey("error.stack");
 
     private void exportLogSpan(SpanData span) {
         String message = span.getName();
@@ -562,11 +564,18 @@ public class Exporter implements SpanExporter {
             @Override
             public <T> void accept(AttributeKey<T> key, T value) {
                 String stringKey = key.getKey();
-                if (stringKey.startsWith("ai.internal.")
-                        || stringKey.equals(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME)
-                        || stringKey.equals(AiAppId.SPAN_TARGET_ATTRIBUTE_NAME)) {
+                if (stringKey.startsWith("ai.internal.")) {
                     return;
                 }
+                // TODO rename these to "ai.internal..."
+                if (key.equals(SPAN_SOURCE_ATTRIBUTE_KEY)
+                        || key.equals(SPAN_TARGET_ATTRIBUTE_NAME)
+                        || key.equals(LOGGER_LEVEL)
+                        || key.equals(LOGGER_LOGGER_NAME)
+                        || key.equals(LOGGER_ERROR_STACK)) {
+                    return;
+                }
+
                 int index = stringKey.indexOf(".");
                 String prefix = index == -1 ? stringKey : stringKey.substring(0, index);
                 if (STANDARD_ATTRIBUTE_PREFIXES.contains(prefix)) {
