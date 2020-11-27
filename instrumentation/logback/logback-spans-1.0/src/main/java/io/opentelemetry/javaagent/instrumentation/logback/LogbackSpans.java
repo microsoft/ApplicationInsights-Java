@@ -45,15 +45,15 @@ public class LogbackSpans {
     SpanBuilder builder =
         TRACER
             .spanBuilder(event.getFormattedMessage())
-            .setAttribute("ai.internal.log", true)
-            .setAttribute("level", level.toString())
-            .setAttribute("loggerName", event.getLoggerName());
+            .setAttribute("applicationinsights.internal.log", true)
+            .setAttribute("applicationinsights.internal.log_level", level.toString())
+            .setAttribute("applicationinsights.internal.logger_name", event.getLoggerName());
     for (Map.Entry<String, String> entry : event.getMDCPropertyMap().entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
     }
     Span span = builder.startSpan();
     if (t != null) {
-      span.setAttribute("error.stack", toString(t));
+      span.setAttribute("applicationinsights.internal.log_error_stack", toString(t));
     }
     span.end();
   }

@@ -36,15 +36,15 @@ public class Log4jSpans {
     SpanBuilder builder =
         TRACER
             .spanBuilder(message.getFormattedMessage())
-            .setAttribute("ai.internal.log", true)
-            .setAttribute("level", level.toString())
-            .setAttribute("loggerName", logger.getName());
+            .setAttribute("applicationinsights.internal.log", true)
+            .setAttribute("applicationinsights.internal.log_level", level.toString())
+            .setAttribute("applicationinsights.internal.logger_name", logger.getName());
     for (Map.Entry<String, String> entry : ThreadContext.getImmutableContext().entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
     }
     Span span = builder.startSpan();
     if (t != null) {
-      span.setAttribute("error.stack", toString(t));
+      span.setAttribute("applicationinsights.internal.log_error_stack", toString(t));
     }
     span.end();
   }
