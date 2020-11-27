@@ -75,7 +75,7 @@ public class MainEntryPoint {
             startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
             ConfigurationBuilder.logConfigurationMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
-            AgentInitializer.start(instrumentation, bootstrapURL, false);
+            AgentInitializer.initialize(instrumentation, bootstrapURL, false);
             startupLogger.info("ApplicationInsights Java Agent started successfully");
             success = true;
             LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
