@@ -27,6 +27,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.instrumentation.api.aiappid.AiHttpTraceContext;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
+import io.opentelemetry.javaagent.tooling.TracerInstaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,7 @@ public class ConnectionStringAccessor implements AiConnectionString.Accessor {
         if (!Strings.isNullOrEmpty(value)) {
             TelemetryConfiguration.getActive().setConnectionString(value);
             // now that we know user has opted in to tracing, need to set up propagator
-            OpenTelemetry.setGlobalPropagators(
+            TracerInstaller.setGlobalPropagators(
                     DefaultContextPropagators.builder().addTextMapPropagator(AiHttpTraceContext.getInstance()).build());
             logger.info("Set connection string lazily for the Azure Function Consumption Plan.");
         }
