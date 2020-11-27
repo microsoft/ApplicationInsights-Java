@@ -41,12 +41,12 @@ public class JavaUtilLoggingSpans {
     Span span =
         TRACER
             .spanBuilder(FORMATTER.formatMessage(logRecord))
-            .setAttribute("ai.internal.log", true)
-            .setAttribute("level", level.getName())
-            .setAttribute("loggerName", logger.getName())
+            .setAttribute("applicationinsights.internal.log", true)
+            .setAttribute("applicationinsights.internal.log_level", level.getName())
+            .setAttribute("applicationinsights.internal.logger_name", logger.getName())
             .startSpan();
     if (t != null) {
-      span.setAttribute("error.stack", toString(t));
+      span.setAttribute("applicationinsights.internal.log_error_stack", toString(t));
     }
     span.end();
   }
