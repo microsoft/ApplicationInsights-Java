@@ -56,7 +56,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("testdb", rdd.getTarget());
-        assertEquals("SELECT testdb.abc", rdd.getName());
+        assertEquals("select * from abc where xyz = ?", rdd.getName());
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -81,7 +81,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("testdb", rdd.getTarget());
-        assertEquals("SELECT testdb.abc", rdd.getName());
+        assertEquals("select * from abc", rdd.getName());
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -105,11 +105,12 @@ public class JdbcSmokeTest extends AiSmokeTest {
 
         String largeStr = " /*" + Strings.repeat("a", 2000) + "*/";
         String query = "select * from abc" + largeStr;
+        String truncatedQuery = query.substring(0, Math.min(query.length(), 1024));
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("testdb", rdd.getTarget());
-        assertEquals("SELECT testdb.abc", rdd.getName());
+        assertEquals(truncatedQuery, rdd.getName());
         assertEquals(query, rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -134,7 +135,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("testdb", rdd.getTarget());
-        assertEquals("INSERT testdb.abc", rdd.getName());
+        assertEquals("insert into abc (xyz) values (?)", rdd.getName());
         assertEquals("insert into abc (xyz) values (?)", rdd.getData());
         // assertEquals(" [Batch of 3]", rdd.getProperties().get("Args"));
         assertTrue(rdd.getSuccess());
@@ -161,7 +162,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("testdb", rdd.getTarget());
-        assertEquals("INSERT testdb.abc", rdd.getName());
+        assertEquals("insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u'); insert into abc (xyz) values ('v')", rdd.getName());
         assertEquals("insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');" +
                 " insert into abc (xyz) values ('v')", rdd.getData());
         assertEquals(" [Batch]", rdd.getProperties().get("Args"));
@@ -196,7 +197,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("mysql", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
-        assertEquals("SELECT mysql.abc", rdd.getName());
+        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -228,7 +229,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("mysql", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
-        assertEquals("SELECT mysql.abc", rdd.getName());
+        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -253,7 +254,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("postgres", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
-        assertEquals("SELECT postgres.abc", rdd.getName());
+        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -278,7 +279,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("postgres", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
-        assertEquals("SELECT postgres.abc", rdd.getName());
+        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -303,7 +304,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("mssql", rdd.getTarget()); // this is the db.system
-        assertEquals("SELECT abc", rdd.getName());
+        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -328,7 +329,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("mssql", rdd.getTarget()); // this is the db.system
-        assertEquals("SELECT abc", rdd.getName());
+        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -354,7 +355,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("oracle", rdd.getTarget()); // this is the db.system
-        assertEquals("SELECT testdb.abc", rdd.getName());
+        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
@@ -380,7 +381,7 @@ public class JdbcSmokeTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());
         assertEquals("oracle", rdd.getTarget()); // this is the db.system
-        assertEquals("SELECT testdb.abc", rdd.getName());
+        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
