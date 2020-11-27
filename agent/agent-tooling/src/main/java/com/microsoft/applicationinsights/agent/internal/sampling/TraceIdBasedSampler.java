@@ -20,7 +20,7 @@ public final class TraceIdBasedSampler implements Sampler {
 
     private static final Logger logger = LoggerFactory.getLogger(TraceIdBasedSampler.class);
 
-    private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("ai.internal.sampling.percentage");
+    private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("applicationinsights.internal.sampling_percentage");
 
     // all sampling percentage must be in a ratio of 100/N where N is a whole number (2, 3, 4, …)
     // e.g. 50 for 1/2 or 33.33 for 1/3

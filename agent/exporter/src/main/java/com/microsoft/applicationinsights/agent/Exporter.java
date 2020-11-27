@@ -70,13 +70,16 @@ public class Exporter implements SpanExporter {
 
     private static final Joiner JOINER = Joiner.on(", ");
 
-    private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("ai.internal.sampling.percentage");
+    private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE_KEY = AttributeKey.doubleKey("applicationinsights.internal.sampling_percentage");
 
-    private static final AttributeKey<Boolean> AI_INTERNAL_LOG = AttributeKey.booleanKey("ai.internal.log");
+    private static final AttributeKey<Boolean> AI_LOG_KEY = AttributeKey.booleanKey("applicationinsights.internal.log");
 
-    // TODO rename these to "ai.internal..."
-    private static final AttributeKey<String> SPAN_SOURCE_ATTRIBUTE_KEY = AttributeKey.stringKey(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME);
-    private static final AttributeKey<String> SPAN_TARGET_ATTRIBUTE_NAME = AttributeKey.stringKey(AiAppId.SPAN_TARGET_ATTRIBUTE_NAME);
+    private static final AttributeKey<String> AI_SPAN_SOURCE_KEY = AttributeKey.stringKey(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME);
+    private static final AttributeKey<String> AI_SPAN_TARGET_KEY = AttributeKey.stringKey(AiAppId.SPAN_TARGET_ATTRIBUTE_NAME);
+
+    private static final AttributeKey<String> AI_LOG_LEVEL_KEY = AttributeKey.stringKey("applicationinsights.internal.log_level");
+    private static final AttributeKey<String> AI_LOGGER_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.logger_name");
+    private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY = AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
 
     private final TelemetryClient telemetryClient;
 
@@ -116,7 +119,7 @@ public class Exporter implements SpanExporter {
             return;
         }
         if (kind == Kind.INTERNAL) {
-            Boolean isLog = span.getAttributes().get(AI_INTERNAL_LOG);
+            Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
             if (isLog != null && isLog) {
                 exportLogSpan(span);
             } else if ("spring-scheduling".equals(stdComponent) && !SpanId.isValid(span.getParentSpanId())) {
@@ -145,7 +148,7 @@ public class Exporter implements SpanExporter {
 
         String source = null;
         ReadableAttributes attributes = span.getAttributes();
-        String sourceAppId = attributes.get(SPAN_SOURCE_ATTRIBUTE_KEY);
+        String sourceAppId = attributes.get(AI_SPAN_SOURCE_KEY);
         if (sourceAppId != null && !AiAppId.getAppId().equals(sourceAppId)) {
             source = sourceAppId;
         }
@@ -204,7 +207,7 @@ public class Exporter implements SpanExporter {
             telemetry.getProperties().put("statusDescription", description);
         }
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE);
+        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
 
         setExtraAttributes(telemetry.getProperties(), attributes);
         track(telemetry, samplingPercentage);
@@ -239,7 +242,7 @@ public class Exporter implements SpanExporter {
 
         telemetry.setSuccess(span.getStatus().isOk());
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE);
+        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
 
         setExtraAttributes(telemetry.getProperties(), attributes);
         track(telemetry, samplingPercentage);
@@ -269,18 +272,13 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    // TODO rename these to "ai.internal..."
-    private static final AttributeKey<String> LOGGER_LEVEL = AttributeKey.stringKey("level");
-    private static final AttributeKey<String> LOGGER_LOGGER_NAME = AttributeKey.stringKey("loggerName");
-    private static final AttributeKey<String> LOGGER_ERROR_STACK = AttributeKey.stringKey("error.stack");
-
     private void exportLogSpan(SpanData span) {
         String message = span.getName();
         ReadableAttributes attributes = span.getAttributes();
-        String level = attributes.get(LOGGER_LEVEL);
-        String loggerName = attributes.get(LOGGER_LOGGER_NAME);
-        String errorStack = attributes.get(LOGGER_ERROR_STACK);
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE);
+        String level = attributes.get(AI_LOG_LEVEL_KEY);
+        String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
+        String errorStack = attributes.get(AI_LOG_ERROR_STACK_KEY);
+        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
         if (errorStack == null) {
             trackTrace(message, span.getStartEpochNanos(), level, loggerName, span.getTraceId(),
                     span.getParentSpanId(), samplingPercentage, attributes);
@@ -429,7 +427,7 @@ public class Exporter implements SpanExporter {
             target = "Http";
         }
 
-        String targetAppId = attributes.get(SPAN_TARGET_ATTRIBUTE_NAME);
+        String targetAppId = attributes.get(AI_SPAN_TARGET_KEY);
         if (targetAppId == null || AiAppId.getAppId().equals(targetAppId)) {
             telemetry.setType("Http");
             telemetry.setTarget(target);
@@ -572,18 +570,9 @@ public class Exporter implements SpanExporter {
             @Override
             public <T> void accept(AttributeKey<T> key, T value) {
                 String stringKey = key.getKey();
-                if (stringKey.startsWith("ai.internal.")) {
+                if (stringKey.startsWith("applicationinsights.internal.")) {
                     return;
                 }
-                // TODO rename these to "ai.internal..."
-                if (key.equals(SPAN_SOURCE_ATTRIBUTE_KEY)
-                        || key.equals(SPAN_TARGET_ATTRIBUTE_NAME)
-                        || key.equals(LOGGER_LEVEL)
-                        || key.equals(LOGGER_LOGGER_NAME)
-                        || key.equals(LOGGER_ERROR_STACK)) {
-                    return;
-                }
-
                 int index = stringKey.indexOf(".");
                 String prefix = index == -1 ? stringKey : stringKey.substring(0, index);
                 if (STANDARD_ATTRIBUTE_PREFIXES.contains(prefix)) {
