@@ -134,4 +134,9 @@ public abstract class ServletHttpServerTracer<RESPONSE>
     }
     return spanName;
   }
+
+  @Override
+  protected String aiRequestContext(final HttpServletRequest request) {
+    return request.getHeader(AI_REQUEST_CONTEXT_HEADER_NAME);
+  }
 }
