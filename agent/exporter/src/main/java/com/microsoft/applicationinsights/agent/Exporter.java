@@ -207,9 +207,9 @@ public class Exporter implements SpanExporter {
             telemetry.getProperties().put("statusDescription", description);
         }
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
-
         setExtraAttributes(telemetry.getProperties(), attributes);
+
+        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
     }
@@ -242,9 +242,9 @@ public class Exporter implements SpanExporter {
 
         telemetry.setSuccess(span.getStatus().isOk());
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
-
         setExtraAttributes(telemetry.getProperties(), attributes);
+
+        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
     }
@@ -273,18 +273,11 @@ public class Exporter implements SpanExporter {
     }
 
     private void exportLogSpan(SpanData span) {
-        String message = span.getName();
-        ReadableAttributes attributes = span.getAttributes();
-        String level = attributes.get(AI_LOG_LEVEL_KEY);
-        String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
-        String errorStack = attributes.get(AI_LOG_ERROR_STACK_KEY);
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
+        String errorStack = span.getAttributes().get(AI_LOG_ERROR_STACK_KEY);
         if (errorStack == null) {
-            trackTrace(message, span.getStartEpochNanos(), level, loggerName, span.getTraceId(),
-                    span.getParentSpanId(), samplingPercentage, attributes);
+            trackTrace(span);
         } else {
-            trackTraceAsException(message, span.getStartEpochNanos(), level, loggerName, errorStack, span.getTraceId(),
-                    span.getParentSpanId(), samplingPercentage, attributes);
+            trackTraceAsException(span, errorStack);
         }
     }
 
@@ -315,39 +308,49 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private void trackTrace(String message, long timeEpochNanos, String level, String loggerName, String traceId,
-                            String parentSpanId, Double samplingPercentage, ReadableAttributes attributes) {
+    private void trackTrace(SpanData span) {
+        String message = span.getName();
+        ReadableAttributes attributes = span.getAttributes();
+        String level = attributes.get(AI_LOG_LEVEL_KEY);
+        String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
+
         TraceTelemetry telemetry = new TraceTelemetry(message, toSeverityLevel(level));
 
-        if (SpanId.isValid(parentSpanId)) {
-            telemetry.getContext().getOperation().setId(traceId);
-            telemetry.getContext().getOperation().setParentId(parentSpanId);
+        if (SpanId.isValid(span.getParentSpanId())) {
+            telemetry.getContext().getOperation().setId(span.getTraceId());
+            telemetry.getContext().getOperation().setParentId(span.getParentSpanId());
         }
 
         setLoggerProperties(telemetry.getProperties(), level, loggerName);
         setExtraAttributes(telemetry.getProperties(), attributes);
-        telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(timeEpochNanos)));
+        telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
+
+        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
         track(telemetry, samplingPercentage);
     }
 
-    private void trackTraceAsException(String message, long timeEpochNanos, String level, String loggerName,
-                                       String errorStack, String traceId, String parentSpanId,
-                                       Double samplingPercentage, ReadableAttributes attributes) {
+    private void trackTraceAsException(SpanData span, String errorStack) {
+        ReadableAttributes attributes = span.getAttributes();
+        String level = attributes.get(AI_LOG_LEVEL_KEY);
+        String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
+
         ExceptionTelemetry telemetry = new ExceptionTelemetry();
 
         telemetry.setTimestamp(new Date());
 
-        if (SpanId.isValid(parentSpanId)) {
-            telemetry.getContext().getOperation().setId(traceId);
-            telemetry.getContext().getOperation().setParentId(parentSpanId);
+        if (SpanId.isValid(span.getParentSpanId())) {
+            telemetry.getContext().getOperation().setId(span.getTraceId());
+            telemetry.getContext().getOperation().setParentId(span.getParentSpanId());
         }
 
         telemetry.getData().setExceptions(Exceptions.minimalParse(errorStack));
         telemetry.setSeverityLevel(toSeverityLevel(level));
-        telemetry.getProperties().put("Logger Message", message);
+        telemetry.getProperties().put("Logger Message", span.getName());
         setLoggerProperties(telemetry.getProperties(), level, loggerName);
         setExtraAttributes(telemetry.getProperties(), attributes);
-        telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(timeEpochNanos)));
+        telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
+
+        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
         track(telemetry, samplingPercentage);
     }
 
@@ -380,6 +383,7 @@ public class Exporter implements SpanExporter {
 
     private static void setLoggerProperties(Map<String, String> properties, String level, String loggerName) {
         if (level != null) {
+            // TODO are these needed? level is already reported as severityLevel, sourceType maybe needed for exception telemetry only?
             properties.put("SourceType", "Logger");
             properties.put("LoggingLevel", level);
         }
