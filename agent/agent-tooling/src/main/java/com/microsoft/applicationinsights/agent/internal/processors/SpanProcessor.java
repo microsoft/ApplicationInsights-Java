@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -105,7 +106,7 @@ public class SpanProcessor extends AgentProcessor {
         }
 
         String spanName = span.getName();
-        final Attributes.Builder builder = Attributes.builder();
+        final AttributesBuilder builder = Attributes.builder();
         // copy existing attributes.
         // According to Collector docs, The matched portion
         // in the span name is replaced by extracted attribute name. If the attributes exist
@@ -119,7 +120,7 @@ public class SpanProcessor extends AgentProcessor {
     }
 
     private String applyRule(List<String> groupNamesList, Pattern pattern,
-                             SpanData span, String spanName, Attributes.Builder builder) {
+                             SpanData span, String spanName, AttributesBuilder builder) {
         if (groupNamesList.isEmpty()) return spanName;
         Matcher matcher = pattern.matcher(spanName);
         StringBuilder sb = new StringBuilder();

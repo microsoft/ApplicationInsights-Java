@@ -68,7 +68,7 @@ public class Exporter implements SpanExporter {
 
     private static final Logger logger = LoggerFactory.getLogger(Exporter.class);
 
-    private static final Pattern COMPONENT_PATTERN = Pattern.compile("io\\.opentelemetry\\.auto\\.([^0-9]*)(-[0-9.]*)?");
+    private static final Pattern COMPONENT_PATTERN = Pattern.compile("io\\.opentelemetry\\.javaagent\\.([^0-9]*)(-[0-9.]*)?");
 
     private static final Joiner JOINER = Joiner.on(", ");
 
@@ -469,18 +469,26 @@ public class Exporter implements SpanExporter {
     private static final Set<String> SQL_DB_SYSTEMS = ImmutableSet.of("db2", "derby", "mariadb", "mssql", "mysql", "oracle", "postgresql", "sqlite", "other_sql", "hsqldb", "h2");
 
     private static void applyDatabaseClientSpan(Map<AttributeKey<?>, Object> attributes, RemoteDependencyTelemetry telemetry, String dbSystem) {
+        String dbStatement = removeAttributeString(attributes, SemanticAttributes.DB_STATEMENT);
         String type;
         if (SQL_DB_SYSTEMS.contains(dbSystem)) {
             type = "SQL";
+            // keeping existing behavior that was release in 3.0.0 for now
+            // not going with new jdbc instrumentation span name of "<db.operation> <db.name>.<db.sql.table>" for now
+            // just in case this behavior is reversed due to spec:
+            // "It is not recommended to attempt any client-side parsing of `db.statement` just to get these properties,
+            // they should only be used if the library being instrumented already provides them."
+            // also need to discuss with other AI language exporters
+            //
+            // if we go to shorter span name now, and it gets reverted, no way for customers to get the shorter name back
+            // whereas if we go to shorter span name in future, and they still prefer more cardinality, they can get that
+            // back using telemetry processor to copy db.statement into span name
+            telemetry.setName(dbStatement);
         } else {
             type = dbSystem;
         }
         telemetry.setType(type);
-        // capturing db.statement, which is the full (sanitized) statement
-        // while span name is a much more truncated version of the statement
-        // (or at least will be in the future, see
-        // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1409)
-        telemetry.setCommandName(removeAttributeString(attributes, SemanticAttributes.DB_STATEMENT));
+        telemetry.setCommandName(dbStatement);
         String target = nullAwareConcat(getTargetFromPeerAttributes(attributes, getDefaultPortForDbSystem(dbSystem)),
                 removeAttributeString(attributes, SemanticAttributes.DB_NAME), "/");
         if (target == null) {
