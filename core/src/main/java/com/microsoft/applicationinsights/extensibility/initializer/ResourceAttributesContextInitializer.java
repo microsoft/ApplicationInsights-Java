@@ -43,7 +43,12 @@ public final class ResourceAttributesContextInitializer implements ContextInitia
     @Override
     public void initialize(TelemetryContext context) {
         for (Map.Entry<String, String> entry: resourceAttributes.entrySet()) {
-            context.getProperties().put(entry.getKey(), substitutor.replace(entry.getValue()));
+            String key = entry.getKey();
+            if (key.equals("service.version")) {
+                context.getComponent().setVersion(substitutor.replace(entry.getValue()));
+            } else {
+                context.getProperties().put(key, substitutor.replace(entry.getValue()));
+            }
         }
     }
 }

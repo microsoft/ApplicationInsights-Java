@@ -24,6 +24,8 @@ public class CustomDimensionsTest extends AiSmokeTest {
         assertEquals("value", rd.getProperties().get("test"));
         assertEquals("/root", rd.getProperties().get("home"));
 
+        assertEquals("123", rdEnvelope.getTags().get("ai.application.ver"));
+
         assertTrue(rd.getSuccess());
     }
 }
