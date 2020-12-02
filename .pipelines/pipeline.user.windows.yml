@@ -17,9 +17,6 @@ signing_options:
 restore:
   commands:
     - !!defaultcommand
-      name: 'Download collectd-api.jar'
-      command: '.scripts/downloadCollectdJar.cmd'
-    - !!defaultcommand
       name: 'Install Windows 8.1 SDK'
       command: '.scripts/installWindows81Sdk.cmd'
       logs:
