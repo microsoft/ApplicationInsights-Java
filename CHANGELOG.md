@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 3.0.1 GA
+* fix for an issue where null pointer exception is being thrown when attribute value is not provided and matchType is regexp
+
 # Version 3.0.0 GA
 * Config changes
 	- Change json config file name from ApplicationInsights.json to applicationinsights.json
