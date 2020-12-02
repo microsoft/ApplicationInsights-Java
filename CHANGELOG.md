@@ -1,7 +1,7 @@
 # CHANGELOG
 
 # Version 3.0.1 GA
-* fix for an issue where null pointer exception is being thrown when attribute value is not provided and matchType is regexp
+* Telemetry processor config throws null pointer exception when attribute value is not provided and matchType is regexp
 
 # Version 3.0.0 GA
 * Config changes
