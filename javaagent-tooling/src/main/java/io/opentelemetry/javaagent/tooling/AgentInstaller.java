@@ -23,6 +23,7 @@ import io.opentelemetry.javaagent.tooling.config.ConfigInitializer;
 import io.opentelemetry.javaagent.tooling.context.FieldBackedProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,15 +58,49 @@ public class AgentInstaller {
 
   static {
     BootstrapPackagePrefixesHolder.setBoostrapPackagePrefixes(loadBootstrapPackagePrefixes());
+
+    ClassLoader savedContextClassLoader = Thread.currentThread().getContextClassLoader();
+    try {
+      // calling (shaded) OpenTelemetry.getTracerProvider() with context class loader set to the
+      // agent class loader, so that SPI finds the agent's (isolated) SDK, and (shaded)
+      // OpenTelemetry registers it, and then when instrumentation calls (shaded)
+      // OpenTelemetry.getTracerProvider() later, they get back the agent's (isolated) SDK
+      //
+      // but if we don't trigger this early registration, then if instrumentation is the first to
+      // call (shaded) OpenTelemetry.getTracerProvider(), then SPI can't see the agent class loader,
+      // and so (shaded) OpenTelemetry registers the no-op TracerFactory, and it cannot be replaced
+      // later
+      Thread.currentThread().setContextClassLoader(AgentInstaller.class.getClassLoader());
+      OpenTelemetry.getGlobalTracerProvider();
+    } finally {
+      Thread.currentThread().setContextClassLoader(savedContextClassLoader);
+    }
+
+    // this needs to be called before AgentTooling class is initialized
+    addByteBuddyRawSetting();
+
     // WeakMap is used by other classes below, so we need to register the provider first.
     AgentTooling.registerWeakMapProvider();
-    // this needs to be done as early as possible - before the first Config.get() call
-    ConfigInitializer.initialize();
   }
 
-  public static void installBytebuddyAgent(Instrumentation inst) {
+  public static void installBytebuddyAgent(Instrumentation inst) throws Exception {
+
+    Class<?> clazz = null;
+    try {
+      clazz = Class.forName("io.opentelemetry.javaagent.tooling.BeforeAgentInstaller");
+    } catch (final ClassNotFoundException ignored) {
+    }
+    if (clazz != null) {
+      // exceptions in this code should be propagated up so that agent startup fails
+      final Method method = clazz.getMethod("beforeInstallBytebuddyAgent", Instrumentation.class);
+      method.invoke(null, inst);
+    }
+
+    // this needs to be done as early as possible - before the first Config.get() call
+    ConfigInitializer.initialize();
+
     if (Config.get().getBooleanProperty(JAVAAGENT_ENABLED_CONFIG, true)) {
-      installBytebuddyAgent(inst, false);
+      installBytebuddyAgent(inst, false, new AgentBuilder.Listener[0]);
     } else {
       log.debug("Tracing is disabled, not installing instrumentations.");
     }
@@ -83,32 +118,11 @@ public class AgentInstaller {
       boolean skipAdditionalLibraryMatcher,
       AgentBuilder.Listener... listeners) {
 
-    ClassLoader savedContextClassLoader = Thread.currentThread().getContextClassLoader();
-    try {
-      // calling (shaded) OpenTelemetry.getGlobalTracerProvider() with context class loader set to
-      // the
-      // agent class loader, so that SPI finds the agent's (isolated) SDK, and (shaded)
-      // OpenTelemetry registers it, and then when instrumentation calls (shaded)
-      // OpenTelemetry.getGlobalTracerProvider() later, they get back the agent's (isolated) SDK
-      //
-      // but if we don't trigger this early registration, then if instrumentation is the first to
-      // call (shaded) OpenTelemetry.getGlobalTracerProvider(), then SPI can't see the agent class
-      // loader,
-      // and so (shaded) OpenTelemetry registers the no-op TracerFactory, and it cannot be replaced
-      // later
-      Thread.currentThread().setContextClassLoader(AgentInstaller.class.getClassLoader());
-      OpenTelemetry.getGlobalTracerProvider();
-    } finally {
-      Thread.currentThread().setContextClassLoader(savedContextClassLoader);
-    }
-
     OpenTelemetrySdkAccess.internalSetForceFlush(
         (timeout, unit) ->
             OpenTelemetrySdk.getGlobalTracerManagement().forceFlush().join(timeout, unit));
 
     INSTRUMENTATION = inst;
-
-    addByteBuddyRawSetting();
 
     FieldBackedProvider.resetContextMatchers();
 
