@@ -10,6 +10,7 @@ import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementM
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
+import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
@@ -48,10 +49,14 @@ public class JettyInstrumentationModule extends InstrumentationModule {
       // normally, which the jetty instrumentation does not capture since jetty doesn't populate
       // contextPath and servletPath until right before calling the servlet
       // (another option is to instrument ServletHolder.handle() to capture those fields)
-      return not(named("org.eclipse.jetty.server.handler.HandlerWrapper"))
-          .and(not(named("org.eclipse.jetty.server.handler.ScopedHandler")))
-          .and(not(named("org.eclipse.jetty.server.handler.ContextHandler")))
-          .and(not(named("org.eclipse.jetty.servlet.ServletHandler")))
+      //
+      // using nameStartsWith() as there are many built-in handlers, e.g.
+      // org.eclipse.jetty.server.handler.HandlerWrapper
+      // org.eclipse.jetty.server.handler.ScopedHandler
+      // org.eclipse.jetty.server.handler.ContextHandler
+      // org.eclipse.jetty.security.SecurityHandler
+      // org.eclipse.jetty.servlet.ServletHandler
+      return not(nameStartsWith("org.eclipse.jetty."))
           .and(implementsInterface(named("org.eclipse.jetty.server.Handler")));
     }
 
