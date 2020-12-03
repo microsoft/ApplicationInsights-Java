@@ -1,0 +1,26 @@
+apply from: "${rootDir}/gradle/instrumentation.gradle"
+
+muzzle {
+  pass {
+    group = "io.micrometer"
+    module = "micrometer-core"
+    versions = "[1.0.0,)"
+    extraDependency "org.springframework.boot:spring-boot-actuator-autoconfigure:2.0.0.RELEASE"
+    assertInverse = true
+  }
+  pass {
+    group = "org.springframework.boot"
+    module = "spring-boot-actuator-autoconfigure"
+    versions = "[2.0.0.RELEASE,)"
+    extraDependency "io.micrometer:micrometer-core:1.0.0"
+    assertInverse = true
+  }
+}
+
+dependencies {
+  library group: 'io.micrometer', name: 'micrometer-core', version: '1.4.0'
+  library group: 'org.springframework.boot', name: 'spring-boot-actuator-autoconfigure', version: '2.2.0.RELEASE'
+  compileOnly project(':javaagent-bootstrap')
+
+  testImplementation group: 'com.microsoft.azure', name: 'azure-spring-boot-metrics-starter', version: '2.2.3'
+}
