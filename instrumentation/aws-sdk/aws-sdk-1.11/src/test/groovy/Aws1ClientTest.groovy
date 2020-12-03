@@ -162,7 +162,7 @@ class Aws1ClientTest extends AgentTestRunner {
         }
       }
     }
-    server.lastRequest.headers.get("traceparent") == null
+    server.lastRequest.headers.get("traceparent") != null
 
     where:
     service      | operation           | method | path                  | handlerCount | client                                                                                                                                             | call                                                                            | additionalAttributes              | body
