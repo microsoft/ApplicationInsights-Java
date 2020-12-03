@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.agent.internal.sampling;
 import java.util.List;
 import javax.annotation.Nullable;
 
+import com.microsoft.applicationinsights.agent.Exporter;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.ReadableAttributes;
@@ -20,8 +21,6 @@ public final class TraceIdBasedSampler implements Sampler {
 
     private static final Logger logger = LoggerFactory.getLogger(TraceIdBasedSampler.class);
 
-    private static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE = AttributeKey.doubleKey("ai.internal.sampling.percentage");
-
     // all sampling percentage must be in a ratio of 100/N where N is a whole number (2, 3, 4, …)
     // e.g. 50 for 1/2 or 33.33 for 1/3
     //
@@ -35,7 +34,7 @@ public final class TraceIdBasedSampler implements Sampler {
         this.samplingPercentage = samplingPercentage;
         Attributes alwaysOnAttributes;
         if (samplingPercentage != 100) {
-            alwaysOnAttributes = Attributes.of(AI_SAMPLING_PERCENTAGE, samplingPercentage);
+            alwaysOnAttributes = Attributes.of(Exporter.AI_SAMPLING_PERCENTAGE_KEY, samplingPercentage);
         } else {
             alwaysOnAttributes = Attributes.empty();
         }
