@@ -110,7 +110,9 @@ public abstract class AgentProcessor {
             Map<AttributeKey<?>, Pattern> attributeKeyValuePatterns = new HashMap<>();
             if (attributes != null) {
                 for (ProcessorAttribute attribute : attributes) {
-                    attributeKeyValuePatterns.put(AttributeKey.stringKey(attribute.key), Pattern.compile(attribute.value));
+                    if (attribute.value != null) {
+                        attributeKeyValuePatterns.put(AttributeKey.stringKey(attribute.key), Pattern.compile(attribute.value));
+                    }
                 }
             }
             List<Pattern> spanPatterns = new ArrayList<>();
