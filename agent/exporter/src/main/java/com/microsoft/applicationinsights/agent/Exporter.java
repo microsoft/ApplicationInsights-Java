@@ -35,6 +35,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -206,7 +207,7 @@ public class Exporter implements SpanExporter {
             telemetry.getProperties().put("statusDescription", description);
         }
 
-        setExtraAttributes(telemetry.getProperties(), attributes);
+        setExtraAttributes(telemetry, attributes);
 
         Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
         track(telemetry, samplingPercentage);
@@ -241,7 +242,7 @@ public class Exporter implements SpanExporter {
 
         telemetry.setSuccess(span.getStatus().isOk());
 
-        setExtraAttributes(telemetry.getProperties(), attributes);
+        setExtraAttributes(telemetry, attributes);
 
         Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
         track(telemetry, samplingPercentage);
@@ -287,7 +288,7 @@ public class Exporter implements SpanExporter {
             telemetry.getContext().getOperation().setId(span.getTraceId());
             telemetry.getContext().getOperation().setParentId(span.getParentSpanId());
             telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(event.getEpochNanos())));
-            setExtraAttributes(telemetry.getProperties(), event.getAttributes());
+            setExtraAttributes(telemetry, event.getAttributes());
 
             if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
                     || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE) != null) {
@@ -321,7 +322,7 @@ public class Exporter implements SpanExporter {
         }
 
         setLoggerProperties(telemetry.getProperties(), level, loggerName);
-        setExtraAttributes(telemetry.getProperties(), attributes);
+        setExtraAttributes(telemetry, attributes);
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
 
         Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
@@ -346,7 +347,7 @@ public class Exporter implements SpanExporter {
         telemetry.setSeverityLevel(toSeverityLevel(level));
         telemetry.getProperties().put("Logger Message", span.getName());
         setLoggerProperties(telemetry.getProperties(), level, loggerName);
-        setExtraAttributes(telemetry.getProperties(), attributes);
+        setExtraAttributes(telemetry, attributes);
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
 
         Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
@@ -568,10 +569,19 @@ public class Exporter implements SpanExporter {
     private static final Set<String> STANDARD_ATTRIBUTE_PREFIXES =
             ImmutableSet.of("http", "db", "message", "messaging", "rpc", "enduser", "net", "peer", "exception", "thread", "faas");
 
-    private static void setExtraAttributes(Map<String, String> properties, Attributes attributes) {
+    private static void setExtraAttributes(Telemetry telemetry, Attributes attributes) {
         attributes.forEach((key, value) -> {
             String stringKey = key.getKey();
             if (stringKey.startsWith("applicationinsights.internal.")) {
+                return;
+            }
+            // special case mappings
+            if (key.equals(SemanticAttributes.ENDUSER_ID) && value instanceof String) {
+                telemetry.getContext().getUser().setId((String) value);
+                return;
+            }
+            if (key.equals(SemanticAttributes.HTTP_USER_AGENT) && value instanceof String) {
+                telemetry.getContext().getUser().setUserAgent((String) value);
                 return;
             }
             int index = stringKey.indexOf(".");
@@ -581,7 +591,7 @@ public class Exporter implements SpanExporter {
             }
             String val = getStringValue(key, value);
             if (value != null) {
-                properties.put(key.getKey(), val);
+                telemetry.getProperties().put(key.getKey(), val);
             }
         });
     }

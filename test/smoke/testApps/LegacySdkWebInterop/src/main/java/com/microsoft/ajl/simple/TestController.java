@@ -19,6 +19,7 @@ public class TestController {
         RequestTelemetry requestTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry();
         requestTelemetry.getProperties().put("myattr1", "myvalue1");
         requestTelemetry.getProperties().put("myattr2", "myvalue2");
+        requestTelemetry.getContext().getUser().setId("myuser");
         requestTelemetry.setName("myspanname");
         return "OK!";
     }

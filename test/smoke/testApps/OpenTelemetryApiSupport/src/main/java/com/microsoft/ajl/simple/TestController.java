@@ -17,6 +17,7 @@ public class TestController {
     public String test() {
         Span.current().setAttribute("myattr1", "myvalue1");
         Span.current().setAttribute("myattr2", "myvalue2");
+        Span.current().setAttribute("enduser.id", "myuser");
         Span.current().updateName("myspanname");
         return "OK!";
     }
