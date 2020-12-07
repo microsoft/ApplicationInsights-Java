@@ -683,6 +683,77 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
+    public void simpleIncludeRegexNoValueTest() {
+        MockExporter mockExporter = new MockExporter();
+        ProcessorConfig config = new ProcessorConfig();
+        config.type = ProcessorType.attribute;
+        config.processorName = "simpleIncludeRegexNoValue";
+        config.include = new ProcessorIncludeExclude();
+        config.include.matchType = ProcessorMatchType.regexp;
+        config.include.spanNames = Arrays.asList("svc.*", "test.*");
+        ProcessorAttribute attributeWithNoValue = new ProcessorAttribute();
+        attributeWithNoValue.key = "testKey";
+        config.include.attributes = new ArrayList<>();
+        config.include.attributes.add(attributeWithNoValue);
+        ProcessorAction action = new ProcessorAction();
+        action.key = "testKey";
+        action.action = ProcessorActionType.update;
+        action.value = "redacted";
+        List<ProcessorAction> actions = new ArrayList<>();
+        actions.add(action);
+        config.actions = actions;
+        SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
+
+        Span spanA = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcA")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue1")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        Span spanB = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcB")
+                .setAttribute("one", "1")
+                .setAttribute("testKey", "testValue2")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        Span spanC = OpenTelemetry.getGlobalTracer("test").spanBuilder("serviceC")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        Span spanD = OpenTelemetry.getGlobalTracer("test").spanBuilder("serviceD")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        Span spanE = OpenTelemetry.getGlobalTracer("test").spanBuilder("svcE")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testV1")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        List<SpanData> spans = new ArrayList<>();
+        spans.add(((ReadableSpan) spanA).toSpanData());
+        spans.add(((ReadableSpan) spanB).toSpanData());
+        spans.add(((ReadableSpan) spanC).toSpanData());
+        spans.add(((ReadableSpan) spanD).toSpanData());
+        spans.add(((ReadableSpan) spanE).toSpanData());
+
+        exampleExporter.export(spans);
+
+        // verify that resulting spans are filtered in the way we want
+        List<SpanData> result = mockExporter.getSpans();
+        SpanData resultSpanA = result.get(0);
+        SpanData resultSpanB = result.get(1);
+        SpanData resultSpanC = result.get(2);
+        SpanData resultSpanE = result.get(4);
+        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("redacted", Objects.requireNonNull(resultSpanE.getAttributes().get(AttributeKey.stringKey("testKey"))));
+    }
+
+    @Test
     public void simpleIncludeHashTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
