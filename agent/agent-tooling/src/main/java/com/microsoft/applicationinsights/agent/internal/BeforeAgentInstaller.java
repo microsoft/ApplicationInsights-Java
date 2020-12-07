@@ -111,7 +111,6 @@ public class BeforeAgentInstaller {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
                                             "No connection string or instrumentation key provided",
                                             "Please provide connection string or instrumentation key.","");
-                //throw new ConfigurationException("No connection string or instrumentation key provided");
             }
         }
         // Function to validate user provided processor configuration

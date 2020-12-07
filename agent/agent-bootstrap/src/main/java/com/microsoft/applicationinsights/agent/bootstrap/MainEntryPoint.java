@@ -122,7 +122,11 @@ public class MainEntryPoint {
                 startupLogger.error(message, t);
             }
         } else {
-            System.err.println(message);
+            if (isFriendlyException) {
+                System.err.println(message);
+            } else {
+                t.printStackTrace();
+            }
         }
     }
 

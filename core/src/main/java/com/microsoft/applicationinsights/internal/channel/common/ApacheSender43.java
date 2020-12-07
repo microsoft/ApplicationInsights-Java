@@ -29,6 +29,7 @@ import javax.annotation.concurrent.GuardedBy;
 import javax.net.ssl.SSLHandshakeException;
 
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -77,10 +78,18 @@ public final class ApacheSender43 implements ApacheSender {
         try {
             return getHttpClient().execute(post);
         } catch (SSLHandshakeException e) {
-            throw new FriendlyException("ApplicationInsights Java Agent failed to send telemetry data.",
-                    "Unable to find valid certification path to requested target.",
-                    "Please import the SSL certificate from "+post.getURI().getHost()+", into the java key store.",
-                    "This message is only logged the first time it occurs after startup.");
+            String completeUrl = "https://"+post.getURI().getHost();
+            if(completeUrl.equals(Defaults.LIVE_ENDPOINT)) {
+                throw new FriendlyException("ApplicationInsights Java Agent failed to connect to Live metric end point.",
+                        "Unable to find valid certification path to requested target.",
+                        "Please import the SSL certificate from " + completeUrl + ", into the java key store.",
+                        "This message is only logged the first time it occurs after startup.");
+            } else {
+                throw new FriendlyException("ApplicationInsights Java Agent failed to send telemetry data.",
+                        "Unable to find valid certification path to requested target.",
+                        "Please import the SSL certificate from " + completeUrl + ", into the java key store.",
+                        "This message is only logged the first time it occurs after startup.");
+            }
         }
     }
 

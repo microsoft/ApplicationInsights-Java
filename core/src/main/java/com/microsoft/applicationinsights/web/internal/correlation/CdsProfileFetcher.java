@@ -21,8 +21,21 @@
 
 package com.microsoft.applicationinsights.web.internal.correlation;
 
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.URI;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLHandshakeException;
+
 import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -40,33 +53,18 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.URI;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
 
     private static final Logger logger = LoggerFactory.getLogger(CdsProfileFetcher.class);
-
-    public static volatile HttpHost proxy;
-
-    private CloseableHttpAsyncClient httpClient;
     private static final String PROFILE_QUERY_ENDPOINT_APP_ID_FORMAT = "%s/api/profiles/%s/appId";
-
+    public static volatile HttpHost proxy;
     // cache of tasks per ikey
     /* Visible for Testing */ final ConcurrentMap<String, Future<HttpResponse>> tasks;
-
     // failure counters per ikey
     /* Visible for Testing */ final ConcurrentMap<String, Integer> failureCounters;
-
     private final PeriodicTaskPool taskThreadPool;
     private final CdsRetryPolicy retryPolicy;
+    private CloseableHttpAsyncClient httpClient;
 
     public CdsProfileFetcher() {
         this(new CdsRetryPolicy());
@@ -104,16 +102,36 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
         this.httpClient.start();
     }
 
+    private static FriendlyException getFriendlyException(Throwable t) {
+        if (t instanceof FriendlyException) {
+            return (FriendlyException) t;
+        }
+        Throwable cause = t.getCause();
+        if (cause == null) {
+            return null;
+        }
+        return getFriendlyException(cause);
+    }
+
     @Override
-    public ProfileFetcherResult fetchApplicationId(String instrumentationKey, TelemetryConfiguration configuration) throws ApplicationIdResolutionException, InterruptedException {
+    public ProfileFetcherResult fetchApplicationId(String instrumentationKey, TelemetryConfiguration configuration) throws ApplicationIdResolutionException, InterruptedException, FriendlyException {
         try {
             return internalFetchAppProfile(instrumentationKey, configuration);
         } catch (ExecutionException | IOException e) {
-            throw new ApplicationIdResolutionException(e);
+            Throwable cause = e.getCause();
+            if (cause != null && cause instanceof SSLHandshakeException) {
+                throw new FriendlyException("ApplicationInsights Java Agent failed to connect to CdsProfile end point.",
+                        "Unable to find valid certification path to requested target.",
+                        "Please import the SSL certificate from "+ Defaults.PROFILER_ENDPOINT +", into the java key store.",
+                        "This message is only logged the first time it occurs after startup.");
+            } else {
+                throw new ApplicationIdResolutionException(e);
+            }
         }
     }
 
-    private ProfileFetcherResult internalFetchAppProfile(String instrumentationKey, TelemetryConfiguration configuration) throws InterruptedException, ExecutionException, IOException {
+    private ProfileFetcherResult internalFetchAppProfile(String instrumentationKey, TelemetryConfiguration configuration)
+            throws InterruptedException, ExecutionException, IOException {
         if (StringUtils.isEmpty(instrumentationKey)) {
             throw new IllegalArgumentException("instrumentationKey must not be null or empty");
         }
@@ -204,17 +222,6 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
     }
 
     /**
-     * Runnable that is used to clear the retry counters and pending unresolved tasks.
-     */
-    private class CachePurgingRunnable implements Runnable {
-        @Override
-        public void run() {
-            tasks.clear();
-            failureCounters.clear();
-        }
-    }
-
-    /**
      * Responsible for CDS Retry Policy configuration.
      */
     public static class CdsRetryPolicy {
@@ -231,12 +238,13 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
          */
         private long resetPeriodInMinutes;
 
-        public int getMaxInstantRetries() {
-            return maxInstantRetries;
+        public CdsRetryPolicy() {
+            maxInstantRetries = DEFAULT_MAX_INSTANT_RETRIES;
+            resetPeriodInMinutes = DEFAULT_RESET_PERIOD_IN_MINUTES;
         }
 
-        public long getResetPeriodInMinutes() {
-            return resetPeriodInMinutes;
+        public int getMaxInstantRetries() {
+            return maxInstantRetries;
         }
 
         public void setMaxInstantRetries(int maxInstantRetries) {
@@ -246,16 +254,26 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
             this.maxInstantRetries = maxInstantRetries;
         }
 
+        public long getResetPeriodInMinutes() {
+            return resetPeriodInMinutes;
+        }
+
         public void setResetPeriodInMinutes(long resetPeriodInMinutes) {
             if (resetPeriodInMinutes < 1) {
                 throw new IllegalArgumentException("CDS retries reset interval should be at least 1 minute");
             }
             this.resetPeriodInMinutes = resetPeriodInMinutes;
         }
+    }
 
-        public CdsRetryPolicy() {
-            maxInstantRetries = DEFAULT_MAX_INSTANT_RETRIES;
-            resetPeriodInMinutes = DEFAULT_RESET_PERIOD_IN_MINUTES;
+    /**
+     * Runnable that is used to clear the retry counters and pending unresolved tasks.
+     */
+    private class CachePurgingRunnable implements Runnable {
+        @Override
+        public void run() {
+            tasks.clear();
+            failureCounters.clear();
         }
     }
 }

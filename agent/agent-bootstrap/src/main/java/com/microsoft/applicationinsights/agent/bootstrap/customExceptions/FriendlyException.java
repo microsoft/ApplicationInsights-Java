@@ -31,7 +31,7 @@ public class FriendlyException extends Exception {
         messageBuilder.append("Action:").append(System.lineSeparator());
         messageBuilder.append(action).append(System.lineSeparator());
         if (!note.isEmpty()) {
-            messageBuilder.append(action).append(System.lineSeparator());
+            messageBuilder.append(System.lineSeparator());
             messageBuilder.append("Note:").append(System.lineSeparator());
             messageBuilder.append(note).append(System.lineSeparator());
         }
