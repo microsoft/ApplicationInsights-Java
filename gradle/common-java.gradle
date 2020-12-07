@@ -56,7 +56,8 @@ spotbugs {
 
 spotbugsMain {
     reports {
-        xml.enabled = true
+        // NOTE: only one can be enabled at a time
+        // xml.enabled = true
         html.enabled = true
     }
 }

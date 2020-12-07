@@ -216,4 +216,10 @@
             <Bug pattern="NM_METHOD_NAMING_CONVENTION" />
         </Or>
     </Match>
+    <Match>
+        <!-- SafeObjectInputStream protects against deserializing untrusted data -->
+        <Bug pattern="OBJECT_DESERIALIZATION" />
+        <Class name="com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput"/>
+        <Method name="loadTransmission" />
+    </Match>
 </FindBugsFilter>
