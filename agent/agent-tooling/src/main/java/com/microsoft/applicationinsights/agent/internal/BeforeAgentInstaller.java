@@ -48,7 +48,7 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Tele
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.extensibility.initializer.ResourceAttributesContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
@@ -110,7 +110,7 @@ public class BeforeAgentInstaller {
             if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
                                             "No connection string or instrumentation key provided",
-                                            "Please provide connection string or instrumentation key.","");
+                                            "Please provide connection string or instrumentation key.");
             }
         }
         // Function to validate user provided processor configuration
@@ -202,7 +202,7 @@ public class BeforeAgentInstaller {
         }
     }
 
-    private static void validateProcessorConfiguration(Configuration config) {
+    private static void validateProcessorConfiguration(Configuration config) throws FriendlyException {
         if (config.preview == null || config.preview.processors == null) return;
         for (ProcessorConfig processorConfig : config.preview.processors) {
             processorConfig.validate();

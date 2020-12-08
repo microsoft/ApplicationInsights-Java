@@ -6,6 +6,7 @@ import java.util.List;
 
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.processors.AgentProcessor.IncludeExclude;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -17,7 +18,7 @@ public class ExporterWithSpanProcessor implements SpanExporter {
     private final SpanProcessor spanProcessor;
 
     // caller should check config.isValid before creating
-    public ExporterWithSpanProcessor(ProcessorConfig config, SpanExporter delegate) {
+    public ExporterWithSpanProcessor(ProcessorConfig config, SpanExporter delegate) throws FriendlyException {
         config.validate();
         spanProcessor = SpanProcessor.create(config);
         this.delegate = delegate;

@@ -11,7 +11,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ToAttributeConfig;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
+import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -23,8 +23,8 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 public class ExporterWithSpanProcessorTest {
-    @Test(expected = ConfigurationException.class)
-    public void noNameObjectTest() {
+    @Test(expected = FriendlyException.class)
+    public void noNameObjectTest() throws FriendlyException {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -43,8 +43,8 @@ public class ExporterWithSpanProcessorTest {
         exampleExporter.export(spans);
     }
 
-    @Test(expected = ConfigurationException.class)
-    public void inValidConfigTestWithNoFromOrToAttributesTest() {
+    @Test(expected = FriendlyException.class)
+    public void inValidConfigTestWithNoFromOrToAttributesTest() throws FriendlyException {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -64,8 +64,8 @@ public class ExporterWithSpanProcessorTest {
         exampleExporter.export(spans);
     }
 
-    @Test(expected = ConfigurationException.class)
-    public void inValidConfigTestWithToAttributesNoRulesTest() {
+    @Test(expected = FriendlyException.class)
+    public void inValidConfigTestWithToAttributesNoRulesTest() throws FriendlyException {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -87,7 +87,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void SimpleRenameSpanTest() {
+    public void SimpleRenameSpanTest() throws FriendlyException {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -118,7 +118,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void SimpleRenameSpanWithSeparatorTest() {
+    public void SimpleRenameSpanWithSeparatorTest() throws FriendlyException {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -150,7 +150,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void SimpleRenameSpanWithMissingKeysTest() {
+    public void SimpleRenameSpanWithMissingKeysTest() throws FriendlyException {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -181,7 +181,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void RenameSpanWithIncludeTest() {
+    public void RenameSpanWithIncludeTest() throws FriendlyException {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -247,8 +247,8 @@ public class ExporterWithSpanProcessorTest {
     }
 
 
-    @Test(expected = ConfigurationException.class)
-    public void InvalidRegexInRulesTest() {
+    @Test(expected = FriendlyException.class)
+    public void InvalidRegexInRulesTest() throws FriendlyException {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -283,7 +283,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void SimpleToAttributesTest() {
+    public void SimpleToAttributesTest() throws FriendlyException {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -318,7 +318,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void MultiRuleToAttributesTest() {
+    public void MultiRuleToAttributesTest() throws FriendlyException {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -370,7 +370,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void ExtractAttributesWithIncludeExcludeTest() {
+    public void ExtractAttributesWithIncludeExcludeTest() throws FriendlyException {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;

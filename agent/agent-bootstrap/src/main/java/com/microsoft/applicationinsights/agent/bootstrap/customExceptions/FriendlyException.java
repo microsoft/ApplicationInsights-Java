@@ -14,6 +14,10 @@ public class FriendlyException extends Exception {
         super(populateFriendlyMessage(banner, message, action, note));
     }
 
+    public FriendlyException(String banner, String message, String action) {
+        super(populateFriendlyMessage(banner, message, action, ""));
+    }
+
     public FriendlyException(String banner, String action, Throwable cause) {
         super(populateFriendlyMessage(banner, "", action, ""), cause);
     }

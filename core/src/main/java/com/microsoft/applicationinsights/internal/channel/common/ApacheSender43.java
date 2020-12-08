@@ -82,12 +82,14 @@ public final class ApacheSender43 implements ApacheSender {
             if(completeUrl.equals(Defaults.LIVE_ENDPOINT)) {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to connect to Live metric end point.",
                         "Unable to find valid certification path to requested target.",
-                        "Please import the SSL certificate from " + completeUrl + ", into the java key store.",
+                        "Please import the SSL certificate from " + completeUrl + ", into the java key store. "+
+                        "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
                         "This message is only logged the first time it occurs after startup.");
             } else {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to send telemetry data.",
                         "Unable to find valid certification path to requested target.",
-                        "Please import the SSL certificate from " + completeUrl + ", into the java key store.",
+                        "Please import the SSL certificate from " + completeUrl + ", into the java key store. "+
+                        "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
                         "This message is only logged the first time it occurs after startup.");
             }
         }
