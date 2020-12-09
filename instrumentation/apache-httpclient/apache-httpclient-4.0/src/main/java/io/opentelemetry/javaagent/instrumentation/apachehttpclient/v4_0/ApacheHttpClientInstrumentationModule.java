@@ -47,7 +47,6 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
   }
 
   public static class HttpClientInstrumentation implements TypeInstrumentation {
-
     @Override
     public ElementMatcher<ClassLoader> classLoaderOptimization() {
       return hasClassesNamed("org.apache.http.client.HttpClient");
