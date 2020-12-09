@@ -33,13 +33,9 @@ import org.apache.http.HttpRequest;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @AutoService(InstrumentationModule.class)
 public class ApacheHttpClientInstrumentationModule extends InstrumentationModule {
-
-  private static final Logger logger = LoggerFactory.getLogger(ApacheHttpClientInstrumentationModule.class);
 
   public ApacheHttpClientInstrumentationModule() {
     super("apache-httpclient", "apache-httpclient-4.0");
