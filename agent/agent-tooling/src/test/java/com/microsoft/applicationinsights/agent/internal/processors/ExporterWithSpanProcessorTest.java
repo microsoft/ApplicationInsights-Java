@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 
 public class ExporterWithSpanProcessorTest {
     @Test(expected = FriendlyException.class)
-    public void noNameObjectTest() throws FriendlyException {
+    public void noNameObjectTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -44,7 +44,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test(expected = FriendlyException.class)
-    public void inValidConfigTestWithNoFromOrToAttributesTest() throws FriendlyException {
+    public void inValidConfigTestWithNoFromOrToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -65,7 +65,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test(expected = FriendlyException.class)
-    public void inValidConfigTestWithToAttributesNoRulesTest() throws FriendlyException {
+    public void inValidConfigTestWithToAttributesNoRulesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -87,7 +87,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void SimpleRenameSpanTest() throws FriendlyException {
+    public void SimpleRenameSpanTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -118,7 +118,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void SimpleRenameSpanWithSeparatorTest() throws FriendlyException {
+    public void SimpleRenameSpanWithSeparatorTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -150,7 +150,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void SimpleRenameSpanWithMissingKeysTest() throws FriendlyException {
+    public void SimpleRenameSpanWithMissingKeysTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -181,7 +181,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void RenameSpanWithIncludeTest() throws FriendlyException {
+    public void RenameSpanWithIncludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -248,7 +248,7 @@ public class ExporterWithSpanProcessorTest {
 
 
     @Test(expected = FriendlyException.class)
-    public void InvalidRegexInRulesTest() throws FriendlyException {
+    public void InvalidRegexInRulesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -283,7 +283,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void SimpleToAttributesTest() throws FriendlyException {
+    public void SimpleToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -318,7 +318,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void MultiRuleToAttributesTest() throws FriendlyException {
+    public void MultiRuleToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
@@ -370,7 +370,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
     @Test
-    public void ExtractAttributesWithIncludeExcludeTest() throws FriendlyException {
+    public void ExtractAttributesWithIncludeExcludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;

@@ -127,7 +127,7 @@ public class Configuration {
                 Pattern.compile(value);
             } catch (PatternSyntaxException exception) {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                "User provided processor configuration do not have valid regex:" + value,
+                                "Telemetry processor configuration does not have valid regex:" + value,
                                 "Please provide a valid regex in the telemetry processors configuration. " +
                                 "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
@@ -136,7 +136,7 @@ public class Configuration {
         public void validate() throws FriendlyException {
             if (type == null) {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                "User provided processor configuration has a processor with no type!!!",
+                                "Telemetry processor configuration has a processor with no type!!!",
                                 "Please provide a type in the telemetry processors configuration. " +
                                 "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
@@ -154,8 +154,8 @@ public class Configuration {
             if (type == ProcessorType.attribute) {
                 if (actions == null || actions.isEmpty()) {
                     throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                    "User provided configuration has invalid attribute processor configuration with empty actions!!!",
-                                    "Please provide atleast one action in the attribute processors configuration. " +
+                                    "Telemetry processor configuration has invalid attribute processor configuration with empty actions!!!",
+                                    "Please provide at least one action in the attribute processors configuration. " +
                                     "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
                 for (ProcessorAction action : actions) {
@@ -168,7 +168,7 @@ public class Configuration {
             if (type == ProcessorType.log || type == ProcessorType.span) {
                 if (name == null) {
                     throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                    "User provided configuration has invalid span/log processor configuration with empty name object!!!",
+                                    "Telemetry processor configuration has invalid span/log processor configuration with empty name object!!!",
                                     "Please provide name in the span/log processor configuration. " +
                                     "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
@@ -185,8 +185,8 @@ public class Configuration {
         public void validate() throws FriendlyException {
             if (fromAttributes == null && toAttributes == null) {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                "User provided configuration has invalid name object with no fromAttributes or no toAttributes!!!",
-                                "Please provide atleast one of fromAttributes or toAttributes in the processor configuration. " +
+                                "Telemetry processor configuration has invalid name object with no fromAttributes or no toAttributes!!!",
+                                "Please provide at least one of fromAttributes or toAttributes in the processor configuration. " +
                                 "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             if (toAttributes != null)  toAttributes.validate();
@@ -199,8 +199,8 @@ public class Configuration {
         public void validate() throws FriendlyException {
             if(rules==null || rules.isEmpty()) {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                "User provided config has invalid toAttribute value with no rules!!!",
-                                "Please provide atleast one rule under the toAttribute section of processor configuration. " +
+                                "Telemetry processor configuration has invalid toAttribute value with no rules!!!",
+                                "Please provide at least one rule under the toAttribute section of processor configuration. " +
                                 "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             for (String rule : rules) {
@@ -219,7 +219,7 @@ public class Configuration {
         public void validate (ProcessorType processorType) throws FriendlyException {
             if (this.matchType == null) {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                "User provided config has invalid include/exclude value with no matchType!!!",
+                                "Telemetry processor configuration has invalid include/exclude value with no matchType!!!",
                                 "Please provide matchType under the include/exclude section of processor configuration. " +
                                 "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
@@ -227,7 +227,7 @@ public class Configuration {
                 for (ProcessorAttribute attribute : this.attributes) {
                     if (attribute.key == null || attribute.key.isEmpty()) {
                         throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                        "User provided config has invalid include/exclude value with attribute which has empty key!!!",
+                                        "Telemetry processor configuration has invalid include/exclude value with attribute which has empty key!!!",
                                         "Please provide valid key with value under the include/exclude's attribute section of processor configuration. " +
                                         "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                     }
@@ -249,8 +249,8 @@ public class Configuration {
         private void validAttributeProcessorIncludeExclude() throws FriendlyException {
             if (spanNames == null && attributes == null) {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                "User provided config has invalid include/exclude value with no spanNames or no attributes!!!",
-                                "Please provide atleast one of spanNames or attributes under the include/exclude section of processor configuration. " +
+                                "Telemetry processor configuration has invalid include/exclude value with no spanNames or no attributes!!!",
+                                "Please provide at least one of spanNames or attributes under the include/exclude section of processor configuration. " +
                                 "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             if (spanNames != null && matchType == ProcessorMatchType.regexp) {
@@ -263,8 +263,8 @@ public class Configuration {
         private void validateLogProcessorIncludeExclude() throws FriendlyException {
             if (logNames == null && attributes == null) {
                 throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                "User provided config has invalid include/exclude value with no logNames or no attributes!!!",
-                                "Please provide atleast one of logNames or attributes under the include/exclude section of processor configuration. " +
+                                "Telemetry processor configuration has invalid include/exclude value with no logNames or no attributes!!!",
+                                "Please provide at least one of logNames or attributes under the include/exclude section of processor configuration. " +
                                 "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             if (logNames != null && matchType == ProcessorMatchType.regexp) {
@@ -277,8 +277,8 @@ public class Configuration {
         private void validateSpanProcessorIncludeExclude() throws FriendlyException {
                 if (spanNames == null && attributes == null) {
                     throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                    "User provided config has invalid include/exclude value with no spanNames or no attributes!!!",
-                                    "Please provide atleast one of spanNames or attributes under the include/exclude section of processor configuration. " +
+                                    "Telemetry processor configuration has invalid include/exclude value with no spanNames or no attributes!!!",
+                                    "Please provide at least one of spanNames or attributes under the include/exclude section of processor configuration. " +
                                     "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
                 if (spanNames != null && matchType == ProcessorMatchType.regexp) {
@@ -306,20 +306,20 @@ public class Configuration {
 
                 if (this.key == null || this.key.isEmpty()) {
                     throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                    "User provided config has invalid action with empty key!!!",
+                                    "Telemetry processor configuration has invalid action with empty key!!!",
                                     "Please provide a valid key with value under each action section of processor configuration. " +
                                     "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
                 if (this.action == null) {
                     throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                    "User provided config has invalid config with empty action!!!",
+                                    "Telemetry processor configuration has invalid config with empty action!!!",
                                     "Please provide a valid action. Telemetry processors cannot have empty or no actions. " +
                                     "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
                 if (this.action == ProcessorActionType.insert || this.action == ProcessorActionType.update) {
                     if(this.value == null && this.fromAttribute == null) {
                         throw new FriendlyException("ApplicationInsights Java Agent failed to start.",
-                                        "User provided config has invalid action with empty value or empty fromAttribute!!!",
+                                        "Telemetry processor configuration has invalid action with empty value or empty fromAttribute!!!",
                                         "Please provide a valid action with value under each action section of processor configuration. " +
                                         "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                     }

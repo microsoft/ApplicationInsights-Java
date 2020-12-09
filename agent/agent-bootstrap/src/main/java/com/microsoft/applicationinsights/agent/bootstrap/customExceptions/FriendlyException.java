@@ -1,7 +1,7 @@
 package com.microsoft.applicationinsights.agent.bootstrap.customExceptions;
 
 // This class is duplicated from com.microsoft.applicationinsights.customExceptions.FriendlyException since we are not able to import core packages to agent-bootstrap
-public class FriendlyException extends Exception {
+public class FriendlyException extends RuntimeException {
     public FriendlyException() {
         super();
     }

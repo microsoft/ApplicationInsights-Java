@@ -120,9 +120,10 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
         } catch (ExecutionException | IOException e) {
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof SSLHandshakeException) {
-                throw new FriendlyException("ApplicationInsights Java Agent failed to connect to CdsProfile end point.",
+                URI uri =configuration.getEndpointProvider().getAppIdEndpointURL(instrumentationKey);
+                throw new FriendlyException("ApplicationInsights Java Agent failed to connect to CdsProfiler end point.",
                         "Unable to find valid certification path to requested target.",
-                        "Please import the SSL certificate from "+ Defaults.PROFILER_ENDPOINT +", into the java key store. "+
+                        "Please import the SSL certificate from "+ uri.getHost() +", into the java key store. "+
                         "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
                         "This message is only logged the first time it occurs after startup.");
             } else {

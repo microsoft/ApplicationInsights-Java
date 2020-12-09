@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.customExceptions;
 
-public class FriendlyException extends Exception {
+public class FriendlyException extends RuntimeException {
     public FriendlyException() {
         super();
     }
