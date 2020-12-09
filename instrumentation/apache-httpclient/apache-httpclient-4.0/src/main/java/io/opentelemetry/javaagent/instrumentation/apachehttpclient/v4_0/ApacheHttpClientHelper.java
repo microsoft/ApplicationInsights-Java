@@ -19,12 +19,9 @@ import org.slf4j.LoggerFactory;
 
 public class ApacheHttpClientHelper {
 
-  private static final Logger logger = LoggerFactory.getLogger(ApacheHttpClientHelper.class);
-
   public static SpanWithScope doMethodEnter(HttpUriRequest request) {
     Span span = tracer().startSpan(request);
     Scope scope = tracer().startScope(span, request);
-    logger.debug("##################### ApacheHttpClientHelper::doMethodEnter:: requestUri:{} requestMethod:{}, allHeaders:{}", request.getURI(), request.getMethod(), request.getAllHeaders());
     return new SpanWithScope(span, scope);
   }
 
@@ -43,7 +40,6 @@ public class ApacheHttpClientHelper {
       Span span = spanWithScope.getSpan();
       if (result instanceof HttpResponse) {
         tracer().onResponse(span, (HttpResponse) result);
-        logger.debug("##################### ApacheHttpClientHelper::doMethodExit:: entity:{}", ((HttpResponse) result).getEntity());
       } // else they probably provided a ResponseHandler
       if (throwable != null) {
         tracer().endExceptionally(span, throwable);

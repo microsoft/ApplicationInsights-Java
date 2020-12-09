@@ -137,7 +137,7 @@ public abstract class InstrumentationModule {
     InstrumentationContextProvider contextProvider = getContextProvider();
 
     AgentBuilder agentBuilder = parentAgentBuilder;
-    log.debug("##################### classLoaderOptimizationOptOutFlag: {}", classLoaderOptimizationOptOutFlag);
+    log.info("classLoaderOptimizationOptOutFlag: {}", classLoaderOptimizationOptOutFlag);
     for (TypeInstrumentation typeInstrumentation : typeInstrumentations) {
       AgentBuilder.Identified.Extendable extendableAgentBuilder =
           agentBuilder

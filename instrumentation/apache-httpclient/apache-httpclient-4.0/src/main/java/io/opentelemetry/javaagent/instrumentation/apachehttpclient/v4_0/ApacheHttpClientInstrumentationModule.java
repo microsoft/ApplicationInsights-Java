@@ -54,7 +54,6 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
 
     @Override
     public ElementMatcher<ClassLoader> classLoaderOptimization() {
-      logger.debug("##################### ApacheHttpClientInstrumentationModule::classLoaderOptimization");
       return hasClassesNamed("org.apache.http.client.HttpClient");
     }
 
