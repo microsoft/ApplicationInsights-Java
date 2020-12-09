@@ -50,7 +50,7 @@ public abstract class InstrumentationModule {
   private static final Logger log = LoggerFactory.getLogger(InstrumentationModule.class);
   private static final Logger muzzleLog = LoggerFactory.getLogger("muzzleMatcher");
 
-  private static boolean classLoaderOptimizationOptOutFlag = Boolean.getBoolean("ClassLoaderOptimizationOptOut");
+  private static boolean classLoaderOptimizationOptOutFlag = Boolean.getBoolean("classLoaderOptimizationOptOut");
 
   private static final String[] EMPTY = new String[0];
 
