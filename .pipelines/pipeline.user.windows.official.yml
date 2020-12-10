@@ -1,0 +1,43 @@
+version:
+  major: 0
+  minor: 0
+  name: 'ApplicationInsights-Java'
+  system: 'custom'
+static_analysis_options:
+  policheck_options:
+    disable_tool_scan: false
+    fail_on_error: true
+build:
+  commands:
+    - !!buildcommand
+      name: 'Assemble Perf Counters DLL'
+      command: '.scripts/gradle.cmd'
+      arguments: ':core:windowsSharedLibrary'
+      artifacts:
+        - from: 'core/build/libs/windows/shared'
+          include:
+            - '**/*'
+          exclude:
+            - '**/*.pdb'
+          signing_options:
+            profile: external_distribution
+            sign_inline: true
+      logs:
+        - to: 'PerfCounters DLL Build Logs'
+          from: 'core/build/tmp'
+          include:
+            - '*WindowsCpp/*'
+    - !!buildcommand
+      name: 'Assemble ApplicationInsights-Java JARs'
+      command: '.scripts/gradle.cmd'
+      arguments: 'assemble -Pcore.native.artifacts.prebuilt=true -DisRelease=true'
+      artifacts:
+        - to: 'Artifacts'
+          include:
+            - '**/build/libs/*.jar'
+          exclude:
+            - '**/build/libs/*-sources.jar'
+            - '**/build/libs/*-javadoc.jar'
+            - 'logging/common/**/*'
+            - 'ApplicationInsightsInternalLogger/**/*'
+            - 'buildSrc/**/*'
