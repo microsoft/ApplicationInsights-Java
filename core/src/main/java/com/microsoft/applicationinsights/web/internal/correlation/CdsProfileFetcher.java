@@ -102,17 +102,6 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
         this.httpClient.start();
     }
 
-    private static FriendlyException getFriendlyException(Throwable t) {
-        if (t instanceof FriendlyException) {
-            return (FriendlyException) t;
-        }
-        Throwable cause = t.getCause();
-        if (cause == null) {
-            return null;
-        }
-        return getFriendlyException(cause);
-    }
-
     @Override
     public ProfileFetcherResult fetchApplicationId(String instrumentationKey, TelemetryConfiguration configuration) throws ApplicationIdResolutionException, InterruptedException, FriendlyException {
         try {

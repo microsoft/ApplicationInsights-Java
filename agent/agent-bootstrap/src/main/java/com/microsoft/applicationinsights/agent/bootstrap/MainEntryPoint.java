@@ -103,7 +103,8 @@ public class MainEntryPoint {
         }
     }
 
-    private static FriendlyException getFriendlyException(Throwable t) {
+    // visible for testing
+    static FriendlyException getFriendlyException(Throwable t) {
         if (t instanceof FriendlyException) {
             return (FriendlyException) t;
         }
