@@ -14,6 +14,10 @@ versioning:
       command: '.scripts/version.cmd'
 signing_options:
   profile: '170'
+static_analysis_options:
+  policheck_options:
+    disable_tool_scan: false
+    fail_on_error: true
 restore:
   commands:
     - !!defaultcommand

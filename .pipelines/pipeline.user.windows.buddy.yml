@@ -1,7 +1,9 @@
-static_analysis_options:
-  policheck_options:
-    disable_tool_scan: false
-    fail_on_error: true
+version:
+  major: 0
+  minor: 0
+  tag: 'SNAPSHOT'
+  name: 'ApplicationInsights-Java'
+  system: 'custom'
 build:
   commands:
     - !!buildcommand
