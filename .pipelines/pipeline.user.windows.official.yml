@@ -26,7 +26,7 @@ build:
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
-      arguments: 'assemble -Pcore.native.artifacts.prebuilt=true -DisRelease=true'
+      arguments: 'assemble -Pcore.native.artifacts.prebuilt=true -DisRelease=true -Pai.etw.native.build=release'
       artifacts:
         - to: 'Artifacts'
           include:
