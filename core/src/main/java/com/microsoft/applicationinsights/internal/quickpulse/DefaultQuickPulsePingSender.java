@@ -23,8 +23,10 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
@@ -48,6 +50,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private String pingPrefix;
     private long lastValidTransmission = 0;
+    private static volatile AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
     public DefaultQuickPulsePingSender(ApacheSender sender, TelemetryConfiguration configuration, String instanceName, String quickPulseId) {
         this.configuration = configuration;
@@ -98,6 +101,10 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
                     default:
                         break;
                 }
+            }
+        } catch (FriendlyException e) {
+            if(!friendlyExceptionThrown.getAndSet(true)) {
+                logger.error(e.getMessage());
             }
         } catch (IOException e) {
             // chomp

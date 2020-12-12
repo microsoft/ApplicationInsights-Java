@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
@@ -42,6 +43,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The class is responsible for the actual sending of
@@ -54,6 +56,7 @@ import java.net.UnknownHostException;
 public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionNetworkOutput.class);
+    private static volatile AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String CONTENT_ENCODING_HEADER = "Content-Encoding";
@@ -185,6 +188,11 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
             } catch (IOException ioe) {
                 ex = ioe;
                 logger.error("Failed to send", ioe);
+            } catch (FriendlyException e) {
+                ex = e;
+                if(!friendlyExceptionThrown.getAndSet(true)) {
+                    logger.error(e.getMessage());
+                }
             } catch (Exception e) {
                 ex = e;
                 logger.error("Failed to send, unexpected exception", e);

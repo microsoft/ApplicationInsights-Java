@@ -21,17 +21,15 @@
 package com.microsoft.applicationinsights.agent.bootstrap;
 
 import java.io.File;
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.nio.file.Path;
-import java.security.ProtectionDomain;
 
 import ch.qos.logback.classic.Level;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.SelfDiagnostics;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import io.opentelemetry.javaagent.bootstrap.AgentInitializer;
@@ -83,11 +81,14 @@ public class MainEntryPoint {
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
-            if (startupLogger != null) {
-                startupLogger.error("ApplicationInsights Java Agent failed to start", t);
+
+            FriendlyException friendlyException = getFriendlyException(t);
+            if (friendlyException != null) {
+                logErrorMessage(startupLogger, friendlyException.getMessage(), true, t);
             } else {
-                t.printStackTrace();
+                logErrorMessage(startupLogger, "ApplicationInsights Java Agent failed to start", false, t);
             }
+
         } finally {
             try {
                 StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
@@ -99,6 +100,34 @@ public class MainEntryPoint {
                 }
             }
             MDC.clear();
+        }
+    }
+
+    // visible for testing
+    static FriendlyException getFriendlyException(Throwable t) {
+        if (t instanceof FriendlyException) {
+            return (FriendlyException) t;
+        }
+        Throwable cause = t.getCause();
+        if (cause == null) {
+            return null;
+        }
+        return getFriendlyException(cause);
+    }
+
+    private static void logErrorMessage(Logger startupLogger, String message, boolean isFriendlyException, Throwable t) {
+        if (startupLogger != null) {
+            if (isFriendlyException) {
+                startupLogger.error(message);
+            } else {
+                startupLogger.error(message, t);
+            }
+        } else {
+            if (isFriendlyException) {
+                System.err.println(message);
+            } else {
+                t.printStackTrace();
+            }
         }
     }
 

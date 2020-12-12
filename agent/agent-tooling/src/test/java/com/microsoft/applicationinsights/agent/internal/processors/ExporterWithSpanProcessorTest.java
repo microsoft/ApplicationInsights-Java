@@ -11,7 +11,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ToAttributeConfig;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
+import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -23,7 +23,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 public class ExporterWithSpanProcessorTest {
-    @Test(expected = ConfigurationException.class)
+    @Test(expected = FriendlyException.class)
     public void noNameObjectTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
@@ -43,7 +43,7 @@ public class ExporterWithSpanProcessorTest {
         exampleExporter.export(spans);
     }
 
-    @Test(expected = ConfigurationException.class)
+    @Test(expected = FriendlyException.class)
     public void inValidConfigTestWithNoFromOrToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
@@ -64,7 +64,7 @@ public class ExporterWithSpanProcessorTest {
         exampleExporter.export(spans);
     }
 
-    @Test(expected = ConfigurationException.class)
+    @Test(expected = FriendlyException.class)
     public void inValidConfigTestWithToAttributesNoRulesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
@@ -247,7 +247,7 @@ public class ExporterWithSpanProcessorTest {
     }
 
 
-    @Test(expected = ConfigurationException.class)
+    @Test(expected = FriendlyException.class)
     public void InvalidRegexInRulesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();

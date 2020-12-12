@@ -11,6 +11,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
+import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
@@ -27,7 +28,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 public class TracerInstaller {
 
-    public static void installAgentTracer() {
+    public static void installAgentTracer() throws FriendlyException {
         TelemetryClient telemetryClient = Global.getTelemetryClient();
         Configuration config = MainEntryPoint.getConfiguration();
         List<ProcessorConfig> processors = new ArrayList<>(config.preview.processors);
