@@ -4,13 +4,10 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.microsoft.applicationinsights.agent.Exporter;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult.Decision;
@@ -39,16 +36,16 @@ public final class TraceIdBasedSampler implements Sampler {
             alwaysOnAttributes = Attributes.empty();
         }
         alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, alwaysOnAttributes);
-        alwaysOffDecision= new FixedRateSamplerDecision(Decision.DROP, Attributes.empty());
+        alwaysOffDecision = new FixedRateSamplerDecision(Decision.DROP, Attributes.empty());
     }
 
     @Override
     public SamplingResult shouldSample(@Nullable Context parentContext,
-                                 String traceId,
-                                 String name,
-                                 Span.Kind spanKind,
-                                 ReadableAttributes attributes,
-                                 List<SpanData.Link> parentLinks) {
+                                       String traceId,
+                                       String name,
+                                       Span.Kind spanKind,
+                                       Attributes attributes,
+                                       List<SpanData.Link> parentLinks) {
         if (samplingPercentage == 100) {
             return alwaysOnDecision;
         }

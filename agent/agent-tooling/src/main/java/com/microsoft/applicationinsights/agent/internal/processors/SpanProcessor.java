@@ -9,7 +9,6 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -76,7 +75,7 @@ public class SpanProcessor extends AgentProcessor {
     public SpanData processFromAttributes(SpanData span) {
         if (spanHasAllFromAttributeKeys(span)) {
             StringBuffer updatedSpanBuffer = new StringBuffer();
-            ReadableAttributes existingSpanAttributes = span.getAttributes();
+            Attributes existingSpanAttributes = span.getAttributes();
             for (AttributeKey<?> attributeKey : fromAttributes) {
                 updatedSpanBuffer.append(existingSpanAttributes.get(attributeKey));
                 updatedSpanBuffer.append(separator);
@@ -92,7 +91,7 @@ public class SpanProcessor extends AgentProcessor {
 
     private boolean spanHasAllFromAttributeKeys(SpanData span) {
         if (fromAttributes.isEmpty()) return false;
-        ReadableAttributes existingSpanAttributes = span.getAttributes();
+        Attributes existingSpanAttributes = span.getAttributes();
         for (AttributeKey<?> attributeKey : fromAttributes) {
             if (existingSpanAttributes.get(attributeKey) == null) return false;
         }
@@ -106,21 +105,20 @@ public class SpanProcessor extends AgentProcessor {
         }
 
         String spanName = span.getName();
-        final AttributesBuilder builder = Attributes.builder();
         // copy existing attributes.
         // According to Collector docs, The matched portion
         // in the span name is replaced by extracted attribute name. If the attributes exist
         // they will be overwritten. Need a way to optimize this.
-        span.getAttributes().forEach(builder::put);
+        AttributesBuilder builder = span.getAttributes().toBuilder();
         for (int i = 0; i < groupNames.size(); i++) {
-            spanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), span, spanName, builder);
+            spanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), spanName, builder);
         }
         return new MySpanData(span, builder.build(), spanName);
 
     }
 
     private String applyRule(List<String> groupNamesList, Pattern pattern,
-                             SpanData span, String spanName, AttributesBuilder builder) {
+                             String spanName, AttributesBuilder builder) {
         if (groupNamesList.isEmpty()) return spanName;
         Matcher matcher = pattern.matcher(spanName);
         StringBuilder sb = new StringBuilder();

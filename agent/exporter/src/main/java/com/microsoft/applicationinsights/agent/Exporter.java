@@ -44,9 +44,8 @@ import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
@@ -147,7 +146,7 @@ public class Exporter implements SpanExporter {
         RequestTelemetry telemetry = new RequestTelemetry();
 
         String source = null;
-        ReadableAttributes attributes = span.getAttributes();
+        Attributes attributes = span.getAttributes();
         String sourceAppId = attributes.get(AI_SPAN_SOURCE_KEY);
         if (sourceAppId != null && !AiAppId.getAppId().equals(sourceAppId)) {
             source = sourceAppId;
@@ -222,7 +221,7 @@ public class Exporter implements SpanExporter {
 
         telemetry.setName(span.getName());
 
-        ReadableAttributes attributes = span.getAttributes();
+        Attributes attributes = span.getAttributes();
 
         if (inProc) {
             telemetry.setType("InProc");
@@ -249,7 +248,7 @@ public class Exporter implements SpanExporter {
         trackEvents(span, samplingPercentage);
     }
 
-    private void applySemanticConventions(ReadableAttributes attributes, RemoteDependencyTelemetry telemetry, Span.Kind spanKind) {
+    private void applySemanticConventions(Attributes attributes, RemoteDependencyTelemetry telemetry, Span.Kind spanKind) {
         String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
         if (httpMethod != null) {
             applyHttpClientSpan(attributes, telemetry);
@@ -310,7 +309,7 @@ public class Exporter implements SpanExporter {
 
     private void trackTrace(SpanData span) {
         String message = span.getName();
-        ReadableAttributes attributes = span.getAttributes();
+        Attributes attributes = span.getAttributes();
         String level = attributes.get(AI_LOG_LEVEL_KEY);
         String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
 
@@ -330,7 +329,7 @@ public class Exporter implements SpanExporter {
     }
 
     private void trackTraceAsException(SpanData span, String errorStack) {
-        ReadableAttributes attributes = span.getAttributes();
+        Attributes attributes = span.getAttributes();
         String level = attributes.get(AI_LOG_LEVEL_KEY);
         String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
 
@@ -392,7 +391,7 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static void applyHttpClientSpan(ReadableAttributes attributes, RemoteDependencyTelemetry telemetry) {
+    private static void applyHttpClientSpan(Attributes attributes, RemoteDependencyTelemetry telemetry) {
 
         // from the spec, at least one of the following sets of attributes is required:
         // * http.url
@@ -450,7 +449,7 @@ public class Exporter implements SpanExporter {
         telemetry.setCommandName(url);
     }
 
-    private static void applyRpcClientSpan(ReadableAttributes attributes, RemoteDependencyTelemetry telemetry, String rpcSystem) {
+    private static void applyRpcClientSpan(Attributes attributes, RemoteDependencyTelemetry telemetry, String rpcSystem) {
         telemetry.setType(rpcSystem);
         String target = getTargetFromPeerAttributes(attributes, 0);
         // not appending /rpc.service for now since that seems too fine-grained
@@ -462,7 +461,7 @@ public class Exporter implements SpanExporter {
 
     private static final Set<String> SQL_DB_SYSTEMS = ImmutableSet.of("db2", "derby", "mariadb", "mssql", "mysql", "oracle", "postgresql", "sqlite", "other_sql", "hsqldb", "h2");
 
-    private static void applyDatabaseClientSpan(ReadableAttributes attributes, RemoteDependencyTelemetry telemetry, String dbSystem) {
+    private static void applyDatabaseClientSpan(Attributes attributes, RemoteDependencyTelemetry telemetry, String dbSystem) {
         String dbStatement = attributes.get(SemanticAttributes.DB_STATEMENT);
         String type;
         if (SQL_DB_SYSTEMS.contains(dbSystem)) {
@@ -491,7 +490,7 @@ public class Exporter implements SpanExporter {
         telemetry.setTarget(target);
     }
 
-    private void applyMessagingClientSpan(ReadableAttributes attributes, RemoteDependencyTelemetry telemetry, String messagingSystem, Kind spanKind) {
+    private void applyMessagingClientSpan(Attributes attributes, RemoteDependencyTelemetry telemetry, String messagingSystem, Kind spanKind) {
         if (spanKind == Kind.PRODUCER) {
             telemetry.setType("Queue Message | " + messagingSystem);
         } else {
@@ -506,7 +505,7 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static String getTargetFromPeerAttributes(ReadableAttributes attributes, int defaultPort) {
+    private static String getTargetFromPeerAttributes(Attributes attributes, int defaultPort) {
         String target = attributes.get(SemanticAttributes.PEER_SERVICE);
         if (target != null) {
             // do not append port if peer.service is provided
@@ -569,23 +568,20 @@ public class Exporter implements SpanExporter {
     private static final Set<String> STANDARD_ATTRIBUTE_PREFIXES =
             ImmutableSet.of("http", "db", "message", "messaging", "rpc", "enduser", "net", "peer", "exception", "thread", "faas");
 
-    private static void setExtraAttributes(Map<String, String> properties, ReadableAttributes attributes) {
-        attributes.forEach(new AttributeConsumer() {
-            @Override
-            public <T> void accept(AttributeKey<T> key, T value) {
-                String stringKey = key.getKey();
-                if (stringKey.startsWith("applicationinsights.internal.")) {
-                    return;
-                }
-                int index = stringKey.indexOf(".");
-                String prefix = index == -1 ? stringKey : stringKey.substring(0, index);
-                if (STANDARD_ATTRIBUTE_PREFIXES.contains(prefix)) {
-                    return;
-                }
-                String val = getStringValue(key, value);
-                if (value != null) {
-                    properties.put(key.getKey(), val);
-                }
+    private static void setExtraAttributes(Map<String, String> properties, Attributes attributes) {
+        attributes.forEach((key, value) -> {
+            String stringKey = key.getKey();
+            if (stringKey.startsWith("applicationinsights.internal.")) {
+                return;
+            }
+            int index = stringKey.indexOf(".");
+            String prefix = index == -1 ? stringKey : stringKey.substring(0, index);
+            if (STANDARD_ATTRIBUTE_PREFIXES.contains(prefix)) {
+                return;
+            }
+            String val = getStringValue(key, value);
+            if (value != null) {
+                properties.put(key.getKey(), val);
             }
         });
     }

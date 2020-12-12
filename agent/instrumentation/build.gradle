@@ -8,7 +8,7 @@ repositories {
     mavenLocal()
 }
 
-def instrumentationVersion = '0.11.0+ai.patch.1'
+def instrumentationVersion = '0.12.0+ai.patch.1'
 
 dependencies {
     compile project(':agent:agent-tooling')
@@ -39,7 +39,7 @@ dependencies {
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-4.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-5.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-5.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-log4j-spans-1.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-log4j-spans-1.2', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-log4j-spans-2.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-logback-spans-1.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-micrometer-1.0', version: instrumentationVersion
