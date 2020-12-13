@@ -188,6 +188,10 @@ public class MainEntryPoint {
 
         Level otherLibsLevel = level == Level.INFO ? Level.WARN : level;
 
+        // TODO need something more reliable, currently will log too much WARN if "muzzleMatcher" logger name changes
+        // muzzleMatcher logs at WARN level in order to make them visible, but really should only be enabled when debugging
+        Level muzzleMatcherLevel = level.levelInt <= Level.DEBUG.levelInt ? level : getMaxLevel(level, Level.WARN);
+
         try {
             System.setProperty("applicationinsights.logback.configurationFile", configurationFile.toString());
 
@@ -196,10 +200,10 @@ public class MainEntryPoint {
             System.setProperty("applicationinsights.logback.file.maxSize", selfDiagnostics.file.maxSizeMb + "MB");
             System.setProperty("applicationinsights.logback.file.maxIndex", Integer.toString(selfDiagnostics.file.maxHistory));
 
-            System.setProperty("applicationinsights.logback.level.other", otherLibsLevel.toString());
             System.setProperty("applicationinsights.logback.level", level.levelStr);
-
+            System.setProperty("applicationinsights.logback.level.other", otherLibsLevel.toString());
             System.setProperty("applicationinsights.logback.level.atLeastInfo", atLeastInfoLevel.levelStr);
+            System.setProperty("applicationinsights.logback.level.muzzleMatcher", muzzleMatcherLevel.levelStr);
 
             return LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
         } finally {
@@ -209,7 +213,9 @@ public class MainEntryPoint {
             System.clearProperty("applicationinsights.logback.file.maxSize");
             System.clearProperty("applicationinsights.logback.file.maxIndex");
             System.clearProperty("applicationinsights.logback.level");
-            System.clearProperty("applicationinsights.logback.level.org.apache.http");
+            System.clearProperty("applicationinsights.logback.level.other");
+            System.clearProperty("applicationinsights.logback.level.atLeastInfo");
+            System.clearProperty("applicationinsights.logback.level.muzzleMatcher");
         }
     }
 
