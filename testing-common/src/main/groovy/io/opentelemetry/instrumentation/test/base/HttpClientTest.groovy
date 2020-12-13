@@ -15,7 +15,6 @@ import static org.junit.Assume.assumeTrue
 
 import io.opentelemetry.api.trace.attributes.SemanticAttributes
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId
-import io.opentelemetry.instrumentation.api.tracer.HttpClientTracer
 import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.sdk.trace.data.SpanData
@@ -414,18 +413,18 @@ abstract class HttpClientTest extends AgentTestRunner {
         errorEvent(exception.class, exception.message)
       }
       attributes {
-        "${SemanticAttributes.NET_TRANSPORT.key()}" "IP.TCP"
-        "${SemanticAttributes.NET_PEER_NAME.key()}" uri.host
-        "${SemanticAttributes.NET_PEER_IP.key()}" { it == null || it == "127.0.0.1" } // Optional
-        "${SemanticAttributes.NET_PEER_PORT.key()}" uri.port > 0 ? uri.port : { it == null || it == 443 }
-        "${SemanticAttributes.HTTP_URL.key()}" { it == "${uri}" || it == "${removeFragment(uri)}" }
-        "${SemanticAttributes.HTTP_METHOD.key()}" method
-        "${SemanticAttributes.HTTP_FLAVOR.key()}" httpFlavor
+        "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+        "${SemanticAttributes.NET_PEER_NAME.key}" uri.host
+        "${SemanticAttributes.NET_PEER_IP.key}" { it == null || it == "127.0.0.1" } // Optional
+        "${SemanticAttributes.NET_PEER_PORT.key}" uri.port > 0 ? uri.port : { it == null || it == 443 }
+        "${SemanticAttributes.HTTP_URL.key}" { it == "${uri}" || it == "${removeFragment(uri)}" }
+        "${SemanticAttributes.HTTP_METHOD.key}" method
+        "${SemanticAttributes.HTTP_FLAVOR.key}" httpFlavor
         if (userAgent) {
-          "${SemanticAttributes.HTTP_USER_AGENT.key()}" { it.startsWith(userAgent) }
+          "${SemanticAttributes.HTTP_USER_AGENT.key}" { it.startsWith(userAgent) }
         }
         if (status) {
-          "${SemanticAttributes.HTTP_STATUS_CODE.key()}" status
+          "${SemanticAttributes.HTTP_STATUS_CODE.key}" status
         }
         if (capturesAiTargetAppId && !exception && uri.host != "www.google.com") {
           "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
@@ -450,7 +449,7 @@ abstract class HttpClientTest extends AgentTestRunner {
   }
 
   String expectedOperationName(String method) {
-    return method != null ? "HTTP $method" : HttpClientTracer.DEFAULT_SPAN_NAME
+    return method != null ? "HTTP $method" : "HTTP request"
   }
 
   int extraClientSpans() {

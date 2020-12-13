@@ -90,7 +90,7 @@ shadowJar {
   }
 
   // rewrite library instrumentation dependencies
-  relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation")
+  relocate "io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation"
 
   // relocate OpenTelemetry API usage
   relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"

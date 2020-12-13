@@ -3,18 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import static io.opentelemetry.api.trace.Span.Kind.INTERNAL
+import static io.opentelemetry.api.trace.Span.Kind.SERVER
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.PATH_PARAM
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.SUCCESS
-import static io.opentelemetry.api.trace.Span.Kind.INTERNAL
-import static io.opentelemetry.api.trace.Span.Kind.SERVER
 import static java.util.concurrent.TimeUnit.SECONDS
 import static org.junit.Assume.assumeTrue
 
+import io.opentelemetry.api.trace.attributes.SemanticAttributes
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
 import io.opentelemetry.sdk.trace.data.SpanData
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
 import java.util.concurrent.CompletableFuture
 import okhttp3.Call
 import okhttp3.Callback
@@ -176,14 +176,14 @@ abstract class JaxRsHttpServerTest<S> extends HttpServerTest<S> {
         hasNoParent()
       }
       attributes {
-        "${SemanticAttributes.NET_PEER_IP.key()}" { it == null || it == "127.0.0.1" } // Optional
-        "${SemanticAttributes.NET_PEER_PORT.key()}" Long
-        "${SemanticAttributes.HTTP_URL.key()}" fullUrl.toString()
-        "${SemanticAttributes.HTTP_METHOD.key()}" method
-        "${SemanticAttributes.HTTP_STATUS_CODE.key()}" statusCode
-        "${SemanticAttributes.HTTP_FLAVOR.key()}" "HTTP/1.1"
-        "${SemanticAttributes.HTTP_USER_AGENT.key()}" TEST_USER_AGENT
-        "${SemanticAttributes.HTTP_CLIENT_IP.key()}" TEST_CLIENT_IP
+        "${SemanticAttributes.NET_PEER_IP.key}" { it == null || it == "127.0.0.1" } // Optional
+        "${SemanticAttributes.NET_PEER_PORT.key}" Long
+        "${SemanticAttributes.HTTP_URL.key}" fullUrl.toString()
+        "${SemanticAttributes.HTTP_METHOD.key}" method
+        "${SemanticAttributes.HTTP_STATUS_CODE.key}" statusCode
+        "${SemanticAttributes.HTTP_FLAVOR.key}" "HTTP/1.1"
+        "${SemanticAttributes.HTTP_USER_AGENT.key}" TEST_USER_AGENT
+        "${SemanticAttributes.HTTP_CLIENT_IP.key}" TEST_CLIENT_IP
       }
     }
   }
@@ -218,7 +218,7 @@ abstract class JaxRsHttpServerTest<S> extends HttpServerTest<S> {
       childOf((SpanData) parent)
       attributes {
         if (isCancelled) {
-          "canceled" true
+          "jaxrs.canceled" true
         }
       }
     }

@@ -1,0 +1,92 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.javaagent.instrumentation.lettuce.v5_0.rx;
+
+import static io.opentelemetry.javaagent.instrumentation.lettuce.v5_0.LettuceDatabaseClientTracer.tracer;
+
+import io.lettuce.core.protocol.RedisCommand;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
+import java.util.function.Consumer;
+import org.reactivestreams.Subscription;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Signal;
+import reactor.core.publisher.SignalType;
+
+public class LettuceFluxTerminationRunnable implements Consumer<Signal<?>>, Runnable {
+
+  private Context context;
+  private int numResults;
+  private final FluxOnSubscribeConsumer onSubscribeConsumer;
+
+  public LettuceFluxTerminationRunnable(RedisCommand<?, ?, ?> command, boolean expectsResponse) {
+    onSubscribeConsumer = new FluxOnSubscribeConsumer(this, command, expectsResponse);
+  }
+
+  public FluxOnSubscribeConsumer getOnSubscribeConsumer() {
+    return onSubscribeConsumer;
+  }
+
+  private void finishSpan(boolean isCommandCancelled, Throwable throwable) {
+    if (context != null) {
+      Span span = Span.fromContext(context);
+      span.setAttribute("lettuce.command.results.count", numResults);
+      if (isCommandCancelled) {
+        span.setAttribute("lettuce.command.cancelled", true);
+      }
+      if (throwable == null) {
+        tracer().end(span);
+      } else {
+        tracer().endExceptionally(span, throwable);
+      }
+    } else {
+      LoggerFactory.getLogger(Flux.class)
+          .error(
+              "Failed to finish this.span, LettuceFluxTerminationRunnable cannot find this.span "
+                  + "because it probably wasn't started.");
+    }
+  }
+
+  @Override
+  public void accept(Signal signal) {
+    if (SignalType.ON_COMPLETE.equals(signal.getType())
+        || SignalType.ON_ERROR.equals(signal.getType())) {
+      finishSpan(false, signal.getThrowable());
+    } else if (SignalType.ON_NEXT.equals(signal.getType())) {
+      ++numResults;
+    }
+  }
+
+  @Override
+  public void run() {
+    finishSpan(true, null);
+  }
+
+  public static class FluxOnSubscribeConsumer implements Consumer<Subscription> {
+
+    private final LettuceFluxTerminationRunnable owner;
+    private final RedisCommand<?, ?, ?> command;
+    private final boolean expectsResponse;
+
+    public FluxOnSubscribeConsumer(
+        LettuceFluxTerminationRunnable owner,
+        RedisCommand<?, ?, ?> command,
+        boolean expectsResponse) {
+      this.owner = owner;
+      this.command = command;
+      this.expectsResponse = expectsResponse;
+    }
+
+    @Override
+    public void accept(Subscription subscription) {
+      owner.context = tracer().startSpan(Context.current(), null, command);
+      if (!expectsResponse) {
+        tracer().end(owner.context);
+      }
+    }
+  }
+}

@@ -50,7 +50,8 @@ public abstract class InstrumentationModule {
   private static final Logger log = LoggerFactory.getLogger(InstrumentationModule.class);
   private static final Logger muzzleLog = LoggerFactory.getLogger("muzzleMatcher");
 
-  private static boolean classLoaderOptimizationOptOutFlag = Boolean.getBoolean("classLoaderOptimizationOptOut");
+  private static boolean classLoaderOptimizationOptOutFlag =
+      Boolean.getBoolean("classLoaderOptimizationOptOut");
 
   private static final String[] EMPTY = new String[0];
 
@@ -146,7 +147,10 @@ public abstract class InstrumentationModule {
                       typeInstrumentation.typeMatcher(),
                       "Instrumentation type matcher unexpected exception: " + getClass().getName()),
                   failSafe(
-                      classLoaderOptimizationOptOutFlag ? moduleClassLoaderMatcher : moduleClassLoaderMatcher.and(typeInstrumentation.classLoaderOptimization()),
+                      classLoaderOptimizationOptOutFlag
+                          ? moduleClassLoaderMatcher
+                          : moduleClassLoaderMatcher.and(
+                              typeInstrumentation.classLoaderOptimization()),
                       "Instrumentation class loader matcher unexpected exception: "
                           + getClass().getName()))
               .and(NOT_DECORATOR_MATCHER)
@@ -332,6 +336,6 @@ public abstract class InstrumentationModule {
   }
 
   protected boolean defaultEnabled() {
-    return Config.get().getBooleanProperty("otel.instrumentation.defaultEnabled", true);
+    return Config.get().getBooleanProperty("otel.instrumentation.default-enabled", true);
   }
 }

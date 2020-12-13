@@ -5,10 +5,10 @@
 
 package io.opentelemetry.instrumentation.grpc.v1_5
 
-import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
-import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 import static io.opentelemetry.api.trace.Span.Kind.CLIENT
 import static io.opentelemetry.api.trace.Span.Kind.SERVER
+import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
+import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 
 import example.GreeterGrpc
 import example.Helloworld
@@ -31,10 +31,10 @@ import io.grpc.ServerInterceptor
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
-import io.opentelemetry.instrumentation.test.InstrumentationSpecification
-import io.opentelemetry.instrumentation.test.utils.PortUtils
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.attributes.SemanticAttributes
+import io.opentelemetry.instrumentation.test.InstrumentationSpecification
+import io.opentelemetry.instrumentation.test.utils.PortUtils
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
@@ -95,9 +95,9 @@ abstract class AbstractGrpcTest extends InstrumentationSpecification {
             }
           }
           attributes {
-            "${SemanticAttributes.RPC_SYSTEM.key()}" "grpc"
-            "${SemanticAttributes.RPC_SERVICE.key()}" "example.Greeter"
-            "${SemanticAttributes.RPC_METHOD.key()}" "SayHello"
+            "${SemanticAttributes.RPC_SYSTEM.key}" "grpc"
+            "${SemanticAttributes.RPC_SERVICE.key}" "example.Greeter"
+            "${SemanticAttributes.RPC_METHOD.key}" "SayHello"
           }
         }
         span(2) {
@@ -113,11 +113,11 @@ abstract class AbstractGrpcTest extends InstrumentationSpecification {
             }
           }
           attributes {
-            "${SemanticAttributes.RPC_SYSTEM.key()}" "grpc"
-            "${SemanticAttributes.RPC_SERVICE.key()}" "example.Greeter"
-            "${SemanticAttributes.RPC_METHOD.key()}" "SayHello"
-            "${SemanticAttributes.NET_PEER_IP.key()}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key()}" Long
+            "${SemanticAttributes.RPC_SYSTEM.key}" "grpc"
+            "${SemanticAttributes.RPC_SERVICE.key}" "example.Greeter"
+            "${SemanticAttributes.RPC_METHOD.key}" "SayHello"
+            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_PORT.key}" Long
           }
         }
       }
@@ -169,9 +169,9 @@ abstract class AbstractGrpcTest extends InstrumentationSpecification {
           errored true
           status(StatusCode.ERROR)
           attributes {
-            "${SemanticAttributes.RPC_SYSTEM.key()}" "grpc"
-            "${SemanticAttributes.RPC_SERVICE.key()}" "example.Greeter"
-            "${SemanticAttributes.RPC_METHOD.key()}" "SayHello"
+            "${SemanticAttributes.RPC_SYSTEM.key}" "grpc"
+            "${SemanticAttributes.RPC_SERVICE.key}" "example.Greeter"
+            "${SemanticAttributes.RPC_METHOD.key}" "SayHello"
           }
         }
         span(1) {
@@ -191,11 +191,11 @@ abstract class AbstractGrpcTest extends InstrumentationSpecification {
             errorEvent grpcStatus.cause.class, grpcStatus.cause.message, 1
           }
           attributes {
-            "${SemanticAttributes.RPC_SYSTEM.key()}" "grpc"
-            "${SemanticAttributes.RPC_SERVICE.key()}" "example.Greeter"
-            "${SemanticAttributes.RPC_METHOD.key()}" "SayHello"
-            "${SemanticAttributes.NET_PEER_IP.key()}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key()}" Long
+            "${SemanticAttributes.RPC_SYSTEM.key}" "grpc"
+            "${SemanticAttributes.RPC_SERVICE.key}" "example.Greeter"
+            "${SemanticAttributes.RPC_METHOD.key}" "SayHello"
+            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_PORT.key}" Long
           }
         }
       }
@@ -254,9 +254,9 @@ abstract class AbstractGrpcTest extends InstrumentationSpecification {
           // NB: Exceptions thrown on the server don't appear to be propagated to the client, at
           // least for the version we test against.
           attributes {
-            "${SemanticAttributes.RPC_SYSTEM.key()}" "grpc"
-            "${SemanticAttributes.RPC_SERVICE.key()}" "example.Greeter"
-            "${SemanticAttributes.RPC_METHOD.key()}" "SayHello"
+            "${SemanticAttributes.RPC_SYSTEM.key}" "grpc"
+            "${SemanticAttributes.RPC_SERVICE.key}" "example.Greeter"
+            "${SemanticAttributes.RPC_METHOD.key}" "SayHello"
           }
         }
         span(1) {
@@ -276,11 +276,11 @@ abstract class AbstractGrpcTest extends InstrumentationSpecification {
             errorEvent grpcStatus.cause.class, grpcStatus.cause.message, 1
           }
           attributes {
-            "${SemanticAttributes.RPC_SYSTEM.key()}" "grpc"
-            "${SemanticAttributes.RPC_SERVICE.key()}" "example.Greeter"
-            "${SemanticAttributes.RPC_METHOD.key()}" "SayHello"
-            "${SemanticAttributes.NET_PEER_IP.key()}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key()}" Long
+            "${SemanticAttributes.RPC_SYSTEM.key}" "grpc"
+            "${SemanticAttributes.RPC_SERVICE.key}" "example.Greeter"
+            "${SemanticAttributes.RPC_METHOD.key}" "SayHello"
+            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_PORT.key}" Long
           }
         }
       }
@@ -417,9 +417,9 @@ abstract class AbstractGrpcTest extends InstrumentationSpecification {
             }
           }
           attributes {
-            "${SemanticAttributes.RPC_SYSTEM.key()}" "grpc"
-            "${SemanticAttributes.RPC_SERVICE.key()}" "example.Greeter"
-            "${SemanticAttributes.RPC_METHOD.key()}" "SayHello"
+            "${SemanticAttributes.RPC_SYSTEM.key}" "grpc"
+            "${SemanticAttributes.RPC_SERVICE.key}" "example.Greeter"
+            "${SemanticAttributes.RPC_METHOD.key}" "SayHello"
           }
         }
         span(2) {
@@ -435,11 +435,11 @@ abstract class AbstractGrpcTest extends InstrumentationSpecification {
             }
           }
           attributes {
-            "${SemanticAttributes.RPC_SYSTEM.key()}" "grpc"
-            "${SemanticAttributes.RPC_SERVICE.key()}" "example.Greeter"
-            "${SemanticAttributes.RPC_METHOD.key()}" "SayHello"
-            "${SemanticAttributes.NET_PEER_IP.key()}" "127.0.0.1"
-            "${SemanticAttributes.NET_PEER_PORT.key()}" Long
+            "${SemanticAttributes.RPC_SYSTEM.key}" "grpc"
+            "${SemanticAttributes.RPC_SERVICE.key}" "example.Greeter"
+            "${SemanticAttributes.RPC_METHOD.key}" "SayHello"
+            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_PORT.key}" Long
           }
         }
       }

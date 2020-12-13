@@ -5,6 +5,7 @@
 
 package io.opentelemetry.instrumentation.test.server.http
 
+import static io.opentelemetry.api.OpenTelemetry.getGlobalPropagators
 import static io.opentelemetry.api.trace.Span.Kind.SERVER
 import static io.opentelemetry.instrumentation.test.server.http.HttpServletRequestExtractAdapter.GETTER
 
@@ -12,8 +13,8 @@ import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanBuilder
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.context.Context
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId
-import io.opentelemetry.instrumentation.api.decorator.BaseDecorator
 import io.opentelemetry.instrumentation.test.asserts.InMemoryExporterAssert
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.utils.PortUtils
@@ -250,7 +251,8 @@ class TestHttpServer implements AutoCloseable {
       }
       if (isTestServer) {
         final SpanBuilder spanBuilder = tracer.spanBuilder("test-http-server").setSpanKind(SERVER)
-        spanBuilder.setParent(BaseDecorator.extract(req, GETTER))
+        // using Context.root() to avoid inheriting any potentially leaked context here
+        spanBuilder.setParent(getGlobalPropagators().getTextMapPropagator().extract(Context.root(), req, GETTER))
         final Span span = spanBuilder.startSpan()
         span.end()
       }
