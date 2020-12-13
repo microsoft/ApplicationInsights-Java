@@ -16,8 +16,8 @@ import spock.lang.Unroll
 
 class GrpcSmokeTest extends SmokeTest {
 
-  protected String getTargetImage(int jdk) {
-    "open-telemetry-docker-dev.bintray.io/java/smoke-grpc-jdk$jdk:latest"
+  protected String getTargetImage(int jdk, String serverVersion) {
+    "ghcr.io/open-telemetry/java-test-containers:smoke-grpc-jdk$jdk-20201207.404860494"
   }
 
   @Unroll
@@ -46,6 +46,7 @@ class GrpcSmokeTest extends SmokeTest {
 
     cleanup:
     stopTarget()
+    channel.shutdown()
 
     where:
     jdk << [8, 11, 15]

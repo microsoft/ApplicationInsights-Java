@@ -10,8 +10,8 @@ import okhttp3.Request
 
 class PlaySmokeTest extends SmokeTest {
 
-  protected String getTargetImage(int jdk) {
-    "open-telemetry-docker-dev.bintray.io/java/smoke-play-jdk$jdk:latest"
+  protected String getTargetImage(int jdk, String serverVersion) {
+    "ghcr.io/open-telemetry/java-test-containers:smoke-play-jdk$jdk-20201128.1734635"
   }
 
   def "play smoke test on JDK #jdk"(int jdk) {

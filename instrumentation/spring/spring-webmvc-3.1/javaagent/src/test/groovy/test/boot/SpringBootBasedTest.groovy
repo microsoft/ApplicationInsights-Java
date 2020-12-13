@@ -5,20 +5,20 @@
 
 package test.boot
 
+import static io.opentelemetry.api.trace.Span.Kind.INTERNAL
+import static io.opentelemetry.api.trace.Span.Kind.SERVER
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.AUTH_ERROR
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.EXCEPTION
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.LOGIN
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.PATH_PARAM
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.REDIRECT
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.SUCCESS
-import static io.opentelemetry.api.trace.Span.Kind.INTERNAL
-import static io.opentelemetry.api.trace.Span.Kind.SERVER
 
 import com.google.common.collect.ImmutableMap
+import io.opentelemetry.api.trace.attributes.SemanticAttributes
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
 import io.opentelemetry.sdk.trace.data.SpanData
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
 import okhttp3.FormBody
 import okhttp3.RequestBody
 import org.springframework.boot.SpringApplication
@@ -155,7 +155,7 @@ class SpringBootBasedTest extends HttpServerTest<ConfigurableApplicationContext>
       kind INTERNAL
       errored false
       attributes {
-        "view.type" RedirectView.simpleName
+        "spring-webmvc.view.type" RedirectView.simpleName
       }
     }
   }
@@ -192,14 +192,14 @@ class SpringBootBasedTest extends HttpServerTest<ConfigurableApplicationContext>
         errorEvent(Exception, EXCEPTION.body)
       }
       attributes {
-        "${SemanticAttributes.NET_PEER_IP.key()}" { it == null || it == "127.0.0.1" } // Optional
-        "${SemanticAttributes.NET_PEER_PORT.key()}" Long
-        "${SemanticAttributes.HTTP_URL.key()}" { it == "${endpoint.resolve(address)}" || it == "${endpoint.resolveWithoutFragment(address)}" }
-        "${SemanticAttributes.HTTP_METHOD.key()}" method
-        "${SemanticAttributes.HTTP_STATUS_CODE.key()}" endpoint.status
-        "${SemanticAttributes.HTTP_FLAVOR.key()}" "HTTP/1.1"
-        "${SemanticAttributes.HTTP_USER_AGENT.key()}" TEST_USER_AGENT
-        "${SemanticAttributes.HTTP_CLIENT_IP.key()}" TEST_CLIENT_IP
+        "${SemanticAttributes.NET_PEER_IP.key}" { it == null || it == "127.0.0.1" } // Optional
+        "${SemanticAttributes.NET_PEER_PORT.key}" Long
+        "${SemanticAttributes.HTTP_URL.key}" { it == "${endpoint.resolve(address)}" || it == "${endpoint.resolveWithoutFragment(address)}" }
+        "${SemanticAttributes.HTTP_METHOD.key}" method
+        "${SemanticAttributes.HTTP_STATUS_CODE.key}" endpoint.status
+        "${SemanticAttributes.HTTP_FLAVOR.key}" "HTTP/1.1"
+        "${SemanticAttributes.HTTP_USER_AGENT.key}" TEST_USER_AGENT
+        "${SemanticAttributes.HTTP_CLIENT_IP.key}" TEST_CLIENT_IP
       }
     }
   }

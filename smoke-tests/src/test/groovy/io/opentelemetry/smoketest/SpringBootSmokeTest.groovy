@@ -16,8 +16,8 @@ import spock.lang.Unroll
 
 class SpringBootSmokeTest extends SmokeTest {
 
-  protected String getTargetImage(int jdk) {
-    "open-telemetry-docker-dev.bintray.io/java/smoke-springboot-jdk$jdk:20201120.373623860"
+  protected String getTargetImage(int jdk, String serverVersion) {
+    "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk$jdk-20201204.400701583"
   }
 
   @Unroll
@@ -42,6 +42,10 @@ class SpringBootSmokeTest extends SmokeTest {
     [currentAgentVersion] as Set == findResourceAttribute(traces, "telemetry.auto.version")
       .map { it.stringValue }
       .collect(toSet())
+    findResourceAttribute(traces, "os.name")
+      .map { it.stringValue }
+      .findAny()
+      .isPresent()
 
     then: "correct traceIds are logged via MDC instrumentation"
     def loggedTraceIds = getLoggedTraceIds(output)

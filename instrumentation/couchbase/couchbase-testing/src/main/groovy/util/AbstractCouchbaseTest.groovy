@@ -17,11 +17,11 @@ import com.couchbase.mock.Bucket
 import com.couchbase.mock.BucketConfiguration
 import com.couchbase.mock.CouchbaseMock
 import com.couchbase.mock.http.query.QueryServer
+import io.opentelemetry.api.trace.attributes.SemanticAttributes
 import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.utils.PortUtils
 import io.opentelemetry.sdk.trace.data.SpanData
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
 import java.util.concurrent.TimeUnit
 import spock.lang.Shared
 
@@ -114,11 +114,11 @@ abstract class AbstractCouchbaseTest extends AgentTestRunner {
         childOf((SpanData) parentSpan)
       }
       attributes {
-        "${SemanticAttributes.DB_SYSTEM.key()}" "couchbase"
+        "${SemanticAttributes.DB_SYSTEM.key}" "couchbase"
         if (bucketName != null) {
-          "${SemanticAttributes.DB_NAME.key()}" bucketName
+          "${SemanticAttributes.DB_NAME.key}" bucketName
         }
-        "${SemanticAttributes.DB_STATEMENT.key()}" spanName
+        "${SemanticAttributes.DB_STATEMENT.key}" spanName
       }
     }
   }
