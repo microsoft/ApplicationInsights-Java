@@ -45,4 +45,14 @@
         <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder" />
         <Method name="getPidUsingProcessHandle" />
     </Match>
+    <Match>
+        <Bug pattern="CRLF_INJECTION_LOGS" />
+        <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
+        <Method name="logErrorMessage" />
+    </Match>
+    <Match>
+        <Bug pattern="CRLF_INJECTION_LOGS" />
+        <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
+        <Method name="start" />
+    </Match>
 </FindBugsFilter>

@@ -22,6 +22,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.instrumentation.api.aiappid.AiHttpTraceContext;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -47,7 +48,12 @@ public class TracerInstaller {
             setGlobalPropagators(DefaultContextPropagators.builder().build());
         }
 
-        OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(
+        TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
+
+        // Register additional thread details
+        tracerManagement.addSpanProcessor(new AddThreadDetailsSpanProcessor());
+
+        tracerManagement.updateActiveTraceConfig(
                 TraceConfig.getDefault().toBuilder()
                         .setSampler(Samplers.getSampler(Global.getSamplingPercentage()))
                         .build());
@@ -68,11 +74,10 @@ public class TracerInstaller {
                 }
             }
 
-            OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(SimpleSpanProcessor.builder(currExporter).build());
+            tracerManagement.addSpanProcessor(SimpleSpanProcessor.builder(currExporter).build());
 
         } else {
-            OpenTelemetrySdk.getGlobalTracerManagement()
-                    .addSpanProcessor(SimpleSpanProcessor.builder(new Exporter(telemetryClient)).build());
+            tracerManagement.addSpanProcessor(SimpleSpanProcessor.builder(new Exporter(telemetryClient)).build());
         }
     }
 

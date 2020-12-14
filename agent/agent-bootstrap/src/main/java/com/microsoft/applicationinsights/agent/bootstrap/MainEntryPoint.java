@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import io.opentelemetry.javaagent.bootstrap.AgentInitializer;
 import io.opentelemetry.javaagent.bootstrap.ConfigureLogging;
@@ -63,6 +64,7 @@ public class MainEntryPoint {
     public static void start(Instrumentation instrumentation, URL bootstrapURL) {
         boolean success = false;
         Logger startupLogger = null;
+        String version = SdkVersionFinder.readVersion();
         try {
             Path agentPath = new File(bootstrapURL.toURI()).toPath();
             DiagnosticsHelper.setAgentJarFile(agentPath);
@@ -74,7 +76,7 @@ public class MainEntryPoint {
             ConfigurationBuilder.logConfigurationMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
             AgentInitializer.initialize(instrumentation, bootstrapURL, false);
-            startupLogger.info("ApplicationInsights Java Agent started successfully");
+            startupLogger.info("ApplicationInsights Java Agent {} started successfully", version);
             success = true;
             LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
                     .info("Application Insights Codeless Agent Attach Successful");
@@ -83,10 +85,11 @@ public class MainEntryPoint {
         } catch (Throwable t) {
 
             FriendlyException friendlyException = getFriendlyException(t);
+            String banner = "ApplicationInsights Java Agent " + version + " failed to start";
             if (friendlyException != null) {
-                logErrorMessage(startupLogger, friendlyException.getMessage(), true, t);
+                logErrorMessage(startupLogger, friendlyException.getMessageWithBanner(banner), true, t);
             } else {
-                logErrorMessage(startupLogger, "ApplicationInsights Java Agent failed to start", false, t);
+                logErrorMessage(startupLogger, banner, false, t);
             }
 
         } finally {
@@ -188,6 +191,10 @@ public class MainEntryPoint {
 
         Level otherLibsLevel = level == Level.INFO ? Level.WARN : level;
 
+        // TODO need something more reliable, currently will log too much WARN if "muzzleMatcher" logger name changes
+        // muzzleMatcher logs at WARN level in order to make them visible, but really should only be enabled when debugging
+        Level muzzleMatcherLevel = level.levelInt <= Level.DEBUG.levelInt ? level : getMaxLevel(level, Level.WARN);
+
         try {
             System.setProperty("applicationinsights.logback.configurationFile", configurationFile.toString());
 
@@ -196,10 +203,10 @@ public class MainEntryPoint {
             System.setProperty("applicationinsights.logback.file.maxSize", selfDiagnostics.file.maxSizeMb + "MB");
             System.setProperty("applicationinsights.logback.file.maxIndex", Integer.toString(selfDiagnostics.file.maxHistory));
 
-            System.setProperty("applicationinsights.logback.level.other", otherLibsLevel.toString());
             System.setProperty("applicationinsights.logback.level", level.levelStr);
-
+            System.setProperty("applicationinsights.logback.level.other", otherLibsLevel.toString());
             System.setProperty("applicationinsights.logback.level.atLeastInfo", atLeastInfoLevel.levelStr);
+            System.setProperty("applicationinsights.logback.level.muzzleMatcher", muzzleMatcherLevel.levelStr);
 
             return LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
         } finally {
@@ -209,7 +216,9 @@ public class MainEntryPoint {
             System.clearProperty("applicationinsights.logback.file.maxSize");
             System.clearProperty("applicationinsights.logback.file.maxIndex");
             System.clearProperty("applicationinsights.logback.level");
-            System.clearProperty("applicationinsights.logback.level.org.apache.http");
+            System.clearProperty("applicationinsights.logback.level.other");
+            System.clearProperty("applicationinsights.logback.level.atLeastInfo");
+            System.clearProperty("applicationinsights.logback.level.muzzleMatcher");
         }
     }
 

@@ -4,13 +4,14 @@ import java.util.List;
 
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import org.junit.*;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 @UseAgent
-public class SpringBootAutoTest extends AiSmokeTest {
+public class LegacySdkWebInteropTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/test")
@@ -21,8 +22,10 @@ public class SpringBootAutoTest extends AiSmokeTest {
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
-        // TODO verify browser and other envelope tags somewhere else
-        assertTrue(rdEnvelope.getTags().get("ai.user.userAgent").startsWith("Apache-HttpClient/"));
+        assertEquals("myvalue1", rd.getProperties().get("myattr1"));
+        assertEquals("myvalue2", rd.getProperties().get("myattr2"));
+        assertEquals("myuser", rdEnvelope.getTags().get("ai.user.id"));
+        assertEquals("myspanname", rd.getName());
 
         assertTrue(rd.getSuccess());
     }
