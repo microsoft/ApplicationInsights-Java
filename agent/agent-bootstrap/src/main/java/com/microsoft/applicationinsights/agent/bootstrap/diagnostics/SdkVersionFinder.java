@@ -13,6 +13,10 @@ public class SdkVersionFinder extends CachedDiagnosticsValueFinder {
 
     @Override
     protected String populateValue() {
+        return readVersion();
+    }
+
+    public static String readVersion() {
         Properties props = new Properties();
         InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("ai.sdk-version.properties");
         if (in != null) {
