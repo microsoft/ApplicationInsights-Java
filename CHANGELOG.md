@@ -1,7 +1,16 @@
 # CHANGELOG
 
-# Version 3.0.1 GA
-* Telemetry processor config throws null pointer exception when attribute value is not provided and matchType is regexp
+# Version 3.0.1-BETA
+* Update to otel-java-instrumentation 0.12.0
+* Friendly error messages thrown for the following scenarios
+    - Missing connection string
+    - Invalid SSL certificate issues when not able to connect to IngestionEndPoint Url, Live endpoint Url and CdsProfiler endpoint url.
+    - Invalid Telemetry Processor Configuration
+* Telemetry processor config throws null pointer exception when attribute value is not provided and matchType is regexp.
+* Map service.version to application_Version(Resolves [#1392](https://github.com/microsoft/ApplicationInsights-Java/issues/1392))
+* Lazy set propagators in Azure Functions
+* Bring in fix for Azure Functions instrumentation
+* Fix NullPointerException for Linux consumption plan
 
 # Version 3.0.0 GA
 * Config changes
