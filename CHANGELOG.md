@@ -1,7 +1,19 @@
 # CHANGELOG
 
-# Version 3.0.1 GA
-* Telemetry processor config throws null pointer exception when attribute value is not provided and matchType is regexp
+# Version 3.0.1-BETA
+* Friendly error messages thrown for the following scenarios
+    - Missing connection string
+    - Invalid SSL certificate issues when not able to connect to IngestionEndPoint Url, Live endpoint Url and CdsProfiler endpoint url.
+    - Invalid Telemetry Processor Configuration
+* Telemetry processor config throws null pointer exception when attribute value is not provided and matchType is regexp.
+* Map service.version to application_Version(Resolves [#1392](https://github.com/microsoft/ApplicationInsights-Java/issues/1392))
+* This release also brings more interoperability with the 2.x SDK:
+    - ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getProperties().put("key1", "val1")
+	- ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name")
+	- ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getUser().setId("uname")
+
+* Add thread details span processor
+* Add agent version number to startup message
 
 # Version 3.0.0 GA
 * Config changes
