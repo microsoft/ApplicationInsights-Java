@@ -34,7 +34,7 @@ public class TraceLog4j1_2Test extends AiSmokeTest {
 
         MessageData md1 = logs.get(0);
         MessageData md2 = logs.get(1);
-        MessageData md3 = logs.get(3);
+        MessageData md3 = logs.get(2);
 
         assertEquals("This is log4j1.2 warn.", md1.getMessage());
         assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
