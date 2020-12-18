@@ -8,19 +8,18 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-@UseAgent
+@UseAgent("logging")
 public class TraceJavaUtilLoggingTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/traceJavaUtilLogging")
     public void testTraceJavaUtilLogging() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(3);
+        List<Envelope> mdList = mockedIngestion.waitForMessageItemsInRequest(2);
 
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
-        Envelope mdEnvelope3 = mdList.get(2);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
@@ -32,27 +31,20 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
             }
         });
 
-        MessageData md1 = logs.get(0);
         MessageData md2 = logs.get(1);
         MessageData md3 = logs.get(2);
-
-        assertEquals("This is jul info.", md1.getMessage());
-        assertEquals(SeverityLevel.Information, md1.getSeverityLevel());
-        assertEquals("Logger", md1.getProperties().get("SourceType"));
-        assertEquals("INFO", md1.getProperties().get("LoggingLevel"));
-        assertParentChild(rd, rdEnvelope, mdEnvelope1);
 
         assertEquals("This is jul warning.", md2.getMessage());
         assertEquals(SeverityLevel.Warning, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
         assertEquals("WARNING", md2.getProperties().get("LoggingLevel"));
-        assertParentChild(rd, rdEnvelope, mdEnvelope2);
+        assertParentChild(rd, rdEnvelope, mdEnvelope1);
 
         assertEquals("This is jul severe.", md3.getMessage());
         assertEquals(SeverityLevel.Error, md3.getSeverityLevel());
         assertEquals("Logger", md3.getProperties().get("SourceType"));
         assertEquals("SEVERE", md3.getProperties().get("LoggingLevel"));
-        assertParentChild(rd, rdEnvelope, mdEnvelope3);
+        assertParentChild(rd, rdEnvelope, mdEnvelope2);
     }
 
     @Test

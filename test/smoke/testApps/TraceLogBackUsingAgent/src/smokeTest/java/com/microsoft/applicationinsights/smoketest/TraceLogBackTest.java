@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-@UseAgent
+@UseAgent("logging")
 public class TraceLogBackTest extends AiSmokeTest {
 
     @Before

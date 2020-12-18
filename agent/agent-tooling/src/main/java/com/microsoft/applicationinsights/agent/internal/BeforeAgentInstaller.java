@@ -243,12 +243,12 @@ public class BeforeAgentInstaller {
         if (logging == null) {
             return defaultValue;
         }
-        Object thresholdObj = logging.get("threshold");
+        Object thresholdObj = logging.get("level");
         if (thresholdObj == null) {
             return defaultValue;
         }
         if (!(thresholdObj instanceof String)) {
-            startupLogger.warn("logging threshold must be a string, but found: {}", thresholdObj.getClass());
+            startupLogger.warn("logging level must be a string, but found: {}", thresholdObj.getClass());
             return defaultValue;
         }
         String threshold = (String) thresholdObj;
