@@ -65,7 +65,7 @@ public class Log4jSpansInstrumentationModule extends InstrumentationModule {
       // log4j 2.12.1 introduced and started using this new log() method
       transformers.put(
           isMethod()
-              .and(isProtected())
+              .and(isProtected().or(isPublic()))
               .and(named("log"))
               .and(takesArguments(6))
               .and(takesArgument(0, named("org.apache.logging.log4j.Level")))
