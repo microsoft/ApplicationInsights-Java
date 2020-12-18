@@ -132,6 +132,19 @@ public class BeforeAgentInstaller {
             properties.put("ota.integration.java-util-logging.enabled", "false");
             properties.put("ota.integration.logback.enabled", "false");
         }
+        if (!isInstrumentationEnabled(config, "redis")) {
+            properties.put("ota.integration.jedis.enabled", "false");
+            properties.put("ota.integration.lettuce.enabled", "false");
+        }
+        if (!isInstrumentationEnabled(config, "kafka")) {
+            properties.put("ota.integration.kafka.enabled", "false");
+        }
+        if (!isInstrumentationEnabled(config, "mongo")) {
+            properties.put("ota.integration.mongo.enabled", "false");
+        }
+        if (!isInstrumentationEnabled(config, "cassandra")) {
+            properties.put("ota.integration.cassandra.enabled", "false");
+        }
         if (!config.preview.openTelemetryApiSupport) {
             properties.put("ota.integration.opentelemetry-api.enabled", "false");
         }
