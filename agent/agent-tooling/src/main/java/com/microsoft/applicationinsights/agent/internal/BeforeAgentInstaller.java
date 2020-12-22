@@ -121,6 +121,7 @@ public class BeforeAgentInstaller {
         properties.put("experimental.log.capture.threshold", getLoggingFrameworksThreshold(config, "INFO"));
         int reportingIntervalSeconds = getMicrometerReportingIntervalSeconds(config, 60);
         properties.put("micrometer.step.millis", Long.toString(SECONDS.toMillis(reportingIntervalSeconds)));
+        // TODO need some kind of test for these configuration properties
         if (!isInstrumentationEnabled(config, "micrometer")) {
             properties.put("otel.instrumentation.micrometer.enabled", "false");
         }
