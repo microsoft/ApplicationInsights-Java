@@ -121,32 +121,33 @@ public class BeforeAgentInstaller {
         properties.put("experimental.log.capture.threshold", getLoggingFrameworksThreshold(config, "INFO"));
         int reportingIntervalSeconds = getMicrometerReportingIntervalSeconds(config, 60);
         properties.put("micrometer.step.millis", Long.toString(SECONDS.toMillis(reportingIntervalSeconds)));
+        // TODO need some kind of test for these configuration properties
         if (!isInstrumentationEnabled(config, "micrometer")) {
-            properties.put("ota.integration.micrometer.enabled", "false");
+            properties.put("otel.instrumentation.micrometer.enabled", "false");
         }
         if (!isInstrumentationEnabled(config, "jdbc")) {
-            properties.put("ota.integration.jdbc.enabled", "false");
+            properties.put("otel.instrumentation.jdbc.enabled", "false");
         }
         if (!isInstrumentationEnabled(config, "logging")) {
-            properties.put("ota.integration.log4j.enabled", "false");
-            properties.put("ota.integration.java-util-logging.enabled", "false");
-            properties.put("ota.integration.logback.enabled", "false");
+            properties.put("otel.instrumentation.log4j.enabled", "false");
+            properties.put("otel.instrumentation.java-util-logging.enabled", "false");
+            properties.put("otel.instrumentation.logback.enabled", "false");
         }
         if (!isInstrumentationEnabled(config, "redis")) {
-            properties.put("ota.integration.jedis.enabled", "false");
-            properties.put("ota.integration.lettuce.enabled", "false");
+            properties.put("otel.instrumentation.jedis.enabled", "false");
+            properties.put("otel.instrumentation.lettuce.enabled", "false");
         }
         if (!isInstrumentationEnabled(config, "kafka")) {
-            properties.put("ota.integration.kafka.enabled", "false");
+            properties.put("otel.instrumentation.kafka.enabled", "false");
         }
         if (!isInstrumentationEnabled(config, "mongo")) {
-            properties.put("ota.integration.mongo.enabled", "false");
+            properties.put("otel.instrumentation.mongo.enabled", "false");
         }
         if (!isInstrumentationEnabled(config, "cassandra")) {
-            properties.put("ota.integration.cassandra.enabled", "false");
+            properties.put("otel.instrumentation.cassandra.enabled", "false");
         }
         if (!config.preview.openTelemetryApiSupport) {
-            properties.put("ota.integration.opentelemetry-api.enabled", "false");
+            properties.put("otel.instrumentation.opentelemetry-api.enabled", "false");
         }
         Config.internalInitializeConfig(Config.create(properties));
         if (Config.get().getListProperty("additional.bootstrap.package.prefixes").isEmpty()) {
