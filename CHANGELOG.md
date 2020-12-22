@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# Version 3.0.1-BETA.2
+* Fix code to use the correct logging configuration 'level' [#1415](https://github.com/microsoft/ApplicationInsights-Java/issues/1415))
+* Capture log4j2 async logging. Addresses issue [#1389](https://github.com/microsoft/ApplicationInsights-Java/issues/1389)
+* Add configuration for disabling dependencies [#1294](https://github.com/microsoft/ApplicationInsights-Java/issues/1294)
+
 # Version 3.0.1-BETA
 * Friendly error messages thrown for the following scenarios
     - Missing connection string
