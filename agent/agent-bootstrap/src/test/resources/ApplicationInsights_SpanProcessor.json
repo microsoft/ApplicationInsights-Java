@@ -118,6 +118,17 @@
               ]
             }
           }
+        },
+        {
+          "type": "attribute",
+          "processorName": "attributes/extract",
+          "actions": [
+            {
+              "key": "http.url",
+              "pattern": "^(?P<http_protocol>.*):\\/\\/(?P<http_domain>.*)\\/(?P<http_path>.*)(\\?|\\&)(?P<http_query_params>.*)",
+              "action": "extract"
+            }
+          ]
         }
       ]
     }

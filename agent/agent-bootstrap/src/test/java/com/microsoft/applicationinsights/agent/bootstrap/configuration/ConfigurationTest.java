@@ -74,7 +74,7 @@ public class ConfigurationTest {
         PreviewConfiguration preview = configuration.preview;
 
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals(7, preview.processors.size());
+        assertEquals(8, preview.processors.size());
         // insert config test
         ProcessorConfig insertConfig = preview.processors.get(0);
         assertEquals("attributes/insert", insertConfig.processorName);
@@ -137,6 +137,14 @@ public class ConfigurationTest {
         assertEquals("span/extractAttributes", spanExtractAttributesConfig.processorName);
         assertEquals(1, spanExtractAttributesConfig.name.toAttributes.rules.size());
         assertEquals("^/api/v1/document/(?<documentId>.*)/update$", spanExtractAttributesConfig.name.toAttributes.rules.get(0));
+        // attribute/extract
+        ProcessorConfig attributesExtractConfig = preview.processors.get(7);
+        assertEquals(ProcessorType.attribute, attributesExtractConfig.type);
+        assertEquals("attributes/extract", attributesExtractConfig.processorName);
+        assertEquals(1, attributesExtractConfig.actions.size());
+        assertEquals(ProcessorActionType.extract,attributesExtractConfig.actions.get(0).action);
+        assertEquals("http.url",attributesExtractConfig.actions.get(0).key);
+        assertEquals("^(?P<http_protocol>.*):\\/\\/(?P<http_domain>.*)\\/(?P<http_path>.*)(\\?|\\&)(?P<http_query_params>.*)",attributesExtractConfig.actions.get(0).pattern);
 
 
     }

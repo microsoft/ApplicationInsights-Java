@@ -14,7 +14,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 
 public class SpanProcessor extends AgentProcessor {
-    private static final Pattern capturingGroupNames = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>");
     private final List<AttributeKey<?>> fromAttributes;
     private final List<Pattern> toAttributeRulePatterns;
     private final List<List<String>> groupNames;

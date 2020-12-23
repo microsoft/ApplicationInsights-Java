@@ -56,7 +56,7 @@ public class Configuration {
 
     public enum ProcessorActionType {
         //Moshi JSON builder donot allow case insensitive mapping
-        insert, update, delete, hash
+        insert, update, delete, hash, extract
     }
 
     public enum ProcessorType {
@@ -290,6 +290,7 @@ public class Configuration {
         public ProcessorActionType action;
         public String value;
         public String fromAttribute;
+        public String pattern;
 
         public void validate() throws FriendlyException {
 
@@ -309,6 +310,15 @@ public class Configuration {
                                         "Please provide a valid action with value under each action section of processor configuration. " +
                                         "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                     }
+                }
+
+                if(this.action == ProcessorActionType.extract) {
+                    if(this.pattern == null) {
+                        throw new FriendlyException("Telemetry processor configuration has invalid action with empty key or empty pattern!!!",
+                                "Please provide a valid action with pattern under each action section of type extract. " +
+                                        "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                    }
+                    ProcessorConfig.isValidRegex(pattern);
                 }
         }
     }
