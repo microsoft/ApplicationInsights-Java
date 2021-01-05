@@ -193,7 +193,7 @@ public class MainEntryPoint {
 
         // TODO need something more reliable, currently will log too much WARN if "muzzleMatcher" logger name changes
         // muzzleMatcher logs at WARN level in order to make them visible, but really should only be enabled when debugging
-        Level muzzleMatcherLevel = level.levelInt <= Level.DEBUG.levelInt ? level : getMaxLevel(level, Level.WARN);
+        Level muzzleMatcherLevel = level.levelInt <= Level.DEBUG.levelInt ? level : getMaxLevel(level, Level.ERROR);
 
         try {
             System.setProperty("applicationinsights.logback.configurationFile", configurationFile.toString());
