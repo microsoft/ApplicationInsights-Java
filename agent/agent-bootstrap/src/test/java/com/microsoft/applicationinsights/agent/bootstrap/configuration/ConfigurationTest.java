@@ -17,6 +17,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Moshi.Builder;
 import com.squareup.moshi.Types;
 import okio.Buffer;
 import org.junit.*;
@@ -31,7 +32,7 @@ public class ConfigurationTest {
 
     private static Configuration loadConfiguration() throws IOException {
         CharSource json = Resources.asCharSource(Resources.getResource("applicationinsights.json"), Charsets.UTF_8);
-        Moshi moshi = new Moshi.Builder().build();
+        Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
         JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
         return jsonAdapter.fromJson(json.read());
     }
@@ -68,7 +69,7 @@ public class ConfigurationTest {
     public void shouldParseProcessorConfiguration() throws IOException {
 
         CharSource json = Resources.asCharSource(Resources.getResource("ApplicationInsights_SpanProcessor.json"), Charsets.UTF_8);
-        Moshi moshi = new Moshi.Builder().build();
+        Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
         JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
         Configuration configuration = jsonAdapter.fromJson(json.read());
         PreviewConfiguration preview = configuration.preview;
@@ -144,7 +145,11 @@ public class ConfigurationTest {
         assertEquals(1, attributesExtractConfig.actions.size());
         assertEquals(ProcessorActionType.extract,attributesExtractConfig.actions.get(0).action);
         assertEquals("http.url",attributesExtractConfig.actions.get(0).key);
-        assertEquals("^(?P<http_protocol>.*):\\/\\/(?P<http_domain>.*)\\/(?P<http_path>.*)(\\?|\\&)(?P<http_query_params>.*)",attributesExtractConfig.actions.get(0).pattern);
+        assertEquals(1,attributesExtractConfig.actions.size());
+        assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute);
+        assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute.extractAttributePattern);
+        assertEquals(4,attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.size());
+        assertEquals("httpProtocol",attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.get(0));
 
 
     }
@@ -202,7 +207,7 @@ public class ConfigurationTest {
     }
 
     private List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {
-        Moshi moshi = new Moshi.Builder().build();
+        Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
         Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
         JsonReader reader = JsonReader.of(new Buffer().writeUtf8(json));
         reader.setLenient(true);

@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
+import com.squareup.moshi.Json;
+import io.opentelemetry.api.common.AttributeKey;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -285,42 +287,68 @@ public class Configuration {
         public String value;
     }
 
+    public static class ExtractAttribute {
+        public Pattern extractAttributePattern;
+        public List<String> extractAttributeGroupNames;
+
+        public ExtractAttribute(Pattern extractAttributePattern, List<String> extractAttributeGroupNames) {
+            this.extractAttributePattern = extractAttributePattern;
+            this.extractAttributeGroupNames = extractAttributeGroupNames;
+        }
+        //ToDo: Handle empty patterns or groupNames are not populated gracefully
+        public void validate() {
+            if(extractAttributePattern == null || extractAttributeGroupNames==null || extractAttributeGroupNames.size() == 0) {
+                throw new FriendlyException("Telemetry processor configuration does not have valid regex in extract action",
+                        "Please provide a valid regex in the telemetry processors configuration. " +
+                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+            }
+        }
+    }
+
     public static class ProcessorAction {
         public String key;
         public ProcessorActionType action;
         public String value;
         public String fromAttribute;
-        public String pattern;
+        public ExtractAttribute extractAttribute;
 
         public void validate() throws FriendlyException {
 
-                if (this.key == null || this.key.isEmpty()) {
-                    throw new FriendlyException("Telemetry processor configuration has invalid action with empty key!!!",
-                                    "Please provide a valid key with value under each action section of processor configuration. " +
+            if (this.key == null || this.key.isEmpty()) {
+                throw new FriendlyException("Telemetry processor configuration has invalid action with empty key!!!",
+                        "Please provide a valid key with value under each action section of processor configuration. " +
+                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+            }
+            if (this.action == null) {
+                throw new FriendlyException("Telemetry processor configuration has invalid config with empty action!!!",
+                        "Please provide a valid action. Telemetry processors cannot have empty or no actions. " +
+                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+            }
+            if (this.action == ProcessorActionType.insert || this.action == ProcessorActionType.update) {
+                if(this.value == null && this.fromAttribute == null) {
+                    throw new FriendlyException("Telemetry processor configuration has invalid action with empty value or empty fromAttribute!!!",
+                            "Please provide a valid action with value under each action section of processor configuration. " +
                                     "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
-                if (this.action == null) {
-                    throw new FriendlyException("Telemetry processor configuration has invalid config with empty action!!!",
-                                    "Please provide a valid action. Telemetry processors cannot have empty or no actions. " +
-                                    "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
-                }
-                if (this.action == ProcessorActionType.insert || this.action == ProcessorActionType.update) {
-                    if(this.value == null && this.fromAttribute == null) {
-                        throw new FriendlyException("Telemetry processor configuration has invalid action with empty value or empty fromAttribute!!!",
-                                        "Please provide a valid action with value under each action section of processor configuration. " +
-                                        "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
-                    }
-                }
+            }
 
-                if(this.action == ProcessorActionType.extract) {
-                    if(this.pattern == null) {
-                        throw new FriendlyException("Telemetry processor configuration has invalid action with empty key or empty pattern!!!",
-                                "Please provide a valid action with pattern under each action section of type extract. " +
-                                        "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
-                    }
-                    ProcessorConfig.isValidRegex(pattern);
+            if(this.action == ProcessorActionType.extract) {
+                if(this.extractAttribute == null) {
+                    throw new FriendlyException("Telemetry processor configuration has invalid action with empty pattern!!!",
+                            "Please provide a valid action with pattern under each action section of type extract. " +
+                                    "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
+                this.extractAttribute.validate();
+            }
         }
+    }
+
+    public static class ProcessorActionJson {
+        public String key;
+        public ProcessorActionType action;
+        public String value;
+        public String fromAttribute;
+        public String pattern;
     }
 
     // transient so that Moshi will ignore when binding from json

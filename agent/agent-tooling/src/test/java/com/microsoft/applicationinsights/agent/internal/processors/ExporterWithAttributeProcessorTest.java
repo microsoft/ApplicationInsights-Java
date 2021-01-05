@@ -5,7 +5,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ExtractAttribute;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAction;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorActionType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAttribute;
@@ -13,6 +16,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorIncludeExclude;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.ProcessorActionAdaptor;
 import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
@@ -1140,7 +1144,10 @@ public class ExporterWithAttributeProcessorTest {
         config.processorName = "actionExtract";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
-        action.pattern = "^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)";
+        String regex="^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)";
+        Pattern pattern = Pattern.compile(regex);
+        List<String> groupNames= ProcessorActionAdaptor.getGroupNames(regex);
+        action.extractAttribute= new ExtractAttribute(pattern,groupNames);
         action.action = ProcessorActionType.extract;
         List<ProcessorAction> actions = new ArrayList<>();
         actions.add(action);
@@ -1180,7 +1187,10 @@ public class ExporterWithAttributeProcessorTest {
         config.processorName = "actionExtract";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
-        action.pattern = "^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)";
+        String regex="^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)";
+        Pattern pattern = Pattern.compile(regex);
+        List<String> groupNames= ProcessorActionAdaptor.getGroupNames(regex);
+        action.extractAttribute= new ExtractAttribute(pattern,groupNames);
         action.action = ProcessorActionType.extract;
         List<ProcessorAction> actions = new ArrayList<>();
         actions.add(action);

@@ -1,13 +1,7 @@
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAction;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorActionType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
@@ -23,46 +17,20 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class AttributeProcessor extends AgentProcessor {
 
     private final List<ProcessorAction> actions;
-    private final Map<ProcessorAction,Pattern> extractAttributePatternMap;
-    private final Map<ProcessorAction,List<String>> extractAttributeGroupNamesMap;
 
     private AttributeProcessor(
             List<ProcessorAction> actions,
             @Nullable IncludeExclude include,
-            @Nullable IncludeExclude exclude,
-            Map<ProcessorAction, Pattern> extractAttributePatternMap,
-            Map<ProcessorAction, List<String>> extractAttributeGroupNamesMap) {
+            @Nullable IncludeExclude exclude) {
         super(include, exclude);
         this.actions = actions;
-        this.extractAttributePatternMap = extractAttributePatternMap;
-        this.extractAttributeGroupNamesMap = extractAttributeGroupNamesMap;
-
     }
 
     // Creates a Span Processor object
     public static AttributeProcessor create(ProcessorConfig config) {
         IncludeExclude normalizedInclude = config.include != null ? getNormalizedIncludeExclude(config.include) : null;
         IncludeExclude normalizedExclude = config.exclude != null ? getNormalizedIncludeExclude(config.exclude) : null;
-        Map<ProcessorAction,Pattern> extractAttributePatternMap = new HashMap<>();
-        Map<ProcessorAction,List<String>> extractAttributeGroupNamesMap = new HashMap<>();
-        for(ProcessorAction actionObj:config.actions) {
-            if(actionObj.action == ProcessorActionType.extract) {
-                Pattern regexPattern = Pattern.compile(actionObj.pattern);
-                List<String> groupNames = getGroupNames(actionObj.pattern);
-                extractAttributePatternMap.put(actionObj, regexPattern);
-                extractAttributeGroupNamesMap.put(actionObj, groupNames);
-            }
-        }
-        return new AttributeProcessor(config.actions, normalizedInclude, normalizedExclude, extractAttributePatternMap, extractAttributeGroupNamesMap);
-    }
-
-    private static List<String> getGroupNames(String regex) {
-        List<String> groupNames = new ArrayList<>();
-        Matcher matcher = capturingGroupNames.matcher(regex);
-        while (matcher.find()) {
-            groupNames.add(matcher.group(1));
-        }
-        return groupNames;
+        return new AttributeProcessor(config.actions, normalizedInclude, normalizedExclude);
     }
 
     // Copy from existing attribute.
@@ -90,58 +58,41 @@ public class AttributeProcessor extends AgentProcessor {
         final Attributes existingSpanAttributes = span.getAttributes();
         AttributesBuilder builderCopy= span.getAttributes().toBuilder();
         final boolean[] spanUpdateFlag = new boolean[1];
+        Object existingValue = existingSpanAttributes.get(AttributeKey.stringKey(actionObj.key));
         switch (actionObj.action) {
             case update:
-                existingSpanAttributes.forEach(new BiConsumer<AttributeKey<?>, Object>() {
-                    @Override
-                    public void accept(AttributeKey<?> key, Object value) {
-                        if (key.getKey().equals(actionObj.key) && applyUpdateAction(actionObj, existingSpanAttributes, builderCopy)) {
-                            spanUpdateFlag[0] = true;
-                        }
-                    }
-                });
+                // TODO don't instantiate new AttributeKey every time
+                if (existingValue != null && applyUpdateAction(actionObj, existingSpanAttributes, builderCopy)) {
+                    spanUpdateFlag[0] = true;
+                }
                 break;
             case delete:
                 final AttributesBuilder builder = Attributes.builder();
-                existingSpanAttributes.forEach(new BiConsumer<AttributeKey<?>, Object>() {
-                    @Override
-                    public void accept(AttributeKey<?> key, Object value) {
-                        if (key.getKey().equals(actionObj.key)) {
-                            spanUpdateFlag[0] = true;
-                        } else {
-                            putIntoBuilder(builder, key, value);
-                        }
+                existingSpanAttributes.forEach((key, value) -> {
+                    if (key.getKey().equals(actionObj.key)) {
+                        spanUpdateFlag[0] = true;
+                    } else {
+                        putIntoBuilder(builder, key, value);
                     }
                 });
                 return spanUpdateFlag[0] ? new MySpanData(span, builder.build()) : span;
             case hash:
-                existingSpanAttributes.forEach(new BiConsumer<AttributeKey<?>, Object>() {
-                    @Override
-                    public void accept(AttributeKey<?> key, Object value) {
-                        if (key.getKey().equals(actionObj.key) && (value instanceof String)) {
-                            // Currently we only support String
-                            builderCopy.put(actionObj.key, DigestUtils.sha1Hex((String) value));
-                            spanUpdateFlag[0] = true;
-                        }
-                    }
-                });
+                if (existingValue != null && (existingValue instanceof String)) {
+                    // Currently we only support String
+                    builderCopy.put(actionObj.key, DigestUtils.sha1Hex((String) existingValue));
+                    spanUpdateFlag[0] = true;
+                }
                 break;
             case extract:
-                existingSpanAttributes.forEach(new BiConsumer<AttributeKey<?>, Object>() {
-                    @Override
-                    public void accept(AttributeKey<?> key, Object value) {
-                        if (key.getKey().equals(actionObj.key) && (value instanceof String)) {
-                            Pattern extractAttributePattern = extractAttributePatternMap.get(actionObj);
-                            Matcher matcher = extractAttributePattern.matcher((String) value);
-                            if(matcher.matches()) {
-                                spanUpdateFlag[0] = true;
-                                for(String groupName: extractAttributeGroupNamesMap.get(actionObj)) {
-                                    builderCopy.put(groupName, matcher.group(groupName));
-                                }
-                            }
+                if (existingValue != null && (existingValue instanceof String)) {
+                    Matcher matcher = actionObj.extractAttribute.extractAttributePattern.matcher((String) existingValue);
+                    if(matcher.matches()) {
+                        spanUpdateFlag[0] = true;
+                        for(String groupName: actionObj.extractAttribute.extractAttributeGroupNames) {
+                            builderCopy.put(groupName, matcher.group(groupName));
                         }
                     }
-                });
+                }
                 break;
             default:
                 break; // no action. Added to escape spotBug failures.
