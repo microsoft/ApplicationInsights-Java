@@ -2,8 +2,8 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import java.util.List;
 import java.util.regex.Matcher;
+
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAction;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorActionType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -33,72 +33,133 @@ public class AttributeProcessor extends AgentProcessor {
         return new AttributeProcessor(config.actions, normalizedInclude, normalizedExclude);
     }
 
-    // Copy from existing attribute.
-    // Returns true if attribute has been found and copied. Else returns false.
-    // ToDo store fromAttribute as AttributeKey<?> to avoid creating AttributeKey each time
-    private static boolean copyFromExistingAttribute(AttributesBuilder insertBuilder, Attributes existingSpanAttributes, ProcessorAction actionObj) {
-        Object existingSpanAttributeValue = existingSpanAttributes.get(AttributeKey.stringKey(actionObj.fromAttribute));
-        if (existingSpanAttributeValue instanceof String) {
-            insertBuilder.put(actionObj.key, (String) existingSpanAttributeValue);
-            return true;
-        }
-        return false;
-    }
-
     // Function to process actions
     public SpanData processActions(SpanData span) {
         SpanData updatedSpan = span;
         for (ProcessorAction actionObj : actions) {
-            updatedSpan = actionObj.action == ProcessorActionType.insert ? processInsertAction(updatedSpan, actionObj) : processOtherAction(updatedSpan, actionObj);
+            updatedSpan = processAction(updatedSpan, actionObj);
         }
         return updatedSpan;
     }
 
-    private SpanData processOtherAction(SpanData span, ProcessorAction actionObj) {
-        final Attributes existingSpanAttributes = span.getAttributes();
-        AttributesBuilder builderCopy= span.getAttributes().toBuilder();
-        final boolean[] spanUpdateFlag = new boolean[1];
-        Object existingValue = existingSpanAttributes.get(AttributeKey.stringKey(actionObj.key));
+    private SpanData processAction(SpanData span, ProcessorAction actionObj) {
         switch (actionObj.action) {
+            case insert:
+                return processInsertAction(span, actionObj);
             case update:
-                // TODO don't instantiate new AttributeKey every time
-                if (existingValue != null && applyUpdateAction(actionObj, existingSpanAttributes, builderCopy)) {
-                    spanUpdateFlag[0] = true;
-                }
-                break;
+                return processUpdateAction(span, actionObj);
             case delete:
-                final AttributesBuilder builder = Attributes.builder();
-                existingSpanAttributes.forEach((key, value) -> {
-                    if (key.getKey().equals(actionObj.key)) {
-                        spanUpdateFlag[0] = true;
-                    } else {
-                        putIntoBuilder(builder, key, value);
-                    }
-                });
-                return spanUpdateFlag[0] ? new MySpanData(span, builder.build()) : span;
+                return processDeleteAction(span, actionObj);
             case hash:
-                if (existingValue != null && (existingValue instanceof String)) {
-                    // Currently we only support String
-                    builderCopy.put(actionObj.key, DigestUtils.sha1Hex((String) existingValue));
-                    spanUpdateFlag[0] = true;
-                }
-                break;
+                return procesHashAction(span, actionObj);
             case extract:
-                if (existingValue != null && (existingValue instanceof String)) {
-                    Matcher matcher = actionObj.extractAttribute.extractAttributePattern.matcher((String) existingValue);
-                    if(matcher.matches()) {
-                        spanUpdateFlag[0] = true;
-                        for(String groupName: actionObj.extractAttribute.extractAttributeGroupNames) {
-                            builderCopy.put(groupName, matcher.group(groupName));
-                        }
-                    }
-                }
-                break;
+                return processExtractAction(span, actionObj);
             default:
-                break; // no action. Added to escape spotBug failures.
+                return span;
         }
+    }
 
-        return spanUpdateFlag[0] ? new MySpanData(span, builderCopy.build()) : span;
+    private SpanData processInsertAction(SpanData span, ProcessorAction actionObj) {
+        Attributes existingSpanAttributes = span.getAttributes();
+        //Update from existing attribute
+        if (actionObj.value != null) {
+            //update to new value
+            final AttributesBuilder builder = Attributes.builder();
+            builder.put(actionObj.key, actionObj.value);
+            builder.putAll(existingSpanAttributes);
+            return new MySpanData(span, builder.build());
+        }
+        String fromAttributeValue = getAttribute(existingSpanAttributes, AttributeKey.stringKey(actionObj.fromAttribute));
+        if (fromAttributeValue != null) {
+            final AttributesBuilder builder = Attributes.builder();
+            builder.put(actionObj.key, fromAttributeValue);
+            builder.putAll(existingSpanAttributes);
+            return new MySpanData(span, builder.build());
+        }
+        return span;
+    }
+
+    private SpanData processUpdateAction(SpanData span, ProcessorAction actionObj) {
+        // Currently we only support String
+        // TODO don't instantiate new AttributeKey every time
+        String existingValue = getAttribute(span.getAttributes(), AttributeKey.stringKey(actionObj.key));
+        if (existingValue == null) {
+            return span;
+        }
+        //Update from existing attribute
+        if (actionObj.value != null) {
+            //update to new value
+            AttributesBuilder builder = span.getAttributes().toBuilder();
+            builder.put(actionObj.key, actionObj.value);
+            return new MySpanData(span, builder.build());
+        }
+        String fromAttributeValue = getAttribute(span.getAttributes(), AttributeKey.stringKey(actionObj.fromAttribute));
+        if (fromAttributeValue != null) {
+            AttributesBuilder builder = span.getAttributes().toBuilder();
+            builder.put(actionObj.key, fromAttributeValue);
+            return new MySpanData(span, builder.build());
+        }
+        return span;
+    }
+
+    private SpanData processDeleteAction(SpanData span, ProcessorAction actionObj) {
+        // Currently we only support String
+        // TODO don't instantiate new AttributeKey every time
+        String existingValue = getAttribute(span.getAttributes(), AttributeKey.stringKey(actionObj.key));
+        if (existingValue == null) {
+            return span;
+        }
+        AttributesBuilder builder = Attributes.builder();
+        span.getAttributes().forEach((key, value) -> {
+            if (!key.getKey().equals(actionObj.key)) {
+                putIntoBuilder(builder, key, value);
+            }
+        });
+        return new MySpanData(span, builder.build());
+    }
+
+    private SpanData procesHashAction(SpanData span, ProcessorAction actionObj) {
+        // Currently we only support String
+        // TODO don't instantiate new AttributeKey every time
+        String existingValue = getAttribute(span.getAttributes(), AttributeKey.stringKey(actionObj.key));
+        AttributesBuilder builderCopy;
+        if (existingValue == null) {
+            return span;
+        }
+        builderCopy = span.getAttributes().toBuilder();
+        builderCopy.put(actionObj.key, DigestUtils.sha1Hex(existingValue));
+        return new MySpanData(span, builderCopy.build());
+    }
+
+    private SpanData processExtractAction(SpanData span, ProcessorAction actionObj) {
+        // Currently we only support String
+        // TODO don't instantiate new AttributeKey every time
+        String existingValue = getAttribute(span.getAttributes(), AttributeKey.stringKey(actionObj.key));
+        if (existingValue == null) {
+            return span;
+        }
+        Matcher matcher = actionObj.extractAttribute.extractAttributePattern.matcher(existingValue);
+        if (!matcher.matches()) {
+            return span;
+        }
+        AttributesBuilder builder = span.getAttributes().toBuilder();
+        for (String groupName : actionObj.extractAttribute.extractAttributeGroupNames) {
+            builder.put(groupName, matcher.group(groupName));
+        }
+        return new MySpanData(span, builder.build());
+    }
+
+    // this won't be needed once we update to 0.13.0
+    // see https://github.com/open-telemetry/opentelemetry-java/pull/2284
+    public static String getAttribute(Attributes attributes, AttributeKey<String> key) {
+        Object existingValueObj = attributes.get(key);
+        // checking the return type won't be needed once we update to 0.13.0
+        // see https://github.com/open-telemetry/opentelemetry-java/pull/2284
+        if (existingValueObj instanceof String) {
+            return (String) existingValueObj;
+        } else {
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -125,29 +186,6 @@ public class AttributeProcessor extends AgentProcessor {
             default:
                 // TODO log at least a debug level message
                 break;
-        }
-    }
-
-
-    private SpanData processInsertAction(SpanData span, ProcessorAction actionObj) {
-        Attributes existingSpanAttributes = span.getAttributes();
-        final AttributesBuilder insertBuilder = Attributes.builder();
-        if (applyUpdateAction(actionObj, existingSpanAttributes, insertBuilder)) {
-            // Copy all existing attributes
-            insertBuilder.putAll(existingSpanAttributes);
-            return new MySpanData(span, insertBuilder.build());
-        }
-        return span;
-    }
-
-    private boolean applyUpdateAction(ProcessorAction actionObj, Attributes existingSpanAttributes, AttributesBuilder builder) {
-        //Update from existing attribute
-        if (actionObj.value != null) {
-            //update to new value
-            builder.put(actionObj.key, actionObj.value);
-            return true;
-        } else {
-            return copyFromExistingAttribute(builder, existingSpanAttributes, actionObj);
         }
     }
 }

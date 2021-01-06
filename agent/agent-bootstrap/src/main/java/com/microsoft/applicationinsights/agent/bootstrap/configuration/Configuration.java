@@ -297,9 +297,9 @@ public class Configuration {
         }
         //ToDo: Handle empty patterns or groupNames are not populated gracefully
         public void validate() {
-            if(extractAttributePattern == null || extractAttributeGroupNames==null || extractAttributeGroupNames.size() == 0) {
-                throw new FriendlyException("Telemetry processor configuration does not have valid regex in extract action",
-                        "Please provide a valid regex in the telemetry processors configuration. " +
+            if(extractAttributeGroupNames==null || extractAttributeGroupNames.size() == 0) {
+                throw new FriendlyException("Telemetry processor configuration does not have valid regex to extract attributes:"+extractAttributePattern.toString(),
+                        "Please provide a valid regex of the form (?<name>X) where X is the usual regular expression." +
                                 "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
         }

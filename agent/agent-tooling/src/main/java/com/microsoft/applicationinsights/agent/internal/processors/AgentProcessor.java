@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public abstract class AgentProcessor {
-    protected static final Pattern capturingGroupNames = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>");
     private final @Nullable IncludeExclude include;
     private final @Nullable IncludeExclude exclude;
 

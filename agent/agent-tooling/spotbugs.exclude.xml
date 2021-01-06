@@ -49,7 +49,7 @@
         <Bug pattern="WEAK_MESSAGE_DIGEST_SHA1" />
         <!-- Open Telemetry support SHA1 message digest for hash operation. https://github.com/open-telemetry/opentelemetry-collector/blob/master/processor/attributesprocessor/README.md -->
         <Class name="com.microsoft.applicationinsights.agent.internal.processors.AttributeProcessor" />
-        <Method name="processOtherAction" />
+        <Method name="procesHashAction" />
     </Match>
 
 </FindBugsFilter>
