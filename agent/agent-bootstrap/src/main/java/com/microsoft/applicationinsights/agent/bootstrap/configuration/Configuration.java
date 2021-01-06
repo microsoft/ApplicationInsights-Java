@@ -299,7 +299,7 @@ public class Configuration {
         public void validate() {
             if(extractAttributeGroupNames==null || extractAttributeGroupNames.size() == 0) {
                 throw new FriendlyException("Telemetry processor configuration does not have valid regex to extract attributes:"+extractAttributePattern.toString(),
-                        "Please provide a valid regex of the form (?<name>X) where X is the usual regular expression." +
+                        "Please provide a valid regex of the form (?<name>X) where X is the usual regular expression. " +
                                 "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
         }
