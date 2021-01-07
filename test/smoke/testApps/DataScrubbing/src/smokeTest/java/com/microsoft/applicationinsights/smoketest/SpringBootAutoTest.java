@@ -21,7 +21,8 @@ public class SpringBootAutoTest extends AiSmokeTest {
         assertNotNull(rd.getProperties().get("attribute1"));
         assertEquals("testValue1", rd.getProperties().get("attribute1"));
         assertEquals("testValue2", rd.getProperties().get("attribute2"));
-
+        assertNotNull(rd.getProperties().get("httpPath"));
+        assertEquals("/DataScrubbing/test",rd.getProperties().get("httpPath"));
     }
 
     @Test

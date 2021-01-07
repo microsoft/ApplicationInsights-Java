@@ -5,7 +5,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ExtractAttribute;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAction;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorActionType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAttribute;
@@ -13,6 +16,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorIncludeExclude;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.ProcessorActionAdaptor;
 import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
@@ -1132,5 +1136,91 @@ public class ExporterWithAttributeProcessorTest {
         assertEquals("testValue2", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey2"))));
     }
 
+    @Test
+    public void actionInsertWithExtractTest() {
+        MockExporter mockExporter = new MockExporter();
+        ProcessorConfig config = new ProcessorConfig();
+        config.type = ProcessorType.attribute;
+        config.processorName = "actionExtract";
+        ProcessorAction action = new ProcessorAction();
+        action.key = "testKey";
+        String regex="^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)";
+        Pattern pattern = Pattern.compile(regex);
+        List<String> groupNames= ProcessorActionAdaptor.getGroupNames(regex);
+        action.extractAttribute= new ExtractAttribute(pattern,groupNames);
+        action.action = ProcessorActionType.extract;
+        List<ProcessorAction> actions = new ArrayList<>();
+        actions.add(action);
+        config.actions = actions;
+        SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
+
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "http://example.com/path?queryParam1=value1,queryParam2=value2")
+                .setAttribute("TESTKEY", "testValue2")
+                .startSpan();
+
+        SpanData spanData = ((ReadableSpan) span).toSpanData();
+
+        List<SpanData> spans = new ArrayList<>();
+        spans.add(spanData);
+        exampleExporter.export(spans);
+
+        // verify that resulting spans are filtered in the way we want
+        List<SpanData> result = mockExporter.getSpans();
+        SpanData resultSpan = result.get(0);
+        assertEquals("http", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpProtocol"))));
+        assertEquals("example.com", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpDomain"))));
+        assertEquals("path", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpPath"))));
+        assertEquals("queryParam1=value1,queryParam2=value2",
+                Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpQueryParams"))));
+        assertEquals("http://example.com/path?queryParam1=value1,queryParam2=value2",
+                Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
+    }
+
+    @Test
+    public void actionInsertWithExtractDuplicateTest() {
+        MockExporter mockExporter = new MockExporter();
+        ProcessorConfig config = new ProcessorConfig();
+        config.type = ProcessorType.attribute;
+        config.processorName = "actionExtract";
+        ProcessorAction action = new ProcessorAction();
+        action.key = "testKey";
+        String regex="^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)";
+        Pattern pattern = Pattern.compile(regex);
+        List<String> groupNames= ProcessorActionAdaptor.getGroupNames(regex);
+        action.extractAttribute= new ExtractAttribute(pattern,groupNames);
+        action.action = ProcessorActionType.extract;
+        List<ProcessorAction> actions = new ArrayList<>();
+        actions.add(action);
+        config.actions = actions;
+        SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
+
+        Span span = OpenTelemetry.getGlobalTracer("test").spanBuilder("my span")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "http://example.com/path?queryParam1=value1,queryParam2=value2")
+                .setAttribute("httpPath", "oldPath")
+                .startSpan();
+
+        SpanData spanData = ((ReadableSpan) span).toSpanData();
+
+        List<SpanData> spans = new ArrayList<>();
+        spans.add(spanData);
+        exampleExporter.export(spans);
+
+        // verify that resulting spans are filtered in the way we want
+        List<SpanData> result = mockExporter.getSpans();
+        SpanData resultSpan = result.get(0);
+        assertEquals("http", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpProtocol"))));
+        assertEquals("example.com", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpDomain"))));
+        assertEquals("path", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpPath"))));
+        assertNotEquals("oldPath", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpPath"))));
+        assertEquals("queryParam1=value1,queryParam2=value2",
+                Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpQueryParams"))));
+        assertEquals("http://example.com/path?queryParam1=value1,queryParam2=value2",
+                Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
+    }
 
 }

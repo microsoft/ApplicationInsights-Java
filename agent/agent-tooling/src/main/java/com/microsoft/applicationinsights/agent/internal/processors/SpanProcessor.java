@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.ProcessorActionAdaptor;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -14,7 +15,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 
 public class SpanProcessor extends AgentProcessor {
-    private static final Pattern capturingGroupNames = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>");
     private final List<AttributeKey<?>> fromAttributes;
     private final List<Pattern> toAttributeRulePatterns;
     private final List<List<String>> groupNames;
@@ -52,23 +52,18 @@ public class SpanProcessor extends AgentProcessor {
                 toAttributeRulePatterns.add(Pattern.compile(rule));
             }
         }
-        List<List<String>> groupNames = getGroupNames(toAttributeRules);
+        List<List<String>> groupNames = getGroupNamesList(toAttributeRules);
         String separator = config.name.separator != null ? config.name.separator : "";
         return new SpanProcessor(normalizedInclude, normalizedExclude,
                 fromAttributes, toAttributeRulePatterns, groupNames, separator);
     }
 
-    private static List<List<String>> getGroupNames(List<String> toAttributeRules) {
-        List<List<String>> groupNames = new ArrayList<>();
+    private static List<List<String>> getGroupNamesList(List<String> toAttributeRules) {
+        List<List<String>> groupNamesList = new ArrayList<>();
         for (String rule : toAttributeRules) {
-            List<String> subGroupList = new ArrayList<>();
-            Matcher matcher = capturingGroupNames.matcher(rule);
-            while (matcher.find()) {
-                subGroupList.add(matcher.group(1));
-            }
-            groupNames.add(subGroupList);
+            groupNamesList.add(ProcessorActionAdaptor.getGroupNames(rule));
         }
-        return groupNames;
+        return groupNamesList;
     }
 
     //fromAttributes represents the attribute keys to pull the values from to generate the new span name.

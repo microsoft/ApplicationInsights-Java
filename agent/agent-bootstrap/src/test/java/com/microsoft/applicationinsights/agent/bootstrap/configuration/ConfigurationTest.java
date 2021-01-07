@@ -17,6 +17,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Moshi.Builder;
 import com.squareup.moshi.Types;
 import okio.Buffer;
 import org.junit.*;
@@ -31,7 +32,7 @@ public class ConfigurationTest {
 
     private static Configuration loadConfiguration() throws IOException {
         CharSource json = Resources.asCharSource(Resources.getResource("applicationinsights.json"), Charsets.UTF_8);
-        Moshi moshi = new Moshi.Builder().build();
+        Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
         JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
         return jsonAdapter.fromJson(json.read());
     }
@@ -68,13 +69,13 @@ public class ConfigurationTest {
     public void shouldParseProcessorConfiguration() throws IOException {
 
         CharSource json = Resources.asCharSource(Resources.getResource("ApplicationInsights_SpanProcessor.json"), Charsets.UTF_8);
-        Moshi moshi = new Moshi.Builder().build();
+        Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
         JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
         Configuration configuration = jsonAdapter.fromJson(json.read());
         PreviewConfiguration preview = configuration.preview;
 
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals(7, preview.processors.size());
+        assertEquals(8, preview.processors.size());
         // insert config test
         ProcessorConfig insertConfig = preview.processors.get(0);
         assertEquals("attributes/insert", insertConfig.processorName);
@@ -137,6 +138,18 @@ public class ConfigurationTest {
         assertEquals("span/extractAttributes", spanExtractAttributesConfig.processorName);
         assertEquals(1, spanExtractAttributesConfig.name.toAttributes.rules.size());
         assertEquals("^/api/v1/document/(?<documentId>.*)/update$", spanExtractAttributesConfig.name.toAttributes.rules.get(0));
+        // attribute/extract
+        ProcessorConfig attributesExtractConfig = preview.processors.get(7);
+        assertEquals(ProcessorType.attribute, attributesExtractConfig.type);
+        assertEquals("attributes/extract", attributesExtractConfig.processorName);
+        assertEquals(1, attributesExtractConfig.actions.size());
+        assertEquals(ProcessorActionType.extract,attributesExtractConfig.actions.get(0).action);
+        assertEquals("http.url",attributesExtractConfig.actions.get(0).key);
+        assertEquals(1,attributesExtractConfig.actions.size());
+        assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute);
+        assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute.extractAttributePattern);
+        assertEquals(4,attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.size());
+        assertEquals("httpProtocol",attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.get(0));
 
 
     }
@@ -194,7 +207,7 @@ public class ConfigurationTest {
     }
 
     private List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {
-        Moshi moshi = new Moshi.Builder().build();
+        Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
         Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
         JsonReader reader = JsonReader.of(new Buffer().writeUtf8(json));
         reader.setLenient(true);

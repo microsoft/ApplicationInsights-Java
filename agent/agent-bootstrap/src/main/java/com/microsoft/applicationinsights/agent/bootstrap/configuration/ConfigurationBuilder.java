@@ -86,7 +86,7 @@ public class ConfigurationBuilder {
 
         // JmxMetrics env variable has higher precedence over jmxMetrics config from applicationinsights.json
         if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
-            Moshi moshi = new Moshi.Builder().build();
+            Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
             Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
             JsonReader reader = JsonReader.of(new Buffer().writeUtf8(jmxMetricsEnvVarJson));
             reader.setLenient(true);
@@ -222,7 +222,7 @@ public class ConfigurationBuilder {
     static Map<String, String> overlayWithEnvVars(String name, Map<String, String> defaultValue) {
         String value = System.getenv(name);
         if (value != null && !value.isEmpty()) {
-            Moshi moshi = new Moshi.Builder().build();
+            Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
             JsonAdapter<Map> adapter = moshi.adapter(Map.class);
             Map<String, String> stringMap = new HashMap<>();
             Map<String, Object> objectMap;
@@ -290,7 +290,7 @@ public class ConfigurationBuilder {
         // last modified doesn't change after that, the new updated file will not be read afterwards
         long lastModifiedTime = attributes.lastModifiedTime().toMillis();
         try (InputStream in = Files.newInputStream(configPath)) {
-            Moshi moshi = new Moshi.Builder().build();
+            Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
             JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
             Buffer buffer = new Buffer();
             buffer.readFrom(in);

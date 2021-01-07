@@ -5,8 +5,14 @@ targetCompatibility = 1.8
 compileSmokeTestJava.sourceCompatibility = 1.8
 compileSmokeTestJava.targetCompatibility = 1.8
 
+war {
+    // this is done to remove the version from the archive file name
+    // to make span name verification simpler
+    archiveFileName = project.name + '.war'
+}
+
 ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = war.archiveFileName.get()
+ext.testAppArtifactFilename = project.name + '.war'
 
 dependencies {
     compileOnly aiAgentJar // this is just to force building the agent first
