@@ -61,8 +61,17 @@ import java.util.regex.Pattern;
  */
 public class OpenTelemetryAgent {
 
+    // this is to prevent the agent from loading and instrumenting everything twice
+    // (leading to unpredictable results) when -javaagent:applicationinsights-agent.jar
+    // appears multiple times on the command line
+    private static volatile boolean alreadyLoaded;
+
     public static void premain(final String agentArgs, final Instrumentation inst) {
+        if (alreadyLoaded) {
+            return;
+        }
         agentmain(agentArgs, inst);
+        alreadyLoaded = true;
     }
 
     public static void agentmain(final String agentArgs, final Instrumentation inst) {
