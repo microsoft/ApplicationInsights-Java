@@ -41,9 +41,10 @@ public class DuplicateAgentClassFileTransformer implements ClassFileTransformer 
     private static final Logger logger = LoggerFactory.getLogger(DuplicateAgentClassFileTransformer.class);
 
     // using constant here so that it will NOT get shaded
-    // IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER COULD INLINE IT BELOW AND APPLY .substring(1)
+    // IMPORTANT FOR THIS NOT TO BE FINAL (or private)
+    // OTHERWISE COMPILER COULD THEORETICALLY INLINE IT BELOW AND APPLY .substring(1)
     // and then it WOULD be shaded
-    public static String[] UNSHADED_CLASS_NAMES = new String[] {
+    static String[] UNSHADED_CLASS_NAMES = new String[] {
             "!io/opentelemetry/javaagent/OpenTelemetryAgent", // 3.0
             "!io/opentelemetry/auto/bootstrap/AgentBootstrap", // early 3.0 previews
             "!com/microsoft/applicationinsights/agent/internal/Premain", // 2.5.0+
