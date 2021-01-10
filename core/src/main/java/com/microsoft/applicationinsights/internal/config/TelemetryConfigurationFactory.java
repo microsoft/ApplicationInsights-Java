@@ -104,7 +104,6 @@ public enum TelemetryConfigurationFactory {
     }
 
     private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
-        setConnectionString(userConfiguration, configuration);
         setRoleName(userConfiguration, configuration);
         setRoleInstance(userConfiguration, configuration);
         configuration.setChannel(new InProcessTelemetryChannel(configuration));
