@@ -167,26 +167,22 @@ public class ConfigurationBuilder {
     }
 
     static void overlayEnvVars(Configuration config) throws IOException {
-        config.role.name = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.role.name);
-        config.role.instance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.role.instance);
+        if (isTrimEmpty(config.role.name)) {
+            // only use WEBSITE_SITE_NAME as a fallback
+            config.role.name = getEnv(WEBSITE_SITE_NAME);
+        }
+        config.role.name = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, config.role.name);
+
+        if (isTrimEmpty(config.role.instance)) {
+            // only use WEBSITE_INSTANCE_ID as a fallback
+            config.role.name = getEnv(WEBSITE_INSTANCE_ID);
+        }
+        config.role.instance = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, config.role.instance);
 
         config.sampling.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
         loadLogCaptureEnvVar(config);
         loadJmxMetrics(config);
-    }
-
-    // visible for testing
-    static String overlayWithEnvVars(String name1, String name2, String defaultValue) {
-        String value = getEnv(name1);
-        if (value != null && !value.isEmpty()) {
-            return value;
-        }
-        value = getEnv(name2);
-        if (value != null && !value.isEmpty()) {
-            return value;
-        }
-        return defaultValue;
     }
 
     static String overlayWithEnvVar(String name, String defaultValue) {
@@ -219,39 +215,16 @@ public class ConfigurationBuilder {
     }
 
     // visible for testing
-    static Map<String, String> overlayWithEnvVars(String name, Map<String, String> defaultValue) {
-        String value = System.getenv(name);
-        if (value != null && !value.isEmpty()) {
-            Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
-            JsonAdapter<Map> adapter = moshi.adapter(Map.class);
-            Map<String, String> stringMap = new HashMap<>();
-            Map<String, Object> objectMap;
-            try {
-                objectMap = adapter.fromJson(value);
-            } catch (Exception e) {
-                configurationMessages.add(new ConfigurationMessage("could not parse environment variable {} as json: {}", name, value));
-                return defaultValue;
-            }
-            for (Map.Entry<String, Object> entry : objectMap.entrySet()) {
-                Object val = entry.getValue();
-                if (!(val instanceof String)) {
-                    configurationMessages.add(new ConfigurationMessage("currently only string values are supported in json map from {}: {}", name, value));
-                    return defaultValue;
-                }
-                stringMap.put(entry.getKey(), (String) val);
-            }
-            return stringMap;
-        }
-        return defaultValue;
-    }
-
-    // visible for testing
     static String trimAndEmptyToNull(String str) {
         if (str == null) {
             return null;
         }
         String trimmed = str.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private static boolean isTrimEmpty(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     public static class ConfigurationException extends RuntimeException {
