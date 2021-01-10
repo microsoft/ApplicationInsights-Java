@@ -166,7 +166,7 @@ public class ConfigurationBuilder {
         return value != null ? value : trimAndEmptyToNull(System.getProperty(propertyName));
     }
 
-    static void overlayEnvVars(Configuration config) throws IOException {
+    public static void overlayEnvVars(Configuration config) throws IOException {
         config.role.name = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.role.name);
         config.role.instance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.role.instance);
 
