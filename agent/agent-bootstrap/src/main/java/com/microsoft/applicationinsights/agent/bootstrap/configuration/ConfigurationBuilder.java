@@ -55,6 +55,8 @@ public class ConfigurationBuilder {
 
     private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL = "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL";
 
+    private static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL = "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL";
+
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
 
@@ -81,7 +83,7 @@ public class ConfigurationBuilder {
         }
     }
 
-    private static void loadJmxMetrics(Configuration config) throws IOException {
+    private static void loadJmxMetricsEnvVar(Configuration config) throws IOException {
         String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, (String)null);
 
         // JmxMetrics env variable has higher precedence over jmxMetrics config from applicationinsights.json
@@ -93,6 +95,9 @@ public class ConfigurationBuilder {
             JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
             config.jmxMetrics = jsonAdapter.fromJson(reader);
         }
+    }
+
+    private static void addDefaultJmxMetricsIfNotPresent(Configuration config) {
         if (!jmxMetricExisted(config.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
             JmxMetric threadCountJmxMetric = new JmxMetric();
             threadCountJmxMetric.name = "Current Thread Count";
@@ -172,8 +177,12 @@ public class ConfigurationBuilder {
 
         config.sampling.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
+        config.selfDiagnostics.level = overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL, config.selfDiagnostics.level);
+
         loadLogCaptureEnvVar(config);
-        loadJmxMetrics(config);
+        loadJmxMetricsEnvVar(config);
+
+        addDefaultJmxMetricsIfNotPresent(config);
     }
 
     // visible for testing
