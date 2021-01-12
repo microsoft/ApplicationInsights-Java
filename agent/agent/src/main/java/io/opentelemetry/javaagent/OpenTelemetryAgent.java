@@ -59,10 +59,22 @@ import java.util.regex.Pattern;
  *   <li>Do dot touch any logging facilities here so we can configure them later
  * </ul>
  */
+// IMPORTANT!! If this class is renamed, be sure to add the previous name to DuplicateAgentClassFileTransformer
+// so that previous versions will be suppressed (current versions with the same class name are suppressed
+// below via the alreadyLoaded flag
 public class OpenTelemetryAgent {
 
+    // this is to prevent the agent from loading and instrumenting everything twice
+    // (leading to unpredictable results) when -javaagent:applicationinsights-agent.jar
+    // appears multiple times on the command line
+    private static volatile boolean alreadyLoaded;
+
     public static void premain(final String agentArgs, final Instrumentation inst) {
+        if (alreadyLoaded) {
+            return;
+        }
         agentmain(agentArgs, inst);
+        alreadyLoaded = true;
     }
 
     public static void agentmain(final String agentArgs, final Instrumentation inst) {

@@ -31,9 +31,10 @@ import java.util.concurrent.CountDownLatch;
 class JulListeningClassFileTransformer implements ClassFileTransformer {
 
     // using constant here so that it will NOT get shaded
-    // IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER COULD INLINE IT BELOW AND APPLY .substring(1)
+    // IMPORTANT FOR THIS NOT TO BE FINAL (or private)
+    // OTHERWISE COMPILER COULD THEORETICALLY INLINE IT BELOW AND APPLY .substring(1)
     // and then it WOULD be shaded
-    public static String UNSHADED_PREFIX = "!java/util/logging/Logger";
+    static String UNSHADED_PREFIX = "!java/util/logging/Logger";
 
     private final String unshadedClassName = UNSHADED_PREFIX.substring(1);
 

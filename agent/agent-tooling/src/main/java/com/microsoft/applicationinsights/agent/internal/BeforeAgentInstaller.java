@@ -89,6 +89,7 @@ public class BeforeAgentInstaller {
         instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
         instrumentation.addTransformer(new ApplicationInsightsAppenderClassFileTransformer());
         instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
+        instrumentation.addTransformer(new DuplicateAgentClassFileTransformer());
     }
 
     private static void start(Instrumentation instrumentation) throws Exception {
