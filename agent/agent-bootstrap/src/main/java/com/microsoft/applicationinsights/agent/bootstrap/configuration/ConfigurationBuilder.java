@@ -176,7 +176,7 @@ public class ConfigurationBuilder {
         return value != null ? value : trimAndEmptyToNull(System.getProperty(propertyName));
     }
 
-    static void overlayEnvVars(Configuration config) throws IOException {
+    public static void overlayEnvVars(Configuration config) throws IOException {
         config.connectionString = overlayWithEnvVar(APPLICATIONINSIGHTS_CONNECTION_STRING, config.connectionString);
         if (config.connectionString == null) {
             // this is for backwards compatibility only
