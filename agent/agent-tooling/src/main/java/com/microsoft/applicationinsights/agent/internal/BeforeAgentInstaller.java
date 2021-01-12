@@ -80,7 +80,6 @@ public class BeforeAgentInstaller {
     }
 
     public static void beforeInstallBytebuddyAgent(Instrumentation instrumentation) throws Exception {
-        instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
         start(instrumentation);
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
