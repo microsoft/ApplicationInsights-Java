@@ -150,8 +150,6 @@ public class ConfigurationTest {
         assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute.extractAttributePattern);
         assertEquals(4,attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.size());
         assertEquals("httpProtocol",attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.get(0));
-
-
     }
 
     @Test
@@ -169,13 +167,23 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void shouldOverrideConnectionString() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=11111111-1111-1111-1111-111111111111");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("InstrumentationKey=11111111-1111-1111-1111-111111111111", configuration.connectionString);
+    }
+
+    @Test
     public void shouldOverrideSamplingPercentage() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "0.25");
 
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertTrue(configuration.sampling.percentage == 0.25);
+        assertEquals(0.25, configuration.sampling.percentage, 0);
     }
 
     @Test
