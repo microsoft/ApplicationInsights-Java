@@ -47,6 +47,11 @@ public class ConfigurationBuilder {
 
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_CONFIGURATION_FILE";
 
+    private static final String APPLICATIONINSIGHTS_CONNECTION_STRING = "APPLICATIONINSIGHTS_CONNECTION_STRING";
+
+    // this is for backwards compatibility only
+    private static final String APPINSIGHTS_INSTRUMENTATIONKEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
+
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
 
@@ -167,6 +172,16 @@ public class ConfigurationBuilder {
     }
 
     static void overlayEnvVars(Configuration config) throws IOException {
+        config.connectionString = overlayWithEnvVar(APPLICATIONINSIGHTS_CONNECTION_STRING, config.connectionString);
+        if (config.connectionString == null) {
+            // this is for backwards compatibility only
+            String instrumentationKey = System.getenv(APPINSIGHTS_INSTRUMENTATIONKEY);
+            if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
+                // TODO log an info message recommending APPLICATIONINSIGHTS_CONNECTION_STRING
+                config.connectionString = "InstrumentationKey=" + instrumentationKey;
+            }
+        }
+
         config.role.name = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.role.name);
         config.role.instance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.role.instance);
 
