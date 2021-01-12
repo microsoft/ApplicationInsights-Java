@@ -47,6 +47,11 @@ public class ConfigurationBuilder {
 
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_CONFIGURATION_FILE";
 
+    private static final String APPLICATIONINSIGHTS_CONNECTION_STRING = "APPLICATIONINSIGHTS_CONNECTION_STRING";
+
+    // this is for backwards compatibility only
+    private static final String APPINSIGHTS_INSTRUMENTATIONKEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
+
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
 
@@ -54,6 +59,8 @@ public class ConfigurationBuilder {
     private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE = "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
     private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL = "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL";
+
+    private static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL = "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL";
 
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
@@ -81,7 +88,7 @@ public class ConfigurationBuilder {
         }
     }
 
-    private static void loadJmxMetrics(Configuration config) throws IOException {
+    private static void loadJmxMetricsEnvVar(Configuration config) throws IOException {
         String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, (String)null);
 
         // JmxMetrics env variable has higher precedence over jmxMetrics config from applicationinsights.json
@@ -93,6 +100,9 @@ public class ConfigurationBuilder {
             JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
             config.jmxMetrics = jsonAdapter.fromJson(reader);
         }
+    }
+
+    private static void addDefaultJmxMetricsIfNotPresent(Configuration config) {
         if (!jmxMetricExisted(config.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
             JmxMetric threadCountJmxMetric = new JmxMetric();
             threadCountJmxMetric.name = "Current Thread Count";
@@ -167,13 +177,27 @@ public class ConfigurationBuilder {
     }
 
     public static void overlayEnvVars(Configuration config) throws IOException {
+        config.connectionString = overlayWithEnvVar(APPLICATIONINSIGHTS_CONNECTION_STRING, config.connectionString);
+        if (config.connectionString == null) {
+            // this is for backwards compatibility only
+            String instrumentationKey = System.getenv(APPINSIGHTS_INSTRUMENTATIONKEY);
+            if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
+                // TODO log an info message recommending APPLICATIONINSIGHTS_CONNECTION_STRING
+                config.connectionString = "InstrumentationKey=" + instrumentationKey;
+            }
+        }
+
         config.role.name = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.role.name);
         config.role.instance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.role.instance);
 
         config.sampling.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
+        config.selfDiagnostics.level = overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL, config.selfDiagnostics.level);
+
         loadLogCaptureEnvVar(config);
-        loadJmxMetrics(config);
+        loadJmxMetricsEnvVar(config);
+
+        addDefaultJmxMetricsIfNotPresent(config);
     }
 
     // visible for testing

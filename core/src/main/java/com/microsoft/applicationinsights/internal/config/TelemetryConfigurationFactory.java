@@ -54,14 +54,6 @@ public enum TelemetryConfigurationFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(TelemetryConfigurationFactory.class);
 
-    // Default file name
-    private static final String CONFIG_FILE_NAME = "ApplicationInsights.xml";
-    private static final String BUILT_IN_NAME = "BuiltIn";
-
-    public static final String CONNECTION_STRING_ENV_VAR_NAME = "APPLICATIONINSIGHTS_CONNECTION_STRING";
-
-    static final String EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY = "APPINSIGHTS_INSTRUMENTATIONKEY";
-
     private static final Set<String> defaultPerformaceModuleClassNames = new HashSet<>();
 
     static {
@@ -94,7 +86,6 @@ public enum TelemetryConfigurationFactory {
     public void initialize(TelemetryConfiguration configuration,
                            ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
 
-        setInstrumentationKey(applicationInsightsConfig, configuration);
         setConnectionString(applicationInsightsConfig, configuration);
         setRoleName(applicationInsightsConfig, configuration);
         setRoleInstance(applicationInsightsConfig, configuration);
@@ -113,7 +104,6 @@ public enum TelemetryConfigurationFactory {
     }
 
     private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
-        setInstrumentationKey(userConfiguration, configuration);
         setRoleName(userConfiguration, configuration);
         setRoleInstance(userConfiguration, configuration);
         configuration.setChannel(new InProcessTelemetryChannel(configuration));
@@ -156,56 +146,9 @@ public enum TelemetryConfigurationFactory {
         modules.addAll(pcModules);
     }
 
-    /**
-     * Setting an instrumentation key:
-     * First we try the environment variable 'APPINSIGHTS_INSTRUMENTATIONKEY'
-     * Next we will try to fetch the i-key from the ApplicationInsights.xml
-     * @param userConfiguration The configuration that was represents the user's configuration in ApplicationInsights.xml.
-     * @param configuration The configuration class.
-     */
-    private void setInstrumentationKey(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
-        try {
-            String ikey;
-
-            ikey = System.getenv(EXTERNAL_PROPERTY_IKEY_NAME_SECONDARY);
-            if (!Strings.isNullOrEmpty(ikey)) {
-                configuration.setInstrumentationKey(ikey);
-                return;
-            }
-
-            // Else, try to find the i-key in ApplicationInsights.xml
-            if (userConfiguration != null) {
-                ikey = userConfiguration.getInstrumentationKey();
-                if (ikey == null) {
-                    return;
-                }
-
-                ikey = ikey.trim();
-                if (ikey.length() == 0) {
-                    return;
-                }
-
-                configuration.setInstrumentationKey(ikey);
-            }
-        } catch (Exception e) {
-            logger.error("Failed to set instrumentation key: '{}'", e.toString());
-        }
-    }
-
     private void setConnectionString(ApplicationInsightsXmlConfiguration configXml, TelemetryConfiguration configuration) {
-        // connection string > ikey
-        // hardcoded > env var > system property > config.xml
 
-        // hardcoded should follow a different path
-        String connectionString = configXml.getConnectionString(); // config.xml
-
-        String nextValue = System.getenv(CONNECTION_STRING_ENV_VAR_NAME);
-        if (!Strings.isNullOrEmpty(nextValue)) {
-            if (!Strings.isNullOrEmpty(connectionString)) {
-                logger.warn("Environment variable {} is overriding connection string value from {}", CONNECTION_STRING_ENV_VAR_NAME, CONFIG_FILE_NAME);
-            }
-            connectionString = nextValue;
-        }
+        String connectionString = configXml.getConnectionString();
 
         if (connectionString != null) {
             configuration.setConnectionString(connectionString);

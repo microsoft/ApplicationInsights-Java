@@ -80,7 +80,6 @@ public class BeforeAgentInstaller {
     }
 
     public static void beforeInstallBytebuddyAgent(Instrumentation instrumentation) throws Exception {
-        instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
         start(instrumentation);
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
@@ -247,9 +246,7 @@ public class BeforeAgentInstaller {
     }
 
     private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
-        return !Strings.isNullOrEmpty(config.connectionString)
-                || !Strings.isNullOrEmpty(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
-                || !Strings.isNullOrEmpty(System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
+        return !Strings.isNullOrEmpty(config.connectionString);
     }
 
     private static String getLoggingFrameworksThreshold(Configuration config, String defaultValue) {
