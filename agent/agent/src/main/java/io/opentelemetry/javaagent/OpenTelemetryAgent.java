@@ -59,6 +59,9 @@ import java.util.regex.Pattern;
  *   <li>Do dot touch any logging facilities here so we can configure them later
  * </ul>
  */
+// IMPORTANT!! If this class is renamed, be sure to add the previous name to DuplicateAgentClassFileTransformer
+// so that previous versions will be suppressed (current versions with the same class name are suppressed
+// below via the alreadyLoaded flag
 public class OpenTelemetryAgent {
 
     // this is to prevent the agent from loading and instrumenting everything twice
