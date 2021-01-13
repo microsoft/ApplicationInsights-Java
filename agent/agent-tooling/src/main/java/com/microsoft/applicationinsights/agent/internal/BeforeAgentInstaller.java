@@ -128,11 +128,6 @@ public class BeforeAgentInstaller {
         if (!isInstrumentationEnabled(config, "jdbc")) {
             properties.put("otel.instrumentation.jdbc.enabled", "false");
         }
-        if (!isInstrumentationEnabled(config, "logging")) {
-            properties.put("otel.instrumentation.log4j.enabled", "false");
-            properties.put("otel.instrumentation.java-util-logging.enabled", "false");
-            properties.put("otel.instrumentation.logback.enabled", "false");
-        }
         if (!isInstrumentationEnabled(config, "redis")) {
             properties.put("otel.instrumentation.jedis.enabled", "false");
             properties.put("otel.instrumentation.lettuce.enabled", "false");
