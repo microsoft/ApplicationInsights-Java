@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# Version 3.0.1 GA
+* Suppress duplicate AI agents. Resolves [#1345](https://github.com/microsoft/ApplicationInsights-Java/issues/1345)
+* Fix role name precedence. Resolves [#1425](https://github.com/microsoft/ApplicationInsights-Java/issues/1425)
+* Fix APPLICATIONINSIGHTS_CONNECTION_STRING env var. Resolves [#1428](https://github.com/microsoft/ApplicationInsights-Java/issues/1428)
+* Add APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL env var. Resolves [#1422](https://github.com/microsoft/ApplicationInsights-Java/issues/1422)
+* New 'extract' attribute feature added to Telemetry processors.
+
 # Version 3.0.1-BETA.2
 * Fix code to use the correct logging configuration 'level' [#1415](https://github.com/microsoft/ApplicationInsights-Java/issues/1415))
 * Capture log4j2 async logging. Addresses issue [#1389](https://github.com/microsoft/ApplicationInsights-Java/issues/1389)
