@@ -1,5 +1,8 @@
 # CHANGELOG
 
+# Version 3.0.2-BETA
+* Fix App Services logback parser exceptions.
+
 # Version 3.0.1 GA
 * Suppress duplicate AI agents. Resolves [#1345](https://github.com/microsoft/ApplicationInsights-Java/issues/1345)
 * Fix role name precedence. Resolves [#1425](https://github.com/microsoft/ApplicationInsights-Java/issues/1425)
