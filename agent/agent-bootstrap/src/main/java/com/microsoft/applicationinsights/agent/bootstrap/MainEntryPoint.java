@@ -79,7 +79,7 @@ public class MainEntryPoint {
             startupLogger.info("ApplicationInsights Java Agent {} started successfully", version);
             success = true;
             LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-                    .info("Application Insights Codeless Agent Attach Successful");
+                    .info("Application Insights Codeless Agent {} Attach Successful", version);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
