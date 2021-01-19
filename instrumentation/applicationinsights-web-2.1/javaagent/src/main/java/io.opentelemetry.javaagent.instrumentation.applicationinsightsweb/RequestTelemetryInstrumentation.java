@@ -11,6 +11,7 @@ import static net.bytebuddy.matcher.ElementMatchers.isStatic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
+import static net.bytebuddy.matcher.ElementMatchers.takesNoArguments;
 
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import io.opentelemetry.api.trace.Span;
@@ -40,7 +41,14 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
             .and(takesArguments(1)),
         RequestTelemetryInstrumentation.class.getName() + "$SetNameAdvice");
     transformers.put(
-        isMethod().and(isPublic()).and(not(isStatic())).and(not(named("setName"))),
+        isMethod().and(isPublic()).and(not(isStatic())).and(named("getId")).and(takesNoArguments()),
+        RequestTelemetryInstrumentation.class.getName() + "$GetIdAdvice");
+    transformers.put(
+        isMethod()
+            .and(isPublic())
+            .and(not(isStatic()))
+            .and(not(named("setName")))
+            .and(not(named("getId"))),
         RequestTelemetryInstrumentation.class.getName() + "$OtherMethodsAdvice");
     return transformers;
   }
@@ -53,6 +61,19 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
           InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
       if (span != null) {
         span.updateName(name);
+      }
+    }
+  }
+
+  public static class GetIdAdvice {
+    @Advice.OnMethodExit
+    public static void methodExit(
+        @Advice.This RequestTelemetry requestTelemetry,
+        @Advice.Return(readOnly = false) String id) {
+      Span span =
+          InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
+      if (span != null) {
+        id = span.getSpanContext().getSpanIdAsHexString();
       }
     }
   }
