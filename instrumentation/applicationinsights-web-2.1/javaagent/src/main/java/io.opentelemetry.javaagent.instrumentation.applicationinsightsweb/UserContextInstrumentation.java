@@ -59,7 +59,7 @@ public class UserContextInstrumentation implements TypeInstrumentation {
         @Advice.This UserContext userContext, @Advice.Origin("#m") String methodName) {
       Span span = InstrumentationContext.get(UserContext.class, Span.class).get(userContext);
       if (span != null) {
-        throw new RuntimeException(
+        LogOnce.logOnce(
             "ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getContext().getUser()."
                 + methodName
                 + "() is not supported by the Application Insights for Java 3.0 agent");
