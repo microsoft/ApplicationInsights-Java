@@ -3,8 +3,8 @@
 # Version 3.0.2 GA
 * Fix App Services logback parser exceptions.
 * Log instead of throwing exception on unbridged API [#1442](https://github.com/microsoft/ApplicationInsights-Java/issues/1442)
-* Support request getId
-* Support operation getId
+* Fix role name config [#1450](https://github.com/microsoft/ApplicationInsights-Java/issues/1450)
+* Support more interop with 2.x SDK ThreadContext (getId and getParentId)
 
 # Version 3.0.1 GA
 * Suppress duplicate AI agents. Resolves [#1345](https://github.com/microsoft/ApplicationInsights-Java/issues/1345)
