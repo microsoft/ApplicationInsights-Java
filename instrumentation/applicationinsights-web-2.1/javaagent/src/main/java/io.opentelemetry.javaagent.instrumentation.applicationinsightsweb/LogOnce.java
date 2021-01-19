@@ -21,7 +21,11 @@ public class LogOnce {
 
   public static void logOnce(String message) {
     if (loggedMessages.add(message)) {
-      logger.info(message);
+      logger.warn("{} (this message will only be logged once)", message);
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "location stack trace for the warning above", new Exception("location stack trace"));
+      }
     }
   }
 }
