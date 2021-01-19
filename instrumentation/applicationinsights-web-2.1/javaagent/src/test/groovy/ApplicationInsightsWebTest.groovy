@@ -58,9 +58,9 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
     }
   }
 
-  def "update request name"() {
+  def "set request name"() {
     when:
-    new Code().updateName()
+    new Code().setName()
 
     then:
     assertTraces(1) {
@@ -71,12 +71,58 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
           hasNoParent()
         }
         span(1) {
-          name "Code.internalUpdateName"
+          name "Code.internalSetName"
           kind INTERNAL
           childOf span(0)
         }
       }
     }
+  }
+
+  def "get request id"() {
+    when:
+    def spanId = new Code().getId()
+
+    then:
+    assertTraces(1) {
+      trace(0, 2) {
+        span(0) {
+          name "Code.getId"
+          kind SERVER
+          hasNoParent()
+        }
+        span(1) {
+          name "Code.internalGetId"
+          kind INTERNAL
+          childOf span(0)
+        }
+      }
+    }
+
+    TEST_WRITER.getTraces().get(0).get(0).spanId == spanId
+  }
+
+  def "get operation id"() {
+    when:
+    def spanId = new Code().getOperationId()
+
+    then:
+    assertTraces(1) {
+      trace(0, 2) {
+        span(0) {
+          name "Code.getOperationId"
+          kind SERVER
+          hasNoParent()
+        }
+        span(1) {
+          name "Code.internalGetOperationId"
+          kind INTERNAL
+          childOf span(0)
+        }
+      }
+    }
+
+    TEST_WRITER.getTraces().get(0).get(0).spanId == spanId
   }
 
   def "should not throw on other RequestTelemetryContext methods"() {
@@ -102,5 +148,10 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
   def "should not throw on other UserContext methods"() {
     expect:
     new Code().otherUserContextMethods()
+  }
+
+  def "should not throw on other OperationContext methods"() {
+    expect:
+    new Code().otherOperationContextMethods()
   }
 }

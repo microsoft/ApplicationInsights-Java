@@ -34,6 +34,9 @@ public class ApplicationInsightsWebInstrumentationModule extends Instrumentation
     mappings.put(
         "com.microsoft.applicationinsights.extensibility.context.UserContext",
         Span.class.getName());
+    mappings.put(
+        "com.microsoft.applicationinsights.extensibility.context.OperationContext",
+        Span.class.getName());
     return mappings;
   }
 
@@ -45,6 +48,7 @@ public class ApplicationInsightsWebInstrumentationModule extends Instrumentation
         new BaseTelemetryInstrumentation(),
         new RequestTelemetryInstrumentation(),
         new TelemetryContextInstrumentation(),
-        new UserContextInstrumentation());
+        new UserContextInstrumentation(),
+        new OperationContextInstrumentation());
   }
 }
