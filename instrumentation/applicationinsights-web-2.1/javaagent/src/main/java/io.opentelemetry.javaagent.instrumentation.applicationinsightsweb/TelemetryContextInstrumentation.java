@@ -12,6 +12,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesNoArguments;
 
+import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import io.opentelemetry.api.trace.Span;
@@ -41,7 +42,18 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
             .and(takesNoArguments()),
         TelemetryContextInstrumentation.class.getName() + "$GetUserAdvice");
     transformers.put(
-        isMethod().and(isPublic()).and(not(isStatic())).and(not(named("getUser"))),
+        isMethod()
+            .and(isPublic())
+            .and(not(isStatic()))
+            .and(named("getOperation"))
+            .and(takesNoArguments()),
+        TelemetryContextInstrumentation.class.getName() + "$GetOperationAdvice");
+    transformers.put(
+        isMethod()
+            .and(isPublic())
+            .and(not(isStatic()))
+            .and(not(named("getUser")))
+            .and(not(named("getOperation"))),
         TelemetryContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
     return transformers;
   }
@@ -54,6 +66,19 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
           InstrumentationContext.get(TelemetryContext.class, Span.class).get(telemetryContext);
       if (span != null) {
         InstrumentationContext.get(UserContext.class, Span.class).put(userContext, span);
+      }
+    }
+  }
+
+  public static class GetOperationAdvice {
+    @Advice.OnMethodExit
+    public static void methodExit(
+        @Advice.This TelemetryContext telemetryContext,
+        @Advice.Return OperationContext operationContext) {
+      Span span =
+          InstrumentationContext.get(TelemetryContext.class, Span.class).get(telemetryContext);
+      if (span != null) {
+        InstrumentationContext.get(OperationContext.class, Span.class).put(operationContext, span);
       }
     }
   }
