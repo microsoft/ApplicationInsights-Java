@@ -46,6 +46,11 @@ public class Code {
     return internalGetId();
   }
 
+  @WithSpan(kind = Span.Kind.SERVER)
+  public String getOperationId() {
+    return internalGetOperationId();
+  }
+
   @WithSpan
   private void internalSetName() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name");
@@ -54,6 +59,15 @@ public class Code {
   @WithSpan
   private String internalGetId() {
     return ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getId();
+  }
+
+  @WithSpan
+  private String internalGetOperationId() {
+    return ThreadContext.getRequestTelemetryContext()
+        .getHttpRequestTelemetry()
+        .getContext()
+        .getOperation()
+        .getId();
   }
 
   @WithSpan(kind = Span.Kind.SERVER)
@@ -83,5 +97,14 @@ public class Code {
         .getContext()
         .getUser()
         .setAccountId("abc");
+  }
+
+  @WithSpan(kind = Span.Kind.SERVER)
+  public void otherOperationContextMethods() {
+    ThreadContext.getRequestTelemetryContext()
+        .getHttpRequestTelemetry()
+        .getContext()
+        .getOperation()
+        .setId("xyz");
   }
 }
