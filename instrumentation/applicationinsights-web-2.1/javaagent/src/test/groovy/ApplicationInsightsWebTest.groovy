@@ -79,48 +79,28 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
     }
   }
 
-  def "should throw on other RequestTelemetryContext methods"() {
-    when:
+  def "should not throw on other RequestTelemetryContext methods"() {
+    expect:
     new Code().otherRequestTelemetryContextMethods()
-
-    then:
-    def exception = thrown(Exception)
-    exception.getMessage().contains("ThreadContext.getRequestTelemetryContext().getCorrelationContext() is not supported")
   }
 
-  def "should throw on other RequestTelemetry methods"() {
-    when:
+  def "should not throw on other RequestTelemetry methods"() {
+    expect:
     new Code().otherRequestTelemetryMethods()
-
-    then:
-    def exception = thrown(Exception)
-    exception.getMessage().contains("ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getName() is not supported")
   }
 
-  def "should throw on other BaseTelemetry methods"() {
-    when:
+  def "should not throw on other BaseTelemetry methods"() {
+    expect:
     new Code().otherBaseTelemetryMethods()
-
-    then:
-    def exception = thrown(Exception)
-    exception.getMessage().contains("ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getTimestamp() is not supported")
   }
 
-  def "should throw on other TelemetryContext methods"() {
-    when:
+  def "should not throw on other TelemetryContext methods"() {
+    expect:
     new Code().otherTelemetryContextMethods()
-
-    then:
-    def exception = thrown(Exception)
-    exception.getMessage().contains("ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getContext().getSession() is not supported")
   }
 
-  def "should throw on other UserContext methods"() {
-    when:
+  def "should not throw on other UserContext methods"() {
+    expect:
     new Code().otherUserContextMethods()
-
-    then:
-    def exception = thrown(Exception)
-    exception.getMessage().contains("ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getContext().getUser().setAccountId() is not supported")
   }
 }
