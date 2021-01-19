@@ -65,7 +65,7 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
       Span span =
           InstrumentationContext.get(TelemetryContext.class, Span.class).get(telemetryContext);
       if (span != null) {
-        throw new RuntimeException(
+        LogOnce.logOnce(
             "ThreadContext.getRequestTelemetryContext().getRequestTelemetry().getContext()."
                 + methodName
                 + "() is not supported by the Application Insights for Java 3.0 agent");
