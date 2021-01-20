@@ -195,7 +195,7 @@ public class ConfigurationBuilder {
 
         if (isTrimEmpty(config.role.instance)) {
             // only use WEBSITE_INSTANCE_ID as a fallback
-            config.role.name = getEnv(WEBSITE_INSTANCE_ID);
+            config.role.instance = getEnv(WEBSITE_INSTANCE_ID);
         }
         config.role.instance = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, config.role.instance);
 
@@ -248,7 +248,7 @@ public class ConfigurationBuilder {
     }
 
     private static boolean isTrimEmpty(String value) {
-        return value != null && !value.trim().isEmpty();
+        return value == null || value.trim().isEmpty();
     }
 
     public static class ConfigurationException extends RuntimeException {

@@ -17,7 +17,6 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Moshi.Builder;
 import com.squareup.moshi.Types;
 import okio.Buffer;
 import org.junit.*;
@@ -31,7 +30,11 @@ public class ConfigurationTest {
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
     private static Configuration loadConfiguration() throws IOException {
-        CharSource json = Resources.asCharSource(Resources.getResource("applicationinsights.json"), Charsets.UTF_8);
+        return loadConfiguration("applicationinsights.json");
+    }
+
+    private static Configuration loadConfiguration(String resourceName) throws IOException {
+        CharSource json = Resources.asCharSource(Resources.getResource(resourceName), Charsets.UTF_8);
         Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
         JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
         return jsonAdapter.fromJson(json.read());
@@ -154,6 +157,9 @@ public class ConfigurationTest {
 
     @Test
     public void shouldUseDefaults() throws IOException {
+        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+        envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+
         Configuration configuration = loadConfiguration();
 
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
@@ -174,6 +180,68 @@ public class ConfigurationTest {
         ConfigurationBuilder.overlayEnvVars(configuration);
 
         assertEquals("InstrumentationKey=11111111-1111-1111-1111-111111111111", configuration.connectionString);
+    }
+
+    @Test
+    public void shouldOverrideRoleName() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_ROLE_NAME", "role name from env");
+        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("role name from env", configuration.role.name);
+    }
+
+    @Test
+    public void shouldOverrideRoleNameWithWebsiteEnvVar() throws IOException {
+        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+
+        Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("role name from website env", configuration.role.name);
+    }
+
+    @Test
+    public void shouldNotOverrideRoleNameWithWebsiteEnvVar() throws IOException {
+        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("Something Good", configuration.role.name);
+    }
+
+    @Test
+    public void shouldOverrideRoleInstance() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_ROLE_INSTANCE", "role instance from env");
+        envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("role instance from env", configuration.role.instance);
+    }
+
+    @Test
+    public void shouldOverrideRoleInstanceWithWebsiteEnvVar() throws IOException {
+        envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+
+        Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("role instance from website env", configuration.role.instance);
+    }
+
+    @Test
+    public void shouldNotOverrideRoleInstanceWithWebsiteEnvVar() throws IOException {
+        envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("xyz123", configuration.role.instance);
     }
 
     @Test
