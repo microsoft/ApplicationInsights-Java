@@ -14,11 +14,13 @@ import static net.bytebuddy.matcher.ElementMatchers.takesNoArguments;
 
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
+import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
@@ -41,7 +43,26 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
             .and(takesNoArguments()),
         RequestTelemetryContextInstrumentation.class.getName() + "$GetRequestTelemetryAdvice");
     transformers.put(
-        isMethod().and(isPublic()).and(not(isStatic())).and(not(named("getHttpRequestTelemetry"))),
+        isMethod()
+            .and(isPublic())
+            .and(not(isStatic()))
+            .and(named("getTracestate"))
+            .and(takesNoArguments()),
+        RequestTelemetryContextInstrumentation.class.getName() + "$GetTracestateAdvice");
+    transformers.put(
+        isMethod()
+            .and(isPublic())
+            .and(not(isStatic()))
+            .and(named("getTraceflag"))
+            .and(takesNoArguments()),
+        RequestTelemetryContextInstrumentation.class.getName() + "$GetTraceflagAdvice");
+    transformers.put(
+        isMethod()
+            .and(isPublic())
+            .and(not(isStatic()))
+            .and(not(named("getHttpRequestTelemetry")))
+            .and(not(named("getTracestate")))
+            .and(not(named("getTraceflag"))),
         RequestTelemetryContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
     return transformers;
   }
@@ -56,6 +77,54 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
               .get(requestTelemetryContext);
       if (span != null) {
         InstrumentationContext.get(RequestTelemetry.class, Span.class).put(requestTelemetry, span);
+      }
+    }
+  }
+
+  public static class GetTracestateAdvice {
+    @Advice.OnMethodExit
+    public static void methodExit(
+        @Advice.This RequestTelemetryContext requestTelemetryContext,
+        @Advice.Return(readOnly = false) Tracestate tracestate) {
+      Span span =
+          InstrumentationContext.get(RequestTelemetryContext.class, Span.class)
+              .get(requestTelemetryContext);
+      if (span != null) {
+        TracestateBuilder builder = new TracestateBuilder();
+        span.getSpanContext().getTraceState().forEach(builder);
+        tracestate = new Tracestate(builder.toString());
+      }
+    }
+  }
+
+  public static class TracestateBuilder implements BiConsumer<String, String> {
+
+    private final StringBuilder stringBuilder = new StringBuilder();
+
+    @Override
+    public void accept(String key, String value) {
+      if (stringBuilder.length() != 0) {
+        stringBuilder.append(',');
+      }
+      stringBuilder.append(key).append('=').append(value);
+    }
+
+    @Override
+    public String toString() {
+      return stringBuilder.toString();
+    }
+  }
+
+  public static class GetTraceflagAdvice {
+    @Advice.OnMethodExit
+    public static void methodExit(
+        @Advice.This RequestTelemetryContext requestTelemetryContext,
+        @Advice.Return(readOnly = false) int traceflag) {
+      Span span =
+          InstrumentationContext.get(RequestTelemetryContext.class, Span.class)
+              .get(requestTelemetryContext);
+      if (span != null) {
+        traceflag = span.getSpanContext().getTraceFlags();
       }
     }
   }
