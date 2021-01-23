@@ -4,7 +4,7 @@
 
     <!-- The key from the portal: -->
 
-    <ConnectionString>InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://non-existent-host</ConnectionString>
+    <ConnectionString>InstrumentationKey=BAD1BAD1-BAD1-BAD1-BAD1-BAD1BAD1BAD1;IngestionEndpoint=http://non-existent-host</ConnectionString>
 
     <SDKLogger type="CONSOLE">
         <enabled>true</enabled>

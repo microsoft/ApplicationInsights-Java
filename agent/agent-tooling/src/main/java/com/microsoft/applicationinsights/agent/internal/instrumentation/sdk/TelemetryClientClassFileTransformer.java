@@ -25,6 +25,7 @@ import java.io.PrintStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.net.MalformedURLException;
 import java.security.ProtectionDomain;
+import java.util.Date;
 
 import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -39,8 +40,8 @@ import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import net.bytebuddy.jar.asm.ClassReader;
 import net.bytebuddy.jar.asm.ClassVisitor;
 import net.bytebuddy.jar.asm.ClassWriter;
@@ -48,12 +49,12 @@ import net.bytebuddy.jar.asm.FieldVisitor;
 import net.bytebuddy.jar.asm.Label;
 import net.bytebuddy.jar.asm.MethodVisitor;
 import net.bytebuddy.jar.asm.Opcodes;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.util.ASMifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static net.bytebuddy.jar.asm.Opcodes.ACC_PRIVATE;
-import static net.bytebuddy.jar.asm.Opcodes.ACC_PUBLIC;
 import static net.bytebuddy.jar.asm.Opcodes.ACONST_NULL;
 import static net.bytebuddy.jar.asm.Opcodes.ALOAD;
 import static net.bytebuddy.jar.asm.Opcodes.ARETURN;
@@ -63,21 +64,21 @@ import static net.bytebuddy.jar.asm.Opcodes.CHECKCAST;
 import static net.bytebuddy.jar.asm.Opcodes.DLOAD;
 import static net.bytebuddy.jar.asm.Opcodes.DUP;
 import static net.bytebuddy.jar.asm.Opcodes.GETFIELD;
-import static net.bytebuddy.jar.asm.Opcodes.GETSTATIC;
 import static net.bytebuddy.jar.asm.Opcodes.GOTO;
+import static net.bytebuddy.jar.asm.Opcodes.ICONST_1;
 import static net.bytebuddy.jar.asm.Opcodes.ICONST_M1;
 import static net.bytebuddy.jar.asm.Opcodes.IFEQ;
+import static net.bytebuddy.jar.asm.Opcodes.IFNE;
 import static net.bytebuddy.jar.asm.Opcodes.IFNONNULL;
 import static net.bytebuddy.jar.asm.Opcodes.IFNULL;
 import static net.bytebuddy.jar.asm.Opcodes.ILOAD;
 import static net.bytebuddy.jar.asm.Opcodes.INSTANCEOF;
+import static net.bytebuddy.jar.asm.Opcodes.INVOKEINTERFACE;
 import static net.bytebuddy.jar.asm.Opcodes.INVOKESPECIAL;
 import static net.bytebuddy.jar.asm.Opcodes.INVOKESTATIC;
 import static net.bytebuddy.jar.asm.Opcodes.INVOKEVIRTUAL;
 import static net.bytebuddy.jar.asm.Opcodes.IRETURN;
 import static net.bytebuddy.jar.asm.Opcodes.ISTORE;
-import static net.bytebuddy.jar.asm.Opcodes.LLOAD;
-import static net.bytebuddy.jar.asm.Opcodes.LSTORE;
 import static net.bytebuddy.jar.asm.Opcodes.NEW;
 import static net.bytebuddy.jar.asm.Opcodes.RETURN;
 
@@ -129,6 +130,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
 
         private boolean foundConfigurationField;
         private boolean foundIsDisabledMethod;
+        private boolean foundActivateInitializersMethod;
+        private boolean foundActivateProcessorsMethod;
 
         private TelemetryClientClassVisitor(ClassWriter cw) {
             super(ASM7, cw);
@@ -157,6 +160,12 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
                 foundIsDisabledMethod = true;
                 overwriteIsDisabledMethod(mv);
                 return null;
+            } else if (name.equals("activateInitializers") && descriptor.equals("(L" + unshadedPrefix + "/telemetry/Telemetry;)V")) {
+                foundActivateInitializersMethod = true;
+                return mv;
+            } else if (name.equals("activateProcessors") && descriptor.equals("(L" + unshadedPrefix + "/telemetry/Telemetry;)Z")) {
+                foundActivateProcessorsMethod = true;
+                return mv;
             } else {
                 return mv;
             }
@@ -172,108 +181,172 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             writeAgentTrackRequestTelemetryMethod();
             writeAgentTrackExceptionTelemetryMethod();
             writeAgentToMillisMethod();
+            if (!foundActivateInitializersMethod) {
+                writeActivateInitializersMethod();
+            }
+            if (!foundActivateProcessorsMethod) {
+                writeActivateProcessorsMethod();
+            }
         }
 
         private void overwriteTrackMethod(MethodVisitor mv) {
             mv.visitCode();
-            Label l0 = new Label();
-            Label l1 = new Label();
-            Label l2 = new Label();
-            mv.visitTryCatchBlock(l0, l1, l2, "java/lang/Throwable");
+            Label label0 = new Label();
+            Label label1 = new Label();
+            Label label2 = new Label();
+            mv.visitTryCatchBlock(label0, label1, label2, "java/lang/Throwable");
+            Label label3 = new Label();
+            mv.visitLabel(label3);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/TelemetryClient", "isDisabled", "()Z", false);
-            mv.visitJumpInsn(IFEQ, l0);
+            Label label4 = new Label();
+            mv.visitJumpInsn(IFEQ, label4);
+            Label label5 = new Label();
+            mv.visitLabel(label5);
             mv.visitInsn(RETURN);
-            mv.visitLabel(l0);
+            mv.visitLabel(label4);
+            mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEINTERFACE, unshadedPrefix + "/telemetry/Telemetry", "getTimestamp", "()Ljava/util/Date;", true);
+            Label label6 = new Label();
+            mv.visitJumpInsn(IFNONNULL, label6);
+            Label label7 = new Label();
+            mv.visitLabel(label7);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitTypeInsn(NEW, "java/util/Date");
+            mv.visitInsn(DUP);
+            mv.visitMethodInsn(INVOKESPECIAL, "java/util/Date", "<init>", "()V", false);
+            mv.visitMethodInsn(INVOKEINTERFACE, unshadedPrefix + "/telemetry/Telemetry", "setTimestamp", "(Ljava/util/Date;)V", true);
+            mv.visitLabel(label6);
+            mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEINTERFACE, unshadedPrefix + "/telemetry/Telemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", true);
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/TelemetryClient", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "initialize", "(L" + unshadedPrefix + "/telemetry/TelemetryContext;)V", false);
+            Label label8 = new Label();
+            mv.visitLabel(label8);
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "activateInitializers", "(L" + unshadedPrefix + "/telemetry/Telemetry;)V", false);
+            Label label9 = new Label();
+            mv.visitLabel(label9);
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "activateProcessors", "(L" + unshadedPrefix + "/telemetry/Telemetry;)Z", false);
+            mv.visitJumpInsn(IFNE, label0);
+            Label label10 = new Label();
+            mv.visitLabel(label10);
+            mv.visitInsn(RETURN);
+            mv.visitLabel(label0);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/EventTelemetry");
-            Label l3 = new Label();
-            mv.visitJumpInsn(IFEQ, l3);
+            Label label11 = new Label();
+            mv.visitJumpInsn(IFEQ, label11);
+            Label label12 = new Label();
+            mv.visitLabel(label12);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/EventTelemetry");
             mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$trackEventTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/EventTelemetry;)V", false);
-            mv.visitLabel(l3);
+            mv.visitLabel(label11);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/MetricTelemetry");
-            Label l4 = new Label();
-            mv.visitJumpInsn(IFEQ, l4);
+            Label label13 = new Label();
+            mv.visitJumpInsn(IFEQ, label13);
+            Label label14 = new Label();
+            mv.visitLabel(label14);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/MetricTelemetry");
             mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$trackMetricTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/MetricTelemetry;)V", false);
-            mv.visitLabel(l4);
+            mv.visitLabel(label13);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry");
-            Label l5 = new Label();
-            mv.visitJumpInsn(IFEQ, l5);
+            Label label15 = new Label();
+            mv.visitJumpInsn(IFEQ, label15);
+            Label label16 = new Label();
+            mv.visitLabel(label16);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry");
             mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient",
                     "agent$trackRemoteDependencyTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/RemoteDependencyTelemetry;)V", false);
-            mv.visitLabel(l5);
+            mv.visitLabel(label15);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/PageViewTelemetry");
-            Label l6 = new Label();
-            mv.visitJumpInsn(IFEQ, l6);
+            Label label17 = new Label();
+            mv.visitJumpInsn(IFEQ, label17);
+            Label label18 = new Label();
+            mv.visitLabel(label18);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/PageViewTelemetry");
             mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$trackPageViewTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/PageViewTelemetry;)V", false);
-            mv.visitLabel(l6);
+            mv.visitLabel(label17);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/TraceTelemetry");
-            Label l7 = new Label();
-            mv.visitJumpInsn(IFEQ, l7);
+            Label label19 = new Label();
+            mv.visitJumpInsn(IFEQ, label19);
+            Label label20 = new Label();
+            mv.visitLabel(label20);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/TraceTelemetry");
             mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$trackTraceTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/TraceTelemetry;)V", false);
-            mv.visitLabel(l7);
+            mv.visitLabel(label19);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/RequestTelemetry");
-            Label l8 = new Label();
-            mv.visitJumpInsn(IFEQ, l8);
+            Label label21 = new Label();
+            mv.visitJumpInsn(IFEQ, label21);
+            Label label22 = new Label();
+            mv.visitLabel(label22);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/RequestTelemetry");
             mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$trackRequestTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/RequestTelemetry;)V", false);
-            mv.visitLabel(l8);
+            mv.visitLabel(label21);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(INSTANCEOF, unshadedPrefix + "/telemetry/ExceptionTelemetry");
-            Label l9 = new Label();
-            mv.visitJumpInsn(IFEQ, l9);
+            mv.visitJumpInsn(IFEQ, label1);
+            Label label23 = new Label();
+            mv.visitLabel(label23);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, unshadedPrefix + "/telemetry/ExceptionTelemetry");
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/TelemetryClient", "agent$trackExceptionTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/ExceptionTelemetry;)V", false);
-            mv.visitLabel(l1);
-            mv.visitJumpInsn(GOTO, l9);
-            mv.visitLabel(l2);
-            mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[]{"java/lang/Throwable"});
+            mv.visitLabel(label1);
+            mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+            Label label24 = new Label();
+            mv.visitJumpInsn(GOTO, label24);
+            mv.visitLabel(label2);
+            mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[] {"java/lang/Throwable"});
             mv.visitVarInsn(ASTORE, 2);
+            Label label25 = new Label();
+            mv.visitLabel(label25);
             mv.visitVarInsn(ALOAD, 2);
             mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "logErrorOnce", "(Ljava/lang/Throwable;)V",
                     false);
-            mv.visitLabel(l9);
+            mv.visitLabel(label24);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitInsn(RETURN);
-            mv.visitMaxs(2, 3);
+            Label label26 = new Label();
+            mv.visitLabel(label26);
+            mv.visitMaxs(3, 3);
             mv.visitEnd();
         }
 
@@ -309,6 +382,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackEventTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/EventTelemetry;)V", null, null);
             mv.visitCode();
+            Label label0 = new Label();
+            mv.visitLabel(label0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getName",
                     "()Ljava/lang/String;", false);
@@ -316,12 +391,22 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getProperties",
                     "()Ljava/util/Map;", false);
             mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getTags", "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getMetrics",
                     "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
             mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackEvent",
-                    "(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V", false);
+                    "(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            Label label1 = new Label();
+            mv.visitLabel(label1);
             mv.visitInsn(RETURN);
-            mv.visitMaxs(3, 2);
+            Label label2 = new Label();
+            mv.visitLabel(label2);
+            mv.visitMaxs(5, 2);
             mv.visitEnd();
         }
 
@@ -329,6 +414,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackMetricTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/MetricTelemetry;)V", null, null);
             mv.visitCode();
+            Label label0 = new Label();
+            mv.visitLabel(label0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getName",
                     "()Ljava/lang/String;", false);
@@ -344,17 +431,29 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getMax",
                     "()Ljava/lang/Double;", false);
             mv.visitVarInsn(ALOAD, 1);
+            Label label1 = new Label();
+            mv.visitLabel(label1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getStandardDeviation",
                     "()Ljava/lang/Double;", false);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getProperties",
                     "()Ljava/util/Map;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getTags", "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
+            Label label2 = new Label();
+            mv.visitLabel(label2);
             mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackMetric",
-                    "(Ljava/lang/String;DLjava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;" +
-                            "Ljava/util/Map;)V",
-                    false);
+                    "(Ljava/lang/String;DLjava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            Label label3 = new Label();
+            mv.visitLabel(label3);
             mv.visitInsn(RETURN);
-            mv.visitMaxs(8, 2);
+            Label label4 = new Label();
+            mv.visitLabel(label4);
+            mv.visitMaxs(10, 2);
             mv.visitEnd();
         }
 
@@ -362,6 +461,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackRemoteDependencyTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/RemoteDependencyTelemetry;)V", null, null);
             mv.visitCode();
+            Label label0 = new Label();
+            mv.visitLabel(label0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getName",
                     "()Ljava/lang/String;", false);
@@ -378,6 +479,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$toMillis",
                     "(L" + unshadedPrefix + "/telemetry/Duration;)Ljava/lang/Long;", false);
             mv.visitVarInsn(ALOAD, 1);
+            Label label1 = new Label();
+            mv.visitLabel(label1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getSuccess",
                     "()Z", false);
             mv.visitVarInsn(ALOAD, 1);
@@ -393,14 +496,25 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getProperties",
                     "()Ljava/util/Map;", false);
             mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getTags", "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getMetrics",
                     "()Ljava/util/Map;", false);
-            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackDependency",
-                    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;" +
-                            "Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)V",
-                    false);
+            mv.visitVarInsn(ALOAD, 1);
+            Label label2 = new Label();
+            mv.visitLabel(label2);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
+            Label label3 = new Label();
+            mv.visitLabel(label3);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackDependency", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            Label label4 = new Label();
+            mv.visitLabel(label4);
             mv.visitInsn(RETURN);
-            mv.visitMaxs(10, 2);
+            Label label5 = new Label();
+            mv.visitLabel(label5);
+            mv.visitMaxs(12, 2);
             mv.visitEnd();
         }
 
@@ -408,6 +522,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackPageViewTelemetry",
                     "(L" + unshadedPrefix + "/telemetry/PageViewTelemetry;)V", null, null);
             mv.visitCode();
+            Label label0 = new Label();
+            mv.visitLabel(label0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getName",
                     "()Ljava/lang/String;", false);
@@ -421,21 +537,38 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getProperties",
                     "()Ljava/util/Map;", false);
             mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getTags", "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getMetrics",
                     "()Ljava/util/concurrent/ConcurrentMap;", false);
-            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackPageView",
-                    "(Ljava/lang/String;Ljava/net/URI;JLjava/util/Map;Ljava/util/Map;)V", false);
+            mv.visitVarInsn(ALOAD, 1);
+            Label label1 = new Label();
+            mv.visitLabel(label1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
+            Label label2 = new Label();
+            mv.visitLabel(label2);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackPageView", "(Ljava/lang/String;Ljava/net/URI;JLjava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            Label label3 = new Label();
+            mv.visitLabel(label3);
             mv.visitInsn(RETURN);
-            mv.visitMaxs(6, 2);
+            Label label4 = new Label();
+            mv.visitLabel(label4);
+            mv.visitMaxs(8, 2);
             mv.visitEnd();
         }
 
         private void writeAgentTrackTraceTelemetryMethod() {
             MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackTraceTelemetry", "(L" + unshadedPrefix + "/telemetry/TraceTelemetry;)V", null, null);
             mv.visitCode();
+            Label label0 = new Label();
+            mv.visitLabel(label0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TraceTelemetry", "getSeverityLevel", "()L" + unshadedPrefix + "/telemetry/SeverityLevel;", false);
             mv.visitVarInsn(ASTORE, 2);
+            Label label1 = new Label();
+            mv.visitLabel(label1);
             mv.visitVarInsn(ALOAD, 2);
             Label label2 = new Label();
             mv.visitJumpInsn(IFNULL, label2);
@@ -449,13 +582,29 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitLabel(label3);
             mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[] {Opcodes.INTEGER});
             mv.visitVarInsn(ISTORE, 3);
+            Label label4 = new Label();
+            mv.visitLabel(label4);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TraceTelemetry", "getMessage", "()Ljava/lang/String;", false);
             mv.visitVarInsn(ILOAD, 3);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TraceTelemetry", "getProperties", "()Ljava/util/Map;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agent/bootstrap/BytecodeUtil", "trackTrace", "(Ljava/lang/String;ILjava/util/Map;)V", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TraceTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getTags", "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            Label label5 = new Label();
+            mv.visitLabel(label5);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TraceTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
+            Label label6 = new Label();
+            mv.visitLabel(label6);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackTrace", "(Ljava/lang/String;ILjava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            Label label7 = new Label();
+            mv.visitLabel(label7);
             mv.visitInsn(RETURN);
+            Label label8 = new Label();
+            mv.visitLabel(label8);
             mv.visitMaxs(5, 4);
             mv.visitEnd();
         }
@@ -480,39 +629,70 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getDuration", "()L" + unshadedPrefix + "/telemetry/Duration;", false);
             mv.visitMethodInsn(INVOKESPECIAL, unshadedPrefix + "/TelemetryClient", "agent$toMillis", "(L" + unshadedPrefix + "/telemetry/Duration;)Ljava/lang/Long;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J", false);
             mv.visitVarInsn(ALOAD, 1);
+            Label label3 = new Label();
+            mv.visitLabel(label3);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getResponseCode", "()Ljava/lang/String;", false);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "isSuccess", "()Z", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agent/bootstrap/BytecodeUtil", "trackRequest", "(Ljava/lang/String;Ljava/lang/String;Ljava/net/URL;Ljava/util/Date;JLjava/lang/String;Z)V", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getProperties", "()Ljava/util/Map;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getTags", "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
+            Label label4 = new Label();
+            mv.visitLabel(label4);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackRequest", "(Ljava/lang/String;Ljava/lang/String;Ljava/net/URL;Ljava/util/Date;Ljava/lang/Long;Ljava/lang/String;ZLjava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
             mv.visitLabel(label1);
-            Label label3 = new Label();
-            mv.visitJumpInsn(GOTO, label3);
+            Label label5 = new Label();
+            mv.visitJumpInsn(GOTO, label5);
             mv.visitLabel(label2);
             mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[] {"java/net/MalformedURLException"});
             mv.visitVarInsn(ASTORE, 2);
+            Label label6 = new Label();
+            mv.visitLabel(label6);
             mv.visitVarInsn(ALOAD, 2);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agent/bootstrap/BytecodeUtil", "logErrorOnce", "(Ljava/lang/Throwable;)V", false);
-            mv.visitLabel(label3);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "logErrorOnce", "(Ljava/lang/Throwable;)V", false);
+            mv.visitLabel(label5);
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitInsn(RETURN);
-            mv.visitMaxs(8, 3);
+            Label label7 = new Label();
+            mv.visitLabel(label7);
+            mv.visitMaxs(10, 3);
             mv.visitEnd();
         }
 
         private void writeAgentTrackExceptionTelemetryMethod() {
             MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackExceptionTelemetry", "(L" + unshadedPrefix + "/telemetry/ExceptionTelemetry;)V", null, null);
             mv.visitCode();
+            Label label0 = new Label();
+            mv.visitLabel(label0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getException", "()Ljava/lang/Exception;", false);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getProperties", "()Ljava/util/Map;", false);
             mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getTags", "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getMetrics", "()Ljava/util/concurrent/ConcurrentMap;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "com/microsoft/applicationinsights/agent/bootstrap/BytecodeUtil", "trackException", "(Ljava/lang/Exception;Ljava/util/Map;Ljava/util/Map;)V", false);
+            mv.visitVarInsn(ALOAD, 1);
+            Label label1 = new Label();
+            mv.visitLabel(label1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
+            Label label2 = new Label();
+            mv.visitLabel(label2);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackException", "(Ljava/lang/Exception;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            Label label3 = new Label();
+            mv.visitLabel(label3);
             mv.visitInsn(RETURN);
-            mv.visitMaxs(3, 2);
+            Label label4 = new Label();
+            mv.visitLabel(label4);
+            mv.visitMaxs(5, 2);
             mv.visitEnd();
         }
 
@@ -543,6 +723,23 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMaxs(6, 2);
             mv.visitEnd();
         }
+
+        private void writeActivateInitializersMethod() {
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "activateInitializers", "(L" + unshadedPrefix + "/telemetry/Telemetry;)V", null, null);
+            mv.visitCode();
+            mv.visitInsn(RETURN);
+            mv.visitMaxs(0, 2);
+            mv.visitEnd();
+        }
+
+        private void writeActivateProcessorsMethod() {
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "activateProcessors", "(L" + unshadedPrefix + "/telemetry/Telemetry;)Z", null, null);
+            mv.visitCode();
+            mv.visitInsn(ICONST_1);
+            mv.visitInsn(IRETURN);
+            mv.visitMaxs(1, 2);
+            mv.visitEnd();
+        }
     }
 
     // DO NOT REMOVE
@@ -558,6 +755,12 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         content = content.replace("com/microsoft/applicationinsights/telemetry", "\" + unshadedPrefix + \"/telemetry");
         content = content.replace("\"com/microsoft/applicationinsights/agent/internal/instrumentation/sdk" +
                 "/TelemetryClientClassFileTransformer$TC", "unshadedPrefix + \"/TelemetryClient");
+        content = content.replace("\"com/microsoft/applicationinsights/agent/bootstrap/BytecodeUtil\"", "BYTECODE_UTIL_INTERNAL_NAME");
+        content = content.replace("methodVisitor = classWriter.", "MethodVisitor mv = cw.");
+        content = content.replace("methodVisitor.", "mv.");
+        content = content.replace("\r\n", "\n");
+        content = content.replaceAll("(?m)^[^\n]*visitLineNumber[^\n]*\n", "");
+        content = content.replaceAll("(?m)^[^\n]*visitLocalVariable[^\n]*\n", "");
         System.out.println(content);
     }
 
@@ -566,6 +769,17 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
     public static class TC {
 
         private TelemetryConfiguration configuration;
+
+        public TelemetryContext getContext() {
+            return null;
+        }
+
+        private void activateInitializers(Telemetry telemetry) {
+        }
+
+        private boolean activateProcessors(Telemetry telemetry) {
+            return true;
+        }
 
         public boolean isDisabled() {
             return configuration.isTrackingDisabled();
@@ -582,6 +796,22 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             if (isDisabled()) {
                 return;
             }
+
+            if (telemetry.getTimestamp() == null) {
+                telemetry.setTimestamp(new Date());
+            }
+
+            // intentionally not getting instrumentation key from configuration
+            // while still allowing instrumentation key to be overridden at Telemetry or TelemetryClient level
+
+            telemetry.getContext().initialize(getContext());
+
+            activateInitializers(telemetry);
+
+            if (!activateProcessors(telemetry)) {
+                return;
+            }
+
             try {
                 if (telemetry instanceof EventTelemetry) {
                     agent$trackEventTelemetry((EventTelemetry) telemetry);
@@ -610,39 +840,44 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         }
 
         private void agent$trackEventTelemetry(EventTelemetry t) {
-            BytecodeUtil.trackEvent(t.getName(), t.getProperties(), t.getMetrics());
+            BytecodeUtil.trackEvent(t.getName(), t.getProperties(), t.getContext().getTags(), t.getMetrics(), t.getContext().getInstrumentationKey());
         }
 
         private void agent$trackMetricTelemetry(MetricTelemetry t) {
             BytecodeUtil.trackMetric(t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
-                    t.getStandardDeviation(), t.getProperties());
+                    t.getStandardDeviation(), t.getProperties(), t.getContext().getTags(), t.getContext().getInstrumentationKey());
         }
 
         private void agent$trackRemoteDependencyTelemetry(RemoteDependencyTelemetry t) {
             BytecodeUtil.trackDependency(t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
-                    t.getSuccess(), t.getCommandName(), t.getType(), t.getTarget(), t.getProperties(), t.getMetrics());
+                    t.getSuccess(), t.getCommandName(), t.getType(), t.getTarget(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
+                    t.getContext().getInstrumentationKey());
         }
 
         private void agent$trackPageViewTelemetry(PageViewTelemetry t) {
-            BytecodeUtil.trackPageView(t.getName(), t.getUri(), t.getDuration(), t.getProperties(), t.getMetrics());
+            BytecodeUtil.trackPageView(t.getName(), t.getUri(), t.getDuration(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
+                    t.getContext().getInstrumentationKey());
         }
 
         private void agent$trackTraceTelemetry(TraceTelemetry t) {
             SeverityLevel level = t.getSeverityLevel();
-            int severityLevel = level != null ? level.getValue(): -1;
-            BytecodeUtil.trackTrace(t.getMessage(), severityLevel, t.getProperties());
+            int severityLevel = level != null ? level.getValue() : -1;
+            BytecodeUtil.trackTrace(t.getMessage(), severityLevel, t.getProperties(), t.getContext().getTags(),
+                    t.getContext().getInstrumentationKey());
         }
 
         private void agent$trackRequestTelemetry(RequestTelemetry t) {
             try {
-                BytecodeUtil.trackRequest(t.getId(), t.getName(), t.getUrl(), t.getTimestamp(), agent$toMillis(t.getDuration()), t.getResponseCode(), t.isSuccess());
+                BytecodeUtil.trackRequest(t.getId(), t.getName(), t.getUrl(), t.getTimestamp(), agent$toMillis(t.getDuration()),
+                        t.getResponseCode(), t.isSuccess(), t.getProperties(), t.getContext().getTags(), t.getContext().getInstrumentationKey());
             } catch (MalformedURLException e) {
                 BytecodeUtil.logErrorOnce(e);
             }
         }
 
-        public void agent$trackExceptionTelemetry(ExceptionTelemetry telemetry) {
-            BytecodeUtil.trackException(telemetry.getException(), telemetry.getProperties(), telemetry.getMetrics());
+        private void agent$trackExceptionTelemetry(ExceptionTelemetry t) {
+            BytecodeUtil.trackException(t.getException(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
+                    t.getContext().getInstrumentationKey());
         }
 
         @Nullable
