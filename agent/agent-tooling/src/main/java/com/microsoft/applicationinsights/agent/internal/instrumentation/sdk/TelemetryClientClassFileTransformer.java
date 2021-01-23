@@ -160,6 +160,9 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
                 foundIsDisabledMethod = true;
                 overwriteIsDisabledMethod(mv);
                 return null;
+            } else if (name.equals("flush") && descriptor.equals("()V")) {
+                overwriteFlushMethod(mv);
+                return null;
             } else if (name.equals("activateInitializers") && descriptor.equals("(L" + unshadedPrefix + "/telemetry/Telemetry;)V")) {
                 foundActivateInitializersMethod = true;
                 return mv;
@@ -375,6 +378,14 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
                     "isTrackingDisabled", "()Z", false);
             mv.visitInsn(IRETURN);
             mv.visitMaxs(1, 1);
+            mv.visitEnd();
+        }
+
+        private void overwriteFlushMethod(MethodVisitor mv) {
+            mv.visitCode();
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "flush", "()V", false);
+            mv.visitInsn(RETURN);
+            mv.visitMaxs(0, 1);
             mv.visitEnd();
         }
 
@@ -779,6 +790,10 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
 
         private boolean activateProcessors(Telemetry telemetry) {
             return true;
+        }
+
+        public void flush() {
+            BytecodeUtil.flush();
         }
 
         public boolean isDisabled() {

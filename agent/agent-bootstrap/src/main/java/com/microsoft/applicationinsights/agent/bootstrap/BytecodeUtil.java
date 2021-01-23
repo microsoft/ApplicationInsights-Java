@@ -102,6 +102,12 @@ public class BytecodeUtil {
         }
     }
 
+    public static void flush() {
+        if (delegate != null) {
+            delegate.flush();
+        }
+    }
+
     public static void logErrorOnce(Throwable t) {
         if (delegate != null) {
             delegate.logErrorOnce(t);
@@ -141,6 +147,8 @@ public class BytecodeUtil {
 
         void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
                             String instrumentationKey);
+
+        void flush();
 
         void logErrorOnce(Throwable t);
     }

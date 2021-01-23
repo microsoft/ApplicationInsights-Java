@@ -232,6 +232,12 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     @Override
+    public void flush() {
+        // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
+        checkNotNull(Global.getTelemetryClient()).flush();
+    }
+
+    @Override
     public void logErrorOnce(Throwable t) {
         if (!alreadyLoggedError.getAndSet(true)) {
             logger.error(t.getMessage(), t);

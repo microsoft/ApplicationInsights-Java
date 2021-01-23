@@ -24,6 +24,9 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         client.trackPageView("test-page");
 
+        // just making sure flush() doesn't throw exception
+        client.flush();
+
         PageViewTelemetry pvt2 = new PageViewTelemetry("test-page-2");
         pvt2.getContext().setInstrumentationKey("12341234-1234-1234-1234-123412341234");
         pvt2.getContext().getUser().setId("user-id-goes-here");
