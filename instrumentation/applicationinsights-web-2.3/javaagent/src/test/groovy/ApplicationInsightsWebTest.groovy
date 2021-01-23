@@ -7,6 +7,7 @@ import static io.opentelemetry.api.trace.Span.Kind.INTERNAL
 import static io.opentelemetry.api.trace.Span.Kind.SERVER
 
 import com.microsoft.applicationinsights.web.internal.ThreadContext
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanContext
@@ -112,7 +113,7 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
 
   def "get operation id"() {
     when:
-    def spanId = new Code().getOperationId()
+    def traceId = new Code().getOperationId()
 
     then:
     assertTraces(1) {
@@ -130,7 +131,7 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
       }
     }
 
-    TEST_WRITER.getTraces().get(0).get(0).spanId == spanId
+    TEST_WRITER.getTraces().get(0).get(0).traceId == traceId
   }
 
   def "get tracestate"() {
@@ -185,6 +186,31 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
 
     where:
     flag << [0, 1]
+  }
+
+  def "should interop with generateChildDependencyTraceparent"() {
+    def spanContext = SpanContext.create(
+      "12341234123412341234123412341234",
+      "1234123412341234",
+      TraceFlags.getDefault(),
+      TraceState.getDefault())
+    def parent = Context.root().with(Span.wrap(spanContext))
+    def span = OpenTelemetry.getGlobalTracer("test")
+      .spanBuilder("test")
+      .setParent(parent)
+      .startSpan()
+
+    when:
+    Scope scope = parent.with(span).makeCurrent()
+    def traceparent
+    try {
+      traceparent = TraceContextCorrelation.generateChildDependencyTraceparent()
+    } finally {
+      scope.close()
+    }
+
+    then:
+    traceparent != null
   }
 
   def "should not throw on other RequestTelemetryContext methods"() {
