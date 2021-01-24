@@ -4,16 +4,18 @@ muzzle {
   pass {
     group = "com.microsoft.azure"
     module = "applicationinsights-web"
-    versions = "[2.0.2,)"
+    versions = "[2.3.0,)"
   }
 }
 
 dependencies {
-  library group: 'com.microsoft.azure', name: 'applicationinsights-web', version: '2.0.2'
+  library group: 'com.microsoft.azure', name: 'applicationinsights-web', version: '2.3.0'
 
   testImplementation project(':instrumentation:opentelemetry-annotations-1.0:javaagent')
 
   // TODO switch to deps.opentelemetryExtAnnotations
   //  after https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/1643
   testImplementation project(path: ':opentelemetry-ext-annotations-shaded-for-instrumenting', configuration: 'shadow')
+
+  testImplementation 'javax.servlet:javax.servlet-api:3.0.1'
 }
