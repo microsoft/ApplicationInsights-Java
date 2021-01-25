@@ -78,10 +78,7 @@
             }
           ]
         }
-      ],
-      "selfDiagnostics": {
-        "level": "debug"
-      }
+      ]
     }
   }
 

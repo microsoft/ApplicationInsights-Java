@@ -22,7 +22,6 @@ package com.microsoft.applicationinsights.agent.bootstrap;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 
@@ -137,16 +136,12 @@ public class MainEntryPoint {
                 } else {
                     startupLogger.error(message, t);
                 }
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            } finally {
+            } catch (Throwable e) {
                 // If the startupLogger still have some issues being initialized, just print the error stack trace
-                if(startupLogger == null) {
-                    if (isFriendlyException) {
-                        System.err.println(message);
-                    } else {
-                        t.printStackTrace();
-                    }
+                if (isFriendlyException) {
+                    System.err.println(message);
+                } else {
+                    t.printStackTrace();
                 }
             }
         }
