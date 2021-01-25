@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
 import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
@@ -36,7 +37,7 @@ public class ConfigurationTest {
     private static Configuration loadConfiguration(String resourceName) throws IOException {
         CharSource json = Resources.asCharSource(Resources.getResource(resourceName), Charsets.UTF_8);
         Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
-        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class).failOnUnknown();
         return jsonAdapter.fromJson(json.read());
     }
 
@@ -71,12 +72,8 @@ public class ConfigurationTest {
     @Test
     public void shouldParseProcessorConfiguration() throws IOException {
 
-        CharSource json = Resources.asCharSource(Resources.getResource("ApplicationInsights_SpanProcessor.json"), Charsets.UTF_8);
-        Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
-        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
-        Configuration configuration = jsonAdapter.fromJson(json.read());
+        Configuration configuration = loadConfiguration("ApplicationInsights_SpanProcessor.json");
         PreviewConfiguration preview = configuration.preview;
-
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
         assertEquals(8, preview.processors.size());
         // insert config test
@@ -280,6 +277,11 @@ public class ConfigurationTest {
         assertEquals(jmxMetrics.get(0).name, configuration.jmxMetrics.get(0).name); // class count is overridden by the env var
         assertEquals(jmxMetrics.get(1).name, configuration.jmxMetrics.get(1).name); // code cache is overridden by the env var
         assertEquals(configuration.jmxMetrics.get(2).name, "Current Thread Count");
+    }
+
+    @Test(expected = JsonDataException.class)
+    public void shouldNotParseFaultyJson() throws IOException {
+        Configuration configuration = loadConfiguration("applicationinsights_faulty.json");
     }
 
     private List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {

@@ -22,6 +22,7 @@ package com.microsoft.applicationinsights.agent.bootstrap;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 
@@ -87,9 +88,9 @@ public class MainEntryPoint {
             FriendlyException friendlyException = getFriendlyException(t);
             String banner = "ApplicationInsights Java Agent " + version + " failed to start";
             if (friendlyException != null) {
-                logErrorMessage(startupLogger, friendlyException.getMessageWithBanner(banner), true, t);
+                logErrorMessage(startupLogger, friendlyException.getMessageWithBanner(banner), true, t, bootstrapURL);
             } else {
-                logErrorMessage(startupLogger, banner, false, t);
+                logErrorMessage(startupLogger, banner, false, t, bootstrapURL);
             }
 
         } finally {
@@ -118,7 +119,8 @@ public class MainEntryPoint {
         return getFriendlyException(cause);
     }
 
-    private static void logErrorMessage(Logger startupLogger, String message, boolean isFriendlyException, Throwable t) {
+    private static void logErrorMessage(Logger startupLogger, String message, boolean isFriendlyException, Throwable t, URL bootstrapURL) {
+
         if (startupLogger != null) {
             if (isFriendlyException) {
                 startupLogger.error(message);
@@ -126,10 +128,24 @@ public class MainEntryPoint {
                 startupLogger.error(message, t);
             }
         } else {
-            if (isFriendlyException) {
-                System.err.println(message);
-            } else {
-                t.printStackTrace();
+            try {
+                Path agentPath = new File(bootstrapURL.toURI()).toPath();
+                startupLogger = configureLogging(new SelfDiagnostics(), agentPath);
+                if (isFriendlyException) {
+                    startupLogger.error(message);
+                } else {
+                    startupLogger.error(message, t);
+                }
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            } finally {
+                if(startupLogger == null) {
+                    if (isFriendlyException) {
+                        System.err.println(message);
+                    } else {
+                        t.printStackTrace();
+                    }
+                }
             }
         }
     }
