@@ -129,6 +129,7 @@ public class MainEntryPoint {
             }
         } else {
             try {
+                // IF the startupLogger failed to be initialized due to configuration syntax error, try initializing it here
                 Path agentPath = new File(bootstrapURL.toURI()).toPath();
                 startupLogger = configureLogging(new SelfDiagnostics(), agentPath);
                 if (isFriendlyException) {
@@ -139,6 +140,7 @@ public class MainEntryPoint {
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             } finally {
+                // If the startupLogger still have some issues being initialized, just print the error stack trace
                 if(startupLogger == null) {
                     if (isFriendlyException) {
                         System.err.println(message);

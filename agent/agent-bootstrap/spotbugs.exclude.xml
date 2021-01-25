@@ -22,6 +22,11 @@
                 <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
                 <Method name="start"/>
             </And>
+            <And>
+                <!-- False Positive. Path is not from an external source. -->
+                <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
+                <Method name="logErrorMessage"/>
+            </And>
         </Or>
     </Match>
     <Match>
