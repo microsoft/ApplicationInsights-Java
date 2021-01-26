@@ -305,11 +305,11 @@ public class ConfigurationBuilder {
                 configuration.lastModifiedTime = lastModifiedTime;
                 return configuration;
             } catch(JsonDataException ex) {
-                throw new FriendlyException("Application Insights Java agent's configuration file has the following issue:\n"+ex.getMessage(),
+                throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following issue:\n"+ex.getMessage(),
                         "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
 
             } catch (JsonEncodingException ex) {
-                throw new FriendlyException("Application Insights Java agent's configuration file has the following syntax issue:\n"+ex.getMessage(),
+                throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following syntax issue:\n"+ex.getMessage(),
                         "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
 
             } catch(Exception e) {
