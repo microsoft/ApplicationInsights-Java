@@ -87,9 +87,9 @@ public class MainEntryPoint {
             FriendlyException friendlyException = getFriendlyException(t);
             String banner = "ApplicationInsights Java Agent " + version + " failed to start";
             if (friendlyException != null) {
-                logErrorMessage(startupLogger, friendlyException.getMessageWithBanner(banner), true, t);
+                logErrorMessage(startupLogger, friendlyException.getMessageWithBanner(banner), true, t, bootstrapURL);
             } else {
-                logErrorMessage(startupLogger, banner, false, t);
+                logErrorMessage(startupLogger, banner, false, t, bootstrapURL);
             }
 
         } finally {
@@ -118,7 +118,8 @@ public class MainEntryPoint {
         return getFriendlyException(cause);
     }
 
-    private static void logErrorMessage(Logger startupLogger, String message, boolean isFriendlyException, Throwable t) {
+    private static void logErrorMessage(Logger startupLogger, String message, boolean isFriendlyException, Throwable t, URL bootstrapURL) {
+
         if (startupLogger != null) {
             if (isFriendlyException) {
                 startupLogger.error(message);
@@ -126,10 +127,22 @@ public class MainEntryPoint {
                 startupLogger.error(message, t);
             }
         } else {
-            if (isFriendlyException) {
-                System.err.println(message);
-            } else {
-                t.printStackTrace();
+            try {
+                // IF the startupLogger failed to be initialized due to configuration syntax error, try initializing it here
+                Path agentPath = new File(bootstrapURL.toURI()).toPath();
+                startupLogger = configureLogging(new SelfDiagnostics(), agentPath);
+                if (isFriendlyException) {
+                    startupLogger.error(message);
+                } else {
+                    startupLogger.error(message, t);
+                }
+            } catch (Throwable e) {
+                // If the startupLogger still have some issues being initialized, just print the error stack trace
+                if (isFriendlyException) {
+                    System.err.println(message);
+                } else {
+                    t.printStackTrace();
+                }
             }
         }
     }

@@ -288,7 +288,7 @@ public class ConfigurationBuilder {
         long lastModifiedTime = attributes.lastModifiedTime().toMillis();
         try (InputStream in = Files.newInputStream(configPath)) {
             Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
-            JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+            JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class).failOnUnknown();
             Buffer buffer = new Buffer();
             buffer.readFrom(in);
             try {
