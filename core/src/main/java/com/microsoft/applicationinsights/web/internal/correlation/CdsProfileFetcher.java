@@ -36,6 +36,7 @@ import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
+import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.PeriodicTaskPool;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -110,11 +111,22 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof SSLHandshakeException) {
                 URI uri =configuration.getEndpointProvider().getAppIdEndpointURL(instrumentationKey);
-                throw new FriendlyException("ApplicationInsights Java Agent failed to connect to CdsProfiler end point.",
-                        "Unable to find valid certification path to requested target.",
-                        "Please import the SSL certificate from "+ uri.getHost() +", into the java key store. "+
-                        "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
-                        "This message is only logged the first time it occurs after startup.");
+                boolean isUsingCustomKeyStore = (System.getProperty("javax.net.ssl.trustStore") != null) ;
+                if(isUsingCustomKeyStore) {
+                    throw new FriendlyException("ApplicationInsights Java Agent failed to connect to CdsProfiler end point.",
+                            "Unable to find valid certification path to requested target.",
+                            "Please import the SSL certificate from "+ uri.getHost() +", into your custom java key store.\n" +
+                                    "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
+                            "This message is only logged the first time it occurs after startup.");
+                } else {
+                    throw new FriendlyException("ApplicationInsights Java Agent failed to connect to CdsProfiler end point.",
+                            "Unable to find valid certification path to requested target.",
+                            "Please import the SSL certificate from "+ uri.getHost() +", into the default java key store located at:" +
+                                    DeviceInfo.getJavaCacertsPath() + "\n" +
+                                    "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
+                            "This message is only logged the first time it occurs after startup.");
+                }
+
             } else {
                 throw new ApplicationIdResolutionException(e);
             }

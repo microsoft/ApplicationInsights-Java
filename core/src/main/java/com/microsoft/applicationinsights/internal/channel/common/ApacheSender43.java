@@ -24,12 +24,12 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import javax.annotation.concurrent.GuardedBy;
 import javax.net.ssl.SSLHandshakeException;
 
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
+import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -78,19 +78,38 @@ public final class ApacheSender43 implements ApacheSender {
         try {
             return getHttpClient().execute(post);
         } catch (SSLHandshakeException e) {
-            String completeUrl = "https://"+post.getURI().getHost();
-            if(completeUrl.equals(Defaults.LIVE_ENDPOINT)) {
-                throw new FriendlyException("ApplicationInsights Java Agent failed to connect to Live metric end point.",
-                        "Unable to find valid certification path to requested target.",
-                        "Please import the SSL certificate from " + completeUrl + ", into the java key store. "+
-                        "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
-                        "This message is only logged the first time it occurs after startup.");
+            String completeUrl = "https://" + post.getURI().getHost();
+            boolean isUsingCustomKeyStore = (System.getProperty("javax.net.ssl.trustStore") != null);
+            if (isUsingCustomKeyStore) {
+                if (completeUrl.equals(Defaults.LIVE_ENDPOINT)) {
+                    throw new FriendlyException("ApplicationInsights Java Agent failed to connect to Live metric end point.",
+                            "Unable to find valid certification path to requested target.",
+                            "Please import the SSL certificate from " + completeUrl + ", into your custom java key store.\n" +
+                                    "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
+                            "This message is only logged the first time it occurs after startup.");
+                } else {
+                    throw new FriendlyException("ApplicationInsights Java Agent failed to send telemetry data.",
+                            "Unable to find valid certification path to requested target.",
+                            "Please import the SSL certificate from " + completeUrl + ", into your custom java key store.\n" +
+                                    "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
+                            "This message is only logged the first time it occurs after startup.");
+                }
             } else {
-                throw new FriendlyException("ApplicationInsights Java Agent failed to send telemetry data.",
-                        "Unable to find valid certification path to requested target.",
-                        "Please import the SSL certificate from " + completeUrl + ", into the java key store. "+
-                        "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
-                        "This message is only logged the first time it occurs after startup.");
+                if (completeUrl.equals(Defaults.LIVE_ENDPOINT)) {
+                    throw new FriendlyException("ApplicationInsights Java Agent failed to connect to Live metric end point.",
+                            "Unable to find valid certification path to requested target.",
+                            "Please import the SSL certificate from " + completeUrl + ", into the default java key store located at:" +
+                                    DeviceInfo.getJavaCacertsPath() + "\n" +
+                                    "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
+                            "This message is only logged the first time it occurs after startup.");
+                } else {
+                    throw new FriendlyException("ApplicationInsights Java Agent failed to send telemetry data.",
+                            "Unable to find valid certification path to requested target.",
+                            "Please import the SSL certificate from " + completeUrl + ", into the default java key store located at:" +
+                                    DeviceInfo.getJavaCacertsPath() + "\n" +
+                                    "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450",
+                            "This message is only logged the first time it occurs after startup.");
+                }
             }
         }
     }
