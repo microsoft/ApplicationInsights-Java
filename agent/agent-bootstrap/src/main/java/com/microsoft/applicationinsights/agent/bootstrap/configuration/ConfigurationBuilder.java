@@ -34,8 +34,11 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonDataException;
+import com.squareup.moshi.JsonEncodingException;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
@@ -301,7 +304,15 @@ public class ConfigurationBuilder {
                 configuration.configPath = configPath;
                 configuration.lastModifiedTime = lastModifiedTime;
                 return configuration;
-            } catch (Exception e) {
+            } catch(JsonDataException ex) {
+                throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following issue:\n"+ex.getMessage(),
+                        "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+
+            } catch (JsonEncodingException ex) {
+                throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following syntax issue:\n"+ex.getMessage(),
+                        "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+
+            } catch(Exception e) {
                 throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
             }
         }
