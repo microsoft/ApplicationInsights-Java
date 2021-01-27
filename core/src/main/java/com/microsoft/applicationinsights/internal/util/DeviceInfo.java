@@ -56,10 +56,5 @@ public class DeviceInfo {
         return Locale.getDefault().toLanguageTag();
     }
 
-    public static String getJavaCacertsPath() {
-        String JAVA_HOME = System.getProperty("java.home");
-        String OS = System.getProperty("os.name").toLowerCase();
-        boolean IS_WINDOWS = (OS.indexOf("win") >= 0);
-        return IS_WINDOWS ? JAVA_HOME+"\\lib\\security\\cacerts" : JAVA_HOME+"/lib/security/cacerts";
-    }
+
 }
