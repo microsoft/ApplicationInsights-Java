@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.TraceFlags
 import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.Scope
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.instrumentation.test.AgentTestRunner
 
 class ApplicationInsightsWebTest extends AgentTestRunner {
@@ -211,6 +212,42 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
 
     then:
     traceparent != null
+  }
+
+  def "should interop with retriveTracestate"() {
+    def spanContext = SpanContext.create(
+      "12341234123412341234123412341234",
+      "1234123412341234",
+      TraceFlags.getDefault(),
+      otelTraceState)
+    def parent = Context.root().with(Span.wrap(spanContext))
+    def span = OpenTelemetry.getGlobalTracer("test")
+      .spanBuilder("test")
+      .setParent(parent)
+      .startSpan()
+
+    AiAppId.setSupplier({ appId })
+
+    when:
+    Scope scope = parent.with(span).makeCurrent()
+    def traceparent = null
+    try {
+      traceparent = TraceContextCorrelation.retriveTracestate()
+    } finally {
+      scope.close()
+    }
+
+    then:
+    traceparent == legacyTracestate
+
+    where:
+    otelTraceState                               | appId  | legacyTracestate
+    TraceState.getDefault()                      | null   | null
+    TraceState.getDefault()                      | ""     | null
+    TraceState.getDefault()                      | "1234" | "az=1234"
+    TraceState.builder().set("one", "1").build() | null   | "one=1"
+    TraceState.builder().set("one", "1").build() | ""     | "one=1"
+    TraceState.builder().set("one", "1").build() | "1234" | "az=1234,one=1"
   }
 
   def "should not throw on other RequestTelemetryContext methods"() {
