@@ -67,12 +67,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             return;
         }
         EventTelemetry telemetry = new EventTelemetry(name);
-        MapUtil.copy(properties, telemetry.getProperties());
-        MapUtil.copy(tags, telemetry.getContext().getTags());
-        MapUtil.copy(metrics, telemetry.getMetrics());
-        if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
-            telemetry.getContext().setInstrumentationKey(instrumentationKey);
-        }
+        telemetry.getProperties().putAll(properties);
+        telemetry.getContext().getTags().putAll(tags);
+        telemetry.getMetrics().putAll(metrics);
+        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
+        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -93,11 +92,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.setMin(min);
         telemetry.setMax(max);
         telemetry.setStandardDeviation(stdDev);
-        MapUtil.copy(properties, telemetry.getProperties());
-        MapUtil.copy(tags, telemetry.getContext().getTags());
-        if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
-            telemetry.getContext().setInstrumentationKey(instrumentationKey);
-        }
+        telemetry.getProperties().putAll(properties);
+        telemetry.getContext().getTags().putAll(tags);
+        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
+        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -122,12 +120,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.setCommandName(commandName);
         telemetry.setType(type);
         telemetry.setTarget(target);
-        MapUtil.copy(properties, telemetry.getProperties());
-        MapUtil.copy(tags, telemetry.getContext().getTags());
-        MapUtil.copy(metrics, telemetry.getMetrics());
-        if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
-            telemetry.getContext().setInstrumentationKey(instrumentationKey);
-        }
+        telemetry.getProperties().putAll(properties);
+        telemetry.getContext().getTags().putAll(tags);
+        telemetry.getMetrics().putAll(metrics);
+        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
+        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -143,12 +140,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.setName(name);
         telemetry.setUrl(uri);
         telemetry.setDuration(totalMillis);
-        MapUtil.copy(properties, telemetry.getProperties());
-        MapUtil.copy(tags, telemetry.getContext().getTags());
-        MapUtil.copy(metrics, telemetry.getMetrics());
-        if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
-            telemetry.getContext().setInstrumentationKey(instrumentationKey);
-        }
+        telemetry.getProperties().putAll(properties);
+        telemetry.getContext().getTags().putAll(tags);
+        telemetry.getMetrics().putAll(metrics);
+        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
+        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -165,11 +161,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (severityLevel != -1) {
             telemetry.setSeverityLevel(getSeverityLevel(severityLevel));
         }
-        MapUtil.copy(properties, telemetry.getProperties());
-        MapUtil.copy(tags, telemetry.getContext().getTags());
-        if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
-            telemetry.getContext().setInstrumentationKey(instrumentationKey);
-        }
+        telemetry.getProperties().putAll(properties);
+        telemetry.getContext().getTags().putAll(tags);
+        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
+        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -193,11 +188,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         telemetry.setResponseCode(responseCode);
         telemetry.setSuccess(success);
-        MapUtil.copy(properties, telemetry.getProperties());
-        MapUtil.copy(tags, telemetry.getContext().getTags());
-        if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
-            telemetry.getContext().setInstrumentationKey(instrumentationKey);
-        }
+        telemetry.getProperties().putAll(properties);
+        telemetry.getContext().getTags().putAll(tags);
+        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
+        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -212,12 +206,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         ExceptionTelemetry telemetry = new ExceptionTelemetry();
         telemetry.setException(exception);
         telemetry.setSeverityLevel(SeverityLevel.Error);
-        MapUtil.copy(properties, telemetry.getProperties());
-        MapUtil.copy(tags, telemetry.getContext().getTags());
-        MapUtil.copy(metrics, telemetry.getMetrics());
-        if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
-            telemetry.getContext().setInstrumentationKey(instrumentationKey);
-        }
+        telemetry.getProperties().putAll(properties);
+        telemetry.getContext().getTags().putAll(tags);
+        telemetry.getMetrics().putAll(metrics);
+        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
+        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }

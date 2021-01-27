@@ -1,46 +1,20 @@
 package com.microsoft.applicationinsights.smoketest;
 
-import java.util.Comparator;
 import java.util.List;
 
 import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
-import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
-import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
-import com.microsoft.applicationinsights.internal.schemav2.MessageData;
-import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
-import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
-import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers;
-import com.microsoft.applicationinsights.smoketest.matchers.PageViewDataMatchers;
-import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import org.junit.Test;
 
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers.withMessage;
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasException;
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasMeasurement;
-import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasSeverityLevel;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasDuration;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasName;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasResponseCode;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasSuccess;
-import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasUrl;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 @UseAgent
 public class CoreAndFilterTests extends AiSmokeTest {
@@ -281,34 +255,46 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         assertNotNull(pv1);
         assertEquals(new Duration(0), pv1.getDuration());
+        // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are from the agent
+        assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", pvdEnvelope1.getIKey());
+        assertEquals("testrolename", pvdEnvelope1.getTags().get("ai.cloud.role"));
+        assertEquals("testroleinstance", pvdEnvelope1.getTags().get("ai.cloud.roleInstance"));
+        assertTrue(pvdEnvelope1.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
         assertNotNull(pv2);
         assertEquals(new Duration(123456), pv2.getDuration());
         assertEquals("value", pv2.getProperties().get("key"));
         assertEquals("a-value", pv2.getProperties().get("a-prop"));
         assertEquals("another-value", pv2.getProperties().get("another-prop"));
-        // checking that custom instrumentation key is sent
-        assertEquals("12341234-1234-1234-1234-123412341234", pvdEnvelope2.getIKey());
         assertEquals("user-id-goes-here", pvdEnvelope2.getTags().get("ai.user.id"));
         assertEquals("account-id-goes-here", pvdEnvelope2.getTags().get("ai.user.accountId"));
         assertEquals("user-agent-goes-here", pvdEnvelope2.getTags().get("ai.user.userAgent"));
         assertEquals("os-goes-here", pvdEnvelope2.getTags().get("ai.device.os"));
         assertEquals("session-id-goes-here", pvdEnvelope2.getTags().get("ai.session.id"));
         assertEquals("1.2.3.4", pvdEnvelope2.getTags().get("ai.location.ip"));
+        // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are from the agent
+        assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", pvdEnvelope2.getIKey());
+        assertEquals("testrolename", pvdEnvelope2.getTags().get("ai.cloud.role"));
+        assertEquals("testroleinstance", pvdEnvelope2.getTags().get("ai.cloud.roleInstance"));
+        assertTrue(pvdEnvelope2.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+
 
         assertNotNull(pv3);
         assertEquals(new Duration(123456), pv3.getDuration());
         assertEquals("value", pv3.getProperties().get("key"));
-        assertEquals("a-value", pv2.getProperties().get("a-prop"));
-        assertEquals("another-value", pv2.getProperties().get("another-prop"));
-        // checking that custom instrumentation key is sent
-        assertEquals("12341234-1234-1234-1234-123412341234", pvdEnvelope3.getIKey());
-        assertEquals("user-id-goes-here", pvdEnvelope2.getTags().get("ai.user.id"));
-        assertEquals("account-id-goes-here", pvdEnvelope2.getTags().get("ai.user.accountId"));
-        assertEquals("user-agent-goes-here", pvdEnvelope2.getTags().get("ai.user.userAgent"));
-        assertEquals("os-goes-here", pvdEnvelope2.getTags().get("ai.device.os"));
-        assertEquals("session-id-goes-here", pvdEnvelope2.getTags().get("ai.session.id"));
-        assertEquals("1.2.3.4", pvdEnvelope2.getTags().get("ai.location.ip"));
+        assertEquals("a-value", pv3.getProperties().get("a-prop"));
+        assertEquals("another-value", pv3.getProperties().get("another-prop"));
+        assertEquals("user-id-goes-here", pvdEnvelope3.getTags().get("ai.user.id"));
+        assertEquals("account-id-goes-here", pvdEnvelope3.getTags().get("ai.user.accountId"));
+        assertEquals("user-agent-goes-here", pvdEnvelope3.getTags().get("ai.user.userAgent"));
+        assertEquals("os-goes-here", pvdEnvelope3.getTags().get("ai.device.os"));
+        assertEquals("session-id-goes-here", pvdEnvelope3.getTags().get("ai.session.id"));
+        assertEquals("1.2.3.4", pvdEnvelope3.getTags().get("ai.location.ip"));
+        // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are from the agent
+        assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", pvdEnvelope3.getIKey());
+        assertEquals("testrolename", pvdEnvelope3.getTags().get("ai.cloud.role"));
+        assertEquals("testroleinstance", pvdEnvelope3.getTags().get("ai.cloud.roleInstance"));
+        assertTrue(pvdEnvelope3.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
         assertParentChild(rd, rdEnvelope, pvdEnvelope1);
         assertParentChild(rd, rdEnvelope, pvdEnvelope2);

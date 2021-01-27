@@ -237,7 +237,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
 
     MetricTelemetry telemetry = gatherData();
     telemetry.getContext().getOperation().setSyntheticSource(HEARTBEAT_SYNTHETIC_METRIC_NAME);
-    telemetryClient.trackMetric(telemetry);
+    telemetryClient.track(telemetry);
     logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
 
   }

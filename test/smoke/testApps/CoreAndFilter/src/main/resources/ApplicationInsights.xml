@@ -4,7 +4,9 @@
 
     <!-- The key from the portal: -->
 
-    <ConnectionString>InstrumentationKey=BAD1BAD1-BAD1-BAD1-BAD1-BAD1BAD1BAD1;IngestionEndpoint=http://non-existent-host</ConnectionString>
+    <!-- cannot use ConnectionString here since testing against 2.x SDK prior to 2.5.1
+         (which was when ConnectionString support was introduced) -->
+    <InstrumentationKey>BAD1BAD1-BAD1-BAD1-BAD1-BAD1BAD1BAD1</InstrumentationKey>
 
     <SDKLogger type="CONSOLE">
         <enabled>true</enabled>
@@ -33,9 +35,11 @@
     </TelemetryInitializers>
 
     <Channel>
+        <EndpointAddress>http://non-existent-host/v2/track</EndpointAddress>
         <DeveloperMode>true</DeveloperMode>
         <FlushIntervalInSeconds>1</FlushIntervalInSeconds>
     </Channel>
+
     <PerformanceCounters>
         <UseBuiltIn>False</UseBuiltIn>
     </PerformanceCounters>

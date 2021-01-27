@@ -207,14 +207,6 @@ public final class TelemetryContext {
         return tags;
     }
 
-    public void initialize(TelemetryContext source) {
-        if (Strings.isNullOrEmpty(this.instrumentationKey) && !Strings.isNullOrEmpty(source.getInstrumentationKey()))
-            setInstrumentationKey(source.getInstrumentationKey(), source.getNormalizedInstrumentationKey());
-
-        MapUtil.copy(source.tags, this.tags);
-        MapUtil.copy(source.properties, this.properties);
-    }
-
     public InternalContext getInternal() {
         if (internal == null) {
             internal = new InternalContext(tags);

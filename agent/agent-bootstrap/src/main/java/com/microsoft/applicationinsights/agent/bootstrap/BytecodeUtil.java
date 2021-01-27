@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil;
 import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil.MicrometerUtilDelegate;
@@ -120,6 +121,32 @@ public class BytecodeUtil {
                 + MINUTES.toMillis(minutes)
                 + SECONDS.toMillis(seconds)
                 + milliseconds;
+    }
+
+    // basically the same as SDK MapUtil.copy()
+    public static void copy(Map<String, String> source, Map<String, String> target) {
+        if (target == null) {
+            throw new IllegalArgumentException("target must not be null");
+        }
+
+        if (source == null || source.isEmpty()) {
+            return;
+        }
+
+        for (Map.Entry<String, String> entry : source.entrySet()) {
+            String key = entry.getKey();
+            if (key == null || key.isEmpty()) {
+                continue;
+            }
+
+            if (!target.containsKey(key)) {
+                if (target instanceof ConcurrentHashMap && entry.getValue() == null) {
+                    continue;
+                } else {
+                    target.put(key, entry.getValue());
+                }
+            }
+        }
     }
 
     public interface BytecodeUtilDelegate {

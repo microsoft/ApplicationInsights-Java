@@ -44,6 +44,7 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
         client.trackPageView(pvt2);
 
         TelemetryClient otherClient = new TelemetryClient();
+        // this instrumentation set directly on the TelemetryClient should is intentionally ignored by interop
         otherClient.getContext().setInstrumentationKey("12341234-1234-1234-1234-123412341234");
         otherClient.getContext().getUser().setId("user-id-goes-here");
         otherClient.getContext().getUser().setAccountId("account-id-goes-here");
