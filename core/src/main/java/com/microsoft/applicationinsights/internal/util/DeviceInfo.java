@@ -55,6 +55,4 @@ public class DeviceInfo {
     public static String getLocale() {
         return Locale.getDefault().toLanguageTag();
     }
-
-
 }
