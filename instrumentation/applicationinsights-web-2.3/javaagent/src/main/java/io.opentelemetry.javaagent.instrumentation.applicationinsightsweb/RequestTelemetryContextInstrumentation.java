@@ -16,6 +16,8 @@ import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.HashMap;
@@ -90,9 +92,22 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
           InstrumentationContext.get(RequestTelemetryContext.class, Span.class)
               .get(requestTelemetryContext);
       if (span != null) {
-        TracestateBuilder builder = new TracestateBuilder();
-        span.getSpanContext().getTraceState().forEach(builder);
-        tracestate = new Tracestate(builder.toString());
+        TraceState traceState = span.getSpanContext().getTraceState();
+        Tracestate parent;
+        if (traceState.isEmpty()) {
+          parent = null;
+        } else {
+          TracestateBuilder builder = new TracestateBuilder();
+          traceState.forEach(builder);
+          parent = new Tracestate(builder.toString());
+        }
+        // this is what 2.x SDK does
+        String appId = AiAppId.getAppId();
+        if (appId != null && !appId.isEmpty()) {
+          tracestate = new Tracestate(parent, "az", appId);
+        } else {
+          tracestate = parent;
+        }
       }
     }
   }
