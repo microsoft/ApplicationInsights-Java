@@ -46,7 +46,7 @@ public class BytecodeUtil {
             MicrometerUtil.setDelegate(new MicrometerUtilDelegate() {
                 @Override
                 public void trackMetric(String name, double value, Integer count, Double min, Double max, Map<String, String> properties) {
-                    delegate.trackMetric(name, value, count, min, max, null, properties, Collections.emptyMap(), null);
+                    delegate.trackMetric(name, value, count, min, max, null, properties, Collections.emptyMap());
                 }
             });
         }
@@ -55,51 +55,49 @@ public class BytecodeUtil {
     public static void trackEvent(String name, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
                                   String instrumentationKey) {
         if (delegate != null) {
-            delegate.trackEvent(name, properties, tags, metrics, instrumentationKey);
+            delegate.trackEvent(name, properties, tags, metrics);
         }
     }
 
     public static void trackMetric(String name, double value, Integer count, Double min, Double max, Double stdDev,
-                                   Map<String, String> properties, Map<String, String> tags, String instrumentationKey) {
+                                   Map<String, String> properties, Map<String, String> tags) {
         if (delegate != null) {
-            delegate.trackMetric(name, value, count, min, max, stdDev, properties, tags, instrumentationKey);
+            delegate.trackMetric(name, value, count, min, max, stdDev, properties, tags);
         }
     }
 
     public static void trackDependency(String name, String id, String resultCode, Long totalMillis, boolean success,
                                        String commandName, String type, String target, Map<String, String> properties,
-                                       Map<String, String> tags, Map<String, Double> metrics, String instrumentationKey) {
+                                       Map<String, String> tags, Map<String, Double> metrics) {
         if (delegate != null) {
             delegate.trackDependency(name, id, resultCode, totalMillis, success, commandName, type, target, properties,
-                    tags, metrics, instrumentationKey);
+                    tags, metrics);
         }
     }
 
     public static void trackPageView(String name, URI uri, long totalMillis, Map<String, String> properties, Map<String, String> tags,
-                                     Map<String, Double> metrics, String instrumentationKey) {
+                                     Map<String, Double> metrics) {
         if (delegate != null) {
-            delegate.trackPageView(name, uri, totalMillis, properties, tags, metrics, instrumentationKey);
+            delegate.trackPageView(name, uri, totalMillis, properties, tags, metrics);
         }
     }
 
-    public static void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags,
-                                  String instrumentationKey) {
+    public static void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags) {
         if (delegate != null) {
-            delegate.trackTrace(message, severityLevel, properties, tags, instrumentationKey);
+            delegate.trackTrace(message, severityLevel, properties, tags);
         }
     }
 
     public static void trackRequest(String id, String name, URL url, Date timestamp, Long duration, String responseCode, boolean success,
-                                    Map<String, String> properties, Map<String, String> tags, String instrumentationKey) {
+                                    Map<String, String> properties, Map<String, String> tags) {
         if (delegate != null) {
-            delegate.trackRequest(id, name, url, timestamp, duration, responseCode, success, properties, tags, instrumentationKey);
+            delegate.trackRequest(id, name, url, timestamp, duration, responseCode, success, properties, tags);
         }
     }
 
-    public static void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
-                                      String instrumentationKey) {
+    public static void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
         if (delegate != null) {
-            delegate.trackException(exception, properties, tags, metrics, instrumentationKey);
+            delegate.trackException(exception, properties, tags, metrics);
         }
     }
 
@@ -151,29 +149,24 @@ public class BytecodeUtil {
 
     public interface BytecodeUtilDelegate {
 
-        void trackEvent(String name, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
-                        String instrumentationKey);
+        void trackEvent(String name, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics);
 
         void trackMetric(String name, double value, Integer count, Double min, Double max,
-                         Double stdDev, Map<String, String> properties, Map<String, String> tags,
-                         String instrumentationKey);
+                         Double stdDev, Map<String, String> properties, Map<String, String> tags);
 
         void trackDependency(String name, String id, String resultCode, Long totalMillis,
                              boolean success, String commandName, String type, String target,
-                             Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
-                             String instrumentationKey);
+                             Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics);
 
         void trackPageView(String name, URI uri, long totalMillis, Map<String, String> properties, Map<String, String> tags,
-                           Map<String, Double> metrics, String instrumentationKey);
+                           Map<String, Double> metrics);
 
-        void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags,
-                        String instrumentationKey);
+        void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags);
 
         void trackRequest(String id, String name, URL url, Date timestamp, Long duration, String responseCode, boolean success,
-                          Map<String, String> properties, Map<String, String> tags, String instrumentationKey);
+                          Map<String, String> properties, Map<String, String> tags);
 
-        void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
-                            String instrumentationKey);
+        void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics);
 
         void flush();
 

@@ -60,8 +60,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
 
     @Override
-    public void trackEvent(String name, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
-                           String instrumentationKey) {
+    public void trackEvent(String name, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
 
         if (Strings.isNullOrEmpty(name)) {
             return;
@@ -79,8 +78,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     // TODO do not track if perf counter (?)
     @Override
     public void trackMetric(String name, double value, Integer count, Double min, Double max,
-                            Double stdDev, Map<String, String> properties, Map<String, String> tags,
-                            String instrumentationKey) {
+                            Double stdDev, Map<String, String> properties, Map<String, String> tags) {
 
         if (Strings.isNullOrEmpty(name)) {
             return;
@@ -103,8 +101,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     @Override
     public void trackDependency(String name, String id, String resultCode, @Nullable Long totalMillis,
                                 boolean success, String commandName, String type, String target,
-                                Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
-                                String instrumentationKey) {
+                                Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
 
         if (Strings.isNullOrEmpty(name)) {
             return;
@@ -131,7 +128,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     @Override
     public void trackPageView(String name, URI uri, long totalMillis, Map<String, String> properties,
-                              Map<String, String> tags, Map<String, Double> metrics, String instrumentationKey) {
+                              Map<String, String> tags, Map<String, Double> metrics) {
 
         if (Strings.isNullOrEmpty(name)) {
             return;
@@ -150,8 +147,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     @Override
-    public void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags,
-                           String instrumentationKey) {
+    public void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags) {
         if (Strings.isNullOrEmpty(message)) {
             return;
         }
@@ -171,7 +167,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     @Override
     public void trackRequest(String id, String name, URL url, Date timestamp, @Nullable Long duration, String responseCode, boolean success,
-                             Map<String, String> properties, Map<String, String> tags, String instrumentationKey) {
+                             Map<String, String> properties, Map<String, String> tags) {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
@@ -198,7 +194,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     @Override
     public void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags,
-                               Map<String, Double> metrics, String instrumentationKey) {
+                               Map<String, Double> metrics) {
         if (exception == null) {
             return;
         }
