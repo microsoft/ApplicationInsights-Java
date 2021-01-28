@@ -69,8 +69,6 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
         telemetry.getMetrics().putAll(metrics);
-        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
-        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -92,8 +90,6 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.setStandardDeviation(stdDev);
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
-        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
-        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -120,8 +116,6 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
         telemetry.getMetrics().putAll(metrics);
-        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
-        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -140,8 +134,6 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
         telemetry.getMetrics().putAll(metrics);
-        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
-        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -159,8 +151,6 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
-        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
-        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -186,8 +176,6 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.setSuccess(success);
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
-        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
-        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }
@@ -205,8 +193,6 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
         telemetry.getMetrics().putAll(metrics);
-        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
-        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
 
         track(telemetry);
     }

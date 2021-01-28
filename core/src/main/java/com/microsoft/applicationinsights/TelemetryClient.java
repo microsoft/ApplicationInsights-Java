@@ -131,6 +131,8 @@ public class TelemetryClient {
         }
 
         TelemetryContext context = telemetry.getContext();
+        // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
+        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
         context.setInstrumentationKey(getContext().getInstrumentationKey(), getContext().getNormalizedInstrumentationKey());
 
         // the TelemetryClient's base context contains tags:
