@@ -112,12 +112,11 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof SSLHandshakeException) {
                 URI uri =configuration.getEndpointProvider().getAppIdEndpointURL(instrumentationKey);
-                SSLUtil.throwSSLFriendlyException(uri.getHost());
+                throw SSLUtil.newSSLFriendlyException(uri.getHost());
             } else {
                 throw new ApplicationIdResolutionException(e);
             }
         }
-        return null;
     }
 
     private ProfileFetcherResult internalFetchAppProfile(String instrumentationKey, TelemetryConfiguration configuration)

@@ -7,7 +7,7 @@ import com.microsoft.applicationinsights.internal.config.connection.ConnectionSt
 
 public class SSLUtil {
 
-    public static void throwSSLFriendlyException(String url) {
+    public static FriendlyException newSSLFriendlyException(String url)  {
         throw new FriendlyException(getSSLFriendlyExceptionBanner(url),
                 getSSLFriendlyExceptionMessage(),
                 getSSLFriendlyExceptionAction(url),

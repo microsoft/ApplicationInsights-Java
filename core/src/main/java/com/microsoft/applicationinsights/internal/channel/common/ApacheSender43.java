@@ -78,9 +78,8 @@ public final class ApacheSender43 implements ApacheSender {
             return getHttpClient().execute(post);
         } catch (SSLHandshakeException e) {
             String completeUrl = "https://" + post.getURI().getHost();
-            SSLUtil.throwSSLFriendlyException(completeUrl);
+            throw SSLUtil.newSSLFriendlyException(completeUrl);
         }
-        return null;
     }
 
     @Override
