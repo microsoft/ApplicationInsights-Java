@@ -8,12 +8,12 @@ import com.microsoft.applicationinsights.internal.config.connection.ConnectionSt
 public class SSLUtil {
 
     public static void throwSSLFriendlyException(String url) {
-        boolean isUsingCustomKeyStore = (System.getProperty("javax.net.ssl.trustStore") != null);
         throw new FriendlyException(getSSLFriendlyExceptionBanner(url),
                 getSSLFriendlyExceptionMessage(),
-                getSSLFriendlyExceptionAction(url, isUsingCustomKeyStore),
+                getSSLFriendlyExceptionAction(url),
                 getSSLFriendlyExceptionNote());
     }
+
     private static String getJavaCacertsPath() {
         String JAVA_HOME = System.getProperty("java.home");
         return new File(JAVA_HOME, "lib/security/cacerts").getPath();
@@ -24,9 +24,8 @@ public class SSLUtil {
         if(cacertsPath!=null) {
             return new File(cacertsPath).getPath();
         }
-        return "Custom Java Keystore Path not specified";
+        return null;
     }
-
 
     private static String getSSLFriendlyExceptionBanner(String url) {
         if (url.equals(Defaults.LIVE_ENDPOINT)) {
@@ -39,13 +38,14 @@ public class SSLUtil {
         return "Unable to find valid certification path to requested target.";
     }
 
-    private static String getSSLFriendlyExceptionAction(String completeUrl, boolean isUsingCustomKeyStore) {
-        if (isUsingCustomKeyStore) {
-            return "Please import the SSL certificate from " + completeUrl + ", into your custom java key store located at:\n"
-                    + getCustomJavaKeystorePath() + "\n"
+    private static String getSSLFriendlyExceptionAction(String url) {
+        String customJavaKeyStorePath = getCustomJavaKeystorePath();
+        if (customJavaKeyStorePath != null) {
+            return "Please import the SSL certificate from " + url + ", into your custom java key store located at:\n"
+                    + customJavaKeyStorePath + "\n"
                     + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
         }
-        return "Please import the SSL certificate from " + completeUrl + ", into the default java key store located at:\n"
+        return "Please import the SSL certificate from " + url + ", into the default java key store located at:\n"
                 + getJavaCacertsPath() + "\n"
                 + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
     }
