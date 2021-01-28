@@ -4,9 +4,7 @@
 
     <!-- The key from the portal: -->
 
-    <!-- cannot use ConnectionString here since testing against 2.x SDK prior to 2.5.1
-         (which was when ConnectionString support was introduced) -->
-    <InstrumentationKey>BAD1BAD1-BAD1-BAD1-BAD1-BAD1BAD1BAD1</InstrumentationKey>
+    <ConnectionString>InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://non-existent-host</ConnectionString>
 
     <!-- HTTP request component (not required for bare API) -->
     <QuickPulse enabled="false" />
@@ -29,7 +27,7 @@
     </TelemetryInitializers>
 
     <Channel>
-        <EndpointAddress>http://non-existent-host/v2/track</EndpointAddress>
+
         <DeveloperMode>true</DeveloperMode>
         <FlushIntervalInSeconds>1</FlushIntervalInSeconds>
     </Channel>
