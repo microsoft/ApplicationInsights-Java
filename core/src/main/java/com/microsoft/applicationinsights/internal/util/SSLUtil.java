@@ -3,10 +3,18 @@ package com.microsoft.applicationinsights.internal.util;
 import java.io.File;
 import javax.net.ssl.SSLHandshakeException;
 
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 
 public class SSLUtil {
 
+    public static void throwSSLFriendlyException(String url) {
+        boolean isUsingCustomKeyStore = (System.getProperty("javax.net.ssl.trustStore") != null);
+        throw new FriendlyException(SSLUtil.getSSLFriendlyExceptionBanner(url),
+                SSLUtil.getSSLFriendlyExceptionMessage(),
+                SSLUtil.getSSLFriendlyExceptionAction(url, isUsingCustomKeyStore),
+                SSLUtil.getSSLFriendlyExceptionNote());
+    }
     public static String getJavaCacertsPath() {
         String JAVA_HOME = System.getProperty("java.home");
         return new File(JAVA_HOME, "lib/security/cacerts").getPath();

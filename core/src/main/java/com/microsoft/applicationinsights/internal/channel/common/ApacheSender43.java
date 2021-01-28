@@ -78,12 +78,9 @@ public final class ApacheSender43 implements ApacheSender {
             return getHttpClient().execute(post);
         } catch (SSLHandshakeException e) {
             String completeUrl = "https://" + post.getURI().getHost();
-            boolean isUsingCustomKeyStore = (System.getProperty("javax.net.ssl.trustStore") != null);
-            throw new FriendlyException(SSLUtil.getSSLFriendlyExceptionBanner(completeUrl),
-                    SSLUtil.getSSLFriendlyExceptionMessage(),
-                    SSLUtil.getSSLFriendlyExceptionAction(completeUrl, isUsingCustomKeyStore),
-                    SSLUtil.getSSLFriendlyExceptionNote());
+            SSLUtil.throwSSLFriendlyException(completeUrl);
         }
+        return null;
     }
 
     @Override

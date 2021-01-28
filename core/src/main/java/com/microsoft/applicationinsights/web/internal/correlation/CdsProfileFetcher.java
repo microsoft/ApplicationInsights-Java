@@ -112,15 +112,12 @@ public class CdsProfileFetcher implements ApplicationIdResolver, Closeable {
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof SSLHandshakeException) {
                 URI uri =configuration.getEndpointProvider().getAppIdEndpointURL(instrumentationKey);
-                boolean isUsingCustomKeyStore = (System.getProperty("javax.net.ssl.trustStore") != null) ;
-                throw new FriendlyException("ApplicationInsights Java Agent failed to connect to CdsProfiler end point.",
-                        SSLUtil.getSSLFriendlyExceptionMessage(),
-                        SSLUtil.getSSLFriendlyExceptionAction(uri.getHost(),isUsingCustomKeyStore),
-                        SSLUtil.getSSLFriendlyExceptionNote());
+                SSLUtil.throwSSLFriendlyException(uri.getHost());
             } else {
                 throw new ApplicationIdResolutionException(e);
             }
         }
+        return null;
     }
 
     private ProfileFetcherResult internalFetchAppProfile(String instrumentationKey, TelemetryConfiguration configuration)
