@@ -129,8 +129,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
 
         private boolean foundConfigurationField;
         private boolean foundIsDisabledMethod;
-        private boolean foundActivateInitializersMethod;
-        private boolean foundActivateProcessorsMethod;
 
         private TelemetryClientClassVisitor(ClassWriter cw) {
             super(ASM7, cw);
@@ -162,12 +160,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             } else if (name.equals("flush") && descriptor.equals("()V")) {
                 overwriteFlushMethod(mv);
                 return null;
-            } else if (name.equals("activateInitializers") && descriptor.equals("(L" + unshadedPrefix + "/telemetry/Telemetry;)V")) {
-                foundActivateInitializersMethod = true;
-                return mv;
-            } else if (name.equals("activateProcessors") && descriptor.equals("(L" + unshadedPrefix + "/telemetry/Telemetry;)Z")) {
-                foundActivateProcessorsMethod = true;
-                return mv;
             } else {
                 return mv;
             }
@@ -183,12 +175,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             writeAgentTrackRequestTelemetryMethod();
             writeAgentTrackExceptionTelemetryMethod();
             writeAgentToMillisMethod();
-            if (!foundActivateInitializersMethod) {
-                writeActivateInitializersMethod();
-            }
-            if (!foundActivateProcessorsMethod) {
-                writeActivateProcessorsMethod();
-            }
         }
 
         private void overwriteTrackMethod(MethodVisitor mv) {
@@ -401,17 +387,14 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getMetrics",
                     "()Ljava/util/concurrent/ConcurrentMap;", false);
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
             mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackEvent",
-                    "(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+                    "(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)V", false);
             Label label1 = new Label();
             mv.visitLabel(label1);
             mv.visitInsn(RETURN);
             Label label2 = new Label();
             mv.visitLabel(label2);
-            mv.visitMaxs(5, 2);
+            mv.visitMaxs(4, 2);
             mv.visitEnd();
         }
 
@@ -696,23 +679,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMaxs(6, 2);
             mv.visitEnd();
         }
-
-        private void writeActivateInitializersMethod() {
-            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "activateInitializers", "(L" + unshadedPrefix + "/telemetry/Telemetry;)V", null, null);
-            mv.visitCode();
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(0, 2);
-            mv.visitEnd();
-        }
-
-        private void writeActivateProcessorsMethod() {
-            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "activateProcessors", "(L" + unshadedPrefix + "/telemetry/Telemetry;)Z", null, null);
-            mv.visitCode();
-            mv.visitInsn(ICONST_1);
-            mv.visitInsn(IRETURN);
-            mv.visitMaxs(1, 2);
-            mv.visitEnd();
-        }
     }
 
     // DO NOT REMOVE
@@ -745,13 +711,6 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
 
         public TelemetryContext getContext() {
             return null;
-        }
-
-        private void activateInitializers(Telemetry telemetry) {
-        }
-
-        private boolean activateProcessors(Telemetry telemetry) {
-            return true;
         }
 
         public void flush() {
@@ -820,7 +779,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         }
 
         private void agent$trackEventTelemetry(EventTelemetry t) {
-            BytecodeUtil.trackEvent(t.getName(), t.getProperties(), t.getContext().getTags(), t.getMetrics(), t.getContext().getInstrumentationKey());
+            BytecodeUtil.trackEvent(t.getName(), t.getProperties(), t.getContext().getTags(), t.getMetrics());
         }
 
         private void agent$trackMetricTelemetry(MetricTelemetry t) {

@@ -52,8 +52,7 @@ public class BytecodeUtil {
         }
     }
 
-    public static void trackEvent(String name, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
-                                  String instrumentationKey) {
+    public static void trackEvent(String name, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
         if (delegate != null) {
             delegate.trackEvent(name, properties, tags, metrics);
         }
