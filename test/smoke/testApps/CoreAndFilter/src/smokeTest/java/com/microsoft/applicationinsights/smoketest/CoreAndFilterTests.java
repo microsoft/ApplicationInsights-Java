@@ -1,18 +1,40 @@
 package com.microsoft.applicationinsights.smoketest;
 
+import java.util.Comparator;
 import java.util.List;
 
 import com.microsoft.applicationinsights.internal.schemav2.Data;
+import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
+import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
+import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
+import com.microsoft.applicationinsights.internal.schemav2.MessageData;
+import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
+import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
+import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
+import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers;
+import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import org.junit.Test;
 
+import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.ExceptionDetailsMatchers.withMessage;
+import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasException;
+import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasMeasurement;
+import static com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers.hasSeverityLevel;
+import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasDuration;
+import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasName;
+import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasResponseCode;
+import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasSuccess;
+import static com.microsoft.applicationinsights.smoketest.matchers.RequestDataMatchers.hasUrl;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.*;
 
