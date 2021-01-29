@@ -31,6 +31,7 @@ import net.bytebuddy.matcher.ElementMatcher;
 @AutoService(InstrumentationModule.class)
 public class JavaUtilLoggingSpansInstrumentationModule extends InstrumentationModule {
   public JavaUtilLoggingSpansInstrumentationModule() {
+    // this name is important currently because it's used to disable this instrumentation
     super("java-util-logging");
   }
 

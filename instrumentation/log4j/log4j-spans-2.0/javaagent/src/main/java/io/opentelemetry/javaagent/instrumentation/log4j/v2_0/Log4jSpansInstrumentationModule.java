@@ -33,6 +33,7 @@ import org.apache.logging.log4j.message.Message;
 @AutoService(InstrumentationModule.class)
 public class Log4jSpansInstrumentationModule extends InstrumentationModule {
   public Log4jSpansInstrumentationModule() {
+    // this name is important currently because it's used to disable this instrumentation
     super("log4j");
   }
 

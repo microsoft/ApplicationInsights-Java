@@ -29,6 +29,7 @@ import net.bytebuddy.matcher.ElementMatcher;
 @AutoService(InstrumentationModule.class)
 public class LogbackSpansInstrumentationModule extends InstrumentationModule {
   public LogbackSpansInstrumentationModule() {
+    // this name is important currently because it's used to disable this instrumentation
     super("logback");
   }
 

@@ -31,6 +31,7 @@ import org.apache.log4j.Priority;
 public class Log4jSpansInstrumentationModule extends InstrumentationModule {
 
   public Log4jSpansInstrumentationModule() {
+    // this name is important currently because it's used to disable this instrumentation
     super("log4j");
   }
 
