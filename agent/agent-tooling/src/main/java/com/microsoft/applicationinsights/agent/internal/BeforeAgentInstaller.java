@@ -61,7 +61,6 @@ import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElem
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher;
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.instrumentation.api.config.Config;
 import org.apache.http.HttpHost;
@@ -179,7 +178,7 @@ public class BeforeAgentInstaller {
         Global.setSamplingPercentage(SamplingPercentage.roundToNearest(config.sampling.percentage));
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
-        AiAppId.setSupplier(new AppIdSupplier());
+        AppIdSupplier.registerAndTriggerResolution();
 
         // this is for Azure Function Linux consumption plan support.
         if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
