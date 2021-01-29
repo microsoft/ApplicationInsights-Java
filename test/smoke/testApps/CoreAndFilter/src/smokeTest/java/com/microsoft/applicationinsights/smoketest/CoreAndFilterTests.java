@@ -18,7 +18,6 @@ import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
 import com.microsoft.applicationinsights.smoketest.matchers.ExceptionDataMatchers;
-import com.microsoft.applicationinsights.smoketest.matchers.PageViewDataMatchers;
 import com.microsoft.applicationinsights.smoketest.matchers.TraceDataMatchers;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import org.junit.Test;
@@ -37,10 +36,7 @@ import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 @UseAgent
 public class CoreAndFilterTests extends AiSmokeTest {
@@ -254,27 +250,77 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        List<Envelope> pvdList = mockedIngestion.waitForItemsInOperation("PageViewData", 2, operationId);
-
-        Envelope pvdEnvelope1 = pvdList.get(0);
-        Envelope pvdEnvelope2 = pvdList.get(1);
+        List<Envelope> pvdList = mockedIngestion.waitForItemsInOperation("PageViewData", 3, operationId);
 
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
-        final List<Domain> pageViews = mockedIngestion.getTelemetryDataByTypeInRequest("PageViewData");
-        assertThat(pageViews, hasItem(allOf(
-                PageViewDataMatchers.hasName("test-page"),
-                PageViewDataMatchers.hasDuration(new Duration(0))
-        )));
+        Envelope pvdEnvelope1 = null;
+        Envelope pvdEnvelope2 = null;
+        Envelope pvdEnvelope3 = null;
 
-        assertThat(pageViews, hasItem(allOf(
-                PageViewDataMatchers.hasName("test-page-2"),
-                PageViewDataMatchers.hasDuration(new Duration(123456)),
-                PageViewDataMatchers.hasProperty("key", "value")
-        )));
+        for (Envelope pvdEnvelope : pvdList) {
+            PageViewData pv = (PageViewData) ((Data) pvdEnvelope.getData()).getBaseData();
+            if (pv.getName().equals("test-page")) {
+                pvdEnvelope1 = pvdEnvelope;
+            } else if (pv.getName().equals("test-page-2")) {
+                pvdEnvelope2 = pvdEnvelope;
+            } else if (pv.getName().equals("test-page-3")) {
+                pvdEnvelope3 = pvdEnvelope;
+            } else {
+                throw new AssertionError("Unexpected page view: " + pv.getName());
+            }
+        }
+
+        PageViewData pv1 = (PageViewData) ((Data) pvdEnvelope1.getData()).getBaseData();
+        PageViewData pv2 = (PageViewData) ((Data) pvdEnvelope2.getData()).getBaseData();
+        PageViewData pv3 = (PageViewData) ((Data) pvdEnvelope3.getData()).getBaseData();
+
+        assertNotNull(pv1);
+        assertEquals(new Duration(0), pv1.getDuration());
+        // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are from the agent
+        assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", pvdEnvelope1.getIKey());
+        assertEquals("testrolename", pvdEnvelope1.getTags().get("ai.cloud.role"));
+        assertEquals("testroleinstance", pvdEnvelope1.getTags().get("ai.cloud.roleInstance"));
+        assertTrue(pvdEnvelope1.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+
+        assertNotNull(pv2);
+        assertEquals(new Duration(123456), pv2.getDuration());
+        assertEquals("value", pv2.getProperties().get("key"));
+        assertEquals("a-value", pv2.getProperties().get("a-prop"));
+        assertEquals("another-value", pv2.getProperties().get("another-prop"));
+        assertEquals("user-id-goes-here", pvdEnvelope2.getTags().get("ai.user.id"));
+        assertEquals("account-id-goes-here", pvdEnvelope2.getTags().get("ai.user.accountId"));
+        assertEquals("user-agent-goes-here", pvdEnvelope2.getTags().get("ai.user.userAgent"));
+        assertEquals("os-goes-here", pvdEnvelope2.getTags().get("ai.device.os"));
+        assertEquals("session-id-goes-here", pvdEnvelope2.getTags().get("ai.session.id"));
+        assertEquals("1.2.3.4", pvdEnvelope2.getTags().get("ai.location.ip"));
+        // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are from the agent
+        assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", pvdEnvelope2.getIKey());
+        assertEquals("testrolename", pvdEnvelope2.getTags().get("ai.cloud.role"));
+        assertEquals("testroleinstance", pvdEnvelope2.getTags().get("ai.cloud.roleInstance"));
+        assertTrue(pvdEnvelope2.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+
+
+        assertNotNull(pv3);
+        assertEquals(new Duration(123456), pv3.getDuration());
+        assertEquals("value", pv3.getProperties().get("key"));
+        assertEquals("a-value", pv3.getProperties().get("a-prop"));
+        assertEquals("another-value", pv3.getProperties().get("another-prop"));
+        assertEquals("user-id-goes-here", pvdEnvelope3.getTags().get("ai.user.id"));
+        assertEquals("account-id-goes-here", pvdEnvelope3.getTags().get("ai.user.accountId"));
+        assertEquals("user-agent-goes-here", pvdEnvelope3.getTags().get("ai.user.userAgent"));
+        assertEquals("os-goes-here", pvdEnvelope3.getTags().get("ai.device.os"));
+        assertEquals("session-id-goes-here", pvdEnvelope3.getTags().get("ai.session.id"));
+        assertEquals("1.2.3.4", pvdEnvelope3.getTags().get("ai.location.ip"));
+        // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are from the agent
+        assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", pvdEnvelope3.getIKey());
+        assertEquals("testrolename", pvdEnvelope3.getTags().get("ai.cloud.role"));
+        assertEquals("testroleinstance", pvdEnvelope3.getTags().get("ai.cloud.roleInstance"));
+        assertTrue(pvdEnvelope3.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
         assertParentChild(rd, rdEnvelope, pvdEnvelope1);
         assertParentChild(rd, rdEnvelope, pvdEnvelope2);
+        assertParentChild(rd, rdEnvelope, pvdEnvelope3);
     }
 
     @Test

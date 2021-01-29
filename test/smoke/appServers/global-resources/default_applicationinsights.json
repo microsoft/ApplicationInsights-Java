@@ -1,3 +1,7 @@
 {
-  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/"
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  }
 }

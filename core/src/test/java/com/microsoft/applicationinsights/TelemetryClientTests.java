@@ -21,13 +21,10 @@
 
 package com.microsoft.applicationinsights;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -44,7 +41,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.any;
@@ -101,58 +97,6 @@ public final class TelemetryClientTests {
     {
         String nodeName = client.getContext().getInternal().getNodeName();
         Assert.assertFalse(nodeName == null || nodeName.length()==0);
-    }
-
-    @Test
-    public void testNodeNameSent() {
-        client.trackEvent("Event");
-
-        EventTelemetry telemetry = (EventTelemetry) verifyAndGetLastEventSent();
-        String nodeName = telemetry.getContext().getInternal().getNodeName();
-        Assert.assertFalse(nodeName == null || nodeName.length()==0);
-    }
-
-    @Test
-    public void testOverideNodeName(){
-        String overrideNode = "NewNodeName";
-        client.getContext().getInternal().setNodeName(overrideNode);
-        client.trackEvent("Event");
-        EventTelemetry telemetry = (EventTelemetry) verifyAndGetLastEventSent();
-        String nodeName = telemetry.getContext().getInternal().getNodeName();
-        Assert.assertTrue("NodeName was not overriden", nodeName.equals(overrideNode));
-    }
-
-    @Test
-    public void testChannelSendException() {
-        TelemetryChannel mockChannel = new TelemetryChannel() {
-            @Override
-            public boolean isDeveloperMode() {
-                return false;
-            }
-
-            @Override
-            public void setDeveloperMode(boolean value) {
-
-            }
-
-            @Override
-            public void send(Telemetry item) {
-                throw new RuntimeException();
-            }
-
-            @Override
-            public void shutdown(long timeout, TimeUnit timeUnit) {
-
-            }
-
-            @Override
-            public void flush() {
-
-            }
-        };
-
-        configuration.setChannel(mockChannel);
-        client.trackEvent("Mock");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -212,226 +156,8 @@ public final class TelemetryClientTests {
     }
 
     @Test
-    public void testTrackEventWithPropertiesAndMetrics() {
-        Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
-        Map<String, Double> metrics = new HashMap<String, Double>() {{ put("key", 1d); }};
-
-        client.trackEvent("Event", properties, metrics);
-
-        EventTelemetry telemetry = (EventTelemetry) verifyAndGetLastEventSent();
-        Assert.assertTrue("Expected telemetry property not found", telemetry.getProperties().get("key").equalsIgnoreCase("value"));
-        Assert.assertTrue("Expected telemetry property not found", 1d == telemetry.getMetrics().get("key"));
-    }
-
-    @Test
-    public void testTrackEventWithName() {
-        client.trackEvent("Event");
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackEventWithEventTelemetry() {
-        EventTelemetry eventTelemetry = new EventTelemetry("Event");
-        client.trackEvent(eventTelemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackSessionState() {
-        client.trackSessionState(SessionState.End);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackTraceAll() {
-        Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
-        client.trackTrace("Trace", SeverityLevel.Error, properties);
-
-        Telemetry telemetry = verifyAndGetLastEventSent();
-        verifyTraceTelemetry(telemetry, SeverityLevel.Error, properties);
-    }
-
-    @Test
-    public void testTrackTraceWithProperties() {
-        Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
-        client.trackTrace("Trace", null, properties);
-
-        Telemetry telemetry = verifyAndGetLastEventSent();
-        verifyTraceTelemetry(telemetry, null, properties);
-    }
-
-    @Test
-    public void testTrackTraceWithSeverityLevel() {
-        client.trackTrace("Trace", SeverityLevel.Critical);
-
-        Telemetry telemetry = verifyAndGetLastEventSent();
-        verifyTraceTelemetry(telemetry, SeverityLevel.Critical, null);
-    }
-
-    @Test
-    public void testTrackTraceWithName() {
-        client.trackTrace("Trace");
-
-        verifyAndGetLastEventSent();}
-
-    @Test
-    public void testTrackTraceWithTraceTelemetry() {
-        TraceTelemetry telemetry = new TraceTelemetry("Trace");
-        client.trackTrace(telemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackMetricWithExpandedValues() {
-        Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
-        client.trackMetric("Metric", 1, 1, 1, 1, properties);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackMetricWithNameAndValue() {
-        final String name = "Metric";
-        final double value = 1.11;
-        client.trackMetric(name, value);
-
-        MetricTelemetry mt = (MetricTelemetry) verifyAndGetLastEventSent();
-        assertEquals("getName", name, mt.getName());
-        assertEquals("getValue", value, mt.getValue(), Math.ulp(value));
-
-        assertNull("getCount should be null", mt.getCount());
-        assertNull("getMin should be null", mt.getMin());
-        assertNull("getMax should be null", mt.getMax());
-        assertNull("getStandardDeviation should be null", mt.getStandardDeviation());
-        assertTrue("properties should be empty", mt.getProperties().isEmpty());
-    }
-
-    @Test
-    public void testTrackMetricWithAllValues() {
-        Map<String, String> props = new HashMap<String, String>() {{
-            put("key1", "value1");
-            put("key2", "value2");
-        }};
-
-        final String name = "MyMetric";
-        final double value = 1.01;
-        final Integer sampleCount = 2;
-        final Double min = 0.01;
-        final Double max = 1.0;
-        final Double stdDev = 0.636396;
-
-        client.trackMetric(name, value, sampleCount, min, max, stdDev, props);
-        MetricTelemetry mt = (MetricTelemetry) verifyAndGetLastEventSent();
-
-        assertEquals("getName", name, mt.getName());
-        assertEquals("getValue", value, mt.getValue(), Math.ulp(value));
-        assertEquals("getMin", min, mt.getMin());
-        assertEquals("getMax", max, mt.getMax());
-        assertEquals("getStandardDeviation", stdDev, mt.getStandardDeviation());
-        assertNotNull("getProperties should be non-null", mt.getProperties());
-        for (String key : props.keySet()) {
-            assertTrue("metric properties contains key", mt.getProperties().containsKey(key));
-            assertEquals("metric properties key/value pair did not match", props.get(key), mt.getProperties().get(key));
-        }
-    }
-
-    @Test
-    public void testTrackMetricAggregateWithSomeNulls() {
-        Map<String, String> propsIsNull = null;
-
-        final String name = "MyMetricHasNulls";
-        final double value = 1.02;
-        final Integer sampleCount = 3;
-        final Double minIsNull = null;
-        final Double max = 0.99;
-        final Double stdDevIsNull = null;
-
-        client.trackMetric(name, value, sampleCount, minIsNull, max, stdDevIsNull, propsIsNull);
-        MetricTelemetry mt = (MetricTelemetry) verifyAndGetLastEventSent();
-
-        assertEquals("getName", name, mt.getName());
-        assertEquals("getValue", value, mt.getValue(), Math.ulp(value));
-        assertNull("getMin should be null", mt.getMin());
-        assertEquals("getMax", max, mt.getMax());
-        assertNull("getStandardDeviation should be null", mt.getStandardDeviation());
-        assertNotNull("getProperties should be null", mt.getProperties());
-        assertEquals("properties size", 0, mt.getProperties().size());
-    }
-
-    @Test
-    public void testTrackMetricWithMetricTelemetry() {
-        MetricTelemetry telemetry = new MetricTelemetry("Metric", 1);
-        client.trackMetric(telemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackExceptionWithPropertiesAndMetrics() {
-        Exception exception = new Exception("Exception");
-        Map<String, String> properties = new HashMap<String, String>() {{ put("key", "value"); }};
-        Map<String, Double> metrics = new HashMap<String, Double>() {{ put("key", 1d); }};
-
-        client.trackException(exception, properties, metrics);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackExceptionWithExceptionTelemetry() {
-        ExceptionTelemetry telemetry = new ExceptionTelemetry(new Exception("Exception"));
-
-        client.trackException(telemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackException() {
-        Exception exception = new Exception("Exception");
-
-        client.trackException(exception);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackHttpRequest() {
-        client.trackHttpRequest("Name", new Date(), 1, "200", true);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackHttpRequestWithHttpRequestTelemetry() {
-        RequestTelemetry telemetry = new RequestTelemetry("Name", new Date(), 1, "200", true);
-        client.trackRequest(telemetry);
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
     @Ignore("Not supported yet.") //FIXME yes, it is
     public void testTrackRemoteDependency(){ }
-
-    @Test
-    public void testTrackPageViewWithName() {
-        client.trackPageView("PageName");
-
-        verifyAndGetLastEventSent();
-    }
-
-    @Test
-    public void testTrackPageViewWithPageViewTelemetry() {
-        PageViewTelemetry telemetry = new PageViewTelemetry("PageName");
-        client.trackPageView(telemetry);
-
-        verifyAndGetLastEventSent();
-    }
 
     @Test
     public void testTrackWithCustomTelemetryTimestamp() {
