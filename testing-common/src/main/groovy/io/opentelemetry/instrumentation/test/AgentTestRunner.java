@@ -16,6 +16,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.test.asserts.InMemoryExporterAssert;
 import io.opentelemetry.javaagent.testing.common.AgentTestingExporterAccess;
+import io.opentelemetry.javaagent.testing.common.AgentTestingMicrometerDelegateAccess;
 import io.opentelemetry.javaagent.testing.common.TestAgentListenerAccess;
 import java.util.Collections;
 import java.util.List;
@@ -98,6 +99,7 @@ public abstract class AgentTestRunner extends Specification {
     assert !Span.current().getSpanContext().isValid()
         : "Span is active before test has started: " + Span.current();
     AgentTestingExporterAccess.reset();
+    AgentTestingMicrometerDelegateAccess.reset();
   }
 
   @AfterClass

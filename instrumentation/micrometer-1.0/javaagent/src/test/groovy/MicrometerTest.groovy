@@ -16,16 +16,12 @@ import io.micrometer.core.instrument.LongTaskTimer
 import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.TimeGauge
 import io.micrometer.core.instrument.Timer
-import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil
 import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.javaagent.instrumentation.micrometer.AzureMonitorMeterRegistry
+import io.opentelemetry.javaagent.testing.common.AgentTestingMicrometerDelegateAccess
 import java.util.concurrent.Executors
-import spock.lang.Shared
 
 class MicrometerTest extends AgentTestRunner {
-
-  @Shared
-  MetricCapturingDelegate delegate
 
   def "should register AzureMonitorMeterRegistry"() {
     expect:
@@ -49,9 +45,6 @@ class MicrometerTest extends AgentTestRunner {
 
   def "should capture time gauge"() {
     setup:
-    delegate = new MetricCapturingDelegate()
-    MicrometerUtil.setDelegate(delegate)
-
     def registry = new AzureMonitorMeterRegistry(Clock.SYSTEM)
     TimeGauge.builder("test", "", MILLISECONDS, { 11d }).register(registry)
 
@@ -59,19 +52,17 @@ class MicrometerTest extends AgentTestRunner {
     registry.publish()
 
     then:
-    delegate.measurements.size() == 1
-    delegate.measurements[0].name == "test"
-    delegate.measurements[0].value == 11
-    delegate.measurements[0].count == null
-    delegate.measurements[0].min == null
-    delegate.measurements[0].max == null
+    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
+    measurements.size() == 1
+    measurements[0].name == "test"
+    measurements[0].value == 11
+    measurements[0].count == null
+    measurements[0].min == null
+    measurements[0].max == null
   }
 
   def "should capture gauge"() {
     setup:
-    delegate = new MetricCapturingDelegate()
-    MicrometerUtil.setDelegate(delegate)
-
     def registry = new AzureMonitorMeterRegistry(Clock.SYSTEM)
     Gauge.builder("test", { 22 }).register(registry)
 
@@ -79,19 +70,17 @@ class MicrometerTest extends AgentTestRunner {
     registry.publish()
 
     then:
-    delegate.measurements.size() == 1
-    delegate.measurements[0].name == "test"
-    delegate.measurements[0].value == 22
-    delegate.measurements[0].count == null
-    delegate.measurements[0].min == null
-    delegate.measurements[0].max == null
+    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
+    measurements.size() == 1
+    measurements[0].name == "test"
+    measurements[0].value == 22
+    measurements[0].count == null
+    measurements[0].min == null
+    measurements[0].max == null
   }
 
   def "should capture counter"() {
     setup:
-    delegate = new MetricCapturingDelegate()
-    MicrometerUtil.setDelegate(delegate)
-
     def clock = new TestClock()
     def registry = new AzureMonitorMeterRegistry(clock)
     def counter = Counter.builder("test").register(registry)
@@ -102,19 +91,17 @@ class MicrometerTest extends AgentTestRunner {
     registry.publish()
 
     then:
-    delegate.measurements.size() == 1
-    delegate.measurements[0].name == "test"
-    delegate.measurements[0].value == 3.3
-    delegate.measurements[0].count == null
-    delegate.measurements[0].min == null
-    delegate.measurements[0].max == null
+    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
+    measurements.size() == 1
+    measurements[0].name == "test"
+    measurements[0].value == 3.3
+    measurements[0].count == null
+    measurements[0].min == null
+    measurements[0].max == null
   }
 
   def "should capture timer"() {
     setup:
-    delegate = new MetricCapturingDelegate()
-    MicrometerUtil.setDelegate(delegate)
-
     def clock = new TestClock()
     def registry = new AzureMonitorMeterRegistry(clock)
     def timer = Timer.builder("test").register(registry)
@@ -126,19 +113,17 @@ class MicrometerTest extends AgentTestRunner {
     registry.publish()
 
     then:
-    delegate.measurements.size() == 1
-    delegate.measurements[0].name == "test"
-    delegate.measurements[0].value == 99
-    delegate.measurements[0].count == 2
-    delegate.measurements[0].min == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
-    delegate.measurements[0].max == 55
+    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
+    measurements.size() == 1
+    measurements[0].name == "test"
+    measurements[0].value == 99
+    measurements[0].count == 2
+    measurements[0].min == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
+    measurements[0].max == 55
   }
 
   def "should capture distribution summary"() {
     setup:
-    delegate = new MetricCapturingDelegate()
-    MicrometerUtil.setDelegate(delegate)
-
     def clock = new TestClock()
     def registry = new AzureMonitorMeterRegistry(clock)
     def distributionSummary = DistributionSummary.builder("test").register(registry)
@@ -150,19 +135,17 @@ class MicrometerTest extends AgentTestRunner {
     registry.publish()
 
     then:
-    delegate.measurements.size() == 1
-    delegate.measurements[0].name == "test"
-    delegate.measurements[0].value == 9.9
-    delegate.measurements[0].count == 2
-    delegate.measurements[0].min == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
-    delegate.measurements[0].max == 5.5
+    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
+    measurements.size() == 1
+    measurements[0].name == "test"
+    measurements[0].value == 9.9
+    measurements[0].count == 2
+    measurements[0].min == null // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
+    measurements[0].max == 5.5
   }
 
   def "should capture long task timer"() {
     setup:
-    delegate = new MetricCapturingDelegate()
-    MicrometerUtil.setDelegate(delegate)
-
     def registry = new AzureMonitorMeterRegistry(Clock.SYSTEM)
     def timer = LongTaskTimer.builder("test").register(registry)
 
@@ -182,24 +165,22 @@ class MicrometerTest extends AgentTestRunner {
     registry.publish()
 
     then:
-    delegate.measurements.size() == 2
-    delegate.measurements[0].name == "test_active"
-    delegate.measurements[0].value == 2
-    delegate.measurements[0].count == null
-    delegate.measurements[0].min == null
-    delegate.measurements[0].max == null
-    delegate.measurements[1].name == "test_duration"
-    delegate.measurements[1].value > 150
-    delegate.measurements[1].count == null
-    delegate.measurements[1].min == null
-    delegate.measurements[1].max == null
+    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
+    measurements.size() == 2
+    measurements[0].name == "test_active"
+    measurements[0].value == 2
+    measurements[0].count == null
+    measurements[0].min == null
+    measurements[0].max == null
+    measurements[1].name == "test_duration"
+    measurements[1].value > 150
+    measurements[1].count == null
+    measurements[1].min == null
+    measurements[1].max == null
   }
 
   def "should capture function counter"() {
     setup:
-    delegate = new MetricCapturingDelegate()
-    MicrometerUtil.setDelegate(delegate)
-
     def clock = new TestClock()
     def registry = new AzureMonitorMeterRegistry(clock)
     FunctionCounter.builder("test", "", { 6.6d }).register(registry)
@@ -209,19 +190,17 @@ class MicrometerTest extends AgentTestRunner {
     registry.publish()
 
     then:
-    delegate.measurements.size() == 1
-    delegate.measurements[0].name == "test"
-    delegate.measurements[0].value == 6.6
-    delegate.measurements[0].count == null
-    delegate.measurements[0].min == null
-    delegate.measurements[0].max == null
+    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
+    measurements.size() == 1
+    measurements[0].name == "test"
+    measurements[0].value == 6.6
+    measurements[0].count == null
+    measurements[0].min == null
+    measurements[0].max == null
   }
 
   def "should capture function timer"() {
     setup:
-    delegate = new MetricCapturingDelegate()
-    MicrometerUtil.setDelegate(delegate)
-
     def clock = new TestClock()
     def registry = new AzureMonitorMeterRegistry(clock)
     FunctionTimer.builder("test", "", { 2L }, { 4.4d }, MILLISECONDS)
@@ -231,12 +210,13 @@ class MicrometerTest extends AgentTestRunner {
     registry.publish()
 
     then:
-    delegate.measurements.size() == 1
-    delegate.measurements[0].name == "test"
-    delegate.measurements[0].value == 4.4
-    delegate.measurements[0].count == 2
-    delegate.measurements[0].min == null
-    delegate.measurements[0].max == null
+    def measurements = AgentTestingMicrometerDelegateAccess.getMeasurements()
+    measurements.size() == 1
+    measurements[0].name == "test"
+    measurements[0].value == 4.4
+    measurements[0].count == 2
+    measurements[0].min == null
+    measurements[0].max == null
   }
 
   static class TestClock implements Clock {
@@ -251,38 +231,6 @@ class MicrometerTest extends AgentTestRunner {
     @Override
     long monotonicTime() {
       return MILLISECONDS.toNanos(timeMillis)
-    }
-  }
-
-  static class MetricCapturingDelegate implements MicrometerUtil.MicrometerUtilDelegate {
-
-    List<Measurement> measurements = new ArrayList<>()
-
-    @Override
-    void trackMetric(String name, double value, Integer count, Double min, Double max, Map<String, String> properties) {
-      measurements.add(new Measurement(name, value, count, min, max, properties))
-    }
-  }
-
-  static class Measurement {
-    final String name
-    final double value
-    final Integer count
-    final Double min
-    final Double max
-    final Map<String, String> properties
-
-    Measurement(final String name,
-                final double value,
-                final Integer count,
-                final Double min,
-                final Double max, final Map<String, String> properties) {
-      this.name = name
-      this.value = value
-      this.count = count
-      this.min = min
-      this.max = max
-      this.properties = properties
     }
   }
 }
