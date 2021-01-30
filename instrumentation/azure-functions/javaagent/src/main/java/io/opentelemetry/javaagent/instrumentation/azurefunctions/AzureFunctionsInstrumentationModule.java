@@ -13,7 +13,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
@@ -66,7 +66,7 @@ public class AzureFunctionsInstrumentationModule extends InstrumentationModule {
         final Object traceContext =
             InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
         final Context extractedContext =
-            OpenTelemetry.getGlobalPropagators()
+            GlobalOpenTelemetry.getPropagators()
                 .getTextMapPropagator()
                 .extract(Context.root(), traceContext, GETTER);
         final SpanContext spanContext = Span.fromContext(extractedContext).getSpanContext();

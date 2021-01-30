@@ -5,7 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.azurefunctions;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.lang.reflect.Method;
@@ -19,7 +19,7 @@ public class InvocationRequestExtractAdapter implements TextMapPropagator.Getter
   private static final Logger log = LoggerFactory.getLogger(InvocationRequestExtractAdapter.class);
 
   public static final Tracer TRACER =
-      OpenTelemetry.getGlobalTracer("io.opentelemetry.auto.azure-functions");
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.azure-functions");
 
   public static final InvocationRequestExtractAdapter GETTER =
       new InvocationRequestExtractAdapter();
