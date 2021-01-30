@@ -12,6 +12,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.AppIdSupplier;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
@@ -31,14 +32,20 @@ public class TracerInstaller {
 
     public static void installAgentTracer() throws FriendlyException {
         TelemetryClient telemetryClient = Global.getTelemetryClient();
-        Configuration config = MainEntryPoint.getConfiguration();
-        List<ProcessorConfig> processors = new ArrayList<>(config.preview.processors);
-        // Reversing the order of processors before passing it to SpanProcessor
-        Collections.reverse(processors);
         if (telemetryClient == null) {
             // agent failed during startup
             return;
         }
+
+        // only safe now to resolve app id because SSL initialization
+        // triggers loading of java.util.logging (starting with Java 8u231)
+        // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
+        AppIdSupplier.registerAndTriggerResolution();
+
+        Configuration config = MainEntryPoint.getConfiguration();
+        List<ProcessorConfig> processors = new ArrayList<>(config.preview.processors);
+        // Reversing the order of processors before passing it to SpanProcessor
+        Collections.reverse(processors);
 
         if (config.connectionString != null) {
             setGlobalPropagators(
