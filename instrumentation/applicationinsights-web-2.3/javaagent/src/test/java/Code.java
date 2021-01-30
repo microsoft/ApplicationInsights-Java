@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import application.io.opentelemetry.api.trace.Span;
-import application.io.opentelemetry.extension.annotations.WithSpan;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.extension.annotations.WithSpan;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
 
 public class Code {
