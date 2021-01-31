@@ -288,6 +288,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals("value", pv2.getProperties().get("key"));
         assertEquals("a-value", pv2.getProperties().get("a-prop"));
         assertEquals("another-value", pv2.getProperties().get("another-prop"));
+        assertEquals("operation-name-goes-here", pvdEnvelope2.getTags().get("ai.operation.name"));
         assertEquals("user-id-goes-here", pvdEnvelope2.getTags().get("ai.user.id"));
         assertEquals("account-id-goes-here", pvdEnvelope2.getTags().get("ai.user.accountId"));
         assertEquals("user-agent-goes-here", pvdEnvelope2.getTags().get("ai.user.userAgent"));
@@ -306,6 +307,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals("value", pv3.getProperties().get("key"));
         assertEquals("a-value", pv3.getProperties().get("a-prop"));
         assertEquals("another-value", pv3.getProperties().get("another-prop"));
+        assertEquals("operation-name-goes-here", pvdEnvelope3.getTags().get("ai.operation.name"));
         assertEquals("user-id-goes-here", pvdEnvelope3.getTags().get("ai.user.id"));
         assertEquals("account-id-goes-here", pvdEnvelope3.getTags().get("ai.user.accountId"));
         assertEquals("user-agent-goes-here", pvdEnvelope3.getTags().get("ai.user.userAgent"));
