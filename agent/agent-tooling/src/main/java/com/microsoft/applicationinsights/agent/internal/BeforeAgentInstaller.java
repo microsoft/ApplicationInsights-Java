@@ -46,6 +46,8 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Perf
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
+import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagatorProvider;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
@@ -143,6 +145,10 @@ public class BeforeAgentInstaller {
         if (!config.preview.openTelemetryApiSupport) {
             properties.put("otel.instrumentation.opentelemetry-api.enabled", "false");
         }
+        properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
+        // AI exporter is configured manually
+        properties.put("otel.trace.exporter", "none");
+        properties.put("otel.metrics.exporter", "none");
         Config.internalInitializeConfig(Config.create(properties));
         if (Config.get().getListProperty("additional.bootstrap.package.prefixes").isEmpty()) {
             throw new IllegalStateException("underlying config not initialized in time");

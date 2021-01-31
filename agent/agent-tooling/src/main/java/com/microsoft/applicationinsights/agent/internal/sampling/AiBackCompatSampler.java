@@ -7,16 +7,16 @@ import com.microsoft.applicationinsights.agent.Exporter;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
-import io.opentelemetry.sdk.trace.samplers.SamplingResult.Decision;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class TraceIdBasedSampler implements Sampler {
+public final class AiBackCompatSampler implements Sampler {
 
-    private static final Logger logger = LoggerFactory.getLogger(TraceIdBasedSampler.class);
+    private static final Logger logger = LoggerFactory.getLogger(AiBackCompatSampler.class);
 
     // all sampling percentage must be in a ratio of 100/N where N is a whole number (2, 3, 4, …)
     // e.g. 50 for 1/2 or 33.33 for 1/3
@@ -27,7 +27,7 @@ public final class TraceIdBasedSampler implements Sampler {
     private final SamplingResult alwaysOnDecision;
     private final SamplingResult alwaysOffDecision;
 
-    public TraceIdBasedSampler(double samplingPercentage) {
+    public AiBackCompatSampler(double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
         Attributes alwaysOnAttributes;
         if (samplingPercentage != 100) {
@@ -35,8 +35,8 @@ public final class TraceIdBasedSampler implements Sampler {
         } else {
             alwaysOnAttributes = Attributes.empty();
         }
-        alwaysOnDecision = new FixedRateSamplerDecision(Decision.RECORD_AND_SAMPLE, alwaysOnAttributes);
-        alwaysOffDecision = new FixedRateSamplerDecision(Decision.DROP, Attributes.empty());
+        alwaysOnDecision = new FixedRateSamplerDecision(SamplingDecision.RECORD_AND_SAMPLE, alwaysOnAttributes);
+        alwaysOffDecision = new FixedRateSamplerDecision(SamplingDecision.DROP, Attributes.empty());
     }
 
     @Override
@@ -45,7 +45,7 @@ public final class TraceIdBasedSampler implements Sampler {
                                        String name,
                                        Span.Kind spanKind,
                                        Attributes attributes,
-                                       List<SpanData.Link> parentLinks) {
+                                       List<LinkData> parentLinks) {
         if (samplingPercentage == 100) {
             return alwaysOnDecision;
         }
@@ -63,16 +63,16 @@ public final class TraceIdBasedSampler implements Sampler {
 
     private static final class FixedRateSamplerDecision implements SamplingResult {
 
-        private final Decision decision;
+        private final SamplingDecision decision;
         private final Attributes attributes;
 
-        private FixedRateSamplerDecision(Decision decision, Attributes attributes) {
+        private FixedRateSamplerDecision(SamplingDecision decision, Attributes attributes) {
             this.decision = decision;
             this.attributes = attributes;
         }
 
         @Override
-        public Decision getDecision() {
+        public SamplingDecision getDecision() {
             return decision;
         }
 

@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.Sampling;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -92,10 +93,7 @@ public class JsonConfigPolling implements Runnable {
                 if (configuration.sampling.percentage != lastReadSamplingPercentage) {
                     logger.debug("Updating sampling percentage from {} to {}", lastReadSamplingPercentage, configuration.sampling.percentage);
                     double roundedSamplingPercentage = SamplingPercentage.roundToNearest(configuration.sampling.percentage);
-                    OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(
-                            OpenTelemetrySdk.getGlobalTracerManagement().getActiveTraceConfig().toBuilder()
-                                    .setSampler(Samplers.getSampler(roundedSamplingPercentage))
-                                    .build());
+                    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(roundedSamplingPercentage));
                     Global.setSamplingPercentage(roundedSamplingPercentage);
                     lastReadSamplingPercentage = configuration.sampling.percentage;
                 }

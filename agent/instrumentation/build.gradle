@@ -12,7 +12,7 @@ def instrumentationVersion = '0.15.0+ai.patch.1'
 
 dependencies {
     compile project(':agent:agent-tooling')
-    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpasyncclient-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpasyncclient-4.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-2.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-4.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-applicationinsights-web-2.3', version: instrumentationVersion

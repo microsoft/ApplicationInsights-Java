@@ -50,12 +50,13 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,11 +132,9 @@ public class Exporter implements SpanExporter {
             }
         } else if (kind == Kind.CLIENT || kind == Kind.PRODUCER) {
             exportRemoteDependency(span, false);
-        } else if (kind == Kind.CONSUMER && !span.hasRemoteParent()) {
-            // TODO need spec clarification, but it seems polling for messages can be CONSUMER also
-            //  in which case the span will not have a remote parent and should be treated as a dependency instead of a request
+        } else if (kind == Kind.CONSUMER) {
             exportRemoteDependency(span, false);
-        } else if (kind == Kind.SERVER || kind == Kind.CONSUMER) {
+        } else if (kind == Kind.SERVER) {
             exportRequest(span);
         } else {
             throw new UnsupportedOperationException(kind.name());
@@ -201,7 +200,7 @@ public class Exporter implements SpanExporter {
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
 
-        telemetry.setSuccess(span.getStatus().isOk());
+        telemetry.setSuccess(span.getStatus().getStatusCode() == StatusCode.OK);
         String description = span.getStatus().getDescription();
         if (description != null) {
             telemetry.getProperties().put("statusDescription", description);
@@ -240,7 +239,7 @@ public class Exporter implements SpanExporter {
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
 
-        telemetry.setSuccess(span.getStatus().isOk());
+        telemetry.setSuccess(span.getStatus().getStatusCode() == StatusCode.OK);
 
         setExtraAttributes(telemetry, attributes);
 
@@ -283,7 +282,7 @@ public class Exporter implements SpanExporter {
 
     private void trackEvents(SpanData span, Double samplingPercentage) {
         boolean foundException = false;
-        for (Event event : span.getEvents()) {
+        for (EventData event : span.getEvents()) {
             EventTelemetry telemetry = new EventTelemetry(event.getName());
             telemetry.getContext().getOperation().setId(span.getTraceId());
             telemetry.getContext().getOperation().setParentId(span.getParentSpanId());
@@ -543,21 +542,21 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static void addLinks(Map<String, String> properties, List<Link> links) {
+    private static void addLinks(Map<String, String> properties, List<LinkData> links) {
         if (links.isEmpty()) {
             return;
         }
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         boolean first = true;
-        for (Link link : links) {
+        for (LinkData link : links) {
             if (!first) {
                 sb.append(",");
             }
             sb.append("{\"operation_Id\":\"");
-            sb.append(link.getContext().getTraceIdAsHexString());
+            sb.append(link.getSpanContext().getTraceIdAsHexString());
             sb.append("\",\"id\":\"");
-            sb.append(link.getContext().getSpanIdAsHexString());
+            sb.append(link.getSpanContext().getSpanIdAsHexString());
             sb.append("\"}");
             first = false;
         }
