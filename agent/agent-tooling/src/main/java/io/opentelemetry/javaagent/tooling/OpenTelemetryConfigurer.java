@@ -32,11 +32,6 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
             return;
         }
 
-        // only safe now to resolve app id because SSL initialization
-        // triggers loading of java.util.logging (starting with Java 8u231)
-        // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
-        AppIdSupplier.registerAndTriggerResolution();
-
         Configuration config = MainEntryPoint.getConfiguration();
 
         tracerProvider.setSampler(DelegatingSampler.getInstance());

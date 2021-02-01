@@ -112,7 +112,10 @@ shadowJar {
         exclude(dependency('org.slf4j:slf4j-api'))
     }
 
-    mergeServiceFiles()
+    // need to merge at least META-INF/services/io.opentelemetry.javaagent.tooling.InstrumentationModule files
+    mergeServiceFiles {
+        exclude 'META-INF/services/io.opentelemetry.javaagent.spi.ComponentInstaller'
+    }
 
     exclude '**/module-info.class'
 

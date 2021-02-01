@@ -38,6 +38,7 @@ dependencies {
     compile 'com.google.guava:guava:27.1-android'
 
     compile 'io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.15.0+ai.patch.1'
+    compile 'io.opentelemetry.javaagent:opentelemetry-javaagent-spi:0.15.0+ai.patch.1'
     // TODO sync bytebuddy version with version from auto-tooling (above)
     compile group: 'net.bytebuddy', name: 'byte-buddy', version: '1.10.10'
 
