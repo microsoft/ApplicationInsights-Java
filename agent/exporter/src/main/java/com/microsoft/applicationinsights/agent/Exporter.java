@@ -200,7 +200,7 @@ public class Exporter implements SpanExporter {
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
 
-        telemetry.setSuccess(span.getStatus().getStatusCode() == StatusCode.OK);
+        telemetry.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
         String description = span.getStatus().getDescription();
         if (description != null) {
             telemetry.getProperties().put("statusDescription", description);
@@ -239,7 +239,7 @@ public class Exporter implements SpanExporter {
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
 
-        telemetry.setSuccess(span.getStatus().getStatusCode() == StatusCode.OK);
+        telemetry.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
         setExtraAttributes(telemetry, attributes);
 
