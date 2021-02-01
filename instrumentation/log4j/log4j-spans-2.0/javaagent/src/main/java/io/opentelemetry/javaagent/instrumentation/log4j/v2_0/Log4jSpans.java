@@ -84,7 +84,7 @@ public class Log4jSpans {
       case "ALL":
         return Level.ALL;
       default:
-        log.error("unexpected value for experimental.log.capture.threshold: {}", level);
+        log.error("unexpected value for otel.experimental.log.capture.threshold: {}", level);
         return Level.OFF;
     }
   }
