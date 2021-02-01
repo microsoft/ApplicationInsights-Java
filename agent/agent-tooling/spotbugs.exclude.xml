@@ -42,6 +42,12 @@
     <Match>
         <Bug pattern="PREDICTABLE_RANDOM" />
         <!-- These random numbers are not used for cryptography. Predictable pseudorandom is sufficient. -->
+        <Class name="com.microsoft.applicationinsights.agent.internal.propagator.AiBackCompatPropagator" />
+        <Method name="extract" />
+    </Match>
+    <Match>
+        <Bug pattern="PREDICTABLE_RANDOM" />
+        <!-- These random numbers are not used for cryptography. Predictable pseudorandom is sufficient. -->
         <Class name="com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2" />
         <Method name="&lt;clinit&gt;" />
     </Match>
