@@ -118,10 +118,10 @@ public class BeforeAgentInstaller {
 
 
         Map<String, String> properties = new HashMap<>();
-        properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
-        properties.put("experimental.log.capture.threshold", getLoggingFrameworksThreshold(config, "INFO"));
+        properties.put("otel.additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
+        properties.put("otel.experimental.log.capture.threshold", getLoggingFrameworksThreshold(config, "INFO"));
         int reportingIntervalSeconds = getMicrometerReportingIntervalSeconds(config, 60);
-        properties.put("micrometer.step.millis", Long.toString(SECONDS.toMillis(reportingIntervalSeconds)));
+        properties.put("otel.micrometer.step.millis", Long.toString(SECONDS.toMillis(reportingIntervalSeconds)));
         // TODO need some kind of test for these configuration properties
         if (!isInstrumentationEnabled(config, "micrometer")) {
             properties.put("otel.instrumentation.micrometer.enabled", "false");
@@ -150,7 +150,7 @@ public class BeforeAgentInstaller {
         properties.put("otel.trace.exporter", "none");
         properties.put("otel.metrics.exporter", "none");
         Config.internalInitializeConfig(Config.create(properties));
-        if (Config.get().getListProperty("additional.bootstrap.package.prefixes").isEmpty()) {
+        if (Config.get().getListProperty("otel.additional.bootstrap.package.prefixes").isEmpty()) {
             throw new IllegalStateException("underlying config not initialized in time");
         }
 
