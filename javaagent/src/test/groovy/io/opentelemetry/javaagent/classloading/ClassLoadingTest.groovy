@@ -7,9 +7,9 @@ package io.opentelemetry.javaagent.classloading
 
 import static io.opentelemetry.javaagent.IntegrationTestUtils.createJarWithClasses
 
-import io.opentelemetry.instrumentation.util.gc.GcUtils
 import io.opentelemetry.javaagent.ClassToInstrument
 import io.opentelemetry.javaagent.ClassToInstrumentChild
+import io.opentelemetry.javaagent.util.GcUtils
 import java.lang.ref.WeakReference
 import spock.lang.Specification
 import spock.lang.Timeout
@@ -65,7 +65,7 @@ class ClassLoadingTest extends Specification {
     }
   }
 
-  def "make sure that ByteBuddy reads classes's bytes only once"() {
+  def "make sure that ByteBuddy reads the class bytes only once"() {
     setup:
     CountingClassLoader loader = new CountingClassLoader(classpath)
 

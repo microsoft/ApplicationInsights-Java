@@ -92,9 +92,4 @@ public class NettyHttpServerTracer
     }
     return null;
   }
-
-  @Override
-  protected String aiRequestContext(final HttpRequest request) {
-    return request.headers().get(AI_REQUEST_CONTEXT_HEADER_NAME);
-  }
 }

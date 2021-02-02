@@ -8,7 +8,7 @@ package io.opentelemetry.javaagent.instrumentation.logback;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
@@ -24,7 +24,7 @@ public class LogbackSpans {
   private static final Logger log = LoggerFactory.getLogger(LogbackSpans.class);
 
   private static final Tracer TRACER =
-      OpenTelemetry.getGlobalTracer("io.opentelemetry.auto.logback-1.0");
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.logback-1.0");
 
   public static void capture(final ILoggingEvent event) {
 
@@ -65,7 +65,7 @@ public class LogbackSpans {
   }
 
   private static Level getThreshold() {
-    String level = Config.get().getProperty("experimental.log.capture.threshold");
+    String level = Config.get().getProperty("otel.experimental.log.capture.threshold");
     if (level == null) {
       return Level.OFF;
     }
@@ -92,7 +92,7 @@ public class LogbackSpans {
       case "ALL":
         return Level.ALL;
       default:
-        log.error("unexpected value for experimental.log.capture.threshold: {}", level);
+        log.error("unexpected value for otel.experimental.log.capture.threshold: {}", level);
         return Level.OFF;
     }
   }

@@ -59,12 +59,26 @@ public class TraceInspector {
         .count();
   }
 
+  public long countFilteredEventAttributes(String attributeName, Object attributeValue) {
+    return getSpanStream()
+        .flatMap(s -> s.getEventsList().stream())
+        .flatMap(e -> e.getAttributesList().stream())
+        .filter(a -> a.getKey().equals(attributeName))
+        .map(a -> a.getValue().getStringValue())
+        .filter(s -> s.equals(attributeValue))
+        .count();
+  }
+
   protected int countSpansByName(String spanName) {
     return (int) getSpanStream().filter(it -> it.getName().equals(spanName)).count();
   }
 
   protected int countSpansByKind(Span.SpanKind spanKind) {
     return (int) getSpanStream().filter(it -> it.getKind().equals(spanKind)).count();
+  }
+
+  protected int countSpans() {
+    return (int) getSpanStream().count();
   }
 
   public int size() {

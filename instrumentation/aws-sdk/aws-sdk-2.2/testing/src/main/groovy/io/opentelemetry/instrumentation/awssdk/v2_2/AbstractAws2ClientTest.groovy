@@ -9,8 +9,7 @@ import static com.google.common.collect.ImmutableMap.of
 import static io.opentelemetry.api.trace.Span.Kind.CLIENT
 import static io.opentelemetry.instrumentation.test.server.http.TestHttpServer.httpServer
 
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import io.opentelemetry.instrumentation.test.InstrumentationSpecification
 import java.time.Duration
 import java.util.concurrent.Future
@@ -63,10 +62,17 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
 
   @AutoCleanup
   @Shared
-  def server = httpServer {
-    handlers {
-      all {
-        response.status(200).send(responseBody.get())
+  def server
+
+  def setup() {
+    // Lazy-load server to allow traits to initialize first.
+    if (server == null) {
+      server = httpServer {
+        handlers {
+          all {
+            response.status(200).send(responseBody.get())
+          }
+        }
       }
     }
   }
@@ -145,7 +151,7 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             "${SemanticAttributes.DB_SYSTEM.key}" "dynamodb"
             "${SemanticAttributes.DB_NAME.key}" "sometable"
             "${SemanticAttributes.DB_OPERATION.key}" "${operation}"
-            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
@@ -225,7 +231,7 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             } else if (service == "Kinesis") {
               "aws.stream.name" "somestream"
             }
-            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
@@ -315,7 +321,7 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             } else if (service == "Kinesis") {
               "aws.stream.name" "somestream"
             }
-            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }

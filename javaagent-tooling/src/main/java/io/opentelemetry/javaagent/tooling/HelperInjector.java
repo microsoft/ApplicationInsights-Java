@@ -6,7 +6,7 @@
 package io.opentelemetry.javaagent.tooling;
 
 import static io.opentelemetry.javaagent.instrumentation.api.WeakMap.Provider.newWeakMap;
-import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.BOOTSTRAP_CLASSLOADER;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.BOOTSTRAP_CLASSLOADER;
 
 import io.opentelemetry.javaagent.bootstrap.HelperResources;
 import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
@@ -47,6 +47,8 @@ public class HelperInjector implements Transformer {
           return "<bootstrap>";
         }
       };
+
+  private static final WeakMap<Class<?>, Boolean> injectedClasses = newWeakMap();
 
   private final String requestingName;
 
@@ -132,6 +134,8 @@ public class HelperInjector implements Transformer {
           } else {
             classes = injectClassLoader(classLoader, classnameToBytes);
           }
+
+          classes.values().forEach(c -> injectedClasses.put(c, Boolean.TRUE));
 
           // All agent helper classes are in the unnamed module
           // And there's exactly one unnamed module per classloader
@@ -232,5 +236,9 @@ public class HelperInjector implements Transformer {
     if (!deleted) {
       file.deleteOnExit();
     }
+  }
+
+  public static boolean isInjectedClass(Class<?> c) {
+    return injectedClasses.containsKey(c);
   }
 }

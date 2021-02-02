@@ -8,6 +8,7 @@ import static io.opentelemetry.api.trace.Span.Kind.SERVER
 
 import com.microsoft.applicationinsights.web.internal.ThreadContext
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanContext
@@ -15,7 +16,6 @@ import io.opentelemetry.api.trace.TraceFlags
 import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.Scope
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId
 import io.opentelemetry.instrumentation.test.AgentTestRunner
 
 class ApplicationInsightsWebTest extends AgentTestRunner {
@@ -142,7 +142,7 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
       TraceFlags.getDefault(),
       TraceState.builder().set("one", "1").set("two", "2").build())
     def parent = Context.root().with(Span.wrap(spanContext))
-    def span = OpenTelemetry.getGlobalTracer("test")
+    def span = GlobalOpenTelemetry.getTracer("test")
       .spanBuilder("test")
       .setParent(parent)
       .startSpan()
@@ -168,7 +168,7 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
       (byte) flag,
       TraceState.getDefault())
     def parent = Context.root().with(Span.wrap(spanContext))
-    def span = OpenTelemetry.getGlobalTracer("test")
+    def span = GlobalOpenTelemetry.getTracer("test")
       .spanBuilder("test")
       .setParent(parent)
       .startSpan()
@@ -196,7 +196,7 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
       TraceFlags.getDefault(),
       TraceState.getDefault())
     def parent = Context.root().with(Span.wrap(spanContext))
-    def span = OpenTelemetry.getGlobalTracer("test")
+    def span = GlobalOpenTelemetry.getTracer("test")
       .spanBuilder("test")
       .setParent(parent)
       .startSpan()
@@ -221,12 +221,10 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
       TraceFlags.getDefault(),
       otelTraceState)
     def parent = Context.root().with(Span.wrap(spanContext))
-    def span = OpenTelemetry.getGlobalTracer("test")
+    def span = GlobalOpenTelemetry.getTracer("test")
       .spanBuilder("test")
       .setParent(parent)
       .startSpan()
-
-    AiAppId.setSupplier({ appId })
 
     when:
     Scope scope = parent.with(span).makeCurrent()
@@ -241,13 +239,9 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
     traceparent == legacyTracestate
 
     where:
-    otelTraceState                               | appId  | legacyTracestate
-    TraceState.getDefault()                      | null   | null
-    TraceState.getDefault()                      | ""     | null
-    TraceState.getDefault()                      | "1234" | "az=1234"
-    TraceState.builder().set("one", "1").build() | null   | "one=1"
-    TraceState.builder().set("one", "1").build() | ""     | "one=1"
-    TraceState.builder().set("one", "1").build() | "1234" | "az=1234,one=1"
+    otelTraceState                               | legacyTracestate
+    TraceState.getDefault()                      | "az=1234"
+    TraceState.builder().set("one", "1").build() | "az=1234,one=1"
   }
 
   def "should not throw on other RequestTelemetryContext methods"() {

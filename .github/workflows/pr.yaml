@@ -18,23 +18,19 @@ jobs:
         with:
           job-id: jdk11
 
-      - name: Build
-        uses: nick-invision/retry@v2.2.0
-        with:
-          command: ./gradlew check --stacktrace
-          timeout_minutes: 90
-          max_attempts: 3
+      - name: Start deadlock detector
+        run: .github/scripts/deadlock-detector.sh
 
-      - name: Aggregate test reports with ciMate
+      - name: Build
+        run: ./gradlew check --stacktrace
+
+      - name: Upload deadlock detector artifacts
         if: always()
-        continue-on-error: true
-        env:
-          CIMATE_PROJECT_ID: mz1jo49x
-          CIMATE_CI_KEY: "PR / jdk11"
-        run: |
-          wget -q https://get.cimate.io/release/linux/cimate
-          chmod +x cimate
-          ./cimate -v "**/TEST-*.xml"
+        uses: actions/upload-artifact@v2
+        with:
+          name: deadlock-detector-build
+          path: /tmp/deadlock-detector-*
+          if-no-files-found: ignore
 
   test:
     runs-on: ubuntu-latest
@@ -60,23 +56,19 @@ jobs:
         with:
           job-id: jdk${{ matrix.java }}
 
-      - name: Test
-        uses: nick-invision/retry@v2.2.0
-        with:
-          command: ./gradlew test -PtestJavaVersion=${{ matrix.java }} --stacktrace -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
-          timeout_minutes: 90
-          max_attempts: 3
+      - name: Start deadlock detector
+        run: .github/scripts/deadlock-detector.sh
 
-      - name: Aggregate test reports with ciMate
+      - name: Test
+        run: ./gradlew test -PtestJavaVersion=${{ matrix.java }} --stacktrace -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }} -Porg.gradle.java.installations.auto-download=false
+
+      - name: Upload deadlock detector artifacts
         if: always()
-        continue-on-error: true
-        env:
-          CIMATE_PROJECT_ID: mz1jo49x
-          CIMATE_CI_KEY: "PR / jdk${{matrix.java}}"
-        run: |
-          wget -q https://get.cimate.io/release/linux/cimate
-          chmod +x cimate
-          ./cimate -v "**/TEST-*.xml"
+        uses: actions/upload-artifact@v2
+        with:
+          name: deadlock-detector-test-${{ matrix.java }}
+          path: /tmp/deadlock-detector-*
+          if-no-files-found: ignore
 
   setup-muzzle-matrix:
     runs-on: ubuntu-latest

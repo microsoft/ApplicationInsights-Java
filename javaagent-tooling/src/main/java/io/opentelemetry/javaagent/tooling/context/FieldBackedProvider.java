@@ -5,8 +5,8 @@
 
 package io.opentelemetry.javaagent.tooling.context;
 
-import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.BOOTSTRAP_CLASSLOADER;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.BOOTSTRAP_CLASSLOADER;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import io.opentelemetry.instrumentation.api.config.Config;
@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
  *       adding context storage field
  *   <li>Injecting a Dynamic Class created from {@link ContextStoreImplementationTemplate} to use
  *       injected field or fall back to a static map
- *   <li>Rewritting calls to the context-store to access the specific dynamic {@link
+ *   <li>Rewriting calls to the context-store to access the specific dynamic {@link
  *       ContextStoreImplementationTemplate}
  * </ol>
  *
@@ -75,6 +75,13 @@ import org.slf4j.LoggerFactory;
  */
 public class FieldBackedProvider implements InstrumentationContextProvider {
 
+  // IMPORTANT: the logging in this class is performed at TRACE level instead of DEBUG level
+  //
+  // BECAUSE: logging in this class occurs frequently and under class file transform,
+  // which can lead gradle to deadlock sporadically when gradle triggers a class to load
+  // while it is holding a lock, and then (because gradle hijacks System.out),
+  // gradle is called from inside of the class file transform,
+  // and then gradle tries to grab a different lock (and then add multiple threads)
   private static final Logger log = LoggerFactory.getLogger(FieldBackedProvider.class);
 
   /**
@@ -198,7 +205,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
                         .equals(owner)
                     && CONTEXT_GET_METHOD.getName().equals(name)
                     && Type.getMethodDescriptor(CONTEXT_GET_METHOD).equals(descriptor)) {
-                  log.debug("Found context-store access in {}", instrumenterClass.getName());
+                  log.trace("Found context-store access in {}", instrumenterClass.getName());
                   /*
                   The idea here is that the rest if this method visitor collects last three instructions in `insnStack`
                   variable. Once we get here we check if those last three instructions constitute call that looks like
@@ -214,7 +221,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
                     TypeDescription contextStoreImplementationClass =
                         getContextStoreImplementation(keyClassName, contextClassName);
                     if (log.isDebugEnabled()) {
-                      log.debug(
+                      log.trace(
                           "Rewriting context-store map fetch for instrumenter {}: {} -> {}",
                           instrumenterClass.getName(),
                           keyClassName,
@@ -373,11 +380,11 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
          */
         synchronized (INSTALLED_CONTEXT_MATCHERS) {
           if (INSTALLED_CONTEXT_MATCHERS.contains(entry)) {
-            log.debug("Skipping builder for {} {}", instrumenterClass.getName(), entry);
+            log.trace("Skipping builder for {} {}", instrumenterClass.getName(), entry);
             continue;
           }
 
-          log.debug("Making builder for {} {}", instrumenterClass.getName(), entry);
+          log.trace("Making builder for {} {}", instrumenterClass.getName(), entry);
           INSTALLED_CONTEXT_MATCHERS.add(entry);
 
           /*
@@ -600,8 +607,8 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
   }
 
   /**
-   * Generate an 'implementation' of a context store classfor given key class name and context class
-   * name.
+   * Generate an 'implementation' of a context store class for given key class name and context
+   * class name.
    *
    * @param keyClassName key class name
    * @param contextClassName context class name
@@ -1006,22 +1013,22 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
     return DYNAMIC_CLASSES_PACKAGE
         + getClass().getSimpleName()
         + "$ContextStore$"
-        + Utils.converToInnerClassName(keyClassName)
+        + Utils.convertToInnerClassName(keyClassName)
         + "$"
-        + Utils.converToInnerClassName(contextClassName);
+        + Utils.convertToInnerClassName(contextClassName);
   }
 
   private String getContextAccessorInterfaceName(String keyClassName, String contextClassName) {
     return DYNAMIC_CLASSES_PACKAGE
         + getClass().getSimpleName()
         + "$ContextAccessor$"
-        + Utils.converToInnerClassName(keyClassName)
+        + Utils.convertToInnerClassName(keyClassName)
         + "$"
-        + Utils.converToInnerClassName(contextClassName);
+        + Utils.convertToInnerClassName(contextClassName);
   }
 
   private static String getContextFieldName(String keyClassName) {
-    return "__opentelemetryContext$" + Utils.converToInnerClassName(keyClassName);
+    return "__opentelemetryContext$" + Utils.convertToInnerClassName(keyClassName);
   }
 
   private static String getContextGetterName(String keyClassName) {

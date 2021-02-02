@@ -15,75 +15,20 @@ import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEn
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 import static org.junit.Assume.assumeTrue
 
-import ch.qos.logback.classic.Level
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
-import io.opentelemetry.instrumentation.test.utils.OkHttpUtils
-import io.opentelemetry.instrumentation.test.utils.PortUtils
 import io.opentelemetry.sdk.trace.data.SpanData
 import java.util.concurrent.Callable
 import okhttp3.HttpUrl
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import spock.lang.Shared
 import spock.lang.Unroll
 
 @Unroll
-abstract class HttpServerTest<SERVER> extends AgentTestRunner {
-
-  public static final Logger SERVER_LOGGER = LoggerFactory.getLogger("http-server")
-  static {
-    ((ch.qos.logback.classic.Logger) SERVER_LOGGER).setLevel(Level.DEBUG)
-  }
-  protected static final String TEST_CLIENT_IP = "1.1.1.1"
-  protected static final String TEST_USER_AGENT = "test-user-agent"
-
-  @Shared
-  SERVER server
-  @Shared
-  OkHttpClient client = OkHttpUtils.client()
-  @Shared
-  int port
-  @Shared
-  URI address
-
-  def setupSpec() {
-    withRetryOnAddressAlreadyInUse({
-      setupSpecUnderRetry()
-    })
-  }
-
-  def setupSpecUnderRetry() {
-    port = PortUtils.randomOpenPort()
-    address = buildAddress()
-    server = startServer(port)
-    println getClass().name + " http server started at: http://localhost:$port" + getContextPath()
-  }
-
-  URI buildAddress() {
-    return new URI("http://localhost:$port" + getContextPath() + "/")
-  }
-
-  abstract SERVER startServer(int port)
-
-  def cleanupSpec() {
-    if (server == null) {
-      println getClass().name + " can't stop null server"
-      return
-    }
-    stopServer(server)
-    server = null
-    println getClass().name + " http server stopped at: http://localhost:$port/"
-  }
-
-  abstract void stopServer(SERVER server)
+abstract class HttpServerTest<SERVER> extends AgentTestRunner implements HttpServerTestTrait<SERVER> {
 
   String expectedServerSpanName(ServerEndpoint endpoint) {
     return endpoint == PATH_PARAM ? getContextPath() + "/path/:id/param" : endpoint.resolvePath(address).path
@@ -122,7 +67,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
   }
 
   boolean testErrorBody() {
-    return true
+    true
   }
 
   boolean testExceptionBody() {
@@ -130,6 +75,18 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
   }
 
   boolean testException() {
+    true
+  }
+
+  Class<?> expectedExceptionClass() {
+    Exception
+  }
+
+  boolean testRedirect() {
+    true
+  }
+
+  boolean testError() {
     true
   }
 
@@ -290,6 +247,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
 
   def "test redirect"() {
     setup:
+    assumeTrue(testRedirect())
     def request = request(REDIRECT, method, body).build()
     def response = client.newCall(request).execute()
 
@@ -310,6 +268,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
 
   def "test error"() {
     setup:
+    assumeTrue(testError())
     def request = request(ERROR, method, body).build()
     def response = client.newCall(request).execute()
 
@@ -415,9 +374,9 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
           }
           if (endpoint != NOT_FOUND) {
             if (hasHandlerSpan()) {
-              controllerSpan(it, spanIndex++, span(1), errorMessage)
+              controllerSpan(it, spanIndex++, span(1), errorMessage, expectedExceptionClass())
             } else {
-              controllerSpan(it, spanIndex++, span(0), errorMessage)
+              controllerSpan(it, spanIndex++, span(0), errorMessage, expectedExceptionClass())
             }
             if (hasRenderSpan(endpoint)) {
               renderSpan(it, spanIndex++, span(0), method, endpoint)
@@ -435,12 +394,12 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
     }
   }
 
-  void controllerSpan(TraceAssert trace, int index, Object parent, String errorMessage = null) {
+  void controllerSpan(TraceAssert trace, int index, Object parent, String errorMessage = null, Class exceptionClass = Exception) {
     trace.span(index) {
       name "controller"
       errored errorMessage != null
       if (errorMessage) {
-        errorEvent(Exception, errorMessage)
+        errorEvent(exceptionClass, errorMessage)
       }
       childOf((SpanData) parent)
     }
@@ -478,8 +437,8 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
         event(0) {
           eventName(SemanticAttributes.EXCEPTION_EVENT_NAME)
           attributes {
-            "${SemanticAttributes.EXCEPTION_TYPE.key}" { it == null || it == Exception.name }
-            "${SemanticAttributes.EXCEPTION_MESSAGE.key}" { it == null || it == EXCEPTION.body }
+            "${SemanticAttributes.EXCEPTION_TYPE.key}" { it == null || it == expectedExceptionClass().name }
+            "${SemanticAttributes.EXCEPTION_MESSAGE.key}" { it == null || it == endpoint.body }
             "${SemanticAttributes.EXCEPTION_STACKTRACE.key}" { it == null || it instanceof String }
           }
         }
@@ -499,7 +458,7 @@ abstract class HttpServerTest<SERVER> extends AgentTestRunner {
 
   void assertRequestContextHeader(Response response) {
     if (sendsBackAiTargetAppId()) {
-      assert response.header("Request-Context") == "appId=" + AiAppId.getAppId()
+      assert response.header("Request-Context") == "appId=1234"
     } else {
       assert response.header("Request-Context") == null
     }

@@ -5,12 +5,12 @@
 
 package io.opentelemetry.javaagent.instrumentation.httpclient;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import io.opentelemetry.instrumentation.api.tracer.HttpClientTracer;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.URI;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpHeaders;
@@ -61,16 +61,14 @@ public class JdkHttpClientTracer
   }
 
   @Override
-  protected Span onResponse(Span span, HttpResponse<?> httpResponse) {
-    span = super.onResponse(span, httpResponse);
+  protected void onResponse(Span span, HttpResponse<?> httpResponse) {
+    super.onResponse(span, httpResponse);
 
     if (httpResponse != null) {
       span.setAttribute(
           SemanticAttributes.HTTP_FLAVOR,
           httpResponse.version() == Version.HTTP_1_1 ? "1.1" : "2.0");
     }
-
-    return span;
   }
 
   @Override
@@ -89,7 +87,7 @@ public class JdkHttpClientTracer
   public HttpHeaders inject(HttpHeaders original) {
     Map<String, List<String>> headerMap = new HashMap<>();
 
-    OpenTelemetry.getGlobalPropagators()
+    GlobalOpenTelemetry.getPropagators()
         .getTextMapPropagator()
         .inject(
             Context.current(),

@@ -7,7 +7,9 @@ package io.opentelemetry.instrumentation.spring.autoconfigure.httpclients.webcli
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.spring.autoconfigure.TracerAutoConfiguration;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -22,8 +24,13 @@ class WebClientAutoConfigurationTest {
               AutoConfigurations.of(
                   TracerAutoConfiguration.class, WebClientAutoConfiguration.class));
 
+  @AfterEach
+  void tearDown() {
+    GlobalOpenTelemetry.resetForTest();
+  }
+
   @Test
-  @DisplayName("when httpclients are ENABLED should initialize WebClientBeanPostProccesor bean")
+  @DisplayName("when httpclients are ENABLED should initialize WebClientBeanPostProcessor bean")
   void httpClientsEnabled() {
     this.contextRunner
         .withPropertyValues("opentelemetry.trace.httpclients.enabled=true")
@@ -38,7 +45,7 @@ class WebClientAutoConfigurationTest {
 
   @Test
   @DisplayName(
-      "when httpclients are DISABLED should NOT initialize WebClientBeanPostProccesor bean")
+      "when httpclients are DISABLED should NOT initialize WebClientBeanPostProcessor bean")
   void disabledProperty() {
     this.contextRunner
         .withPropertyValues("opentelemetry.trace.httpclients.enabled=false")
@@ -50,7 +57,7 @@ class WebClientAutoConfigurationTest {
 
   @Test
   @DisplayName(
-      "when httpclients enabled property is MISSING should initialize WebClientBeanPostProccesor bean")
+      "when httpclients enabled property is MISSING should initialize WebClientBeanPostProcessor bean")
   void noProperty() {
     this.contextRunner.run(
         (context) -> {

@@ -5,8 +5,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.couchbase.v2_6;
 
-import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
@@ -16,11 +16,11 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.couchbase.client.core.message.CouchbaseRequest;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.instrumentation.api.tracer.utils.NetPeerUtils;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;

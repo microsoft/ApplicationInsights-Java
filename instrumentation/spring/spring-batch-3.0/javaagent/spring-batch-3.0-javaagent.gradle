@@ -1,0 +1,39 @@
+apply from: "$rootDir/gradle/instrumentation.gradle"
+
+muzzle {
+  pass {
+    group = "org.springframework.batch"
+    module = "spring-batch-core"
+    versions = "[3.0.0.RELEASE,)"
+    assertInverse = true
+  }
+}
+
+dependencies {
+  library group: 'org.springframework.batch', name: 'spring-batch-core', version: '3.0.0.RELEASE'
+
+  testImplementation group: 'javax.inject', name: 'javax.inject', version: '1'
+  // SimpleAsyncTaskExecutor context propagation
+  testInstrumentation project(':instrumentation:spring:spring-core-2.0:javaagent')
+}
+
+tasks.withType(Test) {
+  jvmArgs '-Dotel.instrumentation.spring-batch.enabled=true'
+}
+test {
+  filter {
+    excludeTestsMatching '*ChunkRootSpanTest'
+    excludeTestsMatching '*ItemLevelSpanTest'
+  }
+}
+test.finalizedBy(tasks.register("testChunkRootSpan", Test) {
+  filter {
+    includeTestsMatching '*ChunkRootSpanTest'
+  }
+  jvmArgs '-Dotel.instrumentation.spring-batch.chunk.root-span=true'
+}).finalizedBy(tasks.register("testItemLevelSpan", Test) {
+  filter {
+    includeTestsMatching '*ItemLevelSpanTest'
+  }
+  jvmArgs '-Dotel.instrumentation.spring-batch.item.enabled=true'
+})

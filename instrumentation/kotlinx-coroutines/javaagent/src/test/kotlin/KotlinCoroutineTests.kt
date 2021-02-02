@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.extension.kotlin.asContextElement
-import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
@@ -14,11 +14,10 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.channels.actor
-import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.channels.toChannel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.selects.select
@@ -27,8 +26,7 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 
 class KotlinCoroutineTests(private val dispatcher: CoroutineDispatcher) {
-  // Java8BytecodeBridge is needed in order to support Kotlin which generally targets Java 6 bytecode
-  val tracer: Tracer = Java8BytecodeBridge.getGlobalTracer("io.opentelemetry.auto")
+  val tracer: Tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.auto")
 
   fun tracedAcrossChannels() = runTest {
 
@@ -39,14 +37,9 @@ class KotlinCoroutineTests(private val dispatcher: CoroutineDispatcher) {
       }
     }
 
-    val actor = actor<Int> {
-      consumeEach {
-        tracedChild("consume_$it")
-      }
+    producer.consumeAsFlow().collect {
+      tracedChild("consume_$it")
     }
-
-    producer.toChannel(actor)
-    actor.close()
   }
 
   fun tracePreventedByCancellation() {
@@ -153,6 +146,7 @@ class KotlinCoroutineTests(private val dispatcher: CoroutineDispatcher) {
     }
     span.end()
   }
+
   suspend fun a2(iter: Long) {
     var span = tracer.spanBuilder("a2").startSpan()
     span.setAttribute("iter", iter)
@@ -161,6 +155,7 @@ class KotlinCoroutineTests(private val dispatcher: CoroutineDispatcher) {
     }
     span.end()
   }
+
   suspend fun b(iter: Long) {
     var span = tracer.spanBuilder("b").startSpan()
     span.setAttribute("iter", iter)
@@ -170,6 +165,7 @@ class KotlinCoroutineTests(private val dispatcher: CoroutineDispatcher) {
     }
     span.end()
   }
+
   suspend fun b2(iter: Long) {
     var span = tracer.spanBuilder("b2").startSpan()
     span.setAttribute("iter", iter)

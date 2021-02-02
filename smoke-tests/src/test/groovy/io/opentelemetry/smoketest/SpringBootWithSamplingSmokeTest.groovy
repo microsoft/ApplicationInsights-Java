@@ -14,13 +14,16 @@ class SpringBootWithSamplingSmokeTest extends SmokeTest {
   static final int NUM_TRIES = 1000
   static final int ALLOWED_DEVIATION = 0.1 * NUM_TRIES
 
-  protected String getTargetImage(int jdk, String serverVersion) {
-    "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk$jdk-20201204.400701583"
+  protected String getTargetImage(String jdk, String serverVersion) {
+    "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk$jdk-20210129.520311771"
   }
 
   @Override
   protected Map<String, String> getExtraEnv() {
-    return ["OTEL_CONFIG_SAMPLER_PROBABILITY": String.valueOf(SAMPLER_PROBABILITY)]
+    return [
+      "OTEL_TRACE_SAMPLER": "parentbased_traceidratio",
+      "OTEL_TRACE_SAMPLER_ARG": String.valueOf(SAMPLER_PROBABILITY),
+    ]
   }
 
   def "spring boot with probability sampling enabled on JDK #jdk"(int jdk) {
@@ -31,7 +34,7 @@ class SpringBootWithSamplingSmokeTest extends SmokeTest {
 
     when:
     for (int i = 1; i <= NUM_TRIES; i++) {
-      CLIENT.newCall(request).execute()
+      CLIENT.newCall(request).execute().close()
     }
     Collection<ExportTraceServiceRequest> traces = waitForTraces()
 

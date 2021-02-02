@@ -5,8 +5,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.methods;
 
-import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import com.google.auto.service.AutoService;
@@ -50,6 +50,15 @@ public class MethodInstrumentationModule extends InstrumentationModule {
             .filter(e -> !e.getValue().isEmpty())
             .map(e -> new TracerClassInstrumentation(e.getKey(), e.getValue()))
             .collect(Collectors.toList());
+  }
+
+  // the default configuration has empty "otel.instrumentation.methods.include", and so doesn't
+  // generate any TypeInstrumentation for muzzle to analyze
+  @Override
+  protected String[] additionalHelperClassNames() {
+    return typeInstrumentations.isEmpty()
+        ? new String[0]
+        : new String[] {"io.opentelemetry.javaagent.instrumentation.methods.MethodTracer"};
   }
 
   @Override

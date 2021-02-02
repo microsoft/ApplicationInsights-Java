@@ -42,15 +42,8 @@ CopySpec isolateSpec(Collection<Project> projectsWithShadowJar) {
 //Includes everything needed for OOTB experience
 shadowJar {
   dependsOn ':instrumentation:shadowJar'
-  dependsOn ':javaagent-exporters:shadowJar'
-  def projectsWithShadowJar = [project(':javaagent-exporters'), project(':instrumentation')]
+  def projectsWithShadowJar = [project(':instrumentation')]
   with isolateSpec(projectsWithShadowJar)
-
-  // Exclude class files pulled in from the javaagent-exporters project that are also pulled in from the
-  // instrumentation project.
-  // Removing duplicates reduces jar size and can prevent issues when downstream projects repackage
-  // the jar.
-  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 //Includes instrumentations, but not exporters
@@ -90,17 +83,19 @@ tasks.withType(ShadowJar).configureEach {
 
   // relocate OpenTelemetry API
   relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
+  relocate "io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv"
   relocate "io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi"
   relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
+
+  // relocate OpenTelemetry extensions
+  relocate "io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin"
+  relocate "io.opentelemetry.extension.trace.propagation", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.trace.propagation"
 }
 
 dependencies {
-  testImplementation project(':javaagent-bootstrap')
-  testImplementation project(':javaagent-api')
-  testImplementation project(':instrumentation-api')
-  testImplementation project(':utils:test-utils')
+  testCompileOnly project(':javaagent-bootstrap')
+  testCompileOnly project(':javaagent-api')
 
-  testImplementation deps.testLogging
   testImplementation deps.guava
 
   testImplementation 'io.opentracing.contrib.dropwizard:dropwizard-opentracing:0.2.2'
@@ -109,9 +104,7 @@ dependencies {
 }
 
 tasks.withType(Test).configureEach {
-  // Multi-threaded logging seems to be causing deadlocks with Gradle's log capture.
-  //  jvmArgs "-Dio.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel=debug"
-  //  jvmArgs "-Dorg.slf4j.simpleLogger.defaultLogLevel=debug"
+  jvmArgs "-Dotel.javaagent.debug=true"
 
   doFirst {
     // Defining here to allow jacoco to be first on the command line.

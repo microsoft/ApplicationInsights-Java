@@ -12,7 +12,7 @@ import io.opentelemetry.instrumentation.test.InstrumentationTestTrait
 class AwsLambdaTest extends AbstractAwsLambdaRequestHandlerTest implements InstrumentationTestTrait {
 
   def cleanup() {
-    assert testWriter.forceFlushCalled()
+    assert forceFlushCalled()
   }
 
   static class TestRequestHandler extends TracingRequestHandler<String, String> {

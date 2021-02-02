@@ -26,6 +26,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.containers.output.ToStringConsumer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.containers.wait.strategy.WaitStrategy
+import org.testcontainers.images.PullPolicy
 import org.testcontainers.utility.MountableFile
 import spock.lang.Shared
 import spock.lang.Specification
@@ -46,13 +47,19 @@ abstract class SmokeTest extends Specification {
   @Shared
   protected GenericContainer target
 
-  protected abstract String getTargetImage(int jdk, String serverVersion)
+  protected abstract String getTargetImage(String jdk, String serverVersion)
 
   /**
    * Subclasses can override this method to customise target application's environment
    */
   protected Map<String, String> getExtraEnv() {
     return Collections.emptyMap()
+  }
+
+  /**
+   * Subclasses can override this method to customise target application's environment
+   */
+  protected void customizeContainer(GenericContainer container) {
   }
 
   @Shared
@@ -67,6 +74,7 @@ abstract class SmokeTest extends Specification {
       .waitingFor(Wait.forHttp("/health").forPort(8080))
       .withNetwork(network)
       .withNetworkAliases("backend")
+      .withImagePullPolicy(PullPolicy.alwaysPull())
       .withLogConsumer(new Slf4jLogConsumer(logger))
     backend.start()
 
@@ -75,12 +83,17 @@ abstract class SmokeTest extends Specification {
       .withNetwork(network)
       .withNetworkAliases("collector")
       .withLogConsumer(new Slf4jLogConsumer(logger))
+      .withImagePullPolicy(PullPolicy.alwaysPull())
       .withCopyFileToContainer(MountableFile.forClasspathResource("/otel.yaml"), "/etc/otel.yaml")
       .withCommand("--config /etc/otel.yaml")
     collector.start()
   }
 
   def startTarget(int jdk, String serverVersion = null) {
+    startTarget(String.valueOf(jdk), serverVersion)
+  }
+
+  def startTarget(String jdk, String serverVersion = null) {
     def output = new ToStringConsumer()
     target = new GenericContainer<>(getTargetImage(jdk, serverVersion))
       .withExposedPorts(8080)
@@ -88,11 +101,13 @@ abstract class SmokeTest extends Specification {
       .withLogConsumer(output)
       .withLogConsumer(new Slf4jLogConsumer(logger))
       .withCopyFileToContainer(MountableFile.forHostPath(agentPath), "/opentelemetry-javaagent-all.jar")
-      .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/opentelemetry-javaagent-all.jar")
+      .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/opentelemetry-javaagent-all.jar -Dio.opentelemetry.javaagent.slf4j.simpleLogger.log.muzzleMatcher=true")
       .withEnv("OTEL_BSP_MAX_EXPORT_BATCH_SIZE", "1")
       .withEnv("OTEL_BSP_SCHEDULE_DELAY_MILLIS", "10")
-      .withEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "collector:55680")
+      .withEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:55680")
+      .withImagePullPolicy(PullPolicy.alwaysPull())
       .withEnv(extraEnv)
+    customizeContainer(target)
 
     WaitStrategy waitStrategy = getWaitStrategy()
     if (waitStrategy != null) {
@@ -122,6 +137,7 @@ abstract class SmokeTest extends Specification {
   def cleanupSpec() {
     backend.stop()
     collector.stop()
+    network.close()
   }
 
   protected static Stream<AnyValue> findResourceAttribute(Collection<ExportTraceServiceRequest> traces,
@@ -190,5 +206,12 @@ abstract class SmokeTest extends Specification {
   private static Stream<String> findTraceId(String log) {
     def m = TRACE_ID_PATTERN.matcher(log)
     m.matches() ? Stream.of(m.group("traceId")) : Stream.empty() as Stream<String>
+  }
+
+  protected static boolean isVersionLogged(ToStringConsumer output, String version) {
+    output.toUtf8String().lines()
+      .filter({ it.contains("opentelemetry-javaagent - version: " + version) })
+      .findFirst()
+      .isPresent()
   }
 }

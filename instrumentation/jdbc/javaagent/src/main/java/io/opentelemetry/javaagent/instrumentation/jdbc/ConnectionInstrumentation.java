@@ -5,16 +5,16 @@
 
 package io.opentelemetry.javaagent.instrumentation.jdbc;
 
-import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.hasInterface;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
-import io.opentelemetry.javaagent.instrumentation.api.db.SqlStatementInfo;
+import io.opentelemetry.javaagent.instrumentation.api.db.SqlStatementSanitizer;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.sql.PreparedStatement;
 import java.util.Map;
@@ -49,10 +49,7 @@ public class ConnectionInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void addDbInfo(
         @Advice.Argument(0) String sql, @Advice.Return PreparedStatement statement) {
-      SqlStatementInfo normalizedSql = JdbcUtils.normalizeAndExtractInfo(sql);
-      if (normalizedSql != null) {
-        JdbcMaps.preparedStatements.put(statement, normalizedSql);
-      }
+      JdbcMaps.preparedStatements.put(statement, SqlStatementSanitizer.sanitize(sql));
     }
   }
 }

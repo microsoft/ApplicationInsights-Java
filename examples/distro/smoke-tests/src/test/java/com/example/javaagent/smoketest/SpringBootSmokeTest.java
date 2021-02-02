@@ -14,7 +14,8 @@ import org.junit.jupiter.api.Test;
 class SpringBootSmokeTest extends SmokeTest {
 
   protected String getTargetImage(int jdk) {
-    return "open-telemetry-docker-dev.bintray.io/java/smoke-springboot-jdk" + jdk + ":latest";
+    return "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk" + jdk
+        + "-20201204.400701583";
   }
 
   @Test
@@ -37,12 +38,13 @@ class SpringBootSmokeTest extends SmokeTest {
     Assertions.assertNotNull(response.header("X-server-id"));
     Assertions.assertEquals(1, response.headers("X-server-id").size());
     Assertions.assertTrue(TraceId.isValid(response.header("X-server-id")));
-    Assertions.assertEquals(response.body().string(), "Hi!");
+    Assertions.assertEquals("Hi!", response.body().string());
     Assertions.assertEquals(1, countSpansByName(traces, "/greeting"));
     Assertions.assertEquals(0, countSpansByName(traces, "WebController.greeting"));
     Assertions.assertEquals(1, countSpansByName(traces, "WebController.withSpan"));
     Assertions.assertEquals(2, countSpansByAttributeValue(traces, "custom", "demo"));
-    Assertions.assertEquals(1, countResourcesByValue(traces, "telemetry.auto.version", currentAgentVersion));
+    Assertions.assertEquals(1,
+        countResourcesByValue(traces, "telemetry.auto.version", currentAgentVersion));
     Assertions.assertEquals(1, countResourcesByValue(traces, "custom.resource", "demo"));
 
     stopTarget();

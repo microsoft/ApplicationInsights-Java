@@ -5,9 +5,8 @@
 
 package io.opentelemetry.instrumentation.runtimemetrics;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.metrics.LongSumObserver;
+import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.Meter;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -35,24 +34,22 @@ public final class GarbageCollector {
   /** Register all observers provided by this module. */
   public void registerObservers() {
     List<GarbageCollectorMXBean> garbageCollectors = ManagementFactory.getGarbageCollectorMXBeans();
-    Meter meter = OpenTelemetry.getGlobalMeter(GarbageCollector.class.getName());
-    final LongSumObserver observer =
-        meter
-            .longSumObserverBuilder("runtime.jvm.gc.collection")
-            .setDescription("Time spent in a given JVM garbage collector in milliseconds.")
-            .setUnit("ms")
-            .build();
-    final List<Labels> labelSets = new ArrayList<>(garbageCollectors.size());
+    Meter meter = GlobalMetricsProvider.getMeter(GarbageCollector.class.getName());
+    List<Labels> labelSets = new ArrayList<>(garbageCollectors.size());
     for (final GarbageCollectorMXBean gc : garbageCollectors) {
       labelSets.add(Labels.of(GC_LABEL_KEY, gc.getName()));
     }
-
-    observer.setCallback(
-        resultLongObserver -> {
-          for (int i = 0; i < garbageCollectors.size(); i++) {
-            resultLongObserver.observe(
-                garbageCollectors.get(i).getCollectionTime(), labelSets.get(i));
-          }
-        });
+    meter
+        .longSumObserverBuilder("runtime.jvm.gc.collection")
+        .setDescription("Time spent in a given JVM garbage collector in milliseconds.")
+        .setUnit("ms")
+        .setUpdater(
+            resultLongObserver -> {
+              for (int i = 0; i < garbageCollectors.size(); i++) {
+                resultLongObserver.observe(
+                    garbageCollectors.get(i).getCollectionTime(), labelSets.get(i));
+              }
+            })
+        .build();
   }
 }

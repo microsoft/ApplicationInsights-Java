@@ -42,12 +42,15 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
         || name.startsWith("com.jayway.jsonpath.")
         || name.startsWith("com.lightbend.lagom.")
         || name.startsWith("javax.el.")
-        || name.startsWith("net.sf.cglib.")
         || name.startsWith("org.apache.lucene.")
         || name.startsWith("org.apache.tartarus.")
         || name.startsWith("org.json.simple.")
         || name.startsWith("org.yaml.snakeyaml.")) {
       return true;
+    }
+
+    if (name.startsWith("net.sf.cglib.")) {
+      return !name.equals("net.sf.cglib.core.internal.LoadingCache$2");
     }
 
     if (name.startsWith("org.springframework.")) {
@@ -129,7 +132,9 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
       if (name.startsWith("org.springframework.core.")) {
         if (name.startsWith("org.springframework.core.task.")
             || name.equals("org.springframework.core.DecoratingClassLoader")
-            || name.equals("org.springframework.core.OverridingClassLoader")) {
+            || name.equals("org.springframework.core.OverridingClassLoader")
+            || name.equals(
+                "org.springframework.core.ReactiveAdapterRegistry$EmptyCompletableFuture")) {
           return false;
         }
         // Spring boot actuator / micrometer instrumentation

@@ -7,8 +7,10 @@ package io.opentelemetry.instrumentation.spring.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -21,15 +23,20 @@ class TracerAutoConfigurationTest {
   @TestConfiguration
   static class CustomTracerConfiguration {
     @Bean
-    public Tracer customTestTracer() {
-      return OpenTelemetry.getGlobalTracer("customTestTracer");
+    public Tracer customTestTracer(TracerProvider tracerProvider) {
+      return tracerProvider.get("customTestTracer");
     }
   }
 
   private final ApplicationContextRunner contextRunner = new ApplicationContextRunner();
 
+  @AfterEach
+  void tearDown() {
+    GlobalOpenTelemetry.resetForTest();
+  }
+
   @Test
-  @DisplayName("when Application Context contains Tracer bean should NOT initalize otelTracer")
+  @DisplayName("when Application Context contains Tracer bean should NOT initialize otelTracer")
   void customTracer() {
     this.contextRunner
         .withUserConfiguration(CustomTracerConfiguration.class)
@@ -43,7 +50,7 @@ class TracerAutoConfigurationTest {
 
   @Test
   @DisplayName("when Application Context DOES NOT contain Tracer bean should initialize otelTracer")
-  void initalizeTracer() {
+  void initializeTracer() {
     this.contextRunner
         .withConfiguration(AutoConfigurations.of(TracerAutoConfiguration.class))
         .run(
@@ -61,7 +68,7 @@ class TracerAutoConfigurationTest {
         .run(
             (context) -> {
               assertThat(context.getBean("otelTracer", Tracer.class))
-                  .isEqualTo(OpenTelemetry.getGlobalTracer("testTracer"));
+                  .isEqualTo(GlobalOpenTelemetry.getTracer("testTracer"));
             });
   }
 }

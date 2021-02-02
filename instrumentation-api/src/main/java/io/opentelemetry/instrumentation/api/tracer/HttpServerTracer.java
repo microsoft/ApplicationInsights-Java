@@ -10,17 +10,27 @@ import static io.opentelemetry.api.trace.Span.Kind.SERVER;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // TODO In search for a better home package
+
+/**
+ * Base class for implementing Tracers for HTTP servers. It has 3 types that must be specified by
+ * subclasses:
+ *
+ * @param <REQUEST> - The specific type for HTTP requests
+ * @param <RESPONSE> - The specific type for HTTP responses
+ * @param <CONNECTION> - The specific type of HTTP connection, used to get peer address information
+ *     and HTTP flavor.
+ * @param <STORAGE> - Implementation specific storage type for attaching/getting the server context.
+ *     Use Void if your subclass does not have an implementation specific storage need.
+ */
 public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> extends BaseTracer {
 
   // the class name is part of the attribute name, so that it will be shaded when used in javaagent
@@ -28,11 +38,6 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
   public static final String CONTEXT_ATTRIBUTE = HttpServerTracer.class.getName() + ".Context";
 
   protected static final String USER_AGENT = "User-Agent";
-
-  protected static final String AI_REQUEST_CONTEXT_HEADER_NAME = "Request-Context";
-
-  private static final boolean AI_BACK_COMPAT = true;
-  private static final String AI_REQUEST_CONTEXT_HEADER_APPID_KEY = "appId";
 
   public HttpServerTracer() {
     super();
@@ -77,7 +82,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     onRequest(span, request);
     onConnectionAndRequest(span, connection, request);
 
-    Context context = parentContext.with(CONTEXT_SERVER_SPAN_KEY, span).with(span);
+    Context context = withServerSpan(parentContext, span);
     attachServerContext(context, storage);
 
     return context;
@@ -133,7 +138,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
 
   public Span getServerSpan(STORAGE storage) {
     Context attachedContext = getServerContext(storage);
-    return attachedContext == null ? null : attachedContext.get(CONTEXT_SERVER_SPAN_KEY);
+    return attachedContext == null ? null : getCurrentServerSpan(attachedContext);
   }
 
   /**
@@ -156,15 +161,6 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     final String sourceAppId = span.getSpanContext().getTraceState().get(AiAppId.TRACESTATE_KEY);
     if (sourceAppId != null && !sourceAppId.isEmpty()) {
       span.setAttribute(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME, sourceAppId);
-    } else if (AI_BACK_COMPAT) {
-      final String aiRequestContext = aiRequestContext(request);
-      if (aiRequestContext != null) {
-        final Map<String, String> map = toMap(aiRequestContext);
-        final String backCompatSourceAppId = map.get(AI_REQUEST_CONTEXT_HEADER_APPID_KEY);
-        if (backCompatSourceAppId != null && !backCompatSourceAppId.isEmpty()) {
-          span.setAttribute(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME, backCompatSourceAppId);
-        }
-      }
     }
 
     span.setAttribute(SemanticAttributes.HTTP_METHOD, method(request));
@@ -291,23 +287,5 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
    */
   protected boolean isRelativeUrl(String url) {
     return !(url.startsWith("http://") || url.startsWith("https://"));
-  }
-
-  protected String aiRequestContext(final REQUEST request) {
-    return null;
-  }
-
-  private static Map<String, String> toMap(final String str) {
-    final Map<String, String> result = new HashMap<>();
-    final String[] pairs = str.split(",");
-    for (final String pair : pairs) {
-      final String[] keyValuePair = pair.trim().split("=");
-      if (keyValuePair.length == 2) {
-        final String key = keyValuePair[0].trim();
-        final String value = keyValuePair[1].trim();
-        result.put(key, value);
-      }
-    }
-    return result;
   }
 }

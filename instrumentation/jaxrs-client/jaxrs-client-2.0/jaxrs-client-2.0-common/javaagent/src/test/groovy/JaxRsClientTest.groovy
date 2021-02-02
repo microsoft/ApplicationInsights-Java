@@ -5,8 +5,7 @@
 
 import static io.opentelemetry.api.trace.Span.Kind.CLIENT
 
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import io.opentelemetry.instrumentation.test.base.HttpClientTest
 import java.util.concurrent.TimeUnit
 import javax.ws.rs.client.Client
@@ -70,7 +69,7 @@ abstract class JaxRsClientTest extends HttpClientTest {
             "${SemanticAttributes.HTTP_METHOD.key}" method
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" statusCode
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
-            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
         serverSpan(it, 1, span(0))

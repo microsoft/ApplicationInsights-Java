@@ -11,6 +11,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.servlet.ServletContextPath;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 public class Struts2Tracer extends BaseTracer {
 
@@ -29,9 +30,9 @@ public class Struts2Tracer extends BaseTracer {
 
     Span strutsSpan = tracer.spanBuilder(spanName).startSpan();
 
-    strutsSpan.setAttribute("code.namespace", actionClass.getName());
+    strutsSpan.setAttribute(SemanticAttributes.CODE_NAMESPACE, actionClass.getName());
     if (method != null) {
-      strutsSpan.setAttribute("code.function", method);
+      strutsSpan.setAttribute(SemanticAttributes.CODE_FUNCTION, method);
     }
 
     return strutsSpan;

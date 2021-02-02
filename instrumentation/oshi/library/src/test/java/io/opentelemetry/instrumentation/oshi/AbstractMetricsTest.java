@@ -7,16 +7,17 @@ package io.opentelemetry.instrumentation.oshi;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Type;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -24,13 +25,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
-public class AbstractMetricsTest {
+class AbstractMetricsTest {
   TestMetricExporter testMetricExporter;
 
+  static SdkMeterProvider meterProvider;
+
+  @BeforeAll
+  static void initializeOpenTelemetry() {
+    meterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
+  }
+
   @BeforeEach
-  public void beforeEach() {
+  void beforeEach() {
     testMetricExporter = new TestMetricExporter();
   }
 
@@ -38,35 +47,38 @@ public class AbstractMetricsTest {
     return IntervalMetricReader.builder()
         .setExportIntervalMillis(100)
         .setMetricExporter(testMetricExporter)
-        .setMetricProducers(
-            Collections.singletonList(
-                OpenTelemetrySdk.getGlobalMeterProvider().getMetricProducer()))
+        .setMetricProducers(Collections.singletonList(meterProvider))
         .build();
   }
 
   public void verify(
-      String metricName, String unit, MetricData.Type type, boolean checkNonZeroValue) {
+      String metricName, String unit, MetricDataType type, boolean checkNonZeroValue) {
     List<MetricData> metricDataList = testMetricExporter.metricDataList;
     for (MetricData metricData : metricDataList) {
       if (metricData.getName().equals(metricName)) {
         assertThat(metricData.getDescription()).isNotEmpty();
         assertThat(metricData.getUnit()).isEqualTo(unit);
-        assertThat(metricData.getPoints()).isNotEmpty();
+        metricData.getDoubleGaugeData().getPoints();
+        List<PointData> points = new ArrayList<>();
+        points.addAll(metricData.getDoubleGaugeData().getPoints());
+        points.addAll(metricData.getDoubleSumData().getPoints());
+        points.addAll(metricData.getDoubleSummaryData().getPoints());
+        points.addAll(metricData.getLongGaugeData().getPoints());
+        points.addAll(metricData.getLongSumData().getPoints());
+
+        assertThat(points).isNotEmpty();
         assertThat(metricData.getType()).isEqualTo(type);
         if (checkNonZeroValue) {
-          for (Point point : metricData.getPoints()) {
-            if (metricData.getType() == Type.NON_MONOTONIC_LONG) {
-              LongPoint longPoint = (LongPoint) point;
+          for (PointData point : points) {
+            if (point instanceof LongPointData) {
+              LongPointData longPoint = (LongPointData) point;
               assertThat(longPoint.getValue()).isGreaterThan(0);
-            } else if (metricData.getType() == Type.NON_MONOTONIC_DOUBLE) {
-              DoublePoint doublePoint = (DoublePoint) point;
+            } else if (point instanceof DoublePointData) {
+              DoublePointData doublePoint = (DoublePointData) point;
               assertThat(doublePoint.getValue()).isGreaterThan(0.0);
-            } else if (metricData.getType() == Type.SUMMARY) {
-              SummaryPoint summaryPoint = (SummaryPoint) point;
+            } else if (point instanceof DoubleSummaryPointData) {
+              DoubleSummaryPointData summaryPoint = (DoubleSummaryPointData) point;
               assertThat(summaryPoint.getSum()).isGreaterThan(0.0);
-            } else if (metricData.getType() == Type.GAUGE_DOUBLE) {
-              DoublePoint doublePoint = (DoublePoint) point;
-              assertThat(doublePoint.getValue()).isGreaterThan(0.0);
             } else {
               Assertions.fail("unexpected type " + metricData.getType());
             }
@@ -95,7 +107,9 @@ public class AbstractMetricsTest {
     }
 
     @Override
-    public void shutdown() {}
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
 
     public void waitForData() throws InterruptedException {
       latch.await(1, TimeUnit.SECONDS);

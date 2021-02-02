@@ -14,19 +14,19 @@ import okhttp3.Request
 
 class JaegerExporterSmokeTest extends SmokeTest {
 
-  protected String getTargetImage(int jdk, String serverVersion) {
-    "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk$jdk-20201204.400701583"
+  protected String getTargetImage(String jdk, String serverVersion) {
+    "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk$jdk-20210129.520311771"
   }
 
   @Override
   protected Map<String, String> getExtraEnv() {
     return [
-      "OTEL_EXPORTER"                : "jaeger",
+      "OTEL_TRACE_EXPORTER"          : "jaeger",
       "OTEL_EXPORTER_JAEGER_ENDPOINT": "collector:14250"
     ]
   }
 
-  def "spring boot smoke test with Zipkin"() {
+  def "spring boot smoke test with jaeger grpc"() {
     setup:
     startTarget(11)
 

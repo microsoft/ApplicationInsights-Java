@@ -5,3 +5,7 @@ dependencies {
 
   testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '0.9.16'
 }
+
+tasks.withType(Test) {
+  jvmArgs "-Dotel.experimental.log.capture.threshold=warn"
+}

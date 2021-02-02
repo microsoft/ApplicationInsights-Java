@@ -54,14 +54,12 @@ class ActiveSpanManager {
    * @param exchange The exchange
    * @param span The span
    */
-  public static void activate(Exchange exchange, Span span) {
+  public static void activate(Exchange exchange, Span span, Span.Kind spanKind) {
 
     SpanWithScope parent = exchange.getProperty(ACTIVE_SPAN_PROPERTY, SpanWithScope.class);
-    SpanWithScope spanWithScope = SpanWithScope.activate(span, parent);
+    SpanWithScope spanWithScope = SpanWithScope.activate(span, parent, spanKind);
     exchange.setProperty(ACTIVE_SPAN_PROPERTY, spanWithScope);
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Activated a span: " + spanWithScope);
-    }
+    LOG.debug("Activated a span: {}", spanWithScope);
   }
 
   /**
@@ -78,9 +76,7 @@ class ActiveSpanManager {
     if (spanWithScope != null) {
       spanWithScope.deactivate();
       exchange.setProperty(ACTIVE_SPAN_PROPERTY, spanWithScope.getParent());
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("Deactivated span: " + spanWithScope);
-      }
+      LOG.debug("Deactivated span: {}", spanWithScope);
     }
   }
 
@@ -95,9 +91,19 @@ class ActiveSpanManager {
       this.scope = scope;
     }
 
-    public static SpanWithScope activate(Span span, SpanWithScope parent) {
-      Scope scope = CamelTracer.TRACER.startScope(span);
+    public static SpanWithScope activate(Span span, SpanWithScope parent, Span.Kind spanKind) {
+      Scope scope = null;
+      if (isClientSpan(spanKind)) {
+        scope = CamelTracer.TRACER.startClientScope(span);
+      } else {
+        scope = CamelTracer.TRACER.startScope(span);
+      }
+
       return new SpanWithScope(parent, span, scope);
+    }
+
+    private static boolean isClientSpan(Span.Kind kind) {
+      return (Span.Kind.CLIENT.equals(kind) || Span.Kind.PRODUCER.equals(kind));
     }
 
     public SpanWithScope getParent() {

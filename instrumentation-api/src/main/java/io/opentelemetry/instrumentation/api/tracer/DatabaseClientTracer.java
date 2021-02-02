@@ -7,13 +7,13 @@ package io.opentelemetry.instrumentation.api.tracer;
 
 import static io.opentelemetry.api.trace.Span.Kind.CLIENT;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.tracer.utils.NetPeerUtils;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutionException;
 
@@ -24,11 +24,11 @@ public abstract class DatabaseClientTracer<CONNECTION, QUERY> extends BaseTracer
   protected final Tracer tracer;
 
   public DatabaseClientTracer() {
-    tracer = OpenTelemetry.getGlobalTracer(getInstrumentationName(), getVersion());
+    tracer = GlobalOpenTelemetry.getTracer(getInstrumentationName(), getVersion());
   }
 
   public boolean shouldStartSpan(Context parentContext) {
-    return parentContext.get(CONTEXT_CLIENT_SPAN_KEY) == null;
+    return shouldStartSpan(CLIENT, parentContext);
   }
 
   public Context startSpan(Context parentContext, CONNECTION connection, QUERY query) {
@@ -48,17 +48,12 @@ public abstract class DatabaseClientTracer<CONNECTION, QUERY> extends BaseTracer
     }
     onStatement(span, normalizedQuery);
 
-    return parentContext.with(span).with(CONTEXT_CLIENT_SPAN_KEY, span);
+    return withClientSpan(parentContext, span);
   }
 
   @Override
   public Span getCurrentSpan() {
     return Span.current();
-  }
-
-  public Span getClientSpan() {
-    Context context = Context.current();
-    return context.get(CONTEXT_CLIENT_SPAN_KEY);
   }
 
   public void end(Context context) {

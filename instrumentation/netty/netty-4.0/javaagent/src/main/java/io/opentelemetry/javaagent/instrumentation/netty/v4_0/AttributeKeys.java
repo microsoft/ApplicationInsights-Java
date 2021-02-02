@@ -30,8 +30,8 @@ public class AttributeKeys {
   public static final AttributeKey<Context> SERVER_SPAN =
       attributeKey(AttributeKeys.class.getName() + ".server-span");
 
-  public static final AttributeKey<Context> CLIENT_SPAN =
-      attributeKey(AttributeKeys.class.getName() + ".client-span");
+  public static final AttributeKey<Context> CLIENT_CONTEXT =
+      attributeKey(AttributeKeys.class.getName() + ".client-context");
 
   public static final AttributeKey<Context> CLIENT_PARENT_CONTEXT =
       attributeKey(AttributeKeys.class.getName() + ".client-parent-context");
@@ -42,8 +42,10 @@ public class AttributeKeys {
    * prevents an issue with Apache Atlas project were this class loaded by multiple class loaders,
    * while the Attribute class is loaded by a third class loader and used internally for the
    * cassandra driver.
+   *
+   * <p>Keep this API public for vendor instrumentations
    */
-  private static <T> AttributeKey<T> attributeKey(String key) {
+  public static <T> AttributeKey<T> attributeKey(String key) {
     ConcurrentMap<String, AttributeKey<?>> classLoaderMap =
         map.computeIfAbsent(AttributeKey.class.getClassLoader(), mapSupplier);
     if (classLoaderMap.containsKey(key)) {
