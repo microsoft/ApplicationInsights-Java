@@ -35,7 +35,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -72,6 +71,7 @@ public class Exporter implements SpanExporter {
     private static final Joiner JOINER = Joiner.on(", ");
 
     public static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE_KEY = AttributeKey.doubleKey("applicationinsights.internal.sampling_percentage");
+    public static final AttributeKey<String> AI_OPERATION_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
     private static final AttributeKey<Boolean> AI_LOG_KEY = AttributeKey.booleanKey("applicationinsights.internal.log");
 
@@ -237,6 +237,10 @@ public class Exporter implements SpanExporter {
         if (SpanId.isValid(parentSpanId)) {
             telemetry.getContext().getOperation().setParentId(parentSpanId);
         }
+        String operationName = attributes.get(AI_OPERATION_NAME_KEY);
+        if (operationName != null) {
+            telemetry.getContext().getOperation().setName(operationName);
+        }
 
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
@@ -283,11 +287,16 @@ public class Exporter implements SpanExporter {
     }
 
     private void trackEvents(SpanData span, Double samplingPercentage) {
+        String operationName = span.getAttributes().get(AI_OPERATION_NAME_KEY);
+
         boolean foundException = false;
         for (EventData event : span.getEvents()) {
             EventTelemetry telemetry = new EventTelemetry(event.getName());
             telemetry.getContext().getOperation().setId(span.getTraceId());
-            telemetry.getContext().getOperation().setParentId(span.getParentSpanId());
+            telemetry.getContext().getOperation().setParentId(span.getSpanId());
+            if (operationName != null) {
+                telemetry.getContext().getOperation().setName(operationName);
+            }
             telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(event.getEpochNanos())));
             setExtraAttributes(telemetry, event.getAttributes());
 
@@ -299,7 +308,7 @@ public class Exporter implements SpanExporter {
                     // TODO map OpenTelemetry exception to Application Insights exception better
                     String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
                     if (stacktrace != null) {
-                        trackException(stacktrace, span, telemetry, span.getSpanId(), samplingPercentage);
+                        trackException(stacktrace, span, telemetry, span.getSpanId(), operationName, samplingPercentage);
                     }
                 }
                 foundException = true;
@@ -320,6 +329,10 @@ public class Exporter implements SpanExporter {
         if (SpanId.isValid(span.getParentSpanId())) {
             telemetry.getContext().getOperation().setId(span.getTraceId());
             telemetry.getContext().getOperation().setParentId(span.getParentSpanId());
+            String operationName = attributes.get(AI_OPERATION_NAME_KEY);
+            if (operationName != null) {
+                telemetry.getContext().getOperation().setName(operationName);
+            }
         }
 
         setLoggerProperties(telemetry.getProperties(), level, loggerName);
@@ -342,6 +355,10 @@ public class Exporter implements SpanExporter {
         if (SpanId.isValid(span.getParentSpanId())) {
             telemetry.getContext().getOperation().setId(span.getTraceId());
             telemetry.getContext().getOperation().setParentId(span.getParentSpanId());
+            String operationName = attributes.get(AI_OPERATION_NAME_KEY);
+            if (operationName != null) {
+                telemetry.getContext().getOperation().setName(operationName);
+            }
         }
 
         telemetry.getData().setExceptions(Exceptions.minimalParse(errorStack));
@@ -356,11 +373,14 @@ public class Exporter implements SpanExporter {
     }
 
     private void trackException(String errorStack, SpanData span, Telemetry telemetry,
-                                String id, Double samplingPercentage) {
+                                String id, String operationName, Double samplingPercentage) {
         ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry();
         exceptionTelemetry.getData().setExceptions(Exceptions.minimalParse(errorStack));
         exceptionTelemetry.getContext().getOperation().setId(telemetry.getContext().getOperation().getId());
         exceptionTelemetry.getContext().getOperation().setParentId(id);
+        if (operationName != null) {
+            telemetry.getContext().getOperation().setName(operationName);
+        }
         exceptionTelemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getEndEpochNanos())));
         track(exceptionTelemetry, samplingPercentage);
     }
