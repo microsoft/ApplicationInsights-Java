@@ -17,11 +17,10 @@ public class MicrometerTest extends AiSmokeTest {
     public void doMostBasicTest() throws Exception {
         mockedIngestion.waitForItems("RequestData", 1);
 
-        mockedIngestion.waitForItems("MetricData", 1);
+        // sometimes receives more than 1 due to timing
+        mockedIngestion.waitForMinItems("MetricData", 1);
 
         List<MetricData> metrics = mockedIngestion.getTelemetryDataByType("MetricData");
-
-        assertEquals(1, metrics.size());
 
         List<DataPoint> points = metrics.get(0).getMetrics();
 
