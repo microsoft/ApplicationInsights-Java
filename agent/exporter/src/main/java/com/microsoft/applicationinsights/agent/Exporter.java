@@ -132,9 +132,11 @@ public class Exporter implements SpanExporter {
             }
         } else if (kind == Kind.CLIENT || kind == Kind.PRODUCER) {
             exportRemoteDependency(span, false);
-        } else if (kind == Kind.CONSUMER) {
+        } else if (kind == Kind.CONSUMER && !span.getParentSpanContext().isRemote()) {
+            // TODO need spec clarification, but it seems polling for messages can be CONSUMER also
+            //  in which case the span will not have a remote parent and should be treated as a dependency instead of a request
             exportRemoteDependency(span, false);
-        } else if (kind == Kind.SERVER) {
+        } else if (kind == Kind.SERVER || kind == Kind.CONSUMER) {
             exportRequest(span);
         } else {
             throw new UnsupportedOperationException(kind.name());
