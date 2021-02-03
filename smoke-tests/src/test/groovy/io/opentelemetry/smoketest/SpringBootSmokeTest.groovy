@@ -16,8 +16,8 @@ import spock.lang.Unroll
 
 class SpringBootSmokeTest extends SmokeTest {
 
-  protected String getTargetImage(int jdk, String serverVersion) {
-    "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk$jdk-20201204.400701583"
+  protected String getTargetImage(String jdk, String serverVersion) {
+    "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk$jdk-20210129.520311771"
   }
 
   @Unroll
@@ -27,7 +27,7 @@ class SpringBootSmokeTest extends SmokeTest {
     String url = "http://localhost:${target.getMappedPort(8080)}/greeting"
     def request = new Request.Builder().url(url).get().build()
 
-    def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name.IMPLEMENTATION_VERSION)
+    def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name.IMPLEMENTATION_VERSION).toString()
 
     when:
     def response = CLIENT.newCall(request).execute()
@@ -42,10 +42,13 @@ class SpringBootSmokeTest extends SmokeTest {
     [currentAgentVersion] as Set == findResourceAttribute(traces, "telemetry.auto.version")
       .map { it.stringValue }
       .collect(toSet())
-    findResourceAttribute(traces, "os.name")
+    findResourceAttribute(traces, "os.type")
       .map { it.stringValue }
       .findAny()
       .isPresent()
+
+    then: "javaagent logs its version on startup"
+    isVersionLogged(output, currentAgentVersion)
 
     then: "correct traceIds are logged via MDC instrumentation"
     def loggedTraceIds = getLoggedTraceIds(output)

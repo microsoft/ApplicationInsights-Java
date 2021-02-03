@@ -16,11 +16,16 @@ public class Servlet2HttpServerTracer extends ServletHttpServerTracer<ResponseWi
 
   @Override
   protected String getInstrumentationName() {
-    return "io.opentelemetry.javaagent.servlet";
+    return "io.opentelemetry.javaagent.servlet-2.2";
   }
 
   @Override
   protected int responseStatus(ResponseWithStatus responseWithStatus) {
     return responseWithStatus.getStatus();
+  }
+
+  @Override
+  protected boolean isResponseCommitted(ResponseWithStatus responseWithStatus) {
+    return responseWithStatus.getResponse().isCommitted();
   }
 }

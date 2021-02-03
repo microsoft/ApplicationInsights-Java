@@ -13,9 +13,7 @@ dependencies {
 
   testImplementation project(':instrumentation:opentelemetry-annotations-1.0:javaagent')
 
-  // TODO switch to deps.opentelemetryExtAnnotations
-  //  after https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/1643
-  testImplementation project(path: ':opentelemetry-ext-annotations-shaded-for-instrumenting', configuration: 'shadow')
+  testImplementation deps.opentelemetryExtAnnotations
 
   testImplementation 'javax.servlet:javax.servlet-api:3.0.1'
 }

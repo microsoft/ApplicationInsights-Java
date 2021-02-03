@@ -9,11 +9,12 @@ import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Session;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.tracer.DatabaseClientTracer;
 import io.opentelemetry.instrumentation.api.tracer.utils.NetPeerUtils;
-import io.opentelemetry.javaagent.instrumentation.api.db.DbSystem;
+import io.opentelemetry.javaagent.instrumentation.api.db.SqlStatementSanitizer;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes.DbSystemValues;
 import java.net.InetSocketAddress;
 
 public class CassandraDatabaseClientTracer extends DatabaseClientTracer<Session, String> {
@@ -30,12 +31,12 @@ public class CassandraDatabaseClientTracer extends DatabaseClientTracer<Session,
 
   @Override
   protected String normalizeQuery(String query) {
-    return CassandraQueryNormalizer.normalize(query);
+    return SqlStatementSanitizer.sanitize(query).getFullStatement();
   }
 
   @Override
   protected String dbSystem(Session session) {
-    return DbSystem.CASSANDRA;
+    return DbSystemValues.CASSANDRA;
   }
 
   @Override

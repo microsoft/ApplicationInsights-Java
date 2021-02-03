@@ -6,7 +6,7 @@
 import static io.opentelemetry.api.trace.Span.Kind.CONSUMER
 import static io.opentelemetry.api.trace.Span.Kind.PRODUCER
 
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.sdk.trace.data.SpanData
@@ -134,22 +134,8 @@ class Jms1Test extends AgentTestRunner {
 
     expect:
     receivedMessage == null
-    assertTraces(1) {
-      trace(0, 1) { // Consumer trace
-        span(0) {
-          hasNoParent()
-          name destinationName + " receive"
-          kind CONSUMER
-          errored false
-          attributes {
-            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "jms"
-            "${SemanticAttributes.MESSAGING_DESTINATION.key}" destinationName
-            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" destinationType
-            "${SemanticAttributes.MESSAGING_OPERATION.key}" "receive"
-          }
-        }
-      }
-    }
+    // span is not created if no message is received
+    assertTraces(0, {})
 
     cleanup:
     consumer.close()
@@ -169,22 +155,8 @@ class Jms1Test extends AgentTestRunner {
 
     expect:
     receivedMessage == null
-    assertTraces(1) {
-      trace(0, 1) { // Consumer trace
-        span(0) {
-          hasNoParent()
-          name destinationName + " receive"
-          kind CONSUMER
-          errored false
-          attributes {
-            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "jms"
-            "${SemanticAttributes.MESSAGING_DESTINATION.key}" destinationName
-            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" destinationType
-            "${SemanticAttributes.MESSAGING_OPERATION.key}" "receive"
-          }
-        }
-      }
-    }
+    // span is not created if no message is received
+    assertTraces(0, {})
 
     cleanup:
     consumer.close()

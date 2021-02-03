@@ -6,6 +6,7 @@
 package io.opentelemetry.javaagent.instrumentation.log4j.v2_0;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static java.util.Collections.singletonList;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isProtected;
@@ -47,6 +48,11 @@ public class Log4jSpansInstrumentationModule extends InstrumentationModule {
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
       return extendsClass(named("org.apache.logging.log4j.spi.AbstractLogger"));
+    }
+
+    @Override
+    public ElementMatcher<ClassLoader> classLoaderOptimization() {
+      return hasClassesNamed("org.apache.logging.log4j.spi.AbstractLogger");
     }
 
     @Override

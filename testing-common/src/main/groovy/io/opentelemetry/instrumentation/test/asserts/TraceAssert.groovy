@@ -7,12 +7,12 @@ package io.opentelemetry.instrumentation.test.asserts
 
 import static SpanAssert.assertSpan
 
-import com.google.common.base.Stopwatch
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 import io.opentelemetry.instrumentation.test.InMemoryExporter
 import io.opentelemetry.sdk.trace.data.SpanData
 import java.util.concurrent.TimeUnit
+import java.util.function.Supplier
 
 class TraceAssert {
   private final List<SpanData> spans
@@ -23,14 +23,14 @@ class TraceAssert {
     this.spans = spans
   }
 
-  static void assertTrace(InMemoryExporter writer, String traceId, int expectedSize,
+  static void assertTrace(Supplier<List<SpanData>> spanSupplier, String traceId, int expectedSize,
                           @ClosureParams(value = SimpleType, options = ['io.opentelemetry.instrumentation.test.asserts.TraceAssert'])
                           @DelegatesTo(value = TraceAssert, strategy = Closure.DELEGATE_FIRST) Closure spec) {
-    def spans = getTrace(writer, traceId)
-    Stopwatch stopwatch = Stopwatch.createStarted()
-    while (spans.size() < expectedSize && stopwatch.elapsed(TimeUnit.SECONDS) < 10) {
+    def spans = getTrace(spanSupplier, traceId)
+    def startTime = System.nanoTime()
+    while (spans.size() < expectedSize && elapsedSeconds(startTime) < 10) {
       Thread.sleep(10)
-      spans = getTrace(writer, traceId)
+      spans = getTrace(spanSupplier, traceId)
     }
     assert spans.size() == expectedSize
     def asserter = new TraceAssert(spans)
@@ -39,6 +39,10 @@ class TraceAssert {
     clone.resolveStrategy = Closure.DELEGATE_FIRST
     clone(asserter)
     asserter.assertSpansAllVerified()
+  }
+
+  private static long elapsedSeconds(long startTime) {
+    TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startTime)
   }
 
   List<SpanData> getSpans() {
@@ -68,17 +72,13 @@ class TraceAssert {
     span(index, spec)
   }
 
-  // this doesn't provide any functionality, just a self-documenting marker
-  void sortSpans(Closure callback) {
-    callback.call()
-  }
-
   void assertSpansAllVerified() {
     assert assertedIndexes.size() == spans.size()
   }
 
-  private static List<SpanData> getTrace(InMemoryExporter writer, String traceId) {
-    for (List<SpanData> trace : writer.getTraces()) {
+  private static List<SpanData> getTrace(Supplier<List<SpanData>> spanSupplier, String traceId) {
+    List<List<SpanData>> traces = InMemoryExporter.groupTraces(spanSupplier.get())
+    for (List<SpanData> trace : traces) {
       if (trace[0].traceId == traceId) {
         return trace
       }

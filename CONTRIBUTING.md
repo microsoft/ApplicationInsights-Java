@@ -16,7 +16,7 @@ See [Running the tests](./docs/contributing/running-tests.md) for more details.
 
 For developers testing code changes before a release is complete, there are
 snapshot builds of the `master` branch. They are available from
-[JFrog OSS repository](https://oss.jfrog.org/artifactory/oss-snapshot-local/io/opentelemetry/instrumentation/)
+the Sonatype OSS snapshots repository at https://oss.sonatype.org/content/repositories/snapshots/ ([browse](https://oss.sonatype.org/content/repositories/snapshots/io/opentelemetry/))
 
 #### Building from source
 
@@ -53,6 +53,10 @@ See [Writing instrumentation](docs/contributing/writing-instrumentation.md)
 ### Understanding the javaagent components
 
 See [Understanding the javaagent components](docs/contributing/javaagent-jar-components.md)
+
+### Understanding the javaagent instrumentation testing components
+
+See [Understanding the javaagent instrumentation testing components](docs/contributing/javaagent-test-infra.md)
 
 ### Debugging
 

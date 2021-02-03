@@ -5,10 +5,10 @@
 
 package io.opentelemetry.instrumentation.awslambda.v1_0;
 
-import static io.opentelemetry.api.trace.attributes.SemanticAttributes.CLOUD_ACCOUNT_ID;
-import static io.opentelemetry.api.trace.attributes.SemanticAttributes.FAAS_EXECUTION;
-import static io.opentelemetry.api.trace.attributes.SemanticAttributes.FAAS_ID;
-import static io.opentelemetry.api.trace.attributes.SemanticAttributes.FAAS_TRIGGER;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.CLOUD_ACCOUNT_ID;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.FAAS_EXECUTION;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.FAAS_ID;
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.FAAS_TRIGGER;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
@@ -18,9 +18,9 @@ import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes.FaasTriggerValues;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes.FaasTriggerValues;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -159,9 +159,8 @@ public class AwsLambdaTracer extends BaseTracer {
   /** Creates new scoped context with the given span. */
   @Override
   public Scope startScope(Span span) {
-    // TODO we could do this in one go, but TracingContextUtils.CONTEXT_SPAN_KEY is private
     io.opentelemetry.context.Context newContext =
-        io.opentelemetry.context.Context.current().with(CONTEXT_SERVER_SPAN_KEY, span).with(span);
+        withServerSpan(io.opentelemetry.context.Context.current(), span);
     return newContext.makeCurrent();
   }
 

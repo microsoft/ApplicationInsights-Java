@@ -7,8 +7,8 @@ package io.opentelemetry.javaagent.instrumentation.apachehttpclient.v4_0;
 
 import static io.opentelemetry.javaagent.instrumentation.apachehttpclient.v4_0.ApacheHttpClientTracer.tracer;
 import static io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge.currentContext;
-import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static java.util.Collections.singletonList;
 import static net.bytebuddy.matcher.ElementMatchers.isAbstract;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
@@ -62,7 +62,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
       // There are 8 execute(...) methods.  Depending on the version, they may or may not delegate
-      // to eachother. Thus, all methods need to be instrumented.  Because of argument position and
+      // to each other. Thus, all methods need to be instrumented.  Because of argument position and
       // type, some methods can share the same advice class.  The call depth tracking ensures only 1
       // span is created
 
@@ -157,7 +157,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
         return;
       }
 
-      context = tracer().startSpan(parentContext, request, request);
+      context = tracer().startSpan(parentContext, request);
       scope = context.makeCurrent();
     }
 
@@ -194,12 +194,12 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
         return;
       }
 
-      context = tracer().startSpan(parentContext, request, request);
+      context = tracer().startSpan(parentContext, request);
       scope = context.makeCurrent();
 
       // Wrap the handler so we capture the status code
       if (handler instanceof ResponseHandler) {
-        handler = new WrappingStatusSettingResponseHandler(context, (ResponseHandler) handler);
+        handler = new WrappingStatusSettingResponseHandler(context, (ResponseHandler<?>) handler);
       }
     }
 
@@ -230,13 +230,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
         return;
       }
 
-      HttpUriRequest httpUriRequest;
-      if (request instanceof HttpUriRequest) {
-        httpUriRequest = (HttpUriRequest) request;
-      } else {
-        httpUriRequest = new HostAndRequestAsHttpUriRequest(host, request);
-      }
-      context = tracer().startSpan(parentContext, httpUriRequest, httpUriRequest);
+      context = tracer().startSpan(parentContext, host, request);
       scope = context.makeCurrent();
     }
 
@@ -274,18 +268,12 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
         return;
       }
 
-      HttpUriRequest httpUriRequest;
-      if (request instanceof HttpUriRequest) {
-        httpUriRequest = (HttpUriRequest) request;
-      } else {
-        httpUriRequest = new HostAndRequestAsHttpUriRequest(host, request);
-      }
-      context = tracer().startSpan(parentContext, httpUriRequest, httpUriRequest);
+      context = tracer().startSpan(parentContext, host, request);
       scope = context.makeCurrent();
 
       // Wrap the handler so we capture the status code
       if (handler instanceof ResponseHandler) {
-        handler = new WrappingStatusSettingResponseHandler(context, (ResponseHandler) handler);
+        handler = new WrappingStatusSettingResponseHandler(context, (ResponseHandler<?>) handler);
       }
     }
 

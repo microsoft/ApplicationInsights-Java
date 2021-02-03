@@ -5,12 +5,12 @@
 
 package io.opentelemetry.javaagent.instrumentation.servlet.v2_2;
 
-import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
-import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.NameMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
-import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
@@ -27,12 +27,12 @@ import net.bytebuddy.matcher.ElementMatcher;
 /**
  * Class <code>javax.servlet.http.HttpServletResponse</code> got method <code>getStatus</code> only
  * in Servlet specification version 3.0. This means that we cannot set {@link
- * io.opentelemetry.api.trace.attributes.SemanticAttributes#HTTP_STATUS_CODE} attribute on the
+ * io.opentelemetry.semconv.trace.attributes.SemanticAttributes#HTTP_STATUS_CODE} attribute on the
  * created span using just response object.
  *
  * <p>This instrumentation intercepts status setting methods from Servlet 2.0 specification and
  * stores that status into context store. Then {@link Servlet2Advice#stopSpan(ServletRequest,
- * ServletResponse, Throwable, Span, Scope)} can get it from context and set required span
+ * ServletResponse, Throwable, Context, Scope)} can get it from context and set required span
  * attribute.
  */
 public class HttpServletResponseInstrumentation implements TypeInstrumentation {

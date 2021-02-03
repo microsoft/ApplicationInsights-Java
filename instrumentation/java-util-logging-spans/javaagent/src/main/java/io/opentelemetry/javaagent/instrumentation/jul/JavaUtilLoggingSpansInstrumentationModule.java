@@ -47,6 +47,8 @@ public class JavaUtilLoggingSpansInstrumentationModule extends InstrumentationMo
       return extendsClass(named("java.util.logging.Logger"));
     }
 
+    // TODO adding classLoaderOptimization doesn't work (tests fail)
+
     @Override
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();

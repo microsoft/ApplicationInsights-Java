@@ -6,7 +6,7 @@
 package io.opentelemetry.javaagent.instrumentation.javaclassloader;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
-import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedNoneOf;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.NameMatchers.namedNoneOf;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isProtected;
@@ -130,7 +130,7 @@ public class ClassLoaderInstrumentation implements TypeInstrumentation {
       }
       // TODO replace with new SPI in 0.10.0
       for (final String prefix :
-          Config.get().getListProperty("additional.bootstrap.package.prefixes")) {
+          Config.get().getListProperty("otel.additional.bootstrap.package.prefixes")) {
         if (name.startsWith(prefix)) {
           try {
             return Class.forName(name, false, null);

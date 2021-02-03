@@ -11,9 +11,9 @@ import com.mongodb.ServerAddress;
 import com.mongodb.connection.ConnectionDescription;
 import com.mongodb.event.CommandStartedEvent;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.instrumentation.api.tracer.DatabaseClientTracer;
-import io.opentelemetry.javaagent.instrumentation.api.db.DbSystem;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes.DbSystemValues;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -56,7 +56,7 @@ public class MongoClientTracer extends DatabaseClientTracer<CommandStartedEvent,
 
   @Override
   protected String dbSystem(CommandStartedEvent event) {
-    return DbSystem.MONGODB;
+    return DbSystemValues.MONGODB;
   }
 
   @Override
@@ -119,7 +119,7 @@ public class MongoClientTracer extends DatabaseClientTracer<CommandStartedEvent,
       asList("ordered", "insert", "count", "find", "create");
 
   private JsonWriterSettings createJsonWriterSettings(int maxNormalizedQueryLength) {
-    JsonWriterSettings settings = new JsonWriterSettings(false);
+    JsonWriterSettings settings = null;
     try {
       // The static JsonWriterSettings.builder() method was introduced in the 3.5 release
       Optional<Method> buildMethod =
@@ -154,6 +154,16 @@ public class MongoClientTracer extends DatabaseClientTracer<CommandStartedEvent,
       }
     } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
     }
+    if (settings == null) {
+      try {
+        settings = JsonWriterSettings.class.getConstructor(Boolean.TYPE).newInstance(false);
+      } catch (InstantiationException
+          | IllegalAccessException
+          | InvocationTargetException
+          | NoSuchMethodException ignored) {
+      }
+    }
+
     return settings;
   }
 

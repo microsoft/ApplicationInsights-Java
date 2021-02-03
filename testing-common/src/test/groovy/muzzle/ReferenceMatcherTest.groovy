@@ -47,7 +47,7 @@ class ReferenceMatcherTest extends Specification {
   def "match safe classpaths"() {
     setup:
     def collector = new ReferenceCollector()
-    collector.collectReferencesFrom(MethodBodyAdvice.name)
+    collector.collectReferencesFromAdvice(MethodBodyAdvice.name)
     Reference[] refs = collector.getReferences().values().toArray(new Reference[0])
     def refMatcher = new ReferenceMatcher(refs)
 
@@ -85,7 +85,7 @@ class ReferenceMatcherTest extends Specification {
       (ClassLoader) null)
 
     def collector = new ReferenceCollector()
-    collector.collectReferencesFrom(MethodBodyAdvice.name)
+    collector.collectReferencesFromAdvice(MethodBodyAdvice.name)
     Reference[] refs = collector.getReferences().values().toArray(new Reference[0])
 
     def refMatcher1 = new ReferenceMatcher(refs)
@@ -225,7 +225,7 @@ class ReferenceMatcherTest extends Specification {
     getMismatchClassSet(mismatches) == [MissingMethod] as Set
   }
 
-  def "should fail helper classes that does not implement all abstract methods - even if emtpy abstract class reference exists"() {
+  def "should fail helper classes that does not implement all abstract methods - even if empty abstract class reference exists"() {
     given:
     def emptySuperClassRef = new Reference.Builder(TestHelperClasses.HelperSuperClass.name)
       .build()

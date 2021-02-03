@@ -31,3 +31,7 @@ dependencies {
 test.finalizedBy(tasks.register('testAsync', Test) {
   jvmArgs '-DLog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector'
 })
+
+tasks.withType(Test) {
+  jvmArgs "-Dotel.experimental.log.capture.threshold=warn"
+}

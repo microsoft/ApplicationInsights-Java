@@ -15,7 +15,7 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
 
   public AzureMonitorRegistryConfig() {
     // TODO add Config.get().getIntegerProperty()
-    String stepStr = Config.get().getProperty("micrometer.step.millis");
+    String stepStr = Config.get().getProperty("otel.micrometer.step.millis");
     if (stepStr != null && !stepStr.isEmpty()) {
       step = Duration.ofMillis(Integer.parseInt(stepStr));
     } else {

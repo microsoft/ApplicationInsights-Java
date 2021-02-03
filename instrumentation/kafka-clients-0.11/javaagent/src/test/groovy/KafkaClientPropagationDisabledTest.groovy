@@ -6,8 +6,7 @@
 import static io.opentelemetry.api.trace.Span.Kind.CONSUMER
 import static io.opentelemetry.api.trace.Span.Kind.PRODUCER
 
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
-import io.opentelemetry.instrumentation.test.utils.ConfigUtils
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -21,18 +20,6 @@ import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.kafka.test.utils.KafkaTestUtils
 
 class KafkaClientPropagationDisabledTest extends KafkaClientBaseTest {
-  static final PREVIOUS_CONFIG = ConfigUtils.updateConfigAndResetInstrumentation {
-    it.setProperty("otel.instrumentation.kafka.client-propagation", "false")
-  }
-
-  def cleanupSpec() {
-    ConfigUtils.setConfig(PREVIOUS_CONFIG)
-  }
-
-  @Override
-  protected isPropagationEnabled() {
-    return false
-  }
 
   def "should not read remote context when consuming messages if propagation is disabled"() {
     setup:
@@ -97,8 +84,8 @@ class KafkaClientPropagationDisabledTest extends KafkaClientBaseTest {
             "${SemanticAttributes.MESSAGING_OPERATION.key}" "process"
             "${SemanticAttributes.MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES.key}" Long
             "${SemanticAttributes.MESSAGING_KAFKA_PARTITION.key}" { it >= 0 }
-            "kafka-clients.offset" 0
-            "kafka-clients.record.queue_time_ms" { it >= 0 }
+            "kafka.offset" 0
+            "kafka.record.queue_time_ms" { it >= 0 }
           }
         }
       }

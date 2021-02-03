@@ -13,7 +13,8 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.tracer.DatabaseClientTracer;
 import io.opentelemetry.instrumentation.api.tracer.utils.NetPeerUtils;
-import io.opentelemetry.javaagent.instrumentation.api.db.DbSystem;
+import io.opentelemetry.javaagent.instrumentation.api.db.SqlStatementSanitizer;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes.DbSystemValues;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
@@ -31,12 +32,12 @@ public class CassandraDatabaseClientTracer extends DatabaseClientTracer<CqlSessi
 
   @Override
   protected String normalizeQuery(String query) {
-    return CassandraQueryNormalizer.normalize(query);
+    return SqlStatementSanitizer.sanitize(query).getFullStatement();
   }
 
   @Override
   protected String dbSystem(CqlSession session) {
-    return DbSystem.CASSANDRA;
+    return DbSystemValues.CASSANDRA;
   }
 
   @Override

@@ -1,3 +1,5 @@
+import java.time.Duration
+
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
@@ -7,6 +9,9 @@ nexusPublishing {
   repositories {
     sonatype()
   }
+
+  connectTimeout = Duration.ofMinutes(5)
+  clientTimeout = Duration.ofMinutes(5)
 }
 
 publishing {
@@ -48,8 +53,8 @@ publishing {
         developers {
           developer {
             id = 'opentelemetry'
-            name = 'OpenTelemetry Gitter'
-            url = 'https://gitter.im/open-telemetry/opentelemetry-java-instrumentation'
+            name = 'OpenTelemetry'
+            url = 'https://github.com/open-telemetry/opentelemetry-java-instrumentation/discussions'
           }
         }
 
@@ -85,7 +90,7 @@ private String artifactPrefix(Project p, String archivesBaseName) {
   return 'opentelemetry-'
 }
 
-rootProject.tasks.closeAndReleaseRepository.dependsOn tasks.publishToSonatype
+rootProject.tasks.closeAndReleaseRepository.mustRunAfter tasks.publishToSonatype
 
 tasks.withType(Sign).configureEach {
   onlyIf { System.getenv("CI") != null }

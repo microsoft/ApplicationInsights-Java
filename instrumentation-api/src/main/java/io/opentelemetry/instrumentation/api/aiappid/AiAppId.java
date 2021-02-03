@@ -19,6 +19,13 @@ public class AiAppId {
 
   private static volatile Supplier supplier;
 
+  static {
+    String testingAppId = System.getProperty("ai.internal.testing.appId");
+    if (testingAppId != null) {
+      supplier = () -> testingAppId;
+    }
+  }
+
   public static void setSupplier(final Supplier supplier) {
     AiAppId.supplier = supplier;
   }

@@ -36,19 +36,25 @@ final class CamelRoutePolicy extends RoutePolicySupport {
 
   private static final Logger LOG = LoggerFactory.getLogger(CamelRoutePolicy.class);
 
-  private Span spanOnExchangeBegin(Route route, Exchange exchange, SpanDecorator sd) {
+  private Span spanOnExchangeBegin(
+      Route route, Exchange exchange, SpanDecorator sd, Span.Kind spanKind) {
     Span activeSpan = CamelTracer.TRACER.getCurrentSpan();
     String name = sd.getOperationName(exchange, route.getEndpoint(), CamelDirection.INBOUND);
     SpanBuilder builder = CamelTracer.TRACER.spanBuilder(name);
+    builder.setSpanKind(spanKind);
     if (!activeSpan.getSpanContext().isValid()) {
-      // root operation, set kind, otherwise - INTERNAL
-      builder.setSpanKind(sd.getReceiverSpanKind());
       Context parentContext = CamelPropagationUtil.extractParent(exchange.getIn().getHeaders());
       if (parentContext != null) {
         builder.setParent(parentContext);
       }
     }
     return builder.startSpan();
+  }
+
+  private Span.Kind spanKind(SpanDecorator sd) {
+    Span activeSpan = CamelTracer.TRACER.getCurrentSpan();
+    // if there's an active span, this is not a root span which we always mark as INTERNAL
+    return (activeSpan.getSpanContext().isValid() ? Span.Kind.INTERNAL : sd.getReceiverSpanKind());
   }
 
   /**
@@ -59,12 +65,11 @@ final class CamelRoutePolicy extends RoutePolicySupport {
   public void onExchangeBegin(Route route, Exchange exchange) {
     try {
       SpanDecorator sd = CamelTracer.TRACER.getSpanDecorator(route.getEndpoint());
-      Span span = spanOnExchangeBegin(route, exchange, sd);
+      Span.Kind spanKind = spanKind(sd);
+      Span span = spanOnExchangeBegin(route, exchange, sd, spanKind);
       sd.pre(span, exchange, route.getEndpoint(), CamelDirection.INBOUND);
-      ActiveSpanManager.activate(exchange, span);
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("[Route start] Receiver span started " + span);
-      }
+      ActiveSpanManager.activate(exchange, span, spanKind);
+      LOG.debug("[Route start] Receiver span started {}", span);
     } catch (Throwable t) {
       LOG.warn("Failed to capture tracing data", t);
     }
@@ -76,14 +81,13 @@ final class CamelRoutePolicy extends RoutePolicySupport {
     try {
       Span span = ActiveSpanManager.getSpan(exchange);
       if (span != null) {
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("[Route finished] Receiver span finished " + span);
-        }
+
+        LOG.debug("[Route finished] Receiver span finished {}", span);
         SpanDecorator sd = CamelTracer.TRACER.getSpanDecorator(route.getEndpoint());
         sd.post(span, exchange, route.getEndpoint());
         ActiveSpanManager.deactivate(exchange);
       } else {
-        LOG.warn("Could not find managed span for exchange=" + exchange);
+        LOG.warn("Could not find managed span for exchange={}", exchange);
       }
     } catch (Throwable t) {
       LOG.warn("Failed to capture tracing data", t);

@@ -9,7 +9,11 @@ minimumInstructionCoverage = 0
 
 configurations {
   // classpath used by the instrumentation muzzle plugin
-  instrumentationMuzzle
+  instrumentationMuzzle {
+    canBeConsumed = true
+    canBeResolved = false
+    extendsFrom implementation
+  }
 }
 
 dependencies {
@@ -19,13 +23,24 @@ dependencies {
   implementation project(':instrumentation-api')
 
   implementation deps.opentelemetryApi
+  implementation deps.opentelemetryApiMetrics
   implementation deps.opentelemetryContext
   implementation deps.opentelemetrySdk
+  implementation deps.opentelemetrySdkAutoconfigure
+  implementation deps.opentelemetrySdkMetrics
+  implementation deps.opentelemetryKotlin
   implementation deps.opentelemetryTraceProps
   implementation(deps.opentelemetryResources) {
     // exclude sdk-common to avoid bumping guava version
     exclude group: 'io.opentelemetry', module: 'opentelemetry-sdk-common'
   }
+
+  implementation deps.opentelemetryJaeger
+  implementation deps.opentelemetryLogging
+  implementation deps.opentelemetryOtlp
+  implementation deps.opentelemetryOtlpMetrics
+  implementation deps.opentelemetryPrometheus
+  implementation deps.opentelemetryZipkin
 
   implementation group: 'com.blogspot.mydailyjava', name: 'weak-lock-free', version: '0.15'
   implementation deps.bytebuddy
@@ -34,10 +49,13 @@ dependencies {
   implementation deps.autoservice
   implementation deps.slf4j
 
+  implementation group: 'io.grpc', name: 'grpc-netty', version: '1.34.1'
+
   testImplementation project(':testing-common')
+  testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.18.1'
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
 
   instrumentationMuzzle sourceSets.main.output
-  instrumentationMuzzle configurations.implementation
 }
 
 test {
@@ -45,12 +63,10 @@ test {
     excludeTestsMatching 'HelperInjectionTest'
   }
 }
-
 // Needs a fresh classloader.
 // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/919
-def testHelperInjection = tasks.register('testHelperInjection', Test) {
+test.finalizedBy(tasks.register('testHelperInjection', Test) {
   filter {
     includeTestsMatching 'HelperInjectionTest'
   }
-}
-test.dependsOn(testHelperInjection)
+})

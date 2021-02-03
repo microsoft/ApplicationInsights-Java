@@ -2,11 +2,11 @@
 
 <p align="center">
   <strong>
-    <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation#getting-started">Getting Started<a/>
+    <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation#getting-started">Getting Started</a>
     &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-    <a href="https://github.com/open-telemetry/community#special-interest-groups">Getting Involved<a/>
+    <a href="https://github.com/open-telemetry/community#special-interest-groups">Getting Involved</a>
     &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-    <a href="https://gitter.im/open-telemetry/opentelemetry-java-instrumentation">Getting In Touch<a/>
+    <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation/discussions">Getting In Touch</a>
   </strong>
 </p>
 
@@ -79,7 +79,10 @@ java -javaagent:path/to/opentelemetry-javaagent-all.jar \
      -jar myapp.jar
 ```
 
-### Configuration parameters (subject to change!)
+Learn how to add custom instrumentation in the [Manually Instrumenting](#manually-instrumenting)
+section.
+
+## Configuration parameters (subject to change!)
 
 Note: These parameter names are very likely to change over time, so please check
 back here when trying out a new version! Please report any bugs or unexpected
@@ -110,12 +113,12 @@ to the OpenTelemetry Resource ([see below](#opentelemetry-resource)), e.g. `OTEL
 
 ##### Jaeger exporter
 
-A simple wrapper for the Jaeger exporter of opentelemetry-java. gRPC is currently the only supported communications protocol.
+A simple wrapper for the Jaeger exporter of opentelemetry-java. This exporter uses gRPC for its communications protocol.
 
-| System property                   | Environment variable              | Description                                                                                            |
+| System property                   | Environment variable              | Description                                                                                        |
 |-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------|
-| otel.exporter=jaeger              | OTEL_EXPORTER=jaeger              | Select the Jaeger exporter                                                                          |
-| otel.exporter.jaeger.endpoint     | OTEL_EXPORTER_JAEGER_ENDPOINT     | The Jaeger endpoint to connect to. Default is `localhost:14250`. Currently only gRPC is supported. |
+| otel.exporter=jaeger              | OTEL_EXPORTER=jaeger              | Select the Jaeger exporter                                                                         |
+| otel.exporter.jaeger.endpoint     | OTEL_EXPORTER_JAEGER_ENDPOINT     | The Jaeger gRPC endpoint to connect to. Default is `localhost:14250`.                              |
 | otel.exporter.jaeger.service.name | OTEL_EXPORTER_JAEGER_SERVICE_NAME | The service name of this JVM instance. Default is `unknown`.                                       |
 
 ##### Zipkin exporter
@@ -209,14 +212,106 @@ for customizing its behavior, such as the `Resource` attached to spans or the `S
 
 Because the automatic instrumentation runs in a different classpath than the instrumented application, it is not possible for customization in the application to take advantage of this customization. In order to provide such customization, you can provide the path to a JAR file, including an SPI implementation using the system property `otel.initializer.jar`. Note that this JAR needs to shade the OpenTelemetry API in the same way as the agent does. The simplest way to do this is to use the same shading configuration as the agent from [here](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/cfade733b899a2f02cfec7033c6a1efd7c54fd8b/java-agent/java-agent.gradle#L39). In addition, you must specify the `io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.spi.TraceProvider` to the name of the class that implements the SPI.
 
-## Supported Java libraries and frameworks
+## Manually instrumenting
+
+> :warning: starting with 0.6.0, and prior to version 1.0.0, `opentelemetry-javaagent-all.jar`
+only supports manual instrumentation using the `opentelemetry-api` version with the same version
+number as the Java agent you are using. Starting with 1.0.0, the Java agent will start supporting
+multiple (1.0.0+) versions of `opentelemetry-api`.
+
+You'll need to add a dependency on the `opentelemetry-api` library to get started; if you intend to
+use the `@WithSpan` annotation, also include the `opentelemetry-extension-annotations` dependency.
+
+### Maven
+
+```xml
+  <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+      <version>0.11.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-extension-annotations</artifactId>
+      <version>0.11.0</version>
+    </dependency>
+  </dependencies>
+```
+
+### Gradle
+
+```groovy
+dependencies {
+    implementation('io.opentelemetry:opentelemetry-api:0.11.0')
+    implementation('io.opentelemetry:opentelemetry-extension-annotations:0.11.0')
+}
+```
+
+### Adding attributes to the current span
+
+A common need when instrumenting an application is to capture additional application-specific or
+business-specific information as additional attributes to an existing span from the automatic
+instrumentation. Grab the current span with `Span.current()` and use the `setAttribute()`
+methods:
+
+```java
+import io.opentelemetry.api.trace.Span;
+
+// ...
+
+Span span = Span.current();
+span.setAttribute(..., ...);
+```
+
+### Creating spans around methods with `@WithSpan`
+
+Another common situation is to capture a span around an existing first-party code method. The
+`@WithSpan` annotation makes this straightforward:
+
+```java
+import io.opentelemetry.extension.annotations.WithSpan;
+
+public class MyClass {
+  @WithSpan
+  public void MyLogic() {
+      <...>
+  }
+}
+```
+
+Each time the application invokes the annotated method, it creates a span that denote its duration
+and provides any thrown exceptions. Unless specified as an argument to the annotation, the span name
+will be `<className>.<methodName>`.
+
+#### Suppressing `@WithSpan` instrumentation
+
+Suppressing `@WithSpan` is useful if you have code that is over-instrumented using `@WithSpan`
+and you want to suppress some of them without modifying the code.
+
+| System property                 | Environment variable            | Purpose                                                                                                                                  |
+|---------------------------------|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| trace.annotated.methods.exclude | TRACE_ANNOTATED_METHODS_EXCLUDE | Suppress `@WithSpan` instrumentation for specific methods.
+Format is "my.package.MyClass1[method1,method2];my.package.MyClass2[method3]" |
+
+### Creating spans manually with a Tracer
+
+OpenTelemetry offers a tracer to easily enable custom instrumentation throughout your application.
+See the [OpenTelemetry Java
+QuickStart](https://github.com/open-telemetry/opentelemetry-java/blob/master/QUICKSTART.md#tracing)
+for an example of how to configure the tracer and use the Tracer, Scope and Span interfaces to
+instrument your application.
+
+## Supported libraries, frameworks, and application servers
+
+These are the supported libraries and frameworks:
 
 | Library/Framework                                                                                                                     | Versions                       |
 |---------------------------------------------------------------------------------------------------------------------------------------|--------------------------------|
 | [Akka HTTP](https://doc.akka.io/docs/akka-http/current/index.html)                                                                    | 10.0+                          |
-| [Apache HttpAsyncClient](https://hc.apache.org/index.html)                                                                            | 4.0+                           |
+| [Apache HttpAsyncClient](https://hc.apache.org/index.html)                                                                            | 4.1+                           |
 | [Apache HttpClient](https://hc.apache.org/index.html)                                                                                 | 2.0+                           |
-| [Armeria](https://armeria.dev)                                                                                                        | 0.99.8+                        |
+| [Armeria](https://armeria.dev)                                                                                                        | 1.3+                           |
 | [AsyncHttpClient](https://github.com/AsyncHttpClient/async-http-client)                                                               | 1.9+ (not including 2.x yet)   |
 | [AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html)                                                          | 1.0+                           |
 | [AWS SDK](https://aws.amazon.com/sdk-for-java/)                                                                                       | 1.11.x and 2.2.0+              |
@@ -228,17 +323,16 @@ Because the automatic instrumentation runs in a different classpath than the ins
 | [Finatra](https://github.com/twitter/finatra)                                                                                         | 2.9+                           |
 | [Geode Client](https://geode.apache.org/)                                                                                             | 1.4+                           |
 | [Google HTTP Client](https://github.com/googleapis/google-http-java-client)                                                           | 1.19+                          |
-| [Grizzly](https://javaee.github.io/grizzly/httpserverframework.html)                                                                  | 2.0+ (disabled by default, see below) |
+| [Grizzly](https://javaee.github.io/grizzly/httpserverframework.html)                                                                  | 2.0+ (disabled by default)     |
 | [gRPC](https://github.com/grpc/grpc-java)                                                                                             | 1.5+                           |
 | [Hibernate](https://github.com/hibernate/hibernate-orm)                                                                               | 3.3+                           |
 | [HttpURLConnection](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/net/HttpURLConnection.html)                     | Java 7+                        |
-| [http4k <sup>&dagger;</sup>](https://www.http4k.org/guide/modules/opentelemetry/)                                                     | 3.270.0+                                                                                                                              |
+| [http4k <sup>&dagger;</sup>](https://www.http4k.org/guide/modules/opentelemetry/)                                                     | 3.270.0+                       |
 | [Hystrix](https://github.com/Netflix/Hystrix)                                                                                         | 1.4+                           |
 | [JAX-RS](https://javaee.github.io/javaee-spec/javadocs/javax/ws/rs/package-summary.html)                                              | 0.5+                           |
 | [JAX-RS Client](https://javaee.github.io/javaee-spec/javadocs/javax/ws/rs/client/package-summary.html)                                | 2.0+                           |
 | [JDBC](https://docs.oracle.com/en/java/javase/11/docs/api/java.sql/java/sql/package-summary.html)                                     | Java 7+                        |
 | [Jedis](https://github.com/xetorthio/jedis)                                                                                           | 1.4+                           |
-| [Jetty](https://www.eclipse.org/jetty/)                                                                                               | 8.0+                           |
 | [JMS](https://javaee.github.io/javaee-spec/javadocs/javax/jms/package-summary.html)                                                   | 1.1+                           |
 | [JSP](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/jsp/package-summary.html)                                           | 2.3+                           |
 | [Kafka](https://kafka.apache.org/20/javadoc/overview-summary.html)                                                                    | 0.11+                          |
@@ -248,7 +342,9 @@ Because the automatic instrumentation runs in a different classpath than the ins
 | [Log4j 1](https://logging.apache.org/log4j/1.2/)                                                                                      | 1.2+                           |
 | [Log4j 2](https://logging.apache.org/log4j/2.x/)                                                                                      | 2.7+                           |
 | [Logback](http://logback.qos.ch/)                                                                                                     | 1.0+                           |
+| [Mojarra](https://projects.eclipse.org/projects/ee4j.mojarra)                                                                         | 1.2+ (not including 3.x yet)   |
 | [MongoDB Drivers](https://mongodb.github.io/mongo-java-driver/)                                                                       | 3.3+                           |
+| [MyFaces](https://myfaces.apache.org/)                                                                                                | 1.2+ (not including 3.x yet)   |
 | [Netty](https://github.com/netty/netty)                                                                                               | 3.8+                           |
 | [OkHttp](https://github.com/square/okhttp/)                                                                                           | 3.0+                           |
 | [Play](https://github.com/playframework/playframework)                                                                                | 2.3+ (not including 2.8.x yet) |
@@ -261,12 +357,14 @@ Because the automatic instrumentation runs in a different classpath than the ins
 | [Redisson](https://github.com/redisson/redisson)                                                                                      | 3.0+                           |
 | [RMI](https://docs.oracle.com/en/java/javase/11/docs/api/java.rmi/java/rmi/package-summary.html)                                      | Java 7+                        |
 | [RxJava](https://github.com/ReactiveX/RxJava)                                                                                         | 1.0+                           |
-| [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)                                           | 2.2+                           |
+| [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)                                           | 2.2+ (not including 5.x yet)   |
 | [Spark Web Framework](https://github.com/perwendel/spark)                                                                             | 2.3+                           |
+| [Spring Batch](https://spring.io/projects/spring-batch)                                                                               | 3.0+                           |
 | [Spring Data](https://spring.io/projects/spring-data)                                                                                 | 1.8+                           |
 | [Spring Scheduling](https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/package-summary.html)       | 3.1+                           |
 | [Spring Web MVC](https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/mvc/package-summary.html)     | 3.1+                           |
 | [Spring Webflux](https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/package-summary.html)        | 5.0+                           |
+| [Spring Web Services](https://spring.io/projects/spring-ws)                                                                           | 2.0+                           |
 | [Spymemcached](https://github.com/couchbase/spymemcached)                                                                             | 2.12+                          |
 | [Struts2](https://github.com/apache/struts)                                                                                           | 2.3+                           |
 | [Twilio](https://github.com/twilio/twilio-java)                                                                                       | 6.6+ (not including 8.x yet)   |
@@ -274,6 +372,20 @@ Because the automatic instrumentation runs in a different classpath than the ins
 | [Vert.x RxJava2](https://vertx.io/docs/vertx-rx/java2/)                                                                               | 3.5+                           |
 
 <sup>&dagger;</sup> OpenTelemetry support provided by the library
+
+These are the supported application servers:
+
+| Application server                                                                        | Version                     | JVM            | OS                             |
+| ----------------------------------------------------------------------------------------- | --------------------------- | -------------- | ------------------------------ |
+| [Glassfish](https://javaee.github.io/glassfish/)                                          | 5.0.x, 5.1.x                | OpenJDK 8, 11  | Ubuntu 18, Windows Server 2019 |
+| [JBoss EAP](https://www.redhat.com/en/technologies/jboss-middleware/application-platform) | 7.1.x, 7.3.x                | OpenJDK 8, 11  | Ubuntu 18, Windows Server 2019 |
+| [Jetty](https://www.eclipse.org/jetty/)                                                   | 9.4.x, 10.0.x               | OpenJDK 8, 11  | Ubuntu 20                      |
+| [Payara](https://www.payara.fish/)                                                        | 5.0.x, 5.1.x                | OpenJDK 8, 11  | Ubuntu 18, Windows Server 2019 |
+| [Tomcat](http://tomcat.apache.org/)                                                       | 7.0.x, 8.5.x, 9.0.x         | OpenJDK 8, 11  | Ubuntu 18                      |
+| [Weblogic](https://www.oracle.com/java/weblogic/)                                         | 12                          | OpenJDK 8      | Oracle Linux 7, 8              |
+| [Weblogic](https://www.oracle.com/java/weblogic/)                                         | 14                          | OpenJDK 8, 11  | Oracle Linux 7, 8              |
+| [WildFly](https://www.wildfly.org/)                                                       | 13.0.x                      | OpenJDK 8      | Ubuntu 18, Windows Server 2019 |
+| [WildFly](https://www.wildfly.org/)                                                       | 17.0.1, 21.0.0              | OpenJDK 8, 11  | Ubuntu 18, Windows Server 2019 |
 
 ### Disabled instrumentations
 
@@ -302,98 +414,6 @@ See [Suppressing specific auto-instrumentation](docs/suppressing-instrumentation
 
 See [Logger MDC auto-instrumentation](docs/logger-mdc-instrumentation.md)
 
-## Manually instrumenting
-
-> :warning: starting with 0.6.0, and prior to version 1.0.0, `opentelemetry-javaagent-all.jar`
-only supports manual instrumentation using the `opentelemetry-api` version with the same version
-number as the Java agent you are using. Starting with 1.0.0, the Java agent will start supporting
-multiple (1.0.0+) versions of `opentelemetry-api`.
-
-You'll need to add a dependency on the `opentelemetry-api` library to get started.
-
-### Maven
-
-```xml
-  <dependencies>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-api</artifactId>
-      <version>0.11.0</version>
-    </dependency>
-  </dependencies>
-```
-
-### Gradle
-
-```groovy
-dependencies {
-    compile('io.opentelemetry:opentelemetry-api:0.11.0')
-}
-```
-
-Now you can use the OpenTelemetry `getTracer` or the `@WithSpan` annotation to
-manually instrument your Java application.
-
-### Configure the OpenTelemetry getTracer
-
-OpenTelemetry offers a tracer to easily enable custom instrumentation
-throughout your application. See the [OpenTelemetry Java
-QuickStart](https://github.com/open-telemetry/opentelemetry-java/blob/master/QUICKSTART.md#tracing)
-for an example of how to configure the tracer.
-
-### Configure a WithSpan annotation
-
-If you want to configure custom instrumentation and don't want to use the
-OpenTelemetry `getTracer` and API directly, configure a `@WithSpan`
-annotation. Add the trace annotation to your application's code:
-
-```java
-import io.opentelemetry.extensions.auto.annotations.WithSpan;
-
-public class MyClass {
-  @WithSpan
-  public void MyLogic() {
-      <...>
-  }
-}
-```
-
-You'll also need to add a dependency for this annotation:
-
-### Maven
-
-```xml
-  <dependencies>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-extension-annotations</artifactId>
-      <version>0.11.0</version>
-    </dependency>
-  </dependencies>
-```
-
-### Gradle
-
-```groovy
-dependencies {
-    compile('io.opentelemetry:opentelemetry-extension-annotations:0.11.0')
-}
-```
-
-Each time the application invokes the annotated method, it creates a span
-that denote its duration and provides any thrown exceptions.
-
-#### Suppressing `@WithSpan` instrumentation
-
-Suppressing `@WithSpan` is useful if you have code that is over-instrumented using `@WithSpan`
-and you want to suppress some of them without modifying the code.
-
-| System property                 | Environment variable            | Purpose                                                                                                                                  |
-|---------------------------------|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
-| trace.annotated.methods.exclude | TRACE_ANNOTATED_METHODS_EXCLUDE | Suppress `@WithSpan` instrumentation for specific methods.
-Format is "my.package.MyClass1[method1,method2];my.package.MyClass2[method3]" |
-
-
 ## Troubleshooting
 
 To turn on the agent's internal debug logging:
@@ -415,6 +435,7 @@ Approvers ([@open-telemetry/java-instrumentation-approvers](https://github.com/o
 
 - [John Watson](https://github.com/jkwatson), Splunk
 - [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek), Splunk
+- [Pavol Loffay](https://github.com/pavolloffay), Traceable.ai
 
 Maintainers ([@open-telemetry/java-instrumentation-maintainers](https://github.com/orgs/open-telemetry/teams/java-instrumentation-maintainers)):
 

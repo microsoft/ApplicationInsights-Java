@@ -5,11 +5,11 @@
 
 import static io.opentelemetry.api.trace.Span.Kind.SERVER
 
-import com.google.common.io.Files
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
 import io.opentelemetry.instrumentation.test.AgentTestRunner
 import io.opentelemetry.instrumentation.test.utils.OkHttpUtils
 import io.opentelemetry.instrumentation.test.utils.PortUtils
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
+import java.nio.file.Files
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -23,15 +23,6 @@ import spock.lang.Unroll
 
 //TODO should this be HttpServerTest?
 class JspInstrumentationBasicTests extends AgentTestRunner {
-
-  static {
-    // skip jar scanning using environment variables:
-    // http://tomcat.apache.org/tomcat-7.0-doc/config/systemprops.html#JAR_Scanning
-    // having this set allows us to test with old versions of the tomcat api since
-    // JarScanFilter did not exist in the tomcat 7 api
-    System.setProperty("org.apache.catalina.startup.ContextConfig.jarsToSkip", "*")
-    System.setProperty("org.apache.catalina.startup.TldConfig.jarsToSkip", "*")
-  }
 
   @Shared
   int port
@@ -50,7 +41,7 @@ class JspInstrumentationBasicTests extends AgentTestRunner {
   OkHttpClient client = OkHttpUtils.client()
 
   def setupSpec() {
-    baseDir = Files.createTempDir()
+    baseDir = Files.createTempDirectory("jsp").toFile()
     baseDir.deleteOnExit()
 
     port = PortUtils.randomOpenPort()

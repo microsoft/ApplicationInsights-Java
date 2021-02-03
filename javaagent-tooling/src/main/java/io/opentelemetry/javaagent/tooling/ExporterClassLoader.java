@@ -9,6 +9,7 @@ import static io.opentelemetry.javaagent.tooling.ShadingRemapper.rule;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
@@ -33,6 +34,9 @@ public class ExporterClassLoader extends URLClassLoader {
           rule(
               "#io.opentelemetry.context",
               "#io.opentelemetry.javaagent.shaded.io.opentelemetry.context"),
+          rule(
+              "#io.opentelemetry.extension.trace.propagation",
+              "#io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.trace.propagation"),
           rule("#java.util.logging.Logger", "#io.opentelemetry.javaagent.bootstrap.PatchLogger"),
           rule("#org.slf4j", "#io.opentelemetry.javaagent.slf4j"));
 
@@ -124,10 +128,9 @@ public class ExporterClassLoader extends URLClassLoader {
   }
 
   private static Manifest getManifest(URL url) {
-    try {
-      JarFile jarFile = new JarFile(url.getFile());
+    try (JarFile jarFile = new JarFile(url.toURI().getPath())) {
       return jarFile.getManifest();
-    } catch (IOException e) {
+    } catch (IOException | URISyntaxException e) {
       log.warn(e.getMessage(), e);
     }
     return null;

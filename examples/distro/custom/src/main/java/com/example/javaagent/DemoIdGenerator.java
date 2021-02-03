@@ -6,8 +6,8 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Custom {@link IdGenerator} which provides span and trace ids.
  *
- * @see io.opentelemetry.sdk.trace.TracerSdkProvider
- * @see DemoTracerCustomizer
+ * @see io.opentelemetry.sdk.trace.SdkTracerProvider
+ * @see DemoSdkTracerProviderConfigurer
  */
 public class DemoIdGenerator implements IdGenerator {
   private static final AtomicLong traceId = new AtomicLong(0);
@@ -20,6 +20,6 @@ public class DemoIdGenerator implements IdGenerator {
 
   @Override
   public String generateTraceId() {
-    return String.format("%032d", spanId.incrementAndGet());
+    return String.format("%032d", traceId.incrementAndGet());
   }
 }

@@ -31,8 +31,8 @@ public class AgentInitializer {
       "'[opentelemetry.auto.trace 'yyyy-MM-dd HH:mm:ss:SSS Z']'";
   private static final String SIMPLE_LOGGER_DEFAULT_LOG_LEVEL_PROPERTY =
       "io.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel";
-  private static final String SIMPLE_LOGGER_MUZZLE_LOG_LEVEL_PROPERTY =
-      "io.opentelemetry.javaagent.slf4j.simpleLogger.log.muzzleMatcher";
+  private static final String SIMPLE_LOGGER_PREFIX =
+      "io.opentelemetry.javaagent.slf4j.simpleLogger.log.";
 
   private static final Logger log;
 
@@ -58,110 +58,22 @@ public class AgentInitializer {
     log = LoggerFactory.getLogger(AgentInitializer.class);
   }
 
+  // Accessed via reflection from tests.
   // fields must be managed under class lock
   public static ClassLoader AGENT_CLASSLOADER = null;
 
-  public static void initialize(
-      final Instrumentation inst, final URL bootstrapUrl, final boolean catchAndLogException)
+  public static void initialize(Instrumentation inst, URL bootstrapUrl) {
+    try {
+      startAgent(inst, bootstrapUrl);
+    } catch (Throwable ex) {
+      log.error("Throwable thrown while installing the agent", ex);
+    }
+  }
+
+  public static void initializeAndBubbleException(Instrumentation inst, URL bootstrapUrl)
       throws Exception {
-    if (catchAndLogException) {
-      try {
-        initialize(inst, bootstrapUrl);
-      } catch (final Throwable t) {
-        log.error("Error starting the agent", t);
-      }
-    } else {
-      // allow exception to bubble up
-      initialize(inst, bootstrapUrl);
-    }
-  }
-
-  private static void initialize(Instrumentation inst, URL bootstrapUrl) throws Exception {
+    // allow exception to bubble up
     startAgent(inst, bootstrapUrl);
-
-    boolean appUsingCustomLogManager = isAppUsingCustomLogManager();
-
-    /*
-     * java.util.logging.LogManager maintains a final static LogManager, which is created during class initialization.
-     *
-     * JMXFetch uses jre bootstrap classes which touch this class. This means applications which require a custom log
-     * manager may not have a chance to set the global log manager if jmxfetch runs first. JMXFetch will incorrectly
-     * set the global log manager in cases where the app sets the log manager system property or when the log manager
-     * class is not on the system classpath.
-     *
-     * Our solution is to delay the initialization of jmxfetch when we detect a custom log manager being used.
-     *
-     * Once we see the LogManager class loading, it's safe to start jmxfetch because the application is already setting
-     * the global log manager and jmxfetch won't be able to touch it due to classloader locking.
-     */
-
-    /*
-     * Similar thing happens with AgentTracer on (at least) zulu-8 because it uses OkHttp which indirectly loads JFR
-     * events which in turn loads LogManager. This is not a problem on newer JDKs because there JFR uses different
-     * logging facility.
-     */
-    if (isJavaBefore9WithJfr() && appUsingCustomLogManager) {
-      log.debug("Custom logger detected. Delaying Agent Tracer initialization.");
-      registerLogManagerCallback(new InstallAgentTracerCallback());
-    } else {
-      installAgentTracer();
-    }
-  }
-
-  private static void registerLogManagerCallback(ClassLoadCallBack callback) throws Exception {
-    Class<?> agentInstallerClass =
-        AGENT_CLASSLOADER.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
-    Method registerCallbackMethod =
-        agentInstallerClass.getMethod("registerClassLoadCallback", String.class, Runnable.class);
-    registerCallbackMethod.invoke(null, "java.util.logging.LogManager", callback);
-  }
-
-  protected abstract static class ClassLoadCallBack implements Runnable {
-
-    @Override
-    public void run() {
-      /*
-       * This callback is called from within bytecode transformer. This can be a problem if callback tries
-       * to load classes being transformed. To avoid this we start a thread here that calls the callback.
-       * This seems to resolve this problem.
-       */
-      Thread thread =
-          new Thread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  try {
-                    execute();
-                  } catch (Exception e) {
-                    log.error("Failed to run class loader callback {}", getName(), e);
-                  }
-                }
-              });
-      thread.setName("agent-startup-" + getName());
-      thread.setDaemon(true);
-      thread.start();
-    }
-
-    public abstract String getName();
-
-    public abstract void execute();
-  }
-
-  protected static class InstallAgentTracerCallback extends ClassLoadCallBack {
-
-    @Override
-    public String getName() {
-      return "agent-tracer";
-    }
-
-    @Override
-    public void execute() {
-      try {
-        installAgentTracer();
-      } catch (final Throwable t) {
-        log.error("Error installing the agent tracer", t);
-      }
-    }
   }
 
   private static synchronized void startAgent(Instrumentation inst, URL bootstrapUrl)
@@ -172,25 +84,15 @@ public class AgentInitializer {
           agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
       Method agentInstallerMethod =
           agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
-      agentInstallerMethod.invoke(null, inst);
+      ClassLoader savedContextClassLoader = Thread.currentThread().getContextClassLoader();
+      try {
+        Thread.currentThread().setContextClassLoader(AGENT_CLASSLOADER);
+        agentInstallerMethod.invoke(null, inst);
+      } finally {
+        Thread.currentThread().setContextClassLoader(savedContextClassLoader);
+      }
       AGENT_CLASSLOADER = agentClassLoader;
     }
-  }
-
-  private static synchronized void installAgentTracer() throws Exception {
-    if (AGENT_CLASSLOADER == null) {
-      throw new IllegalStateException("Agent should have been started already");
-    }
-    // TracerInstaller.installAgentTracer can be called multiple times without any problem
-    // so there is no need to have a 'agentTracerInstalled' flag here.
-
-    // install global tracer
-    Class<?> tracerInstallerClass =
-        AGENT_CLASSLOADER.loadClass("io.opentelemetry.javaagent.tooling.TracerInstaller");
-    Method tracerInstallerMethod = tracerInstallerClass.getMethod("installAgentTracer");
-    tracerInstallerMethod.invoke(null);
-    Method logVersionInfoMethod = tracerInstallerClass.getMethod("logVersionInfo");
-    logVersionInfoMethod.invoke(null);
   }
 
   private static void configureLogger() {
@@ -200,9 +102,15 @@ public class AgentInitializer {
 
     if (isDebugMode()) {
       setSystemPropertyDefault(SIMPLE_LOGGER_DEFAULT_LOG_LEVEL_PROPERTY, "DEBUG");
+      // suppress a couple of verbose ClassNotFoundException stack traces logged at debug level
+      setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "io.perfmark.PerfMark", "INFO");
+      setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "io.grpc.Context", "INFO");
+      setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "io.grpc.internal.ServerImplBuilder", "INFO");
+      setSystemPropertyDefault(
+          SIMPLE_LOGGER_PREFIX + "io.grpc.internal.ManagedChannelImplBuilder", "INFO");
     } else {
       // by default muzzle warnings are turned off
-      setSystemPropertyDefault(SIMPLE_LOGGER_MUZZLE_LOG_LEVEL_PROPERTY, "OFF");
+      setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "muzzleMatcher", "OFF");
     }
   }
 
@@ -270,64 +178,7 @@ public class AgentInitializer {
     return false;
   }
 
-  /**
-   * Search for java or agent-tracer sysprops which indicate that a custom log manager will be used.
-   * Also search for any app classes known to set a custom log manager.
-   *
-   * @return true if we detect a custom log manager being used.
-   */
-  private static boolean isAppUsingCustomLogManager() {
-    String tracerCustomLogManSysprop = "otel.app.customlogmanager";
-    String customLogManagerProp = System.getProperty(tracerCustomLogManSysprop);
-    String customLogManagerEnv =
-        System.getenv(tracerCustomLogManSysprop.replace('.', '_').toUpperCase());
-
-    if (customLogManagerProp != null || customLogManagerEnv != null) {
-      log.debug("Prop - customlogmanager: " + customLogManagerProp);
-      log.debug("Env - customlogmanager: " + customLogManagerEnv);
-      // Allow setting to skip these automatic checks:
-      return Boolean.parseBoolean(customLogManagerProp)
-          || Boolean.parseBoolean(customLogManagerEnv);
-    }
-
-    String jbossHome = System.getenv("JBOSS_HOME");
-    if (jbossHome != null) {
-      log.debug("Env - jboss: " + jbossHome);
-      // JBoss/Wildfly is known to set a custom log manager after startup.
-      // Originally we were checking for the presence of a jboss class,
-      // but it seems some non-jboss applications have jboss classes on the classpath.
-      // This would cause jmxfetch initialization to be delayed indefinitely.
-      // Checking for an environment variable required by jboss instead.
-      return true;
-    }
-
-    String logManagerProp = System.getProperty("java.util.logging.manager");
-    if (logManagerProp != null) {
-      boolean onSysClasspath =
-          ClassLoader.getSystemResource(logManagerProp.replaceAll("\\.", "/") + ".class") != null;
-      log.debug("Prop - logging.manager: " + logManagerProp);
-      log.debug("logging.manager on system classpath: " + onSysClasspath);
-      // Some applications set java.util.logging.manager but never actually initialize the logger.
-      // Check to see if the configured manager is on the system classpath.
-      // If so, it should be safe to initialize jmxfetch which will setup the log manager.
-      return !onSysClasspath;
-    }
-
-    return false;
-  }
-
-  private static boolean isJavaBefore9() {
+  public static boolean isJavaBefore9() {
     return System.getProperty("java.version").startsWith("1.");
-  }
-
-  private static boolean isJavaBefore9WithJfr() {
-    if (!isJavaBefore9()) {
-      return false;
-    }
-    // FIXME: this is quite a hack because there maybe jfr classes on classpath somehow that have
-    // nothing to do with JDK but this should be safe because only thing this does is to delay
-    // tracer install
-    String jfrClassResourceName = "jdk.jfr.Recording".replace('.', '/') + ".class";
-    return Thread.currentThread().getContextClassLoader().getResource(jfrClassResourceName) != null;
   }
 }

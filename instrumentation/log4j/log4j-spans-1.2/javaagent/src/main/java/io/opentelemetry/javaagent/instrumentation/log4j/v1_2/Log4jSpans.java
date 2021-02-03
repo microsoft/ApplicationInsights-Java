@@ -5,7 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.log4j.v1_2;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
@@ -25,7 +25,7 @@ public class Log4jSpans {
   private static final Logger log = LoggerFactory.getLogger(Log4jSpans.class);
 
   private static final Tracer TRACER =
-      OpenTelemetry.getGlobalTracer("io.opentelemetry.auto.log4j-1.1");
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.log4j-1.1");
 
   // these constants are copied from org.apache.log4j.Priority and org.apache.log4j.Level because
   // Level was only introduced in 1.2, and then Level.TRACE was only introduced in 1.2.12
@@ -71,7 +71,7 @@ public class Log4jSpans {
   }
 
   private static int getThreshold() {
-    String level = Config.get().getProperty("experimental.log.capture.threshold");
+    String level = Config.get().getProperty("otel.experimental.log.capture.threshold");
     if (level == null) {
       return OFF_INT;
     }
@@ -99,7 +99,7 @@ public class Log4jSpans {
       case "ALL":
         return ALL_INT;
       default:
-        log.error("unexpected value for experimental.log.capture.threshold: {}", level);
+        log.error("unexpected value for otel.experimental.log.capture.threshold: {}", level);
         return OFF_INT;
     }
   }

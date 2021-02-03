@@ -6,7 +6,7 @@
 package io.opentelemetry.javaagent.instrumentation.rediscala;
 
 import io.opentelemetry.instrumentation.api.tracer.DatabaseClientTracer;
-import io.opentelemetry.javaagent.instrumentation.api.db.DbSystem;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes.DbSystemValues;
 import java.net.InetSocketAddress;
 import redis.RedisCommand;
 
@@ -26,7 +26,7 @@ public class RediscalaClientTracer
 
   @Override
   protected String dbSystem(RedisCommand redisCommand) {
-    return DbSystem.REDIS;
+    return DbSystemValues.REDIS;
   }
 
   @Override

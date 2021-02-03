@@ -25,8 +25,7 @@ import com.amazonaws.services.rds.model.DeleteOptionGroupRequest
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.S3ClientOptions
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.attributes.SemanticAttributes
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import io.opentelemetry.instrumentation.test.AgentTestRunner
 import java.util.concurrent.atomic.AtomicReference
 import spock.lang.AutoCleanup
@@ -119,12 +118,13 @@ class Aws0ClientTest extends AgentTestRunner {
             for (def addedTag : additionalAttributes) {
               "$addedTag.key" "$addedTag.value"
             }
-            "$AiAppId.SPAN_TARGET_ATTRIBUTE_NAME" AiAppId.getAppId()
+            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
     }
-    server.lastRequest.headers.get("traceparent") != null
+    server.lastRequest.headers.get("X-Amzn-Trace-Id") != null
+    server.lastRequest.headers.get("traceparent") == null
 
     where:
     service | operation           | method | path                  | handlerCount | client                                                                      | additionalAttributes              | call                                                                                                                                   | body

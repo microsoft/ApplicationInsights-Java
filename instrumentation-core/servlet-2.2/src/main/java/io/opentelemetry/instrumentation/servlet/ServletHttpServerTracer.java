@@ -6,11 +6,12 @@
 package io.opentelemetry.instrumentation.servlet;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
+import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
 import io.opentelemetry.instrumentation.api.servlet.ServletContextPath;
 import io.opentelemetry.instrumentation.api.tracer.HttpServerTracer;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.Principal;
@@ -32,6 +33,22 @@ public abstract class ServletHttpServerTracer<RESPONSE>
     }
     return context;
   }
+
+  @Override
+  public void endExceptionally(
+      Context context, Throwable throwable, RESPONSE response, long timestamp) {
+    if (isResponseCommitted(response)) {
+      super.endExceptionally(context, throwable, response, timestamp);
+    } else {
+      // passing null response to super, in order to capture as 500 / INTERNAL, due to servlet spec
+      // https://javaee.github.io/servlet-spec/downloads/servlet-4.0/servlet-4_0_FINAL.pdf:
+      // "If a servlet generates an error that is not handled by the error page mechanism as
+      // described above, the container must ensure to send a response with status 500."
+      super.endExceptionally(context, throwable, null, timestamp);
+    }
+  }
+
+  protected abstract boolean isResponseCommitted(RESPONSE response);
 
   @Override
   protected String url(HttpServletRequest httpServletRequest) {
@@ -92,6 +109,12 @@ public abstract class ServletHttpServerTracer<RESPONSE>
     return HttpServletRequestGetter.GETTER;
   }
 
+  public void addUnwrappedThrowable(Context context, Throwable throwable) {
+    if (AppServerBridge.shouldRecordException(context)) {
+      addThrowable(Span.fromContext(context), unwrapThrowable(throwable));
+    }
+  }
+
   @Override
   protected Throwable unwrapThrowable(Throwable throwable) {
     Throwable result = throwable;
@@ -118,17 +141,36 @@ public abstract class ServletHttpServerTracer<RESPONSE>
     return httpServletRequest.getHeader(name);
   }
 
-  private static String getSpanName(HttpServletRequest request) {
-    String spanName = request.getServletPath();
-    String contextPath = request.getContextPath();
-    if (contextPath != null && !contextPath.isEmpty() && !contextPath.equals("/")) {
-      spanName = contextPath + spanName;
+  public static String getSpanName(HttpServletRequest request) {
+    String servletPath = request.getServletPath();
+    if (servletPath.isEmpty()) {
+      return "HTTP " + request.getMethod();
     }
-    return spanName;
+    String contextPath = request.getContextPath();
+    if (contextPath == null || contextPath.isEmpty() || contextPath.equals("/")) {
+      return servletPath;
+    }
+    return contextPath + servletPath;
   }
 
-  @Override
-  protected String aiRequestContext(final HttpServletRequest request) {
-    return request.getHeader(AI_REQUEST_CONTEXT_HEADER_NAME);
+  /**
+   * When server spans are managed by app server instrumentation, servlet must update server span
+   * name only once and only during the first pass through the servlet stack. There are potential
+   * forward and other scenarios, where servlet path may change, but we don't want this to be
+   * reflected in the span name.
+   */
+  public void updateServerSpanNameOnce(Context attachedContext, HttpServletRequest request) {
+    if (AppServerBridge.shouldUpdateServerSpanName(attachedContext)) {
+      updateSpanName(Span.fromContext(attachedContext), request);
+      AppServerBridge.setServletUpdatedServerSpanName(attachedContext, true);
+    }
+  }
+
+  public void updateSpanName(HttpServletRequest request) {
+    updateSpanName(getServerSpan(request), request);
+  }
+
+  private static void updateSpanName(Span span, HttpServletRequest request) {
+    span.updateName(getSpanName(request));
   }
 }

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.awssdk.v2_2;
 
-import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
@@ -18,6 +18,11 @@ import net.bytebuddy.matcher.ElementMatcher;
 public class AwsSdkInstrumentationModule extends InstrumentationModule {
   public AwsSdkInstrumentationModule() {
     super("aws-sdk", "aws-sdk-2.2");
+  }
+
+  @Override
+  public String[] additionalHelperClassNames() {
+    return new String[] {"io.opentelemetry.extension.trace.propagation.AwsXrayPropagator"};
   }
 
   /**

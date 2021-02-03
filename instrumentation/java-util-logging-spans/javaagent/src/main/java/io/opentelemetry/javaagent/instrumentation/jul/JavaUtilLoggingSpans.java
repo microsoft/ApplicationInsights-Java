@@ -5,7 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.jul;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.api.config.Config;
@@ -22,7 +22,7 @@ public class JavaUtilLoggingSpans {
   private static final org.slf4j.Logger log = LoggerFactory.getLogger(JavaUtilLoggingSpans.class);
 
   private static final Tracer TRACER =
-      OpenTelemetry.getGlobalTracer("io.opentelemetry.auto.java-util-logging");
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.java-util-logging");
 
   private static final Formatter FORMATTER = new AccessibleFormatter();
 
@@ -58,7 +58,7 @@ public class JavaUtilLoggingSpans {
   }
 
   private static Level getThreshold() {
-    String level = Config.get().getProperty("experimental.log.capture.threshold");
+    String level = Config.get().getProperty("otel.experimental.log.capture.threshold");
     if (level == null) {
       return Level.OFF;
     }
@@ -87,7 +87,7 @@ public class JavaUtilLoggingSpans {
       case "ALL":
         return Level.ALL;
       default:
-        log.error("unexpected value for experimental.log.capture.threshold: {}", level);
+        log.error("unexpected value for otel.experimental.log.capture.threshold: {}", level);
         return Level.OFF;
     }
   }

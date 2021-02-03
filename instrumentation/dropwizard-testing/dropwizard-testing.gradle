@@ -1,11 +1,9 @@
-ext {
-  skipPublish = true
-}
+ext.skipPublish = true
 apply from: "$rootDir/gradle/instrumentation.gradle"
 
 dependencies {
-  testImplementation project(':instrumentation:jaxrs:jaxrs-2.0:jaxrs-2.0-jersey-2.0:javaagent')
-  testImplementation project(':instrumentation:servlet:servlet-3.0:javaagent')
+  testInstrumentation project(':instrumentation:jaxrs:jaxrs-2.0:jaxrs-2.0-jersey-2.0:javaagent')
+  testInstrumentation project(':instrumentation:servlet:servlet-3.0:javaagent')
 
   // First version with DropwizardTestSupport:
   testImplementation group: 'io.dropwizard', name: 'dropwizard-testing', version: '0.8.0'

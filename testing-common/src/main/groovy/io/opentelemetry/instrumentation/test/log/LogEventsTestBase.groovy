@@ -8,7 +8,6 @@ package io.opentelemetry.instrumentation.test.log
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 
 import io.opentelemetry.instrumentation.test.AgentTestRunner
-import io.opentelemetry.instrumentation.test.utils.ConfigUtils
 import spock.lang.Unroll
 
 /**
@@ -17,14 +16,6 @@ import spock.lang.Unroll
  */
 @Unroll
 abstract class LogEventsTestBase extends AgentTestRunner {
-
-  // TODO intentionally not resetting config because it causes the second test to fail in
-  // java-util-logging-spans instrumentation
-  static {
-    ConfigUtils.updateConfig {
-      it.setProperty("experimental.log.capture.threshold", "warn")
-    }
-  }
 
   abstract Object createLogger(String name)
 
