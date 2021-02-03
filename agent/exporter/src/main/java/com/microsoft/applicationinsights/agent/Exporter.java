@@ -287,7 +287,7 @@ public class Exporter implements SpanExporter {
         for (EventData event : span.getEvents()) {
             EventTelemetry telemetry = new EventTelemetry(event.getName());
             telemetry.getContext().getOperation().setId(span.getTraceId());
-            telemetry.getContext().getOperation().setParentId(span.getParentSpanId());
+            telemetry.getContext().getOperation().setParentId(span.getSpanId());
             telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(event.getEpochNanos())));
             setExtraAttributes(telemetry, event.getAttributes());
 
