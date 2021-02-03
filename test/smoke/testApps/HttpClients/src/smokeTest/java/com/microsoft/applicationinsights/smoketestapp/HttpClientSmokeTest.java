@@ -35,7 +35,8 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope);
+
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
     }
 
     @Test
@@ -57,7 +58,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
     }
 
     @Test
@@ -79,7 +80,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
     }
 
     @Test
@@ -101,7 +102,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
     }
 
     @Test
@@ -123,7 +124,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
     }
 
     @Ignore // OpenTelemetry Auto-Instrumentation does not support OkHttp 2
@@ -146,7 +147,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
     }
 
     @Test
@@ -168,7 +169,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
     }
 
     @Test
@@ -191,10 +192,10 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("HTTP GET", rdd.getName());
         // TODO investigate why %2520 is captured instead of %20
         assertEquals("https://www.bing.com/search?q=spaces%2520test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
     }
 
-    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         assertNotNull(operationId);
         assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
@@ -203,5 +204,8 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertNull(operationParentId);
 
         assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
+
+        assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
+        assertEquals(operationName, childEnvelope.getTags().get("ai.operation.name"));
     }
 }

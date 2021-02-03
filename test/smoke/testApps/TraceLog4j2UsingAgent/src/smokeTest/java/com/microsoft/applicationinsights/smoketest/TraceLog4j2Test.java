@@ -48,21 +48,21 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertEquals("Logger", md1.getProperties().get("SourceType"));
         assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
         assertEquals("MDC value", md1.getProperties().get("MDC key"));
-        assertParentChild(rd, rdEnvelope, mdEnvelope1);
+        assertParentChild(rd, rdEnvelope, mdEnvelope1, "/TraceLog4j2UsingAgent/traceLog4j2");
 
         assertEquals("This is log4j2 error.", md2.getMessage());
         assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
         assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
         assertFalse(md2.getProperties().containsKey("MDC key"));
-        assertParentChild(rd, rdEnvelope, mdEnvelope2);
+        assertParentChild(rd, rdEnvelope, mdEnvelope2, "/TraceLog4j2UsingAgent/traceLog4j2");
 
         assertEquals("This is log4j2 fatal.", md3.getMessage());
         assertEquals(SeverityLevel.Critical, md3.getSeverityLevel());
         assertEquals("Logger", md3.getProperties().get("SourceType"));
         assertEquals("FATAL", md3.getProperties().get("LoggingLevel"));
         assertFalse(md3.getProperties().containsKey("MDC key"));
-        assertParentChild(rd, rdEnvelope, mdEnvelope3);
+        assertParentChild(rd, rdEnvelope, mdEnvelope3, "/TraceLog4j2UsingAgent/traceLog4j2");
     }
 
     @Test
@@ -88,10 +88,10 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertEquals("Logger", ed.getProperties().get("SourceType"));
         assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
         assertEquals("MDC value", ed.getProperties().get("MDC key"));
-        assertParentChild(rd, rdEnvelope, edEnvelope);
+        assertParentChild(rd, rdEnvelope, edEnvelope, "/TraceLog4j2UsingAgent/traceLog4j2WithException");
     }
 
-    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         assertNotNull(operationId);
         assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
@@ -100,5 +100,8 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertNull(operationParentId);
 
         assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
+
+        assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
+        assertEquals(operationName, childEnvelope.getTags().get("ai.operation.name"));
     }
 }

@@ -35,10 +35,10 @@ public class SampleTestWithDependencyContainer extends AiSmokeTest {
         assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
         assertEquals("EXISTS", rdd.getName());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CachingCalculator/index.jsp");
     }
 
-    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         assertNotNull(operationId);
         assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
@@ -47,5 +47,8 @@ public class SampleTestWithDependencyContainer extends AiSmokeTest {
         assertNull(operationParentId);
 
         assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
+
+        assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
+        assertEquals(operationName, childEnvelope.getTags().get("ai.operation.name"));
     }
 }
