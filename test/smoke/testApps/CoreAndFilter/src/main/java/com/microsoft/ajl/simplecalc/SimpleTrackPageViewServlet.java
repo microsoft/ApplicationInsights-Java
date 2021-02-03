@@ -29,7 +29,6 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
 
         PageViewTelemetry pvt2 = new PageViewTelemetry("test-page-2");
         pvt2.getContext().setInstrumentationKey("12341234-1234-1234-1234-123412341234");
-        // operation name is intentionally overridden by auto-collected request operation name
         pvt2.getContext().getOperation().setName("operation-name-goes-here");
         pvt2.getContext().getUser().setId("user-id-goes-here");
         pvt2.getContext().getUser().setAccountId("account-id-goes-here");
@@ -48,7 +47,6 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
         TelemetryClient otherClient = new TelemetryClient();
         // instrumentation key set directly on the TelemetryClient is intentionally ignored by interop
         otherClient.getContext().setInstrumentationKey("12341234-1234-1234-1234-123412341234");
-        // operation name is intentionally overridden by auto-collected request operation name
         otherClient.getContext().getOperation().setName("operation-name-goes-here");
         otherClient.getContext().getUser().setId("user-id-goes-here");
         otherClient.getContext().getUser().setAccountId("account-id-goes-here");

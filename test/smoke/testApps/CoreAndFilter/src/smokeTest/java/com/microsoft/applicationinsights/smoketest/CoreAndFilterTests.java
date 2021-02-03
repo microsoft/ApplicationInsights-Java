@@ -321,8 +321,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertTrue(pvdEnvelope3.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
         assertParentChild(rd, rdEnvelope, pvdEnvelope1, "/CoreAndFilter/trackPageView");
-        assertParentChild(rd, rdEnvelope, pvdEnvelope2, "/CoreAndFilter/trackPageView");
-        assertParentChild(rd, rdEnvelope, pvdEnvelope3, "/CoreAndFilter/trackPageView");
+        assertParentChild(rd, rdEnvelope, pvdEnvelope2, "/CoreAndFilter/trackPageView", "operation-name-goes-here");
+        assertParentChild(rd, rdEnvelope, pvdEnvelope3, "/CoreAndFilter/trackPageView", "operation-name-goes-here");
     }
 
     @Test
@@ -425,6 +425,10 @@ public class CoreAndFilterTests extends AiSmokeTest {
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
+        assertParentChild(rd, rdEnvelope, childEnvelope, null);
+    }
+
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName, String childOperationName) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         assertNotNull(operationId);
         assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
@@ -435,6 +439,6 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
 
         assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
-        assertNull(childEnvelope.getTags().get("ai.operation.name"));
+        assertEquals(childOperationName, childEnvelope.getTags().get("ai.operation.name"));
     }
 }
