@@ -42,7 +42,7 @@
     <Match>
         <Bug pattern="PREDICTABLE_RANDOM" />
         <!-- These random numbers are not used for cryptography. Predictable pseudorandom is sufficient. -->
-        <Class name="com.microsoft.applicationinsights.agent.internal.propagator.AiBackCompatPropagator" />
+        <Class name="com.microsoft.applicationinsights.agent.internal.propagator.AiLegacyPropagator" />
         <Method name="extract" />
     </Match>
     <Match>
