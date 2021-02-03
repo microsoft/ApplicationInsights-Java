@@ -19,7 +19,7 @@ public class DelegatingPropagator implements TextMapPropagator {
     }
 
     public void setUpStandardDelegate() {
-        delegate = TextMapPropagator.composite(AiBackCompatPropagator.getInstance(), W3CTraceContextPropagator.getInstance());
+        delegate = TextMapPropagator.composite(AiLegacyPropagator.getInstance(), W3CTraceContextPropagator.getInstance());
     }
 
     @Override

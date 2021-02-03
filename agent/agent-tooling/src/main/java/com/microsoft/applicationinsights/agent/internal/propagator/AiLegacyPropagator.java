@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.propagator;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nullable;
 
@@ -40,11 +39,12 @@ import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AiBackCompatPropagator implements TextMapPropagator {
+// this propagator handles the legacy Application Insights distributed tracing header format
+public class AiLegacyPropagator implements TextMapPropagator {
 
-    private static final Logger logger = LoggerFactory.getLogger(AiBackCompatPropagator.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(AiLegacyPropagator.class.getName());
 
-    private static final TextMapPropagator instance = new AiBackCompatPropagator();
+    private static final TextMapPropagator instance = new AiLegacyPropagator();
 
     private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
     private static final int SPAN_ID_HEX_SIZE = SpanId.getHexLength();
@@ -53,7 +53,7 @@ public class AiBackCompatPropagator implements TextMapPropagator {
         return instance;
     }
 
-    private AiBackCompatPropagator() {
+    private AiLegacyPropagator() {
     }
 
     @Override
