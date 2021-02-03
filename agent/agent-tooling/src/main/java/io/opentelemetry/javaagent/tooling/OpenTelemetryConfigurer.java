@@ -72,7 +72,4 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
             tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(new Exporter(telemetryClient)));
         }
     }
-
-    public static void logVersionInfo() {
-    }
 }
