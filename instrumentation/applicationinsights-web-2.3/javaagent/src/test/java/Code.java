@@ -4,7 +4,10 @@
  */
 
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
+import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.extension.annotations.WithSpan;
 
 public class Code {
@@ -106,5 +109,20 @@ public class Code {
         .getContext()
         .getOperation()
         .setId("xyz");
+  }
+
+  @WithSpan(kind = Span.Kind.SERVER)
+  public Tracestate getTracestate() {
+    return ThreadContext.getRequestTelemetryContext().getTracestate();
+  }
+
+  @WithSpan(kind = Span.Kind.SERVER)
+  public int getTraceflag() {
+    return ThreadContext.getRequestTelemetryContext().getTraceflag();
+  }
+
+  @WithSpan(kind = Span.Kind.SERVER)
+  public String retriveTracestate() {
+    return TraceContextCorrelation.retriveTracestate();
   }
 }

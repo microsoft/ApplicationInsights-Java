@@ -6,10 +6,8 @@
 import static io.opentelemetry.api.trace.Span.Kind.INTERNAL
 import static io.opentelemetry.api.trace.Span.Kind.SERVER
 
-import com.microsoft.applicationinsights.web.internal.ThreadContext
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation
 import io.opentelemetry.api.GlobalOpenTelemetry
-import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanContext
 import io.opentelemetry.api.trace.TraceFlags
@@ -141,20 +139,11 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
       "1234123412341234",
       TraceFlags.getDefault(),
       TraceState.builder().set("one", "1").set("two", "2").build())
-    def parent = Context.root().with(Span.wrap(spanContext))
-    def span = GlobalOpenTelemetry.getTracer("test")
-      .spanBuilder("test")
-      .setParent(parent)
-      .startSpan()
 
     when:
-    Scope scope = parent.with(span).makeCurrent()
-    def tracestate = null
-    try {
-      tracestate = ThreadContext.getRequestTelemetryContext().getTracestate()
-    } finally {
-      scope.close()
-    }
+    def scope = Context.root().with(Span.wrap(spanContext)).makeCurrent()
+    def tracestate = new Code().getTracestate()
+    scope.close()
 
     then:
     tracestate.get("one") == "1"
@@ -167,20 +156,11 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
       "1234123412341234",
       (byte) flag,
       TraceState.getDefault())
-    def parent = Context.root().with(Span.wrap(spanContext))
-    def span = GlobalOpenTelemetry.getTracer("test")
-      .spanBuilder("test")
-      .setParent(parent)
-      .startSpan()
 
     when:
-    Scope scope = parent.with(span).makeCurrent()
-    def traceflag = 0
-    try {
-      traceflag = ThreadContext.getRequestTelemetryContext().getTraceflag()
-    } finally {
-      scope.close()
-    }
+    def scope = Context.root().with(Span.wrap(spanContext)).makeCurrent()
+    def traceflag = new Code().getTraceflag()
+    scope.close()
 
     then:
     traceflag == flag
@@ -220,20 +200,11 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
       "1234123412341234",
       TraceFlags.getDefault(),
       otelTraceState)
-    def parent = Context.root().with(Span.wrap(spanContext))
-    def span = GlobalOpenTelemetry.getTracer("test")
-      .spanBuilder("test")
-      .setParent(parent)
-      .startSpan()
 
     when:
-    Scope scope = parent.with(span).makeCurrent()
-    def traceparent = null
-    try {
-      traceparent = TraceContextCorrelation.retriveTracestate()
-    } finally {
-      scope.close()
-    }
+    def scope = Context.root().with(Span.wrap(spanContext)).makeCurrent()
+    def traceparent = new Code().retriveTracestate()
+    scope.close()
 
     then:
     traceparent == legacyTracestate
