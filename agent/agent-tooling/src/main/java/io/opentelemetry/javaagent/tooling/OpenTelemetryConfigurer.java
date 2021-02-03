@@ -10,8 +10,8 @@ import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
+import com.microsoft.applicationinsights.agent.internal.AppIdSupplier;
 import com.microsoft.applicationinsights.agent.internal.Global;
-import com.microsoft.applicationinsights.agent.internal.OperationNameSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
@@ -35,8 +35,6 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
         Configuration config = MainEntryPoint.getConfiguration();
 
         tracerProvider.setSampler(DelegatingSampler.getInstance());
-
-        tracerProvider.addSpanProcessor(new OperationNameSpanProcessor());
 
         if (config.connectionString != null) {
             DelegatingPropagator.getInstance().setUpStandardDelegate();
