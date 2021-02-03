@@ -30,7 +30,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
-import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -42,10 +41,10 @@ import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
+import io.opentelemetry.sdk.trace.ReadableSpan;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -226,6 +225,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             String spanId = context.getSpanIdAsHexString();
             telemetry.getContext().getOperation().setId(traceId);
             telemetry.getContext().getOperation().setParentId(spanId);
+            Span serverSpan = BaseTracer.getCurrentServerSpan();
+            if (serverSpan instanceof ReadableSpan) {
+                telemetry.getContext().getOperation().setName(((ReadableSpan) serverSpan).getName());
+            }
         }
         double samplingPercentage = Global.getSamplingPercentage();
         if (sample(telemetry, samplingPercentage)) {
