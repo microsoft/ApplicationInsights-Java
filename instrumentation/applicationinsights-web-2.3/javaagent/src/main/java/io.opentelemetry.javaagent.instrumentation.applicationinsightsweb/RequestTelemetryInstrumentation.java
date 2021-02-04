@@ -41,6 +41,13 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
             .and(takesArguments(1)),
         RequestTelemetryInstrumentation.class.getName() + "$SetNameAdvice");
     transformers.put(
+        isMethod()
+            .and(isPublic())
+            .and(not(isStatic()))
+            .and(named("setSource"))
+            .and(takesArguments(1)),
+        RequestTelemetryInstrumentation.class.getName() + "$SetSourceAdvice");
+    transformers.put(
         isMethod().and(isPublic()).and(not(isStatic())).and(named("getId")).and(takesNoArguments()),
         RequestTelemetryInstrumentation.class.getName() + "$GetIdAdvice");
     transformers.put(
@@ -48,6 +55,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
             .and(isPublic())
             .and(not(isStatic()))
             .and(not(named("setName")))
+            .and(not(named("setSource")))
             .and(not(named("getId"))),
         RequestTelemetryInstrumentation.class.getName() + "$OtherMethodsAdvice");
     return transformers;
@@ -61,6 +69,18 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
           InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
       if (span != null) {
         span.updateName(name);
+      }
+    }
+  }
+
+  public static class SetSourceAdvice {
+    @Advice.OnMethodEnter
+    public static void methodEnter(
+        @Advice.This RequestTelemetry requestTelemetry, @Advice.Argument(0) String source) {
+      Span span =
+          InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
+      if (span != null) {
+        span.setAttribute("applicationinsights.internal.source", source);
       }
     }
   }
