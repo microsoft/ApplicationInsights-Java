@@ -216,6 +216,6 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
       return;
     }
     final String targetAppId = responseHeader.substring(index + 1);
-    span.setAttribute(AiAppId.SPAN_TARGET_ATTRIBUTE_NAME, targetAppId);
+    span.setAttribute(AiAppId.SPAN_TARGET_APP_ID_ATTRIBUTE_NAME, targetAppId);
   }
 }

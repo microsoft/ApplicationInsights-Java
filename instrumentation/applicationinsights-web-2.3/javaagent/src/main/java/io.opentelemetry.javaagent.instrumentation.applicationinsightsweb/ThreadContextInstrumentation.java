@@ -5,7 +5,6 @@
 
 package io.opentelemetry.javaagent.instrumentation.applicationinsightsweb;
 
-import static io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge.currentSpan;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
@@ -46,9 +45,6 @@ public class ThreadContextInstrumentation implements TypeInstrumentation {
       }
       requestTelemetryContext = new RequestTelemetryContext(0);
       Span serverSpan = BaseTracer.getCurrentServerSpan();
-      if (serverSpan == null) {
-        serverSpan = currentSpan();
-      }
       InstrumentationContext.get(RequestTelemetryContext.class, Span.class)
           .put(requestTelemetryContext, serverSpan);
     }

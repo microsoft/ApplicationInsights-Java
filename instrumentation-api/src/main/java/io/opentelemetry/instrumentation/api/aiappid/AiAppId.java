@@ -9,12 +9,12 @@ public class AiAppId {
 
   // forward propagation of appId
   public static final String TRACESTATE_KEY = "az";
-  public static final String SPAN_SOURCE_ATTRIBUTE_NAME =
+  public static final String SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME =
       "applicationinsights.internal.source_app_id";
 
   // backwards propagation of appId
   public static final String RESPONSE_HEADER_NAME = "Request-Context";
-  public static final String SPAN_TARGET_ATTRIBUTE_NAME =
+  public static final String SPAN_TARGET_APP_ID_ATTRIBUTE_NAME =
       "applicationinsights.internal.target_app_id";
 
   private static volatile Supplier supplier;
