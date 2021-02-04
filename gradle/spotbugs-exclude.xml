@@ -51,4 +51,13 @@
     <Bug pattern="UC_USELESS_VOID_METHOD"/>
   </Match>
 
+  <Match>
+    <Class
+      name="io.opentelemetry.javaagent.instrumentation.micrometer.ActuatorInstrumentation$GetCandidateConfigurationsAdvice"/>
+    <Method name="onExit"
+      params="java.util.List"
+      returns="void"/>
+    <Bug pattern="UC_USELESS_VOID_METHOD"/>
+  </Match>
+
 </FindBugsFilter>
