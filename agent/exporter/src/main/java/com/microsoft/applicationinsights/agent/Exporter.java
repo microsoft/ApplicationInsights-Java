@@ -35,7 +35,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -75,8 +74,12 @@ public class Exporter implements SpanExporter {
 
     private static final AttributeKey<Boolean> AI_LOG_KEY = AttributeKey.booleanKey("applicationinsights.internal.log");
 
-    private static final AttributeKey<String> AI_SPAN_SOURCE_KEY = AttributeKey.stringKey(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME);
-    private static final AttributeKey<String> AI_SPAN_TARGET_KEY = AttributeKey.stringKey(AiAppId.SPAN_TARGET_ATTRIBUTE_NAME);
+    private static final AttributeKey<String> AI_SPAN_SOURCE_APP_ID_KEY = AttributeKey.stringKey(AiAppId.SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME);
+    private static final AttributeKey<String> AI_SPAN_TARGET_APP_ID_KEY = AttributeKey.stringKey(AiAppId.SPAN_TARGET_APP_ID_ATTRIBUTE_NAME);
+
+    // this is only used by the 2.x web interop bridge
+    // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
+    private static final AttributeKey<String> AI_SPAN_SOURCE_KEY = AttributeKey.stringKey("applicationinsights.internal.source");
 
     private static final AttributeKey<String> AI_LOG_LEVEL_KEY = AttributeKey.stringKey("applicationinsights.internal.log_level");
     private static final AttributeKey<String> AI_LOGGER_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.logger_name");
@@ -149,7 +152,7 @@ public class Exporter implements SpanExporter {
 
         String source = null;
         Attributes attributes = span.getAttributes();
-        String sourceAppId = attributes.get(AI_SPAN_SOURCE_KEY);
+        String sourceAppId = attributes.get(AI_SPAN_SOURCE_APP_ID_KEY);
         if (sourceAppId != null && !AiAppId.getAppId().equals(sourceAppId)) {
             source = sourceAppId;
         }
@@ -163,6 +166,11 @@ public class Exporter implements SpanExporter {
                     source = messagingSystem;
                 }
             }
+        }
+        if (source == null) {
+            // this is only used by the 2.x web interop bridge
+            // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
+            source = attributes.get(AI_SPAN_SOURCE_KEY);
         }
         telemetry.setSource(source);
 
@@ -432,7 +440,7 @@ public class Exporter implements SpanExporter {
             target = "Http";
         }
 
-        String targetAppId = attributes.get(AI_SPAN_TARGET_KEY);
+        String targetAppId = attributes.get(AI_SPAN_TARGET_APP_ID_KEY);
         if (targetAppId == null || AiAppId.getAppId().equals(targetAppId)) {
             telemetry.setType("Http");
             telemetry.setTarget(target);
