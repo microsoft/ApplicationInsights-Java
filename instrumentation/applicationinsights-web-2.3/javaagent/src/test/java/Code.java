@@ -7,7 +7,6 @@ import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.extension.annotations.WithSpan;
 
 public class Code {
@@ -45,6 +44,11 @@ public class Code {
   }
 
   @WithSpan(kind = Span.Kind.SERVER)
+  public void setSource() {
+    internalSetSource();
+  }
+
+  @WithSpan(kind = Span.Kind.SERVER)
   public String getId() {
     return internalGetId();
   }
@@ -57,6 +61,11 @@ public class Code {
   @WithSpan
   private void internalSetName() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name");
+  }
+
+  @WithSpan
+  private void internalSetSource() {
+    ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSource("the source");
   }
 
   @WithSpan

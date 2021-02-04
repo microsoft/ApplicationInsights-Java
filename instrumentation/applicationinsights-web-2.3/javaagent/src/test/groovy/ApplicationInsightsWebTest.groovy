@@ -87,6 +87,30 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
     }
   }
 
+  def "set source"() {
+    when:
+    new Code().setSource()
+
+    then:
+    assertTraces(1) {
+      trace(0, 2) {
+        span(0) {
+          name "Code.setSource"
+          kind SERVER
+          hasNoParent()
+          attributes {
+            "applicationinsights.internal.source" "the source"
+          }
+        }
+        span(1) {
+          name "Code.internalSetSource"
+          kind INTERNAL
+          childOf span(0)
+        }
+      }
+    }
+  }
+
   def "get request id"() {
     when:
     def spanId = new Code().getId()
