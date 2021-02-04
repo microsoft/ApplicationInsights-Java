@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 // * implements same trace id hashing algorithm so that traces are sampled the same across multiple nodes
 //   when some of those nodes are being monitored by other Application Insights SDKs (and 2.x Java SDK)
 // * adds sampling percentage to span attribute (TODO this is not being applied to child spans)
-public final class AiBackCompatSampler implements Sampler {
+public final class AiSampler implements Sampler {
 
-    private static final Logger logger = LoggerFactory.getLogger(AiBackCompatSampler.class);
+    private static final Logger logger = LoggerFactory.getLogger(AiSampler.class);
 
     // all sampling percentage must be in a ratio of 100/N where N is a whole number (2, 3, 4, ...)
     // e.g. 50 for 1/2 or 33.33 for 1/3
@@ -31,7 +31,7 @@ public final class AiBackCompatSampler implements Sampler {
     private final SamplingResult alwaysOnDecision;
     private final SamplingResult alwaysOffDecision;
 
-    public AiBackCompatSampler(double samplingPercentage) {
+    public AiSampler(double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
         Attributes alwaysOnAttributes;
         if (samplingPercentage != 100) {
