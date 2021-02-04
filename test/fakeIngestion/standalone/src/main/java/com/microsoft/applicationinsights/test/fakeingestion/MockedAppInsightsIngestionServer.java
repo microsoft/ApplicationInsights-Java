@@ -2,12 +2,10 @@ package com.microsoft.applicationinsights.test.fakeingestion;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -134,10 +132,6 @@ public class MockedAppInsightsIngestionServer {
         return waitForItems(type, numItems, null);
     }
 
-    public List<Envelope> waitForMinItems(final String type, final int numItems) throws Exception {
-        return waitForMinItems(type, numItems, null);
-    }
-
     // this is important for Message and Exception types which can also be captured outside of requests
     public List<Envelope> waitForItemsInOperation(final String type, final int numItems, String operationId) throws Exception {
         return waitForItems(type, numItems, operationId);
@@ -163,20 +157,16 @@ public class MockedAppInsightsIngestionServer {
 
     // if operationId is null, then matches all items, otherwise only matches items with that operationId
     public List<Envelope> waitForItems(final String type, final int numItems, final String operationId) throws Exception {
-        List<Envelope> items =  waitForMinItems(type, numItems, operationId);
-        if (items.size() > numItems) {
-            throw new AssertionError("Expecting " + numItems + " of type " + type + ", but received " + items.size());
-        }
-        return items;
-    }
-
-    public List<Envelope> waitForMinItems(String type, int numItems, String operationId) throws InterruptedException, ExecutionException, TimeoutException {
-        return waitForItems(new Predicate<Envelope>() {
+        List<Envelope> items = waitForItems(new Predicate<Envelope>() {
             @Override public boolean apply(Envelope input) {
                 return input.getData().getBaseType().equals(type)
                         && (operationId == null || operationId.equals(input.getTags().get("ai.operation.id")));
             }
         }, numItems, 10, TimeUnit.SECONDS);
+        if (items.size() > numItems) {
+            throw new AssertionError("Expecting " + numItems + " of type " + type + ", but received " + items.size());
+        }
+        return items;
     }
 
     /**
