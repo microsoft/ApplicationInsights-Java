@@ -160,7 +160,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
   protected void onRequest(Span span, REQUEST request) {
     final String sourceAppId = span.getSpanContext().getTraceState().get(AiAppId.TRACESTATE_KEY);
     if (sourceAppId != null && !sourceAppId.isEmpty()) {
-      span.setAttribute(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME, sourceAppId);
+      span.setAttribute(AiAppId.SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME, sourceAppId);
     }
 
     span.setAttribute(SemanticAttributes.HTTP_METHOD, method(request));
