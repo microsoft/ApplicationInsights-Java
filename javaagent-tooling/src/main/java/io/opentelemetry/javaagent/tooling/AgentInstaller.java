@@ -25,6 +25,7 @@ import io.opentelemetry.javaagent.tooling.config.ConfigInitializer;
 import io.opentelemetry.javaagent.tooling.context.FieldBackedProvider;
 import io.opentelemetry.javaagent.tooling.matcher.GlobalClassloaderIgnoresMatcher;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,12 +72,25 @@ public class AgentInstaller {
     AgentTooling.registerWeakMapProvider();
     // Instrumentation can use a bounded cache, so register here.
     AgentTooling.registerBoundedCacheProvider();
-    // this needs to be done as early as possible - before the first Config.get() call
-    ConfigInitializer.initialize();
   }
 
-  public static void installBytebuddyAgent(Instrumentation inst) {
+  public static void installBytebuddyAgent(Instrumentation inst) throws Exception {
     logVersionInfo();
+
+    Class<?> clazz = null;
+    try {
+      clazz = Class.forName("io.opentelemetry.javaagent.tooling.BeforeAgentInstaller");
+    } catch (final ClassNotFoundException ignored) {
+    }
+    if (clazz != null) {
+      // exceptions in this code should be propagated up so that agent startup fails
+      final Method method = clazz.getMethod("beforeInstallBytebuddyAgent", Instrumentation.class);
+      method.invoke(null, inst);
+    }
+
+    // this needs to be done as early as possible - before the first Config.get() call
+    ConfigInitializer.initialize();
+
     if (Config.get().getBooleanProperty(JAVAAGENT_ENABLED_CONFIG, true)) {
       Iterable<ComponentInstaller> componentInstallers = loadComponentProviders();
       installBytebuddyAgent(inst, componentInstallers);
