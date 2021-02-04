@@ -10,7 +10,6 @@ import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
-import com.microsoft.applicationinsights.agent.internal.AppIdSupplier;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
@@ -40,9 +39,9 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
             DelegatingPropagator.getInstance().setUpStandardDelegate();
             DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(Global.getSamplingPercentage()));
         } else {
-            // in Azure Functions, need to configure once we know user has opted in to tracing
-            // the default for DelegatingPropagator is to not propagate anything
-            // and the default for DelegatingSampler is to not sample anything
+            // in Azure Functions, we configure later on, once we know user has opted in to tracing
+            // (note: the default for DelegatingPropagator is to not propagate anything
+            // and the default for DelegatingSampler is to not sample anything)
         }
 
         List<ProcessorConfig> processors = new ArrayList<>(config.preview.processors);
