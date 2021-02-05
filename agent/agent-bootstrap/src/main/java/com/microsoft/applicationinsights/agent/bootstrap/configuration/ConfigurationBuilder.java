@@ -71,6 +71,8 @@ public class ConfigurationBuilder {
     // cannot use logger before loading configuration, so need to store any messages locally until logger is initialized
     private static final List<ConfigurationMessage> configurationMessages = new CopyOnWriteArrayList<>();
 
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationBuilder.class);
+
     public static Configuration create(Path agentJarPath) throws IOException {
         Configuration config = loadConfigurationFile(agentJarPath);
         overlayEnvVars(config);
@@ -162,7 +164,6 @@ public class ConfigurationBuilder {
     }
 
     public static void logConfigurationMessages() {
-        Logger logger = LoggerFactory.getLogger(ConfigurationBuilder.class);
         for (ConfigurationMessage configurationMessage : configurationMessages) {
             configurationMessage.log(logger);
         }
@@ -290,9 +291,8 @@ public class ConfigurationBuilder {
                 Configuration configuration = jsonAdapter.fromJson(buffer);
                 return configuration;
             } catch(JsonDataException ex) {
-                Logger logger = LoggerFactory.getLogger(ConfigurationBuilder.class);
-                logger.warn(ex.getMessage());
                 if(strict) {
+                    logger.warn(ex.getMessage());
                     // Try extracting the configuration without failOnUnknown
                     return getConfigurationFromConfigFile(configPath, false);
                 } else {
@@ -309,10 +309,9 @@ public class ConfigurationBuilder {
     }
 
     static String getJsonEncodingExceptionMessage(String configPath, String message) {
-        String DEFAULT_MESSAGE = "Application Insights Java agent's configuration file "+ configPath +
-                " has a malformed JSON\n";
+        String defaultMessage = "Application Insights Java agent's configuration file "+ configPath + " has a malformed JSON\n";
         if(message == null) {
-            return DEFAULT_MESSAGE;
+            return defaultMessage;
         }
 
         // Moshi builder json data exception sample:
@@ -320,7 +319,7 @@ public class ConfigurationBuilder {
         // This exception message is thrown if the json has an unexpected attribute and json object
         // that belong to this attribute has malformed json syntax.
         if(message.contains("$.null")) {
-            return DEFAULT_MESSAGE;
+            return defaultMessage;
         }
 
         // Moshi builder json data exception sample:
@@ -330,7 +329,7 @@ public class ConfigurationBuilder {
             return "Application Insights Java agent's configuration file "+ configPath +
                     " has a malformed JSON at path "+message.substring(jsonAttributeIndex) +"\n";
         } else {
-            return DEFAULT_MESSAGE;
+            return defaultMessage;
         }
     }
 
