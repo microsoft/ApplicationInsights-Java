@@ -279,6 +279,61 @@ public class ConfigurationBuilder {
         }
     }
 
+    private static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict) throws IOException {
+        try (InputStream in = Files.newInputStream(configPath)) {
+            Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
+            JsonAdapter<Configuration> jsonAdapter = strict ? moshi.adapter(Configuration.class).failOnUnknown() :
+                    moshi.adapter(Configuration.class);
+            Buffer buffer = new Buffer();
+            buffer.readFrom(in);
+            try {
+                Configuration configuration = jsonAdapter.fromJson(buffer);
+                return configuration;
+            } catch(JsonDataException ex) {
+                Logger logger = LoggerFactory.getLogger(ConfigurationBuilder.class);
+                logger.warn(ex.getMessage());
+                if(strict) {
+                    // Try extracting the configuration without failOnUnknown
+                    return getConfigurationFromConfigFile(configPath, false);
+                } else {
+                    throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following json issue:\n"+ex.getMessage(),
+                            "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+                }
+            } catch (JsonEncodingException ex) {
+                throw new FriendlyException(JsonEncodingExceptionMessage(configPath.toAbsolutePath().toString(), ex.getMessage()),
+                        "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+            } catch(Exception e) {
+                throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
+            }
+        }
+    }
+
+    private static String JsonEncodingExceptionMessage(String configPath, String message) {
+        String DEFAULT_MESSAGE = "Application Insights Java agent's configuration file "+ configPath +
+                " has a malformed JSON\n";
+        if(message == null) {
+            return DEFAULT_MESSAGE;
+        }
+
+        // Moshi builder json data exception sample:
+        // Use JsonReader.setLenient(true) to accept malformed JSON at path $.null.[0]
+        // This exception message is thrown if the json has an unexpected attribute and json object
+        // that belong to this attribute has malformed json syntax.
+        if(message.contains("$.null")) {
+            return DEFAULT_MESSAGE;
+        }
+
+        // Moshi builder json data exception sample:
+        // Use JsonReader.setLenient(true) to accept malformed JSON at path $.selfDiagnostics
+        int jsonAttributeIndex = message.lastIndexOf("$.");
+        if(jsonAttributeIndex > 0 && jsonAttributeIndex < message.length() -2) {
+            return "Application Insights Java agent's configuration file "+ configPath +
+                    " has a malformed JSON at path "+message.substring(jsonAttributeIndex) +"\n";
+        } else {
+            return DEFAULT_MESSAGE;
+        }
+    }
+
     public static Configuration loadJsonConfigFile(Path configPath) throws IOException{
         if (!Files.exists(configPath)) {
             throw new IllegalStateException("config file does not exist: " + configPath);
@@ -289,32 +344,14 @@ public class ConfigurationBuilder {
         // where file is updated after reading it but before reading last modified, and then since
         // last modified doesn't change after that, the new updated file will not be read afterwards
         long lastModifiedTime = attributes.lastModifiedTime().toMillis();
-        try (InputStream in = Files.newInputStream(configPath)) {
-            Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
-            JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class).failOnUnknown();
-            Buffer buffer = new Buffer();
-            buffer.readFrom(in);
-            try {
-                Configuration configuration = jsonAdapter.fromJson(buffer);
-                if (configuration.instrumentationSettings != null) {
-                    throw new IllegalStateException("It looks like you are using an old applicationinsights.json file" +
-                            " which still has \"instrumentationSettings\", please see the docs for the new format:" +
-                            " https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
-                }
-                configuration.configPath = configPath;
-                configuration.lastModifiedTime = lastModifiedTime;
-                return configuration;
-            } catch(JsonDataException ex) {
-                throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following issue:\n"+ex.getMessage(),
-                        "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
-
-            } catch (JsonEncodingException ex) {
-                throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following syntax issue:\n"+ex.getMessage(),
-                        "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
-
-            } catch(Exception e) {
-                throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
-            }
+        Configuration configuration = getConfigurationFromConfigFile(configPath, true);
+        if (configuration.instrumentationSettings != null) {
+            throw new IllegalStateException("It looks like you are using an old applicationinsights.json file" +
+                    " which still has \"instrumentationSettings\", please see the docs for the new format:" +
+                    " https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
         }
+        configuration.configPath = configPath;
+        configuration.lastModifiedTime = lastModifiedTime;
+        return configuration;
     }
 }
