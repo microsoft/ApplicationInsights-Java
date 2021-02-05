@@ -35,7 +35,7 @@ dependencies {
 
   /**
   testImplementation deps.testcontainers
-  testImplementation "org.testcontainers:localstack:1.15.0-rc2"**/
+  testImplementation "org.testcontainers:localstack:1.15.1"**/
 
   testLibrary group: 'org.elasticmq', name: 'elasticmq-rest-sqs_2.12', version: '1.0.0'
 
