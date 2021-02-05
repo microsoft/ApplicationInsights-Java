@@ -1,9 +1,13 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Predicate;
+import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
+import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 import org.junit.*;
 
@@ -17,24 +21,36 @@ public class MicrometerTest extends AiSmokeTest {
     public void doMostBasicTest() throws Exception {
         mockedIngestion.waitForItems("RequestData", 1);
 
-        mockedIngestion.waitForItems("MetricData", 1);
+        List<Envelope> metricItems = mockedIngestion.waitForItems(new Predicate<Envelope>() {
+            @Override
+            public boolean apply(Envelope input) {
+                if (!input.getData().getBaseType().equals("MetricData")) {
+                    return false;
+                }
+                MetricData data = (MetricData) ((Data) input.getData()).getBaseData();
+                if (!"/test".equals(data.getProperties().get("uri"))) {
+                    return false;
+                }
+                for (DataPoint point : data.getMetrics()) {
+                    if (point.getName().equals("http_server_requests") && point.getCount() == 1) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }, 1, 10, TimeUnit.SECONDS);
 
-        List<MetricData> metrics = mockedIngestion.getTelemetryDataByType("MetricData");
-
-        assertEquals(1, metrics.size());
-
-        List<DataPoint> points = metrics.get(0).getMetrics();
-
+        MetricData data = (MetricData) ((Data) metricItems.get(0).getData()).getBaseData();
+        List<DataPoint> points = data.getMetrics();
         assertEquals(1, points.size());
 
         DataPoint point = points.get(0);
 
-        assertEquals(DataPointType.Measurement, point.getKind());
-        assertEquals(1, point.getValue(), 0);
-        assertEquals("test_counter", point.getName());
-        assertNull("getCount was non-null", point.getCount());
-        assertNull("getMin was non-null", point.getMin());
-        assertNull("getMax was non-null", point.getMax());
+        assertEquals(DataPointType.Aggregation, point.getKind());
+        assertEquals(1, point.getCount(), 0); // (this was verified above in Predicate also)
+        assertEquals("http_server_requests", point.getName()); // (this was verified above in Predicate also)
+        assertNull("getMin was non-null", point.getMin()); // this isn't desired, but see https://github.com/micrometer-metrics/micrometer/issues/457
+        assertNotNull("getMax was null", point.getMax());
         assertNull("getStdDev was non-null", point.getStdDev());
     }
 }

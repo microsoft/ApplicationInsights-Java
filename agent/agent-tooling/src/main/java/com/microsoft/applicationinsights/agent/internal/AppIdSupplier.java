@@ -47,7 +47,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
         String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
         if (instrumentationKey == null) {
             // this is possible in Azure Function consumption plan prior to "specialization"
-            return null;
+            return "";
         }
 
         String appId = InstrumentationKeyResolver.INSTANCE.resolveInstrumentationKey(instrumentationKey, TelemetryConfiguration.getActive());

@@ -23,11 +23,10 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.instrumentation.api.aiappid.AiHttpTraceContext;
+import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
+import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
-import io.opentelemetry.javaagent.tooling.TracerInstaller;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,9 +45,10 @@ public class ConnectionStringAccessor implements AiConnectionString.Accessor {
     public void setValue(String value) {
         if (!Strings.isNullOrEmpty(value)) {
             TelemetryConfiguration.getActive().setConnectionString(value);
-            // now that we know user has opted in to tracing, need to set up propagator
-            TracerInstaller.setGlobalPropagators(
-                    DefaultContextPropagators.builder().addTextMapPropagator(AiHttpTraceContext.getInstance()).build());
+            // now that we know the user has opted in to tracing, we need to init the propagator and sampler
+            DelegatingPropagator.getInstance().setUpStandardDelegate();
+            // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
+            DelegatingSampler.getInstance().setAlwaysOnDelegate();
             logger.info("Set connection string lazily for the Azure Function Consumption Plan.");
         }
     }

@@ -38,13 +38,13 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
         assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
         assertEquals("WARNING", md1.getProperties().get("LoggingLevel"));
-        assertParentChild(rd, rdEnvelope, mdEnvelope1);
+        assertParentChild(rd, rdEnvelope, mdEnvelope1, "/TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
 
         assertEquals("This is jul severe.", md2.getMessage());
         assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
         assertEquals("SEVERE", md2.getProperties().get("LoggingLevel"));
-        assertParentChild(rd, rdEnvelope, mdEnvelope2);
+        assertParentChild(rd, rdEnvelope, mdEnvelope2, "/TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
     }
 
     @Test
@@ -69,10 +69,10 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
         assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
         assertEquals("Logger", ed.getProperties().get("SourceType"));
         assertEquals("SEVERE", ed.getProperties().get("LoggingLevel"));
-        assertParentChild(rd, rdEnvelope, edEnvelope);
+        assertParentChild(rd, rdEnvelope, edEnvelope, "/TraceJavaUtilLoggingUsingAgent/traceJavaUtilLoggingWithException");
     }
 
-    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         assertNotNull(operationId);
         assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
@@ -81,5 +81,8 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
         assertNull(operationParentId);
 
         assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
+
+        assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
+        assertNull(childEnvelope.getTags().get("ai.operation.name"));
     }
 }

@@ -37,7 +37,8 @@ dependencies {
 
     compile 'com.google.guava:guava:27.1-android'
 
-    compile 'io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.12.0+ai.patch.1'
+    compile 'io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.15.0+ai.patch.1'
+    compile 'io.opentelemetry.javaagent:opentelemetry-javaagent-spi:0.15.0+ai.patch.1'
     // TODO sync bytebuddy version with version from auto-tooling (above)
     compile group: 'net.bytebuddy', name: 'byte-buddy', version: '1.10.10'
 
@@ -55,7 +56,8 @@ dependencies {
     compile 'org.slf4j:jcl-over-slf4j:1.7.30'
 
     compile(project(':agent:exporter'))
-    compile 'io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator:0.12.0'
+    compile 'io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator:0.15.0-alpha'
+    compile 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:0.15.0-alpha'
 
     compileOnly(project(':agent:agent-bootstrap'))
     testCompile(project(':agent:agent-bootstrap'))
