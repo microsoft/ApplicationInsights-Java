@@ -279,7 +279,7 @@ public class ConfigurationBuilder {
         }
     }
 
-    private static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict) throws IOException {
+    static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict) throws IOException {
         try (InputStream in = Files.newInputStream(configPath)) {
             Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
             JsonAdapter<Configuration> jsonAdapter = strict ? moshi.adapter(Configuration.class).failOnUnknown() :
@@ -300,7 +300,7 @@ public class ConfigurationBuilder {
                             "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
                 }
             } catch (JsonEncodingException ex) {
-                throw new FriendlyException(JsonEncodingExceptionMessage(configPath.toAbsolutePath().toString(), ex.getMessage()),
+                throw new FriendlyException(getJsonEncodingExceptionMessage(configPath.toAbsolutePath().toString(), ex.getMessage()),
                         "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
             } catch(Exception e) {
                 throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
@@ -308,7 +308,7 @@ public class ConfigurationBuilder {
         }
     }
 
-    private static String JsonEncodingExceptionMessage(String configPath, String message) {
+    static String getJsonEncodingExceptionMessage(String configPath, String message) {
         String DEFAULT_MESSAGE = "Application Insights Java agent's configuration file "+ configPath +
                 " has a malformed JSON\n";
         if(message == null) {
