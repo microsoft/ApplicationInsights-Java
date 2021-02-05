@@ -39,7 +39,22 @@ public class AgentInitializer {
   static {
     // We can configure logger here because io.opentelemetry.auto.AgentBootstrap doesn't touch
     // it.
-    configureLogger();
+    Class<?> clazz = null;
+    try {
+      clazz = Class.forName("io.opentelemetry.javaagent.bootstrap.ConfigureLogging");
+    } catch (final ClassNotFoundException ignored) {
+    }
+    if (clazz != null) {
+      // exceptions in this code should be propagated up so that agent startup fails
+      try {
+        final Method method = clazz.getMethod("configure");
+        method.invoke(null);
+      } catch (final Exception e) {
+        throw new IllegalStateException(e);
+      }
+    } else {
+      configureLogger();
+    }
     log = LoggerFactory.getLogger(AgentInitializer.class);
   }
 
@@ -48,28 +63,35 @@ public class AgentInitializer {
   public static ClassLoader AGENT_CLASSLOADER = null;
 
   public static void initialize(Instrumentation inst, URL bootstrapUrl) {
+    try {
+      startAgent(inst, bootstrapUrl);
+    } catch (Throwable ex) {
+      log.error("Throwable thrown while installing the agent", ex);
+    }
+  }
+
+  public static void initializeAndBubbleException(Instrumentation inst, URL bootstrapUrl)
+      throws Exception {
+    // allow exception to bubble up
     startAgent(inst, bootstrapUrl);
   }
 
-  private static synchronized void startAgent(Instrumentation inst, URL bootstrapUrl) {
+  private static synchronized void startAgent(Instrumentation inst, URL bootstrapUrl)
+      throws Exception {
     if (AGENT_CLASSLOADER == null) {
+      ClassLoader agentClassLoader = createAgentClassLoader("inst", bootstrapUrl);
+      Class<?> agentInstallerClass =
+          agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
+      Method agentInstallerMethod =
+          agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
+      ClassLoader savedContextClassLoader = Thread.currentThread().getContextClassLoader();
       try {
-        ClassLoader agentClassLoader = createAgentClassLoader("inst", bootstrapUrl);
-        Class<?> agentInstallerClass =
-            agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
-        Method agentInstallerMethod =
-            agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
-        ClassLoader savedContextClassLoader = Thread.currentThread().getContextClassLoader();
-        try {
-          Thread.currentThread().setContextClassLoader(AGENT_CLASSLOADER);
-          agentInstallerMethod.invoke(null, inst);
-        } finally {
-          Thread.currentThread().setContextClassLoader(savedContextClassLoader);
-        }
-        AGENT_CLASSLOADER = agentClassLoader;
-      } catch (Throwable ex) {
-        log.error("Throwable thrown while installing the agent", ex);
+        Thread.currentThread().setContextClassLoader(AGENT_CLASSLOADER);
+        agentInstallerMethod.invoke(null, inst);
+      } finally {
+        Thread.currentThread().setContextClassLoader(savedContextClassLoader);
       }
+      AGENT_CLASSLOADER = agentClassLoader;
     }
   }
 
