@@ -45,10 +45,10 @@ public class CassandraSmokeTest extends AiSmokeTest {
         assertEquals("select * from test.test", rdd.getName());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
     }
 
-    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         assertNotNull(operationId);
         assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
@@ -57,5 +57,8 @@ public class CassandraSmokeTest extends AiSmokeTest {
         assertNull(operationParentId);
 
         assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
+
+        assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
+        assertNull(childEnvelope.getTags().get("ai.operation.name"));
     }
 }

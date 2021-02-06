@@ -22,26 +22,43 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import net.bytebuddy.jar.asm.ClassReader;
 import net.bytebuddy.jar.asm.ClassVisitor;
 import net.bytebuddy.jar.asm.ClassWriter;
 import net.bytebuddy.jar.asm.MethodVisitor;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static net.bytebuddy.jar.asm.Opcodes.ASM7;
+import static net.bytebuddy.jar.asm.Opcodes.RETURN;
 
-// this is needed because gradle shadow doesn't shade the constant
-// "META-INF/services/org.apache.commons.logging.LogFactory" that is in commons-logging code
-class CommonsLogFactoryClassFileTransformer implements ClassFileTransformer {
+public class DuplicateAgentClassFileTransformer implements ClassFileTransformer {
 
-    private static final Logger logger = LoggerFactory.getLogger(CommonsLogFactoryClassFileTransformer.class);
+    private static final Logger logger = LoggerFactory.getLogger(DuplicateAgentClassFileTransformer.class);
 
-    // using constant here so that it will get shaded appropriately
-    // IMPORTANT FOR THIS NOT TO BE FINAL, OTHERWISE COMPILER MAY INLINE IT, WHICH WOULD PREVENT IT FROM BEING SHADED
-    public static String SERVICE_ID = "org.apache.commons.logging.LogFactory";
+    // using constant here so that it will NOT get shaded
+    // IMPORTANT FOR THIS NOT TO BE FINAL (or private)
+    // OTHERWISE COMPILER COULD THEORETICALLY INLINE IT BELOW AND APPLY .substring(1)
+    // and then it WOULD be shaded
+    static String[] UNSHADED_CLASS_NAMES = new String[] {
+            "!io/opentelemetry/auto/bootstrap/AgentBootstrap", // early 3.0 previews
+            "!com/microsoft/applicationinsights/agent/internal/Premain", // 2.5.0+
+            "!com/microsoft/applicationinsights/agent/internal/agent/AgentImplementation" // prior to 2.5.0
+    };
+
+    private final Set<String> unshadedClassNames;
+
+    public DuplicateAgentClassFileTransformer() {
+        Set<String> unshadedClassNames = new HashSet<>();
+        for (String unshadedClassName : UNSHADED_CLASS_NAMES) {
+            unshadedClassNames.add(unshadedClassName.substring(1));
+        }
+        this.unshadedClassNames = unshadedClassNames;
+    }
 
     @Override
     public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
@@ -49,16 +66,12 @@ class CommonsLogFactoryClassFileTransformer implements ClassFileTransformer {
                                           @Nullable ProtectionDomain protectionDomain,
                                           byte[] classfileBuffer) {
 
-        if (!"org/apache/commons/logging/LogFactory".equals(className)) {
-            return null;
-        }
-        if (!className.startsWith("com/microsoft/applicationinsights/")) {
-            // only apply if shaded
+        if (!unshadedClassNames.contains(className)) {
             return null;
         }
         try {
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-            ClassVisitor cv = new CommonsLogFactoryClassVisitor(cw);
+            ClassVisitor cv = new DuplicateAgentClassVisitor(cw);
             ClassReader cr = new ClassReader(classfileBuffer);
             cr.accept(cv, 0);
             return cw.toByteArray();
@@ -68,11 +81,11 @@ class CommonsLogFactoryClassFileTransformer implements ClassFileTransformer {
         }
     }
 
-    private static class CommonsLogFactoryClassVisitor extends ClassVisitor {
+    private static class DuplicateAgentClassVisitor extends ClassVisitor {
 
         private final ClassWriter cw;
 
-        private CommonsLogFactoryClassVisitor(ClassWriter cw) {
+        private DuplicateAgentClassVisitor(ClassWriter cw) {
             super(ASM7, cw);
             this.cw = cw;
         }
@@ -81,25 +94,15 @@ class CommonsLogFactoryClassFileTransformer implements ClassFileTransformer {
         public MethodVisitor visitMethod(int access, String name, String descriptor, @Nullable String signature,
                                          String /*@Nullable*/[] exceptions) {
             MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
-            if (name.equals("getFactory") && descriptor.startsWith("()")) {
-                return new CommonsLogFactoryMethodVisitor(mv);
+            if (name.equals("premain") && descriptor.equals("(Ljava/lang/String;Ljava/lang/instrument/Instrumentation;)V")) {
+                // no-op the initialize() method
+                mv.visitCode();
+                mv.visitInsn(RETURN);
+                mv.visitMaxs(0, 1);
+                mv.visitEnd();
+                return null;
             } else {
                 return mv;
-            }
-        }
-    }
-
-    private static class CommonsLogFactoryMethodVisitor extends MethodVisitor {
-
-        private CommonsLogFactoryMethodVisitor(MethodVisitor mv) {
-            super(ASM7, mv);
-        }
-
-        public void visitLdcInsn(Object value) {
-            if ("META-INF/services/org.apache.commons.logging.LogFactory".equals(value)) {
-                super.visitLdcInsn("META-INF/services/" + SERVICE_ID);
-            } else {
-                super.visitLdcInsn(value);
             }
         }
     }

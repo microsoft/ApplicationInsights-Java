@@ -34,8 +34,11 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonDataException;
+import com.squareup.moshi.JsonEncodingException;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
@@ -47,6 +50,11 @@ public class ConfigurationBuilder {
 
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_CONFIGURATION_FILE";
 
+    private static final String APPLICATIONINSIGHTS_CONNECTION_STRING = "APPLICATIONINSIGHTS_CONNECTION_STRING";
+
+    // this is for backwards compatibility only
+    private static final String APPINSIGHTS_INSTRUMENTATIONKEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
+
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
 
@@ -54,6 +62,8 @@ public class ConfigurationBuilder {
     private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE = "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
     private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL = "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL";
+
+    private static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL = "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL";
 
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
@@ -81,18 +91,21 @@ public class ConfigurationBuilder {
         }
     }
 
-    private static void loadJmxMetrics(Configuration config) throws IOException {
+    private static void loadJmxMetricsEnvVar(Configuration config) throws IOException {
         String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, (String)null);
 
         // JmxMetrics env variable has higher precedence over jmxMetrics config from applicationinsights.json
         if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
-            Moshi moshi = new Moshi.Builder().build();
+            Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
             Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
             JsonReader reader = JsonReader.of(new Buffer().writeUtf8(jmxMetricsEnvVarJson));
             reader.setLenient(true);
             JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
             config.jmxMetrics = jsonAdapter.fromJson(reader);
         }
+    }
+
+    private static void addDefaultJmxMetricsIfNotPresent(Configuration config) {
         if (!jmxMetricExisted(config.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
             JmxMetric threadCountJmxMetric = new JmxMetric();
             threadCountJmxMetric.name = "Current Thread Count";
@@ -166,27 +179,37 @@ public class ConfigurationBuilder {
         return value != null ? value : trimAndEmptyToNull(System.getProperty(propertyName));
     }
 
-    static void overlayEnvVars(Configuration config) throws IOException {
-        config.role.name = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_NAME, WEBSITE_SITE_NAME, config.role.name);
-        config.role.instance = overlayWithEnvVars(APPLICATIONINSIGHTS_ROLE_INSTANCE, WEBSITE_INSTANCE_ID, config.role.instance);
+    public static void overlayEnvVars(Configuration config) throws IOException {
+        config.connectionString = overlayWithEnvVar(APPLICATIONINSIGHTS_CONNECTION_STRING, config.connectionString);
+        if (config.connectionString == null) {
+            // this is for backwards compatibility only
+            String instrumentationKey = System.getenv(APPINSIGHTS_INSTRUMENTATIONKEY);
+            if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
+                // TODO log an info message recommending APPLICATIONINSIGHTS_CONNECTION_STRING
+                config.connectionString = "InstrumentationKey=" + instrumentationKey;
+            }
+        }
+
+        if (isTrimEmpty(config.role.name)) {
+            // only use WEBSITE_SITE_NAME as a fallback
+            config.role.name = getEnv(WEBSITE_SITE_NAME);
+        }
+        config.role.name = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, config.role.name);
+
+        if (isTrimEmpty(config.role.instance)) {
+            // only use WEBSITE_INSTANCE_ID as a fallback
+            config.role.instance = getEnv(WEBSITE_INSTANCE_ID);
+        }
+        config.role.instance = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, config.role.instance);
 
         config.sampling.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
-        loadLogCaptureEnvVar(config);
-        loadJmxMetrics(config);
-    }
+        config.selfDiagnostics.level = overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL, config.selfDiagnostics.level);
 
-    // visible for testing
-    static String overlayWithEnvVars(String name1, String name2, String defaultValue) {
-        String value = getEnv(name1);
-        if (value != null && !value.isEmpty()) {
-            return value;
-        }
-        value = getEnv(name2);
-        if (value != null && !value.isEmpty()) {
-            return value;
-        }
-        return defaultValue;
+        loadLogCaptureEnvVar(config);
+        loadJmxMetricsEnvVar(config);
+
+        addDefaultJmxMetricsIfNotPresent(config);
     }
 
     static String overlayWithEnvVar(String name, String defaultValue) {
@@ -219,39 +242,16 @@ public class ConfigurationBuilder {
     }
 
     // visible for testing
-    static Map<String, String> overlayWithEnvVars(String name, Map<String, String> defaultValue) {
-        String value = System.getenv(name);
-        if (value != null && !value.isEmpty()) {
-            Moshi moshi = new Moshi.Builder().build();
-            JsonAdapter<Map> adapter = moshi.adapter(Map.class);
-            Map<String, String> stringMap = new HashMap<>();
-            Map<String, Object> objectMap;
-            try {
-                objectMap = adapter.fromJson(value);
-            } catch (Exception e) {
-                configurationMessages.add(new ConfigurationMessage("could not parse environment variable {} as json: {}", name, value));
-                return defaultValue;
-            }
-            for (Map.Entry<String, Object> entry : objectMap.entrySet()) {
-                Object val = entry.getValue();
-                if (!(val instanceof String)) {
-                    configurationMessages.add(new ConfigurationMessage("currently only string values are supported in json map from {}: {}", name, value));
-                    return defaultValue;
-                }
-                stringMap.put(entry.getKey(), (String) val);
-            }
-            return stringMap;
-        }
-        return defaultValue;
-    }
-
-    // visible for testing
     static String trimAndEmptyToNull(String str) {
         if (str == null) {
             return null;
         }
         String trimmed = str.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private static boolean isTrimEmpty(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     public static class ConfigurationException extends RuntimeException {
@@ -290,8 +290,8 @@ public class ConfigurationBuilder {
         // last modified doesn't change after that, the new updated file will not be read afterwards
         long lastModifiedTime = attributes.lastModifiedTime().toMillis();
         try (InputStream in = Files.newInputStream(configPath)) {
-            Moshi moshi = new Moshi.Builder().build();
-            JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+            Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
+            JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class).failOnUnknown();
             Buffer buffer = new Buffer();
             buffer.readFrom(in);
             try {
@@ -304,7 +304,15 @@ public class ConfigurationBuilder {
                 configuration.configPath = configPath;
                 configuration.lastModifiedTime = lastModifiedTime;
                 return configuration;
-            } catch (Exception e) {
+            } catch(JsonDataException ex) {
+                throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following issue:\n"+ex.getMessage(),
+                        "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+
+            } catch (JsonEncodingException ex) {
+                throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following syntax issue:\n"+ex.getMessage(),
+                        "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+
+            } catch(Exception e) {
                 throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
             }
         }

@@ -22,6 +22,11 @@
                 <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
                 <Method name="start"/>
             </And>
+            <And>
+                <!-- False Positive. Path is not from an external source. -->
+                <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
+                <Method name="logErrorMessage"/>
+            </And>
         </Or>
     </Match>
     <Match>
@@ -44,5 +49,15 @@
         <Bug pattern="REC_CATCH_EXCEPTION" />
         <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder" />
         <Method name="getPidUsingProcessHandle" />
+    </Match>
+    <Match>
+        <Bug pattern="CRLF_INJECTION_LOGS" />
+        <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
+        <Method name="logErrorMessage" />
+    </Match>
+    <Match>
+        <Bug pattern="CRLF_INJECTION_LOGS" />
+        <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
+        <Method name="start" />
     </Match>
 </FindBugsFilter>

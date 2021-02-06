@@ -1,14 +1,13 @@
 package com.microsoft.applicationinsights.smoketest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import org.junit.Test;
+import org.junit.*;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 @UseAgent
 public class SpringBootAutoTest extends AiSmokeTest {
@@ -16,6 +15,15 @@ public class SpringBootAutoTest extends AiSmokeTest {
     @Test
     @TargetUri("/test")
     public void doMostBasicTest() throws Exception {
-        mockedIngestion.waitForItems("RequestData", 1);
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+
+        Envelope rdEnvelope = rdList.get(0);
+
+        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+
+        // TODO verify browser and other envelope tags somewhere else
+        assertTrue(rdEnvelope.getTags().get("ai.user.userAgent").startsWith("Apache-HttpClient/"));
+
+        assertTrue(rd.getSuccess());
     }
 }

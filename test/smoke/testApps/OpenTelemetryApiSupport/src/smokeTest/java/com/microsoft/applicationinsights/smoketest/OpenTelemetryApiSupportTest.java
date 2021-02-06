@@ -31,6 +31,7 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
         // see https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1726#issuecomment-731890267
         assertEquals("myvalue1", rdd.getProperties().get("myattr1"));
         assertEquals("myvalue2", rdd.getProperties().get("myattr2"));
+        assertEquals("myuser", rddEnvelope.getTags().get("ai.user.id"));
         assertEquals("myspanname", rdd.getName());
 
         assertTrue(rd.getSuccess());

@@ -24,10 +24,12 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import javax.annotation.concurrent.GuardedBy;
+import javax.net.ssl.SSLHandshakeException;
 
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.util.SSLOptionsUtil;
+import com.microsoft.applicationinsights.internal.util.SSLUtil;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -71,8 +73,13 @@ public final class ApacheSender43 implements ApacheSender {
     }
 
     @Override
-    public HttpResponse sendPostRequest(HttpPost post) throws IOException {
-        return getHttpClient().execute(post);
+    public HttpResponse sendPostRequest(HttpPost post) throws IOException, FriendlyException {
+        try {
+            return getHttpClient().execute(post);
+        } catch (SSLHandshakeException e) {
+            String completeUrl = "https://" + post.getURI().getHost();
+            throw SSLUtil.newSSLFriendlyException(completeUrl);
+        }
     }
 
     @Override

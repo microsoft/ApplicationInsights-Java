@@ -5,8 +5,14 @@ targetCompatibility = 1.8
 compileSmokeTestJava.sourceCompatibility = 1.8
 compileSmokeTestJava.targetCompatibility = 1.8
 
+war {
+    // this is done to remove the version from the archive file name
+    // to make span name verification simpler
+    archiveFileName = project.name + '.war'
+}
+
 ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = war.archiveFileName.get()
+ext.testAppArtifactFilename = project.name + '.war'
 
 dependencies {
     compileOnly aiAgentJar // this is just to force building the agent first
@@ -15,6 +21,7 @@ dependencies {
     compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
+    // this dependency is needed to make JBossEAP.7 happy
     compile group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.3'
 
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'

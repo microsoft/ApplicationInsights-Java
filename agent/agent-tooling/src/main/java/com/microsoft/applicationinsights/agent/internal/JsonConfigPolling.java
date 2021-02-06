@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.Sampling;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -48,7 +49,8 @@ public class JsonConfigPolling implements Runnable {
     private volatile double lastReadSamplingPercentage;
     private static final Logger logger = LoggerFactory.getLogger(JsonConfigPolling.class);
 
-    private JsonConfigPolling(Path path, long lastModifiedTime, double lastReadSamplingPercentage) {
+    // visible for testing
+    JsonConfigPolling(Path path, long lastModifiedTime, double lastReadSamplingPercentage) {
         this.path = path;
         this.lastModifiedTime = lastModifiedTime;
         this.lastReadSamplingPercentage = lastReadSamplingPercentage;
@@ -80,23 +82,18 @@ public class JsonConfigPolling implements Runnable {
             if (lastModifiedTime != fileTime.toMillis()) {
                 lastModifiedTime = fileTime.toMillis();
                 Configuration configuration = ConfigurationBuilder.loadJsonConfigFile(path);
+                // important to overlay env vars here, so that we don't overwrite the value set by env var
+                ConfigurationBuilder.overlayEnvVars(configuration);
 
-                // TODO only want to update connectionString with value from configuration file if original value
-                //  is from configuration file (not if original value is from APPLICATIONINSIGHTS_CONNECTION_STRING env var)
                 if (!configuration.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
                     logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
                     TelemetryConfiguration.getActive().setConnectionString(configuration.connectionString);
                 }
 
-                // TODO only want to update sampling percentage with value from configuration file if original value
-                //  is from configuration file (not if original value is from APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE env var)
                 if (configuration.sampling.percentage != lastReadSamplingPercentage) {
                     logger.debug("Updating sampling percentage from {} to {}", lastReadSamplingPercentage, configuration.sampling.percentage);
                     double roundedSamplingPercentage = SamplingPercentage.roundToNearest(configuration.sampling.percentage);
-                    OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(
-                            OpenTelemetrySdk.getGlobalTracerManagement().getActiveTraceConfig().toBuilder()
-                                    .setSampler(Samplers.getSampler(roundedSamplingPercentage))
-                                    .build());
+                    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(roundedSamplingPercentage));
                     Global.setSamplingPercentage(roundedSamplingPercentage);
                     lastReadSamplingPercentage = configuration.sampling.percentage;
                 }

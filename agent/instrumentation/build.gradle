@@ -8,13 +8,14 @@ repositories {
     mavenLocal()
 }
 
-def instrumentationVersion = '0.11.0+ai.patch.1'
+def instrumentationVersion = '0.15.0+ai.patch.1'
 
 dependencies {
     compile project(':agent:agent-tooling')
-    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpasyncclient-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpasyncclient-4.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-2.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-applicationinsights-web-2.3', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-azure-functions', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-cassandra-3.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-cassandra-4.0', version: instrumentationVersion
@@ -39,7 +40,7 @@ dependencies {
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-4.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-5.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-5.1', version: instrumentationVersion
-    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-log4j-spans-1.1', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-log4j-spans-1.2', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-log4j-spans-2.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-logback-spans-1.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-micrometer-1.0', version: instrumentationVersion
@@ -111,7 +112,10 @@ shadowJar {
         exclude(dependency('org.slf4j:slf4j-api'))
     }
 
-    mergeServiceFiles()
+    // need to merge at least META-INF/services/io.opentelemetry.javaagent.tooling.InstrumentationModule files
+    mergeServiceFiles {
+        exclude 'META-INF/services/io.opentelemetry.javaagent.spi.ComponentInstaller'
+    }
 
     exclude '**/module-info.class'
 
@@ -128,6 +132,7 @@ shadowJar {
 
     // relocate OpenTelemetry API usage
     relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
+    relocate "io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv"
     relocate "io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi"
     relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
 

@@ -1,7 +1,6 @@
 {
     "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/",
     "preview": {
-      "roleName": "Something Good",
       "processors" : [
         {
           "type": "attribute",
@@ -67,11 +66,19 @@
             ],
             "separator": "::"
           }
+        },
+        {
+          "type": "attribute",
+          "processorName": "attributes/extract",
+          "actions": [
+            {
+              "key": "http.url",
+              "pattern": "https?://[^/]+(?<httpPath>/[^?]*)",
+              "action": "extract"
+            }
+          ]
         }
-      ],
-      "selfDiagnostics": {
-        "level": "debug"
-      }
+      ]
     }
   }
 

@@ -37,7 +37,6 @@ import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
@@ -47,8 +46,11 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Perf
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
+import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagatorProvider;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.common.CommonUtils;
+import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.extensibility.initializer.ResourceAttributesContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
@@ -61,7 +63,6 @@ import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElem
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher;
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.instrumentation.api.config.Config;
 import org.apache.http.HttpHost;
@@ -80,7 +81,6 @@ public class BeforeAgentInstaller {
     }
 
     public static void beforeInstallBytebuddyAgent(Instrumentation instrumentation) throws Exception {
-        instrumentation.addTransformer(new CommonsLogFactoryClassFileTransformer());
         start(instrumentation);
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
@@ -90,6 +90,7 @@ public class BeforeAgentInstaller {
         instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
         instrumentation.addTransformer(new ApplicationInsightsAppenderClassFileTransformer());
         instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
+        instrumentation.addTransformer(new DuplicateAgentClassFileTransformer());
     }
 
     private static void start(Instrumentation instrumentation) throws Exception {
@@ -108,7 +109,8 @@ public class BeforeAgentInstaller {
         Configuration config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
             if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
-                throw new ConfigurationException("No connection string or instrumentation key provided");
+                throw new FriendlyException("No connection string or instrumentation key provided",
+                                            "Please provide connection string or instrumentation key.");
             }
         }
         // Function to validate user provided processor configuration
@@ -116,26 +118,39 @@ public class BeforeAgentInstaller {
 
 
         Map<String, String> properties = new HashMap<>();
-        properties.put("additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
-        properties.put("experimental.log.capture.threshold", getLoggingFrameworksThreshold(config, "INFO"));
+        properties.put("otel.additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
+        properties.put("otel.experimental.log.capture.threshold", getLoggingFrameworksThreshold(config, "INFO"));
         int reportingIntervalSeconds = getMicrometerReportingIntervalSeconds(config, 60);
-        properties.put("micrometer.step.millis", Long.toString(SECONDS.toMillis(reportingIntervalSeconds)));
+        properties.put("otel.micrometer.step.millis", Long.toString(SECONDS.toMillis(reportingIntervalSeconds)));
+        // TODO need some kind of test for these configuration properties
         if (!isInstrumentationEnabled(config, "micrometer")) {
-            properties.put("ota.integration.micrometer.enabled", "false");
+            properties.put("otel.instrumentation.micrometer.enabled", "false");
         }
         if (!isInstrumentationEnabled(config, "jdbc")) {
-            properties.put("ota.integration.jdbc.enabled", "false");
+            properties.put("otel.instrumentation.jdbc.enabled", "false");
         }
-        if (!isInstrumentationEnabled(config, "logging")) {
-            properties.put("ota.integration.log4j.enabled", "false");
-            properties.put("ota.integration.java-util-logging.enabled", "false");
-            properties.put("ota.integration.logback.enabled", "false");
+        if (!isInstrumentationEnabled(config, "redis")) {
+            properties.put("otel.instrumentation.jedis.enabled", "false");
+            properties.put("otel.instrumentation.lettuce.enabled", "false");
+        }
+        if (!isInstrumentationEnabled(config, "kafka")) {
+            properties.put("otel.instrumentation.kafka.enabled", "false");
+        }
+        if (!isInstrumentationEnabled(config, "mongo")) {
+            properties.put("otel.instrumentation.mongo.enabled", "false");
+        }
+        if (!isInstrumentationEnabled(config, "cassandra")) {
+            properties.put("otel.instrumentation.cassandra.enabled", "false");
         }
         if (!config.preview.openTelemetryApiSupport) {
-            properties.put("ota.integration.opentelemetry-api.enabled", "false");
+            properties.put("otel.instrumentation.opentelemetry-api.enabled", "false");
         }
+        properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
+        // AI exporter is configured manually
+        properties.put("otel.trace.exporter", "none");
+        properties.put("otel.metrics.exporter", "none");
         Config.internalInitializeConfig(Config.create(properties));
-        if (Config.get().getListProperty("additional.bootstrap.package.prefixes").isEmpty()) {
+        if (Config.get().getListProperty("otel.additional.bootstrap.package.prefixes").isEmpty()) {
             throw new IllegalStateException("underlying config not initialized in time");
         }
 
@@ -169,7 +184,6 @@ public class BeforeAgentInstaller {
         Global.setSamplingPercentage(SamplingPercentage.roundToNearest(config.sampling.percentage));
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
-        AiAppId.setSupplier(new AppIdSupplier());
 
         // this is for Azure Function Linux consumption plan support.
         if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
@@ -200,7 +214,7 @@ public class BeforeAgentInstaller {
         }
     }
 
-    private static void validateProcessorConfiguration(Configuration config) {
+    private static void validateProcessorConfiguration(Configuration config) throws FriendlyException {
         if (config.preview == null || config.preview.processors == null) return;
         for (ProcessorConfig processorConfig : config.preview.processors) {
             processorConfig.validate();
@@ -232,9 +246,7 @@ public class BeforeAgentInstaller {
     }
 
     private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
-        return !Strings.isNullOrEmpty(config.connectionString)
-                || !Strings.isNullOrEmpty(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
-                || !Strings.isNullOrEmpty(System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
+        return !Strings.isNullOrEmpty(config.connectionString);
     }
 
     private static String getLoggingFrameworksThreshold(Configuration config, String defaultValue) {
@@ -242,15 +254,15 @@ public class BeforeAgentInstaller {
         if (logging == null) {
             return defaultValue;
         }
-        Object thresholdObj = logging.get("threshold");
-        if (thresholdObj == null) {
+        Object levelObj = logging.get("level");
+        if (levelObj == null) {
             return defaultValue;
         }
-        if (!(thresholdObj instanceof String)) {
-            startupLogger.warn("logging threshold must be a string, but found: {}", thresholdObj.getClass());
+        if (!(levelObj instanceof String)) {
+            startupLogger.warn("logging level must be a string, but found: {}", levelObj.getClass());
             return defaultValue;
         }
-        String threshold = (String) thresholdObj;
+        String threshold = (String) levelObj;
         if (threshold.isEmpty()) {
             return defaultValue;
         }

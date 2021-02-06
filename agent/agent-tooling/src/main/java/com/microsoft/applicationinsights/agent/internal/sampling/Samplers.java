@@ -6,7 +6,7 @@ public class Samplers {
 
     public static Sampler getSampler(double samplingPercentage) {
         if (samplingPercentage != 100) {
-            return new TraceIdBasedSampler(samplingPercentage);
+            return new AiSampler(samplingPercentage);
         } else {
             // OpenTelemetry default sampling is "parent based", which means don't sample if remote traceparent sampled flag was not set,
             // but Application Insights SDKs do not send the sampled flag (since they perform sampling during export instead of head-based sampling)

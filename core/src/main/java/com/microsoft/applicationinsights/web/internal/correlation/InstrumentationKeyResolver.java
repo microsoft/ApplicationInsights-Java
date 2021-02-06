@@ -23,8 +23,10 @@ package com.microsoft.applicationinsights.web.internal.correlation;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,7 @@ public enum InstrumentationKeyResolver {
     private static final String CorrelationIdFormat = "cid-v1:%s";
     private volatile ApplicationIdResolver appIdResolver;
     private final ConcurrentMap<String, String> appIdCache;
+    private static volatile AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
     InstrumentationKeyResolver() {
         this.appIdCache = new ConcurrentHashMap<>();
@@ -85,6 +88,10 @@ public enum InstrumentationKeyResolver {
             }
 
             return appId;
+        } catch (FriendlyException e) {
+            if(!friendlyExceptionThrown.getAndSet(true)) {
+                logger.error(e.getMessage());
+            }
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
                 logger.error("InstrumentationKeyResolver: failed to resolve instrumentation key: {}", config.getInstrumentationKey(), e);

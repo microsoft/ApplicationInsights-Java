@@ -1,0 +1,59 @@
+{
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
+  "role": {
+    "name": "Something Good",
+    "instance": "xyz123"
+  },
+  "customDimensions": {
+    "some key": "abc",
+    "another key": "def"
+  },
+  "sampling": {
+    "percentage": 10
+  },
+  "instrumentation": {
+    "jdbc": {
+      "enabled": false
+    },
+    "logging": {
+      "enabled": true,
+      "level": "error"
+    },
+    "micrometer": {
+      "enabled": true
+    }
+  },
+  "jmxMetrics": [
+    {
+      "name": "Thread Count",
+      "objectName": "java.lang:type=Threading",
+      "attribute": "ThreadCount"
+    },
+    {
+      "name": "Initial Heap Memory",
+      "objectName": "java.lang:type=Memory",
+      "attribute": "HeapMemoryUsage.init"
+    },
+    {
+      "name": "Current Class Loaded Count",
+      "objectName": "java.lang:type=ClassLoading",
+      "attribute": "LoadedClassCount"
+    }
+  ],
+  "heartbeat": {
+    "intervalSeconds": 60
+  },
+  "httpProxy": {
+    "host": "myproxy",
+    "port": 8080
+  },
+  "selfDiagnostics": {
+    "level": "debug",
+    "destination": "file",
+    "file": {
+      "path": "/var/log/applicationinsights/abc.log",
+      "maxSizeMb": 10,
+      "maxHistory": 2
+    }
+  }
+}

@@ -1,7 +1,37 @@
 # CHANGELOG
 
+# Version 3.0.2 GA
+* Fix App Services logback parser exceptions.
+* Log instead of throwing exception on unbridged API [#1442](https://github.com/microsoft/ApplicationInsights-Java/issues/1442)
+* Fix role name config [#1450](https://github.com/microsoft/ApplicationInsights-Java/issues/1450)
+* Support more interop with 2.x SDK ThreadContext (getId and getParentId)
+
 # Version 3.0.1 GA
-* Telemetry processor config throws null pointer exception when attribute value is not provided and matchType is regexp
+* Suppress duplicate AI agents. Resolves [#1345](https://github.com/microsoft/ApplicationInsights-Java/issues/1345)
+* Fix role name precedence. Resolves [#1425](https://github.com/microsoft/ApplicationInsights-Java/issues/1425)
+* Fix APPLICATIONINSIGHTS_CONNECTION_STRING env var. Resolves [#1428](https://github.com/microsoft/ApplicationInsights-Java/issues/1428)
+* Add APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL env var. Resolves [#1422](https://github.com/microsoft/ApplicationInsights-Java/issues/1422)
+* New 'extract' attribute feature added to Telemetry processors.
+
+# Version 3.0.1-BETA.2
+* Fix code to use the correct logging configuration 'level' [#1415](https://github.com/microsoft/ApplicationInsights-Java/issues/1415))
+* Capture log4j2 async logging. Addresses issue [#1389](https://github.com/microsoft/ApplicationInsights-Java/issues/1389)
+* Add configuration for disabling dependencies [#1294](https://github.com/microsoft/ApplicationInsights-Java/issues/1294)
+
+# Version 3.0.1-BETA
+* Friendly error messages thrown for the following scenarios
+    - Missing connection string
+    - Invalid SSL certificate issues when not able to connect to IngestionEndPoint Url, Live endpoint Url and CdsProfiler endpoint url.
+    - Invalid Telemetry Processor Configuration
+* Telemetry processor config throws null pointer exception when attribute value is not provided and matchType is regexp.
+* Map service.version to application_Version(Resolves [#1392](https://github.com/microsoft/ApplicationInsights-Java/issues/1392))
+* This release also brings more interoperability with the 2.x SDK:
+    - ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getProperties().put("key1", "val1")
+	- ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name")
+	- ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getUser().setId("uname")
+
+* Add thread details span processor
+* Add agent version number to startup message
 
 # Version 3.0.0 GA
 * Config changes

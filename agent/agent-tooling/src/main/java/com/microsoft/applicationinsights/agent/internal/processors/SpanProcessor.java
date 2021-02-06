@@ -6,16 +6,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.ProcessorActionAdaptor;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 
 public class SpanProcessor extends AgentProcessor {
-    private static final Pattern capturingGroupNames = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>");
     private final List<AttributeKey<?>> fromAttributes;
     private final List<Pattern> toAttributeRulePatterns;
     private final List<List<String>> groupNames;
@@ -53,30 +52,25 @@ public class SpanProcessor extends AgentProcessor {
                 toAttributeRulePatterns.add(Pattern.compile(rule));
             }
         }
-        List<List<String>> groupNames = getGroupNames(toAttributeRules);
+        List<List<String>> groupNames = getGroupNamesList(toAttributeRules);
         String separator = config.name.separator != null ? config.name.separator : "";
         return new SpanProcessor(normalizedInclude, normalizedExclude,
                 fromAttributes, toAttributeRulePatterns, groupNames, separator);
     }
 
-    private static List<List<String>> getGroupNames(List<String> toAttributeRules) {
-        List<List<String>> groupNames = new ArrayList<>();
+    private static List<List<String>> getGroupNamesList(List<String> toAttributeRules) {
+        List<List<String>> groupNamesList = new ArrayList<>();
         for (String rule : toAttributeRules) {
-            List<String> subGroupList = new ArrayList<>();
-            Matcher matcher = capturingGroupNames.matcher(rule);
-            while (matcher.find()) {
-                subGroupList.add(matcher.group(1));
-            }
-            groupNames.add(subGroupList);
+            groupNamesList.add(ProcessorActionAdaptor.getGroupNames(rule));
         }
-        return groupNames;
+        return groupNamesList;
     }
 
     //fromAttributes represents the attribute keys to pull the values from to generate the new span name.
     public SpanData processFromAttributes(SpanData span) {
         if (spanHasAllFromAttributeKeys(span)) {
             StringBuffer updatedSpanBuffer = new StringBuffer();
-            ReadableAttributes existingSpanAttributes = span.getAttributes();
+            Attributes existingSpanAttributes = span.getAttributes();
             for (AttributeKey<?> attributeKey : fromAttributes) {
                 updatedSpanBuffer.append(existingSpanAttributes.get(attributeKey));
                 updatedSpanBuffer.append(separator);
@@ -92,7 +86,7 @@ public class SpanProcessor extends AgentProcessor {
 
     private boolean spanHasAllFromAttributeKeys(SpanData span) {
         if (fromAttributes.isEmpty()) return false;
-        ReadableAttributes existingSpanAttributes = span.getAttributes();
+        Attributes existingSpanAttributes = span.getAttributes();
         for (AttributeKey<?> attributeKey : fromAttributes) {
             if (existingSpanAttributes.get(attributeKey) == null) return false;
         }
@@ -106,21 +100,20 @@ public class SpanProcessor extends AgentProcessor {
         }
 
         String spanName = span.getName();
-        final AttributesBuilder builder = Attributes.builder();
         // copy existing attributes.
         // According to Collector docs, The matched portion
         // in the span name is replaced by extracted attribute name. If the attributes exist
         // they will be overwritten. Need a way to optimize this.
-        span.getAttributes().forEach(builder::put);
+        AttributesBuilder builder = span.getAttributes().toBuilder();
         for (int i = 0; i < groupNames.size(); i++) {
-            spanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), span, spanName, builder);
+            spanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), spanName, builder);
         }
         return new MySpanData(span, builder.build(), spanName);
 
     }
 
     private String applyRule(List<String> groupNamesList, Pattern pattern,
-                             SpanData span, String spanName, AttributesBuilder builder) {
+                             String spanName, AttributesBuilder builder) {
         if (groupNamesList.isEmpty()) return spanName;
         Matcher matcher = pattern.matcher(spanName);
         StringBuilder sb = new StringBuilder();

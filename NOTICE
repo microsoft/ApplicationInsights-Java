@@ -43,6 +43,7 @@ Microsoft Application Insights Java Software Development Kit consists of materia
 21. CheckerFramework annotations for Java 6 1.0.0 (https://github.com/trask/checker-framework-annotations-for-jdk6)
 22. Gson 2.8.5 (https://github.com/google/gson)
 23. os-maven-plugin 1.6.2 (https://github.com/trustin/os-maven-plugin)
+24. Apache Log4j 1.2.17 (https://logging.apache.org/log4j)
 
 %% Apache Commons-codec NOTICES, INFORMATION, AND LICENSE BEGIN HERE
 =========================================

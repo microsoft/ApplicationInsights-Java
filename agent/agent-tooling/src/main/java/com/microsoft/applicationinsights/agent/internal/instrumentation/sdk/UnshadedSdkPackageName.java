@@ -23,9 +23,10 @@ package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 public class UnshadedSdkPackageName {
 
     // using constant here so that it will NOT get shaded
-    // IMPORTANT FOR THIS NOT TO BE PUBLIC AND NOT FINAL, OTHERWISE COMPILER COULD INLINE IT BELOW AND APPLY
-    // .substring(1) and then it WOULD be shaded
-    public static String ALMOST_PREFIX = "!com/microsoft/applicationinsights";
+    // IMPORTANT FOR THIS NOT TO BE FINAL (or private)
+    // OTHERWISE COMPILER COULD THEORETICALLY INLINE IT BELOW AND APPLY .substring(1)
+    // and then it WOULD be shaded
+    static String ALMOST_PREFIX = "!com/microsoft/applicationinsights";
 
     public static String get() {
         return ALMOST_PREFIX.substring(1);

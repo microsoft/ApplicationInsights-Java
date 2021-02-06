@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configura
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
 import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
@@ -30,9 +31,13 @@ public class ConfigurationTest {
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
     private static Configuration loadConfiguration() throws IOException {
-        CharSource json = Resources.asCharSource(Resources.getResource("applicationinsights.json"), Charsets.UTF_8);
-        Moshi moshi = new Moshi.Builder().build();
-        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
+        return loadConfiguration("applicationinsights.json");
+    }
+
+    private static Configuration loadConfiguration(String resourceName) throws IOException {
+        CharSource json = Resources.asCharSource(Resources.getResource(resourceName), Charsets.UTF_8);
+        Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
+        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class).failOnUnknown();
         return jsonAdapter.fromJson(json.read());
     }
 
@@ -67,14 +72,10 @@ public class ConfigurationTest {
     @Test
     public void shouldParseProcessorConfiguration() throws IOException {
 
-        CharSource json = Resources.asCharSource(Resources.getResource("ApplicationInsights_SpanProcessor.json"), Charsets.UTF_8);
-        Moshi moshi = new Moshi.Builder().build();
-        JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class);
-        Configuration configuration = jsonAdapter.fromJson(json.read());
+        Configuration configuration = loadConfiguration("ApplicationInsights_SpanProcessor.json");
         PreviewConfiguration preview = configuration.preview;
-
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals(7, preview.processors.size());
+        assertEquals(8, preview.processors.size());
         // insert config test
         ProcessorConfig insertConfig = preview.processors.get(0);
         assertEquals("attributes/insert", insertConfig.processorName);
@@ -137,12 +138,25 @@ public class ConfigurationTest {
         assertEquals("span/extractAttributes", spanExtractAttributesConfig.processorName);
         assertEquals(1, spanExtractAttributesConfig.name.toAttributes.rules.size());
         assertEquals("^/api/v1/document/(?<documentId>.*)/update$", spanExtractAttributesConfig.name.toAttributes.rules.get(0));
-
-
+        // attribute/extract
+        ProcessorConfig attributesExtractConfig = preview.processors.get(7);
+        assertEquals(ProcessorType.attribute, attributesExtractConfig.type);
+        assertEquals("attributes/extract", attributesExtractConfig.processorName);
+        assertEquals(1, attributesExtractConfig.actions.size());
+        assertEquals(ProcessorActionType.extract,attributesExtractConfig.actions.get(0).action);
+        assertEquals("http.url",attributesExtractConfig.actions.get(0).key);
+        assertEquals(1,attributesExtractConfig.actions.size());
+        assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute);
+        assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute.extractAttributePattern);
+        assertEquals(4,attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.size());
+        assertEquals("httpProtocol",attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.get(0));
     }
 
     @Test
     public void shouldUseDefaults() throws IOException {
+        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+        envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+
         Configuration configuration = loadConfiguration();
 
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
@@ -156,13 +170,85 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void shouldOverrideConnectionString() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=11111111-1111-1111-1111-111111111111");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("InstrumentationKey=11111111-1111-1111-1111-111111111111", configuration.connectionString);
+    }
+
+    @Test
+    public void shouldOverrideRoleName() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_ROLE_NAME", "role name from env");
+        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("role name from env", configuration.role.name);
+    }
+
+    @Test
+    public void shouldOverrideRoleNameWithWebsiteEnvVar() throws IOException {
+        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+
+        Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("role name from website env", configuration.role.name);
+    }
+
+    @Test
+    public void shouldNotOverrideRoleNameWithWebsiteEnvVar() throws IOException {
+        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("Something Good", configuration.role.name);
+    }
+
+    @Test
+    public void shouldOverrideRoleInstance() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_ROLE_INSTANCE", "role instance from env");
+        envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("role instance from env", configuration.role.instance);
+    }
+
+    @Test
+    public void shouldOverrideRoleInstanceWithWebsiteEnvVar() throws IOException {
+        envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+
+        Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("role instance from website env", configuration.role.instance);
+    }
+
+    @Test
+    public void shouldNotOverrideRoleInstanceWithWebsiteEnvVar() throws IOException {
+        envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("xyz123", configuration.role.instance);
+    }
+
+    @Test
     public void shouldOverrideSamplingPercentage() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "0.25");
 
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertTrue(configuration.sampling.percentage == 0.25);
+        assertEquals(0.25, configuration.sampling.percentage, 0);
     }
 
     @Test
@@ -193,8 +279,13 @@ public class ConfigurationTest {
         assertEquals(configuration.jmxMetrics.get(2).name, "Current Thread Count");
     }
 
+    @Test(expected = JsonDataException.class)
+    public void shouldNotParseFaultyJson() throws IOException {
+        Configuration configuration = loadConfiguration("applicationinsights_faulty.json");
+    }
+
     private List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {
-        Moshi moshi = new Moshi.Builder().build();
+        Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
         Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
         JsonReader reader = JsonReader.of(new Buffer().writeUtf8(json));
         reader.setLenient(true);

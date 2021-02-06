@@ -32,7 +32,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.14'
         classpath 'org.owasp:dependency-check-gradle:5.2.2'
         classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
         classpath 'gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.+'
