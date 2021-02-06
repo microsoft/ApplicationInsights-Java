@@ -68,10 +68,8 @@ public class ConfigurationBuilder {
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
 
-    // cannot use logger before loading configuration, so need to store any messages locally until logger is initialized
-    private static final List<ConfigurationMessage> configurationMessages = new CopyOnWriteArrayList<>();
-
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationBuilder.class);
+    // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
+    private static final List<ConfigurationWarnMessage> configurationWarnMessages = new CopyOnWriteArrayList<>();
 
     public static Configuration create(Path agentJarPath) throws IOException {
         Configuration config = loadConfigurationFile(agentJarPath);
@@ -163,9 +161,11 @@ public class ConfigurationBuilder {
         return new Configuration();
     }
 
-    public static void logConfigurationMessages() {
-        for (ConfigurationMessage configurationMessage : configurationMessages) {
-            configurationMessage.log(logger);
+    // cannot use logger before loading configuration, so need to store any messages locally until logger is initialized
+    public static void logConfigurationWarnMessages() {
+        Logger logger = LoggerFactory.getLogger(ConfigurationBuilder.class);
+        for (ConfigurationWarnMessage configurationWarnMessage : configurationWarnMessages) {
+            configurationWarnMessage.warn(logger);
         }
     }
 
@@ -266,16 +266,16 @@ public class ConfigurationBuilder {
         }
     }
 
-    public static class ConfigurationMessage {
+    public static class ConfigurationWarnMessage {
         private final String message;
         private final Object[] args;
 
-        public ConfigurationMessage(String message, Object... args) {
+        public ConfigurationWarnMessage(String message, Object... args) {
             this.message = message;
             this.args = args;
         }
 
-        private void log(Logger logger) {
+        private void warn(Logger logger) {
             logger.warn(message, args);
         }
     }
@@ -292,9 +292,11 @@ public class ConfigurationBuilder {
                 return configuration;
             } catch(JsonDataException ex) {
                 if(strict) {
-                    logger.warn(ex.getMessage());
                     // Try extracting the configuration without failOnUnknown
-                    return getConfigurationFromConfigFile(configPath, false);
+                    Configuration configuration = getConfigurationFromConfigFile(configPath, false);
+                    // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
+                    configurationWarnMessages.add(new ConfigurationWarnMessage(ex.getMessage()));
+                    return configuration;
                 } else {
                     throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following json issue:\n"+ex.getMessage(),
                             "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
