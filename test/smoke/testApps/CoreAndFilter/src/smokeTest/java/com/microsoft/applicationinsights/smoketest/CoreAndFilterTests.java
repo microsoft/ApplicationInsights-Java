@@ -64,7 +64,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(expectedData, rdd.getData());
         assertEquals(expectedDuration, rdd.getDuration());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope);
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CoreAndFilter/trackDependency");
     }
 
     @Test
@@ -98,8 +98,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         assertEquals("EventDataTest", ed2.getName());
 
-        assertParentChild(rd, rdEnvelope, edEnvelope1);
-        assertParentChild(rd, rdEnvelope, edEnvelope2);
+        assertParentChild(rd, rdEnvelope, edEnvelope1, "/CoreAndFilter/trackEvent");
+        assertParentChild(rd, rdEnvelope, edEnvelope2, "/CoreAndFilter/trackEvent");
     }
 
     @Test
@@ -132,9 +132,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 hasSeverityLevel(SeverityLevel.Error)
         )));
 
-        assertParentChild(rd, rdEnvelope, edEnvelope1);
-        assertParentChild(rd, rdEnvelope, edEnvelope2);
-        assertParentChild(rd, rdEnvelope, edEnvelope3);
+        assertParentChild(rd, rdEnvelope, edEnvelope1, "/CoreAndFilter/trackException");
+        assertParentChild(rd, rdEnvelope, edEnvelope2, "/CoreAndFilter/trackException");
+        assertParentChild(rd, rdEnvelope, edEnvelope3, "/CoreAndFilter/trackException");
     }
 
     @Test
@@ -206,7 +206,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertNull("getMax was non-null", dp.getMax());
         assertNull("getStdDev was non-null", dp.getStdDev());
 
-        assertParentChild(rd, rdEnvelope, mdEnvelope);
+        assertParentChild(rd, rdEnvelope, mdEnvelope, "/CoreAndFilter/trackMetric");
     }
 
     @Test
@@ -238,9 +238,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 TraceDataMatchers.hasProperty("key", "value")
         )));
 
-        assertParentChild(rd, rdEnvelope, mdEnvelope1);
-        assertParentChild(rd, rdEnvelope, mdEnvelope2);
-        assertParentChild(rd, rdEnvelope, mdEnvelope3);
+        assertParentChild(rd, rdEnvelope, mdEnvelope1, "/CoreAndFilter/trackTrace");
+        assertParentChild(rd, rdEnvelope, mdEnvelope2, "/CoreAndFilter/trackTrace");
+        assertParentChild(rd, rdEnvelope, mdEnvelope3, "/CoreAndFilter/trackTrace");
     }
 
     @Test
@@ -288,6 +288,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals("value", pv2.getProperties().get("key"));
         assertEquals("a-value", pv2.getProperties().get("a-prop"));
         assertEquals("another-value", pv2.getProperties().get("another-prop"));
+        // operation name is verified below in assertParentChild()
         assertEquals("user-id-goes-here", pvdEnvelope2.getTags().get("ai.user.id"));
         assertEquals("account-id-goes-here", pvdEnvelope2.getTags().get("ai.user.accountId"));
         assertEquals("user-agent-goes-here", pvdEnvelope2.getTags().get("ai.user.userAgent"));
@@ -306,6 +307,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals("value", pv3.getProperties().get("key"));
         assertEquals("a-value", pv3.getProperties().get("a-prop"));
         assertEquals("another-value", pv3.getProperties().get("another-prop"));
+        // operation name is verified below in assertParentChild()
         assertEquals("user-id-goes-here", pvdEnvelope3.getTags().get("ai.user.id"));
         assertEquals("account-id-goes-here", pvdEnvelope3.getTags().get("ai.user.accountId"));
         assertEquals("user-agent-goes-here", pvdEnvelope3.getTags().get("ai.user.userAgent"));
@@ -318,9 +320,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals("testroleinstance", pvdEnvelope3.getTags().get("ai.cloud.roleInstance"));
         assertTrue(pvdEnvelope3.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
-        assertParentChild(rd, rdEnvelope, pvdEnvelope1);
-        assertParentChild(rd, rdEnvelope, pvdEnvelope2);
-        assertParentChild(rd, rdEnvelope, pvdEnvelope3);
+        assertParentChild(rd, rdEnvelope, pvdEnvelope1, "/CoreAndFilter/trackPageView");
+        assertParentChild(rd, rdEnvelope, pvdEnvelope2, "/CoreAndFilter/trackPageView", "operation-name-goes-here");
+        assertParentChild(rd, rdEnvelope, pvdEnvelope3, "/CoreAndFilter/trackPageView", "operation-name-goes-here");
     }
 
     @Test
@@ -340,7 +342,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals("doPageView", pv.getName());
         assertEquals(new Duration(0), pv.getDuration());
 
-        assertParentChild(rd, rdEnvelope, pvdEnvelope);
+        assertParentChild(rd, rdEnvelope, pvdEnvelope, "/CoreAndFilter/doPageView.jsp");
     }
 
     @Test
@@ -354,18 +356,20 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         assertEquals(false, rd.getSuccess());
         assertEquals("404", rd.getResponseCode());
+
+        assertEquals("/CoreAndFilter/autoFailedRequestWithResultCode", rdEnvelope.getTags().get("ai.operation.name"));
     }
 
     @Test
     @TargetUri(value="/requestSlow?sleeptime=25", timeout=35_000) // the servlet sleeps for 25 seconds
     public void testRequestSlowWithResponseTime() throws Exception {
-        validateSlowTest(25);
+        validateSlowTest(25, "/CoreAndFilter/requestSlow");
     }
 
     @Test
     @TargetUri(value="/slowLoop?responseTime=25", timeout=35_000) // the servlet sleeps for 20 seconds
     public void testSlowRequestUsingCpuBoundLoop() throws Exception {
-        validateSlowTest(25);
+        validateSlowTest(25, "/CoreAndFilter/slowLoop");
     }
 
     @Test
@@ -382,7 +386,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         ExceptionData ed = (ExceptionData) ((Data) edEnvelope.getData()).getBaseData();
 
-        assertEquals(false, rd.getSuccess());
+        assertFalse(rd.getSuccess());
 
         ExceptionDetails eDetails = getExceptionDetails(ed);
         assertEquals("This is a auto thrown exception !", eDetails.getMessage());
@@ -400,7 +404,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         return ex;
     }
 
-    private void validateSlowTest(int expectedDurationSeconds) throws Exception {
+    private void validateSlowTest(int expectedDurationSeconds, String operationName) throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
@@ -416,9 +420,15 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         System.out.printf("Slow response time: expected=%d, actual=%d%n", expected, actual);
         assertThat(actual, both(greaterThanOrEqualTo(min)).and(lessThan(max)));
+
+        assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
     }
 
-    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope) {
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
+        assertParentChild(rd, rdEnvelope, childEnvelope, operationName, null);
+    }
+
+    private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName, String childOperationName) {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         assertNotNull(operationId);
         assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
@@ -427,5 +437,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertNull(operationParentId);
 
         assertEquals(rd.getId(), childEnvelope.getTags().get("ai.operation.parentId"));
+
+        assertEquals(operationName, rdEnvelope.getTags().get("ai.operation.name"));
+        assertEquals(childOperationName, childEnvelope.getTags().get("ai.operation.name"));
     }
 }

@@ -35,7 +35,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -50,12 +49,13 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,8 +74,12 @@ public class Exporter implements SpanExporter {
 
     private static final AttributeKey<Boolean> AI_LOG_KEY = AttributeKey.booleanKey("applicationinsights.internal.log");
 
-    private static final AttributeKey<String> AI_SPAN_SOURCE_KEY = AttributeKey.stringKey(AiAppId.SPAN_SOURCE_ATTRIBUTE_NAME);
-    private static final AttributeKey<String> AI_SPAN_TARGET_KEY = AttributeKey.stringKey(AiAppId.SPAN_TARGET_ATTRIBUTE_NAME);
+    private static final AttributeKey<String> AI_SPAN_SOURCE_APP_ID_KEY = AttributeKey.stringKey(AiAppId.SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME);
+    private static final AttributeKey<String> AI_SPAN_TARGET_APP_ID_KEY = AttributeKey.stringKey(AiAppId.SPAN_TARGET_APP_ID_ATTRIBUTE_NAME);
+
+    // this is only used by the 2.x web interop bridge
+    // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
+    private static final AttributeKey<String> AI_SPAN_SOURCE_KEY = AttributeKey.stringKey("applicationinsights.internal.source");
 
     private static final AttributeKey<String> AI_LOG_LEVEL_KEY = AttributeKey.stringKey("applicationinsights.internal.log_level");
     private static final AttributeKey<String> AI_LOGGER_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.logger_name");
@@ -131,7 +135,7 @@ public class Exporter implements SpanExporter {
             }
         } else if (kind == Kind.CLIENT || kind == Kind.PRODUCER) {
             exportRemoteDependency(span, false);
-        } else if (kind == Kind.CONSUMER && !span.hasRemoteParent()) {
+        } else if (kind == Kind.CONSUMER && !span.getParentSpanContext().isRemote()) {
             // TODO need spec clarification, but it seems polling for messages can be CONSUMER also
             //  in which case the span will not have a remote parent and should be treated as a dependency instead of a request
             exportRemoteDependency(span, false);
@@ -148,7 +152,7 @@ public class Exporter implements SpanExporter {
 
         String source = null;
         Attributes attributes = span.getAttributes();
-        String sourceAppId = attributes.get(AI_SPAN_SOURCE_KEY);
+        String sourceAppId = attributes.get(AI_SPAN_SOURCE_APP_ID_KEY);
         if (sourceAppId != null && !AiAppId.getAppId().equals(sourceAppId)) {
             source = sourceAppId;
         }
@@ -162,6 +166,11 @@ public class Exporter implements SpanExporter {
                     source = messagingSystem;
                 }
             }
+        }
+        if (source == null) {
+            // this is only used by the 2.x web interop bridge
+            // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
+            source = attributes.get(AI_SPAN_SOURCE_KEY);
         }
         telemetry.setSource(source);
 
@@ -201,7 +210,7 @@ public class Exporter implements SpanExporter {
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
 
-        telemetry.setSuccess(span.getStatus().isOk());
+        telemetry.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
         String description = span.getStatus().getDescription();
         if (description != null) {
             telemetry.getProperties().put("statusDescription", description);
@@ -240,7 +249,7 @@ public class Exporter implements SpanExporter {
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
         telemetry.setDuration(new Duration(NANOSECONDS.toMillis(span.getEndEpochNanos() - span.getStartEpochNanos())));
 
-        telemetry.setSuccess(span.getStatus().isOk());
+        telemetry.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
         setExtraAttributes(telemetry, attributes);
 
@@ -283,10 +292,10 @@ public class Exporter implements SpanExporter {
 
     private void trackEvents(SpanData span, Double samplingPercentage) {
         boolean foundException = false;
-        for (Event event : span.getEvents()) {
+        for (EventData event : span.getEvents()) {
             EventTelemetry telemetry = new EventTelemetry(event.getName());
             telemetry.getContext().getOperation().setId(span.getTraceId());
-            telemetry.getContext().getOperation().setParentId(span.getParentSpanId());
+            telemetry.getContext().getOperation().setParentId(span.getSpanId());
             telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(event.getEpochNanos())));
             setExtraAttributes(telemetry, event.getAttributes());
 
@@ -431,7 +440,7 @@ public class Exporter implements SpanExporter {
             target = "Http";
         }
 
-        String targetAppId = attributes.get(AI_SPAN_TARGET_KEY);
+        String targetAppId = attributes.get(AI_SPAN_TARGET_APP_ID_KEY);
         if (targetAppId == null || AiAppId.getAppId().equals(targetAppId)) {
             telemetry.setType("Http");
             telemetry.setTarget(target);
@@ -543,21 +552,21 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private static void addLinks(Map<String, String> properties, List<Link> links) {
+    private static void addLinks(Map<String, String> properties, List<LinkData> links) {
         if (links.isEmpty()) {
             return;
         }
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         boolean first = true;
-        for (Link link : links) {
+        for (LinkData link : links) {
             if (!first) {
                 sb.append(",");
             }
             sb.append("{\"operation_Id\":\"");
-            sb.append(link.getContext().getTraceIdAsHexString());
+            sb.append(link.getSpanContext().getTraceIdAsHexString());
             sb.append("\",\"id\":\"");
-            sb.append(link.getContext().getSpanIdAsHexString());
+            sb.append(link.getSpanContext().getSpanIdAsHexString());
             sb.append("\"}");
             first = false;
         }

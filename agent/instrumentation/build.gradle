@@ -8,11 +8,11 @@ repositories {
     mavenLocal()
 }
 
-def instrumentationVersion = '0.12.0+ai.patch.1'
+def instrumentationVersion = '0.15.0+ai.patch.1'
 
 dependencies {
     compile project(':agent:agent-tooling')
-    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpasyncclient-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpasyncclient-4.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-2.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-4.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-applicationinsights-web-2.3', version: instrumentationVersion
@@ -112,7 +112,10 @@ shadowJar {
         exclude(dependency('org.slf4j:slf4j-api'))
     }
 
-    mergeServiceFiles()
+    // need to merge at least META-INF/services/io.opentelemetry.javaagent.tooling.InstrumentationModule files
+    mergeServiceFiles {
+        exclude 'META-INF/services/io.opentelemetry.javaagent.spi.ComponentInstaller'
+    }
 
     exclude '**/module-info.class'
 
@@ -129,6 +132,7 @@ shadowJar {
 
     // relocate OpenTelemetry API usage
     relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
+    relocate "io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv"
     relocate "io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi"
     relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
 

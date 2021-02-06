@@ -26,6 +26,7 @@ import java.nio.file.Path;
 
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -43,7 +44,7 @@ public class JsonConfigPollingTest {
     public static void tearDown() {
         // need to reset trace config back to default (with default sampler)
         // otherwise tests run after this can fail
-        OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(TraceConfig.getDefault());
+        DelegatingSampler.getInstance().setAlwaysOnDelegate();
     }
 
     @Test
