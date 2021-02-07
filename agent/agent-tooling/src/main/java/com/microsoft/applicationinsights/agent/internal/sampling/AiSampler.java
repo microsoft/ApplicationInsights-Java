@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import java.util.List;
-import javax.annotation.Nullable;
 
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides.MatcherGroup;
 import io.opentelemetry.api.common.Attributes;
@@ -27,7 +26,7 @@ class AiSampler implements Sampler {
     //
     // failure to follow this pattern can result in unexpected / incorrect computation of values in the portal
     private final double defaultSamplingPercentage;
-    private final SamplingResult defaultRecordAndSampleResult;
+    private final SamplingResult recordAndSampleAndAddTraceStateIfMissing;
 
     private final SamplingOverrides samplingOverrides;
 
@@ -38,12 +37,13 @@ class AiSampler implements Sampler {
     // samplingPercentage is still used in BehaviorIfNoMatchingOverrides.RECORD_AND_SAMPLE
     // to set an approximate value for the span attribute "applicationinsights.internal.sampling_percentage"
     //
-    // in the future the sampling percentage (or its invert "count") will be
+    // in the future the sampling percentage (or its inverse "count") will be
     // carried down by trace state to set the accurate value
     AiSampler(double samplingPercentage, SamplingOverrides samplingOverrides,
               BehaviorIfNoMatchingOverrides behaviorIfNoMatchingOverrides) {
         this.defaultSamplingPercentage = samplingPercentage;
-        defaultRecordAndSampleResult = SamplingOverrides.getRecordAndSampleResult(defaultSamplingPercentage);
+        recordAndSampleAndAddTraceStateIfMissing =
+                SamplingOverrides.getRecordAndSampleAndAddTraceStateIfMissing(samplingPercentage);
 
         this.samplingOverrides = samplingOverrides;
 
@@ -53,7 +53,7 @@ class AiSampler implements Sampler {
     }
 
     @Override
-    public SamplingResult shouldSample(@Nullable Context parentContext,
+    public SamplingResult shouldSample(Context parentContext,
                                        String traceId,
                                        String name,
                                        SpanKind spanKind,
@@ -63,23 +63,27 @@ class AiSampler implements Sampler {
         MatcherGroup override = samplingOverrides.getOverride(attributes);
 
         if (override != null) {
-            return getSamplingResult(override.getPercentage(), override.getRecordAndSampleResult(), traceId, name);
+            return getSamplingResult(override.getPercentage(), override.getRecordAndSampleAndOverwriteTraceState(), traceId, name);
         }
 
         switch (behaviorIfNoMatchingOverrides) {
             case RECORD_AND_SAMPLE:
-                return defaultRecordAndSampleResult;
+                // this is used for localParentSampled and remoteParentSampled
+                // (note: currently sampling percentage portion of trace state is not propagated,
+                //        so it will always be missing in the remoteParentSampled case)
+                return recordAndSampleAndAddTraceStateIfMissing;
             case USE_DEFAULT_SAMPLING_PERCENTAGE:
-                return getSamplingResult(defaultSamplingPercentage, defaultRecordAndSampleResult, traceId, name);
+                // this is used for root sampler
+                return getSamplingResult(defaultSamplingPercentage, recordAndSampleAndAddTraceStateIfMissing, traceId, name);
             default:
                 throw new IllegalStateException("Unexpected BehaviorIfNoMatchingOverrides: " + behaviorIfNoMatchingOverrides);
         }
     }
 
-    private SamplingResult getSamplingResult(double percentage, SamplingResult recordAndSampleResult, String traceId, String name) {
+    private SamplingResult getSamplingResult(double percentage, SamplingResult sampledSamplingResult, String traceId, String name) {
         if (percentage == 100) {
             // optimization, no need to calculate score in this case
-            return recordAndSampleResult;
+            return sampledSamplingResult;
         }
         if (percentage == 0) {
             // optimization, no need to calculate score in this case
@@ -89,7 +93,7 @@ class AiSampler implements Sampler {
             logger.debug("Item {} sampled out", name);
             return dropDecision;
         }
-        return recordAndSampleResult;
+        return sampledSamplingResult;
     }
 
     @Override

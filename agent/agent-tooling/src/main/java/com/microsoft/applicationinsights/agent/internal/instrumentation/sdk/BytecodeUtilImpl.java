@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
@@ -220,20 +221,31 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     private static void track(Telemetry telemetry) {
         SpanContext context = Span.current().getSpanContext();
+        double samplingPercentage;
         if (context.isValid()) {
-            String traceId = context.getTraceId();
-            String spanId = context.getSpanId();
-            telemetry.getContext().getOperation().setId(traceId);
-            telemetry.getContext().getOperation().setParentId(spanId);
-        }
-        double samplingPercentage = Global.getSamplingPercentage();
-        if (sample(telemetry, samplingPercentage)) {
-            if (telemetry instanceof SupportSampling && samplingPercentage != 100) {
-                ((SupportSampling) telemetry).setSamplingPercentage(samplingPercentage);
+            if (!context.isSampled()) {
+                // sampled out
+                return;
             }
-            // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
-            checkNotNull(Global.getTelemetryClient()).track(telemetry);
+            telemetry.getContext().getOperation().setId(context.getTraceId());
+            telemetry.getContext().getOperation().setParentId(context.getSpanId());
+            samplingPercentage =
+                    Exporter.getSamplingPercentage(context.getTraceState(), Global.getSamplingPercentage(), false);
+        } else {
+            // sampling is done using the configured sampling percentage
+            samplingPercentage = Global.getSamplingPercentage();
+            if (!sample(telemetry, samplingPercentage)) {
+                // sampled out
+                return;
+            }
         }
+        // sampled in
+
+        if (telemetry instanceof SupportSampling && samplingPercentage != 100) {
+            ((SupportSampling) telemetry).setSamplingPercentage(samplingPercentage);
+        }
+        // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
+        checkNotNull(Global.getTelemetryClient()).track(telemetry);
     }
 
     private static boolean sample(Telemetry telemetry, double samplingPercentage) {

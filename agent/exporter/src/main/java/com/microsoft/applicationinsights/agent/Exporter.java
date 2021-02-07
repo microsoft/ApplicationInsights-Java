@@ -22,19 +22,16 @@ package com.microsoft.applicationinsights.agent;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.telemetry.Duration;
@@ -52,6 +49,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -110,7 +108,7 @@ public class Exporter implements SpanExporter {
 
     private static final Joiner JOINER = Joiner.on(", ");
 
-    public static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE_KEY = AttributeKey.doubleKey("applicationinsights.internal.sampling_percentage");
+    public static final String SAMPLING_PERCENTAGE_TRACE_STATE = "ai-internal-sp";
 
     private static final AttributeKey<Boolean> AI_LOG_KEY = AttributeKey.booleanKey("applicationinsights.internal.log");
 
@@ -124,6 +122,9 @@ public class Exporter implements SpanExporter {
     private static final AttributeKey<String> AI_LOG_LEVEL_KEY = AttributeKey.stringKey("applicationinsights.internal.log_level");
     private static final AttributeKey<String> AI_LOGGER_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.logger_name");
     private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY = AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
+
+    private static final AtomicBoolean alreadyLoggedSamplingPercentageMissing = new AtomicBoolean();
+    private static final AtomicBoolean alreadyLoggedSamplingPercentageParseError = new AtomicBoolean();
 
     private final TelemetryClient telemetryClient;
 
@@ -228,9 +229,50 @@ public class Exporter implements SpanExporter {
 
         setExtraAttributes(remoteDependencyData, attributes);
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
+        double samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         track(remoteDependencyData, samplingPercentage);
         exportEvents(span, samplingPercentage);
+    }
+
+    private static double getSamplingPercentage(TraceState traceState) {
+        return getSamplingPercentage(traceState, 100, true);
+    }
+
+    // for use by 2.x SDK telemetry, see BytecodeUtilImpl
+    public static double getSamplingPercentage(TraceState traceState, double defaultValue, boolean warnOnMissing) {
+        String samplingPercentageStr = traceState.get(SAMPLING_PERCENTAGE_TRACE_STATE);
+        if (samplingPercentageStr == null) {
+            if (warnOnMissing && !alreadyLoggedSamplingPercentageMissing.getAndSet(true)) {
+                // sampler should have set the trace state
+                logger.warn("did not find sampling percentage in trace state: {}", traceState);
+            }
+            return defaultValue;
+        }
+        try {
+            return parseSamplingPercentage(samplingPercentageStr).orElse(defaultValue);
+        } catch (ExecutionException e) {
+            // this shouldn't happen
+            logger.debug(e.getMessage(), e);
+            return defaultValue;
+        }
+    }
+
+    private static final Cache<String, OptionalDouble> parsedSamplingPercentageCache =
+            CacheBuilder.newBuilder()
+                    .maximumSize(100)
+                    .build();
+
+    public static OptionalDouble parseSamplingPercentage(String samplingPercentageStr) throws ExecutionException {
+        return parsedSamplingPercentageCache.get(samplingPercentageStr, () -> {
+            try {
+                return OptionalDouble.of(Double.parseDouble(samplingPercentageStr));
+            } catch (NumberFormatException e) {
+                if (!alreadyLoggedSamplingPercentageParseError.getAndSet(true)) {
+                    logger.warn("error parsing sampling percentage trace state: {}", samplingPercentageStr, e);
+                }
+                return OptionalDouble.empty();
+            }
+        });
     }
 
     private void applySemanticConventions(Attributes attributes, RemoteDependencyTelemetry remoteDependencyData, SpanKind spanKind) {
@@ -282,8 +324,7 @@ public class Exporter implements SpanExporter {
         setExtraAttributes(telemetry, attributes);
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
-        track(telemetry, samplingPercentage);
+        track(telemetry, getSamplingPercentage(span.getSpanContext().getTraceState()));
     }
 
     private void trackTraceAsException(SpanData span, String errorStack) {
@@ -307,8 +348,7 @@ public class Exporter implements SpanExporter {
         setExtraAttributes(telemetry, attributes);
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
-        track(telemetry, samplingPercentage);
+        track(telemetry, getSamplingPercentage(span.getSpanContext().getTraceState()));
     }
 
     private void track(Telemetry telemetry, Double samplingPercentage) {
@@ -559,7 +599,7 @@ public class Exporter implements SpanExporter {
 
         setExtraAttributes(requestData, attributes);
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
+        double samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         track(requestData, samplingPercentage);
         exportEvents(span, samplingPercentage);
     }
