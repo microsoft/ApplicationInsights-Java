@@ -27,10 +27,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
+import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
-import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -42,10 +43,8 @@ import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.Tracer;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -221,20 +220,30 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     private static void track(Telemetry telemetry) {
         SpanContext context = Span.current().getSpanContext();
+        double samplingPercentage;
         if (context.isValid()) {
-            String traceId = context.getTraceIdAsHexString();
-            String spanId = context.getSpanIdAsHexString();
-            telemetry.getContext().getOperation().setId(traceId);
-            telemetry.getContext().getOperation().setParentId(spanId);
-        }
-        double samplingPercentage = Global.getSamplingPercentage();
-        if (sample(telemetry, samplingPercentage)) {
-            if (telemetry instanceof SupportSampling && samplingPercentage != 100) {
-                ((SupportSampling) telemetry).setSamplingPercentage(samplingPercentage);
+            if (!context.isSampled()) {
+                // sampled out
+                return;
             }
-            // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
-            checkNotNull(Global.getTelemetryClient()).track(telemetry);
+            telemetry.getContext().getOperation().setId(context.getTraceIdAsHexString());
+            telemetry.getContext().getOperation().setParentId(context.getSpanIdAsHexString());
+            samplingPercentage = Exporter.getSamplingPercentage(context.getTraceState());
+        } else {
+            // sampling is done using the initial (configured) sampling rate
+            samplingPercentage = MainEntryPoint.getConfiguration().sampling.percentage;
+            if (!sample(telemetry, samplingPercentage)) {
+                // sampled out
+                return;
+            }
         }
+        // sampled in
+
+        if (telemetry instanceof SupportSampling && samplingPercentage != 100) {
+            ((SupportSampling) telemetry).setSamplingPercentage(samplingPercentage);
+        }
+        // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
+        checkNotNull(Global.getTelemetryClient()).track(telemetry);
     }
 
     private static boolean sample(Telemetry telemetry, double samplingPercentage) {

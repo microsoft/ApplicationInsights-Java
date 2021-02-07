@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
+import com.microsoft.applicationinsights.agent.internal.sampling.AiSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -48,7 +49,7 @@ public class ConnectionStringAccessor implements AiConnectionString.Accessor {
             // now that we know the user has opted in to tracing, we need to init the propagator and sampler
             DelegatingPropagator.getInstance().setUpStandardDelegate();
             // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
-            DelegatingSampler.getInstance().setAlwaysOnDelegate();
+            DelegatingSampler.getInstance().setDelegate(new AiSampler(100));
             logger.info("Set connection string lazily for the Azure Function Consumption Plan.");
         }
     }

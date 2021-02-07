@@ -23,13 +23,21 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collections;
 
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.sampling.AiSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
-import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import org.junit.*;
 import org.junit.contrib.java.lang.system.*;
 
@@ -44,39 +52,55 @@ public class JsonConfigPollingTest {
     public static void tearDown() {
         // need to reset trace config back to default (with default sampler)
         // otherwise tests run after this can fail
-        DelegatingSampler.getInstance().setAlwaysOnDelegate();
+        DelegatingSampler.getInstance().setDelegate(new AiSampler(100));
     }
 
     @Test
     public void shouldUpdate() {
         // given
-        TelemetryConfiguration.getActive().setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-        Global.setSamplingPercentage(SamplingPercentage.roundToNearest(90));
+        Configuration lastReadConfiguration = new Configuration();
+        lastReadConfiguration.connectionString = "InstrumentationKey=00000000-0000-0000-0000-000000000000";
+        lastReadConfiguration.sampling.percentage = 90;
 
         // when
         Path path = new File(Resources.getResource("applicationinsights.json").getPath()).toPath();
-        new JsonConfigPolling(path, 0, 90).run();
+        JsonConfigPolling jsonConfigPolling = new JsonConfigPolling(path, 0, lastReadConfiguration);
+        jsonConfigPolling.run();
 
         // then
         assertEquals("InstrumentationKey=11111111-1111-1111-1111-111111111111", TelemetryConfiguration.getActive().getConnectionString());
-        assertEquals(Global.getSamplingPercentage(), 10, 0);
+        assertEquals(2, getCurrentItemCount());
     }
 
     @Test
     public void shouldNotUpdate() {
         // given
-        TelemetryConfiguration.getActive().setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-        Global.setSamplingPercentage(SamplingPercentage.roundToNearest(90));
+        Configuration lastReadConfiguration = new Configuration();
+        lastReadConfiguration.connectionString = "InstrumentationKey=00000000-0000-0000-0000-000000000000";
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=00000000-0000-0000-0000-000000000000");
         envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "90");
 
         // when
         Path path = new File(Resources.getResource("applicationinsights.json").getPath()).toPath();
-        new JsonConfigPolling(path, 0, 90).run();
+        JsonConfigPolling jsonConfigPolling = new JsonConfigPolling(path, 0, lastReadConfiguration);
+        jsonConfigPolling.run();
 
         // then
-        // FIXME uncomment this after https://github.com/microsoft/ApplicationInsights-Java/pull/1431 is merged
-        // assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
-        assertEquals(Global.getSamplingPercentage(), SamplingPercentage.roundToNearest(90), 0);
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
+        assertEquals(1, getCurrentItemCount());
+    }
+
+    private int getCurrentItemCount() {
+        SpanContext spanContext = SpanContext.create(
+                "12341234123412341234123412341234",
+                "1234123412341234",
+                TraceFlags.getDefault(),
+                TraceState.getDefault());
+        Context parentContext = Context.root().with(Span.wrap(spanContext));
+        SamplingResult samplingResult =
+                DelegatingSampler.getInstance().shouldSample(parentContext, "12341234123412341234123412341234", "my span name",
+                        Kind.SERVER, Attributes.empty(), Collections.emptyList());
+        TraceState traceState = samplingResult.getUpdatedTraceState(TraceState.getDefault());
+        return Integer.parseInt(traceState.get("ai.internal.item_count"));
     }
 }

@@ -28,18 +28,18 @@ public class SamplingPercentage {
 
     private static final Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
-    public static double roundToNearest(double samplingPercentage) {
-        if (samplingPercentage == 0) {
+    public static double roundToNearest(double requestedSamplingPercentage) {
+        if (requestedSamplingPercentage == 0) {
             return 0;
         }
-        double itemCount = 100 / samplingPercentage;
-        double rounded = 100.0 / Math.round(itemCount);
+        double itemCount = 100 / requestedSamplingPercentage;
+        double roundedSamplingPercentage = 100.0 / Math.round(itemCount);
 
-        if (Math.abs(samplingPercentage - rounded) >= 1) {
+        if (Math.abs(requestedSamplingPercentage - roundedSamplingPercentage) >= 1) {
             // TODO include link to docs in this warning message
-            startupLogger.warn("the requested sampling percentage {} was rounded to nearest 1/N: {}", samplingPercentage, rounded);
+            startupLogger.warn("the requested sampling percentage {} was rounded to nearest 1/N: {}", requestedSamplingPercentage, roundedSamplingPercentage);
         }
 
-        return rounded;
+        return roundedSamplingPercentage;
     }
 }

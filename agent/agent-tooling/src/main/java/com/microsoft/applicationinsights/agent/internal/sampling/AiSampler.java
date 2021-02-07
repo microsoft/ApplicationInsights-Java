@@ -1,11 +1,14 @@
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.List;
-import javax.annotation.Nullable;
 
 import com.microsoft.applicationinsights.agent.Exporter;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -28,36 +31,46 @@ public final class AiSampler implements Sampler {
     // failure to follow this pattern can result in unexpected / incorrect computation of values in the portal
     private final double samplingPercentage;
 
-    private final SamplingResult alwaysOnDecision;
-    private final SamplingResult alwaysOffDecision;
+    private final SamplingResult downstreamCaptureResult = SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE);
+    private final SamplingResult downstreamDropResult = SamplingResult.create(SamplingDecision.DROP);
+    private final SamplingResult independentCaptureResult;
+    private final SamplingResult independentDropResult;
 
     public AiSampler(double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
-        Attributes alwaysOnAttributes;
-        if (samplingPercentage != 100) {
-            alwaysOnAttributes = Attributes.of(Exporter.AI_SAMPLING_PERCENTAGE_KEY, samplingPercentage);
-        } else {
-            alwaysOnAttributes = Attributes.empty();
-        }
-        alwaysOnDecision = new FixedRateSamplerDecision(SamplingDecision.RECORD_AND_SAMPLE, alwaysOnAttributes);
-        alwaysOffDecision = new FixedRateSamplerDecision(SamplingDecision.DROP, Attributes.empty());
+        String samplingPercentageStr = toRoundedString(samplingPercentage);
+        independentCaptureResult = new IndependentSamplerDecision(SamplingDecision.RECORD_AND_SAMPLE, samplingPercentageStr);
+        independentDropResult = new IndependentSamplerDecision(SamplingDecision.DROP, samplingPercentageStr);
     }
 
     @Override
-    public SamplingResult shouldSample(@Nullable Context parentContext,
+    public SamplingResult shouldSample(Context parentContext,
                                        String traceId,
                                        String name,
                                        Span.Kind spanKind,
                                        Attributes attributes,
                                        List<LinkData> parentLinks) {
+        SpanContext spanContext = Span.fromContext(parentContext).getSpanContext();
+        String percentage = spanContext.getTraceState().get(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE);
+        if (percentage != null) {
+            // ai.internal.sp is already present, which means we can honor traceflags sampling decision
+            // (which normally we can't, at least when remote parent, because older AI SDKs always send traceflags=0)
+            // (and also, in this case, we don't need to add current percentage to trace state, since already present)
+            return spanContext.isSampled() ? downstreamCaptureResult : downstreamDropResult;
+        }
+        // ai.internal.sp was not sent from upstream, which means we can't honor the traceflags sampling decision
+        // (since older AI SDKs always send traceflags=0)
+        // (even if we could honor the traceflags in this case, we wouldn't have the sampling percentage used to
+        // make that decision upstream, so we wouldn't know what "sampleRate" to apply to the telemetry envelope)
+
         if (samplingPercentage == 100) {
-            return alwaysOnDecision;
+            return independentCaptureResult;
         }
         if (SamplingScoreGeneratorV2.getSamplingScore(traceId) >= samplingPercentage) {
             logger.debug("Item {} sampled out", name);
-            return alwaysOffDecision;
+            return independentDropResult;
         }
-        return alwaysOnDecision;
+        return independentCaptureResult;
     }
 
     @Override
@@ -65,14 +78,39 @@ public final class AiSampler implements Sampler {
         return "ApplicationInsights-specific trace id based sampler, with sampling percentage: " + samplingPercentage;
     }
 
-    private static final class FixedRateSamplerDecision implements SamplingResult {
+    // TODO write test for
+    //  * 33.33333333333
+    //  * 66.66666666666
+    //  * 1.123456
+    //  * 50.0
+    //  * 1.0
+    //  * 0
+    //  * 0.001
+    //  * 0.000001
+    // 5 digit of precision, and remove any trailing zeros beyond the decimal point
+    private static String toRoundedString(double percentage) {
+        BigDecimal bigDecimal = new BigDecimal(percentage);
+        bigDecimal = bigDecimal.round(new MathContext(5));
+        String formatted = bigDecimal.toString();
+        double dv = bigDecimal.doubleValue();
+        if (dv > 0 && dv < 1) {
+            while (formatted.endsWith("0")) {
+                formatted = formatted.substring(0, formatted.length() - 1);
+            }
+        }
+        return formatted;
+    }
+
+    private static final class IndependentSamplerDecision implements SamplingResult {
 
         private final SamplingDecision decision;
-        private final Attributes attributes;
+        private final String samplingPercentage;
+        private final TraceState traceState;
 
-        private FixedRateSamplerDecision(SamplingDecision decision, Attributes attributes) {
+        private IndependentSamplerDecision(SamplingDecision decision, String samplingPercentage) {
             this.decision = decision;
-            this.attributes = attributes;
+            this.samplingPercentage = samplingPercentage;
+            traceState = TraceState.builder().set(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE, samplingPercentage).build();
         }
 
         @Override
@@ -82,7 +120,17 @@ public final class AiSampler implements Sampler {
 
         @Override
         public Attributes getAttributes() {
-            return attributes;
+            return Attributes.empty();
+        }
+
+        @Override
+        public TraceState getUpdatedTraceState(TraceState parentTraceState) {
+            if (parentTraceState.isEmpty()) {
+                return traceState;
+            } else if (parentTraceState.get(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE) != null) {
+                return parentTraceState;
+            }
+            return parentTraceState.toBuilder().set(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE, samplingPercentage).build();
         }
     }
 }

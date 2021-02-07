@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +51,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -70,7 +72,7 @@ public class Exporter implements SpanExporter {
 
     private static final Joiner JOINER = Joiner.on(", ");
 
-    public static final AttributeKey<Double> AI_SAMPLING_PERCENTAGE_KEY = AttributeKey.doubleKey("applicationinsights.internal.sampling_percentage");
+    public static final String SAMPLING_PERCENTAGE_TRACE_STATE = "ai-internal-sp";
 
     private static final AttributeKey<Boolean> AI_LOG_KEY = AttributeKey.booleanKey("applicationinsights.internal.log");
 
@@ -84,6 +86,9 @@ public class Exporter implements SpanExporter {
     private static final AttributeKey<String> AI_LOG_LEVEL_KEY = AttributeKey.stringKey("applicationinsights.internal.log_level");
     private static final AttributeKey<String> AI_LOGGER_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.logger_name");
     private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY = AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
+
+    private static final AtomicBoolean alreadyLoggedSamplingPercentageMissing = new AtomicBoolean();
+    private static final AtomicBoolean alreadyLoggedSamplingPercentageParseError = new AtomicBoolean();
 
     private final TelemetryClient telemetryClient;
 
@@ -218,7 +223,7 @@ public class Exporter implements SpanExporter {
 
         setExtraAttributes(telemetry, attributes);
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
+        double samplingPercentage = getSamplingPercentage(span.getTraceState());
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
     }
@@ -253,9 +258,32 @@ public class Exporter implements SpanExporter {
 
         setExtraAttributes(telemetry, attributes);
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
+        double samplingPercentage = getSamplingPercentage(span.getTraceState());
         track(telemetry, samplingPercentage);
         trackEvents(span, samplingPercentage);
+    }
+
+    public static double getSamplingPercentage(TraceState traceState) {
+        String samplingPercentageStr = traceState.get(SAMPLING_PERCENTAGE_TRACE_STATE);
+        if (samplingPercentageStr == null) {
+            if (!alreadyLoggedSamplingPercentageMissing.getAndSet(true)) {
+                logger.warn("did not find sampling percentage in trace state: {}", traceState);
+            }
+            return 100;
+        }
+        return parseSamplingPercentage(samplingPercentageStr);
+    }
+
+    // TODO cache so don't need to re-parse same string over and over and over
+    public static double parseSamplingPercentage(String samplingPercentageStr) {
+        try {
+            return Double.parseDouble(samplingPercentageStr);
+        } catch (NumberFormatException e) {
+            if (!alreadyLoggedSamplingPercentageParseError.getAndSet(true)) {
+                logger.warn("error parsing sampling percentage trace state: {}", samplingPercentageStr, e);
+            }
+            return 100;
+        }
     }
 
     private void applySemanticConventions(Attributes attributes, RemoteDependencyTelemetry telemetry, Span.Kind spanKind) {
@@ -290,7 +318,7 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private void trackEvents(SpanData span, Double samplingPercentage) {
+    private void trackEvents(SpanData span, double samplingPercentage) {
         boolean foundException = false;
         for (EventData event : span.getEvents()) {
             EventTelemetry telemetry = new EventTelemetry(event.getName());
@@ -334,8 +362,7 @@ public class Exporter implements SpanExporter {
         setExtraAttributes(telemetry, attributes);
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
-        track(telemetry, samplingPercentage);
+        track(telemetry, getSamplingPercentage(span.getTraceState()));
     }
 
     private void trackTraceAsException(SpanData span, String errorStack) {
@@ -359,12 +386,11 @@ public class Exporter implements SpanExporter {
         setExtraAttributes(telemetry, attributes);
         telemetry.setTimestamp(new Date(NANOSECONDS.toMillis(span.getStartEpochNanos())));
 
-        Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);
-        track(telemetry, samplingPercentage);
+        track(telemetry, getSamplingPercentage(span.getTraceState()));
     }
 
     private void trackException(String errorStack, SpanData span, Telemetry telemetry,
-                                String id, Double samplingPercentage) {
+                                String id, double samplingPercentage) {
         ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry();
         exceptionTelemetry.getData().setExceptions(Exceptions.minimalParse(errorStack));
         exceptionTelemetry.getContext().getOperation().setId(telemetry.getContext().getOperation().getId());
@@ -373,8 +399,8 @@ public class Exporter implements SpanExporter {
         track(exceptionTelemetry, samplingPercentage);
     }
 
-    private void track(Telemetry telemetry, Double samplingPercentage) {
-        if (telemetry instanceof SupportSampling) {
+    private void track(Telemetry telemetry, double samplingPercentage) {
+        if (samplingPercentage != 100 && telemetry instanceof SupportSampling) {
             ((SupportSampling) telemetry).setSamplingPercentage(samplingPercentage);
         }
         telemetryClient.track(telemetry);

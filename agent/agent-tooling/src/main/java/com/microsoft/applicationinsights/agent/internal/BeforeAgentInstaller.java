@@ -46,7 +46,6 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Perf
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagatorProvider;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.common.CommonUtils;
@@ -181,7 +180,6 @@ public class BeforeAgentInstaller {
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
-        Global.setSamplingPercentage(SamplingPercentage.roundToNearest(config.sampling.percentage));
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
 
@@ -210,7 +208,7 @@ public class BeforeAgentInstaller {
 
         Path configPath = MainEntryPoint.getConfigPath();
         if (configPath != null) {
-            JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime(), config.sampling.percentage);
+            JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime(), config);
         }
     }
 

@@ -16,6 +16,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithS
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
+import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -37,7 +38,9 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
         if (config.connectionString != null) {
             DelegatingPropagator.getInstance().setUpStandardDelegate();
-            DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(Global.getSamplingPercentage()));
+
+            double samplingPercentage = SamplingPercentage.roundToNearest(config.sampling.percentage);
+            DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(samplingPercentage));
         } else {
             // in Azure Functions, we configure later on, once we know user has opted in to tracing
             // (note: the default for DelegatingPropagator is to not propagate anything
