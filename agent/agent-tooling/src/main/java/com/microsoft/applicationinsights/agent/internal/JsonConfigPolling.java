@@ -32,7 +32,6 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
-import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
@@ -92,7 +91,7 @@ public class JsonConfigPolling implements Runnable {
                 if (config.sampling.percentage != lastReadConfig.sampling.percentage) {
                     logger.debug("Updating sampling percentage from {} to {}", lastReadConfig.sampling.percentage, config.sampling.percentage);
                     double samplingPercentage = SamplingPercentage.roundToNearest(config.sampling.percentage);
-                    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(samplingPercentage));
+                    DelegatingSampler.getInstance().setDelegate(samplingPercentage);
                 }
 
                 lastReadConfig = config;

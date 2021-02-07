@@ -3,9 +3,7 @@ package com.microsoft.applicationinsights.smoketest;
 import java.util.List;
 
 import com.google.common.base.Stopwatch;
-import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.*;
 
 import static java.util.concurrent.TimeUnit.SECONDS;

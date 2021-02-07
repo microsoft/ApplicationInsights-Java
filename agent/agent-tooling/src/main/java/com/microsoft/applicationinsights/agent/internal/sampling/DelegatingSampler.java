@@ -20,8 +20,8 @@ public class DelegatingSampler implements Sampler {
         return instance;
     }
 
-    public void setDelegate(Sampler delegate) {
-        this.delegate = delegate;
+    public void setDelegate(double samplingPercentage) {
+        this.delegate = new AiSampler(samplingPercentage);
     }
 
     @Override

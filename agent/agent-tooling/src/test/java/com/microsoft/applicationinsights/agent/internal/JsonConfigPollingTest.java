@@ -27,8 +27,8 @@ import java.util.Collections;
 
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.sampling.AiSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -48,11 +48,10 @@ public class JsonConfigPollingTest {
     @Rule
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
-    @AfterClass
-    public static void tearDown() {
-        // need to reset trace config back to default (with default sampler)
-        // otherwise tests run after this can fail
-        DelegatingSampler.getInstance().setDelegate(new AiSampler(100));
+    @BeforeClass
+    public static void setUp() {
+        // default sampler at startup is "Sampler.alwaysOff()", and this test relies on real sampler
+        DelegatingSampler.getInstance().setDelegate(100);
     }
 
     @Test
@@ -69,16 +68,17 @@ public class JsonConfigPollingTest {
 
         // then
         assertEquals("InstrumentationKey=11111111-1111-1111-1111-111111111111", TelemetryConfiguration.getActive().getConnectionString());
-        assertEquals(2, getCurrentItemCount());
+        assertEquals(10, getCurrentSamplingPercentage());
     }
 
     @Test
     public void shouldNotUpdate() {
         // given
-        Configuration lastReadConfiguration = new Configuration();
-        lastReadConfiguration.connectionString = "InstrumentationKey=00000000-0000-0000-0000-000000000000";
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=00000000-0000-0000-0000-000000000000");
         envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "90");
+        Configuration lastReadConfiguration = new Configuration();
+        lastReadConfiguration.connectionString = "InstrumentationKey=00000000-0000-0000-0000-000000000000";
+        TelemetryConfiguration.getActive().setConnectionString(lastReadConfiguration.connectionString);
 
         // when
         Path path = new File(Resources.getResource("applicationinsights.json").getPath()).toPath();
@@ -87,10 +87,10 @@ public class JsonConfigPollingTest {
 
         // then
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
-        assertEquals(1, getCurrentItemCount());
+        assertEquals(100, getCurrentSamplingPercentage());
     }
 
-    private int getCurrentItemCount() {
+    private int getCurrentSamplingPercentage() {
         SpanContext spanContext = SpanContext.create(
                 "12341234123412341234123412341234",
                 "1234123412341234",
@@ -101,6 +101,6 @@ public class JsonConfigPollingTest {
                 DelegatingSampler.getInstance().shouldSample(parentContext, "12341234123412341234123412341234", "my span name",
                         Kind.SERVER, Attributes.empty(), Collections.emptyList());
         TraceState traceState = samplingResult.getUpdatedTraceState(TraceState.getDefault());
-        return Integer.parseInt(traceState.get("ai.internal.item_count"));
+        return Integer.parseInt(traceState.get(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE));
     }
 }
