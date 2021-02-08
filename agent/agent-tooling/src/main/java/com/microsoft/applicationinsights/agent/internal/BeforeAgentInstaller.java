@@ -65,6 +65,7 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.instrumentation.api.config.ConfigBuilder;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -125,6 +126,7 @@ public class BeforeAgentInstaller {
         // TODO need some kind of test for these configuration properties
         if (!isInstrumentationEnabled(config, "micrometer")) {
             properties.put("otel.instrumentation.micrometer.enabled", "false");
+            properties.put("otel.instrumentation.actuator-metrics.enabled", "false");
         }
         if (!isInstrumentationEnabled(config, "jdbc")) {
             properties.put("otel.instrumentation.jdbc.enabled", "false");
@@ -149,7 +151,7 @@ public class BeforeAgentInstaller {
         // AI exporter is configured manually
         properties.put("otel.trace.exporter", "none");
         properties.put("otel.metrics.exporter", "none");
-        Config.internalInitializeConfig(Config.create(properties));
+        Config.internalInitializeConfig(new ConfigBuilder().readProperties(properties).build());
         if (Config.get().getListProperty("otel.additional.bootstrap.package.prefixes").isEmpty()) {
             throw new IllegalStateException("underlying config not initialized in time");
         }
