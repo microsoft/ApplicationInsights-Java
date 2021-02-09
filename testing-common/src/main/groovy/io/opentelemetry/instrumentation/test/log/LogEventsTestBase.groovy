@@ -8,7 +8,6 @@ package io.opentelemetry.instrumentation.test.log
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
-import io.opentelemetry.instrumentation.test.AgentTestRunner
 import spock.lang.Unroll
 
 /**
