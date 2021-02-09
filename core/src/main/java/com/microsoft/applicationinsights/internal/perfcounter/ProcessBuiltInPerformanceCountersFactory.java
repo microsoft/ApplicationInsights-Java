@@ -104,13 +104,13 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
         ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
 
         try {
-            WindowsPerformanceCounterAsPC pcWindowsPCs = new WindowsPerformanceCounterAsPC();
-            performanceCounters.add(pcWindowsPCs);
+            OshiPerformanceCounter oshiPerfCounter = new OshiPerformanceCounter();
+            performanceCounters.add(oshiPerfCounter);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable e) {
             try {
-                logger.error("Failed to create WindowsPerformanceCounterAsPC: '{}'", e.toString());
+                logger.error("Failed to create OshiPerformanceCounter: '{}'", e.toString());
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
