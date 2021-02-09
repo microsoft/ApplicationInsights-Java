@@ -7,9 +7,11 @@ ch.qos.logback:logback-classic:1.2.3
 ch.qos.logback:logback-core:1.2.3
 com.squareup.moshi:moshi:1.9.3
 com.squareup.okio:okio:1.16.0
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:0.11.0+ai.patch.1
-io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.11.0+ai.patch.1
-io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:0.11.0+ai.patch.1
-io.opentelemetry:opentelemetry-api:0.11.0
-io.opentelemetry:opentelemetry-context:0.11.0
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:0.15.0+ai.patch.1
+io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.15.0+ai.patch.1
+io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:0.15.0+ai.patch.1
+io.opentelemetry:opentelemetry-api-metrics:0.15.0-alpha
+io.opentelemetry:opentelemetry-api:0.15.0
+io.opentelemetry:opentelemetry-context:0.15.0
+io.opentelemetry:opentelemetry-semconv:0.15.0-alpha
 org.slf4j:slf4j-api:1.7.25
