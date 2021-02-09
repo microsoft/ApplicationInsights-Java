@@ -35,9 +35,18 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
     private static final Logger logger = LoggerFactory.getLogger(OshiPerformanceCounter.class);
     private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "OshiPerformanceCounter";
-    private final static double NANOS_IN_SECOND = 1000000000.0;
+    private final static double NANOS_IN_SECOND = 1_000_000_000;
     private long lastCollectionInNanos = -1;
     private double prevProcessIO;
+    private HardwareAbstractionLayer hal;
+    private OSProcess processInfo;
+
+    public OshiPerformanceCounter() {
+        SystemInfo systemInfo = new SystemInfo();
+        hal = systemInfo.getHardware();
+        OperatingSystem osInfo = systemInfo.getOperatingSystem();
+        processInfo = osInfo.getProcess(osInfo.getProcessId());
+    }
 
     @Override public String getId() {
         return ID;
@@ -45,12 +54,6 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
     @Override public void report(TelemetryClient telemetryClient) {
         long currentCollectionInNanos = System.nanoTime();
-
-        SystemInfo systemInfo = new SystemInfo();
-        HardwareAbstractionLayer hal = systemInfo.getHardware();
-        OperatingSystem osInfo = systemInfo.getOperatingSystem();
-        OSProcess processInfo = osInfo.getProcess(osInfo.getProcessId());
-
         double currentProcessIO = 0.0;
 
         // system.disk.io
@@ -61,7 +64,6 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         if (lastCollectionInNanos != -1) {
             double timeElapsedInSeconds = ((double)(currentCollectionInNanos - lastCollectionInNanos)) / NANOS_IN_SECOND;
             double value = (currentProcessIO - prevProcessIO) / timeElapsedInSeconds;
-            prevProcessIO = currentProcessIO;
             send(telemetryClient, value, Constants.PROCESS_IO_PC_METRIC_NAME);
             logger.trace("Sent performance counter for '{}': '{}'", Constants.PROCESS_IO_PC_METRIC_NAME, value);
         }
@@ -71,6 +73,7 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
         // runtime.java.cpu_time
         processInfo.updateAttributes();
+        // getUserTime() and getKernelTime() return the number of milliseconds the process has executed in user mode
         long totalProcessorTime = (long) ((processInfo.getUserTime() + processInfo.getKernelTime()) * 0.001);
         send(telemetryClient, totalProcessorTime, Constants.TOTAL_CPU_PC_METRIC_NAME);
         logger.trace("Sent performance counter for '{}': '{}'", Constants.TOTAL_CPU_PC_METRIC_NAME, totalProcessorTime);
