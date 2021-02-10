@@ -44,6 +44,7 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Depe
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.HeartBeatModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.RequestTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
@@ -86,6 +87,7 @@ public class BeforeAgentInstaller {
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
         instrumentation.addTransformer(new DependencyTelemetryClassFileTransformer());
+        instrumentation.addTransformer(new RequestTelemetryClassFileTransformer());
         instrumentation.addTransformer(new PerformanceCounterModuleClassFileTransformer());
         instrumentation.addTransformer(new QuickPulseClassFileTransformer());
         instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
@@ -149,7 +151,7 @@ public class BeforeAgentInstaller {
         }
         properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
         // AI exporter is configured manually
-        properties.put("otel.trace.exporter", "none");
+        properties.put("otel.traces.exporter", "none");
         properties.put("otel.metrics.exporter", "none");
         Config.internalInitializeConfig(new ConfigBuilder().readProperties(properties).build());
         if (Config.get().getListProperty("otel.additional.bootstrap.package.prefixes").isEmpty()) {

@@ -46,17 +46,16 @@ import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,18 +110,18 @@ public class Exporter implements SpanExporter {
     }
 
     private void export(SpanData span) {
-        Kind kind = span.getKind();
+        SpanKind kind = span.getKind();
         String instrumentationName = span.getInstrumentationLibraryInfo().getName();
         Matcher matcher = COMPONENT_PATTERN.matcher(instrumentationName);
         String stdComponent = matcher.matches() ? matcher.group(1) : null;
 
-        if ("jms".equals(stdComponent) && !SpanId.isValid(span.getParentSpanId()) && kind == Kind.CONSUMER) {
+        if ("jms".equals(stdComponent) && !SpanId.isValid(span.getParentSpanId()) && kind == SpanKind.CONSUMER) {
             // no need to capture these, at least is consistent with prior behavior
             // these tend to be frameworks pulling messages which are then pushed to consumers
             // where we capture them
             return;
         }
-        if (kind == Kind.INTERNAL) {
+        if (kind == SpanKind.INTERNAL) {
             Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
             if (isLog != null && isLog) {
                 exportLogSpan(span);
@@ -133,13 +132,13 @@ public class Exporter implements SpanExporter {
             } else {
                 exportRemoteDependency(span, true);
             }
-        } else if (kind == Kind.CLIENT || kind == Kind.PRODUCER) {
+        } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
             exportRemoteDependency(span, false);
-        } else if (kind == Kind.CONSUMER && !span.getParentSpanContext().isRemote()) {
+        } else if (kind == SpanKind.CONSUMER && !span.getParentSpanContext().isRemote()) {
             // TODO need spec clarification, but it seems polling for messages can be CONSUMER also
             //  in which case the span will not have a remote parent and should be treated as a dependency instead of a request
             exportRemoteDependency(span, false);
-        } else if (kind == Kind.SERVER || kind == Kind.CONSUMER) {
+        } else if (kind == SpanKind.SERVER || kind == SpanKind.CONSUMER) {
             exportRequest(span);
         } else {
             throw new UnsupportedOperationException(kind.name());
@@ -192,11 +191,11 @@ public class Exporter implements SpanExporter {
 
         telemetry.setId(span.getSpanId());
         telemetry.getContext().getOperation().setId(span.getTraceId());
-        String aiLegacyParentId = span.getTraceState().get("ai-legacy-parent-id");
+        String aiLegacyParentId = span.getSpanContext().getTraceState().get("ai-legacy-parent-id");
         if (aiLegacyParentId != null) {
             // see behavior specified at https://github.com/microsoft/ApplicationInsights-Java/issues/1174
             telemetry.getContext().getOperation().setParentId(aiLegacyParentId);
-            String aiLegacyOperationId = span.getTraceState().get("ai-legacy-operation-id");
+            String aiLegacyOperationId = span.getSpanContext().getTraceState().get("ai-legacy-operation-id");
             if (aiLegacyOperationId != null) {
                 telemetry.getContext().getProperties().putIfAbsent("ai_legacyRootID", aiLegacyOperationId);
             }
@@ -258,7 +257,7 @@ public class Exporter implements SpanExporter {
         trackEvents(span, samplingPercentage);
     }
 
-    private void applySemanticConventions(Attributes attributes, RemoteDependencyTelemetry telemetry, Span.Kind spanKind) {
+    private void applySemanticConventions(Attributes attributes, RemoteDependencyTelemetry telemetry, SpanKind spanKind) {
         String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
         if (httpMethod != null) {
             applyHttpClientSpan(attributes, telemetry);
@@ -447,6 +446,7 @@ public class Exporter implements SpanExporter {
         } else {
             // using "Http (tracked component)" is important for dependencies that go cross-component (have an appId in their target field)
             // if you use just HTTP, Breeze will remove appid from the target
+            // TODO remove this once confirmed by zakima that it is no longer needed
             telemetry.setType("Http (tracked component)");
             telemetry.setTarget(target + " | " + targetAppId);
         }
@@ -500,8 +500,8 @@ public class Exporter implements SpanExporter {
         telemetry.setTarget(target);
     }
 
-    private void applyMessagingClientSpan(Attributes attributes, RemoteDependencyTelemetry telemetry, String messagingSystem, Kind spanKind) {
-        if (spanKind == Kind.PRODUCER) {
+    private void applyMessagingClientSpan(Attributes attributes, RemoteDependencyTelemetry telemetry, String messagingSystem, SpanKind spanKind) {
+        if (spanKind == SpanKind.PRODUCER) {
             telemetry.setType("Queue Message | " + messagingSystem);
         } else {
             // e.g. CONSUMER kind (without remote parent) and CLIENT kind
@@ -564,9 +564,9 @@ public class Exporter implements SpanExporter {
                 sb.append(",");
             }
             sb.append("{\"operation_Id\":\"");
-            sb.append(link.getSpanContext().getTraceIdAsHexString());
+            sb.append(link.getSpanContext().getTraceId());
             sb.append("\",\"id\":\"");
-            sb.append(link.getSpanContext().getSpanIdAsHexString());
+            sb.append(link.getSpanContext().getSpanId());
             sb.append("\"}");
             first = false;
         }

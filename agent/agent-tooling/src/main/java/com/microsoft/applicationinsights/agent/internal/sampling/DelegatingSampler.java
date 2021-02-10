@@ -3,7 +3,7 @@ package com.microsoft.applicationinsights.agent.internal.sampling;
 import java.util.List;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -32,7 +32,7 @@ public class DelegatingSampler implements Sampler {
     }
 
     @Override
-    public SamplingResult shouldSample(Context parentContext, String traceId, String name, Kind spanKind, Attributes attributes, List<LinkData> parentLinks) {
+    public SamplingResult shouldSample(Context parentContext, String traceId, String name, SpanKind spanKind, Attributes attributes, List<LinkData> parentLinks) {
         return delegate.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
 
