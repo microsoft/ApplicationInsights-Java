@@ -56,10 +56,8 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         long currentCollectionInNanos = System.nanoTime();
         double currentProcessIO = 0.0;
 
-        // system.disk.io
-        for (HWDiskStore diskStore : hal.getDiskStores()) {
-            currentProcessIO += (double) (diskStore.getReadBytes() + diskStore.getWriteBytes());
-        }
+        // process io
+        currentProcessIO += (double) (processInfo.getBytesRead() + processInfo.getBytesWritten());
 
         if (lastCollectionInNanos != -1) {
             double timeElapsedInSeconds = ((double)(currentCollectionInNanos - lastCollectionInNanos)) / NANOS_IN_SECOND;
