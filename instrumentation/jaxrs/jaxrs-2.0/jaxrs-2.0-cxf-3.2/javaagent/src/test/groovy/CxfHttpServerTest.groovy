@@ -38,4 +38,10 @@ class CxfHttpServerTest extends JaxRsHttpServerTest<Server> {
   void stopServer(Server httpServer) {
     httpServer.stop()
   }
+
+  @Override
+  boolean sendsBackAiTargetAppId() {
+    // jetty instrumentation doesn't support app id exchange
+    return false
+  }
 }

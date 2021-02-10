@@ -45,6 +45,11 @@ class Struts2ActionSpanTest extends HttpServerTest<Server> {
     return true
   }
 
+  @Override
+  boolean sendsBackAiTargetAppId() {
+    true
+  }
+
   String expectedServerSpanName(ServerEndpoint endpoint) {
     return endpoint == PATH_PARAM ? getContextPath() + "/path/{id}/param" : endpoint.resolvePath(address).path
   }
