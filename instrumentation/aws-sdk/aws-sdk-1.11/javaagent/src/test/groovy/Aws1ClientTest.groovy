@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.api.trace.Span.Kind.CLIENT
-import static io.opentelemetry.api.trace.Span.Kind.PRODUCER
+import static io.opentelemetry.api.trace.SpanKind.CLIENT
+import static io.opentelemetry.api.trace.SpanKind.PRODUCER
 import static io.opentelemetry.instrumentation.test.server.http.TestHttpServer.httpServer
 import static io.opentelemetry.instrumentation.test.utils.PortUtils.UNUSABLE_PORT
 
@@ -39,13 +39,13 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder
 import com.amazonaws.services.sqs.model.CreateQueueRequest
 import com.amazonaws.services.sqs.model.SendMessageRequest
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
-import io.opentelemetry.instrumentation.test.AgentTestRunner
 import java.util.concurrent.atomic.AtomicReference
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 
-class Aws1ClientTest extends AgentTestRunner {
+class Aws1ClientTest extends AgentInstrumentationSpecification {
 
   private static final CREDENTIALS_PROVIDER_CHAIN = new AWSCredentialsProviderChain(
     new EnvironmentVariableCredentialsProvider(),

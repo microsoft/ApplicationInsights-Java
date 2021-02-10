@@ -139,7 +139,7 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
           InstrumentationContext.get(RequestTelemetryContext.class, Span.class)
               .get(requestTelemetryContext);
       if (span != null) {
-        traceflag = span.getSpanContext().getTraceFlags();
+        traceflag = span.getSpanContext().getTraceFlags().asByte();
       }
     }
   }

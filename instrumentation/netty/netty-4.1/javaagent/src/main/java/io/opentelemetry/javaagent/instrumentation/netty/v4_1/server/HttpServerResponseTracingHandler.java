@@ -25,10 +25,9 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
       return;
     }
 
-    final String appId = AiAppId.getAppId();
+    String appId = AiAppId.getAppId();
     if (!appId.isEmpty()) {
-      final HttpResponse response = (HttpResponse) msg;
-      response.headers().set(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
+      ((HttpResponse) msg).headers().set(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }
 
     try (Scope ignored = context.makeCurrent()) {

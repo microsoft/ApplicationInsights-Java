@@ -53,7 +53,7 @@ public class Servlet3Advice {
       return;
     }
 
-    final String appId = AiAppId.getAppId();
+    String appId = AiAppId.getAppId();
     if (!appId.isEmpty()) {
       ((HttpServletResponse) response).setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
     }

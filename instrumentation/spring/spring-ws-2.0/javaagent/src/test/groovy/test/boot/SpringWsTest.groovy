@@ -5,8 +5,8 @@
 
 package test.boot
 
-import io.opentelemetry.api.trace.Span
-import io.opentelemetry.instrumentation.test.AgentTestRunner
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.base.HttpServerTestTrait
 import io.opentelemetry.sdk.trace.data.SpanData
@@ -26,7 +26,7 @@ import org.springframework.ws.soap.client.SoapFaultClientException
 import org.springframework.ws.soap.client.core.SoapActionCallback
 import spock.lang.Shared
 
-class SpringWsTest extends AgentTestRunner implements HttpServerTestTrait<ConfigurableApplicationContext> {
+class SpringWsTest extends AgentInstrumentationSpecification implements HttpServerTestTrait<ConfigurableApplicationContext> {
 
   @Shared
   private Jaxb2Marshaller marshaller = new Jaxb2Marshaller()
@@ -122,7 +122,7 @@ class SpringWsTest extends AgentTestRunner implements HttpServerTestTrait<Config
     trace.span(index) {
       hasNoParent()
       name operation
-      kind Span.Kind.SERVER
+      kind SpanKind.SERVER
       errored exception != null
     }
   }
@@ -135,7 +135,7 @@ class SpringWsTest extends AgentTestRunner implements HttpServerTestTrait<Config
         childOf((SpanData) parentSpan)
       }
       name "HelloEndpoint." + methodName
-      kind Span.Kind.INTERNAL
+      kind SpanKind.INTERNAL
       errored exception != null
       if (exception) {
         errorEvent(exception.class, exception.message)

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.spring.batch.item;
 
-import static io.opentelemetry.api.trace.Span.Kind.INTERNAL;
+import static io.opentelemetry.api.trace.SpanKind.INTERNAL;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
@@ -66,14 +66,6 @@ public class ItemTracer extends BaseTracer {
             .startSpan();
 
     return currentContext.with(span);
-  }
-
-  public void end(Context context) {
-    end(Span.fromContext(context));
-  }
-
-  public void endExceptionally(Context context, Throwable throwable) {
-    endExceptionally(Span.fromContext(context), throwable);
   }
 
   @Override

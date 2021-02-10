@@ -7,7 +7,7 @@ package io.opentelemetry.instrumentation.test.log
 
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 
-import io.opentelemetry.instrumentation.test.AgentTestRunner
+import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import spock.lang.Unroll
 
 /**
@@ -15,7 +15,7 @@ import spock.lang.Unroll
  * satisfy in order to support log events.
  */
 @Unroll
-abstract class LogEventsTestBase extends AgentTestRunner {
+abstract class LogEventsTestBase extends AgentInstrumentationSpecification {
 
   abstract Object createLogger(String name)
 

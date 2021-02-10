@@ -14,9 +14,9 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;

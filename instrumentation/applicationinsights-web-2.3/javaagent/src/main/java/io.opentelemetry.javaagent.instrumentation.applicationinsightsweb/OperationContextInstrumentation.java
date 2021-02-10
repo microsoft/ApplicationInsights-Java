@@ -49,7 +49,7 @@ public class OperationContextInstrumentation implements TypeInstrumentation {
       Span span =
           InstrumentationContext.get(OperationContext.class, Span.class).get(operationContext);
       if (span != null) {
-        id = span.getSpanContext().getTraceIdAsHexString();
+        id = span.getSpanContext().getTraceId();
       }
     }
   }
