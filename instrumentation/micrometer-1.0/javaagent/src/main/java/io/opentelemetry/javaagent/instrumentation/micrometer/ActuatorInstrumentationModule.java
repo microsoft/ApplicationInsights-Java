@@ -16,6 +16,8 @@ import net.bytebuddy.matcher.ElementMatcher;
 @AutoService(InstrumentationModule.class)
 public class ActuatorInstrumentationModule extends InstrumentationModule {
 
+  // this instrumentation name is important since it is used to disable actuator-metrics
+  // instrumentation
   public ActuatorInstrumentationModule() {
     super("actuator-metrics");
   }

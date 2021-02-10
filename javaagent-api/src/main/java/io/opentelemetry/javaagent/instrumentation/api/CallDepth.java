@@ -20,8 +20,12 @@ public final class CallDepth {
     return --this.depth;
   }
 
+  /**
+   * Get current call depth. This method may be used by vendor distributions to extend existing
+   * instrumentations.
+   */
   public int get() {
-    return this.depth;
+    return depth;
   }
 
   void reset() {

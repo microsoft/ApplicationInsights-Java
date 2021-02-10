@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.api.trace.Span.Kind.INTERNAL
-import static io.opentelemetry.api.trace.Span.Kind.SERVER
+import static io.opentelemetry.api.trace.SpanKind.INTERNAL
+import static io.opentelemetry.api.trace.SpanKind.SERVER
 
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation
 import io.opentelemetry.api.GlobalOpenTelemetry
@@ -14,9 +14,9 @@ import io.opentelemetry.api.trace.TraceFlags
 import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.Scope
-import io.opentelemetry.instrumentation.test.AgentTestRunner
+import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 
-class ApplicationInsightsWebTest extends AgentTestRunner {
+class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
 
   def "set request property"() {
     when:
@@ -131,7 +131,7 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
       }
     }
 
-    TEST_WRITER.getTraces().get(0).get(0).spanId == spanId
+    testWriter.getTraces().get(0).get(0).spanId == spanId
   }
 
   def "get operation id"() {
@@ -154,7 +154,7 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
       }
     }
 
-    TEST_WRITER.getTraces().get(0).get(0).traceId == traceId
+    testWriter.getTraces().get(0).get(0).traceId == traceId
   }
 
   def "get tracestate"() {
@@ -178,7 +178,7 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
     def spanContext = SpanContext.create(
       "12341234123412341234123412341234",
       "1234123412341234",
-      (byte) flag,
+      flag,
       TraceState.getDefault())
 
     when:
@@ -187,10 +187,10 @@ class ApplicationInsightsWebTest extends AgentTestRunner {
     scope.close()
 
     then:
-    traceflag == flag
+    traceflag == flag.asByte()
 
     where:
-    flag << [0, 1]
+    flag << [TraceFlags.getDefault(), TraceFlags.getSampled()]
   }
 
   def "should interop with generateChildDependencyTraceparent"() {

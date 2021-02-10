@@ -16,12 +16,12 @@ import io.micrometer.core.instrument.LongTaskTimer
 import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.TimeGauge
 import io.micrometer.core.instrument.Timer
-import io.opentelemetry.instrumentation.test.AgentTestRunner
+import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.javaagent.instrumentation.micrometer.AzureMonitorMeterRegistry
 import io.opentelemetry.javaagent.testing.common.AgentTestingMicrometerDelegateAccess
 import java.util.concurrent.Executors
 
-class MicrometerTest extends AgentTestRunner {
+class MicrometerTest extends AgentInstrumentationSpecification {
 
   def "should register AzureMonitorMeterRegistry"() {
     expect:
