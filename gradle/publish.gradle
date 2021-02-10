@@ -90,7 +90,6 @@ private String artifactPrefix(Project p, String archivesBaseName) {
   return 'opentelemetry-'
 }
 
-rootProject.tasks.release.finalizedBy tasks.publishToSonatype
 rootProject.tasks.closeAndReleaseRepository.mustRunAfter tasks.publishToSonatype
 
 tasks.withType(Sign).configureEach {
