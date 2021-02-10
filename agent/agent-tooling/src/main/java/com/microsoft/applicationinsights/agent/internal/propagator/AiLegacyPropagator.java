@@ -46,8 +46,8 @@ public class AiLegacyPropagator implements TextMapPropagator {
 
     private static final TextMapPropagator instance = new AiLegacyPropagator();
 
-    private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
-    private static final int SPAN_ID_HEX_SIZE = SpanId.getHexLength();
+    private static final int TRACE_ID_HEX_SIZE = TraceId.getLength();
+    private static final int SPAN_ID_HEX_SIZE = SpanId.getLength();
 
     public static TextMapPropagator getInstance() {
         return instance;
@@ -88,20 +88,22 @@ public class AiLegacyPropagator implements TextMapPropagator {
         TraceStateBuilder traceState =
                 TraceState.builder().set("ai-legacy-parent-id", aiRequestId);
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        String traceIdHex;
+        String traceId;
         try {
-            traceIdHex = legacyOperationId;
+            traceId = legacyOperationId;
         } catch (IllegalArgumentException e) {
             logger.info("Request-Id root part is not compatible with trace-id.");
             // see behavior specified at
             // https://github.com/microsoft/ApplicationInsights-Java/issues/1174
-            traceIdHex = TraceId.fromLongs(random.nextLong(), random.nextLong());
+            traceId = TraceId.fromLongs(random.nextLong(), random.nextLong());
             traceState.set("ai-legacy-operation-id", legacyOperationId);
         }
+        // TODO (trask) this seems wrong
         String spanIdHex = SpanId.fromLong(random.nextLong());
-        byte traceFlags = TraceFlags.getDefault();
+        // there are no flags, so we assume sampled
+        TraceFlags traceFlags = TraceFlags.getSampled();
         SpanContext spanContext = SpanContext.createFromRemoteParent(
-                traceIdHex, spanIdHex, traceFlags, traceState.build());
+                traceId, spanIdHex, traceFlags, traceState.build());
 
         if (!spanContext.isValid()) {
             return context;
@@ -113,9 +115,9 @@ public class AiLegacyPropagator implements TextMapPropagator {
     private static String getRequestId(SpanContext spanContext) {
         StringBuilder requestId = new StringBuilder(TRACE_ID_HEX_SIZE + SPAN_ID_HEX_SIZE + 3);
         requestId.append('|');
-        requestId.append(spanContext.getTraceIdAsHexString());
+        requestId.append(spanContext.getTraceId());
         requestId.append('.');
-        requestId.append(spanContext.getSpanIdAsHexString());
+        requestId.append(spanContext.getSpanId());
         requestId.append('.');
         return requestId.toString();
     }

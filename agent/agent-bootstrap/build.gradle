@@ -24,11 +24,11 @@ task generateVersionProperties(type: PropsFileGen) {
 processResources.dependsOn generateVersionProperties
 
 dependencies {
-    compile (group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-bootstrap', version: '0.15.0+ai.patch.1') {
+    compile (group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-bootstrap', version: '0.16.0+ai.patch.1') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
-    compile group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: '0.15.0+ai.patch.1'
-    compile group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-api', version: '0.15.0+ai.patch.1'
+    compile group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: '0.16.0+ai.patch.1'
+    compile group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-api', version: '0.16.0+ai.patch.1'
     compile 'ch.qos.logback:logback-classic:1.2.3'
     compile 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
 
