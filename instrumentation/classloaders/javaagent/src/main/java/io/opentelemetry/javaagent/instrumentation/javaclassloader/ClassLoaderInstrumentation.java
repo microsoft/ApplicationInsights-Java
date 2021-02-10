@@ -17,6 +17,7 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.tooling.Constants;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
@@ -126,6 +127,16 @@ public class ClassLoaderInstrumentation implements TypeInstrumentation {
         // stack on one of our bootstrap packages (since the call depth check would then suppress
         // the nested loadClass instrumentation)
         CallDepthThreadLocalMap.reset(ClassLoader.class);
+      }
+      // TODO replace with new SPI in 0.10.0
+      for (final String prefix :
+          Config.get().getListProperty("otel.additional.bootstrap.package.prefixes")) {
+        if (name.startsWith(prefix)) {
+          try {
+            return Class.forName(name, false, null);
+          } catch (final ClassNotFoundException ignored) {
+          }
+        }
       }
       return null;
     }
