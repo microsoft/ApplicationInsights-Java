@@ -7,11 +7,12 @@ import com.microsoft.applicationinsights.web.internal.ThreadContext;
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
 import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.Tracestate;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.extension.annotations.WithSpan;
 
 public class Code {
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public void setProperty() {
     internalSetProperty();
   }
@@ -24,7 +25,7 @@ public class Code {
         .put("akey", "avalue");
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public void setUser() {
     internalSetUser();
   }
@@ -38,22 +39,22 @@ public class Code {
         .setId("myuser");
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public void setName() {
     internalSetName();
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public void setSource() {
     internalSetSource();
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public String getId() {
     return internalGetId();
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public String getOperationId() {
     return internalGetOperationId();
   }
@@ -82,27 +83,27 @@ public class Code {
         .getId();
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public void otherRequestTelemetryContextMethods() {
     ThreadContext.getRequestTelemetryContext().getCorrelationContext();
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public void otherRequestTelemetryMethods() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getName();
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public void otherBaseTelemetryMethods() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getTimestamp();
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public void otherTelemetryContextMethods() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getSession();
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public void otherUserContextMethods() {
     ThreadContext.getRequestTelemetryContext()
         .getHttpRequestTelemetry()
@@ -111,7 +112,7 @@ public class Code {
         .setAccountId("abc");
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public void otherOperationContextMethods() {
     ThreadContext.getRequestTelemetryContext()
         .getHttpRequestTelemetry()
@@ -120,17 +121,17 @@ public class Code {
         .setId("xyz");
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public Tracestate getTracestate() {
     return ThreadContext.getRequestTelemetryContext().getTracestate();
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public int getTraceflag() {
     return ThreadContext.getRequestTelemetryContext().getTraceflag();
   }
 
-  @WithSpan(kind = Span.Kind.SERVER)
+  @WithSpan(kind = SpanKind.SERVER)
   public String retriveTracestate() {
     return TraceContextCorrelation.retriveTracestate();
   }

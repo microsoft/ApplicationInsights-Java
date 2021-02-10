@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.api.trace.Span.Kind.INTERNAL
-import static io.opentelemetry.api.trace.Span.Kind.SERVER
+import static io.opentelemetry.api.trace.SpanKind.INTERNAL
+import static io.opentelemetry.api.trace.SpanKind.SERVER
 
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation
 import io.opentelemetry.api.GlobalOpenTelemetry
@@ -178,7 +178,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
     def spanContext = SpanContext.create(
       "12341234123412341234123412341234",
       "1234123412341234",
-      (byte) flag,
+      flag,
       TraceState.getDefault())
 
     when:
@@ -187,10 +187,10 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
     scope.close()
 
     then:
-    traceflag == flag
+    traceflag == flag.asByte()
 
     where:
-    flag << [0, 1]
+    flag << [TraceFlags.getDefault(), TraceFlags.getSampled()]
   }
 
   def "should interop with generateChildDependencyTraceparent"() {

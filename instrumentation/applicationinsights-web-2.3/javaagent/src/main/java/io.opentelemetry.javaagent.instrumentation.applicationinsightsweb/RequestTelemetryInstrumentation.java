@@ -93,7 +93,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
       Span span =
           InstrumentationContext.get(RequestTelemetry.class, Span.class).get(requestTelemetry);
       if (span != null) {
-        id = span.getSpanContext().getSpanIdAsHexString();
+        id = span.getSpanContext().getSpanId();
       }
     }
   }
