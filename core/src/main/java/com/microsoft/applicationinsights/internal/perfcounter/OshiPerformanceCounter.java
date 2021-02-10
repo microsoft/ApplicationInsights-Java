@@ -33,8 +33,8 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
     private static final Logger logger = LoggerFactory.getLogger(OshiPerformanceCounter.class);
     private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "OshiPerformanceCounter";
-    private final static double NANOS_IN_SECOND = 1_000_000_000;
-    private long prevCollectionInNanos = -1;
+    private final static double MILLIS_IN_SECOND = 1000;
+    private long prevCollectionInMillis = -1;
     private double prevProcessIO;
     private OSProcess processInfo;
 
@@ -51,20 +51,20 @@ public class OshiPerformanceCounter implements PerformanceCounter {
     @Override public void report(TelemetryClient telemetryClient) {
         processInfo.updateAttributes();
 
-        long currentCollectionInNanos = System.nanoTime();
+        long currentCollectionInMillis = System.currentTimeMillis();
         double currentProcessIO = 0;
 
         // process io
         currentProcessIO += (double) (processInfo.getBytesRead() + processInfo.getBytesWritten());
-        if (prevCollectionInNanos != -1) {
-            double timeElapsedInSeconds = (currentCollectionInNanos - prevCollectionInNanos) / NANOS_IN_SECOND;
+        if (prevCollectionInMillis != -1) {
+            double timeElapsedInSeconds = (currentCollectionInMillis - prevCollectionInMillis) / MILLIS_IN_SECOND;
             double value = (currentProcessIO - prevProcessIO) / timeElapsedInSeconds;
             send(telemetryClient, value, Constants.PROCESS_IO_PC_METRIC_NAME);
             logger.trace("Sent performance counter for '{}': '{}'", Constants.PROCESS_IO_PC_METRIC_NAME, value);
         }
 
         prevProcessIO = currentProcessIO;
-        prevCollectionInNanos = currentCollectionInNanos;
+        prevCollectionInMillis = currentCollectionInMillis;
 
         // getUserTime() and getKernelTime() return the number of milliseconds the process has executed in user mode
         long totalProcessorTime = (long) ((processInfo.getUserTime() + processInfo.getKernelTime()) * 0.001);
