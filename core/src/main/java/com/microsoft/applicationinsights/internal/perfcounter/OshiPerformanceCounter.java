@@ -26,8 +26,6 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oshi.SystemInfo;
-import oshi.hardware.HWDiskStore;
-import oshi.hardware.HardwareAbstractionLayer;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
 
@@ -36,14 +34,12 @@ public class OshiPerformanceCounter implements PerformanceCounter {
     private static final Logger logger = LoggerFactory.getLogger(OshiPerformanceCounter.class);
     private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "OshiPerformanceCounter";
     private final static double NANOS_IN_SECOND = 1_000_000_000;
-    private long lastCollectionInNanos = -1;
+    private long prevCollectionInNanos = -1;
     private double prevProcessIO;
-    private HardwareAbstractionLayer hal;
     private OSProcess processInfo;
 
     public OshiPerformanceCounter() {
         SystemInfo systemInfo = new SystemInfo();
-        hal = systemInfo.getHardware();
         OperatingSystem osInfo = systemInfo.getOperatingSystem();
         processInfo = osInfo.getProcess(osInfo.getProcessId());
     }
@@ -53,24 +49,23 @@ public class OshiPerformanceCounter implements PerformanceCounter {
     }
 
     @Override public void report(TelemetryClient telemetryClient) {
+        processInfo.updateAttributes();
+
         long currentCollectionInNanos = System.nanoTime();
-        double currentProcessIO = 0.0;
+        double currentProcessIO = 0;
 
         // process io
         currentProcessIO += (double) (processInfo.getBytesRead() + processInfo.getBytesWritten());
-
-        if (lastCollectionInNanos != -1) {
-            double timeElapsedInSeconds = ((double)(currentCollectionInNanos - lastCollectionInNanos)) / NANOS_IN_SECOND;
+        if (prevCollectionInNanos != -1) {
+            double timeElapsedInSeconds = (currentCollectionInNanos - prevCollectionInNanos) / NANOS_IN_SECOND;
             double value = (currentProcessIO - prevProcessIO) / timeElapsedInSeconds;
             send(telemetryClient, value, Constants.PROCESS_IO_PC_METRIC_NAME);
             logger.trace("Sent performance counter for '{}': '{}'", Constants.PROCESS_IO_PC_METRIC_NAME, value);
         }
 
         prevProcessIO = currentProcessIO;
-        lastCollectionInNanos = currentCollectionInNanos;
+        prevCollectionInNanos = currentCollectionInNanos;
 
-        // runtime.java.cpu_time
-        processInfo.updateAttributes();
         // getUserTime() and getKernelTime() return the number of milliseconds the process has executed in user mode
         long totalProcessorTime = (long) ((processInfo.getUserTime() + processInfo.getKernelTime()) * 0.001);
         send(telemetryClient, totalProcessorTime, Constants.TOTAL_CPU_PC_METRIC_NAME);
