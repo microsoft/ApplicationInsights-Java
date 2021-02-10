@@ -137,6 +137,10 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
                 "org.springframework.core.ReactiveAdapterRegistry$EmptyCompletableFuture")) {
           return false;
         }
+        // Spring boot actuator / micrometer instrumentation
+        if (name.equals("org.springframework.core.io.ClassPathResource")) {
+          return false;
+        }
         return true;
       }
 
@@ -328,7 +332,9 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
           "org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext",
           "org.springframework.boot.web.embedded.tomcat.TomcatWebServer$",
           "org.springframework.boot.web.embedded.tomcat.TomcatEmbeddedWebappClassLoader",
-          "org.springframework.boot.web.servlet.DelegatingFilterProxyRegistrationBean$");
+          "org.springframework.boot.web.servlet.DelegatingFilterProxyRegistrationBean$",
+          // Spring boot actuator / micrometer instrumentation
+          "org.springframework.boot.autoconfigure.AutoConfigurationImportSelector");
 
   private static String outerClassName(final String name) {
     int separator = name.indexOf('$');
