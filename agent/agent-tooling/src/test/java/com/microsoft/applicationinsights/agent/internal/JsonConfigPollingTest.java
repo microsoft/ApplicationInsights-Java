@@ -28,8 +28,6 @@ import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import org.junit.*;
 import org.junit.contrib.java.lang.system.*;
 
