@@ -37,6 +37,7 @@ public class OshiPerformanceCounter implements PerformanceCounter {
     private long prevCollectionInMillis = -1;
     private double prevProcessIO;
     private OSProcess processInfo;
+    private double prevTotalProcessorTime;
 
     public OshiPerformanceCounter() {
         SystemInfo systemInfo = new SystemInfo();
@@ -52,24 +53,22 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         processInfo.updateAttributes();
 
         long currentCollectionInMillis = System.currentTimeMillis();
-        double currentProcessIO = 0;
-
-        // process io
-        currentProcessIO += (double) (processInfo.getBytesRead() + processInfo.getBytesWritten());
+        double currentProcessIO = (double) (processInfo.getBytesRead() + processInfo.getBytesWritten());
+        double currentTotalProcessorTime = processInfo.getUserTime() + processInfo.getKernelTime();
         if (prevCollectionInMillis != -1) {
             double timeElapsedInSeconds = (currentCollectionInMillis - prevCollectionInMillis) / MILLIS_IN_SECOND;
-            double value = (currentProcessIO - prevProcessIO) / timeElapsedInSeconds;
-            send(telemetryClient, value, Constants.PROCESS_IO_PC_METRIC_NAME);
-            logger.trace("Sent performance counter for '{}': '{}'", Constants.PROCESS_IO_PC_METRIC_NAME, value);
+            double processIo = (currentProcessIO - prevProcessIO) / timeElapsedInSeconds;
+            send(telemetryClient, processIo, Constants.PROCESS_IO_PC_METRIC_NAME);
+            logger.trace("Sent performance counter for '{}': '{}'", Constants.PROCESS_IO_PC_METRIC_NAME, processIo);
+
+            double processorTime = (currentTotalProcessorTime - prevTotalProcessorTime) / timeElapsedInSeconds;
+            send(telemetryClient, processorTime, Constants.TOTAL_CPU_PC_METRIC_NAME);
+            logger.trace("Sent performance counter for '{}': '{}'", Constants.TOTAL_CPU_PC_METRIC_NAME, processorTime);
         }
 
         prevProcessIO = currentProcessIO;
+        prevTotalProcessorTime = currentTotalProcessorTime;
         prevCollectionInMillis = currentCollectionInMillis;
-
-        // getUserTime() and getKernelTime() return the number of milliseconds the process has executed in user mode
-        long totalProcessorTime = (long) ((processInfo.getUserTime() + processInfo.getKernelTime()) * 0.001);
-        send(telemetryClient, totalProcessorTime, Constants.TOTAL_CPU_PC_METRIC_NAME);
-        logger.trace("Sent performance counter for '{}': '{}'", Constants.TOTAL_CPU_PC_METRIC_NAME, totalProcessorTime);
     }
 
     private void send(TelemetryClient telemetryClient, double value, String metricName) {
