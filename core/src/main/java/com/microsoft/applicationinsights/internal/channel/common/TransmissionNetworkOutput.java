@@ -45,8 +45,8 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import static com.microsoft.applicationinsights.common.CommonUtils.handleTemporaryExceptions;
+import static com.microsoft.applicationinsights.common.CommonUtils.successCounter;
 
 /**
  * The class is responsible for the actual sending of
@@ -79,12 +79,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
     private final ApacheSender httpClient;
 
     private TransmissionPolicyManager transmissionPolicyManager;
-
-    public static final AtomicLong successCounter = new AtomicLong(0);
-    public static final AtomicLong failureCounter = new AtomicLong(0);
-    public static final AtomicLong previousFailureCounter = new AtomicLong(0);
-    public static final AtomicLong previousSuccessCounter = new AtomicLong(0);
-    public static final AtomicBoolean firstFailure = new AtomicBoolean(false);
 
     /**
      * Creates an instance of the network transmission class.
@@ -187,19 +181,19 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 return true;
 
             } catch (ConnectionPoolTimeoutException e) {
-                handleTemporaryExceptions("Failed to send, connection pool timeout exception. " +
+                handleTemporaryExceptions(logger,"Failed to send, connection pool timeout exception. " +
                         "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
             } catch (SocketException e) {
-                handleTemporaryExceptions("Failed to send, socket exception. " +
+                handleTemporaryExceptions(logger,"Failed to send, socket exception. " +
                         "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
             } catch (SocketTimeoutException e) {
-                handleTemporaryExceptions("Failed to send, socket timeout exception. " +
+                handleTemporaryExceptions(logger,"Failed to send, socket timeout exception. " +
                         "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
             } catch (UnknownHostException e) {
-                handleTemporaryExceptions("Failed to send, wrong host address or cannot reach address due to network issues. " +
+                handleTemporaryExceptions(logger,"Failed to send, wrong host address or cannot reach address due to network issues. " +
                         "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
             } catch (IOException e) {
-                handleTemporaryExceptions("Failed to send, IO exception. " +
+                handleTemporaryExceptions(logger,"Failed to send, IO exception. " +
                         "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
             } catch (FriendlyException e) {
                 ex = e;
@@ -207,7 +201,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                     logger.error(e.getMessage());
                 }
             } catch (Exception e) {
-                handleTemporaryExceptions("Failed to send, unexpected exception. " +
+                handleTemporaryExceptions(logger,"Failed to send, unexpected exception. " +
                         "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
             } catch (ThreadDeath td) {
                 throw td;
@@ -248,24 +242,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
         // This also means that unless there is a TransmissionHandler for this code we
         // will not retry.
         return true;
-    }
-
-    private static void handleTemporaryExceptions(String message, Exception ex) {
-        //Handle first failure
-        if(!firstFailure.getAndSet(true)) {
-            logger.error(message+"\n"+
-                    "Total number of successful telemetry requests so far:"+successCounter.get()+"\n"+
-                    "Future failures will be aggregated and logged once every 5 minutes\n",
-                    ex
-            );
-        //Log the first failure every 5 minutes.
-        } else if(failureCounter.getAndIncrement() == 0) {
-            logger.error(message+"\n"+
-                            "Total number of failed telemetry requests in the last 5 minutes:"+previousFailureCounter.get()+"\n"+
-                            "Total number of successful telemetry requests in the last 5 minutes:"+previousFailureCounter.get()+"\n"+
-                    ex
-            );
-        }
     }
 
     /**

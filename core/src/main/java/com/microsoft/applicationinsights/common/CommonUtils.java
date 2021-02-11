@@ -23,6 +23,10 @@ package com.microsoft.applicationinsights.common;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +34,13 @@ import org.slf4j.LoggerFactory;
 public class CommonUtils {
 
   private static final Logger logger = LoggerFactory.getLogger(CommonUtils.class);
+  public static final AtomicLong successCounter = new AtomicLong(0);
+  public static final AtomicLong failureCounter = new AtomicLong(0);
+  public static final AtomicBoolean firstFailure = new AtomicBoolean(false);
+  public static final AtomicReference<Exception> lastTemporaryException = new AtomicReference<>();
+  public static final AtomicReference<Logger> lastTemporaryExceptionLogger = new AtomicReference<>();
+  public static final AtomicReference<String> lastTemporaryExceptionMessage = new AtomicReference<>();
+
 
   public static boolean isNullOrEmpty(String string) {
     return string == null || string.length() == 0;
@@ -66,6 +77,15 @@ public class CommonUtils {
       logger.debug(
           "Specified class {} is not present on the classpath", classSignature);
       return false;
+    }
+  }
+
+  public static void handleTemporaryExceptions(Logger loggerFromException,String message, Exception ex) {
+    //Handle first failure
+    if(failureCounter.getAndIncrement() == 0) {
+      lastTemporaryExceptionMessage.set(message);
+      lastTemporaryExceptionLogger.set(loggerFromException);
+      lastTemporaryException.set(ex);
     }
   }
 }
