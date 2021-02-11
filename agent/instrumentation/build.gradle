@@ -8,7 +8,7 @@ repositories {
     mavenLocal()
 }
 
-def instrumentationVersion = '0.15.0+ai.patch.1'
+def instrumentationVersion = '0.16.0+ai.patch.1'
 
 dependencies {
     compile project(':agent:agent-tooling')

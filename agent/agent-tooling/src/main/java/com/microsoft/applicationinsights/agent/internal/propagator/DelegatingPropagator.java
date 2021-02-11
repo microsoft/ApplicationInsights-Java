@@ -19,6 +19,7 @@ public class DelegatingPropagator implements TextMapPropagator {
     }
 
     public void setUpStandardDelegate() {
+        // important that W3CTraceContextPropagator is last, so it will take precedence if both sets of headers are present
         delegate = TextMapPropagator.composite(AiLegacyPropagator.getInstance(), W3CTraceContextPropagator.getInstance());
     }
 
