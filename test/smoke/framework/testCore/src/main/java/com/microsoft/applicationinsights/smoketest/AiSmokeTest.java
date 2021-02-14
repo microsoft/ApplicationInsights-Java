@@ -225,17 +225,6 @@ public abstract class AiSmokeTest {
                 System.out.println("\nFinished gathering logs.");
             }
         }
-
-        private void runTailLastLog(String containerId) {
-            System.out.println("\nFetching appserver logs");
-            try {
-                docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh");
-            }
-            catch (Exception e) {
-                System.err.println("Error executing tailLastLog.sh");
-                e.printStackTrace();
-            }
-        }
     };
 
     @BeforeClass

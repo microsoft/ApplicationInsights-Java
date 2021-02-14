@@ -159,10 +159,9 @@ Currently, the only **target_os** supported is `linux`. There are plans to suppo
 
 4. Inside the appserver subdirectory, create a directory named `resources` with a subdirectory for each target OS (again, currently only `linux` is supported). For example, `/test/smoke/appServers`_`MyAppServer.1`_`/`_**`resources/linux`**_
 
-5. Inside the `resources/linux` directory, create two scripts specific to this application server:
+5. Inside the `resources/linux` directory, create one script specific to this application server:
     *  `deploy.sh` - This should take one argument, the absolute path to the test application WAR file. The script will use the application server's mechanism to deploy the WAR file into the server. This can be using the appserver's management API or copying the WAR into a scanned directory; it depends on the application server spec.
     `deploy.sh` will be run after the appserver has started and after the test app WAR is copied into the container.
-    * `tailLastLog.sh` - This takes one optional argument, number of lines to tail. This will be run when a test failed and the goal is to provide any additional diagnostics for addressing the test failure. When run, it should print the given/default number of lines from the tail of the application server's logs. This should include the application server log file which captures the logs from the test application. Logs from deployment should also be included. This could be from one or more files depending on the application server spec. If more than one file is tailed, include a filename header before dumping the log file.
 6. Add an `inlucde` statement to `settings.gradle` at the root of the repository. For example:
 ```gradle
 include ':test:smoke:appServers:MyAppServer'
