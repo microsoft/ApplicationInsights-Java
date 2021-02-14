@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.agent.bootstrap.configuration;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Locale;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
@@ -277,6 +278,26 @@ public class ConfigurationTest {
         assertEquals(jmxMetrics.get(0).name, configuration.jmxMetrics.get(0).name); // class count is overridden by the env var
         assertEquals(jmxMetrics.get(1).name, configuration.jmxMetrics.get(1).name); // code cache is overridden by the env var
         assertEquals(configuration.jmxMetrics.get(2).name, "Current Thread Count");
+    }
+
+    @Test
+    public void shouldOverrideInstrumentationEnabled() throws IOException {
+        shouldOverrideInstrumentationEnable("micrometer");
+        shouldOverrideInstrumentationEnable("jdbc");
+        shouldOverrideInstrumentationEnable("redis");
+        shouldOverrideInstrumentationEnable("kafka");
+        shouldOverrideInstrumentationEnable("mongo");
+        shouldOverrideInstrumentationEnable("cassandra");
+        shouldOverrideInstrumentationEnable("spring-scheduling");
+    }
+
+    private void shouldOverrideInstrumentationEnable(String instrumentationName) throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_" + instrumentationName.replace('-', '_').toUpperCase(Locale.ROOT) + "_ENABLED", "false");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals(false, configuration.instrumentation.get(instrumentationName).get("enabled"));
     }
 
     @Test(expected = JsonDataException.class)
