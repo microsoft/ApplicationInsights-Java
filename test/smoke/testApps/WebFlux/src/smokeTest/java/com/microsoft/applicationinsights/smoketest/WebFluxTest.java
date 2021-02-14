@@ -38,6 +38,7 @@ public class WebFluxTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
         assertFalse(rd.getSuccess());
+        assertEquals("/exception", rd.getName());
         assertEquals("500", rd.getResponseCode());
     }
 
@@ -52,6 +53,7 @@ public class WebFluxTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
         assertFalse(rd.getSuccess());
+        assertEquals("/futureException", rd.getName());
         assertEquals("500", rd.getResponseCode());
     }
 }

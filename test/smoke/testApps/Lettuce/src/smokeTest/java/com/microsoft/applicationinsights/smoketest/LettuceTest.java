@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.smoketestapp;
+package com.microsoft.applicationinsights.smoketest;
 
 import java.util.List;
 
@@ -6,27 +6,18 @@ import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
-import com.microsoft.applicationinsights.smoketest.DependencyContainer;
-import com.microsoft.applicationinsights.smoketest.TargetUri;
-import com.microsoft.applicationinsights.smoketest.UseAgent;
-import com.microsoft.applicationinsights.smoketest.WithDependencyContainers;
-import org.junit.Test;
+import org.junit.*;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
 @UseAgent
-@WithDependencyContainers(
-        @DependencyContainer(
-                value = "mongo:4",
-                portMapping = "27017",
-                hostnameEnvironmentVariable = "MONGO")
-)
-public class MongoSmokeTest extends AiSmokeTest {
+@WithDependencyContainers(@DependencyContainer(value="redis", portMapping="6379"))
+public class LettuceTest extends AiSmokeTest {
 
     @Test
-    @TargetUri("/mongo")
-    public void mongo() throws Exception {
+    @TargetUri("/lettuce")
+    public void lettuce() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
@@ -38,11 +29,10 @@ public class MongoSmokeTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
 
-        assertTrue(rd.getSuccess());
-        assertEquals("mongodb", rdd.getType());
-        assertTrue(rdd.getTarget().matches("dependency[0-9]+/testdb"));
-        assertEquals("{\"find\": \"test\", \"$db\": \"?\"}", rdd.getName());
         assertTrue(rdd.getSuccess());
+        assertEquals("redis", rdd.getType());
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
+        assertEquals("GET", rdd.getName());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
     }

@@ -131,6 +131,7 @@ public class ConfigurationBuilder {
         loadInstrumentationEnabledEnvVar(config, "jdbc", "APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED");
         loadInstrumentationEnabledEnvVar(config, "redis", "APPLICATIONINSIGHTS_INSTRUMENTATION_REDIS_ENABLED");
         loadInstrumentationEnabledEnvVar(config, "kafka", "APPLICATIONINSIGHTS_INSTRUMENTATION_KAFKA_ENABLED");
+        loadInstrumentationEnabledEnvVar(config, "jms", "APPLICATIONINSIGHTS_INSTRUMENTATION_JMS_ENABLED");
         loadInstrumentationEnabledEnvVar(config, "mongo", "APPLICATIONINSIGHTS_INSTRUMENTATION_MONGO_ENABLED");
         loadInstrumentationEnabledEnvVar(config, "cassandra", "APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED");
         loadInstrumentationEnabledEnvVar(config, "spring-scheduling", "APPLICATIONINSIGHTS_INSTRUMENTATION_SPRING_SCHEDULING_ENABLED");

@@ -286,6 +286,7 @@ public class ConfigurationTest {
         shouldOverrideInstrumentationEnable("jdbc");
         shouldOverrideInstrumentationEnable("redis");
         shouldOverrideInstrumentationEnable("kafka");
+        shouldOverrideInstrumentationEnable("jms");
         shouldOverrideInstrumentationEnable("mongo");
         shouldOverrideInstrumentationEnable("cassandra");
         shouldOverrideInstrumentationEnable("spring-scheduling");

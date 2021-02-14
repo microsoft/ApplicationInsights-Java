@@ -12,7 +12,8 @@ import io.lettuce.core.api.sync.RedisCommands;
 @WebServlet("/*")
 public class LettuceTestServlet extends HttpServlet {
 
-    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
         try {
             doGetInternal(req);
             resp.getWriter().println("ok");
@@ -32,7 +33,7 @@ public class LettuceTestServlet extends HttpServlet {
         }
     }
 
-    private void lettuce() throws Exception {
+    private void lettuce() {
         String hostname = System.getenv("REDIS");
         RedisClient redisClient = RedisClient.create("redis://" + hostname);
         RedisCommands<String, String> redisCommands = redisClient.connect().sync();
