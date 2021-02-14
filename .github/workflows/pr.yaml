@@ -32,8 +32,8 @@ jobs:
           java-version: 8
       - name: Build otel-fork
         run: |
-          #git submodule init
-          #git submodule update
+          git submodule init
+          git submodule update
           cd otel
           ./gradlew publishToMavenLocal
       - name: Test
