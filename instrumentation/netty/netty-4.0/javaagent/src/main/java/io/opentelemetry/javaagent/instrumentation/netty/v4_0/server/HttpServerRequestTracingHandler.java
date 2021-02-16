@@ -33,7 +33,7 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
     }
 
     HttpRequest req = (HttpRequest) msg;
-    Context context = tracer().startSpan(req, channel, channel, req.method() + " " + req.uri());
+    Context context = tracer().startSpan(req, channel, channel, req.getMethod() + " " + req.getUri());
 
     try (Scope ignored = context.makeCurrent()) {
       ctx.fireChannelRead(msg);
