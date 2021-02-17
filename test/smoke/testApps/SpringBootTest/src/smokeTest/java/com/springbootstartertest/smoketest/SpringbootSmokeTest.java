@@ -135,7 +135,10 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd3 =
                 (RemoteDependencyData) ((Data) rddEnvelope3.getData()).getBaseData();
 
+        assertTrue(rd.getSuccess());
         assertEquals("/SpringBootTest/asyncDependencyCall", rd.getName());
+        assertEquals("200", rd.getResponseCode());
+
         assertEquals("TestController.asyncDependencyCall", rdd1.getName());
         assertEquals("HTTP GET", rdd2.getName());
         assertEquals("https://www.bing.com", rdd2.getData());
