@@ -36,13 +36,22 @@ public class OshiPerformanceCounter implements PerformanceCounter {
     private final static double MILLIS_IN_SECOND = 1000;
     private long prevCollectionInMillis = -1;
     private double prevProcessIO;
+    private double currentProcessIO;
     private OSProcess processInfo;
     private double prevTotalProcessorTime;
+    private double currentTotalProcessorTime;
 
     public OshiPerformanceCounter() {
         SystemInfo systemInfo = new SystemInfo();
         OperatingSystem osInfo = systemInfo.getOperatingSystem();
         processInfo = osInfo.getProcess(osInfo.getProcessId());
+        processInfo.updateAttributes();
+
+        currentProcessIO = (double) (processInfo.getBytesRead() + processInfo.getBytesWritten());
+        prevProcessIO = currentProcessIO;
+
+        currentTotalProcessorTime = processInfo.getUserTime() + processInfo.getKernelTime();
+        prevTotalProcessorTime = currentTotalProcessorTime;
     }
 
     @Override public String getId() {
@@ -53,8 +62,8 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         processInfo.updateAttributes();
 
         long currentCollectionInMillis = System.currentTimeMillis();
-        double currentProcessIO = (double) (processInfo.getBytesRead() + processInfo.getBytesWritten());
-        double currentTotalProcessorTime = processInfo.getUserTime() + processInfo.getKernelTime();
+        currentProcessIO = (double) (processInfo.getBytesRead() + processInfo.getBytesWritten());
+        currentTotalProcessorTime = processInfo.getUserTime() + processInfo.getKernelTime();
         if (prevCollectionInMillis != -1) {
             double timeElapsedInSeconds = (currentCollectionInMillis - prevCollectionInMillis) / MILLIS_IN_SECOND;
             double processIo = (currentProcessIO - prevProcessIO) / timeElapsedInSeconds;
