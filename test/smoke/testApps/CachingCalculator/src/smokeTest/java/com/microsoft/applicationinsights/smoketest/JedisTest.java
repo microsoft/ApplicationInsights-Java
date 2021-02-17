@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 
 @UseAgent
 @WithDependencyContainers(@DependencyContainer(value="redis", portMapping="6379"))
-public class SampleTestWithDependencyContainer extends AiSmokeTest {
+public class JedisTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/index.jsp")

@@ -140,11 +140,17 @@ public class BeforeAgentInstaller {
         if (!isInstrumentationEnabled(config, "kafka")) {
             properties.put("otel.instrumentation.kafka.enabled", "false");
         }
+        if (!isInstrumentationEnabled(config, "jms")) {
+            properties.put("otel.instrumentation.jms.enabled", "false");
+        }
         if (!isInstrumentationEnabled(config, "mongo")) {
             properties.put("otel.instrumentation.mongo.enabled", "false");
         }
         if (!isInstrumentationEnabled(config, "cassandra")) {
             properties.put("otel.instrumentation.cassandra.enabled", "false");
+        }
+        if (!isInstrumentationEnabled(config, "spring-scheduling")) {
+            properties.put("otel.instrumentation.spring-scheduling.enabled", "false");
         }
         if (!config.preview.openTelemetryApiSupport) {
             properties.put("otel.instrumentation.opentelemetry-api.enabled", "false");

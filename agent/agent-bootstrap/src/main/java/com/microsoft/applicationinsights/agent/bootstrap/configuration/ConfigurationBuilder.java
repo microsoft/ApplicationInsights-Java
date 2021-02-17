@@ -74,25 +74,20 @@ public class ConfigurationBuilder {
     public static Configuration create(Path agentJarPath) throws IOException {
         Configuration config = loadConfigurationFile(agentJarPath);
         overlayEnvVars(config);
-
         return config;
     }
 
     private static void loadLogCaptureEnvVar(Configuration config) {
-        Map<String, Object> logging = config.instrumentation.get("logging");
-        if (logging == null) {
-            logging = new HashMap<>();
-            config.instrumentation.put("logging", logging);
-        }
-
-        final String loggingEnvVar = overlayWithEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL, (String)null);
+        String loggingEnvVar = getEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL);
         if (loggingEnvVar != null) {
-            logging.put("level", loggingEnvVar);
+            config.instrumentation
+                    .computeIfAbsent("logging", k -> new HashMap<>())
+                    .put("level", loggingEnvVar);
         }
     }
 
     private static void loadJmxMetricsEnvVar(Configuration config) throws IOException {
-        String jmxMetricsEnvVarJson = overlayWithEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, (String)null);
+        String jmxMetricsEnvVarJson = getEnvVar(APPLICATIONINSIGHTS_JMX_METRICS);
 
         // JmxMetrics env variable has higher precedence over jmxMetrics config from applicationinsights.json
         if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
@@ -131,13 +126,33 @@ public class ConfigurationBuilder {
         return false;
     }
 
+    private static void loadInstrumentationEnabledEnvVars(Configuration config) {
+        loadInstrumentationEnabledEnvVar(config, "micrometer", "APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED");
+        loadInstrumentationEnabledEnvVar(config, "jdbc", "APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED");
+        loadInstrumentationEnabledEnvVar(config, "redis", "APPLICATIONINSIGHTS_INSTRUMENTATION_REDIS_ENABLED");
+        loadInstrumentationEnabledEnvVar(config, "kafka", "APPLICATIONINSIGHTS_INSTRUMENTATION_KAFKA_ENABLED");
+        loadInstrumentationEnabledEnvVar(config, "jms", "APPLICATIONINSIGHTS_INSTRUMENTATION_JMS_ENABLED");
+        loadInstrumentationEnabledEnvVar(config, "mongo", "APPLICATIONINSIGHTS_INSTRUMENTATION_MONGO_ENABLED");
+        loadInstrumentationEnabledEnvVar(config, "cassandra", "APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED");
+        loadInstrumentationEnabledEnvVar(config, "spring-scheduling", "APPLICATIONINSIGHTS_INSTRUMENTATION_SPRING_SCHEDULING_ENABLED");
+    }
+
+    private static void loadInstrumentationEnabledEnvVar(Configuration config, String instrumentationName, String envVarName) {
+        String instrumentationEnabledEnvVar = getEnvVar(envVarName);
+        if (instrumentationEnabledEnvVar != null) {
+            Map<String, Object> properties = config.instrumentation.computeIfAbsent(instrumentationName, k -> new HashMap<>());
+            // intentionally allowing NumberFormatException to bubble up as invalid configuration and prevent agent from starting
+            properties.put("enabled", Boolean.parseBoolean(instrumentationEnabledEnvVar));
+        }
+    }
+
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
         if (DiagnosticsHelper.isAnyCodelessAttach()) {
             // codeless attach only supports configuration via environment variables (for now at least)
             return new Configuration();
         }
 
-        String configPathStr = getEnvVarOrProperty(APPLICATIONINSIGHTS_CONFIGURATION_FILE, "applicationinsights.configuration.file");
+        String configPathStr = getConfigPath();
         if (configPathStr != null) {
             Path configPath = agentJarPath.resolveSibling(configPathStr);
             if (Files.exists(configPath)) {
@@ -168,17 +183,6 @@ public class ConfigurationBuilder {
         }
     }
 
-    // never returns empty string (empty string is normalized to null)
-    private static String getEnvVar(String name) {
-        return trimAndEmptyToNull(System.getenv(name));
-    }
-
-    // never returns empty string (empty string is normalized to null)
-    private static String getEnvVarOrProperty(String envVarName, String propertyName) {
-        String value = trimAndEmptyToNull(System.getenv(envVarName));
-        return value != null ? value : trimAndEmptyToNull(System.getProperty(propertyName));
-    }
-
     public static void overlayEnvVars(Configuration config) throws IOException {
         config.connectionString = overlayWithEnvVar(APPLICATIONINSIGHTS_CONNECTION_STRING, config.connectionString);
         if (config.connectionString == null) {
@@ -192,13 +196,13 @@ public class ConfigurationBuilder {
 
         if (isTrimEmpty(config.role.name)) {
             // only use WEBSITE_SITE_NAME as a fallback
-            config.role.name = getEnv(WEBSITE_SITE_NAME);
+            config.role.name = getEnvVar(WEBSITE_SITE_NAME);
         }
         config.role.name = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, config.role.name);
 
         if (isTrimEmpty(config.role.instance)) {
             // only use WEBSITE_INSTANCE_ID as a fallback
-            config.role.instance = getEnv(WEBSITE_INSTANCE_ID);
+            config.role.instance = getEnvVar(WEBSITE_INSTANCE_ID);
         }
         config.role.instance = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, config.role.instance);
 
@@ -210,35 +214,45 @@ public class ConfigurationBuilder {
         loadJmxMetricsEnvVar(config);
 
         addDefaultJmxMetricsIfNotPresent(config);
+
+        loadInstrumentationEnabledEnvVars(config);
+    }
+
+    private static String getConfigPath() {
+        String value = getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_FILE);
+        if (value != null) {
+            return value;
+        }
+        // intentionally not checking system properties for other system properties
+        // with the intention to keep configuration paths minimal to help with supportability
+        return trimAndEmptyToNull(System.getProperty("applicationinsights.configuration.file"));
+    }
+
+    private static String getWebsiteSiteNameEnvVar() {
+        String value = getEnvVar(WEBSITE_SITE_NAME);
+        // TODO is the best way to identify running as Azure Functions worker?
+        // TODO is this the correct way to match role name from Azure Functions IIS host?
+        if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+            // special case for Azure Functions
+            return value.toLowerCase(Locale.ENGLISH);
+        }
+        return value;
     }
 
     static String overlayWithEnvVar(String name, String defaultValue) {
-        String value = getEnv(name);
-        if (value != null && !value.isEmpty()) {
-            return value;
-        }
-
-        return defaultValue;
+        String value = getEnvVar(name);
+        return value != null ? value : defaultValue;
     }
 
-    static Double overlayWithEnvVar(String name, Double defaultValue) {
-        String value = getEnv(name);
-        if (value != null && !value.isEmpty()) {
-            return Double.parseDouble(value);
-        }
-
-        return defaultValue;
+    static double overlayWithEnvVar(String name, double defaultValue) {
+        String value = getEnvVar(name);
+        // intentionally allowing NumberFormatException to bubble up as invalid configuration and prevent agent from starting
+        return value != null ? Double.parseDouble(value) : defaultValue;
     }
 
-    private static String getEnv(String name) {
-        String value = System.getenv(name);
-        // TODO is the best way to identify running as Azure Functions worker?
-        // TODO is this the correct way to match role name from Azure Functions IIS host?
-        if (name.equals("WEBSITE_SITE_NAME") && "java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-            // special case for Azure Functions
-            value = value.toLowerCase(Locale.ENGLISH);
-        }
-        return value;
+    // never returns empty string (empty string is normalized to null)
+    private static String getEnvVar(String name) {
+        return trimAndEmptyToNull(System.getenv(name));
     }
 
     // visible for testing
