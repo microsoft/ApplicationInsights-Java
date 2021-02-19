@@ -9,7 +9,6 @@ import static io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3Ht
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
@@ -34,12 +33,15 @@ public class Servlet3Advice {
     }
 
     HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+    HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
     Context attachedContext = tracer().getServerContext(httpServletRequest);
     if (attachedContext != null) {
       // We are inside nested servlet/filter/app-server span, don't create new span
       if (Servlet3HttpServerTracer.needsRescoping(attachedContext)) {
-        attachedContext = tracer().runOnceUnderAppServer(attachedContext, httpServletRequest);
+        attachedContext =
+            tracer()
+                .runOnceUnderAppServer(attachedContext, httpServletRequest, httpServletResponse);
         scope = attachedContext.makeCurrent();
         return;
       }
@@ -47,7 +49,8 @@ public class Servlet3Advice {
       // We already have attached context to request but this could have been done by app server
       // instrumentation, if needed update span with info from current request.
       Context currentContext = Java8BytecodeBridge.currentContext();
-      Context updatedContext = tracer().runOnceUnderAppServer(currentContext, httpServletRequest);
+      Context updatedContext =
+          tracer().runOnceUnderAppServer(currentContext, httpServletRequest, httpServletResponse);
       if (updatedContext != currentContext) {
         // runOnceUnderAppServer updated context, need to re-scope
         scope = updatedContext.makeCurrent();
@@ -61,7 +64,8 @@ public class Servlet3Advice {
       // We already have a span but it was not created by servlet instrumentation.
       // In case it was created by app server integration we need to update it with info from
       // current request.
-      Context updatedContext = tracer().runOnceUnderAppServer(currentContext, httpServletRequest);
+      Context updatedContext =
+          tracer().runOnceUnderAppServer(currentContext, httpServletRequest, httpServletResponse);
       if (currentContext != updatedContext) {
         // runOnceUnderAppServer updated context, need to re-scope
         scope = updatedContext.makeCurrent();
@@ -69,12 +73,7 @@ public class Servlet3Advice {
       return;
     }
 
-    String appId = AiAppId.getAppId();
-    if (!appId.isEmpty()) {
-      ((HttpServletResponse) response).setHeader(AiAppId.RESPONSE_HEADER_NAME, "appId=" + appId);
-    }
-
-    context = tracer().startSpan(httpServletRequest);
+    context = tracer().startSpan(httpServletRequest, httpServletResponse);
     scope = context.makeCurrent();
   }
 

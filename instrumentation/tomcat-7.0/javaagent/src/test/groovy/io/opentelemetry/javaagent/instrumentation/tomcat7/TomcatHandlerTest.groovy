@@ -68,6 +68,11 @@ class TomcatHandlerTest extends HttpServerTest<Tomcat> implements AgentTestTrait
   }
 
   @Override
+  boolean sendsBackAiTargetAppId() {
+    true
+  }
+
+  @Override
   boolean hasErrorPageSpans(ServerEndpoint endpoint) {
     endpoint == ERROR || endpoint == EXCEPTION
   }

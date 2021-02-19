@@ -16,7 +16,6 @@ public class LibertyHttpServerTracer extends Servlet3HttpServerTracer {
     return TRACER;
   }
 
-  @Override
   public Context startSpan(HttpServletRequest request) {
     // using request method as span name as server isn't ready for calling request.getServletPath()
     // span name will be updated a bit later when calling request.getServletPath() works
