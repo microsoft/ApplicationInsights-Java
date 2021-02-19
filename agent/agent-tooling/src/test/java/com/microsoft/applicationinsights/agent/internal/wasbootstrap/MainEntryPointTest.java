@@ -1,7 +1,8 @@
-package com.microsoft.applicationinsights.agent.bootstrap;
+package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
-import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.junit.*;
+
 import static org.junit.Assert.*;
 
 public class MainEntryPointTest {

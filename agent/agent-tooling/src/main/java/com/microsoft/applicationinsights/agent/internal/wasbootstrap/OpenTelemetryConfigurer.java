@@ -1,4 +1,4 @@
-package io.opentelemetry.javaagent.tooling;
+package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,10 +6,10 @@ import java.util.List;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.Exporter;
-import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;

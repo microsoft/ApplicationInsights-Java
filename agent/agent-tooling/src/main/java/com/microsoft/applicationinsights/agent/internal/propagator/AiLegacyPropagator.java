@@ -34,7 +34,9 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TraceStateBuilder;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +64,7 @@ public class AiLegacyPropagator implements TextMapPropagator {
     }
 
     @Override
-    public <C> void inject(Context context, @Nullable C carrier, Setter<C> setter) {
+    public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
         SpanContext spanContext = Span.fromContext(context).getSpanContext();
         if (!spanContext.isValid()) {
             return;
@@ -75,7 +77,7 @@ public class AiLegacyPropagator implements TextMapPropagator {
     }
 
     @Override
-    public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
+    public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
 
         String aiRequestId = getter.get(carrier, "Request-Id");
         if (aiRequestId == null || aiRequestId.isEmpty()) {
@@ -86,7 +88,7 @@ public class AiLegacyPropagator implements TextMapPropagator {
         // https://github.com/microsoft/ApplicationInsights-Java/issues/1174
         String legacyOperationId = aiExtractRootId(aiRequestId);
         TraceStateBuilder traceState =
-                TraceState.builder().set("ai-legacy-parent-id", aiRequestId);
+                TraceState.builder().put("ai-legacy-parent-id", aiRequestId);
         ThreadLocalRandom random = ThreadLocalRandom.current();
         String traceId;
         try {
@@ -96,7 +98,7 @@ public class AiLegacyPropagator implements TextMapPropagator {
             // see behavior specified at
             // https://github.com/microsoft/ApplicationInsights-Java/issues/1174
             traceId = TraceId.fromLongs(random.nextLong(), random.nextLong());
-            traceState.set("ai-legacy-operation-id", legacyOperationId);
+            traceState.put("ai-legacy-operation-id", legacyOperationId);
         }
         // TODO (trask) this seems wrong
         String spanIdHex = SpanId.fromLong(random.nextLong());

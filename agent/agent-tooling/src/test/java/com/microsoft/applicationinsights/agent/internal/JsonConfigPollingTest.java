@@ -48,7 +48,7 @@ public class JsonConfigPollingTest {
     @Test
     public void shouldUpdate() {
         // given
-        TelemetryConfiguration.getActive().setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        TelemetryConfiguration.getActive().setConnectionString("InstrumentationKey=11111111-1111-1111-1111-111111111111");
         Global.setSamplingPercentage(SamplingPercentage.roundToNearest(90));
 
         // when
@@ -56,7 +56,7 @@ public class JsonConfigPollingTest {
         new JsonConfigPolling(path, 0, 90).run();
 
         // then
-        assertEquals("InstrumentationKey=11111111-1111-1111-1111-111111111111", TelemetryConfiguration.getActive().getConnectionString());
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
         assertEquals(Global.getSamplingPercentage(), 10, 0);
     }
 

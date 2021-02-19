@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.bootstrap.configuration;
+package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,9 +29,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
-import com.squareup.moshi.Json;
-import io.opentelemetry.api.common.AttributeKey;
+
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 

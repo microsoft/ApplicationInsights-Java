@@ -8,13 +8,14 @@ repositories {
     mavenLocal()
 }
 
-def instrumentationVersion = '0.16.0+ai.patch.1'
+def instrumentationVersion = '0.17.0+ai.patch.1-alpha'
 
 dependencies {
     compile project(':agent:agent-tooling')
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpasyncclient-4.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-2.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-4.0', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-5.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-applicationinsights-web-2.3', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-azure-functions', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-cassandra-3.0', version: instrumentationVersion
@@ -104,7 +105,7 @@ shadowJar {
     }
 
     dependencies {
-        // exclude bootstrap dependencies from shadowJar
+        // exclude wasbootstrap dependencies from shadowJar
         exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-bootstrap'))
         exclude(dependency('io.opentelemetry:opentelemetry-api'))
         exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
@@ -112,10 +113,7 @@ shadowJar {
         exclude(dependency('org.slf4j:slf4j-api'))
     }
 
-    // need to merge at least META-INF/services/io.opentelemetry.javaagent.tooling.InstrumentationModule files
-    mergeServiceFiles {
-        exclude 'META-INF/services/io.opentelemetry.javaagent.spi.ComponentInstaller'
-    }
+    mergeServiceFiles()
 
     exclude '**/module-info.class'
 

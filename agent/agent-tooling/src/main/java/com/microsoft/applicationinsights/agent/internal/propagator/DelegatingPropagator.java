@@ -5,7 +5,9 @@ import javax.annotation.Nullable;
 
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 
 public class DelegatingPropagator implements TextMapPropagator {
 
@@ -29,12 +31,12 @@ public class DelegatingPropagator implements TextMapPropagator {
     }
 
     @Override
-    public <C> void inject(Context context, @Nullable C carrier, Setter<C> setter) {
+    public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
         delegate.inject(context, carrier, setter);
     }
 
     @Override
-    public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
+    public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
         return delegate.extract(context, carrier, getter);
     }
 }

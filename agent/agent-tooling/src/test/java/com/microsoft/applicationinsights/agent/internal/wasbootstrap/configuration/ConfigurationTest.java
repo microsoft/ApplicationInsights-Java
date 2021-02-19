@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent.bootstrap.configuration;
+package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -9,12 +9,12 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharSource;
 import com.google.common.io.Resources;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.PreviewConfiguration;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorActionType;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.PreviewConfiguration;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorActionType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorMatchType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonReader;

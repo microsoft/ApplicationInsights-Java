@@ -1,1 +1,1 @@
-io.opentelemetry.javaagent.tooling.OpenTelemetryConfigurer
+com.microsoft.applicationinsights.agent.internal.wasbootstrap.OpenTelemetryConfigurer

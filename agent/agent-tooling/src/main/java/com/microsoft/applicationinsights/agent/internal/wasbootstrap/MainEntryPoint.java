@@ -18,28 +18,29 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.agent.bootstrap;
+package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Locale;
 
-import ch.qos.logback.classic.Level;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.SelfDiagnostics;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
-import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
-import io.opentelemetry.javaagent.bootstrap.AgentInitializer;
-import io.opentelemetry.javaagent.bootstrap.ConfigureLogging;
+import com.microsoft.applicationinsights.agent.internal.AiComponentInstaller;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SelfDiagnostics;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.slf4j.event.Level;
 
-// this class has one purpose, start diagnostics before passing control to opentelemetry-auto-instr-java
+// this class initializes configuration and logging before passing control to opentelemetry-java-instrumentation
 public class MainEntryPoint {
 
     private static Configuration configuration;
@@ -61,6 +62,7 @@ public class MainEntryPoint {
         return lastModifiedTime;
     }
 
+    // TODO turn this into an interceptor
     public static void start(Instrumentation instrumentation, URL bootstrapURL) {
         boolean success = false;
         Logger startupLogger = null;
@@ -75,7 +77,9 @@ public class MainEntryPoint {
             startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
             ConfigurationBuilder.logConfigurationMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
-            AgentInitializer.initializeAndBubbleException(instrumentation, bootstrapURL);
+            // TODO convert to agent builder concept
+            AiComponentInstaller.setInstrumentation(instrumentation);
+            AgentInstaller.installBytebuddyAgent(instrumentation, ConfigOverride.getConfig(configuration), false);
             startupLogger.info("ApplicationInsights Java Agent {} started successfully", version);
             success = true;
             LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
@@ -176,7 +180,7 @@ public class MainEntryPoint {
         } else {
             throw new IllegalStateException("Unknown self-diagnostics destination: " + destination);
         }
-        ClassLoader cl = ConfigureLogging.class.getClassLoader();
+        ClassLoader cl = MainEntryPoint.class.getClassLoader();
         if (cl == null) {
             cl = ClassLoader.getSystemClassLoader();
         }
@@ -206,7 +210,7 @@ public class MainEntryPoint {
 
         // TODO need something more reliable, currently will log too much WARN if "muzzleMatcher" logger name changes
         // muzzleMatcher logs at WARN level in order to make them visible, but really should only be enabled when debugging
-        Level muzzleMatcherLevel = level.levelInt <= Level.DEBUG.levelInt ? level : getMaxLevel(level, Level.ERROR);
+        Level muzzleMatcherLevel = level.toInt() <= Level.DEBUG.toInt() ? level : getMaxLevel(level, Level.ERROR);
 
         try {
             System.setProperty("applicationinsights.logback.configurationFile", configurationFile.toString());
@@ -216,10 +220,10 @@ public class MainEntryPoint {
             System.setProperty("applicationinsights.logback.file.maxSize", selfDiagnostics.file.maxSizeMb + "MB");
             System.setProperty("applicationinsights.logback.file.maxIndex", Integer.toString(selfDiagnostics.file.maxHistory));
 
-            System.setProperty("applicationinsights.logback.level", level.levelStr);
+            System.setProperty("applicationinsights.logback.level", level.toString());
             System.setProperty("applicationinsights.logback.level.other", otherLibsLevel.toString());
-            System.setProperty("applicationinsights.logback.level.atLeastInfo", atLeastInfoLevel.levelStr);
-            System.setProperty("applicationinsights.logback.level.muzzleMatcher", muzzleMatcherLevel.levelStr);
+            System.setProperty("applicationinsights.logback.level.atLeastInfo", atLeastInfoLevel.toString());
+            System.setProperty("applicationinsights.logback.level.muzzleMatcher", muzzleMatcherLevel.toString());
 
             return LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
         } finally {
@@ -236,18 +240,14 @@ public class MainEntryPoint {
     }
 
     private static Level getMaxLevel(Level level1, Level level2) {
-        return level1.isGreaterOrEqual(level2) ? level1 : level2;
+        return level1.toInt() >= level2.toInt() ? level1 : level2;
     }
 
     private static Level getLevel(String levelStr) {
-        Level level = Level.valueOf(levelStr);
-        if (!level.levelStr.equalsIgnoreCase(levelStr)) {
+        try {
+            return Level.valueOf(levelStr.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
             throw new IllegalStateException("Unexpected self-diagnostic level: " + levelStr);
         }
-        return level;
-    }
-
-    private static boolean isDebugOrLower(String level) {
-        return level.equalsIgnoreCase("all") || level.equalsIgnoreCase("trace") || level.equalsIgnoreCase("debug");
     }
 }

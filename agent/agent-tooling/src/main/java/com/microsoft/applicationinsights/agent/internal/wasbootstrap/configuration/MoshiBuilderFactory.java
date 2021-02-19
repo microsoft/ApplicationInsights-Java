@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent.bootstrap.configuration;
+package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
 import com.squareup.moshi.Moshi;
 

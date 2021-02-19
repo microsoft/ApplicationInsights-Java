@@ -5,15 +5,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.NameConfig;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorIncludeExclude;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorType;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ToAttributeConfig;
-import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.NameConfig;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorMatchType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ToAttributeConfig;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -23,6 +24,9 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 public class ExporterWithSpanProcessorTest {
+
+    private final Tracer tracer = OpenTelemetrySdk.builder().build().getTracer("test");
+
     @Test(expected = FriendlyException.class)
     public void noNameObjectTest() {
         MockExporter mockExporter = new MockExporter();
@@ -31,7 +35,7 @@ public class ExporterWithSpanProcessorTest {
         config.processorName = "noNameObjectTest";
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = GlobalOpenTelemetry.getTracer("test").spanBuilder("my span")
+        Span span = tracer.spanBuilder("my span")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .startSpan();
@@ -52,7 +56,7 @@ public class ExporterWithSpanProcessorTest {
         config.name = new NameConfig();
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span span = tracer.spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .startSpan();
@@ -74,7 +78,7 @@ public class ExporterWithSpanProcessorTest {
         config.name.toAttributes = new ToAttributeConfig();
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span span = tracer.spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .startSpan();
@@ -96,7 +100,7 @@ public class ExporterWithSpanProcessorTest {
         config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span span = tracer.spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("db.svc", "location")
@@ -128,7 +132,7 @@ public class ExporterWithSpanProcessorTest {
         config.name.separator = "::";
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span span = tracer.spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("db.svc", "location")
@@ -160,7 +164,7 @@ public class ExporterWithSpanProcessorTest {
         config.name.separator = "::";
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span span = tracer.spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("db.svc", "location")
@@ -193,7 +197,7 @@ public class ExporterWithSpanProcessorTest {
         config.include.spanNames = Arrays.asList("svcA", "svcB");
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span spanA = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcA")
+        Span spanA = tracer.spanBuilder("svcA")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("db.svc", "location")
@@ -201,7 +205,7 @@ public class ExporterWithSpanProcessorTest {
                 .setAttribute("id", "1234")
                 .startSpan();
 
-        Span spanB = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcB")
+        Span spanB = tracer.spanBuilder("svcB")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
@@ -209,7 +213,7 @@ public class ExporterWithSpanProcessorTest {
                 .setAttribute("operation", "get")
                 .setAttribute("id", "1234")
                 .startSpan();
-        Span spanC = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcC")
+        Span spanC = tracer.spanBuilder("svcC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
@@ -217,7 +221,7 @@ public class ExporterWithSpanProcessorTest {
                 .setAttribute("operation", "get")
                 .setAttribute("id", "1234")
                 .startSpan();
-        Span spanD = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcD")
+        Span spanD = tracer.spanBuilder("svcD")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
@@ -260,7 +264,7 @@ public class ExporterWithSpanProcessorTest {
         config.name.toAttributes = toAttributeConfig;
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = GlobalOpenTelemetry.getTracer("test").spanBuilder("/api/v1/document/12345678/update")
+        Span span = tracer.spanBuilder("/api/v1/document/12345678/update")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("db.svc", "location")
@@ -295,7 +299,7 @@ public class ExporterWithSpanProcessorTest {
         config.name.toAttributes = toAttributeConfig;
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = GlobalOpenTelemetry.getTracer("test").spanBuilder("/api/v1/document/12345678/update")
+        Span span = tracer.spanBuilder("/api/v1/document/12345678/update")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("db.svc", "location")
@@ -331,14 +335,14 @@ public class ExporterWithSpanProcessorTest {
         config.name.toAttributes = toAttributeConfig;
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span spanA = GlobalOpenTelemetry.getTracer("test").spanBuilder("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
+        Span spanA = tracer.spanBuilder("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("db.svc", "location")
                 .setAttribute("operation", "get")
                 .setAttribute("id", "1234")
                 .startSpan();
-        Span spanB = GlobalOpenTelemetry.getTracer("test").spanBuilder("yyyPassword=**** aba")
+        Span spanB = tracer.spanBuilder("yyyPassword=**** aba")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("db.svc", "location")
@@ -386,7 +390,7 @@ public class ExporterWithSpanProcessorTest {
         config.name.toAttributes.rules = Arrays.asList("(?<operationwebsite>.*?)$");
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span spanA = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcA/test")
+        Span spanA = tracer.spanBuilder("svcA/test")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("db.svc", "location")
@@ -394,7 +398,7 @@ public class ExporterWithSpanProcessorTest {
                 .setAttribute("id", "1234")
                 .startSpan();
 
-        Span spanB = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcB/test")
+        Span spanB = tracer.spanBuilder("svcB/test")
                 .setAttribute("one", "1")
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
@@ -402,7 +406,7 @@ public class ExporterWithSpanProcessorTest {
                 .setAttribute("operation", "get")
                 .setAttribute("id", "1234")
                 .startSpan();
-        Span spanC = GlobalOpenTelemetry.getTracer("test").spanBuilder("svcC")
+        Span spanC = tracer.spanBuilder("svcC")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")
                 .setAttribute("testKey2", "testValue2")
@@ -410,7 +414,7 @@ public class ExporterWithSpanProcessorTest {
                 .setAttribute("operation", "get")
                 .setAttribute("id", "1234")
                 .startSpan();
-        Span spanD = GlobalOpenTelemetry.getTracer("test").spanBuilder("donot/change")
+        Span spanD = tracer.spanBuilder("donot/change")
                 .setAttribute("one", "1")
                 .setAttribute("two", 2L)
                 .setAttribute("testKey", "testValue")

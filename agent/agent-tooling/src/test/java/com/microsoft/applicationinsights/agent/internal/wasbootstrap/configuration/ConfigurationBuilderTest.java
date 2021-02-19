@@ -1,9 +1,9 @@
-package com.microsoft.applicationinsights.agent.bootstrap.configuration;
+package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
 import org.junit.*;
 import org.junit.contrib.java.lang.system.*;
 
-import static com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.trimAndEmptyToNull;
+import static com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.trimAndEmptyToNull;
 import static org.junit.Assert.*;
 
 public class ConfigurationBuilderTest {

@@ -25,19 +25,17 @@ import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
-import com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.JmxMetric;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
@@ -47,11 +45,9 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Quic
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.RequestTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
-import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagatorProvider;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.extensibility.initializer.ResourceAttributesContextInitializer;
 import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender43;
@@ -65,8 +61,7 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
-import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.instrumentation.api.config.ConfigBuilder;
+import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -75,14 +70,20 @@ import org.slf4j.LoggerFactory;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-public class BeforeAgentInstaller {
+public class AiComponentInstaller implements ComponentInstaller {
 
     private static final Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
-    private BeforeAgentInstaller() {
+    // TODO move to "agent builder" and then can inject this in the constructor
+    //  or convert to ByteBuddy and use ByteBuddyAgentCustomizer
+    private static Instrumentation instrumentation;
+
+    public static void setInstrumentation(Instrumentation inst) {
+        instrumentation = inst;
     }
 
-    public static void beforeInstallBytebuddyAgent(Instrumentation instrumentation) throws Exception {
+    @Override
+    public void beforeByteBuddyAgent() {
         start(instrumentation);
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
@@ -96,7 +97,15 @@ public class BeforeAgentInstaller {
         instrumentation.addTransformer(new DuplicateAgentClassFileTransformer());
     }
 
-    private static void start(Instrumentation instrumentation) throws Exception {
+    @Override
+    public void afterByteBuddyAgent() {
+        // only safe now to resolve app id because SSL initialization
+        // triggers loading of java.util.logging (starting with Java 8u231)
+        // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
+        AppIdSupplier.registerAndTriggerResolution();
+    }
+
+    private static void start(Instrumentation instrumentation) {
 
         String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
         if (codelessSdkNamePrefix != null) {
@@ -106,63 +115,18 @@ public class BeforeAgentInstaller {
         File javaTmpDir = new File(System.getProperty("java.io.tmpdir"));
         File tmpDir = new File(javaTmpDir, "applicationinsights-java");
         if (!tmpDir.exists() && !tmpDir.mkdirs()) {
-            throw new Exception("Could not create directory: " + tmpDir.getAbsolutePath());
+            throw new IllegalStateException("Could not create directory: " + tmpDir.getAbsolutePath());
         }
 
         Configuration config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
             if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
                 throw new FriendlyException("No connection string or instrumentation key provided",
-                                            "Please provide connection string or instrumentation key.");
+                        "Please provide connection string or instrumentation key.");
             }
         }
         // Function to validate user provided processor configuration
         validateProcessorConfiguration(config);
-
-
-        Map<String, String> properties = new HashMap<>();
-        properties.put("otel.additional.bootstrap.package.prefixes", "com.microsoft.applicationinsights.agent.bootstrap");
-        properties.put("otel.experimental.log.capture.threshold", getLoggingFrameworksThreshold(config, "INFO"));
-        int reportingIntervalSeconds = getMicrometerReportingIntervalSeconds(config, 60);
-        properties.put("otel.micrometer.step.millis", Long.toString(SECONDS.toMillis(reportingIntervalSeconds)));
-        // TODO need some kind of test for these configuration properties
-        if (!isInstrumentationEnabled(config, "micrometer")) {
-            properties.put("otel.instrumentation.micrometer.enabled", "false");
-            properties.put("otel.instrumentation.actuator-metrics.enabled", "false");
-        }
-        if (!isInstrumentationEnabled(config, "jdbc")) {
-            properties.put("otel.instrumentation.jdbc.enabled", "false");
-        }
-        if (!isInstrumentationEnabled(config, "redis")) {
-            properties.put("otel.instrumentation.jedis.enabled", "false");
-            properties.put("otel.instrumentation.lettuce.enabled", "false");
-        }
-        if (!isInstrumentationEnabled(config, "kafka")) {
-            properties.put("otel.instrumentation.kafka.enabled", "false");
-        }
-        if (!isInstrumentationEnabled(config, "jms")) {
-            properties.put("otel.instrumentation.jms.enabled", "false");
-        }
-        if (!isInstrumentationEnabled(config, "mongo")) {
-            properties.put("otel.instrumentation.mongo.enabled", "false");
-        }
-        if (!isInstrumentationEnabled(config, "cassandra")) {
-            properties.put("otel.instrumentation.cassandra.enabled", "false");
-        }
-        if (!isInstrumentationEnabled(config, "spring-scheduling")) {
-            properties.put("otel.instrumentation.spring-scheduling.enabled", "false");
-        }
-        if (!config.preview.openTelemetryApiSupport) {
-            properties.put("otel.instrumentation.opentelemetry-api.enabled", "false");
-        }
-        properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
-        // AI exporter is configured manually
-        properties.put("otel.traces.exporter", "none");
-        properties.put("otel.metrics.exporter", "none");
-        Config.internalInitializeConfig(new ConfigBuilder().readProperties(properties).build());
-        if (Config.get().getListProperty("otel.additional.bootstrap.package.prefixes").isEmpty()) {
-            throw new IllegalStateException("underlying config not initialized in time");
-        }
 
         // FIXME do something with config
 
@@ -257,58 +221,6 @@ public class BeforeAgentInstaller {
 
     private static boolean hasConnectionStringOrInstrumentationKey(Configuration config) {
         return !Strings.isNullOrEmpty(config.connectionString);
-    }
-
-    private static String getLoggingFrameworksThreshold(Configuration config, String defaultValue) {
-        Map<String, Object> logging = config.instrumentation.get("logging");
-        if (logging == null) {
-            return defaultValue;
-        }
-        Object levelObj = logging.get("level");
-        if (levelObj == null) {
-            return defaultValue;
-        }
-        if (!(levelObj instanceof String)) {
-            startupLogger.warn("logging level must be a string, but found: {}", levelObj.getClass());
-            return defaultValue;
-        }
-        String threshold = (String) levelObj;
-        if (threshold.isEmpty()) {
-            return defaultValue;
-        }
-        return threshold;
-    }
-
-    private static boolean isInstrumentationEnabled(Configuration config, String instrumentationName) {
-        Map<String, Object> properties = config.instrumentation.get(instrumentationName);
-        if (properties == null) {
-            return true;
-        }
-        Object value = properties.get("enabled");
-        if (value == null) {
-            return true;
-        }
-        if (!(value instanceof Boolean)) {
-            startupLogger.warn("{} enabled must be a boolean, but found: {}", instrumentationName, value.getClass());
-            return true;
-        }
-        return (Boolean) value;
-    }
-
-    private static int getMicrometerReportingIntervalSeconds(Configuration config, int defaultValue) {
-        Map<String, Object> micrometer = config.instrumentation.get("micrometer");
-        if (micrometer == null) {
-            return defaultValue;
-        }
-        Object value = micrometer.get("reportingIntervalSeconds");
-        if (value == null) {
-            return defaultValue;
-        }
-        if (!(value instanceof Number)) {
-            startupLogger.warn("micrometer reportingIntervalSeconds must be a number, but found: {}", value.getClass());
-            return defaultValue;
-        }
-        return ((Number) value).intValue();
     }
 
     private static ApplicationInsightsXmlConfiguration buildXmlConfiguration(Configuration config) {
