@@ -25,12 +25,8 @@ public class AiDockerClient {
     public static String DEFAULT_LINUX_USER = "root";
     public static String DEFAULT_LINUX_SHELL = "bash";
 
-    public static final String DOCKER_EXE_ENV_VAR = "DOCKER_EXE";
-
     private String currentUser;
     private String shellExecutor;
-
-    private String dockerExePath;
 
     public AiDockerClient(String user, String shellExecutor) {
         Preconditions.checkNotNull(user, "user");
@@ -38,17 +34,6 @@ public class AiDockerClient {
 
         this.currentUser = user;
         this.shellExecutor = shellExecutor;
-
-        // TODO also check a property
-        String dockerPath = System.getenv(DOCKER_EXE_ENV_VAR);
-        if (Strings.isNullOrEmpty(dockerPath)) {
-            throw new SmokeTestException(DOCKER_EXE_ENV_VAR+" not set");
-        }
-        File de = new File(dockerPath);
-        if (!de.exists()) {
-            throw new SmokeTestException(String.format("Could not find docker: %s=%s", DOCKER_EXE_ENV_VAR, dockerPath));
-        }
-        this.dockerExePath = de.getAbsolutePath();
     }
 
     public String getCurrentUser() {
@@ -89,9 +74,11 @@ public class AiDockerClient {
         Preconditions.checkNotNull(image, "image");
         Preconditions.checkNotNull(portMapping, "portMapping");
 
+        buildProcess(Arrays.asList("docker", "pull", image)).start().waitFor(30, TimeUnit.SECONDS);
+
         String localIp = InetAddress.getLocalHost().getHostAddress();
         List<String> cmd = new ArrayList<>();
-        cmd.addAll(Arrays.asList(dockerExePath, "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));
+        cmd.addAll(Arrays.asList("docker", "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));
         if (!dependencyContainer) {
             // port 5005 is exposed for hooking up IDE debugger
             cmd.addAll(Arrays.asList("-p", "5005:5005"));
@@ -116,7 +103,7 @@ public class AiDockerClient {
         }
         cmd.add(image);
         final Process p = buildProcess(cmd).start();
-        final int timeout = 10;
+        final int timeout = 30;
         final TimeUnit unit = TimeUnit.SECONDS;
         waitAndCheckCodeForProcess(p, timeout, unit, "starting container "+image);
 
@@ -137,7 +124,7 @@ public class AiDockerClient {
         Preconditions.checkNotNull(id, "id");
         Preconditions.checkNotNull(appArchive, "appArchive");
 
-        Process p = buildProcess(dockerExePath, "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/root/docker-stage")).start();
+        Process p = buildProcess("docker", "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/root/docker-stage")).start();
         waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s to container %s", appArchive.getPath(), id));
 
         execOnContainer(id, getShellExecutor(), "./deploy.sh", appArchive.getName());
@@ -148,7 +135,7 @@ public class AiDockerClient {
         Preconditions.checkNotNull(cmd, "cmd");
 
         List<String> cmdList = new ArrayList<>();
-        cmdList.addAll(Arrays.asList(new String[]{dockerExePath, "container", "exec", id, cmd}));
+        cmdList.addAll(Arrays.asList("docker", "container", "exec", id, cmd));
         if (args.length > 0) {
             cmdList.addAll(Arrays.asList(args));
         }
@@ -186,17 +173,17 @@ public class AiDockerClient {
     public void printContainerLogs(String containerId) throws IOException {
         Preconditions.checkNotNull(containerId, "containerId");
 
-        Process p = buildProcess(dockerExePath, "container", "logs", containerId).start();
+        Process p = buildProcess("docker", "container", "logs", containerId).start();
         flushStdout(p);
     }
 
     public void stopContainer(String id) throws IOException, InterruptedException {
-        Process p = buildProcess(dockerExePath, "container", "stop", id).start();
+        Process p = buildProcess("docker", "container", "stop", id).start();
         waitAndCheckCodeForProcess(p, 30, TimeUnit.SECONDS, String.format("stopping container %s", id));
     }
 
     public boolean isContainerRunning(String id) throws IOException, InterruptedException {
-        Process p = new ProcessBuilder(dockerExePath, "inspect", "-f", "{{.State.Running}}", id).start();
+        Process p = new ProcessBuilder("docker", "inspect", "-f", "{{.State.Running}}", id).start();
         waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("checking if container is running: %s", id));
 
         StringWriter sw = new StringWriter();
@@ -211,7 +198,7 @@ public class AiDockerClient {
     }
 
     public String createNetwork(String name) throws IOException, InterruptedException {
-        Process p = buildProcess(dockerExePath, "network", "create", "--driver", "bridge", name).start();
+        Process p = buildProcess("docker", "network", "create", "--driver", "bridge", name).start();
         waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, "creating network");
         return getFirstLineOfProcessOutput(p);
     }
@@ -222,7 +209,7 @@ public class AiDockerClient {
     }
 
     public String deleteNetwork(String nameOrId) throws IOException, InterruptedException {
-        Process p = buildProcess(dockerExePath, "network", "rm", nameOrId).start();
+        Process p = buildProcess("docker", "network", "rm", nameOrId).start();
         waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, "deleting network");
         return getFirstLineOfProcessOutput(p);
     }
@@ -231,7 +218,7 @@ public class AiDockerClient {
      * Returns container name for a running container. If the container id is not running, it returns null.
      */
     public String getRunningContainerName(String containerId) throws IOException, InterruptedException {
-        Process p = buildProcess(dockerExePath, "inspect", "--format","'{{.Name}}'", containerId).start();
+        Process p = buildProcess("docker", "inspect", "--format","'{{.Name}}'", containerId).start();
         waitForProcessToReturn(p, 10, TimeUnit.SECONDS, "inspect entity");
         if (p.exitValue() == 1) {
             return null;

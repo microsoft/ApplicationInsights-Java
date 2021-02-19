@@ -3,8 +3,6 @@ FROM @JRE@
 USER root
 WORKDIR /root/docker-compile
 
-RUN mkdir /root/docker-stage
-
 # update packages and install dependencies: wget
 RUN if type "apt-get" > /dev/null; then \
       apt-get update && apt-get install -y wget procps; \
@@ -25,7 +23,7 @@ RUN wget https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$T
 ENV CATALINA_HOME /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 ENV CATALINA_BASE /opt/apache-tomcat-$TOMCAT_FULL_VERSION
 
-
+RUN mkdir /root/docker-stage
 ADD ./*.sh /root/docker-stage/
 
 # agent related stuff

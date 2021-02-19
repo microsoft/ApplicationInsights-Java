@@ -49,7 +49,7 @@ subprojects {
             dependencyContainers.each { dc ->
                 logger.info "Pulling $dc..."
                 exec {
-                    executable dockerExe
+                    executable 'docker'
                     args 'pull', "$dc"
                 }
             }
@@ -115,5 +115,14 @@ subprojects {
         doLast {
             println "$it.name complete. HTML reports: $reports.html.destination"
         }
+    }
+}
+
+tasks.register("listTestApps") {
+    group = "Help"
+    description = "List all available test apps"
+    doFirst {
+        subprojects.collect { it.path }
+                   .each { println it }
     }
 }
