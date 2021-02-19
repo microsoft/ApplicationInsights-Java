@@ -16,11 +16,13 @@ public class WebFluxTest extends AiSmokeTest {
     @TargetUri("/test")
     public void doMostBasicTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
 
         Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals("/test/**", rd.getName());
@@ -31,11 +33,13 @@ public class WebFluxTest extends AiSmokeTest {
     @TargetUri("/exception")
     public void testException() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
 
         Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         assertFalse(rd.getSuccess());
         assertEquals("/exception", rd.getName());
@@ -46,11 +50,13 @@ public class WebFluxTest extends AiSmokeTest {
     @TargetUri("/futureException")
     public void testFutureException() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-        assertEquals(1, mockedIngestion.getCountForType("RemoteDependencyData"));
 
         Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         assertFalse(rd.getSuccess());
         assertEquals("/futureException", rd.getName());
