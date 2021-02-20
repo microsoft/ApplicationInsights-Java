@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
 
 public class AgentInstaller {
 
-  private static final Logger logger;
+  private static Logger logger;
 
   private static final String JAVAAGENT_ENABLED_CONFIG = "otel.javaagent.enabled";
 
@@ -63,13 +63,27 @@ public class AgentInstaller {
 
   private static final Map<String, List<Runnable>> CLASS_LOAD_CALLBACKS = new HashMap<>();
 
-  static {
-    LoggingConfigurer.configureLogger();
+  public static void installBytebuddyAgent(Instrumentation inst) {
+    installBytebuddyAgent(inst, null, /* setUpLogging= */ true);
+  }
+
+  // this exists for vendors who wish to completely override config and logging
+  public static void installBytebuddyAgent(
+      Instrumentation inst, Config config, boolean setUpLogging) {
+
+    // two most important things to set up are config and then logging
+    if (config != null) {
+      Config.internalInitializeConfig(config);
+    } else {
+      ConfigInitializer.initialize();
+    }
+    if (setUpLogging) {
+      LoggingConfigurer.configureLogger();
+    }
+
     logger = LoggerFactory.getLogger(AgentInstaller.class);
 
     addByteBuddyRawSetting();
-    // this needs to be done as early as possible - before the first Config.get() call
-    ConfigInitializer.initialize();
 
     // ensure java.lang.reflect.Proxy is loaded, as transformation code uses it internally
     // loading java.lang.reflect.Proxy after the bytebuddy transformer is set up causes
@@ -87,12 +101,9 @@ public class AgentInstaller {
     // caffeine uses AtomicReferenceArray, ensure it is loaded to avoid ClassCircularityError during
     // transform.
     AtomicReferenceArray.class.getName();
-  }
 
-  public static void installBytebuddyAgent(Instrumentation inst) {
     logVersionInfo();
-    Config config = Config.get();
-    if (config.getBooleanProperty(JAVAAGENT_ENABLED_CONFIG, true)) {
+    if (Config.get().getBooleanProperty(JAVAAGENT_ENABLED_CONFIG, true)) {
       List<AgentListener> agentListeners = loadOrdered(AgentListener.class);
       installBytebuddyAgent(inst, agentListeners);
     } else {
