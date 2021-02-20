@@ -71,8 +71,8 @@ public class AgentInstaller {
   }
 
   // this exists for vendors who wish to completely override config and logging
-  public static void installBytebuddyAgent(Instrumentation inst, Config config,
-      boolean setUpLogging) {
+  public static void installBytebuddyAgent(
+      Instrumentation inst, Config config, boolean setUpLogging) {
 
     // two most important things to set up are config and then logging
     if (config != null) {
@@ -247,7 +247,7 @@ public class AgentInstaller {
 
   private static List<InstrumentationModule> loadInstrumentationModules() {
     return SafeServiceLoader.load(
-        InstrumentationModule.class, AgentInstaller.class.getClassLoader())
+            InstrumentationModule.class, AgentInstaller.class.getClassLoader())
         .stream()
         .sorted(Comparator.comparingInt(InstrumentationModule::getOrder))
         .collect(Collectors.toList());
