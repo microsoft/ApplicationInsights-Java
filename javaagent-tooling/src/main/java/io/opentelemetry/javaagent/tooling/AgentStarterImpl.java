@@ -11,6 +11,7 @@ import java.io.File;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -62,7 +63,16 @@ public class AgentStarterImpl implements AgentStarter {
     ClassLoader savedContextClassLoader = Thread.currentThread().getContextClassLoader();
     try {
       Thread.currentThread().setContextClassLoader(extensionClassLoader);
+      Class<?> agentInstallerClass =
+          extensionClassLoader.loadClass(
+              "io.opentelemetry.javaagent.tooling.AgentInstallerOverride");
+      Method agentInstallerMethod =
+          agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class, File.class);
+      agentInstallerMethod.invoke(null, instrumentation, javaagentFile);
+    } catch (ClassNotFoundException ignored) {
       AgentInstaller.installBytebuddyAgent(instrumentation);
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
     } finally {
       Thread.currentThread().setContextClassLoader(savedContextClassLoader);
     }
