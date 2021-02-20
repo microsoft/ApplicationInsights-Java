@@ -30,14 +30,37 @@ public final class AgentInitializer {
     if (agentClassLoader == null) {
       agentClassLoader = createAgentClassLoader("inst", javaagentFile);
 
-      Class<?> agentInstallerClass =
-          agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
-      Method agentInstallerMethod =
-          agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
+      Class<?> agentInstallerClass = null;
+      try {
+        agentInstallerClass =
+            agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstallerOverride");
+      } catch (ClassNotFoundException ignored) {
+      }
+
+      boolean override = agentInstallerClass != null;
+
+      if (agentInstallerClass == null) {
+        agentInstallerClass =
+            agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
+      }
+
+      Method agentInstallerMethod;
+      if (override) {
+        agentInstallerMethod =
+            agentInstallerClass
+                .getMethod("installBytebuddyAgent", Instrumentation.class, File.class);
+      } else {
+        agentInstallerMethod =
+            agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
+      }
       ClassLoader savedContextClassLoader = Thread.currentThread().getContextClassLoader();
       try {
         Thread.currentThread().setContextClassLoader(agentClassLoader);
-        agentInstallerMethod.invoke(null, inst);
+        if (override) {
+          agentInstallerMethod.invoke(null, inst, javaagentFile);
+        } else {
+          agentInstallerMethod.invoke(null, inst);
+        }
       } finally {
         Thread.currentThread().setContextClassLoader(savedContextClassLoader);
       }
