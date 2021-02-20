@@ -88,7 +88,8 @@ public final class ConfigInitializer {
           "Configuration file '" + configurationFilePath + "' not found.");
     } catch (IOException ioe) {
       throw new IllegalStateException(
-          "Configuration file '" + configurationFilePath
+          "Configuration file '"
+              + configurationFilePath
               + "' cannot be accessed or correctly parsed.");
     }
 
