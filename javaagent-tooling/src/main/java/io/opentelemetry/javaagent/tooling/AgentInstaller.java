@@ -25,6 +25,7 @@ import io.opentelemetry.javaagent.tooling.config.ConfigInitializer;
 import io.opentelemetry.javaagent.tooling.context.FieldBackedProvider;
 import io.opentelemetry.javaagent.tooling.matcher.GlobalClassloaderIgnoresMatcher;
 import java.lang.instrument.Instrumentation;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,7 +66,7 @@ public class AgentInstaller {
     return INSTRUMENTATION;
   }
 
-  public static void installBytebuddyAgent(Instrumentation inst) {
+  public static void installBytebuddyAgent(Instrumentation inst, URL bootstrapUrl) {
     installBytebuddyAgent(inst, null, true);
   }
 

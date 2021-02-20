@@ -37,11 +37,11 @@ public class AgentInitializer {
       Class<?> agentInstallerClass =
           agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstallerOverride");
       Method agentInstallerMethod =
-          agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
+          agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class, URL.class);
       ClassLoader savedContextClassLoader = Thread.currentThread().getContextClassLoader();
       try {
         Thread.currentThread().setContextClassLoader(AGENT_CLASSLOADER);
-        agentInstallerMethod.invoke(null, inst);
+        agentInstallerMethod.invoke(null, inst, bootstrapUrl);
       } finally {
         Thread.currentThread().setContextClassLoader(savedContextClassLoader);
       }
