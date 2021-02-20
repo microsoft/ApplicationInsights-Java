@@ -19,7 +19,10 @@ import org.slf4j.LoggerFactory;
 
 @AutoValue
 public abstract class Config {
-  private static final Logger log = LoggerFactory.getLogger(Config.class);
+
+  // NOTE it's important not to use slf4j in this class, because this class is used before slf4j is
+  // configured, and so using slf4j here would initialize slf4j-simple before we have a chance to
+  // configure the logging levels
 
   // lazy initialized, so that javaagent can set it, and library instrumentation can fall back and
   // read system properties
@@ -32,7 +35,6 @@ public abstract class Config {
    */
   public static void internalInitializeConfig(Config config) {
     if (INSTANCE != null) {
-      log.warn("Config#INSTANCE was already set earlier");
       return;
     }
     INSTANCE = requireNonNull(config);
@@ -130,7 +132,6 @@ public abstract class Config {
     try {
       return parser.apply(value);
     } catch (Throwable t) {
-      log.debug("Cannot parse {}", value, t);
       return defaultValue;
     }
   }
