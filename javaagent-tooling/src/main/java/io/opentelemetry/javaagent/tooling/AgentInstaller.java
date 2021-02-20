@@ -25,7 +25,6 @@ import io.opentelemetry.javaagent.tooling.config.ConfigInitializer;
 import io.opentelemetry.javaagent.tooling.context.FieldBackedProvider;
 import io.opentelemetry.javaagent.tooling.matcher.GlobalClassloaderIgnoresMatcher;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,43 +65,21 @@ public class AgentInstaller {
     return INSTRUMENTATION;
   }
 
-  public static void installBytebuddyAgent(Instrumentation inst) throws Exception {
+  public static void installBytebuddyAgent(Instrumentation inst) {
+    installBytebuddyAgent(inst, null, true);
+  }
+
+  // this exists for vendors who wish to completely override config and logging
+  public static void installBytebuddyAgent(Instrumentation inst, Config config,
+      boolean setUpLogging) {
 
     // two most important things to set up are config and then logging
-
-    Class<?> clazz = null;
-    try {
-      clazz = Class.forName("io.opentelemetry.javaagent.tooling.ConfigOverride");
-    } catch (ClassNotFoundException ignored) {
-    }
-    Config config = null;
-    if (clazz != null) {
-      // exceptions in this code should be propagated up so that agent startup fails
-      Method method = clazz.getMethod("getConfig");
-      config = (Config) method.invoke(null);
-    }
-
-    // this needs to be done as early as possible - before the first Config.get() call
     if (config != null) {
       Config.internalInitializeConfig(config);
     } else {
       ConfigInitializer.initialize();
     }
-
-    clazz = null;
-    try {
-      clazz = Class.forName("io.opentelemetry.javaagent.bootstrap.ConfigureLogging");
-    } catch (final ClassNotFoundException ignored) {
-    }
-    if (clazz != null) {
-      // exceptions in this code should be propagated up so that agent startup fails
-      try {
-        final Method method = clazz.getMethod("configure");
-        method.invoke(null);
-      } catch (final Exception e) {
-        throw new IllegalStateException(e);
-      }
-    } else {
+    if (setUpLogging) {
       LoggingConfigurer.configureLogger();
     }
 
@@ -269,7 +246,7 @@ public class AgentInstaller {
 
   private static List<InstrumentationModule> loadInstrumentationModules() {
     return SafeServiceLoader.load(
-            InstrumentationModule.class, AgentInstaller.class.getClassLoader())
+        InstrumentationModule.class, AgentInstaller.class.getClassLoader())
         .stream()
         .sorted(Comparator.comparingInt(InstrumentationModule::getOrder))
         .collect(Collectors.toList());
