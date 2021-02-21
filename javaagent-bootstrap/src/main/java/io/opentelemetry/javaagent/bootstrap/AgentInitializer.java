@@ -10,8 +10,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Agent start up logic.
@@ -23,56 +21,12 @@ import org.slf4j.LoggerFactory;
  */
 public class AgentInitializer {
 
-  private static final String SIMPLE_LOGGER_SHOW_DATE_TIME_PROPERTY =
-      "io.opentelemetry.javaagent.slf4j.simpleLogger.showDateTime";
-  private static final String SIMPLE_LOGGER_DATE_TIME_FORMAT_PROPERTY =
-      "io.opentelemetry.javaagent.slf4j.simpleLogger.dateTimeFormat";
-  private static final String SIMPLE_LOGGER_DATE_TIME_FORMAT_DEFAULT =
-      "'[opentelemetry.auto.trace 'yyyy-MM-dd HH:mm:ss:SSS Z']'";
-  private static final String SIMPLE_LOGGER_DEFAULT_LOG_LEVEL_PROPERTY =
-      "io.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel";
-  private static final String SIMPLE_LOGGER_PREFIX =
-      "io.opentelemetry.javaagent.slf4j.simpleLogger.log.";
-
-  private static final Logger log;
-
-  static {
-    // We can configure logger here because io.opentelemetry.auto.AgentBootstrap doesn't touch
-    // it.
-    Class<?> clazz = null;
-    try {
-      clazz = Class.forName("io.opentelemetry.javaagent.bootstrap.ConfigureLogging");
-    } catch (final ClassNotFoundException ignored) {
-    }
-    if (clazz != null) {
-      // exceptions in this code should be propagated up so that agent startup fails
-      try {
-        final Method method = clazz.getMethod("configure");
-        method.invoke(null);
-      } catch (final Exception e) {
-        throw new IllegalStateException(e);
-      }
-    } else {
-      configureLogger();
-    }
-    log = LoggerFactory.getLogger(AgentInitializer.class);
-  }
-
   // Accessed via reflection from tests.
   // fields must be managed under class lock
   public static ClassLoader AGENT_CLASSLOADER = null;
 
-  public static void initialize(Instrumentation inst, URL bootstrapUrl) {
-    try {
-      startAgent(inst, bootstrapUrl);
-    } catch (Throwable ex) {
-      log.error("Throwable thrown while installing the agent", ex);
-    }
-  }
-
-  public static void initializeAndBubbleException(Instrumentation inst, URL bootstrapUrl)
-      throws Exception {
-    // allow exception to bubble up
+  // called via reflection in the OpenTelemetryAgent class
+  public static void initialize(Instrumentation inst, URL bootstrapUrl) throws Exception {
     startAgent(inst, bootstrapUrl);
   }
 
@@ -80,43 +34,24 @@ public class AgentInitializer {
       throws Exception {
     if (AGENT_CLASSLOADER == null) {
       ClassLoader agentClassLoader = createAgentClassLoader("inst", bootstrapUrl);
-      Class<?> agentInstallerClass =
-          agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
+      Class<?> agentInstallerClass;
+      try {
+        agentInstallerClass =
+            agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstallerOverride");
+      } catch (ClassNotFoundException e) {
+        agentInstallerClass =
+            agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
+      }
       Method agentInstallerMethod =
-          agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
+          agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class, URL.class);
       ClassLoader savedContextClassLoader = Thread.currentThread().getContextClassLoader();
       try {
         Thread.currentThread().setContextClassLoader(AGENT_CLASSLOADER);
-        agentInstallerMethod.invoke(null, inst);
+        agentInstallerMethod.invoke(null, inst, bootstrapUrl);
       } finally {
         Thread.currentThread().setContextClassLoader(savedContextClassLoader);
       }
       AGENT_CLASSLOADER = agentClassLoader;
-    }
-  }
-
-  private static void configureLogger() {
-    setSystemPropertyDefault(SIMPLE_LOGGER_SHOW_DATE_TIME_PROPERTY, "true");
-    setSystemPropertyDefault(
-        SIMPLE_LOGGER_DATE_TIME_FORMAT_PROPERTY, SIMPLE_LOGGER_DATE_TIME_FORMAT_DEFAULT);
-
-    if (isDebugMode()) {
-      setSystemPropertyDefault(SIMPLE_LOGGER_DEFAULT_LOG_LEVEL_PROPERTY, "DEBUG");
-      // suppress a couple of verbose ClassNotFoundException stack traces logged at debug level
-      setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "io.perfmark.PerfMark", "INFO");
-      setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "io.grpc.Context", "INFO");
-      setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "io.grpc.internal.ServerImplBuilder", "INFO");
-      setSystemPropertyDefault(
-          SIMPLE_LOGGER_PREFIX + "io.grpc.internal.ManagedChannelImplBuilder", "INFO");
-    } else {
-      // by default muzzle warnings are turned off
-      setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "muzzleMatcher", "OFF");
-    }
-  }
-
-  private static void setSystemPropertyDefault(String property, String value) {
-    if (System.getProperty(property) == null) {
-      System.setProperty(property, value);
     }
   }
 
@@ -154,28 +89,6 @@ public class AgentInitializer {
     */
     Method method = ClassLoader.class.getDeclaredMethod("getPlatformClassLoader");
     return (ClassLoader) method.invoke(null);
-  }
-
-  /**
-   * Determine if we should log in debug level according to otel.javaagent.debug
-   *
-   * @return true if we should
-   */
-  private static boolean isDebugMode() {
-    String tracerDebugLevelSysprop = "otel.javaagent.debug";
-    String tracerDebugLevelProp = System.getProperty(tracerDebugLevelSysprop);
-
-    if (tracerDebugLevelProp != null) {
-      return Boolean.parseBoolean(tracerDebugLevelProp);
-    }
-
-    String tracerDebugLevelEnv =
-        System.getenv(tracerDebugLevelSysprop.replace('.', '_').toUpperCase());
-
-    if (tracerDebugLevelEnv != null) {
-      return Boolean.parseBoolean(tracerDebugLevelEnv);
-    }
-    return false;
   }
 
   public static boolean isJavaBefore9() {

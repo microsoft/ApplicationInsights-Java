@@ -14,12 +14,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @AutoValue
 public abstract class Config {
-  private static final Logger log = LoggerFactory.getLogger(Config.class);
+
+  // NOTE it's important not to use slf4j in this class, because this class is used before slf4j is
+  // configured, and so using slf4j here would initialize slf4j-simple before we have a chance to
+  // configure the logging levels
 
   private static final Config DEFAULT = Config.create(Collections.emptyMap());
 
@@ -125,7 +126,6 @@ public abstract class Config {
     try {
       return parser.apply(value);
     } catch (Throwable t) {
-      log.debug("Cannot parse {}", value, t);
       return defaultValue;
     }
   }
@@ -141,7 +141,7 @@ public abstract class Config {
     // if default is disabled, we want to disable individually.
     boolean anyEnabled = defaultEnabled;
     for (String name : instrumentationNames) {
-      String propertyName = String.format("otel.instrumentation.%s.%s", name, suffix);
+      String propertyName = "otel.instrumentation." + name + '.' + suffix;
       boolean enabled = getBooleanProperty(propertyName, defaultEnabled);
 
       if (defaultEnabled) {
@@ -157,5 +157,9 @@ public abstract class Config {
     Properties properties = new Properties();
     properties.putAll(getAllProperties());
     return properties;
+  }
+
+  public boolean isAgentDebugEnabled() {
+    return getBooleanProperty("otel.javaagent.debug", false);
   }
 }

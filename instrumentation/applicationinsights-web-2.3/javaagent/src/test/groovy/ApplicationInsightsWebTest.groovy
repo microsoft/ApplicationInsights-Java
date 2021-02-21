@@ -131,7 +131,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
       }
     }
 
-    testWriter.getTraces().get(0).get(0).spanId == spanId
+    getTraces().get(0).get(0).spanId == spanId
   }
 
   def "get operation id"() {
@@ -154,7 +154,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
       }
     }
 
-    testWriter.getTraces().get(0).get(0).traceId == traceId
+    getTraces().get(0).get(0).traceId == traceId
   }
 
   def "get tracestate"() {
@@ -162,7 +162,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
       "12341234123412341234123412341234",
       "1234123412341234",
       TraceFlags.getDefault(),
-      TraceState.builder().set("one", "1").set("two", "2").build())
+      TraceState.builder().put("one", "1").put("two", "2").build())
 
     when:
     def scope = Context.root().with(Span.wrap(spanContext)).makeCurrent()
@@ -236,7 +236,7 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
     where:
     otelTraceState                               | legacyTracestate
     TraceState.getDefault()                      | "az=1234"
-    TraceState.builder().set("one", "1").build() | "az=1234,one=1"
+    TraceState.builder().put("one", "1").build() | "az=1234,one=1"
   }
 
   def "should not throw on other RequestTelemetryContext methods"() {
