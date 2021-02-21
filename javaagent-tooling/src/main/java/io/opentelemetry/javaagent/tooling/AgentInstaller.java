@@ -25,7 +25,7 @@ import io.opentelemetry.javaagent.tooling.config.ConfigInitializer;
 import io.opentelemetry.javaagent.tooling.context.FieldBackedProvider;
 import io.opentelemetry.javaagent.tooling.matcher.GlobalClassloaderIgnoresMatcher;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,7 +47,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AgentInstaller {
-  private static final Logger log = LoggerFactory.getLogger(AgentInstaller.class);
+
+  private static Logger log;
 
   private static final String JAVAAGENT_ENABLED_CONFIG = "otel.javaagent.enabled";
   private static final String EXCLUDED_CLASSES_CONFIG = "otel.javaagent.exclude-classes";
@@ -65,31 +66,33 @@ public class AgentInstaller {
     return INSTRUMENTATION;
   }
 
-  static {
+  public static void installBytebuddyAgent(Instrumentation inst, URL bootstrapUrl) {
+    installBytebuddyAgent(inst, null, true);
+  }
+
+  // this exists for vendors who wish to completely override config and logging
+  public static void installBytebuddyAgent(
+      Instrumentation inst, Config config, boolean setUpLogging) {
+
+    // two most important things to set up are config and then logging
+    if (config != null) {
+      Config.internalInitializeConfig(config);
+    } else {
+      ConfigInitializer.initialize();
+    }
+    if (setUpLogging) {
+      LoggingConfigurer.configureLogger();
+    }
+
+    log = LoggerFactory.getLogger(AgentInstaller.class);
+
     addByteBuddyRawSetting();
     BootstrapPackagePrefixesHolder.setBoostrapPackagePrefixes(loadBootstrapPackagePrefixes());
     // WeakMap is used by other classes below, so we need to register the provider first.
     AgentTooling.registerWeakMapProvider();
     // Instrumentation can use a bounded cache, so register here.
     AgentTooling.registerBoundedCacheProvider();
-  }
-
-  public static void installBytebuddyAgent(Instrumentation inst) throws Exception {
     logVersionInfo();
-
-    Class<?> clazz = null;
-    try {
-      clazz = Class.forName("io.opentelemetry.javaagent.tooling.BeforeAgentInstaller");
-    } catch (final ClassNotFoundException ignored) {
-    }
-    if (clazz != null) {
-      // exceptions in this code should be propagated up so that agent startup fails
-      final Method method = clazz.getMethod("beforeInstallBytebuddyAgent", Instrumentation.class);
-      method.invoke(null, inst);
-    }
-
-    // this needs to be done as early as possible - before the first Config.get() call
-    ConfigInitializer.initialize();
 
     if (Config.get().getBooleanProperty(JAVAAGENT_ENABLED_CONFIG, true)) {
       Iterable<ComponentInstaller> componentInstallers = loadComponentProviders();
@@ -106,7 +109,7 @@ public class AgentInstaller {
    * @param inst Java Instrumentation used to install bytebuddy
    * @return the agent's class transformer
    */
-  public static ResettableClassFileTransformer installBytebuddyAgent(
+  private static ResettableClassFileTransformer installBytebuddyAgent(
       Instrumentation inst, Iterable<ComponentInstaller> componentInstallers) {
 
     installComponentsBeforeByteBuddy(componentInstallers);
@@ -334,7 +337,8 @@ public class AgentInstaller {
 
   static class TransformLoggingListener implements AgentBuilder.Listener {
 
-    private static final Logger log = LoggerFactory.getLogger(TransformLoggingListener.class);
+    private static final TransformSafeLogger log =
+        TransformSafeLogger.getLogger(TransformLoggingListener.class);
 
     @Override
     public void onError(
@@ -358,7 +362,9 @@ public class AgentInstaller {
         ClassLoader classLoader,
         JavaModule module,
         boolean loaded,
-        DynamicType dynamicType) {}
+        DynamicType dynamicType) {
+      log.debug("Transformed {} -- {}", typeDescription.getName(), classLoader);
+    }
 
     @Override
     public void onIgnored(

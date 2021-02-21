@@ -57,7 +57,7 @@ class HelperInjectionTest extends Specification {
   def "helpers injected on bootstrap classloader"() {
     setup:
     ByteBuddyAgent.install()
-    AgentInstaller.installBytebuddyAgent(ByteBuddyAgent.getInstrumentation())
+    AgentInstaller.installBytebuddyAgent(ByteBuddyAgent.getInstrumentation(), (URL) null)
     String helperClassName = HelperInjectionTest.getPackage().getName() + '.HelperClass'
     HelperInjector injector = new HelperInjector("test", [helperClassName], [])
     URLClassLoader bootstrapChild = new URLClassLoader(new URL[0], (ClassLoader) null)

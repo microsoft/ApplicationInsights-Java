@@ -5,21 +5,16 @@
 
 package io.opentelemetry.javaagent.instrumentation.azurefunctions;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import java.lang.reflect.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // using reflection because these classes are not published to maven central that we can easily
 // compile against
-public class InvocationRequestExtractAdapter implements TextMapPropagator.Getter<Object> {
+public class InvocationRequestExtractAdapter implements TextMapGetter<Object> {
 
   private static final Logger log = LoggerFactory.getLogger(InvocationRequestExtractAdapter.class);
-
-  public static final Tracer TRACER =
-      GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.azure-functions");
 
   public static final InvocationRequestExtractAdapter GETTER =
       new InvocationRequestExtractAdapter();

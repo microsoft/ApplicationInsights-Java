@@ -18,15 +18,19 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.tracer.HttpStatusConverter;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepth;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.HttpURLConnection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
@@ -69,11 +73,16 @@ public class HttpUrlConnectionInstrumentationModule extends InstrumentationModul
 
     @Override
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      return singletonMap(
+      Map<ElementMatcher<MethodDescription>, String> map = new HashMap<>();
+      map.put(
           isMethod()
               .and(isPublic())
               .and(namedOneOf("connect", "getOutputStream", "getInputStream")),
           HttpUrlConnectionInstrumentationModule.class.getName() + "$HttpUrlConnectionAdvice");
+      map.put(
+          isMethod().and(isPublic()).and(named("getResponseCode")),
+          HttpUrlConnectionInstrumentationModule.class.getName() + "$GetResponseCodeAdvice");
+      return map;
     }
   }
 
@@ -151,6 +160,23 @@ public class HttpUrlConnectionInstrumentationModule extends InstrumentationModul
       // need to reset after calling end(), in case end() calls response headers which will create
       // infinite recursion
       callDepth.decrementAndGet();
+    }
+  }
+
+  public static class GetResponseCodeAdvice {
+
+    @Advice.OnMethodExit
+    public static void methodExit(
+        @Advice.This HttpURLConnection connection, @Advice.Return int returnValue) {
+
+      ContextStore<HttpURLConnection, HttpUrlState> storage =
+          InstrumentationContext.get(HttpURLConnection.class, HttpUrlState.class);
+      HttpUrlState httpUrlState = storage.get(connection);
+      if (httpUrlState != null) {
+        Span span = Span.fromContext(httpUrlState.context);
+        span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, returnValue);
+        span.setStatus(HttpStatusConverter.statusFromHttpStatus(returnValue));
+      }
     }
   }
 

@@ -10,7 +10,7 @@ import static io.opentelemetry.instrumentation.awslambda.v1_0.MapUtils.lowercase
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.extension.aws.AwsXrayPropagator;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
 import java.util.Collections;
@@ -20,30 +20,30 @@ public class ParentContextExtractor {
 
   private static final String AWS_TRACE_HEADER_ENV_KEY = "_X_AMZN_TRACE_ID";
 
-  static Context extract(Map<String, String> headers) {
+  static Context extract(Map<String, String> headers, BaseTracer tracer) {
     Context parentContext = null;
     String parentTraceHeader = System.getenv(AWS_TRACE_HEADER_ENV_KEY);
     if (parentTraceHeader != null) {
-      parentContext = ParentContextExtractor.fromXRayHeader(parentTraceHeader);
+      parentContext = fromXRayHeader(parentTraceHeader);
     }
-    if (!isValid(parentContext)) {
+    if (!isValidAndSampled(parentContext)) {
       // try http
-      parentContext = ParentContextExtractor.fromHttpHeaders(headers);
+      parentContext = fromHttpHeaders(headers, tracer);
     }
     return parentContext;
   }
 
-  private static boolean isValid(Context context) {
+  private static boolean isValidAndSampled(Context context) {
     if (context == null) {
       return false;
     }
     Span parentSpan = Span.fromContext(context);
     SpanContext parentSpanContext = parentSpan.getSpanContext();
-    return parentSpanContext.isValid();
+    return (parentSpanContext.isValid() && parentSpanContext.isSampled());
   }
 
-  static Context fromHttpHeaders(Map<String, String> headers) {
-    return BaseTracer.extractWithGlobalPropagators(lowercaseMap(headers), MapGetter.INSTANCE);
+  private static Context fromHttpHeaders(Map<String, String> headers, BaseTracer tracer) {
+    return tracer.extract(lowercaseMap(headers), MapGetter.INSTANCE);
   }
 
   // lower-case map getter used for extraction
@@ -58,7 +58,7 @@ public class ParentContextExtractor {
             MapGetter.INSTANCE);
   }
 
-  private static class MapGetter implements TextMapPropagator.Getter<Map<String, String>> {
+  private static class MapGetter implements TextMapGetter<Map<String, String>> {
 
     private static final MapGetter INSTANCE = new MapGetter();
 

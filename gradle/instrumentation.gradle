@@ -97,7 +97,9 @@ shadowJar {
   relocate "io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi"
   relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
 
-  // relocate OpenTelemetry extensions
+  // relocate the OpenTelemetry extensions that are used by instrumentation modules
+  // these extensions live in the AgentClassLoader, and are injected into the user's class loader
+  // by the instrumentation modules that use them
   relocate "io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws"
   relocate "io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin"
 
@@ -117,6 +119,8 @@ tasks.withType(Test).configureEach {
   jvmArgs "-Dotel.internal.failOnContextLeak=true"
   // always print muzzle warnings
   jvmArgs "-Dio.opentelemetry.javaagent.slf4j.simpleLogger.log.muzzleMatcher=warn"
+  // prevent sporadic gradle deadlocks, see SafeLogger for more details
+  jvmArgs "-Dotel.internal.enableTransformSafeLogging=true"
   jvmArgs "-Dai.internal.testing.appId=1234"
 
   dependsOn shadowJar

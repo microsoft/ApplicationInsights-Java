@@ -10,6 +10,7 @@ import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEn
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.REDIRECT
 import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEndpoint.SUCCESS
 
+import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import javax.servlet.Servlet
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
@@ -19,6 +20,15 @@ import org.eclipse.jetty.servlet.ServletContextHandler
 
 abstract class JettyServlet3Test extends AbstractServlet3Test<Server, ServletContextHandler> {
 
+  private static final boolean IS_BEFORE_94 = isBefore94()
+
+  static isBefore94() {
+    def version = Server.getVersion().split("\\.")
+    def major = Integer.parseInt(version[0])
+    def minor = Integer.parseInt(version[1])
+    return major < 9 || (major == 9 && minor < 4)
+  }
+
   @Override
   boolean testNotFound() {
     false
@@ -27,6 +37,19 @@ abstract class JettyServlet3Test extends AbstractServlet3Test<Server, ServletCon
   @Override
   Class<?> expectedExceptionClass() {
     ServletException
+  }
+
+  @Override
+  boolean hasResponseSpan(ServerEndpoint endpoint) {
+    return (IS_BEFORE_94 && endpoint == EXCEPTION) || super.hasResponseSpan(endpoint)
+  }
+
+  @Override
+  void responseSpan(TraceAssert trace, int index, Object controllerSpan, Object handlerSpan, String method, ServerEndpoint endpoint) {
+    if (IS_BEFORE_94 && endpoint == EXCEPTION) {
+      sendErrorSpan(trace, index, handlerSpan)
+    }
+    super.responseSpan(trace, index, controllerSpan, handlerSpan, method, endpoint)
   }
 
   @Override
@@ -109,6 +132,11 @@ class JettyServlet3TestAsync extends JettyServlet3Test {
   }
 
   @Override
+  boolean errorEndpointUsesSendError() {
+    false
+  }
+
+  @Override
   boolean testException() {
     // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/807
     return false
@@ -133,6 +161,11 @@ class JettyServlet3TestForward extends JettyDispatchTest {
   @Override
   Class<Servlet> servlet() {
     TestServlet3.Sync // dispatch to sync servlet
+  }
+
+  @Override
+  boolean hasForwardSpan() {
+    true
   }
 
   @Override
@@ -162,6 +195,11 @@ class JettyServlet3TestInclude extends JettyDispatchTest {
   @Override
   boolean testError() {
     false
+  }
+
+  @Override
+  boolean hasIncludeSpan() {
+    true
   }
 
   @Override
@@ -221,6 +259,11 @@ class JettyServlet3TestDispatchAsync extends JettyDispatchTest {
     addServlet(context, "/dispatch" + REDIRECT.path, TestServlet3.DispatchAsync)
     addServlet(context, "/dispatch" + AUTH_REQUIRED.path, TestServlet3.DispatchAsync)
     addServlet(context, "/dispatch/recursive", TestServlet3.DispatchRecursive)
+  }
+
+  @Override
+  boolean errorEndpointUsesSendError() {
+    false
   }
 
   @Override
