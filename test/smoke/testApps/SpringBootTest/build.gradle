@@ -17,8 +17,6 @@ compileSmokeTestJava.sourceCompatibility = 1.8
 compileSmokeTestJava.targetCompatibility = 1.8
 
 dependencies {
-    compileOnly aiAgentJar // this is just to force building the agent first
-
     compile springBootStarterJar
     compile 'com.google.guava:guava:27.1-android'
     compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE') {
