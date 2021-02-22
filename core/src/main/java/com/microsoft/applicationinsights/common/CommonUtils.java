@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.microsoft.applicationinsights.customExceptions.TemporaryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +41,7 @@ public class CommonUtils {
   public static final AtomicReference<Exception> lastTemporaryException = new AtomicReference<>();
   public static final AtomicReference<Logger> lastTemporaryExceptionLogger = new AtomicReference<>();
   public static final AtomicReference<String> lastTemporaryExceptionMessage = new AtomicReference<>();
+  public static final AtomicReference<TemporaryException> lastNetworkTemporaryException = new AtomicReference<>();
 
 
   public static boolean isNullOrEmpty(String string) {
@@ -80,12 +82,4 @@ public class CommonUtils {
     }
   }
 
-  public static void handleTemporaryExceptions(Logger loggerFromException,String message, Exception ex) {
-    //Handle first failure
-    if(failureCounter.getAndIncrement() == 0) {
-      lastTemporaryExceptionMessage.set(message);
-      lastTemporaryExceptionLogger.set(loggerFromException);
-      lastTemporaryException.set(ex);
-    }
-  }
 }

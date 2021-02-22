@@ -63,7 +63,7 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
         this.actualOutput = actualOutput;
         this.transmissionPolicy = transmissionPolicy;
         // Schedule to run every 5 minutes
-        this.networkIssueTracker.scheduleAtFixedRate(new NetworkExceptionsTracker(), 300,300, TimeUnit.SECONDS);
+        this.networkIssueTracker.scheduleAtFixedRate(new NetworkExceptionsTracker(), 300, 300, TimeUnit.SECONDS);
 
         maxThreads = DEFAULT_MAX_NUMBER_OF_THREADS;
         outputThreads = ThreadPoolUtils.newLimitedThreadPool(

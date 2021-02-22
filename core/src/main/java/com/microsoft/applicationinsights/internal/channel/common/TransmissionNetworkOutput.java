@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.customExceptions.TemporaryException;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
@@ -45,8 +46,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import static com.microsoft.applicationinsights.common.CommonUtils.handleTemporaryExceptions;
-import static com.microsoft.applicationinsights.common.CommonUtils.successCounter;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The class is responsible for the actual sending of
@@ -60,10 +60,12 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionNetworkOutput.class);
     private static volatile AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+    public static volatile AtomicReference<TemporaryException> temporaryNetworkException = new AtomicReference<>(new TemporaryException());
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String CONTENT_ENCODING_HEADER = "Content-Encoding";
     private static final String RESPONSE_THROTTLING_HEADER = "Retry-After";
+    private static final String TEMPORARY_EXCEPTION_MESSAGE = "Telemetry will be stored locally and re-sent later once the connection is stable again";
 
     public static final String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
 
@@ -177,32 +179,44 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                     // to be throttled
                     transmissionPolicyManager.clearBackoff();
                 }
-                successCounter.incrementAndGet();
+
+                // Increment Success Counter
+                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter()+1,
+                        temporaryNetworkException.get().getFailureCounter(),
+                        temporaryNetworkException.get().getLastTemporaryException(),
+                        temporaryNetworkException.get().getLastTemporaryExceptionLogger(),
+                        temporaryNetworkException.get().getLastTemporaryExceptionMessage()));
                 return true;
 
             } catch (ConnectionPoolTimeoutException e) {
-                handleTemporaryExceptions(logger,"Failed to send, connection pool timeout exception. " +
-                        "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
+                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
+                        "Failed to send, connection pool timeout exception. "+TEMPORARY_EXCEPTION_MESSAGE));
             } catch (SocketException e) {
-                handleTemporaryExceptions(logger,"Failed to send, socket exception. " +
-                        "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
+                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
+                        "Failed to send, socket exception. "+TEMPORARY_EXCEPTION_MESSAGE));
             } catch (SocketTimeoutException e) {
-                handleTemporaryExceptions(logger,"Failed to send, socket timeout exception. " +
-                        "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
+                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
+                        "Failed to send, socket timeout exception. "+TEMPORARY_EXCEPTION_MESSAGE));
             } catch (UnknownHostException e) {
-                handleTemporaryExceptions(logger,"Failed to send, wrong host address or cannot reach address due to network issues. " +
-                        "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
+                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
+                        "Failed to send, wrong host address or cannot reach address due to network issues. "+TEMPORARY_EXCEPTION_MESSAGE));
             } catch (IOException e) {
-                handleTemporaryExceptions(logger,"Failed to send, IO exception. " +
-                        "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
+                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
+                        "Failed to send, IO exception. "+TEMPORARY_EXCEPTION_MESSAGE));
             } catch (FriendlyException e) {
                 ex = e;
                 if(!friendlyExceptionThrown.getAndSet(true)) {
                     logger.error(e.getMessage());
                 }
             } catch (Exception e) {
-                handleTemporaryExceptions(logger,"Failed to send, unexpected exception. " +
-                        "Telemetry will be stored locally and re-sent later once the connection is stable again", e);
+                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
+                        "Failed to send, unexpected exception. "+TEMPORARY_EXCEPTION_MESSAGE));
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t) {
