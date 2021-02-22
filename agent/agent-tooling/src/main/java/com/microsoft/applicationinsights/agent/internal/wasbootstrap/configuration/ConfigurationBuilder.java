@@ -74,6 +74,20 @@ public class ConfigurationBuilder {
     public static Configuration create(Path agentJarPath) throws IOException {
         Configuration config = loadConfigurationFile(agentJarPath);
         overlayEnvVars(config);
+        Map<String, Object> micrometer = config.instrumentation.get("micrometer");
+        if (micrometer != null) {
+            Object reportingIntervalSeconds = micrometer.get("reportingIntervalSeconds");
+            if (reportingIntervalSeconds instanceof Number) {
+                // TODO remove this backward compatibility in 3.1.0
+                //  (the old name was never documented, but was discovered by some users and posted to a github issue)
+                configurationMessages.add(new ConfigurationMessage(
+                        "please use attribute \"intervalSeconds\" to configure micrometer" +
+                                " instead of \"reportingIntervalSeconds\""));
+                if (!micrometer.containsKey("intervalSeconds")) {
+                    micrometer.put("intervalSeconds", reportingIntervalSeconds);
+                }
+            }
+        }
         return config;
     }
 

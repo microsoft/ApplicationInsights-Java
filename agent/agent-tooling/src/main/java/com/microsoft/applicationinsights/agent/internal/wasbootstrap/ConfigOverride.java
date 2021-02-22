@@ -15,8 +15,8 @@ class ConfigOverride {
     static Config getConfig(Configuration config) {
         Map<String, String> properties = new HashMap<>();
         properties.put("otel.experimental.log.capture.threshold", getLoggingFrameworksThreshold(config, "INFO"));
-        int reportingIntervalSeconds = getMicrometerReportingIntervalSeconds(config, 60);
-        properties.put("otel.micrometer.step.millis", Long.toString(SECONDS.toMillis(reportingIntervalSeconds)));
+        int micrometerIntervalSeconds = getMicrometerIntervalSeconds(config, 60);
+        properties.put("otel.micrometer.step.millis", Long.toString(SECONDS.toMillis(micrometerIntervalSeconds)));
         // TODO need some kind of test for these configuration properties
         if (!isInstrumentationEnabled(config, "micrometer")) {
             properties.put("otel.instrumentation.micrometer.enabled", "false");
@@ -89,17 +89,17 @@ class ConfigOverride {
         return (Boolean) value;
     }
 
-    private static int getMicrometerReportingIntervalSeconds(Configuration config, int defaultValue) {
+    private static int getMicrometerIntervalSeconds(Configuration config, int defaultValue) {
         Map<String, Object> micrometer = config.instrumentation.get("micrometer");
         if (micrometer == null) {
             return defaultValue;
         }
-        Object value = micrometer.get("reportingIntervalSeconds");
+        Object value = micrometer.get("intervalSeconds");
         if (value == null) {
             return defaultValue;
         }
         if (!(value instanceof Number)) {
-            throw new IllegalStateException("micrometer reportingIntervalSeconds must be a number, but found: " + value.getClass());
+            throw new IllegalStateException("micrometer intervalSeconds must be a number, but found: " + value.getClass());
         }
         return ((Number) value).intValue();
     }
