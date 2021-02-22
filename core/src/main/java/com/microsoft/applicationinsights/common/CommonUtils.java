@@ -35,14 +35,6 @@ import org.slf4j.LoggerFactory;
 public class CommonUtils {
 
   private static final Logger logger = LoggerFactory.getLogger(CommonUtils.class);
-  public static final AtomicLong successCounter = new AtomicLong(0);
-  public static final AtomicLong failureCounter = new AtomicLong(0);
-  public static final AtomicBoolean firstFailure = new AtomicBoolean(false);
-  public static final AtomicReference<Exception> lastTemporaryException = new AtomicReference<>();
-  public static final AtomicReference<Logger> lastTemporaryExceptionLogger = new AtomicReference<>();
-  public static final AtomicReference<String> lastTemporaryExceptionMessage = new AtomicReference<>();
-  public static final AtomicReference<TemporaryException> lastNetworkTemporaryException = new AtomicReference<>();
-
 
   public static boolean isNullOrEmpty(String string) {
     return string == null || string.length() == 0;

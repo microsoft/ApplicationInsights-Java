@@ -2,7 +2,8 @@ package com.microsoft.applicationinsights.internal.util;
 
 
 import com.microsoft.applicationinsights.customExceptions.TemporaryException;
-import static com.microsoft.applicationinsights.common.CommonUtils.firstFailure;
+
+import static com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput.firstFailure;
 import static com.microsoft.applicationinsights.internal.channel.common.TransmissionNetworkOutput.temporaryNetworkException;
 
 public class NetworkExceptionsTracker implements Runnable{

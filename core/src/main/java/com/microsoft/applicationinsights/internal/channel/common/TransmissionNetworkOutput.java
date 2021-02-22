@@ -60,6 +60,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionNetworkOutput.class);
     private static volatile AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+    public static final AtomicBoolean firstFailure = new AtomicBoolean(false);
     public static volatile AtomicReference<TemporaryException> temporaryNetworkException = new AtomicReference<>(new TemporaryException());
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
