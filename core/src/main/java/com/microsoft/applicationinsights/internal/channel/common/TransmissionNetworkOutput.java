@@ -190,34 +190,22 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 return true;
 
             } catch (ConnectionPoolTimeoutException e) {
-                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
-                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
-                        "Failed to send, connection pool timeout exception. "+TEMPORARY_EXCEPTION_MESSAGE));
+                handleTemporaryException("Failed to send, connection pool timeout exception. ", logger, e);
             } catch (SocketException e) {
-                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
-                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
-                        "Failed to send, socket exception. "+TEMPORARY_EXCEPTION_MESSAGE));
+                handleTemporaryException("Failed to send, socket exception. ", logger, e);
             } catch (SocketTimeoutException e) {
-                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
-                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
-                        "Failed to send, socket timeout exception. "+TEMPORARY_EXCEPTION_MESSAGE));
+                handleTemporaryException("Failed to send, socket timeout exception. ", logger, e);
             } catch (UnknownHostException e) {
-                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
-                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
-                        "Failed to send, wrong host address or cannot reach address due to network issues. "+TEMPORARY_EXCEPTION_MESSAGE));
+                handleTemporaryException("Failed to send, wrong host address or cannot reach address due to network issues. ", logger, e);
             } catch (IOException e) {
-                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
-                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
-                        "Failed to send, IO exception. "+TEMPORARY_EXCEPTION_MESSAGE));
+                handleTemporaryException("Failed to send, IO exception. ", logger, e);
             } catch (FriendlyException e) {
                 ex = e;
                 if(!friendlyExceptionThrown.getAndSet(true)) {
                     logger.error(e.getMessage());
                 }
             } catch (Exception e) {
-                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
-                        temporaryNetworkException.get().getFailureCounter()+1, e, logger,
-                        "Failed to send, unexpected exception. "+TEMPORARY_EXCEPTION_MESSAGE));
+                handleTemporaryException("Failed to send, unexpected exception. ", logger, e);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t) {
@@ -257,6 +245,21 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
         // This also means that unless there is a TransmissionHandler for this code we
         // will not retry.
         return true;
+    }
+
+    private static void handleTemporaryException(String message, Logger logger, Exception ex) {
+        if(temporaryNetworkException.get().getFailureCounter() == 0) {
+            temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+                    temporaryNetworkException.get().getFailureCounter()+1, ex, logger,
+                    message+TEMPORARY_EXCEPTION_MESSAGE));
+        } else {
+            temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+                    temporaryNetworkException.get().getFailureCounter()+1,
+                    temporaryNetworkException.get().getLastTemporaryException(),
+                    temporaryNetworkException.get().getLastTemporaryExceptionLogger(),
+                    temporaryNetworkException.get().getLastTemporaryExceptionMessage()));
+        }
+
     }
 
     /**
