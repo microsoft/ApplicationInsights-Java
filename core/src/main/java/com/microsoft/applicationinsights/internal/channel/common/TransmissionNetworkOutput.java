@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import com.microsoft.applicationinsights.customExceptions.TemporaryException;
+import com.microsoft.applicationinsights.internal.util.TemporaryExceptionWrapper;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
@@ -61,7 +61,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
     private static final Logger logger = LoggerFactory.getLogger(TransmissionNetworkOutput.class);
     private static volatile AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
     public static final AtomicBoolean firstFailure = new AtomicBoolean(false);
-    public static volatile AtomicReference<TemporaryException> temporaryNetworkException = new AtomicReference<>(new TemporaryException());
+    public static volatile AtomicReference<TemporaryExceptionWrapper> temporaryNetworkException = new AtomicReference<>(new TemporaryExceptionWrapper());
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String CONTENT_ENCODING_HEADER = "Content-Encoding";
@@ -182,7 +182,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 }
 
                 // Increment Success Counter
-                temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter()+1,
+                temporaryNetworkException.set(new TemporaryExceptionWrapper(temporaryNetworkException.get().getSuccessCounter()+1,
                         temporaryNetworkException.get().getFailureCounter(),
                         temporaryNetworkException.get().getLastTemporaryException(),
                         temporaryNetworkException.get().getLastTemporaryExceptionLogger(),
@@ -249,11 +249,11 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
     private static void handleTemporaryException(String message, Logger logger, Exception ex) {
         if(temporaryNetworkException.get().getFailureCounter() == 0) {
-            temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+            temporaryNetworkException.set(new TemporaryExceptionWrapper(temporaryNetworkException.get().getSuccessCounter(),
                     temporaryNetworkException.get().getFailureCounter()+1, ex, logger,
                     message+TEMPORARY_EXCEPTION_MESSAGE));
         } else {
-            temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+            temporaryNetworkException.set(new TemporaryExceptionWrapper(temporaryNetworkException.get().getSuccessCounter(),
                     temporaryNetworkException.get().getFailureCounter()+1,
                     temporaryNetworkException.get().getLastTemporaryException(),
                     temporaryNetworkException.get().getLastTemporaryExceptionLogger(),

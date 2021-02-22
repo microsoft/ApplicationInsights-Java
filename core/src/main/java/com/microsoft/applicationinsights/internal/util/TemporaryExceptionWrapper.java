@@ -1,19 +1,19 @@
-package com.microsoft.applicationinsights.customExceptions;
+package com.microsoft.applicationinsights.internal.util;
 import org.slf4j.Logger;
 
-public class TemporaryException {
+public class TemporaryExceptionWrapper {
     private Long successCounter;
     private Long failureCounter;
     private Exception lastTemporaryException;
     private Logger lastTemporaryExceptionLogger;
     private String lastTemporaryExceptionMessage;
 
-    public TemporaryException() {
+    public TemporaryExceptionWrapper() {
         this.successCounter = 0L;
         this.failureCounter = 0L;
     }
 
-    public TemporaryException(Long successCounter, Long failureCounter, Exception lastTemporaryException, Logger lastTemporaryExceptionLogger, String lastTemporaryExceptionMessage) {
+    public TemporaryExceptionWrapper(Long successCounter, Long failureCounter, Exception lastTemporaryException, Logger lastTemporaryExceptionLogger, String lastTemporaryExceptionMessage) {
         this.successCounter = successCounter;
         this.failureCounter = failureCounter;
         this.lastTemporaryException = lastTemporaryException;

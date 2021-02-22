@@ -4,7 +4,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.microsoft.applicationinsights.customExceptions.TemporaryException;
 import nl.altindag.log.LogCaptor;
 import org.junit.*;
 import org.slf4j.Logger;
@@ -29,7 +28,7 @@ public class NetworkExceptionsTrackerTest {
     @After
     public void tearDown() throws InterruptedException {
         // cleanup code
-        temporaryNetworkException.set(new TemporaryException());
+        temporaryNetworkException.set(new TemporaryExceptionWrapper());
     }
 
     @AfterClass
@@ -43,14 +42,14 @@ public class NetworkExceptionsTrackerTest {
 
     @Test
     public void testSuccessAndFailureCounters() throws InterruptedException {
-        TemporaryException temporaryException = temporaryNetworkException.get();
-        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryException.getFailureCounter()));
-        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryException.getSuccessCounter()));
-        temporaryException.incrementSuccessCounter();
-        assertEquals(java.util.Optional.of(1L), java.util.Optional.ofNullable(temporaryException.getSuccessCounter()));
+        TemporaryExceptionWrapper temporaryExceptionWrapper = temporaryNetworkException.get();
+        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getFailureCounter()));
+        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getSuccessCounter()));
+        temporaryExceptionWrapper.incrementSuccessCounter();
+        assertEquals(java.util.Optional.of(1L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getSuccessCounter()));
         Logger logger = LoggerFactory.getLogger(NetworkExceptionsTrackerTest.class);
         Exception ex=new IllegalArgumentException();
-        temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+        temporaryNetworkException.set(new TemporaryExceptionWrapper(temporaryNetworkException.get().getSuccessCounter(),
                 temporaryNetworkException.get().getFailureCounter()+1, ex, logger, "Test Message"));
         assertEquals(java.util.Optional.of(1L), java.util.Optional.ofNullable(temporaryNetworkException.get().getFailureCounter()));
         assertEquals(ex,temporaryNetworkException.get().getLastTemporaryException());
@@ -61,14 +60,14 @@ public class NetworkExceptionsTrackerTest {
     @Test
     public void testExceptionLogged() {
         LogCaptor logCaptor = LogCaptor.forClass(NetworkExceptionsTrackerTest.class);
-        TemporaryException temporaryException = temporaryNetworkException.get();
-        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryException.getFailureCounter()));
-        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryException.getSuccessCounter()));
-        temporaryException.incrementSuccessCounter();
-        assertEquals(java.util.Optional.of(1L), java.util.Optional.ofNullable(temporaryException.getSuccessCounter()));
+        TemporaryExceptionWrapper temporaryExceptionWrapper = temporaryNetworkException.get();
+        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getFailureCounter()));
+        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getSuccessCounter()));
+        temporaryExceptionWrapper.incrementSuccessCounter();
+        assertEquals(java.util.Optional.of(1L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getSuccessCounter()));
         Logger logger = LoggerFactory.getLogger(NetworkExceptionsTrackerTest.class);
         Exception ex=new IllegalArgumentException();
-        temporaryNetworkException.set(new TemporaryException(temporaryNetworkException.get().getSuccessCounter(),
+        temporaryNetworkException.set(new TemporaryExceptionWrapper(temporaryNetworkException.get().getSuccessCounter(),
                 temporaryNetworkException.get().getFailureCounter()+1, ex, logger, "Test Message"));
         assertEquals(java.util.Optional.of(1L), java.util.Optional.ofNullable(temporaryNetworkException.get().getFailureCounter()));
         assertEquals(ex,temporaryNetworkException.get().getLastTemporaryException());

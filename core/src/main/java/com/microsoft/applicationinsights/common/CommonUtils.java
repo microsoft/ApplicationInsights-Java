@@ -23,11 +23,7 @@ package com.microsoft.applicationinsights.common;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
-import com.microsoft.applicationinsights.customExceptions.TemporaryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
