@@ -16,7 +16,6 @@
       "enabled": false
     },
     "logging": {
-      "enabled": true,
       "level": "error"
     },
     "micrometer": {

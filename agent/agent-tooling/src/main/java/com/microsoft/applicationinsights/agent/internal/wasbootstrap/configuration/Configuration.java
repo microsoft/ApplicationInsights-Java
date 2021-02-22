@@ -41,7 +41,7 @@ public class Configuration {
     public Map<String, String> customDimensions = new HashMap<>();
     public Sampling sampling = new Sampling();
     public List<JmxMetric> jmxMetrics = new ArrayList<>();
-    public Map<String, Map<String, Object>> instrumentation = new HashMap<String, Map<String, Object>>();
+    public Instrumentation instrumentation = new Instrumentation();
     public Heartbeat heartbeat = new Heartbeat();
     public Proxy proxy = new Proxy();
     public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
@@ -81,6 +81,57 @@ public class Configuration {
         public String name;
         public String objectName;
         public String attribute;
+    }
+
+    public static class Instrumentation {
+
+        public CassandraInstrumentation cassandra = new CassandraInstrumentation();
+        public JdbcInstrumentation jdbc = new JdbcInstrumentation();
+        public JmsInstrumentation jms = new JmsInstrumentation();
+        public KafkaInstrumentation kafka = new KafkaInstrumentation();
+        public LoggingInstrumentation logging = new LoggingInstrumentation();
+        public MicrometerInstrumentation micrometer = new MicrometerInstrumentation();
+        public MongoInstrumentation mongo = new MongoInstrumentation();
+        public RedisInstrumentation redis = new RedisInstrumentation();
+        public SpringSchedulingInstrumentation springScheduling = new SpringSchedulingInstrumentation();
+    }
+
+    public static class CassandraInstrumentation {
+        public boolean enabled = true;
+    }
+
+    public static class JdbcInstrumentation {
+        public boolean enabled = true;
+    }
+
+    public static class JmsInstrumentation {
+        public boolean enabled = true;
+    }
+
+    public static class KafkaInstrumentation {
+        public boolean enabled = true;
+    }
+
+    public static class LoggingInstrumentation {
+        public String level = "INFO";
+    }
+
+    public static class MicrometerInstrumentation {
+        public boolean enabled = true; // TODO deprecate in favor of intervalSeconds = -1?
+        public int intervalSeconds = 60;
+        public int reportingIntervalSeconds = 60;
+    }
+
+    public static class MongoInstrumentation {
+        public boolean enabled = true;
+    }
+
+    public static class RedisInstrumentation {
+        public boolean enabled = true;
+    }
+
+    public static class SpringSchedulingInstrumentation {
+        public boolean enabled = true;
     }
 
     public static class Heartbeat {
