@@ -131,6 +131,9 @@ public class ConfigurationBuilder {
             }
         }
         return false;
+
+
+
     }
 
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
@@ -292,11 +295,11 @@ public class ConfigurationBuilder {
                 return configuration;
             } catch(JsonDataException ex) {
                 if(strict) {
-                    logger.warn(ex.getMessage());
+                    logger.warn(getJsonEncodingExceptionMessage(configPath.toAbsolutePath().toString(), ex.getMessage()));
                     // Try extracting the configuration without failOnUnknown
                     return getConfigurationFromConfigFile(configPath, false);
                 } else {
-                    throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following json issue:\n"+ex.getMessage(),
+                    throw new FriendlyException(getJsonEncodingExceptionMessage(configPath.toAbsolutePath().toString(), ex.getMessage()),
                             "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
                 }
             } catch (JsonEncodingException ex) {
@@ -312,6 +315,14 @@ public class ConfigurationBuilder {
         String defaultMessage = "Application Insights Java agent's configuration file "+ configPath + " has a malformed JSON\n";
         if(message == null) {
             return defaultMessage;
+        }
+
+        // Moshi builder json data exception sample:
+        // Cannot skip unexpected NAME at $.httpProxy
+        // Removing the 'Cannot Skip' string from the message.
+        if(message.toLowerCase().contains("cannot skip")) {
+            return "Application Insights Java agent's configuration file "+ configPath +
+                    " has the following JSON issue: "+message.toLowerCase().replaceAll("cannot skip","") +"\n";
         }
 
         // Moshi builder json data exception sample:
