@@ -9,7 +9,6 @@ public class AiBootstrapPackageProvider implements BootstrapPackagesProvider {
 
     @Override
     public List<String> getPackagePrefixes() {
-        // TODO is this needed?
         return Arrays.asList("com.microsoft.applicationinsights.agent.bootstrap");
     }
 }
