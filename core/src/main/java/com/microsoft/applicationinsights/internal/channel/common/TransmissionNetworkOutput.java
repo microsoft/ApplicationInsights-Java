@@ -21,13 +21,20 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
+import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import com.microsoft.applicationinsights.internal.util.TemporaryExceptionWrapper;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
+import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -40,14 +47,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
 /**
  * The class is responsible for the actual sending of
  * {@link com.microsoft.applicationinsights.internal.channel.common.Transmission}
@@ -59,9 +58,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionNetworkOutput.class);
-    private static volatile AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
-    public static final AtomicBoolean firstFailure = new AtomicBoolean(false);
-    public static volatile AtomicReference<TemporaryExceptionWrapper> temporaryNetworkException = new AtomicReference<>(new TemporaryExceptionWrapper());
+    private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+    public static final ExceptionStats networkExceptionStats = new ExceptionStats();
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String CONTENT_ENCODING_HEADER = "Content-Encoding";
@@ -182,30 +180,32 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 }
 
                 // Increment Success Counter
-                temporaryNetworkException.set(new TemporaryExceptionWrapper(temporaryNetworkException.get().getSuccessCounter()+1,
-                        temporaryNetworkException.get().getFailureCounter(),
-                        temporaryNetworkException.get().getLastTemporaryException(),
-                        temporaryNetworkException.get().getLastTemporaryExceptionLogger(),
-                        temporaryNetworkException.get().getLastTemporaryExceptionMessage()));
+                networkExceptionStats.recordSuccess();
                 return true;
 
             } catch (ConnectionPoolTimeoutException e) {
-                handleTemporaryException("Failed to send, connection pool timeout exception. ", logger, e);
+                networkExceptionStats.recordException(
+                        "Failed to send, connection pool timeout exception. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
             } catch (SocketException e) {
-                handleTemporaryException("Failed to send, socket exception. ", logger, e);
+                networkExceptionStats.recordException(
+                        "Failed to send, socket exception. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
             } catch (SocketTimeoutException e) {
-                handleTemporaryException("Failed to send, socket timeout exception. ", logger, e);
+                networkExceptionStats.recordException(
+                        "Failed to send, socket timeout exception. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
             } catch (UnknownHostException e) {
-                handleTemporaryException("Failed to send, wrong host address or cannot reach address due to network issues. ", logger, e);
+                networkExceptionStats.recordException(
+                        "Failed to send, wrong host address or cannot reach address due to network issues. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
             } catch (IOException e) {
-                handleTemporaryException("Failed to send, IO exception. ", logger, e);
+                networkExceptionStats.recordException(
+                        "Failed to send, IO exception. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
             } catch (FriendlyException e) {
                 ex = e;
                 if(!friendlyExceptionThrown.getAndSet(true)) {
                     logger.error(e.getMessage());
                 }
             } catch (Exception e) {
-                handleTemporaryException("Failed to send, unexpected exception. ", logger, e);
+                networkExceptionStats.recordException(
+                        "Failed to send, unexpected exception. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t) {
@@ -245,28 +245,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
         // This also means that unless there is a TransmissionHandler for this code we
         // will not retry.
         return true;
-    }
-
-    private static void handleTemporaryException(String message, Logger logger, Exception ex) {
-        // We log the first exception as soon as it is thrown
-        if(!firstFailure.getAndSet(true)) {
-            logger.error(message+"\n"+
-                    "Total number of successful telemetry requests so far:"+ temporaryNetworkException.get().getSuccessCounter()+"\n"+
-                    "Future failures will be aggregated and logged once every 5 minutes\n", ex);
-        }
-
-        if(temporaryNetworkException.get().getFailureCounter() == 0) {
-            temporaryNetworkException.set(new TemporaryExceptionWrapper(temporaryNetworkException.get().getSuccessCounter(),
-                    temporaryNetworkException.get().getFailureCounter()+1, ex, logger,
-                    message+TEMPORARY_EXCEPTION_MESSAGE));
-        } else {
-            temporaryNetworkException.set(new TemporaryExceptionWrapper(temporaryNetworkException.get().getSuccessCounter(),
-                    temporaryNetworkException.get().getFailureCounter()+1,
-                    temporaryNetworkException.get().getLastTemporaryException(),
-                    temporaryNetworkException.get().getLastTemporaryExceptionLogger(),
-                    temporaryNetworkException.get().getLastTemporaryExceptionMessage()));
-        }
-
     }
 
     /**

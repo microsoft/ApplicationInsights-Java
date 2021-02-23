@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,8 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputAsync;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
-import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProvider;
-import com.microsoft.applicationinsights.internal.util.NetworkExceptionsTracker;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
 /**
@@ -50,8 +46,6 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
     private final TransmissionOutputSync actualOutput;
     private final TransmissionPolicyStateFetcher transmissionPolicy;
     private final int instanceId = INTSTANCE_ID_POOL.getAndIncrement();
-    private final ScheduledExecutorService networkIssueTracker =
-            Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(NetworkExceptionsTracker.class, "networkIssueTracker"));
 
     public ActiveTransmissionNetworkOutput(TransmissionOutputSync actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
         this(actualOutput, transmissionPolicy, DEFAULT_MAX_MESSAGES_IN_BUFFER);
@@ -62,8 +56,6 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
 
         this.actualOutput = actualOutput;
         this.transmissionPolicy = transmissionPolicy;
-        // Schedule to run every 5 minutes
-        this.networkIssueTracker.scheduleAtFixedRate(new NetworkExceptionsTracker(), 300, 300, TimeUnit.SECONDS);
 
         maxThreads = DEFAULT_MAX_NUMBER_OF_THREADS;
         outputThreads = ThreadPoolUtils.newLimitedThreadPool(
