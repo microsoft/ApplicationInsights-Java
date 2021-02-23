@@ -23,8 +23,22 @@ public class ExceptionStats {
     private String warningMessage;
     private Exception exception;
     private Logger logger;
+    // Initial Delay for scheduled executor in milliseconds
+    private int executorInitialDelay;
+    // Period for scheduled executor in milliseconds
+    private int executorPeriod;
 
     private final Object lock = new Object();
+    // Primarily used by test
+    public ExceptionStats(int executorInitialDelay, int executorPeriod) {
+        this.executorInitialDelay = executorInitialDelay;
+        this.executorPeriod = executorPeriod;
+    }
+
+    public ExceptionStats() {
+        this.executorInitialDelay = 300;
+        this.executorPeriod = 300;
+    }
 
     public void recordSuccess() {
         numSuccesses++;
@@ -34,7 +48,7 @@ public class ExceptionStats {
         // log the first exception as soon as it occurs, then log only every 5 min after that
         if (!firstFailure.getAndSet(true)) {
             logger.warn(warningMessage + " (future failures will be aggregated and logged once every 5 minutes)", exception);
-            scheduledExecutor.scheduleAtFixedRate(new ExceptionStatsLogger(), 5, 5, TimeUnit.MINUTES);
+            scheduledExecutor.scheduleAtFixedRate(new ExceptionStatsLogger(), executorInitialDelay, executorPeriod, TimeUnit.SECONDS);
             return;
         }
 

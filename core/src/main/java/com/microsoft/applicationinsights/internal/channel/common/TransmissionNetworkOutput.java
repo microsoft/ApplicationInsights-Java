@@ -177,12 +177,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                     // If we've completed then clear the back off flags as the channel does not need
                     // to be throttled
                     transmissionPolicyManager.clearBackoff();
+                    // Increment Success Counter
+                    networkExceptionStats.recordSuccess();
                 }
-
-                // Increment Success Counter
-                networkExceptionStats.recordSuccess();
                 return true;
-
             } catch (ConnectionPoolTimeoutException e) {
                 networkExceptionStats.recordException(
                         "Failed to send, connection pool timeout exception. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
