@@ -26,6 +26,7 @@ public class LegacySdkWebInteropTest extends AiSmokeTest {
         assertEquals("myvalue2", rd.getProperties().get("myattr2"));
         assertEquals("myuser", rdEnvelope.getTags().get("ai.user.id"));
         assertEquals("myspanname", rd.getName());
+        assertEquals("mysource", rd.getSource());
 
         assertTrue(rd.getSuccess());
     }

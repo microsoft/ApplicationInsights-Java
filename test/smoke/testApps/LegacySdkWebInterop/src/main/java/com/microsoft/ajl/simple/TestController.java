@@ -21,6 +21,7 @@ public class TestController {
         requestTelemetry.getProperties().put("myattr2", "myvalue2");
         requestTelemetry.getContext().getUser().setId("myuser");
         requestTelemetry.setName("myspanname");
+        requestTelemetry.setSource("mysource");
         return "OK!";
     }
 }
