@@ -68,8 +68,8 @@ public class ConfigurationBuilder {
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
 
-    // cannot use logger before loading configuration, so need to store any messages locally until logger is initialized
-    private static final List<ConfigurationMessage> configurationMessages = new CopyOnWriteArrayList<>();
+    // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
+    private static final List<ConfigurationWarnMessage> configurationWarnMessages = new CopyOnWriteArrayList<>();
 
     public static Configuration create(Path agentJarPath) throws IOException {
         Configuration config = loadConfigurationFile(agentJarPath);
@@ -124,6 +124,9 @@ public class ConfigurationBuilder {
             }
         }
         return false;
+
+
+
     }
 
     private static void loadInstrumentationEnabledEnvVars(Configuration config) {
@@ -176,10 +179,11 @@ public class ConfigurationBuilder {
         return new Configuration();
     }
 
-    public static void logConfigurationMessages() {
+    // cannot use logger before loading configuration, so need to store any messages locally until logger is initialized
+    public static void logConfigurationWarnMessages() {
         Logger logger = LoggerFactory.getLogger(ConfigurationBuilder.class);
-        for (ConfigurationMessage configurationMessage : configurationMessages) {
-            configurationMessage.log(logger);
+        for (ConfigurationWarnMessage configurationWarnMessage : configurationWarnMessages) {
+            configurationWarnMessage.warn(logger);
         }
     }
 
@@ -279,17 +283,80 @@ public class ConfigurationBuilder {
         }
     }
 
-    public static class ConfigurationMessage {
+    public static class ConfigurationWarnMessage {
         private final String message;
         private final Object[] args;
 
-        public ConfigurationMessage(String message, Object... args) {
+        public ConfigurationWarnMessage(String message, Object... args) {
             this.message = message;
             this.args = args;
         }
 
-        private void log(Logger logger) {
+        private void warn(Logger logger) {
             logger.warn(message, args);
+        }
+    }
+
+    static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict) throws IOException {
+        try (InputStream in = Files.newInputStream(configPath)) {
+            Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
+            JsonAdapter<Configuration> jsonAdapter = strict ? moshi.adapter(Configuration.class).failOnUnknown() :
+                    moshi.adapter(Configuration.class);
+            Buffer buffer = new Buffer();
+            buffer.readFrom(in);
+            try {
+                Configuration configuration = jsonAdapter.fromJson(buffer);
+                return configuration;
+            } catch(JsonDataException ex) {
+                if(strict) {
+                    // Try extracting the configuration without failOnUnknown
+                    Configuration configuration = getConfigurationFromConfigFile(configPath, false);
+                    // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
+                    configurationWarnMessages.add(new ConfigurationWarnMessage(getJsonEncodingExceptionMessage(configPath.toAbsolutePath().toString(), ex.getMessage())));
+                    return configuration;
+                } else {
+                    throw new FriendlyException(getJsonEncodingExceptionMessage(configPath.toAbsolutePath().toString(), ex.getMessage()),
+                            "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+                }
+            } catch (JsonEncodingException ex) {
+                throw new FriendlyException(getJsonEncodingExceptionMessage(configPath.toAbsolutePath().toString(), ex.getMessage()),
+                        "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+            } catch(Exception e) {
+                throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
+            }
+        }
+    }
+
+    static String getJsonEncodingExceptionMessage(String configPath, String message) {
+        String defaultMessage = "Application Insights Java agent's configuration file "+ configPath + " has a malformed JSON\n";
+        if(message == null) {
+            return defaultMessage;
+        }
+
+        // Moshi builder json data exception sample:
+        // Cannot skip unexpected NAME at $.httpProxy
+        // Removing the 'Cannot Skip' string from the message.
+        if(message.toLowerCase().contains("cannot skip")) {
+            return "Application Insights Java agent's configuration file "+ configPath +
+                    " has the following JSON issue: "+message.toLowerCase().replaceAll("cannot skip","") +"\n";
+        }
+
+        // Moshi builder json data exception sample:
+        // Use JsonReader.setLenient(true) to accept malformed JSON at path $.null.[0]
+        // This exception message is thrown if the json has an unexpected attribute and json object
+        // that belong to this attribute has malformed json syntax.
+        if(message.contains("$.null")) {
+            return defaultMessage;
+        }
+
+        // Moshi builder json data exception sample:
+        // Use JsonReader.setLenient(true) to accept malformed JSON at path $.selfDiagnostics
+        int jsonAttributeIndex = message.lastIndexOf("$.");
+        if(jsonAttributeIndex > 0 && jsonAttributeIndex < message.length() -2) {
+            return "Application Insights Java agent's configuration file "+ configPath +
+                    " has a malformed JSON at path "+message.substring(jsonAttributeIndex) +"\n";
+        } else {
+            return defaultMessage;
         }
     }
 
@@ -303,32 +370,14 @@ public class ConfigurationBuilder {
         // where file is updated after reading it but before reading last modified, and then since
         // last modified doesn't change after that, the new updated file will not be read afterwards
         long lastModifiedTime = attributes.lastModifiedTime().toMillis();
-        try (InputStream in = Files.newInputStream(configPath)) {
-            Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
-            JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class).failOnUnknown();
-            Buffer buffer = new Buffer();
-            buffer.readFrom(in);
-            try {
-                Configuration configuration = jsonAdapter.fromJson(buffer);
-                if (configuration.instrumentationSettings != null) {
-                    throw new IllegalStateException("It looks like you are using an old applicationinsights.json file" +
-                            " which still has \"instrumentationSettings\", please see the docs for the new format:" +
-                            " https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
-                }
-                configuration.configPath = configPath;
-                configuration.lastModifiedTime = lastModifiedTime;
-                return configuration;
-            } catch(JsonDataException ex) {
-                throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following issue:\n"+ex.getMessage(),
-                        "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
-
-            } catch (JsonEncodingException ex) {
-                throw new FriendlyException("Application Insights Java agent's configuration file "+configPath.toAbsolutePath().toString()+" has the following syntax issue:\n"+ex.getMessage(),
-                        "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
-
-            } catch(Exception e) {
-                throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
-            }
+        Configuration configuration = getConfigurationFromConfigFile(configPath, true);
+        if (configuration.instrumentationSettings != null) {
+            throw new IllegalStateException("It looks like you are using an old applicationinsights.json file" +
+                    " which still has \"instrumentationSettings\", please see the docs for the new format:" +
+                    " https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
         }
+        configuration.configPath = configPath;
+        configuration.lastModifiedTime = lastModifiedTime;
+        return configuration;
     }
 }

@@ -75,7 +75,7 @@ public class MainEntryPoint {
             configPath = configuration.configPath;
             lastModifiedTime = configuration.lastModifiedTime;
             startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
-            ConfigurationBuilder.logConfigurationMessages();
+            ConfigurationBuilder.logConfigurationWarnMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
             // TODO convert to agent builder concept
             AiComponentInstaller.setInstrumentation(instrumentation);
