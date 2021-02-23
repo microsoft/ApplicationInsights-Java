@@ -105,7 +105,7 @@ shadowJar {
     }
 
     dependencies {
-        // exclude wasbootstrap dependencies from shadowJar
+        // exclude bootstrap dependencies from shadowJar
         exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-bootstrap'))
         exclude(dependency('io.opentelemetry:opentelemetry-api'))
         exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
