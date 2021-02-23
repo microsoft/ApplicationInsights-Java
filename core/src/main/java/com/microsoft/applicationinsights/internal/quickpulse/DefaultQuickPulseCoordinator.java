@@ -82,15 +82,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
         dataFetcher.prepareQuickPulseDataForSend(QpsServiceRedirectedEndpoint);
         final QuickPulseHeaderInfo currentQuickPulseHeaderInfo = dataSender.getQuickPulseHeaderInfo();
 
-        String redirectLink = currentQuickPulseHeaderInfo.getQpsServiceEndpointRedirect();
-        if (!LocalStringsUtils.isNullOrEmpty(redirectLink)) {
-            QpsServiceRedirectedEndpoint = redirectLink;
-        }
-
-        long newPollingInterval = currentQuickPulseHeaderInfo.getQpsServicePollingInterval();
-        if (newPollingInterval > 0) {
-            QpsServicePollingIntervalHint = newPollingInterval;
-        }
+        this.handleRecievedHeaders(currentQuickPulseHeaderInfo);
 
         switch (currentQuickPulseHeaderInfo.getQuickPulseStatus()) {
             case ERROR:
@@ -113,8 +105,11 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
     }
 
     private long ping() {
-        QuickPulseStatus pingResult = pingSender.ping(QpsServiceRedirectedEndpoint);
-        switch (pingResult) {
+        QuickPulseHeaderInfo pingResult = pingSender.ping(QpsServiceRedirectedEndpoint);
+
+        this.handleRecievedHeaders(pingResult);
+
+        switch (pingResult.getQuickPulseStatus()) {
             case ERROR:
                 return waitOnErrorInMS;
 
@@ -130,6 +125,18 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
                 QuickPulseDataCollector.INSTANCE.disable();
                 stopped = true;
                 return 0;
+        }
+    }
+
+    private void handleRecievedHeaders(QuickPulseHeaderInfo currentQuickPulseHeaderInfo) {
+        String redirectLink = currentQuickPulseHeaderInfo.getQpsServiceEndpointRedirect();
+        if (!LocalStringsUtils.isNullOrEmpty(redirectLink)) {
+            QpsServiceRedirectedEndpoint = redirectLink;
+        }
+
+        long newPollingInterval = currentQuickPulseHeaderInfo.getQpsServicePollingInterval();
+        if (newPollingInterval > 0) {
+            QpsServicePollingIntervalHint = newPollingInterval;
         }
     }
 

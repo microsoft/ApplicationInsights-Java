@@ -46,12 +46,6 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
 
-    private static final String XMsQpsInstanceNameHeaderName = "x-ms-qps-instance-name";
-    private static final String XMsQpsStreamIdHeaderName = "x-ms-qps-stream-id";
-    private static final String XMsQpsMachineNameHeaderName = "x-ms-qps-machine-name";
-    private static final String XMsQpsRoleNameHeaderName = "x-ms-qps-role-name";
-    private static final String XMsQpsInvariantVersionHeaderName = "x-ms-qps-invariant-version";
-
     private final TelemetryConfiguration configuration;
     private final ApacheSender apacheSender;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
@@ -69,6 +63,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         this.roleName = roleName;
         this.instanceName = instanceName;
         this.machineName = machineName;
+        this.quickPulseId = quickPulseId;
 
         if (!LocalStringsUtils.isNullOrEmpty(roleName)) {
             roleName = "\"" + roleName + "\"";
@@ -99,16 +94,11 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     }
 
     @Override
-    public QuickPulseStatus ping(String redirectedEndpoint) {
+    public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
         final Date currentDate = new Date();
         final String endPointURL = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-        final HttpPost request = networkHelper.buildRequest(currentDate, getQuickPulsePingUri(endPointURL));
+        final HttpPost request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endPointURL), quickPulseId, machineName, roleName, instanceName);
 
-        request.addHeader(XMsQpsRoleNameHeaderName, this.roleName);
-        request.addHeader(XMsQpsMachineNameHeaderName, this.machineName);
-        request.addHeader(XMsQpsStreamIdHeaderName, this.quickPulseId);
-        request.addHeader(XMsQpsInstanceNameHeaderName, this.instanceName);
-        request.addHeader(XMsQpsInvariantVersionHeaderName, "2");
 
         final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
         request.setEntity(pingEntity);
@@ -118,12 +108,12 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         try {
             response = apacheSender.sendPostRequest(request);
             if (networkHelper.isSuccess(response)) {
-                final QuickPulseStatus quickPulseResultStatus = networkHelper.getQuickPulseStatus(response);
-                switch (quickPulseResultStatus) {
+                final QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
+                switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
                     case QP_IS_OFF:
                     case QP_IS_ON:
                         lastValidTransmission = sendTime;
-                        return quickPulseResultStatus;
+                        return quickPulseHeaderInfo;
 
                     default:
                         break;
@@ -169,12 +159,12 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         return new ByteArrayEntity(sb.getBytes());
     }
 
-    private QuickPulseStatus onPingError(long sendTime) {
+    private QuickPulseHeaderInfo onPingError(long sendTime) {
         final double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
         if (timeFromLastValidTransmission >= 60.0) {
-            return QuickPulseStatus.ERROR;
+            return new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);
         }
 
-        return QuickPulseStatus.QP_IS_OFF;
+        return new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF);
     }
 }

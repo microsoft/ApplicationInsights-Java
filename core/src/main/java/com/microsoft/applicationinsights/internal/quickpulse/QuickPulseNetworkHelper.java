@@ -34,9 +34,27 @@ import org.apache.http.client.methods.HttpPost;
 final class QuickPulseNetworkHelper {
     private final static long TICKS_AT_EPOCH = 621355968000000000L;
     private static final String HEADER_TRANSMISSION_TIME = "x-ms-qps-transmission-time";
-    private final static String QP_STATUS_HEADER = "x-ms-qps-subscribed";
+    private final static String QPS_STATUS_HEADER = "x-ms-qps-subscribed";
     private final static String QPS_SERVICE_POLLING_INTERVAL_HINT  = "x-ms-qps-service-polling-interval-hint";
     private final static String QPS_SERVICE_ENDPOINT_REDIRECT   = "x-ms-qps-service-endpoint-redirect";
+    private static final String QPS_INSTANCE_NAME_HEADER = "x-ms-qps-instance-name";
+    private static final String QPS_STREAM_ID_HEADER = "x-ms-qps-stream-id";
+    private static final String QPS_MACHINE_NAME_HEADER = "x-ms-qps-machine-name";
+    private static final String QPS_ROLE_NAME_HEADER = "x-ms-qps-role-name";
+    private static final String QPS_INVARIANT_VERSION_HEADER = "x-ms-qps-invariant-version";
+
+
+    public HttpPost buildPingRequest(Date currentDate, String address, String quickPulseId, String machineName, String roleName, String instanceName) {
+
+        HttpPost request = buildRequest(currentDate, address);
+
+        request.addHeader(QPS_ROLE_NAME_HEADER, roleName);
+        request.addHeader(QPS_MACHINE_NAME_HEADER, machineName);
+        request.addHeader(QPS_STREAM_ID_HEADER, quickPulseId);
+        request.addHeader(QPS_INSTANCE_NAME_HEADER, instanceName);
+        request.addHeader(QPS_INVARIANT_VERSION_HEADER, "2");
+        return request;
+    }
 
     public HttpPost buildRequest(Date currentDate, String address) {
         final long ticks = currentDate.getTime() * 10000 + TICKS_AT_EPOCH;
@@ -59,7 +77,7 @@ final class QuickPulseNetworkHelper {
         final QuickPulseHeaderInfo quickPulseHeaderInfo;
 
         for (Header header: headers) {
-            if (QP_STATUS_HEADER.equals(header.getName())) {
+            if (QPS_STATUS_HEADER.equals(header.getName())) {
                 final String qpStatus = header.getValue();
                 if ("true".equalsIgnoreCase(qpStatus)) {
                     status =  QuickPulseStatus.QP_IS_ON;
@@ -80,7 +98,7 @@ final class QuickPulseNetworkHelper {
     }
 
     public QuickPulseStatus getQuickPulseStatus(HttpResponse response) {
-        Header header = response.getFirstHeader(QP_STATUS_HEADER);
+        Header header = response.getFirstHeader(QPS_STATUS_HEADER);
         if (header != null) {
             final String toPost = header.getValue();
             if ("true".equalsIgnoreCase(toPost)) {
