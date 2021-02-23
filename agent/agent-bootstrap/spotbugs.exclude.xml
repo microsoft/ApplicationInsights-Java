@@ -11,53 +11,14 @@
     </Match>
     <Match>
         <Bug pattern="PATH_TRAVERSAL_IN" />
-        <Or>
-            <And>
-                <!-- False Positive. Path is not from an external source. -->
-                <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile$2" />
-                <Method name="run" />
-            </And>
-            <And>
-                <!-- False Positive. Path is not from an external source. -->
-                <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
-                <Method name="start"/>
-            </And>
-            <And>
-                <!-- False Positive. Path is not from an external source. -->
-                <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
-                <Method name="logErrorMessage"/>
-            </And>
-        </Or>
-    </Match>
-    <Match>
-        <Bug pattern="UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD" />
-        <!-- used from agent-tooling -->
-        <Class name="~com\.microsoft\.applicationinsights\.agent\.bootstrap\.configuration\..*" />
-    </Match>
-    <Match>
-        <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" />
-        <!-- used from agent-tooling -->
-        <Class name="~com\.microsoft\.applicationinsights\.agent\.bootstrap\.configuration\..*" />
-    </Match>
-    <Match>
-        <Bug pattern="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD" />
-        <!-- used from agent-tooling -->
-        <Class name="~com\.microsoft\.applicationinsights\.agent\.bootstrap\.configuration\..*" />
+        <!-- False Positive. Path is not from an external source. -->
+        <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile$2" />
+        <Method name="run" />
     </Match>
     <Match>
         <!-- The exception in question comes from Class.forName. It may throw with different versions of java. -->
         <Bug pattern="REC_CATCH_EXCEPTION" />
         <Class name="com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder" />
         <Method name="getPidUsingProcessHandle" />
-    </Match>
-    <Match>
-        <Bug pattern="CRLF_INJECTION_LOGS" />
-        <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
-        <Method name="logErrorMessage" />
-    </Match>
-    <Match>
-        <Bug pattern="CRLF_INJECTION_LOGS" />
-        <Class name="com.microsoft.applicationinsights.agent.bootstrap.MainEntryPoint" />
-        <Method name="start" />
     </Match>
 </FindBugsFilter>

@@ -1,1 +1,1 @@
-io.opentelemetry.javaagent.tooling.BeforeAgentInstaller
+com.microsoft.applicationinsights.agent.internal.AiComponentInstaller

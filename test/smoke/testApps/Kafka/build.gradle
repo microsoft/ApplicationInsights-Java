@@ -12,8 +12,6 @@ ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
 
 dependencies {
-    compileOnly aiAgentJar // this is just to force building the agent first
-
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
     compile group: 'org.springframework.kafka', name: 'spring-kafka', version: '2.3.1.RELEASE'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'

@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.agent.bootstrap.configuration;
+package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,10 +6,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ExtractAttribute;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAction;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorActionJson;
-import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ExtractAttribute;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorAction;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorActionJson;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.squareup.moshi.FromJson;
 import com.squareup.moshi.ToJson;
 

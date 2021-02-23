@@ -1,14 +1,14 @@
-package com.microsoft.applicationinsights.agent.bootstrap.configuration;
+package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.junit.*;
 import org.junit.contrib.java.lang.system.*;
 
-import static com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder.trimAndEmptyToNull;
+import static com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.trimAndEmptyToNull;
 import static org.junit.Assert.*;
 
 public class ConfigurationBuilderTest {
