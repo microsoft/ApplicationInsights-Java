@@ -248,6 +248,13 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
     }
 
     private static void handleTemporaryException(String message, Logger logger, Exception ex) {
+        // We log the first exception as soon as it is thrown
+        if(!firstFailure.getAndSet(true)) {
+            logger.error(message+"\n"+
+                    "Total number of successful telemetry requests so far:"+ temporaryNetworkException.get().getSuccessCounter()+"\n"+
+                    "Future failures will be aggregated and logged once every 5 minutes\n", ex);
+        }
+
         if(temporaryNetworkException.get().getFailureCounter() == 0) {
             temporaryNetworkException.set(new TemporaryExceptionWrapper(temporaryNetworkException.get().getSuccessCounter(),
                     temporaryNetworkException.get().getFailureCounter()+1, ex, logger,

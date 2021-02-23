@@ -2,8 +2,8 @@ package com.microsoft.applicationinsights.internal.util;
 import org.slf4j.Logger;
 
 public class TemporaryExceptionWrapper {
-    private Long successCounter;
-    private Long failureCounter;
+    private long successCounter;
+    private long failureCounter;
     private Exception lastTemporaryException;
     private Logger lastTemporaryExceptionLogger;
     private String lastTemporaryExceptionMessage;
@@ -13,7 +13,7 @@ public class TemporaryExceptionWrapper {
         this.failureCounter = 0L;
     }
 
-    public TemporaryExceptionWrapper(Long successCounter, Long failureCounter, Exception lastTemporaryException, Logger lastTemporaryExceptionLogger, String lastTemporaryExceptionMessage) {
+    public TemporaryExceptionWrapper(long successCounter, long failureCounter, Exception lastTemporaryException, Logger lastTemporaryExceptionLogger, String lastTemporaryExceptionMessage) {
         this.successCounter = successCounter;
         this.failureCounter = failureCounter;
         this.lastTemporaryException = lastTemporaryException;
@@ -21,50 +21,32 @@ public class TemporaryExceptionWrapper {
         this.lastTemporaryExceptionMessage = lastTemporaryExceptionMessage;
     }
 
-    public Long getSuccessCounter() {
+    public long getSuccessCounter() {
         return successCounter;
     }
 
-    public void setSuccessCounter(Long successCounter) {
-        this.successCounter = successCounter;
-    }
-
-    public Long getFailureCounter() {
+    public long getFailureCounter() {
         return failureCounter;
-    }
-
-    public void setFailureCounter(Long failureCounter) {
-        this.failureCounter = failureCounter;
     }
 
     public Exception getLastTemporaryException() {
         return lastTemporaryException;
     }
 
-    public void setLastTemporaryException(Exception lastTemporaryException) {
-        this.lastTemporaryException = lastTemporaryException;
-    }
-
     public Logger getLastTemporaryExceptionLogger() {
         return lastTemporaryExceptionLogger;
-    }
-
-    public void setLastTemporaryExceptionLogger(Logger lastTemporaryExceptionLogger) {
-        this.lastTemporaryExceptionLogger = lastTemporaryExceptionLogger;
     }
 
     public String getLastTemporaryExceptionMessage() {
         return lastTemporaryExceptionMessage;
     }
 
-    public void setLastTemporaryExceptionMessage(String lastTemporaryExceptionMessage) {
-        this.lastTemporaryExceptionMessage = lastTemporaryExceptionMessage;
-    }
-
+    // only used in tests
     public void incrementSuccessCounter() {
         ++this.successCounter;
     }
 
+    //only used in tests
     public void incrementFailureCounter() {
         ++this.failureCounter;
     }

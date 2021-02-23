@@ -43,41 +43,38 @@ public class NetworkExceptionsTrackerTest {
     @Test
     public void testSuccessAndFailureCounters() throws InterruptedException {
         TemporaryExceptionWrapper temporaryExceptionWrapper = temporaryNetworkException.get();
-        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getFailureCounter()));
-        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getSuccessCounter()));
+        assertEquals(0L, temporaryExceptionWrapper.getFailureCounter());
+        assertEquals(0L, temporaryExceptionWrapper.getSuccessCounter());
         temporaryExceptionWrapper.incrementSuccessCounter();
-        assertEquals(java.util.Optional.of(1L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getSuccessCounter()));
+        assertEquals(1L, temporaryExceptionWrapper.getSuccessCounter());
         Logger logger = LoggerFactory.getLogger(NetworkExceptionsTrackerTest.class);
         Exception ex=new IllegalArgumentException();
         temporaryNetworkException.set(new TemporaryExceptionWrapper(temporaryNetworkException.get().getSuccessCounter(),
                 temporaryNetworkException.get().getFailureCounter()+1, ex, logger, "Test Message"));
-        assertEquals(java.util.Optional.of(1L), java.util.Optional.ofNullable(temporaryNetworkException.get().getFailureCounter()));
+        assertEquals(1L, temporaryNetworkException.get().getFailureCounter());
         assertEquals(ex,temporaryNetworkException.get().getLastTemporaryException());
         assertEquals("Test Message",temporaryNetworkException.get().getLastTemporaryExceptionMessage());
         assertEquals(logger,temporaryNetworkException.get().getLastTemporaryExceptionLogger());
     }
 
     @Test
-    public void testExceptionLogged() {
+    public void testExceptionLogged() throws InterruptedException {
         LogCaptor logCaptor = LogCaptor.forClass(NetworkExceptionsTrackerTest.class);
         TemporaryExceptionWrapper temporaryExceptionWrapper = temporaryNetworkException.get();
-        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getFailureCounter()));
-        assertEquals(java.util.Optional.of(0L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getSuccessCounter()));
+        assertEquals(0L, temporaryExceptionWrapper.getFailureCounter());
+        assertEquals(0L, temporaryExceptionWrapper.getSuccessCounter());
         temporaryExceptionWrapper.incrementSuccessCounter();
-        assertEquals(java.util.Optional.of(1L), java.util.Optional.ofNullable(temporaryExceptionWrapper.getSuccessCounter()));
+        assertEquals(1L, temporaryExceptionWrapper.getSuccessCounter());
         Logger logger = LoggerFactory.getLogger(NetworkExceptionsTrackerTest.class);
         Exception ex=new IllegalArgumentException();
         temporaryNetworkException.set(new TemporaryExceptionWrapper(temporaryNetworkException.get().getSuccessCounter(),
                 temporaryNetworkException.get().getFailureCounter()+1, ex, logger, "Test Message"));
-        assertEquals(java.util.Optional.of(1L), java.util.Optional.ofNullable(temporaryNetworkException.get().getFailureCounter()));
+        assertEquals(1L, temporaryNetworkException.get().getFailureCounter());
         assertEquals(ex,temporaryNetworkException.get().getLastTemporaryException());
         assertEquals("Test Message",temporaryNetworkException.get().getLastTemporaryExceptionMessage());
         assertEquals(logger,temporaryNetworkException.get().getLastTemporaryExceptionLogger());
-        long start = System.currentTimeMillis();
-        long end = start + 3000;
-        while (System.currentTimeMillis() < end) {
-            // Wait for 3 secs, so that NetworkExceptionsTracker logs the exception
-        }
+        //wait for 3 secs
+        Thread.sleep(3000);
         assertEquals(1,logCaptor.getErrorLogs().size());
     }
 
