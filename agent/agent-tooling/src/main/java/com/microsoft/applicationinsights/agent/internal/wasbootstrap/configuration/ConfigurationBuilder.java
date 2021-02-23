@@ -303,15 +303,6 @@ public class ConfigurationBuilder {
     }
 
     public static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict) throws IOException{
-        if (!Files.exists(configPath)) {
-            throw new IllegalStateException("config file does not exist: " + configPath);
-        }
-
-        BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
-        // important to read last modified before reading the file, to prevent possible race condition
-        // where file is updated after reading it but before reading last modified, and then since
-        // last modified doesn't change after that, the new updated file will not be read afterwards
-        long lastModifiedTime = attributes.lastModifiedTime().toMillis();
         try (InputStream in = Files.newInputStream(configPath)) {
             Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
             JsonAdapter<Configuration> jsonAdapter = strict ? moshi.adapter(Configuration.class).failOnUnknown() :
