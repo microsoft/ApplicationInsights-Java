@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import com.microsoft.applicationinsights.agent.bootstrap.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.junit.*;
 import org.junit.contrib.java.lang.system.*;
 
