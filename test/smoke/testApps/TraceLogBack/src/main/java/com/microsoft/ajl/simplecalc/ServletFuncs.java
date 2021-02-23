@@ -2,15 +2,12 @@ package com.microsoft.ajl.simplecalc;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class ServletFuncs {
 
-    protected static void geRrenderHtml(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected static void geRrenderHtml(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("text/html;charset=UTF-8");
         renderHtml(request, response.getWriter());
     }

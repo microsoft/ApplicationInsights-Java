@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
                 portMapping = "9042",
                 hostnameEnvironmentVariable = "CASSANDRA")
 )
-public class CassandraSmokeTest extends AiSmokeTest {
+public class CassandraTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/cassandra")

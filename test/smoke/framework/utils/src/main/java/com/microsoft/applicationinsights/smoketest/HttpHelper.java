@@ -16,26 +16,30 @@ import org.apache.http.util.EntityUtils;
 
 public class HttpHelper {
 
-    public static String getAndEnsureSampled(String url) throws UnsupportedOperationException, IOException {
+    public static int getResponseCodeEnsuringSampled(String url) throws UnsupportedOperationException, IOException {
         HttpGet httpGet = new HttpGet(url);
         // traceId=27272727272727272727272727272727 is known to produce a score of 0.66 (out of 100)
         // so will be sampled as long as samplingPercentage > 1%
         httpGet.setHeader("traceparent", "00-27272727272727272727272727272727-1111111111111111-01");
-        return get(httpGet);
+        return getResponseCode(httpGet);
     }
 
     public static String get(String url) throws UnsupportedOperationException, IOException {
-        return get(new HttpGet(url));
+        return getBody(new HttpGet(url));
     }
 
-    private static String get(HttpGet httpGet) throws UnsupportedOperationException, IOException {
-        CloseableHttpClient client = getHttpClient();
-        try {
+    private static String getBody(HttpGet httpGet) throws UnsupportedOperationException, IOException {
+        try (CloseableHttpClient client = getHttpClient()) {
             CloseableHttpResponse resp1 = client.execute(httpGet);
             return extractResponseBody(resp1);
         }
-        finally {
-            client.close();
+    }
+
+    private static int getResponseCode(HttpGet httpGet) throws UnsupportedOperationException, IOException {
+        try (CloseableHttpClient client = getHttpClient()) {
+            CloseableHttpResponse resp1 = client.execute(httpGet);
+            EntityUtils.consume(resp1.getEntity());
+            return resp1.getStatusLine().getStatusCode();
         }
     }
 

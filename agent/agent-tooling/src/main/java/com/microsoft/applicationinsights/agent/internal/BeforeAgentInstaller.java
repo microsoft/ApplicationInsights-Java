@@ -44,6 +44,7 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Depe
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.HeartBeatModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.RequestTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
@@ -65,6 +66,7 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.instrumentation.api.config.ConfigBuilder;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -85,6 +87,7 @@ public class BeforeAgentInstaller {
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
         instrumentation.addTransformer(new DependencyTelemetryClassFileTransformer());
+        instrumentation.addTransformer(new RequestTelemetryClassFileTransformer());
         instrumentation.addTransformer(new PerformanceCounterModuleClassFileTransformer());
         instrumentation.addTransformer(new QuickPulseClassFileTransformer());
         instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
@@ -125,6 +128,7 @@ public class BeforeAgentInstaller {
         // TODO need some kind of test for these configuration properties
         if (!isInstrumentationEnabled(config, "micrometer")) {
             properties.put("otel.instrumentation.micrometer.enabled", "false");
+            properties.put("otel.instrumentation.actuator-metrics.enabled", "false");
         }
         if (!isInstrumentationEnabled(config, "jdbc")) {
             properties.put("otel.instrumentation.jdbc.enabled", "false");
@@ -136,20 +140,26 @@ public class BeforeAgentInstaller {
         if (!isInstrumentationEnabled(config, "kafka")) {
             properties.put("otel.instrumentation.kafka.enabled", "false");
         }
+        if (!isInstrumentationEnabled(config, "jms")) {
+            properties.put("otel.instrumentation.jms.enabled", "false");
+        }
         if (!isInstrumentationEnabled(config, "mongo")) {
             properties.put("otel.instrumentation.mongo.enabled", "false");
         }
         if (!isInstrumentationEnabled(config, "cassandra")) {
             properties.put("otel.instrumentation.cassandra.enabled", "false");
         }
+        if (!isInstrumentationEnabled(config, "spring-scheduling")) {
+            properties.put("otel.instrumentation.spring-scheduling.enabled", "false");
+        }
         if (!config.preview.openTelemetryApiSupport) {
             properties.put("otel.instrumentation.opentelemetry-api.enabled", "false");
         }
         properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
         // AI exporter is configured manually
-        properties.put("otel.trace.exporter", "none");
+        properties.put("otel.traces.exporter", "none");
         properties.put("otel.metrics.exporter", "none");
-        Config.internalInitializeConfig(Config.create(properties));
+        Config.internalInitializeConfig(new ConfigBuilder().readProperties(properties).build());
         if (Config.get().getListProperty("otel.additional.bootstrap.package.prefixes").isEmpty()) {
             throw new IllegalStateException("underlying config not initialized in time");
         }

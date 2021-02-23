@@ -12,6 +12,8 @@ dependencies {
     compile group: 'com.squareup.okhttp', name: 'okhttp', version: '2.7.5'
     compile group: 'org.springframework', name: 'spring-webflux', version: '5.2.3.RELEASE' // for testing netty client
     compile group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.9.4.RELEASE' // needed for above
+    // this dependency is needed to make wildfly happy
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.4'
 
     compile group: 'com.google.guava', name: 'guava', version: '27.1-android'
 

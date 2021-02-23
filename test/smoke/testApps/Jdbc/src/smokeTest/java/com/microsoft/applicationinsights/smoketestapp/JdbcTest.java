@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
                 portMapping = "1433",
                 hostnameEnvironmentVariable = "SQLSERVER")
 })
-public class JdbcSmokeTest extends AiSmokeTest {
+public class JdbcTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/hsqldbPreparedStatement")
