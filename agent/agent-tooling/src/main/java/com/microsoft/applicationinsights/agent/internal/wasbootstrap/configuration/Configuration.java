@@ -155,6 +155,8 @@ public class Configuration {
         // so safer to only allow single interval for now
         public int metricIntervalSeconds = 60;
         public LiveMetrics liveMetrics = new LiveMetrics();
+        // config reload only supports connection string and sampling percentage
+        public boolean configReloadEnabled;
     }
 
     public static class LiveMetrics {

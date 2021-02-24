@@ -182,9 +182,11 @@ public class AiComponentInstaller implements ComponentInstaller {
             }
         });
 
-        Path configPath = MainEntryPoint.getConfigPath();
-        if (configPath != null) {
-            JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime(), config.sampling.percentage);
+        if (config.preview.configReloadEnabled) {
+            Path configPath = MainEntryPoint.getConfigPath();
+            if (configPath != null) {
+                JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime(), config.sampling.percentage);
+            }
         }
     }
 
