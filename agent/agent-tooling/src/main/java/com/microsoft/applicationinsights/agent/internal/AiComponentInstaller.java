@@ -182,9 +182,11 @@ public class AiComponentInstaller implements ComponentInstaller {
             }
         });
 
-        Path configPath = MainEntryPoint.getConfigPath();
-        if (configPath != null) {
-            JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime(), config.sampling.percentage);
+        if (config.preview.configReloadEnabled) {
+            Path configPath = MainEntryPoint.getConfigPath();
+            if (configPath != null) {
+                JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime(), config.sampling.percentage);
+            }
         }
     }
 
@@ -262,6 +264,10 @@ public class AiComponentInstaller implements ComponentInstaller {
             jmxXmls.add(jmxXml);
         }
         xmlConfiguration.getPerformance().setJmxXmlElements(jmxXmls);
+
+        xmlConfiguration.getPerformance().setCollectionFrequencyInSec(config.preview.metricIntervalSeconds);
+
+        xmlConfiguration.getQuickPulse().setEnabled(config.preview.liveMetrics.enabled);
 
         if (config.preview.developerMode) {
             xmlConfiguration.getChannel().setDeveloperMode(true);

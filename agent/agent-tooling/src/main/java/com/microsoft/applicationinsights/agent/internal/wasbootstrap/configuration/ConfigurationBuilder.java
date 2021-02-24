@@ -27,10 +27,8 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
@@ -74,15 +72,21 @@ public class ConfigurationBuilder {
     public static Configuration create(Path agentJarPath) throws IOException {
         Configuration config = loadConfigurationFile(agentJarPath);
         overlayEnvVars(config);
+        if (config.instrumentation.micrometer.reportingIntervalSeconds != 60) {
+            configurationWarnMessages.add(new ConfigurationWarnMessage(
+                    "micrometer \"reportingIntervalSeconds\" setting leaked out previously" +
+                            " as an undocumented testing detail," +
+                            " please use \"preview\": { \"metricIntervalSeconds\" } instead now" +
+                            " (and note that metricIntervalSeconds applies to all auto-collected metrics," +
+                            " not only micrometer)"));
+        }
         return config;
     }
 
     private static void loadLogCaptureEnvVar(Configuration config) {
         String loggingEnvVar = getEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL);
         if (loggingEnvVar != null) {
-            config.instrumentation
-                    .computeIfAbsent("logging", k -> new HashMap<>())
-                    .put("level", loggingEnvVar);
+            config.instrumentation.logging.level = loggingEnvVar;
         }
     }
 
@@ -124,29 +128,25 @@ public class ConfigurationBuilder {
             }
         }
         return false;
-
-
-
     }
 
     private static void loadInstrumentationEnabledEnvVars(Configuration config) {
-        loadInstrumentationEnabledEnvVar(config, "micrometer", "APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED");
-        loadInstrumentationEnabledEnvVar(config, "jdbc", "APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED");
-        loadInstrumentationEnabledEnvVar(config, "redis", "APPLICATIONINSIGHTS_INSTRUMENTATION_REDIS_ENABLED");
-        loadInstrumentationEnabledEnvVar(config, "kafka", "APPLICATIONINSIGHTS_INSTRUMENTATION_KAFKA_ENABLED");
-        loadInstrumentationEnabledEnvVar(config, "jms", "APPLICATIONINSIGHTS_INSTRUMENTATION_JMS_ENABLED");
-        loadInstrumentationEnabledEnvVar(config, "mongo", "APPLICATIONINSIGHTS_INSTRUMENTATION_MONGO_ENABLED");
-        loadInstrumentationEnabledEnvVar(config, "cassandra", "APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED");
-        loadInstrumentationEnabledEnvVar(config, "spring-scheduling", "APPLICATIONINSIGHTS_INSTRUMENTATION_SPRING_SCHEDULING_ENABLED");
-    }
-
-    private static void loadInstrumentationEnabledEnvVar(Configuration config, String instrumentationName, String envVarName) {
-        String instrumentationEnabledEnvVar = getEnvVar(envVarName);
-        if (instrumentationEnabledEnvVar != null) {
-            Map<String, Object> properties = config.instrumentation.computeIfAbsent(instrumentationName, k -> new HashMap<>());
-            // intentionally allowing NumberFormatException to bubble up as invalid configuration and prevent agent from starting
-            properties.put("enabled", Boolean.parseBoolean(instrumentationEnabledEnvVar));
-        }
+        config.instrumentation.micrometer.enabled =
+                overlayWithEnvVar("APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED", config.instrumentation.micrometer.enabled);
+        config.instrumentation.jdbc.enabled =
+                overlayWithEnvVar("APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED", config.instrumentation.jdbc.enabled);
+        config.instrumentation.redis.enabled =
+                overlayWithEnvVar("APPLICATIONINSIGHTS_INSTRUMENTATION_REDIS_ENABLED", config.instrumentation.redis.enabled);
+        config.instrumentation.kafka.enabled =
+                overlayWithEnvVar("APPLICATIONINSIGHTS_INSTRUMENTATION_KAFKA_ENABLED", config.instrumentation.kafka.enabled);
+        config.instrumentation.jms.enabled =
+                overlayWithEnvVar("APPLICATIONINSIGHTS_INSTRUMENTATION_JMS_ENABLED", config.instrumentation.jms.enabled);
+        config.instrumentation.mongo.enabled =
+                overlayWithEnvVar("APPLICATIONINSIGHTS_INSTRUMENTATION_MONGO_ENABLED", config.instrumentation.mongo.enabled);
+        config.instrumentation.cassandra.enabled =
+                overlayWithEnvVar("APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED", config.instrumentation.cassandra.enabled);
+        config.instrumentation.springScheduling.enabled =
+                overlayWithEnvVar("APPLICATIONINSIGHTS_INSTRUMENTATION_SPRING_SCHEDULING_ENABLED", config.instrumentation.springScheduling.enabled);
     }
 
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
@@ -252,6 +252,12 @@ public class ConfigurationBuilder {
         String value = getEnvVar(name);
         // intentionally allowing NumberFormatException to bubble up as invalid configuration and prevent agent from starting
         return value != null ? Double.parseDouble(value) : defaultValue;
+    }
+
+    static boolean overlayWithEnvVar(String name, boolean defaultValue) {
+        String value = getEnvVar(name);
+        // intentionally allowing NumberFormatException to bubble up as invalid configuration and prevent agent from starting
+        return value != null ? Boolean.parseBoolean(value) : defaultValue;
     }
 
     // never returns empty string (empty string is normalized to null)

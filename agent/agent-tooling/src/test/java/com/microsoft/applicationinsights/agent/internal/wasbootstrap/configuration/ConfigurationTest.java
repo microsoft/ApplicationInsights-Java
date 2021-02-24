@@ -3,10 +3,8 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Locale;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharSource;
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
@@ -57,7 +55,7 @@ public class ConfigurationTest {
         assertEquals("Thread Count", configuration.jmxMetrics.get(0).name);
         assertEquals("java.lang:type=Threading", configuration.jmxMetrics.get(0).objectName);
         assertEquals("ThreadCount", configuration.jmxMetrics.get(0).attribute);
-        assertEquals(ImmutableMap.of("level", "error", "enabled", true), configuration.instrumentation.get("logging"));
+        assertEquals("error", configuration.instrumentation.logging.level);
         assertEquals(60, configuration.heartbeat.intervalSeconds);
         assertEquals("myproxy", configuration.proxy.host);
         assertEquals(8080, configuration.proxy.port);
@@ -164,9 +162,8 @@ public class ConfigurationTest {
         assertEquals("Something Good", configuration.role.name);
         assertEquals("xyz123", configuration.role.instance);
         assertEquals(3, configuration.jmxMetrics.size());
-        assertEquals("error", configuration.instrumentation.get("logging").get("level"));
-        assertEquals(true, configuration.instrumentation.get("micrometer").get("enabled"));
-        assertEquals(true, configuration.instrumentation.get("logging").get("enabled"));
+        assertEquals("error", configuration.instrumentation.logging.level);
+        assertTrue(configuration.instrumentation.micrometer.enabled);
         assertEquals(60, configuration.heartbeat.intervalSeconds);
     }
 
@@ -259,8 +256,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("TRACE", configuration.instrumentation.get("logging").get("level"));
-        assertEquals(true, configuration.instrumentation.get("logging").get("enabled"));
+        assertEquals("TRACE", configuration.instrumentation.logging.level);
     }
 
     @Test
@@ -281,29 +277,88 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideInstrumentationEnabled() throws IOException {
-        shouldOverrideInstrumentationEnable("micrometer");
-        shouldOverrideInstrumentationEnable("jdbc");
-        shouldOverrideInstrumentationEnable("redis");
-        shouldOverrideInstrumentationEnable("kafka");
-        shouldOverrideInstrumentationEnable("jms");
-        shouldOverrideInstrumentationEnable("mongo");
-        shouldOverrideInstrumentationEnable("cassandra");
-        shouldOverrideInstrumentationEnable("spring-scheduling");
-    }
-
-    private void shouldOverrideInstrumentationEnable(String instrumentationName) throws IOException {
-        envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_" + instrumentationName.replace('-', '_').toUpperCase(Locale.ROOT) + "_ENABLED", "false");
+    public void shouldOverrideInstrumentationCassandraEnabled() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED", "false");
 
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals(false, configuration.instrumentation.get(instrumentationName).get("enabled"));
+        assertFalse(configuration.instrumentation.cassandra.enabled);
+    }
+
+    @Test
+    public void shouldOverrideInstrumentationJdbcEnabled() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED", "false");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertFalse(configuration.instrumentation.jdbc.enabled);
+    }
+
+    @Test
+    public void shouldOverrideInstrumentationJmsEnabled() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_JMS_ENABLED", "false");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertFalse(configuration.instrumentation.jms.enabled);
+    }
+
+    @Test
+    public void shouldOverrideInstrumentationKafkaEnabled() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_KAFKA_ENABLED", "false");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertFalse(configuration.instrumentation.kafka.enabled);
+    }
+
+    @Test
+    public void shouldOverrideInstrumentationMicrometerEnabled() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED", "false");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertFalse(configuration.instrumentation.micrometer.enabled);
+    }
+
+    @Test
+    public void shouldOverrideInstrumentationMongoEnabled() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_MONGO_ENABLED", "false");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertFalse(configuration.instrumentation.mongo.enabled);
+    }
+
+    @Test
+    public void shouldOverrideInstrumentationRedisEnabled() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_REDIS_ENABLED", "false");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertFalse(configuration.instrumentation.redis.enabled);
+    }
+
+    @Test
+    public void shouldOverrideInstrumentationSpringSchedulingEnabled() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_SPRING_SCHEDULING_ENABLED", "false");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertFalse(configuration.instrumentation.springScheduling.enabled);
     }
 
     @Test(expected = JsonDataException.class)
     public void shouldNotParseFaultyJson() throws IOException {
-        Configuration configuration = loadConfiguration("applicationinsights_faulty.json");
+        loadConfiguration("applicationinsights_faulty.json");
     }
 
     private List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {
