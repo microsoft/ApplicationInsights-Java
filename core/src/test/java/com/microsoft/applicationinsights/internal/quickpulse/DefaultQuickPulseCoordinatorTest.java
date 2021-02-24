@@ -21,9 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
+import java.io.IOException;
 import org.junit.Test;
 import org.mockito.Mockito;
-
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -35,7 +37,7 @@ public class DefaultQuickPulseCoordinatorTest {
         final QuickPulseDataFetcher mockFetcher = mock(QuickPulseDataFetcher.class);
         final QuickPulseDataSender mockSender = mock(QuickPulseDataSender.class);
         final QuickPulsePingSender mockPingSender = mock(QuickPulsePingSender.class);
-        Mockito.doReturn(QuickPulseStatus.QP_IS_OFF).when(mockPingSender).ping(null);
+        Mockito.doReturn(new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF)).when(mockPingSender).ping(null);
 
         final QuickPulseCoordinatorInitData initData = new QuickPulseCoordinatorInitDataBuilder()
                 .withDataFetcher(mockFetcher)
@@ -98,5 +100,39 @@ public class DefaultQuickPulseCoordinatorTest {
         Mockito.verify(mockSender, Mockito.times(1)).getQuickPulseHeaderInfo();
 
         Mockito.verify(mockPingSender, Mockito.atLeast(1)).ping(null);
+    }
+
+    @Test
+    public void testOnePingAndThenOnePostWithRedirectedLink() throws InterruptedException, IOException {
+        final QuickPulseDataFetcher mockFetcher = Mockito.mock(QuickPulseDataFetcher.class);
+        final QuickPulseDataSender mockSender = Mockito.mock(QuickPulseDataSender.class);
+        final QuickPulsePingSender mockPingSender = Mockito.mock(QuickPulsePingSender.class);
+
+        Mockito.doNothing().when(mockFetcher).prepareQuickPulseDataForSend((String)notNull());
+        Mockito.doReturn(new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON, "https://new.endpoint.com", 100)).when(mockPingSender).ping(any());
+        Mockito.doReturn(new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF, "https://new.endpoint.com", 400)).when(mockSender).getQuickPulseHeaderInfo();
+
+        final QuickPulseCoordinatorInitData initData = new QuickPulseCoordinatorInitDataBuilder()
+                .withDataFetcher(mockFetcher)
+                .withDataSender(mockSender)
+                .withPingSender(mockPingSender)
+                .withWaitBetweenPingsInMS(10L)
+                .withWaitBetweenPostsInMS(10L)
+                .withWaitOnErrorInMS(10L)
+                .build();
+
+        final DefaultQuickPulseCoordinator coordinator = new DefaultQuickPulseCoordinator(initData);
+        Thread thread = new Thread(coordinator);
+        thread.setDaemon(true);
+        thread.start();
+
+        Thread.sleep(1000);
+        coordinator.stop();
+
+        thread.join();
+
+        Mockito.verify(mockFetcher, Mockito.atLeast(1)).prepareQuickPulseDataForSend("https://new.endpoint.com");
+        Mockito.verify(mockPingSender, Mockito.atLeast(1)).ping(null);
+        Mockito.verify(mockPingSender, Mockito.times(2)).ping("https://new.endpoint.com");
     }
 }
