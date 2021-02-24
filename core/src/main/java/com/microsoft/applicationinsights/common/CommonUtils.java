@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.common;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,5 +68,4 @@ public class CommonUtils {
       return false;
     }
   }
-
 }

@@ -142,8 +142,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
 
         long currentSizeInBytes = size.get();
         if (currentSizeInBytes >= capacityInBytes) {
-            diskExceptionStats.recordError("Persistent storage max capacity has been reached; "
-                    + "currently at "+ currentSizeInBytes +" bytes. Telemetry will be lost, "
+            diskExceptionStats.recordError("Persistent storage max capacity of "+ capacityInBytes +" bytes has been reached. Telemetry will be lost, "
                     + "please consider increasing the value of MaxTransmissionStorageFilesCapacityInMB property in the configuration file.",logger);
             return false;
         }
