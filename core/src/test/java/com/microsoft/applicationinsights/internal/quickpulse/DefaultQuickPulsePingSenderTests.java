@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.endsWith;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
