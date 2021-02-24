@@ -85,7 +85,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
     private final static int MAX_CAPACITY_MEGABYTES = 1000;
     private final static int MIN_CAPACITY_MEGABYTES = 1;
     private static final String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "Channel.MaxTransmissionStorageCapacityInMB";
-    public static final ExceptionStats memoryExceptionStats = new ExceptionStats();
+    public static final ExceptionStats diskExceptionStats = new ExceptionStats();
 
 
     /// The folder in which we save transmission files
@@ -142,7 +142,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
 
         long currentSizeInBytes = size.get();
         if (currentSizeInBytes >= capacityInBytes) {
-            memoryExceptionStats.recordError("Persistent storage max capacity has been reached; "
+            diskExceptionStats.recordError("Persistent storage max capacity has been reached; "
                     + "currently at "+ currentSizeInBytes +" bytes. Telemetry will be lost, "
                     + "please consider increasing the value of MaxTransmissionStorageFilesCapacityInMB property in the configuration file.",logger);
             return false;
@@ -162,7 +162,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
         }
 
         logger.debug("Data persisted to file. To be sent when the network is available.");
-        memoryExceptionStats.recordSuccess();
+        diskExceptionStats.recordSuccess();
         return true;
     }
 
@@ -205,7 +205,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
                 }
             }
         } catch (Exception e) {
-            memoryExceptionStats.recordException("Error fetching oldest file", e, logger);
+            diskExceptionStats.recordException("Error fetching oldest file", e, logger);
         }
 
         return null;
@@ -247,11 +247,11 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
         try (ObjectInput input = new SafeObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
             transmission = (Transmission)input.readObject();
         } catch (FileNotFoundException e) {
-            memoryExceptionStats.recordException("Failed to load transmission, file not found", e, logger);
+            diskExceptionStats.recordException("Failed to load transmission, file not found", e, logger);
         } catch (ClassNotFoundException e) {
-            memoryExceptionStats.recordException("Failed to load transmission, non transmission", e, logger);
+            diskExceptionStats.recordException("Failed to load transmission, non transmission", e, logger);
         } catch (IOException e) {
-            memoryExceptionStats.recordException("Failed to load transmission, io exception", e, logger);
+            diskExceptionStats.recordException("Failed to load transmission, io exception", e, logger);
         }
 
         return Optional.fromNullable(transmission);
@@ -280,7 +280,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
             size.addAndGet(fileLength);
             return true;
         } catch (Exception e) {
-            memoryExceptionStats.recordException("Rename To Permanent Name failed", e, logger);
+            diskExceptionStats.recordException("Rename To Permanent Name failed", e, logger);
         }
 
         return false;
@@ -294,7 +294,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
             size.addAndGet(-renamedFile.length());
             transmissionFile = renamedFile;
         } catch (Exception ignore) {
-            memoryExceptionStats.recordException("Rename To Temporary Name failed", ignore, logger);
+            diskExceptionStats.recordException("Rename To Temporary Name failed", ignore, logger);
             // Consume the exception, since there isn't anything 'smart' to do now
         }
 
@@ -307,7 +307,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
             output.writeObject(transmission);
             return true;
         } catch (IOException e) {
-            memoryExceptionStats.recordException("Failed to save transmission", e, logger);
+            diskExceptionStats.recordException("Failed to save transmission", e, logger);
         }
 
         return false;
@@ -319,7 +319,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
         	String prefix = TRANSMISSION_FILE_PREFIX + "-" + System.currentTimeMillis() + "-";
             file = File.createTempFile(prefix, null, folder);
         } catch (IOException e) {
-            memoryExceptionStats.recordException("Failed to create temporary file", e, logger);
+            diskExceptionStats.recordException("Failed to create temporary file", e, logger);
         }
 
         return Optional.fromNullable(file);
