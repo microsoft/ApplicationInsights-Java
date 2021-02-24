@@ -53,6 +53,10 @@ public class SpringCloudStreamTest extends AiSmokeTest {
             RemoteDependencyData rddTemp = rdd1;
             rdd1 = rdd2;
             rdd2 = rddTemp;
+
+            Envelope rddEnvelopeTemp = rddEnvelope1;
+            rddEnvelope1 = rddEnvelope2;
+            rddEnvelope2 = rddEnvelopeTemp;
         }
 
         assertEquals("/sendMessage", rd1.getName());
