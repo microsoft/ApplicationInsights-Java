@@ -14,23 +14,29 @@ public class ExceptionStatsLoggerTest {
     @BeforeClass
     public static void setUp() {
         // one-time initialization code
-        networkExceptionStats = new ExceptionStats(3,3);
+        networkExceptionStats = new ExceptionStats(3);
         logger = LoggerFactory.getLogger(ExceptionStatsLoggerTest.class);
     }
 
     @Test
-    public void testWarnAndExceptionLogged() throws InterruptedException {
-        LogCaptor logCaptor = LogCaptor.forClass(ExceptionStatsLoggerTest.class);
+    public void testWarnAndExceptionsAreLogged() throws InterruptedException {
+        LogCaptor logCaptorLocal = LogCaptor.forClass(ExceptionStatsLoggerTest.class);
+        LogCaptor logCaptor = LogCaptor.forClass(ExceptionStats.class);
         networkExceptionStats.recordSuccess();
         Exception ex=new IllegalArgumentException();
         networkExceptionStats.recordException("Test Message",ex,logger);
         networkExceptionStats.recordException("Test Message2",ex,logger);
+        networkExceptionStats.recordException("Test Message2",ex,logger);
+        networkExceptionStats.recordException("Test Message3",ex,logger);
         //wait for 3 secs
         Thread.sleep(3000);
-        assertEquals(1,logCaptor.getErrorLogs().size());
+        assertEquals(2,logCaptor.getErrorLogs().size());
         assertEquals(1,logCaptor.getWarnLogs().size());
-        assertTrue(logCaptor.getErrorLogs().get(0).contains("Total number of failed telemetry requests in the last 0 minutes: 1"));
-        assertTrue(logCaptor.getErrorLogs().get(0).contains("Total number of successful telemetry requests in the last 0 minutes: 1"));
+        System.out.println(logCaptor.getWarnLogs());
+        assertTrue(logCaptor.getErrorLogs().get(0).contains("Test Message2 (failed 2 times in the last 0 minutes)"));
+        assertTrue(logCaptor.getErrorLogs().get(1).contains("Test Message3 (failed 1 times in the last 0 minutes)"));
+        assertTrue(logCaptorLocal.getWarnLogs().get(0).contains("Test Message (future failures will be aggregated and logged once every 0 minutes)"));
+        assertTrue(logCaptor.getWarnLogs().get(0).contains("3/4(Total Failures/Total Requests) reported in the last 0 minutes"));
     }
 
 }
