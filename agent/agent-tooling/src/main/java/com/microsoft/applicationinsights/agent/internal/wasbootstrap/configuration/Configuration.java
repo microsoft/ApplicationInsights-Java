@@ -117,8 +117,8 @@ public class Configuration {
     }
 
     public static class MicrometerInstrumentation {
-        public boolean enabled = true; // TODO deprecate in favor of intervalSeconds = -1?
-        public int intervalSeconds = 60;
+        public boolean enabled = true;
+        // this is just here to detect if using this old undocumented setting in order to give a helpful error message
         public int reportingIntervalSeconds = 60;
     }
 
@@ -150,6 +150,10 @@ public class Configuration {
         public boolean developerMode;
         public List<ProcessorConfig> processors = new ArrayList<>();
         public boolean openTelemetryApiSupport;
+        // applies to perf counters, default custom metrics, jmx metrics, and micrometer metrics
+        // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics world,
+        // so safer to only allow single interval for now
+        public int metricIntervalSeconds = 60;
     }
 
     public static class SelfDiagnostics {

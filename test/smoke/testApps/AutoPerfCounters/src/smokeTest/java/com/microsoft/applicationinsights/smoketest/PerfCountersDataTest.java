@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
-@UseAgent
+@UseAgent("fastmetrics")
 @SuppressWarnings("deprecation")
 public class PerfCountersDataTest extends AiSmokeTest {
     @Test
@@ -23,12 +23,12 @@ public class PerfCountersDataTest extends AiSmokeTest {
         System.out.println("Waiting for performance data...");
         long start = System.currentTimeMillis();
 
-        Envelope availableMem = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Memory\\Available Bytes"), 150, TimeUnit.SECONDS);
-        Envelope totalCpu = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Processor(_Total)\\% Processor Time"), 150, TimeUnit.SECONDS);
+        Envelope availableMem = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Memory\\Available Bytes"), 10, TimeUnit.SECONDS);
+        Envelope totalCpu = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Processor(_Total)\\% Processor Time"), 10, TimeUnit.SECONDS);
 
-        Envelope processIo = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\IO Data Bytes/sec"), 150, TimeUnit.SECONDS);
-        Envelope processMemUsed = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\Private Bytes"), 150, TimeUnit.SECONDS);
-        Envelope processCpu = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\% Processor Time"), 150, TimeUnit.SECONDS);
+        Envelope processIo = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\IO Data Bytes/sec"), 10, TimeUnit.SECONDS);
+        Envelope processMemUsed = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\Private Bytes"), 10, TimeUnit.SECONDS);
+        Envelope processCpu = mockedIngestion.waitForItem(getPerfMetricPredicate("\\Process(??APP_WIN32_PROC??)\\% Processor Time"), 10, TimeUnit.SECONDS);
         System.out.println("PerformanceCounterData are good: " + (System.currentTimeMillis() - start));
 
         MetricData metricMem = getBaseData(availableMem);
@@ -45,12 +45,10 @@ public class PerfCountersDataTest extends AiSmokeTest {
 
         start = System.currentTimeMillis();
         System.out.println("Waiting for metric data...");
-        Envelope deadlocks = mockedIngestion.waitForItem(getPerfMetricPredicate("Suspected Deadlocked Threads"), 150, TimeUnit.SECONDS);
-        Envelope heapUsed = mockedIngestion.waitForItem(getPerfMetricPredicate("Heap Memory Used (MB)"), 150, TimeUnit.SECONDS);
-        Envelope gcTotalCount = mockedIngestion.waitForItem(getPerfMetricPredicate("GC Total Count"), 150,
-                TimeUnit.SECONDS);
-        Envelope gcTotalTime = mockedIngestion.waitForItem(getPerfMetricPredicate("GC Total Time"), 150,
-                TimeUnit.SECONDS);
+        Envelope deadlocks = mockedIngestion.waitForItem(getPerfMetricPredicate("Suspected Deadlocked Threads"), 10, TimeUnit.SECONDS);
+        Envelope heapUsed = mockedIngestion.waitForItem(getPerfMetricPredicate("Heap Memory Used (MB)"), 10, TimeUnit.SECONDS);
+        Envelope gcTotalCount = mockedIngestion.waitForItem(getPerfMetricPredicate("GC Total Count"), 10, TimeUnit.SECONDS);
+        Envelope gcTotalTime = mockedIngestion.waitForItem(getPerfMetricPredicate("GC Total Time"), 10, TimeUnit.SECONDS);
         System.out.println("MetricData are good: " + (System.currentTimeMillis() - start));
 
         MetricData mdDeadlocks = getBaseData(deadlocks);

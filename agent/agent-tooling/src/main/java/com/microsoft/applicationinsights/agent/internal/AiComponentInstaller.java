@@ -263,6 +263,8 @@ public class AiComponentInstaller implements ComponentInstaller {
         }
         xmlConfiguration.getPerformance().setJmxXmlElements(jmxXmls);
 
+        xmlConfiguration.getPerformance().setCollectionFrequencyInSec(config.preview.metricIntervalSeconds);
+
         if (config.preview.developerMode) {
             xmlConfiguration.getChannel().setDeveloperMode(true);
         }

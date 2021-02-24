@@ -15,7 +15,7 @@ class ConfigOverride {
     static Config getConfig(Configuration config) {
         Map<String, String> properties = new HashMap<>();
         properties.put("otel.experimental.log.capture.threshold", config.instrumentation.logging.level);
-        properties.put("otel.micrometer.step.millis", Long.toString(SECONDS.toMillis(config.instrumentation.micrometer.intervalSeconds)));
+        properties.put("otel.micrometer.step.millis", Long.toString(SECONDS.toMillis(config.preview.metricIntervalSeconds)));
         if (!config.instrumentation.micrometer.enabled) {
             properties.put("otel.instrumentation.micrometer.enabled", "false");
             properties.put("otel.instrumentation.actuator-metrics.enabled", "false");

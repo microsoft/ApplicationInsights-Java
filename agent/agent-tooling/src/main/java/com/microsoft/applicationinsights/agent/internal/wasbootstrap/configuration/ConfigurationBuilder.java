@@ -72,12 +72,13 @@ public class ConfigurationBuilder {
     public static Configuration create(Path agentJarPath) throws IOException {
         Configuration config = loadConfigurationFile(agentJarPath);
         overlayEnvVars(config);
-        // TODO remove this backward compatibility in 3.1.0
-        //  (the old name was never documented, but was discovered by some users and posted to a github issue)
         if (config.instrumentation.micrometer.reportingIntervalSeconds != 60) {
             configurationWarnMessages.add(new ConfigurationWarnMessage(
-                    "micrometer \"reportingIntervalSeconds\" has been deprecated," +
-                            " please use \"intervalSeconds\" instead"));
+                    "micrometer \"reportingIntervalSeconds\" setting leaked out previously" +
+                            " as an undocumented testing detail," +
+                            " please use \"preview\": { \"metricIntervalSeconds\" } instead now" +
+                            " (and note that metricIntervalSeconds applies to all auto-collected metrics," +
+                            " not only micrometer)"));
         }
         return config;
     }
