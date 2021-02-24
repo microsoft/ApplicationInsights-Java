@@ -26,7 +26,9 @@ public class DefaultQuickPulseDataFetcherTests {
     public void endpointIsFormattedCorrectlyWhenUsingConfig() {
         final TelemetryConfiguration config = new TelemetryConfiguration();
         config.setConnectionString("InstrumentationKey=testing-123");
-        final String endpointUrl = new DefaultQuickPulseDataFetcher(null, config, null, null,null,null).getQuickPulseEndpoint();
+        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, config, null, null,null,null);
+        final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
+        final String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
         try {
             URI uri = new URI(endpointUrl);
             assertNotNull(uri);
@@ -38,7 +40,10 @@ public class DefaultQuickPulseDataFetcherTests {
 
     @Test
     public void endpointIsFormattedCorrectlyWhenConfigIsNull() {
-        final String endpointUrl = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration)null, null,null, null,null).getQuickPulseEndpoint();
+        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration)null,
+                null,null, null,null);
+        final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
+        final String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
         try {
             URI uri = new URI(endpointUrl);
             assertNotNull(uri);
