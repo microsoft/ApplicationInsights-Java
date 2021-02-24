@@ -96,18 +96,4 @@ final class QuickPulseNetworkHelper {
         quickPulseHeaderInfo = new QuickPulseHeaderInfo(status, serviceEndpointRedirect, servicePollingIntervalHint);
         return quickPulseHeaderInfo;
     }
-
-    public QuickPulseStatus getQuickPulseStatus(HttpResponse response) {
-        Header header = response.getFirstHeader(QPS_STATUS_HEADER);
-        if (header != null) {
-            final String toPost = header.getValue();
-            if ("true".equalsIgnoreCase(toPost)) {
-                return QuickPulseStatus.QP_IS_ON;
-            } else {
-                return QuickPulseStatus.QP_IS_OFF;
-            }
-        }
-
-        return QuickPulseStatus.ERROR;
-    }
 }

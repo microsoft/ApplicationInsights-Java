@@ -82,7 +82,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
         dataFetcher.prepareQuickPulseDataForSend(QpsServiceRedirectedEndpoint);
         final QuickPulseHeaderInfo currentQuickPulseHeaderInfo = dataSender.getQuickPulseHeaderInfo();
 
-        this.handleRecievedHeaders(currentQuickPulseHeaderInfo);
+        this.handleReceivedHeaders(currentQuickPulseHeaderInfo);
 
         switch (currentQuickPulseHeaderInfo.getQuickPulseStatus()) {
             case ERROR:
@@ -106,9 +106,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
 
     private long ping() {
         QuickPulseHeaderInfo pingResult = pingSender.ping(QpsServiceRedirectedEndpoint);
-
-        this.handleRecievedHeaders(pingResult);
-
+        this.handleReceivedHeaders(pingResult);
         switch (pingResult.getQuickPulseStatus()) {
             case ERROR:
                 return waitOnErrorInMS;
@@ -128,7 +126,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
         }
     }
 
-    private void handleRecievedHeaders(QuickPulseHeaderInfo currentQuickPulseHeaderInfo) {
+    private void handleReceivedHeaders(QuickPulseHeaderInfo currentQuickPulseHeaderInfo) {
         String redirectLink = currentQuickPulseHeaderInfo.getQpsServiceEndpointRedirect();
         if (!LocalStringsUtils.isNullOrEmpty(redirectLink)) {
             QpsServiceRedirectedEndpoint = redirectLink;

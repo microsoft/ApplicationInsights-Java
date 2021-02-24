@@ -127,7 +127,8 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         return endpointURL + "/post?ikey=" + getInstrumentationKey();
     }
 
-    private String getQuickPulseEndpoint() {
+    @VisibleForTesting
+    String getQuickPulseEndpoint() {
          return config == null ? QP_BASE_URI : config.getEndpointProvider().getLiveEndpointURL().toString();
     }
 

@@ -142,8 +142,8 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         TelemetryConfiguration config = this.configuration == null ? TelemetryConfiguration.getActive() : configuration;
         return config.getInstrumentationKey();
     }
-
-    private String getQuickPulseEndpoint() {
+    @VisibleForTesting
+    String getQuickPulseEndpoint() {
         if (configuration != null) {
             return configuration.getEndpointProvider().getLiveEndpointURL().toString();
         } else {
