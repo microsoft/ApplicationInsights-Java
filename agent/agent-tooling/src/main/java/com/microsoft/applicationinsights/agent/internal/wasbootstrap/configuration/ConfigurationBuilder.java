@@ -303,7 +303,7 @@ public class ConfigurationBuilder {
         }
     }
 
-    public static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict) throws IOException{
+    static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict) throws IOException {
         try (InputStream in = Files.newInputStream(configPath)) {
             Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
             JsonAdapter<Configuration> jsonAdapter = strict ? moshi.adapter(Configuration.class).failOnUnknown() :
