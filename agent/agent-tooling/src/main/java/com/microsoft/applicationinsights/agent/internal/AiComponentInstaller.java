@@ -265,6 +265,8 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         xmlConfiguration.getPerformance().setCollectionFrequencyInSec(config.preview.metricIntervalSeconds);
 
+        xmlConfiguration.getQuickPulse().setEnabled(config.preview.liveMetrics.enabled);
+
         if (config.preview.developerMode) {
             xmlConfiguration.getChannel().setDeveloperMode(true);
         }

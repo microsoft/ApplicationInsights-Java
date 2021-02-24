@@ -154,6 +154,11 @@ public class Configuration {
         // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics world,
         // so safer to only allow single interval for now
         public int metricIntervalSeconds = 60;
+        public LiveMetrics liveMetrics = new LiveMetrics();
+    }
+
+    public static class LiveMetrics {
+        public boolean enabled = true;
     }
 
     public static class SelfDiagnostics {
