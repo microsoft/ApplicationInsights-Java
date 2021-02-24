@@ -222,7 +222,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 httpClient.dispose(response);
 
                 if (code == HttpStatus.SC_BAD_REQUEST) {
-                    logger.error("Error sending data: {}", reason);
+                    networkExceptionStats.recordError("Error sending data: "+reason, logger);
                 } else if (code != HttpStatus.SC_OK) {
                     // Invoke the listeners for handling things like errors
                     // The listeners will handle the back off logic as well as the dispatch

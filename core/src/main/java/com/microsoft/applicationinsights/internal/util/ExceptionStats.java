@@ -23,9 +23,9 @@ public class ExceptionStats {
     private String warningMessage;
     private Exception exception;
     private Logger logger;
-    // Initial Delay for scheduled executor in milliseconds
+    // Initial Delay for scheduled executor in secs
     private int executorInitialDelay;
-    // Period for scheduled executor in milliseconds
+    // Period for scheduled executor in secs
     private int executorPeriod;
 
     private final Object lock = new Object();
@@ -47,7 +47,7 @@ public class ExceptionStats {
     public void recordException(String warningMessage, Exception exception, Logger logger) {
         // log the first exception as soon as it occurs, then log only every 5 min after that
         if (!firstFailure.getAndSet(true)) {
-            logger.warn(warningMessage + " (future failures will be aggregated and logged once every 5 minutes)", exception);
+            logger.warn(warningMessage + " (future failures will be aggregated and logged once every "+ this.executorPeriod/60 +" minutes)", exception);
             scheduledExecutor.scheduleAtFixedRate(new ExceptionStatsLogger(), executorInitialDelay, executorPeriod, TimeUnit.SECONDS);
             return;
         }
@@ -56,6 +56,23 @@ public class ExceptionStats {
             if (numFailures == 0) {
                 this.warningMessage = warningMessage;
                 this.exception = exception;
+                this.logger = logger;
+            }
+            numFailures++;
+        }
+    }
+
+    public void recordError(String warningMessage, Logger logger) {
+        // log the first exception as soon as it occurs, then log only every 5 min after that
+        if (!firstFailure.getAndSet(true)) {
+            logger.warn(warningMessage + " (future failures will be aggregated and logged once every "+ this.executorPeriod/60 +" minutes)");
+            scheduledExecutor.scheduleAtFixedRate(new ExceptionStatsLogger(), executorInitialDelay, executorPeriod, TimeUnit.SECONDS);
+            return;
+        }
+
+        synchronized (lock) {
+            if (numFailures == 0) {
+                this.warningMessage = warningMessage;
                 this.logger = logger;
             }
             numFailures++;
@@ -86,9 +103,15 @@ public class ExceptionStats {
                 ExceptionStats.this.logger = null;
             }
             if (numFailures > 0) {
-                logger.error(warningMessage + "\n" +
-                        "Total number of failed telemetry requests in the last 5 minutes: " + numFailures + "\n" +
-                        "Total number of successful telemetry requests in the last 5 minutes: " + numSuccesses + "\n", exception);
+                if(exception == null) {
+                    logger.error(warningMessage + "\n" +
+                            "Total number of failed telemetry requests in the last "+ ExceptionStats.this.executorPeriod/60 + "minutes: " + numFailures + "\n" +
+                            "Total number of successful telemetry requests in the last "+ ExceptionStats.this.executorPeriod/60 + " minutes: " + numSuccesses + "\n");
+                } else {
+                    logger.error(warningMessage + "\n" +
+                            "Total number of failed telemetry requests in the last "+ ExceptionStats.this.executorPeriod/60 + " minutes: " + numFailures + "\n" +
+                            "Total number of successful telemetry requests in the last "+ ExceptionStats.this.executorPeriod/60 + " minutes: " + numSuccesses + "\n", exception);
+                }
             }
         }
     }

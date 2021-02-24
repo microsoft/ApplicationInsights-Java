@@ -14,7 +14,7 @@ public class ExceptionStatsLoggerTest {
     @BeforeClass
     public static void setUp() {
         // one-time initialization code
-        networkExceptionStats = new ExceptionStats(0,1);
+        networkExceptionStats = new ExceptionStats(3,3);
         logger = LoggerFactory.getLogger(ExceptionStatsLoggerTest.class);
     }
 
@@ -29,8 +29,8 @@ public class ExceptionStatsLoggerTest {
         Thread.sleep(3000);
         assertEquals(1,logCaptor.getErrorLogs().size());
         assertEquals(1,logCaptor.getWarnLogs().size());
-        assertTrue(logCaptor.getErrorLogs().get(0).contains("Total number of failed telemetry requests in the last 5 minutes: 1"));
-        assertTrue(logCaptor.getErrorLogs().get(0).contains("Total number of successful telemetry requests in the last 5 minutes: 1"));
+        assertTrue(logCaptor.getErrorLogs().get(0).contains("Total number of failed telemetry requests in the last 0 minutes: 1"));
+        assertTrue(logCaptor.getErrorLogs().get(0).contains("Total number of successful telemetry requests in the last 0 minutes: 1"));
     }
 
 }
