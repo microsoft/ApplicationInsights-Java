@@ -6,9 +6,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
-import com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput;
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,8 @@ public class ExceptionStats {
     private static final ScheduledExecutorService scheduledExecutor =
             Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(ExceptionStats.class, "exception stats logger"));
 
-    private static final Logger logger = LoggerFactory.getLogger(ExceptionStats.class);
+    private final Logger logger;
+    private final String introMessage;
 
     // Period for scheduled executor in secs
     private final int intervalSeconds;
@@ -40,12 +41,14 @@ public class ExceptionStats {
 
     private final Object lock = new Object();
 
-    public ExceptionStats() {
-        this(300);
+    public ExceptionStats(Class<?> source, String introMessage) {
+        this(source, introMessage, 300);
     }
 
     // Primarily used by test
-    public ExceptionStats(int intervalSeconds) {
+    public ExceptionStats(Class<?> source, String introMessage, int intervalSeconds) {
+        logger = LoggerFactory.getLogger(source);
+        this.introMessage = introMessage;
         this.intervalSeconds = intervalSeconds;
     }
 
@@ -56,32 +59,25 @@ public class ExceptionStats {
     }
 
     // warningMessage should have low cardinality
-    public void recordException(String warningMessage, Exception exception, Logger logger) {
-        if (!firstFailure.getAndSet(true)) {
-            // log the first time we see an exception as soon as it occurs
-            logger.warn(warningMessage + " (future failures will be aggregated and logged once every "+ this.intervalSeconds /60 +" minutes)", exception);
-            scheduledExecutor.scheduleAtFixedRate(new ExceptionStatsLogger(), intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
-            return;
-        }
-
-        logger.debug(warningMessage, exception);
-
-        synchronized (lock) {
-            warningMessages.computeIfAbsent(warningMessage, key -> new MutableLong()).increment();
-            numFailures++;
-        }
+    public void recordFailure(String warningMessage) {
+        recordFailure(warningMessage, null);
     }
 
-    public void recordError(String warningMessage, Logger logger) {
+    // warningMessage should have low cardinality
+    public void recordFailure(String warningMessage, @Nullable Throwable exception) {
         if (!firstFailure.getAndSet(true)) {
-            // log the first time we see an exception as soon as it occurs
-            logger.warn(warningMessage + " (future failures will be aggregated and logged once every "+ this.intervalSeconds /60 +" minutes)");
+            // log the first time we see an exception as soon as it occurs, along with full stack trace
+            logger.warn(introMessage + " " + warningMessage + " (future failures will be aggregated and logged once every " + intervalSeconds / 60 + " minutes)", exception);
             scheduledExecutor.scheduleAtFixedRate(new ExceptionStatsLogger(), intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
             return;
         }
 
-        logger.debug(warningMessage);
+        logger.debug(introMessage + " " + warningMessage, exception);
 
+        if (warningMessages.size() > 100) {
+            // we have a cardinality problem and don't want to consume too much memory or do too much logging
+            return;
+        }
         synchronized (lock) {
             warningMessages.computeIfAbsent(warningMessage, key -> new MutableLong()).increment();
             numFailures++;
@@ -113,11 +109,25 @@ public class ExceptionStats {
                 ExceptionStats.this.warningMessages = new HashMap<>();
             }
             if (numFailures > 0) {
-                warningMessages.forEach(
-                        (message,failureCount) -> logger.error(message+" (failed "+ failureCount.value + " times in the last "+ ExceptionStats.this.intervalSeconds/60 +" minutes)")
-                );
-                logger.warn(numFailures+"/"+(numFailures+numSuccesses) + "(Total Failures/Total Requests) reported in the last "+ ExceptionStats.this.intervalSeconds/60 +" minutes");
-
+                long numMinutes = ExceptionStats.this.intervalSeconds / 60;
+                long total = numSuccesses + numFailures;
+                StringBuilder message = new StringBuilder();
+                message.append("In the last ");
+                message.append(numMinutes);
+                message.append(" minutes, the following operation has failed ");
+                message.append(numFailures);
+                message.append(" times (out of ");
+                message.append(total);
+                message.append(" total):\n");
+                message.append(introMessage);
+                for (Map.Entry<String, MutableLong> entry : warningMessages.entrySet()) {
+                    message.append("\n * ");
+                    message.append(entry.getKey());
+                    message.append(" (");
+                    message.append(entry.getValue().value);
+                    message.append(" times)");
+                }
+                logger.warn(message.toString());
             }
         }
     }

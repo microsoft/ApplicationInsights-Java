@@ -85,7 +85,12 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
     private final static int MAX_CAPACITY_MEGABYTES = 1000;
     private final static int MIN_CAPACITY_MEGABYTES = 1;
     private static final String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "Channel.MaxTransmissionStorageCapacityInMB";
-    public static final ExceptionStats diskExceptionStats = new ExceptionStats();
+    private static final ExceptionStats diskExceptionStats = new ExceptionStats(
+            TransmissionFileSystemOutput.class,
+            "Unable to send telemetry to the ingestion service," +
+                    " and unable to store telemetry locally, so telemetry will be discarded." +
+                    " See previous warning(s) for reason unable to send telemetry to the ingestion service." +
+                    " Reason unable to store telemetry locally:");
 
 
     /// The folder in which we save transmission files
@@ -142,8 +147,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
 
         long currentSizeInBytes = size.get();
         if (currentSizeInBytes >= capacityInBytes) {
-            diskExceptionStats.recordError("Persistent storage max capacity of "+ capacityInBytes +" bytes has been reached. Telemetry will be lost, "
-                    + "please consider increasing the value of MaxTransmissionStorageFilesCapacityInMB property in the configuration file.",logger);
+            diskExceptionStats.recordFailure("local storage capacity (" + capacityInBytes / (1024 * 1024) + "MB) has been exceeded");
             return false;
         }
 
@@ -204,7 +208,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
                 }
             }
         } catch (Exception e) {
-            diskExceptionStats.recordException("Error fetching oldest file", e, logger);
+            logger.error("Error fetching oldest file", e);
         }
 
         return null;
@@ -246,11 +250,11 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
         try (ObjectInput input = new SafeObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
             transmission = (Transmission)input.readObject();
         } catch (FileNotFoundException e) {
-            diskExceptionStats.recordException("Failed to load transmission, file not found", e, logger);
+            logger.error("Failed to load transmission, file not found, exception: {}", e.toString());
         } catch (ClassNotFoundException e) {
-            diskExceptionStats.recordException("Failed to load transmission, non transmission", e, logger);
+            logger.error("Failed to load transmission, non transmission, exception: {}", e.toString());
         } catch (IOException e) {
-            diskExceptionStats.recordException("Failed to load transmission, io exception", e, logger);
+            logger.error("Failed to load transmission, io exception: {}", e.toString());
         }
 
         return Optional.fromNullable(transmission);
@@ -279,7 +283,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
             size.addAndGet(fileLength);
             return true;
         } catch (Exception e) {
-            diskExceptionStats.recordException("Rename To Permanent Name failed", e, logger);
+            diskExceptionStats.recordFailure("unable to rename file to permanent name: " + e, e);
         }
 
         return false;
@@ -292,8 +296,8 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
             FileUtils.moveFile(tempTransmissionFile, renamedFile);
             size.addAndGet(-renamedFile.length());
             transmissionFile = renamedFile;
-        } catch (Exception ignore) {
-            diskExceptionStats.recordException("Rename To Temporary Name failed", ignore, logger);
+        } catch (Exception e) {
+            diskExceptionStats.recordFailure("unable to rename file to temporary name: " + e, e);
             // Consume the exception, since there isn't anything 'smart' to do now
         }
 
@@ -306,7 +310,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
             output.writeObject(transmission);
             return true;
         } catch (IOException e) {
-            diskExceptionStats.recordException("Failed to save transmission", e, logger);
+            diskExceptionStats.recordFailure("unable to write to file: " + e, e);
         }
 
         return false;
@@ -318,7 +322,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
         	String prefix = TRANSMISSION_FILE_PREFIX + "-" + System.currentTimeMillis() + "-";
             file = File.createTempFile(prefix, null, folder);
         } catch (IOException e) {
-            diskExceptionStats.recordException("Failed to create temporary file", e, logger);
+            diskExceptionStats.recordFailure("unable to create temporary file: " + e, e);
         }
 
         return Optional.fromNullable(file);

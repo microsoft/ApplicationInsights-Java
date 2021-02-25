@@ -59,12 +59,15 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionNetworkOutput.class);
     private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
-    public static final ExceptionStats networkExceptionStats = new ExceptionStats();
+    private static final ExceptionStats networkExceptionStats = new ExceptionStats(
+            TransmissionNetworkOutput.class,
+            "Unable to send telemetry to the ingestion service," +
+                    " so telemetry will be stored to disk and sent to the ingestion service later if possible." +
+                    " Reason unable to send telemetry to the ingestion service:");
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String CONTENT_ENCODING_HEADER = "Content-Encoding";
     private static final String RESPONSE_THROTTLING_HEADER = "Retry-After";
-    private static final String TEMPORARY_EXCEPTION_MESSAGE = "Telemetry will be stored locally and re-sent later once the connection is stable again";
 
     public static final String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
 
@@ -182,34 +185,29 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 }
                 return true;
             } catch (ConnectionPoolTimeoutException e) {
-                networkExceptionStats.recordException(
-                        "Failed to send, connection pool timeout exception. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
+                networkExceptionStats.recordFailure("connection pool timeout exception: " + e, e);
             } catch (SocketException e) {
-                networkExceptionStats.recordException(
-                        "Failed to send, socket exception. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
+                networkExceptionStats.recordFailure("socket exception: " + e, e);
             } catch (SocketTimeoutException e) {
-                networkExceptionStats.recordException(
-                        "Failed to send, socket timeout exception. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
+                networkExceptionStats.recordFailure("socket timeout exception: " + e, e);
             } catch (UnknownHostException e) {
-                networkExceptionStats.recordException(
-                        "Failed to send, wrong host address or cannot reach address due to network issues. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
+                networkExceptionStats.recordFailure("wrong host address or cannot reach address due to network issues: " + e, e);
             } catch (IOException e) {
-                networkExceptionStats.recordException(
-                        "Failed to send, IO exception. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
+                networkExceptionStats.recordFailure("I/O exception: " + e, e);
             } catch (FriendlyException e) {
                 ex = e;
+                // TODO should this be merged into networkExceptionStats?
                 if(!friendlyExceptionThrown.getAndSet(true)) {
                     logger.error(e.getMessage());
                 }
             } catch (Exception e) {
-                networkExceptionStats.recordException(
-                        "Failed to send, unexpected exception. " + TEMPORARY_EXCEPTION_MESSAGE, e, logger);
+                networkExceptionStats.recordFailure("unexpected exception: " + e, e);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t) {
                 ex = t;
                 try {
-                    logger.error("Failed to send, unexpected error", t);
+                    networkExceptionStats.recordFailure("unexpected exception: " + t, t);
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t2) {
@@ -222,7 +220,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 httpClient.dispose(response);
 
                 if (code == HttpStatus.SC_BAD_REQUEST) {
-                    networkExceptionStats.recordError("Error sending data: "+reason, logger);
+                    networkExceptionStats.recordFailure("ingestion service returned 400 (" + reason + ")");
                 } else if (code != HttpStatus.SC_OK) {
                     // Invoke the listeners for handling things like errors
                     // The listeners will handle the back off logic as well as the dispatch
