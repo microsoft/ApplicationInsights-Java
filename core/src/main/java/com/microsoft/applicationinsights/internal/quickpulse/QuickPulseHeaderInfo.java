@@ -3,29 +3,29 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 public class QuickPulseHeaderInfo {
 
     private final QuickPulseStatus quickPulseStatus;
-    private final String QpsServiceEndpointRedirect;
-    private final long QpsServicePollingInterval;
+    private final String qpsServiceEndpointRedirect;
+    private final long qpsServicePollingInterval;
 
     public QuickPulseHeaderInfo(QuickPulseStatus quickPulseStatus,
-                                String QpsServiceEndpointRedirect, long QpsServicePollingIntervalHint) {
+                                String qpsServiceEndpointRedirect, long qpsServicePollingIntervalHint) {
 
         this.quickPulseStatus = quickPulseStatus;
-        this.QpsServiceEndpointRedirect = QpsServiceEndpointRedirect;
-        this.QpsServicePollingInterval = QpsServicePollingIntervalHint;
+        this.qpsServiceEndpointRedirect = qpsServiceEndpointRedirect;
+        this.qpsServicePollingInterval = qpsServicePollingIntervalHint;
     }
 
     public QuickPulseHeaderInfo(QuickPulseStatus quickPulseStatus) {
         this.quickPulseStatus = quickPulseStatus;
-        this.QpsServiceEndpointRedirect = null;
-        this.QpsServicePollingInterval = -1;
+        this.qpsServiceEndpointRedirect = null;
+        this.qpsServicePollingInterval = -1;
     }
 
     public long getQpsServicePollingInterval() {
-        return QpsServicePollingInterval;
+        return qpsServicePollingInterval;
     }
 
     public String getQpsServiceEndpointRedirect() {
-        return QpsServiceEndpointRedirect;
+        return qpsServiceEndpointRedirect;
     }
 
     public QuickPulseStatus getQuickPulseStatus() {
