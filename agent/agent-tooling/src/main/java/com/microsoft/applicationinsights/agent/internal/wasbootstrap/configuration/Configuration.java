@@ -46,6 +46,8 @@ public class Configuration {
     public Proxy proxy = new Proxy();
     public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
     public PreviewConfiguration preview = new PreviewConfiguration();
+    public ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
+    public PerformanceCountersConfiguration performanceCountersConfiguration = new PerformanceCountersConfiguration();
 
     // this is just here to detect if using old format in order to give a helpful error message
     public Map<String, Object> instrumentationSettings;
@@ -418,4 +420,15 @@ public class Configuration {
     // transient so that Moshi will ignore when binding from json
     public transient long lastModifiedTime;
 
+    public static class ProfilerConfiguration {
+        public int configPollPeriod = -1;
+        public int periodicRecordingDuration = -1;
+        public int periodicRecordingInterval = -1;
+        public String serviceProfilerFrontEndPoint = null;
+        public boolean enable = false;
+    }
+
+    public static class PerformanceCountersConfiguration {
+        public double collectionFrequencyInSec = -1;
+    }
 }

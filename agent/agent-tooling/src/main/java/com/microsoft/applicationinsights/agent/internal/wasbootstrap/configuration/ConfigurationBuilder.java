@@ -66,6 +66,11 @@ public class ConfigurationBuilder {
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
 
+    private static final String APPLICATIONINSIGHTS_PROFILER_ENABLE = "APPLICATIONINSIGHTS_PROFILER_ENABLE";
+    private static final String APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT = "APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT";
+
+    private static final String APPLICATIONINSIGHTS_PERFORMANCE_COUNTERS_FREQUENCY = "APPLICATIONINSIGHTS_PERFORMANCE_COUNTERS_FREQUENCY";
+
     // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
     private static final List<ConfigurationWarnMessage> configurationWarnMessages = new CopyOnWriteArrayList<>();
 
@@ -81,6 +86,21 @@ public class ConfigurationBuilder {
                             " not only micrometer)"));
         }
         return config;
+    }
+
+    private static String getEnvVarOrPropertyWithDefault(String name, String defaultValue) {
+        String override = getEnvVarOrProperty(name, name);
+        if (override == null) {
+            return defaultValue;
+        }
+        return override;
+    }
+
+    private static void overlayProfilerConfiguration(Configuration config) {
+        config.profilerConfiguration.enable = Boolean
+                .parseBoolean(getEnvVarOrPropertyWithDefault(APPLICATIONINSIGHTS_PROFILER_ENABLE, Boolean.toString(config.profilerConfiguration.enable)));
+        config.profilerConfiguration.serviceProfilerFrontEndPoint =
+                getEnvVarOrPropertyWithDefault(APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT, config.profilerConfiguration.serviceProfilerFrontEndPoint);
     }
 
     private static void loadLogCaptureEnvVar(Configuration config) {
@@ -187,6 +207,12 @@ public class ConfigurationBuilder {
         }
     }
 
+    // never returns empty string (empty string is normalized to null)
+    private static String getEnvVarOrProperty(String envVarName, String propertyName) {
+        String value = trimAndEmptyToNull(System.getenv(envVarName));
+        return value != null ? value : trimAndEmptyToNull(System.getProperty(propertyName));
+    }
+
     public static void overlayEnvVars(Configuration config) throws IOException {
         config.connectionString = overlayWithEnvVar(APPLICATIONINSIGHTS_CONNECTION_STRING, config.connectionString);
         if (config.connectionString == null) {
@@ -213,11 +239,14 @@ public class ConfigurationBuilder {
         config.sampling.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
         config.selfDiagnostics.level = overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL, config.selfDiagnostics.level);
+        config.performanceCountersConfiguration.collectionFrequencyInSec =
+                overlayWithEnvVar(APPLICATIONINSIGHTS_PERFORMANCE_COUNTERS_FREQUENCY, config.performanceCountersConfiguration.collectionFrequencyInSec);
 
         loadLogCaptureEnvVar(config);
         loadJmxMetricsEnvVar(config);
 
         addDefaultJmxMetricsIfNotPresent(config);
+        overlayProfilerConfiguration(config);
 
         loadInstrumentationEnabledEnvVars(config);
     }
