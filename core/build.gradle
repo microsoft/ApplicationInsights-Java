@@ -76,6 +76,9 @@ configurations {
 }
 
 dependencies {
+    compile(project(":agent:agent-profiler:agent-profiler-api"))
+    compile(project(":agent:agent-profiler:agent-service-profiler"))
+    compile(project(":agent:agent-profiler:agent-alerting"))
     compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
     compile ([group: 'commons-io', name: 'commons-io', version: '2.6' ])
     compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])

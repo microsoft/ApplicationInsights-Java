@@ -185,6 +185,15 @@
         </Or>
     </Match>
     <Match>
+        <Bug pattern="RV_RETURN_VALUE_IGNORED" />
+        <Or>
+            <And>
+                <Class name="com.microsoft.applicationinsights.internal.profiler.JfrUploadService" />
+                <Method name="sendJFRFile" />
+            </And>
+        </Or>
+    </Match>
+    <Match>
         <!-- False positive. Inputs are not exposed to user -->
         <Bug pattern="HTTP_PARAMETER_POLLUTION" />
         <Class name="com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher" />

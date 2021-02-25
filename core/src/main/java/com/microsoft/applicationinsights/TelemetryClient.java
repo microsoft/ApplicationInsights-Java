@@ -22,8 +22,6 @@
 package com.microsoft.applicationinsights;
 
 import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -32,8 +30,8 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
+import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
-import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import org.apache.commons.lang3.StringUtils;
@@ -167,6 +165,8 @@ public class TelemetryClient {
                 // chomp
             }
         }
+
+        TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.consume(telemetry));
     }
 
     /**
