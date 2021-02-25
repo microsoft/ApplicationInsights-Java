@@ -61,9 +61,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
     private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
     private static final ExceptionStats networkExceptionStats = new ExceptionStats(
             TransmissionNetworkOutput.class,
-            "Unable to send telemetry to the ingestion service," +
-                    " so telemetry will be stored to disk and sent to the ingestion service later if possible." +
-                    " Reason unable to send telemetry to the ingestion service:");
+            "Unable to send telemetry to the ingestion service (telemetry will be stored to disk):");
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String CONTENT_ENCODING_HEADER = "Content-Encoding";

@@ -87,11 +87,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
     private static final String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "Channel.MaxTransmissionStorageCapacityInMB";
     private static final ExceptionStats diskExceptionStats = new ExceptionStats(
             TransmissionFileSystemOutput.class,
-            "Unable to send telemetry to the ingestion service," +
-                    " and unable to store telemetry locally, so telemetry will be discarded." +
-                    " See previous warning(s) for reason unable to send telemetry to the ingestion service." +
-                    " Reason unable to store telemetry locally:");
-
+            "Unable to store telemetry to disk (telemetry will be discarded):");
 
     /// The folder in which we save transmission files
     private File folder;

@@ -118,7 +118,7 @@ public class ExceptionStats {
                 message.append(numFailures);
                 message.append(" times (out of ");
                 message.append(total);
-                message.append(" total):\n");
+                message.append("):\n");
                 message.append(introMessage);
                 for (Map.Entry<String, MutableLong> entry : warningMessages.entrySet()) {
                     message.append("\n * ");
