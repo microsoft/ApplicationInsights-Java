@@ -27,7 +27,7 @@ public class ExceptionStatsLoggerTest {
         Thread.sleep(3000);
         assertEquals(2,logCaptor.getWarnLogs().size());
         assertTrue(logCaptor.getWarnLogs().get(0).contains("intro: Test Message (future failures will be aggregated and logged once every 0 minutes)"));
-        assertTrue(logCaptor.getWarnLogs().get(1).contains("In the last 0 minutes, the following operation has failed 3 times (out of 4 total):\n" +
+        assertTrue(logCaptor.getWarnLogs().get(1).contains("In the last 0 minutes, the following operation has failed 3 times (out of 4):\n" +
                 "intro:\n" +
                 " * Test Message2 (2 times)\n" +
                 " * Test Message3 (1 times)"));
