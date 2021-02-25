@@ -90,7 +90,7 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
         } catch (Throwable t) {
             try {
                 stopped = true;
-                quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON);
+                quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {

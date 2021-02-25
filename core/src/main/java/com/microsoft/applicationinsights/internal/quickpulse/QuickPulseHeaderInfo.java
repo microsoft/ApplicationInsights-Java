@@ -2,9 +2,9 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 
 public class QuickPulseHeaderInfo {
 
-    private QuickPulseStatus quickPulseStatus;
-    private String QpsServiceEndpointRedirect;
-    private long QpsServicePollingInterval;
+    private final QuickPulseStatus quickPulseStatus;
+    private final String QpsServiceEndpointRedirect;
+    private final long QpsServicePollingInterval;
 
     public QuickPulseHeaderInfo(QuickPulseStatus quickPulseStatus,
                                 String QpsServiceEndpointRedirect, long QpsServicePollingIntervalHint) {

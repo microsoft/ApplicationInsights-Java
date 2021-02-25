@@ -96,9 +96,8 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     @Override
     public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
         final Date currentDate = new Date();
-        final String endPointURL = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-        final HttpPost request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endPointURL), quickPulseId, machineName, roleName, instanceName);
-
+        final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
+        final HttpPost request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
 
         final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
         request.setEntity(pingEntity);
@@ -134,8 +133,8 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     }
 
     @VisibleForTesting
-    String getQuickPulsePingUri(String endpointURL) {
-        return endpointURL + "/ping?ikey=" + getInstrumentationKey();
+    String getQuickPulsePingUri(String endpointPrefix) {
+        return endpointPrefix + "/ping?ikey=" + getInstrumentationKey();
     }
 
     private String getInstrumentationKey() {

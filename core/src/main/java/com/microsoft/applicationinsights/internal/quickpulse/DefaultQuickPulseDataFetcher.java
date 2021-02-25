@@ -99,8 +99,8 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
             QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
 
             final Date currentDate = new Date();
-            final String endPointURL = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-            final HttpPost request = networkHelper.buildRequest(currentDate, this.getEndpointUrl(endPointURL));
+            final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
+            final HttpPost request = networkHelper.buildRequest(currentDate, this.getEndpointUrl(endpointPrefix));
 
             final ByteArrayEntity postEntity = buildPostEntity(counters);
 
@@ -123,8 +123,8 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     }
 
     @VisibleForTesting
-    String getEndpointUrl(String endpointURL) {
-        return endpointURL + "/post?ikey=" + getInstrumentationKey();
+    String getEndpointUrl(String endpointPrefix) {
+        return endpointPrefix + "/post?ikey=" + getInstrumentationKey();
     }
 
     @VisibleForTesting
