@@ -292,8 +292,8 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
             FileUtils.moveFile(tempTransmissionFile, renamedFile);
             size.addAndGet(-renamedFile.length());
             transmissionFile = renamedFile;
-        } catch (Exception e) {
-            diskExceptionStats.recordFailure("unable to rename file to temporary name: " + e, e);
+        } catch (Exception ignore) {
+            logger.error("Rename To Temporary Name failed, exception: {}", ignore.toString());
             // Consume the exception, since there isn't anything 'smart' to do now
         }
 
