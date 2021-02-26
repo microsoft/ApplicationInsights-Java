@@ -45,6 +45,7 @@ import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
+import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
 import org.apache.commons.io.FileUtils;
@@ -84,7 +85,9 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
     private final static int MAX_CAPACITY_MEGABYTES = 1000;
     private final static int MIN_CAPACITY_MEGABYTES = 1;
     private static final String MAX_TRANSMISSION_STORAGE_CAPACITY_NAME = "Channel.MaxTransmissionStorageCapacityInMB";
-
+    private static final ExceptionStats diskExceptionStats = new ExceptionStats(
+            TransmissionFileSystemOutput.class,
+            "Unable to store telemetry to disk (telemetry will be discarded):");
 
     /// The folder in which we save transmission files
     private File folder;
@@ -140,10 +143,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
 
         long currentSizeInBytes = size.get();
         if (currentSizeInBytes >= capacityInBytes) {
-            logger.error("Persistent storage max capacity has been reached; "
-                + "currently at {} bytes. Telemetry will be lost, "
-                + "please consider increasing the value of MaxTransmissionStorageFilesCapacityInMB property in the configuration file.",
-                currentSizeInBytes);
+            diskExceptionStats.recordFailure("local storage capacity (" + capacityInBytes / (1024 * 1024) + "MB) has been exceeded");
             return false;
         }
 
@@ -161,6 +161,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
         }
 
         logger.debug("Data persisted to file. To be sent when the network is available.");
+        diskExceptionStats.recordSuccess();
         return true;
     }
 
@@ -278,7 +279,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
             size.addAndGet(fileLength);
             return true;
         } catch (Exception e) {
-            logger.error("Rename To Permanent Name failed, exception: {}", e.toString());
+            diskExceptionStats.recordFailure("unable to rename file to permanent name: " + e, e);
         }
 
         return false;
@@ -305,7 +306,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
             output.writeObject(transmission);
             return true;
         } catch (IOException e) {
-            logger.error("Failed to save transmission, exception: {}", e.toString());
+            diskExceptionStats.recordFailure("unable to write to file: " + e, e);
         }
 
         return false;
@@ -317,7 +318,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
         	String prefix = TRANSMISSION_FILE_PREFIX + "-" + System.currentTimeMillis() + "-";
             file = File.createTempFile(prefix, null, folder);
         } catch (IOException e) {
-            logger.error("Failed to create temporary file, exception: {}", e.toString());
+            diskExceptionStats.recordFailure("unable to create temporary file: " + e, e);
         }
 
         return Optional.fromNullable(file);
