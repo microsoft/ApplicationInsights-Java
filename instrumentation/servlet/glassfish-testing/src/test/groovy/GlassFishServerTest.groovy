@@ -66,11 +66,6 @@ class GlassFishServerTest extends HttpServerTest<GlassFish> implements AgentTest
   }
 
   @Override
-  boolean redirectHasBody() {
-    true
-  }
-
-  @Override
   boolean sendsBackAiTargetAppId() {
     true
   }
@@ -91,4 +86,5 @@ class GlassFishServerTest extends HttpServerTest<GlassFish> implements AgentTest
         sendErrorSpan(trace, index, parent)
         break
     }
+  }
 }
