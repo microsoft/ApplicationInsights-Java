@@ -43,11 +43,9 @@ final class QuickPulseNetworkHelper {
     private static final String QPS_ROLE_NAME_HEADER = "x-ms-qps-role-name";
     private static final String QPS_INVARIANT_VERSION_HEADER = "x-ms-qps-invariant-version";
 
-
     public HttpPost buildPingRequest(Date currentDate, String address, String quickPulseId, String machineName, String roleName, String instanceName) {
 
         HttpPost request = buildRequest(currentDate, address);
-
         request.addHeader(QPS_ROLE_NAME_HEADER, roleName);
         request.addHeader(QPS_MACHINE_NAME_HEADER, machineName);
         request.addHeader(QPS_STREAM_ID_HEADER, quickPulseId);
@@ -77,19 +75,19 @@ final class QuickPulseNetworkHelper {
         final QuickPulseHeaderInfo quickPulseHeaderInfo;
 
         for (Header header: headers) {
-            if (QPS_STATUS_HEADER.equals(header.getName())) {
+            if (QPS_STATUS_HEADER.equalsIgnoreCase(header.getName())) {
                 final String qpStatus = header.getValue();
                 if ("true".equalsIgnoreCase(qpStatus)) {
                     status =  QuickPulseStatus.QP_IS_ON;
                 } else {
                     status = QuickPulseStatus.QP_IS_OFF;
                 }
-            } else if (QPS_SERVICE_POLLING_INTERVAL_HINT.equals(header.getName())) {
+            } else if (QPS_SERVICE_POLLING_INTERVAL_HINT.equalsIgnoreCase(header.getName())) {
                 final String servicePollingIntervalHintHeaderValue = header.getValue();
                 if (!LocalStringsUtils.isNullOrEmpty(servicePollingIntervalHintHeaderValue)) {
                     servicePollingIntervalHint = Long.parseLong(servicePollingIntervalHintHeaderValue);
                 }
-            } else if (QPS_SERVICE_ENDPOINT_REDIRECT.equals(header.getName())) {
+            } else if (QPS_SERVICE_ENDPOINT_REDIRECT.equalsIgnoreCase(header.getName())) {
                 serviceEndpointRedirect = header.getValue();
             }
         }
