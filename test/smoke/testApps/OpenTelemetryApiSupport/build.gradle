@@ -20,6 +20,7 @@ dependencies {
     }
 
     compile group: 'io.opentelemetry', name: 'opentelemetry-api', version: '0.17.0'
+    compile group: 'io.opentelemetry', name: 'opentelemetry-extension-annotations', version: '0.17.0'
 
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 }

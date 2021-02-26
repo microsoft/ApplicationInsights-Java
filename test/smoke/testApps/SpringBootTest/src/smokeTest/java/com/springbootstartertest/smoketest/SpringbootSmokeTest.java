@@ -2,10 +2,13 @@ package com.springbootstartertest.smoketest;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
+import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
@@ -91,7 +94,20 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-        List<Envelope> edList = mockedIngestion.waitForItemsInOperation("ExceptionData", 2, operationId);
+        List<Envelope> edList = mockedIngestion.waitForItems(new Predicate<Envelope>() {
+            @Override
+            public boolean apply(Envelope input) {
+                if (!"ExceptionData".equals(input.getData().getBaseType())) {
+                    return false;
+                }
+                if (!operationId.equals(input.getTags().get("ai.operation.id"))) {
+                    return false;
+                }
+                // lastly, filter out ExceptionData captured from tomcat logger
+                ExceptionData data = (ExceptionData) ((Data<?>) input.getData()).getBaseData();
+                return !data.getProperties().containsKey("LoggerName");
+            }
+        }, 2, 10, TimeUnit.SECONDS);
 
         Envelope rddEnvelope = rddList.get(0);
         Envelope edEnvelope1 = edList.get(0);

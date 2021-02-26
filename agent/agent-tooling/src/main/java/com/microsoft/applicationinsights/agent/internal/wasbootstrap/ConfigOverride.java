@@ -44,6 +44,7 @@ class ConfigOverride {
         }
         if (!config.preview.openTelemetryApiSupport) {
             properties.put("otel.instrumentation.opentelemetry-api.enabled", "false");
+            properties.put("otel.instrumentation.opentelemetry-annotations.enabled", "false");
         }
         properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
         // AI exporter is configured manually
