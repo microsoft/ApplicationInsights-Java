@@ -42,8 +42,13 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.SocketException;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.microsoft.applicationinsights.internal.util.Sanitizer.sanitizeUri;
 
 /**
  * The class is responsible for the actual sending of
@@ -57,10 +62,13 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionNetworkOutput.class);
     private static volatile AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+    private static volatile AtomicInteger  stampSpecificRedirects = new AtomicInteger(0);
+    private static volatile AtomicReference<String> stampSpecificRedirectUrl = new AtomicReference(0);
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String CONTENT_ENCODING_HEADER = "Content-Encoding";
     private static final String RESPONSE_THROTTLING_HEADER = "Retry-After";
+    private static final int MAX_STAMP_SPECIFIC_REDIRECTS = 10;
 
     public static final String DEFAULT_SERVER_URI = "https://dc.services.visualstudio.com/v2/track";
 
@@ -156,26 +164,71 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
             Throwable ex = null;
             Header retryAfterHeader = null;
             try {
-                // POST the transmission data to the endpoint
-                request = createTransmissionPostRequest(transmission);
-                httpClient.enhanceRequest(request);
-                response = httpClient.sendPostRequest(request);
-                HttpEntity respEntity = response.getEntity();
-                code = response.getStatusLine().getStatusCode();
-                reason = response.getStatusLine().getReasonPhrase();
-                respString = EntityUtils.toString(respEntity);
-                retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
+                if(stampSpecificRedirects.get() > 0) {
+                    // POST the transmission data to the endpoint
+                    request = createTransmissionPostRequest(transmission,stampSpecificRedirectUrl.get());
+                    httpClient.enhanceRequest(request);
+                    response = httpClient.sendPostRequest(request);
+                    HttpEntity respEntity = response.getEntity();
+                    code = response.getStatusLine().getStatusCode();
+                    reason = response.getStatusLine().getReasonPhrase();
+                    respString = EntityUtils.toString(respEntity);
+                    retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
 
-                // After we reach our instant retry limit we should fail to second transmission output
-                if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() > this.transmissionPolicyManager.getMaxInstantRetries()) {
-                    return false;
-                } else if (code == HttpStatus.SC_OK) {
-                    // If we've completed then clear the back off flags as the channel does not need
-                    // to be throttled
-                    transmissionPolicyManager.clearBackoff();
+                    // After we reach our instant retry limit we should fail to second transmission output
+                    if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() > this.transmissionPolicyManager.getMaxInstantRetries()) {
+                        return false;
+                    } else if (code == HttpStatus.SC_OK) {
+                        // If we've completed then clear the back off flags as the channel does not need
+                        // to be throttled
+                        transmissionPolicyManager.clearBackoff();
+                    } else if (code == 308) { // There is no apache http status code for permanent redirect
+                        URI redirectUrl = sanitizeUri(response.getFirstHeader("location").getValue());
+                        if(redirectUrl !=null && !redirectUrl.toString().equals(request.getURI().toString())) {
+                            if(stampSpecificRedirects.getAndIncrement() < MAX_STAMP_SPECIFIC_REDIRECTS) {
+                                request = createTransmissionPostRequest(transmission, redirectUrl.toString());
+                                httpClient.enhanceRequest(request);
+                                response = httpClient.sendPostRequest(request);
+                                code = response.getStatusLine().getStatusCode();
+                                if(code == HttpStatus.SC_OK) {
+                                    stampSpecificRedirectUrl.set(redirectUrl.toString());
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // POST the transmission data to the endpoint
+                    request = createTransmissionPostRequest(transmission);
+                    httpClient.enhanceRequest(request);
+                    response = httpClient.sendPostRequest(request);
+                    HttpEntity respEntity = response.getEntity();
+                    code = response.getStatusLine().getStatusCode();
+                    reason = response.getStatusLine().getReasonPhrase();
+                    respString = EntityUtils.toString(respEntity);
+                    retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
+
+                    // After we reach our instant retry limit we should fail to second transmission output
+                    if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() > this.transmissionPolicyManager.getMaxInstantRetries()) {
+                        return false;
+                    } else if (code == HttpStatus.SC_OK) {
+                        // If we've completed then clear the back off flags as the channel does not need
+                        // to be throttled
+                        transmissionPolicyManager.clearBackoff();
+                    } else if (code == 308) { // There is no apache http status code for permanent redirect
+                        URI redirectUrl = sanitizeUri(response.getFirstHeader("location").getValue());
+                        if(redirectUrl !=null && !redirectUrl.toString().equals(request.getURI().toString())) {
+                            request = createTransmissionPostRequest(transmission, redirectUrl.toString());
+                            httpClient.enhanceRequest(request);
+                            response = httpClient.sendPostRequest(request);
+                            code = response.getStatusLine().getStatusCode();
+                            if(code == HttpStatus.SC_OK) {
+                                stampSpecificRedirects.getAndIncrement();
+                                stampSpecificRedirectUrl.set(redirectUrl.toString());
+                            }
+                        }
+                    }
                 }
                 return true;
-
             } catch (ConnectionPoolTimeoutException e) {
                 ex = e;
                 logger.error("Failed to send, connection pool timeout exception", e);
@@ -245,6 +298,23 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
      */
     private HttpPost createTransmissionPostRequest(Transmission transmission) {
         HttpPost request = new HttpPost(getIngestionEndpoint());
+        request.addHeader(CONTENT_TYPE_HEADER, transmission.getWebContentType());
+        request.addHeader(CONTENT_ENCODING_HEADER, transmission.getWebContentEncodingType());
+
+        ByteArrayEntity bae = new ByteArrayEntity(transmission.getContent());
+        request.setEntity(bae);
+
+        return request;
+    }
+
+    /**
+     * Generates the HTTP POST to send to the endpoint.
+     *
+     * @param transmission The transmission to send.
+     * @return The completed {@link HttpPost} object
+     */
+    private HttpPost createTransmissionPostRequest(Transmission transmission, String endPointUrl) {
+        HttpPost request = new HttpPost(endPointUrl);
         request.addHeader(CONTENT_TYPE_HEADER, transmission.getWebContentType());
         request.addHeader(CONTENT_ENCODING_HEADER, transmission.getWebContentEncodingType());
 
