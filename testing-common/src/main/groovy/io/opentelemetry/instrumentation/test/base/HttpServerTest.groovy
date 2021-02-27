@@ -67,10 +67,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     false
   }
 
-  boolean redirectHasBody() {
-    false
-  }
-
   boolean testNotFound() {
     true
   }
@@ -80,10 +76,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
   }
 
   boolean testErrorBody() {
-    true
-  }
-
-  boolean testExceptionBody() {
     true
   }
 
@@ -268,7 +260,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
     response.code() == REDIRECT.status
     response.header("location") == REDIRECT.body ||
       response.header("location") == "${address.resolve(REDIRECT.body)}"
-    response.body().contentLength() < 1 || redirectHasBody()
     assertRequestContextHeader(response)
 
     and:
@@ -308,9 +299,6 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
 
     expect:
     response.code() == EXCEPTION.status
-    if (testExceptionBody()) {
-      assert response.body().string() == EXCEPTION.body
-    }
     assertRequestContextHeader(response)
 
     and:
@@ -523,7 +511,7 @@ abstract class HttpServerTest<SERVER> extends InstrumentationSpecification imple
         "${SemanticAttributes.HTTP_URL.key}" { it == "${endpoint.resolve(address)}" || it == "${endpoint.resolveWithoutFragment(address)}" }
         "${SemanticAttributes.HTTP_METHOD.key}" method
         "${SemanticAttributes.HTTP_STATUS_CODE.key}" endpoint.status
-        "${SemanticAttributes.HTTP_FLAVOR.key}" "HTTP/1.1"
+        "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
         "${SemanticAttributes.HTTP_USER_AGENT.key}" TEST_USER_AGENT
       }
     }

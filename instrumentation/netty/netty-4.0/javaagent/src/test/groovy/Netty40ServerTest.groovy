@@ -120,6 +120,6 @@ class Netty40ServerTest extends HttpServerTest<EventLoopGroup> implements AgentT
 
   @Override
   String expectedServerSpanName(ServerEndpoint endpoint) {
-    return "netty.request"
+    return "HTTP GET"
   }
 }
