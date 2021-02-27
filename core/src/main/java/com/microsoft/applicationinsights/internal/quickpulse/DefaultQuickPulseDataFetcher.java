@@ -75,7 +75,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         formatDocuments(sb);
         sb.append("\"Instance\": \"").append(instanceName).append("\",");
         sb.append("\"InstrumentationKey\": \"").append(ikey).append("\",");
-        sb.append("\"InvariantVersion\": 1,");
+        sb.append("\"InvariantVersion\": ").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
         sb.append("\"MachineName\": \"").append(machineName).append("\",");
         sb.append("\"RoleName\": ").append(roleName).append(",");
         sb.append("\"StreamId\": \"").append(quickPulseId).append("\",");

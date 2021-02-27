@@ -73,7 +73,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
                 "\"Documents\": null," +
                 "\"Instance\":\"" + instanceName + "\"," +
                 "\"InstrumentationKey\": null," +
-                "\"InvariantVersion\": 2," +
+                "\"InvariantVersion\": " + QuickPulse.QP_INVARIANT_VERSION + "," +
                 "\"MachineName\":\"" + machineName + "\"," +
                 "\"RoleName\":" + roleName + "," +
                 "\"Metrics\": null," +

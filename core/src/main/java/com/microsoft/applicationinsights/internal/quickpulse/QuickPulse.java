@@ -44,6 +44,7 @@ import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 public enum QuickPulse implements Stoppable {
     INSTANCE;
 
+    public static final Integer QP_INVARIANT_VERSION = 1;
     private volatile boolean initialized = false;
     private Thread thread;
     private Thread senderThread;
