@@ -36,7 +36,6 @@ public final class RemoteDependencyTelemetryTest {
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
         assertNull(telemetry.getStdDev());
-        assertEquals("Other", telemetry.getType());
         assertTrue(telemetry.getProperties().isEmpty());
     }
 
@@ -49,7 +48,6 @@ public final class RemoteDependencyTelemetryTest {
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
         assertNull(telemetry.getStdDev());
-        assertEquals("Other", telemetry.getType());
         assertTrue(telemetry.getProperties().isEmpty());
     }
 
@@ -139,13 +137,5 @@ public final class RemoteDependencyTelemetryTest {
 
         telemetry.setStdDev(new Double(1));
         telemetry.getStdDev();
-    }
-
-    @Test
-    public void testDependencyType() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
-
-        telemetry.setType("Http");
-        assertEquals("Http", telemetry.getType());
     }
 }
