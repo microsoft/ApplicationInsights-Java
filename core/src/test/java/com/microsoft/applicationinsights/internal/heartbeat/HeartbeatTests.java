@@ -287,30 +287,6 @@ public class HeartbeatTests {
   }
 
   @Test
-  public void canSetPropertyWithoutAddingItFirst() {
-    HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(null);
-    Assert.assertTrue(provider.setHeartBeatProperty("test01", "test val", true));
-    Assert.assertTrue(provider.setHeartBeatProperty("test01", "test val", true));
-  }
-
-  @Test
-  public void cannotSetValueOfDefaultPayloadProperties() throws Exception {
-    HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(null);
-    DefaultHeartBeatPropertyProvider defaultBase = new DefaultHeartBeatPropertyProvider();
-
-    //for callable to complete
-    Thread.sleep(100);
-    Field field = defaultBase.getClass().getDeclaredField("defaultFields");
-    field.setAccessible(true);
-    Set<String> defaultFields = (Set<String>)field.get(defaultBase);
-    for (String key : defaultFields) {
-      Assert.assertFalse(provider.setHeartBeatProperty(key, "test", true));
-    }
-  }
-
-  @Test
   public void cannotAddUnknownDefaultProperty() throws Exception {
     DefaultHeartBeatPropertyProvider base = new DefaultHeartBeatPropertyProvider();
     String testKey = "testKey";
