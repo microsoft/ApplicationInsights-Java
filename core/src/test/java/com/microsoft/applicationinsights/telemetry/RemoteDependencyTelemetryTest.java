@@ -32,10 +32,6 @@ public final class RemoteDependencyTelemetryTest {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
 
         assertNull(telemetry.getName());
-        assertNull(telemetry.getCount());
-        assertNull(telemetry.getMin());
-        assertNull(telemetry.getMax());
-        assertNull(telemetry.getStdDev());
         assertTrue(telemetry.getProperties().isEmpty());
     }
 
@@ -44,10 +40,6 @@ public final class RemoteDependencyTelemetryTest {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
         assertEquals("MockName", telemetry.getName());
-        assertNull(telemetry.getCount());
-        assertNull(telemetry.getMin());
-        assertNull(telemetry.getMax());
-        assertNull(telemetry.getStdDev());
         assertTrue(telemetry.getProperties().isEmpty());
     }
 
@@ -65,10 +57,6 @@ public final class RemoteDependencyTelemetryTest {
         assertEquals(duration, telemetry.getDuration());
         assertEquals(success, telemetry.getSuccess());
 
-        assertNull(telemetry.getCount());
-        assertNull(telemetry.getMin());
-        assertNull(telemetry.getMax());
-        assertNull(telemetry.getStdDev());
         assertTrue(telemetry.getProperties().isEmpty());
     }
 
@@ -105,37 +93,5 @@ public final class RemoteDependencyTelemetryTest {
 
         telemetry.setName("MockName1");
         assertEquals("MockName1", telemetry.getName());
-    }
-
-    @Test
-    public void getAndSetCountDoNotThrow() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
-
-        telemetry.setCount(new Integer(1));
-        telemetry.getCount();
-    }
-
-    @Test
-    public void getAndSetMinDoNotThrow() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
-
-        telemetry.setMin(new Double(1));
-        telemetry.getMin();
-    }
-
-    @Test
-    public void getAndSetMaxDoNotThrow() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
-
-        telemetry.setMax(new Double(1));
-        telemetry.getMax();
-    }
-
-    @Test
-    public void getAndSetStdDevDoNotThrow() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
-
-        telemetry.setStdDev(new Double(1));
-        telemetry.getStdDev();
     }
 }

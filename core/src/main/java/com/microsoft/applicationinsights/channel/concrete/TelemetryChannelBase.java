@@ -28,7 +28,6 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
-import com.microsoft.applicationinsights.internal.channel.TransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
@@ -67,7 +66,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     public static final int LOG_TELEMETRY_ITEMS_MODULUS = 10000;
     public static final String THROTTLING_ENABLED_NAME = "Throttling";
 
-    private TransmitterFactory transmitterFactory;
+    private ConfiguredTransmitterFactory<T> transmitterFactory;
     private AtomicLong itemsSent = new AtomicLong(0);
 
     protected boolean isInitailized = false;
@@ -82,67 +81,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     public TelemetryChannelBase(TelemetryConfiguration configuration) {
         initialize(configuration, null, null, Boolean.getBoolean(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME),
                 createDefaultMaxTelemetryBufferCapacityEnforcer(null), createDefaultSendIntervalInSecondsEnforcer(null), true, DEFAULT_MAX_INSTANT_RETRY);
-    }
-
-    /**
-     * @param configuration The telemetry configuration to use for finding endpoints.
-     * @param maxTransmissionStorageCapacity This limits the size of the saved telemetry files which encountered an error during sending.
-     * @param developerMode 'non-production' mode for easier debugging. This forces maxTelemetryBufferCapacity=1 and when logger is enabled, it prints serialized telemetry to log.
-     * @param maxTelemetryBufferCapacity Max number of Telemetries we keep in the buffer, when reached we will send the buffer Note, value should be between TRANSMIT_BUFFER_MIN_TIMEOUT_IN_MILLIS and
-     *                                   TRANSMIT_BUFFER_MAX_TIMEOUT_IN_MILLIS, inclusive
-     * @param sendIntervalInMillis The maximum number of milliseconds to wait before we send the buffer Note, value should be between MIN_MAX_TELEMETRY_BUFFER_CAPACITY and MAX_MAX_TELEMETRY_BUFFER_CAPACITY, inclusive
-     * @param throttling enables throttling when true
-     * @param maxInstantRetries number of retries before starting incremental back-off.
-     */
-    public TelemetryChannelBase(TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis, boolean throttling, int maxInstantRetries) {
-        initialize(configuration, null, maxTransmissionStorageCapacity, developerMode, createDefaultMaxTelemetryBufferCapacityEnforcer(maxTelemetryBufferCapacity),
-                createDefaultSendIntervalInSecondsEnforcer(sendIntervalInMillis), throttling, maxInstantRetries);
-    }
-
-    /**
-     * @deprecated Use {@link #TelemetryChannelBase(TelemetryConfiguration)}
-     */
-    @Deprecated
-    public TelemetryChannelBase() {
-        initialize(null,
-                null,
-                null,
-                Boolean.getBoolean(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME),
-                createDefaultMaxTelemetryBufferCapacityEnforcer(null),
-                createDefaultSendIntervalInSecondsEnforcer(null),
-                true,
-                DEFAULT_MAX_INSTANT_RETRY);
-    }
-
-    /**
-     * @deprecated Use {@link #TelemetryChannelBase(TelemetryConfiguration, String, boolean, int, int, boolean, int)}. Use {@link TelemetryConfiguration#setConnectionString(String)} to set ingestion endpoint, if needed.
-     */
-    @Deprecated
-    public TelemetryChannelBase(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis) {
-        this(endpointAddress, null, developerMode, maxTelemetryBufferCapacity, sendIntervalInMillis, true, DEFAULT_MAX_INSTANT_RETRY);
-    }
-
-    /**
-     * @deprecated Use {@link #TelemetryChannelBase(TelemetryConfiguration, String, boolean, int, int, boolean, int)}. Use {@link TelemetryConfiguration#setConnectionString(String)} to set ingestion endpoint, if needed.
-     */
-    @Deprecated
-    public TelemetryChannelBase(String endpointAddress, String maxTransmissionStorageCapacity, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis, boolean throttling, int maxInstantRetries) {
-        initialize(null,
-                endpointAddress,
-                maxTransmissionStorageCapacity,
-                developerMode,
-                createDefaultMaxTelemetryBufferCapacityEnforcer(maxTelemetryBufferCapacity),
-                createDefaultSendIntervalInSecondsEnforcer(sendIntervalInMillis),
-                throttling,
-                maxInstantRetries);
-    }
-
-    /**
-     * @deprecated Use {@link #TelemetryChannelBase(TelemetryConfiguration, Map)}.
-     */
-    @Deprecated
-    public TelemetryChannelBase(Map<String, String> namesAndValues) {
-        this(null, namesAndValues);
     }
 
     /**
@@ -191,16 +129,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
                 maxInstantRetries);
     }
 
-    /**
-     * @deprecated Use {@link #initialize(TelemetryConfiguration, String, String, boolean, LimitsEnforcer, LimitsEnforcer, boolean, int)}
-     */
-    @Deprecated
-    protected synchronized void initialize(String endpointAddress, String maxTransmissionStorageCapacity,
-                                       boolean developerMode, LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
-                                       LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
-        initialize(null, endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds, throttling, maxInstantRetry);
-    }
-
     protected synchronized void initialize(TelemetryConfiguration configuration, String endpointAddress, String maxTransmissionStorageCapacity,
                                            boolean developerMode, LimitsEnforcer maxTelemetryBufferCapacityEnforcer,
                                            LimitsEnforcer sendIntervalInSeconds, boolean throttling, int maxInstantRetry) {
@@ -210,19 +138,15 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         makeSureEndpointAddressIsValid(endpointAddress);
 
         this.configuration = configuration;
-        final TransmitterFactory<T> transmitterFactory = getTransmitterFactory();
-        if (transmitterFactory instanceof ConfiguredTransmitterFactory && endpointAddress == null) {
-            telemetriesTransmitter = ((ConfiguredTransmitterFactory<T>) transmitterFactory).create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
-        } else {
-            telemetriesTransmitter = transmitterFactory.create(endpointAddress, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
-        }
+        final ConfiguredTransmitterFactory<T> transmitterFactory = getTransmitterFactory();
+        telemetriesTransmitter = transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
         telemetryBuffer = new TelemetryBuffer<>(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
 
         setDeveloperMode(developerMode);
         isInitailized = true;
     }
 
-    protected synchronized TransmitterFactory<T> getTransmitterFactory() {
+    protected synchronized ConfiguredTransmitterFactory<T> getTransmitterFactory() {
         if (transmitterFactory == null) {
             transmitterFactory = createTransmitterFactory();
         }
@@ -333,7 +257,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         logger.trace("{} sending telemetry: {}", this.getClass().getSimpleName(), telemetry.toString());
     }
 
-    protected abstract TransmitterFactory<T> createTransmitterFactory();
+    protected abstract ConfiguredTransmitterFactory<T> createTransmitterFactory();
 
     protected LimitsEnforcer createDefaultMaxTelemetryBufferCapacityEnforcer(Integer currentValue) {
         return LimitsEnforcer.createWithClosestLimitOnError(

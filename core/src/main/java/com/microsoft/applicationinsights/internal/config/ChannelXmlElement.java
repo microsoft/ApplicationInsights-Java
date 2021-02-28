@@ -33,8 +33,6 @@ import com.microsoft.applicationinsights.internal.config.connection.EndpointProv
  */
 public class ChannelXmlElement {
 
-    private String endpointAddress;
-
     private String maxTelemetryBufferCapacity;
 
     private String flushIntervalInSeconds;
@@ -57,28 +55,12 @@ public class ChannelXmlElement {
         this.type = type;
     }
 
-    /**
-     * @deprecated Use {@link TelemetryConfiguration#getEndpointProvider()} and {@link EndpointProvider#getIngestionEndpoint()}.
-     */
-    @Deprecated
-    public String getEndpointAddress() {
-        return endpointAddress;
-    }
-
     public void setThrottling(boolean throttling) {
         this.throttling = throttling;
     }
 
     public boolean getThrottling() {
         return throttling;
-    }
-
-    /**
-     * @deprecated Use {@link TelemetryConfiguration#setConnectionString(String)}.
-     */
-    @Deprecated
-    public void setEndpointAddress(String endpointAddress) {
-        this.endpointAddress = endpointAddress;
     }
 
     public boolean getDeveloperMode() {
@@ -105,14 +87,6 @@ public class ChannelXmlElement {
         this.flushIntervalInSeconds = flushIntervalInSeconds;
     }
 
-    /**
-     * @deprecated Use {@link #getMaxTransmissionStorageFilesCapacityInMB()}
-     */
-    @Deprecated
-    public String isMaxTransmissionStorageFilesCapacityInMB() {
-        return maxTransmissionStorageFilesCapacityInMB;
-    }
-
     public String getMaxTransmissionStorageFilesCapacityInMB() {
         return maxTransmissionStorageFilesCapacityInMB;
     }
@@ -134,11 +108,6 @@ public class ChannelXmlElement {
         if (developerMode) {
             data.put("DeveloperMode", "true");
         }
-
-        if (!Strings.isNullOrEmpty(endpointAddress)) {
-            data.put("EndpointAddress", endpointAddress);
-        }
-
 
         if (!Strings.isNullOrEmpty(maxTelemetryBufferCapacity)) {
             data.put("MaxTelemetryBufferCapacity", maxTelemetryBufferCapacity);

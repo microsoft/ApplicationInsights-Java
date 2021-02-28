@@ -47,19 +47,6 @@ import javax.annotation.Nullable;
  * Created by gupele on 1/15/2015.
  */
 final class InProcessTelemetryTransmitterFactory implements ConfiguredTransmitterFactory {
-    @Deprecated
-    @Override
-    public TelemetriesTransmitter create(@Nullable String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
-        final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);
-        transmissionPolicyManager.addTransmissionHandler(new ErrorHandler(transmissionPolicyManager));
-        transmissionPolicyManager.addTransmissionHandler(new PartialSuccessHandler(transmissionPolicyManager));
-        transmissionPolicyManager.addTransmissionHandler(new ThrottlingHandler(transmissionPolicyManager));
-        transmissionPolicyManager.setMaxInstantRetries(maxInstantRetries);
-        // An active object with the network sender
-        TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(endpoint, transmissionPolicyManager);
-
-        return finishTransmitterConstruction(maxTransmissionStorageCapacity, transmissionPolicyManager, actualNetworkSender);
-    }
 
     @Override
     public TelemetriesTransmitter create(TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {

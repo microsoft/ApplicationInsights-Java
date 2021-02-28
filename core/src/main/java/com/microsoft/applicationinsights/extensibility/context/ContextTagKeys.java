@@ -308,40 +308,6 @@ public class ContextTagKeys
     }
 
     /**
-     * @return current value of DeviceRoleName property
-     * @deprecated use {@link #getCloudRole()}
-     */
-    @Deprecated
-    public final String getDeviceRoleName() {
-        return this.DeviceRoleName;
-    }
-
-    /**
-     * @param value new value of DeviceRoleName property
-     */
-    @Deprecated
-    public final void setDeviceRoleName(String value) {
-        this.DeviceRoleName = value;
-    }
-
-    /**
-     * @return current value of DeviceRoleInstance property
-     * @deprecated use {@link #getCloudRoleInstance()}
-     */
-    @Deprecated
-    public final String getDeviceRoleInstance() {
-        return this.DeviceRoleInstance;
-    }
-
-    /**
-     * @param value new value of DeviceRoleInstance property
-     */
-    @Deprecated
-    public final void setDeviceRoleInstance(String value) {
-        this.DeviceRoleInstance = value;
-    }
-
-    /**
      * @return current value of DeviceOEMName property
      */
     public final String getDeviceOEMName() {

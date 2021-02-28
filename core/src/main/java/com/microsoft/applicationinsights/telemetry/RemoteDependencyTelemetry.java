@@ -34,8 +34,6 @@ import java.util.Map;
  */
 public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<RemoteDependencyData> {
 
-    private static final Logger logger = LoggerFactory.getLogger(RemoteDependencyTelemetry.class);
-
     private Double samplingPercentage;
     private final RemoteDependencyData data;
 
@@ -126,85 +124,6 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
      * @param commandName The command name.
      */
     public void setCommandName(String commandName) { this.data.setData(commandName); }
-
-    /**
-     * @deprecated
-     * Gets the Count property.
-     * @return Count property.
-     */
-    @Deprecated
-    public Integer getCount() {
-        return null;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Count property.
-     * @param value Count property.
-     */
-    @Deprecated
-    public void setCount(Integer value) {
-        //do nothing as this property is no longer in use
-    }
-
-    /**
-     * @deprecated
-     * Gets the Min property.
-     * @return Min property.
-     */
-    @Deprecated
-    public Double getMin() {
-        return null;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Min property.
-     * @param value Min property.
-     */
-    @Deprecated
-    public void setMin(Double value) {
-
-    }
-
-    /**
-     * @deprecated
-     * Gets the Max property.
-     * @return Max property.
-     */
-    @Deprecated
-    public Double getMax() {
-        return null;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Max property.
-     * @param value Max property.
-     */
-    @Deprecated
-    public void setMax(Double value) {
-
-    }
-
-    /**
-     * @deprecated
-     * Gets the Standard Deviation property.
-     * @return Standard Deviation property.
-     */
-    @Deprecated
-    public Double getStdDev() {
-        return null;
-    }
-
-    /**
-     * @deprecated
-     * Sets the StdDev property.
-     * @param value Standard Deviation property.
-     */
-    @Deprecated
-    public void setStdDev(Double value) {
-    }
 
     /**
      * Gets the Type property.

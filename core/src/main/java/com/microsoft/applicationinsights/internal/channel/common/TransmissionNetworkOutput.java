@@ -82,31 +82,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
     private TransmissionPolicyManager transmissionPolicyManager;
 
-    /**
-     * Creates an instance of the network transmission class.
-     *
-     * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.
-     * @return
-     * @deprecated Use {@link #create(TelemetryConfiguration, TransmissionPolicyManager)}
-     */
-    @Deprecated
-    public static TransmissionNetworkOutput create(TransmissionPolicyManager transmissionPolicyManager) {
-        return new TransmissionNetworkOutput(null, null, transmissionPolicyManager);
-    }
-
-    /**
-     * Creates an instance of the network transmission class.
-     *
-     * @param endpoint The HTTP endpoint to send our telemetry too.
-     * @param transmissionPolicyManager The transmission policy used to mark this sender active or blocked.
-     * @return
-     * @deprecated Use {@link #create(TelemetryConfiguration, TransmissionPolicyManager)}
-     */
-    @Deprecated
-    public static TransmissionNetworkOutput create(@Nullable String endpoint, TransmissionPolicyManager transmissionPolicyManager) {
-        return new TransmissionNetworkOutput(endpoint, null, transmissionPolicyManager);
-    }
-
     public static TransmissionNetworkOutput create(TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
         return new TransmissionNetworkOutput(null, configuration, transmissionPolicyManager);
     }

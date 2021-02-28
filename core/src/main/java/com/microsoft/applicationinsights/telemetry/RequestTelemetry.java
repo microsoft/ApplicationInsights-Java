@@ -255,26 +255,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
         data.setUrl(url);
     }
 
-    /**
-     * @deprecated
-     * Gets the HTTP method of the request.
-     * @return The HTTP method
-     */
-    @Deprecated
-    public String getHttpMethod() {
-        return httpMethod;
-    }
-
-    /**
-     * @deprecated
-     * Sets the HTTP method of the request.
-     * @param httpMethod The HTTP method
-     */
-    @Deprecated
-    public void setHttpMethod(String httpMethod) {
-        this.httpMethod = httpMethod;
-    }
-
     @Override
     public Double getSamplingPercentage() {
         return samplingPercentage;

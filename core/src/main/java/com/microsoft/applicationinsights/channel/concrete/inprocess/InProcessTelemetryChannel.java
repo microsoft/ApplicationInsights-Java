@@ -58,35 +58,8 @@ public final class InProcessTelemetryChannel extends TelemetryChannelBase<Teleme
         super(configuration);
     }
 
-    public InProcessTelemetryChannel(TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis, boolean throttling, int maxInstantRetries) {
-        super(configuration, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacity, sendIntervalInMillis, throttling, maxInstantRetries);
-    }
-
     public InProcessTelemetryChannel(TelemetryConfiguration configuration, Map<String, String> channelConfig) {
         super(configuration, channelConfig);
-    }
-
-    @Deprecated
-    public InProcessTelemetryChannel() {
-        super();
-    }
-
-    @Deprecated
-    public InProcessTelemetryChannel(String endpointAddress, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis) {
-        super(endpointAddress, developerMode, maxTelemetryBufferCapacity, sendIntervalInMillis);
-    }
-
-    @Deprecated
-    public InProcessTelemetryChannel(String endpointAddress, String maxTransmissionStorageCapacity, boolean developerMode, int maxTelemetryBufferCapacity, int sendIntervalInMillis, boolean throttling, int maxInstantRetries) {
-        super(endpointAddress, maxTransmissionStorageCapacity, developerMode, maxTelemetryBufferCapacity, sendIntervalInMillis, throttling, maxInstantRetries);
-    }
-
-    /**
-     * @deprecated Use {@link #InProcessTelemetryChannel(TelemetryConfiguration, Map)}
-     */
-    @Deprecated
-    public InProcessTelemetryChannel(Map<String, String> namesAndValues) {
-        super(namesAndValues);
     }
 
     @Override
