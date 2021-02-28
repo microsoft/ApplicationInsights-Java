@@ -98,26 +98,6 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     }
 
     /**
-     * @deprecated
-     * Gets the value indicated where the exception was handled.
-     * @return The value indicating the exception
-     */
-    @Deprecated
-    public ExceptionHandledAt getExceptionHandledAt() {
-        return ExceptionHandledAt.Unhandled;
-    }
-
-    /**
-     * @deprecated
-     * Sets the value indicated where the exception was handled.
-     * @param value The value indicating the exception
-     */
-    @Deprecated
-    public void setExceptionHandledAt(ExceptionHandledAt value) {
-
-    }
-
-    /**
      * Gets a map of application-defined exception metrics.
      * The metrics appear along with the exception in Analytics, but under Custom Metrics in Metrics Explorer.
      * @return The map of metrics

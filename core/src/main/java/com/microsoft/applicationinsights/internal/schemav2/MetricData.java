@@ -101,14 +101,6 @@ public class MetricData extends Domain
     }
 
     /**
-     * Sets the Properties property.
-     */
-    public void setProperties(ConcurrentMap<String, String> value) {
-        this.properties = value;
-    }
-
-
-    /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
      */

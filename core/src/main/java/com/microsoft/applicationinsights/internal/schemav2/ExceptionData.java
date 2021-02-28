@@ -161,14 +161,6 @@ public class ExceptionData extends Domain
     }
 
     /**
-     * Sets the Measurements property.
-     */
-    public void setMeasurements(ConcurrentMap<String, Double> value) {
-        this.measurements = value;
-    }
-
-
-    /**
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
      */
