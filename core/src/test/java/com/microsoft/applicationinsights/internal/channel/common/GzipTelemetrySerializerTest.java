@@ -85,10 +85,6 @@ public final class GzipTelemetrySerializerTest {
         }
 
         @Override
-        public void sanitize() {
-        }
-
-        @Override
         public boolean equals(Object other) {
             if (this == other) {
                 return true;

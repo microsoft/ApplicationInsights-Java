@@ -139,17 +139,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     }
 
     /**
-     * @deprecated
-     * Makes sure the data to send is sanitized from bad chars, proper length etc.
-     */
-    @Override
-    @Deprecated
-    public void sanitize() {
-        Sanitizer.sanitizeProperties(this.getProperties());
-        additionalSanitize();
-    }
-
-    /**
      * Serializes this object in JSON format.
      *
      * @param writer The writer that helps with serializing into Json format
@@ -208,12 +197,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     public void markUsed() {
         used = true;
     }
-
-    /**
-     * Concrete classes should implement this method
-     */
-    @Deprecated
-    protected abstract void additionalSanitize();
 
     /**
      * Concrete classes should implement this method which supplies the

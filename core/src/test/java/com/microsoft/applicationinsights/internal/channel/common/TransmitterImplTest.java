@@ -161,11 +161,6 @@ public final class TransmitterImplTest {
                     }
 
                     @Override
-                    public void sanitize() {
-
-                    }
-
-                    @Override
                     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
 
                     }
@@ -248,11 +243,6 @@ public final class TransmitterImplTest {
                     @Override
                     public Map<String, String> getProperties() {
                         return null;
-                    }
-
-                    @Override
-                    public void sanitize() {
-
                     }
 
                     @Override

@@ -291,15 +291,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     }
 
     @Override
-    @Deprecated
-    protected void additionalSanitize() {
-        data.setName(Sanitizer.sanitizeName(data.getName()));
-        data.setId(Sanitizer.sanitizeName(data.getId()));
-        Sanitizer.sanitizeMeasurements(getMetrics());
-        Sanitizer.sanitizeUri(data.getUrl());
-    }
-
-    @Override
     protected RequestData getData() {
         return data;
     }

@@ -180,12 +180,6 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
         metric.setStdDev(value); updateKind();
     }
 
-    @Deprecated
-    @Override
-    protected void additionalSanitize() {
-        metric.setName(Sanitizer.sanitizeName(metric.getName()));
-    }
-
     @Override
     protected MetricData getData() {
         return data;

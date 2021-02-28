@@ -98,17 +98,6 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
     }
 
     /**
-     * @deprecated
-     * Sanitize name and metrics.
-     */
-    @Override
-    @Deprecated
-    protected void additionalSanitize() {
-        data.setName(Sanitizer.sanitizeName(data.getName()));
-        Sanitizer.sanitizeMeasurements(this.getMetrics());
-    }
-
-    /**
      * Fetches the data structure the instance works with
      *
      * @return The inner data structure.

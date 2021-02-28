@@ -289,12 +289,6 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     }
 
     @Override
-    @Deprecated
-    protected void additionalSanitize() {
-        data.setName(Sanitizer.sanitizeName(data.getName()));
-    }
-
-    @Override
     protected RemoteDependencyData getData() {
         return data;
     }

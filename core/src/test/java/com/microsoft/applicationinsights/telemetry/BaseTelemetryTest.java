@@ -63,11 +63,6 @@ public final class BaseTelemetryTest {
         }
 
         @Override
-        protected void additionalSanitize() {
-            ++numberOfCallsToAdditionalSanitize;
-        }
-
-        @Override
         protected StubDomainData getData() {
             return null;
         }
