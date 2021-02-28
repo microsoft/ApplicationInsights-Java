@@ -33,10 +33,6 @@ public class PerformanceCounterJvmSectionXmlElement {
 
     private boolean enabled = true;
 
-    public ArrayList<JvmXmlElement> getJvmXmlElements() {
-        return jvmXmlElements;
-    }
-
     public void setJvmXmlElements(ArrayList<JvmXmlElement> jvmXmlElements) {
         this.jvmXmlElements = jvmXmlElements;
     }

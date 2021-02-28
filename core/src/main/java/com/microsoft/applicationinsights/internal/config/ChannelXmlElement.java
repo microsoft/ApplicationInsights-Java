@@ -59,44 +59,20 @@ public class ChannelXmlElement {
         this.throttling = throttling;
     }
 
-    public boolean getThrottling() {
-        return throttling;
-    }
-
-    public boolean getDeveloperMode() {
-        return developerMode;
-    }
-
     public void setDeveloperMode(boolean developerMode) {
         this.developerMode = developerMode;
-    }
-
-    public String getMaxTelemetryBufferCapacity() {
-        return maxTelemetryBufferCapacity;
     }
 
     public void setMaxTelemetryBufferCapacity(String maxTelemetryBufferCapacity) {
         this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
     }
 
-    public String getFlushIntervalInSeconds() {
-        return flushIntervalInSeconds;
-    }
-
     public void setFlushIntervalInSeconds(String flushIntervalInSeconds) {
         this.flushIntervalInSeconds = flushIntervalInSeconds;
     }
 
-    public String getMaxTransmissionStorageFilesCapacityInMB() {
-        return maxTransmissionStorageFilesCapacityInMB;
-    }
-
     public void setMaxTransmissionStorageFilesCapacityInMB(String maxTransmissionStorageFilesCapacityInMB) {
         this.maxTransmissionStorageFilesCapacityInMB = maxTransmissionStorageFilesCapacityInMB;
-    }
-
-    public String getMaxInstantRetry() {
-        return maxInstantRetry;
     }
 
     public void setMaxInstantRetry(String maxInstantRetry) {

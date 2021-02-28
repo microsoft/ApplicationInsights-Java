@@ -76,8 +76,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
 
     private boolean developerMode = false;
 
-    private TelemetryConfiguration configuration;
-
     public TelemetryChannelBase(TelemetryConfiguration configuration) {
         initialize(configuration, null, null, Boolean.getBoolean(DEVELOPER_MODE_SYSTEM_PROPRETY_NAME),
                 createDefaultMaxTelemetryBufferCapacityEnforcer(null), createDefaultSendIntervalInSecondsEnforcer(null), true, DEFAULT_MAX_INSTANT_RETRY);
@@ -137,7 +135,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         }
         makeSureEndpointAddressIsValid(endpointAddress);
 
-        this.configuration = configuration;
         final ConfiguredTransmitterFactory<T> transmitterFactory = getTransmitterFactory();
         telemetriesTransmitter = transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
         telemetryBuffer = new TelemetryBuffer<>(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
