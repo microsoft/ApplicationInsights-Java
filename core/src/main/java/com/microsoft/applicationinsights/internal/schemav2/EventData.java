@@ -101,13 +101,6 @@ public class EventData extends Domain
     }
 
     /**
-     * Sets the Properties property.
-     */
-    public void setProperties(ConcurrentMap<String, String> value) {
-        this.properties = value;
-    }
-
-    /**
      * Gets the Measurements property.
      */
     public ConcurrentMap<String, Double> getMeasurements() {

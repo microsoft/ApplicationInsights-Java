@@ -28,15 +28,6 @@ import com.microsoft.applicationinsights.internal.util.MapUtil;
 public final class DeviceContext {
     private final ConcurrentMap<String, String> tags;
 
-    String getType()
-    {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceType());
-    }
-
-    public void setType(String type) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceType(), type);
-    }
-
     public String getId() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceId());
     }

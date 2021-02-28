@@ -35,12 +35,7 @@ import java.util.concurrent.ConcurrentMap;
  * Data contract class Envelope.
  */
 public class Envelope
-    implements JsonSerializable
 {
-    /**
-     * Backing field for property Ver.
-     */
-    private int ver = 1;
 
     /**
      * Backing field for property Name.
@@ -81,27 +76,6 @@ public class Envelope
     }
 
     /**
-     * Gets the Ver property.
-     */
-    public int getVer() {
-        return this.ver;
-    }
-
-    /**
-     * Sets the Ver property.
-     */
-    public void setVer(int value) {
-        this.ver = value;
-    }
-
-    /**
-     * Gets the Name property.
-     */
-    public String getName() {
-        return this.name;
-    }
-
-    /**
      * Sets the Name property.
      */
     public void setName(String value) {
@@ -109,24 +83,10 @@ public class Envelope
     }
 
     /**
-     * Gets the Time property.
-     */
-    public String getTime() {
-        return this.time;
-    }
-
-    /**
      * Sets the Time property.
      */
     public void setTime(String value) {
         this.time = value;
-    }
-
-    /**
-     * Gets the SampleRate property.
-     */
-    public double getSampleRate() {
-        return this.sampleRate;
     }
 
     /**
@@ -186,7 +146,6 @@ public class Envelope
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
      */
-    @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException
     {
         Preconditions.checkNotNull(writer, "writer must be a non-null value");
@@ -199,7 +158,7 @@ public class Envelope
      */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
-        writer.write("ver", ver);
+        writer.write("ver", 1);
         writer.writeRequired("name", name, 1024);
         writer.writeRequired("time", time, 64);
         if (this.sampleRate > 0.0d) {
