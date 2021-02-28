@@ -70,13 +70,6 @@ public class MetricData extends Domain
     }
 
     /**
-     * Sets the Metrics property.
-     */
-    public void setMetrics(List<DataPoint> value) {
-        this.metrics = value;
-    }
-
-    /**
      * Gets the Properties property.
      */
     public ConcurrentMap<String, String> getProperties() {

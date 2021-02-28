@@ -217,19 +217,6 @@ public final class PerformanceCounterContainerTest {
         PerformanceCounterContainer.INSTANCE.register(createMockPerformanceCounter(badId));
     }
 
-    private static PerformanceCounter createMockPerformanceStub(final String id) {
-        return new PerformanceCounter() {
-            @Override
-            public String getId() {
-                return id;
-            }
-
-            @Override
-            public void report(TelemetryClient telemetryClient) {
-            }
-        };
-    }
-
     private static PerformanceCounter createMockPerformanceCounter(String id) {
         PerformanceCounter mockPerformanceCounter = Mockito.mock(PerformanceCounter.class);
         Mockito.doReturn(id).when(mockPerformanceCounter).getId();

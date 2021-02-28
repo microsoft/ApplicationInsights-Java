@@ -200,9 +200,4 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     public String getBaseTypeName() {
         return BASE_TYPE;
     }
-
-    public DataPointType getKind() {
-        return metric.getKind();
-    }
-
 }

@@ -211,10 +211,6 @@ public class PeriodicTaskPool {
             return unit;
         }
 
-        public String getTaskId() {
-            return taskId;
-        }
-
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;

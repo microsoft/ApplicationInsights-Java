@@ -33,18 +33,6 @@ public class PartialSuccessHandler implements TransmissionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(PartialSuccessHandler.class);
 
-    /**
-     * Ctor
-     *
-     * Constructs the PartialSuccessHandler object.
-     *
-     * @param policy
-     *            The {@link TransmissionPolicyManager} object that is needed to
-     *            control the back off policy.
-     */
-    public PartialSuccessHandler(TransmissionPolicyManager policy) {
-    }
-
     @Override
     public void onTransmissionSent(TransmissionHandlerArgs args) {
         validateTransmissionAndSend(args);
@@ -154,27 +142,6 @@ public class PartialSuccessHandler implements TransmissionHandler {
             }
         }
         return originalItems;
-    }
-
-    /**
-     * Sends a new transmission generated from the failed attempts from the original
-     * request.
-     *
-     * @param args
-     *            The {@link TransmissionHandlerArgs} object that contains the
-     *            {@link TransmissionDispatcher}
-     * @param newTransmission
-     *            The {@link List} of items to resent
-     * @return A pass/fail response
-     */
-    boolean sendNewTransmission(TransmissionHandlerArgs args, List<Telemetry> newTransmission) {
-        if (!newTransmission.isEmpty()) {
-            GzipTelemetrySerializer serializer = new GzipTelemetrySerializer();
-            Optional<Transmission> newT = serializer.serialize(newTransmission);
-            args.getTransmissionDispatcher().dispatch(newT.get());
-            return true;
-        }
-        return false;
     }
 
     boolean sendNewTransmissionFromStrings(TransmissionHandlerArgs args, List<String> newTransmission) {

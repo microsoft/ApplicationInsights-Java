@@ -21,31 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public final class ProcessCpuPerformanceCounterTest {
-    private static final class TelemetryClassStub extends TelemetryClient {
-        private final PerformanceCounter performanceCounter;
-
-        public TelemetryClassStub(PerformanceCounter performanceCounter) {
-            this.performanceCounter = performanceCounter;
-        }
-
-        public void track(Telemetry telemetry) {
-            if (!(telemetry instanceof MetricTelemetry)) {
-                assertFalse(true);
-            }
-
-            MetricTelemetry pct = (MetricTelemetry) telemetry;
-            assertEquals(Constants.PROCESS_MEM_PC_METRICS_NAME, pct.getName());
-        }
-    }
-
     @Test
     public void testGetId() {
         ProcessCpuPerformanceCounter pc = new ProcessCpuPerformanceCounter();

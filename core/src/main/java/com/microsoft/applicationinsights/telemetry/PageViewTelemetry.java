@@ -94,10 +94,6 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
         return result;
     }
 
-    public String getUrlString() {
-        return getData().getUrl();
-    }
-
     /**
      * Sets the page view Uri.
      * @param url The page view Uri.
@@ -153,9 +149,5 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     @Override
     public String getBaseTypeName() {
         return BASE_TYPE;
-    }
-
-    public Duration getDurationObject() {
-        return getData().getDuration();
     }
 }

@@ -67,8 +67,8 @@ public class PeriodicRunnableTaskPoolTests {
                 0, 1, TimeUnit.SECONDS, "Test");
         PeriodicTaskPool.PeriodicRunnableTask periodicRunnableTask2 = PeriodicTaskPool.PeriodicRunnableTask.createTask(new DoNothingRunnable(),
                 0, 1, TimeUnit.SECONDS, "Test");
-        ScheduledFuture<?> future = taskPool.executePeriodicRunnableTask(periodicRunnableTask);
-        ScheduledFuture<?> future1 = taskPool.executePeriodicRunnableTask(periodicRunnableTask2);
+        taskPool.executePeriodicRunnableTask(periodicRunnableTask);
+        taskPool.executePeriodicRunnableTask(periodicRunnableTask2);
     }
 
     @Test
