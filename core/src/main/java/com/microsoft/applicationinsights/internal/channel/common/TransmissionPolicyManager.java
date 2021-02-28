@@ -34,7 +34,6 @@ import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerObserver;
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +49,7 @@ import org.slf4j.LoggerFactory;
  *
  * Created by gupele on 6/29/2015.
  */
-public final class TransmissionPolicyManager implements Stoppable, TransmissionHandlerObserver {
+public final class TransmissionPolicyManager implements TransmissionHandlerObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionPolicyManager.class);
 
@@ -156,7 +155,6 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
     /**
      * Stop this transmission thread from sending.
      */
-    @Override
     public synchronized void stop(long timeout, TimeUnit timeUnit) {
         ThreadPoolUtils.stop(threads, timeout, timeUnit);
         this.backoffManager.remove();

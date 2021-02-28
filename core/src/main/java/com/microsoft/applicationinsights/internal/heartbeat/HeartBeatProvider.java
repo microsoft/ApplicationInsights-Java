@@ -2,7 +2,6 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.apache.commons.lang3.StringUtils;
@@ -22,13 +21,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * <p>
  *  Concrete implementation of Heartbeat functionality. This class implements
- *  {@link com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface} and
- *  {@link com.microsoft.applicationinsights.internal.shutdown.Stoppable}
+ *  {@link com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface}
  * </p>
  *
  * @author Dhaval Doshi
  */
-public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable {
+public class HeartBeatProvider implements HeartBeatProviderInterface {
 
   private static final Logger logger = LoggerFactory.getLogger(HeartBeatProvider.class);
 
@@ -224,7 +222,6 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     return heartbeatProperties.containsKey(key);
   }
 
-  @Override
   public void stop(long timeout, TimeUnit timeUnit) {
     ThreadPoolUtils.stop(propertyUpdateService, timeout, timeUnit);
     ThreadPoolUtils.stop(heartBeatSenderService, timeout, timeUnit);

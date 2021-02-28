@@ -30,7 +30,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Created by gupele on 3/3/2015.
  */
-public enum PerformanceCounterContainer implements Stoppable {
+public enum PerformanceCounterContainer {
     INSTANCE;
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceCounterContainer.class);
