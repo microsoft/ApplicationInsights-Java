@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 import java.util.ArrayList;
 
 import com.microsoft.applicationinsights.internal.config.PerformanceCountersXmlElement;
-import com.microsoft.applicationinsights.internal.config.WindowsPerformanceCounterXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,13 +63,5 @@ public final class ProcessPerformanceCountersModule extends AbstractPerformanceC
             logger.error("Failed to initialize JNI connection.");
             return;
         }
-
-        ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs = configuration.getWindowsPCs();
-
-        if (windowsPCs == null || windowsPCs.isEmpty()) {
-            return;
-        }
-
-        throw new IllegalStateException("Custom performance counter metrics have been disabled for Java 3.0+ Agent.");
     }
 }

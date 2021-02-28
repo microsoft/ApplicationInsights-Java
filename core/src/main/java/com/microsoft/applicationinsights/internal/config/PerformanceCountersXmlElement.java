@@ -34,22 +34,12 @@ public class PerformanceCountersXmlElement {
 
     private JmxWrapperXmlElement jmxWrapper = new JmxWrapperXmlElement();
 
-    private WindowsPCWrapperXmlElement windowsPCWrapper = new WindowsPCWrapperXmlElement();
-
     public ArrayList<JmxXmlElement> getJmxXmlElements() {
         return jmxWrapper.jmxXmlElements;
     }
 
     public void setJmxXmlElements(ArrayList<JmxXmlElement> jmxXmlElements) {
         jmxWrapper.jmxXmlElements = jmxXmlElements;
-    }
-
-    public ArrayList<WindowsPerformanceCounterXmlElement> getWindowsPCs() {
-        return windowsPCWrapper.windowsPCs;
-    }
-
-    public void setWindowsPCs(ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs) {
-        windowsPCWrapper.windowsPCs = windowsPCs;
     }
 
     public long getCollectionFrequencyInSec() {
@@ -71,10 +61,5 @@ public class PerformanceCountersXmlElement {
     public static class JmxWrapperXmlElement {
 
         private ArrayList<JmxXmlElement> jmxXmlElements;
-    }
-
-    public static class WindowsPCWrapperXmlElement {
-
-        private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
     }
 }
