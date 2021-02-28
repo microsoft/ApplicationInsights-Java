@@ -47,10 +47,6 @@ public class AddTypeXmlElement {
         this.type = type;
     }
 
-    public void setParameters(ArrayList<ParamXmlElement> paramElements) {
-        this.paramElements = paramElements;
-    }
-
     public Map<String, String> getData() {
         Map<String, String> map = new HashMap<String, String>();
 

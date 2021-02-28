@@ -93,54 +93,12 @@ public final class DeviceContext {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceScreenResolution(), screenResolution);
     }
 
-    String getLocale() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceLocale());
-    }
-
-    public void setLocale(String locale) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceLocale(), locale);
-    }
-
     String getLanguage() {
         return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceLanguage());
     }
 
     public void setLanguage(String language) {
         MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceLanguage(), language);
-    }
-
-    /**
-     * @deprecated use {@link CloudContext#getRole()}
-     */
-    @Deprecated
-    String getRoleName()
-    {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceRoleName());
-    }
-
-    /**
-     * @deprecated use {@link CloudContext#setRole(String)}
-     */
-    @Deprecated
-    public void setRoleName(String roleName)
-    {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceRoleName(), roleName);
-    }
-
-    /**
-     * @deprecated use {@link CloudContext#getRoleInstance()}
-     */
-    @Deprecated
-    String getRoleInstance() {
-        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getDeviceRoleInstance());
-    }
-
-    /**
-     * @deprecated use {@link CloudContext#setRoleInstance(String)}
-     */
-    @Deprecated
-    public void setRoleInstance(String roleInstance) {
-        MapUtil.setStringValueOrRemove(tags, ContextTagKeys.getKeys().getDeviceRoleInstance(), roleInstance);
     }
 
     public DeviceContext(ConcurrentMap<String, String> tags)

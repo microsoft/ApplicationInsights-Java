@@ -94,7 +94,6 @@ public enum TelemetryConfigurationFactory {
         if (!channelIsConfigured) {
             logger.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
         }
-        configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
 
         setTelemetryModules(applicationInsightsConfig, configuration);
 

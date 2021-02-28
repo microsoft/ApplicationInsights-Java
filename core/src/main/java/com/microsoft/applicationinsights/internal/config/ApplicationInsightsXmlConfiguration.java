@@ -26,15 +26,11 @@ package com.microsoft.applicationinsights.internal.config;
  */
 public class ApplicationInsightsXmlConfiguration {
 
-    private String instrumentationKey;
-
     private String connectionString;
 
     private String roleName;
 
     private String roleInstance;
-
-    public boolean disableTelemetry;
 
     private ChannelXmlElement channel = new ChannelXmlElement();
 
@@ -43,16 +39,6 @@ public class ApplicationInsightsXmlConfiguration {
     private PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
 
     private QuickPulseXmlElement quickPulse;
-
-    private String schemaVersion;
-
-    public String getInstrumentationKey() {
-        return instrumentationKey;
-    }
-
-    public void setInstrumentationKey(String instrumentationKey) {
-        this.instrumentationKey = instrumentationKey;
-    }
 
     public String getConnectionString() {
         return connectionString;
@@ -78,14 +64,6 @@ public class ApplicationInsightsXmlConfiguration {
         this.roleInstance = roleInstance;
     }
 
-    public String getSchemaVersion() {
-        return schemaVersion;
-    }
-
-    public void setSchemaVersion(String schemaVersion) {
-        this.schemaVersion = schemaVersion;
-    }
-
     public ChannelXmlElement getChannel() {
         return channel;
     }
@@ -101,18 +79,6 @@ public class ApplicationInsightsXmlConfiguration {
         return quickPulse;
     }
 
-    public void setQuickPulse(QuickPulseXmlElement quickPulse) {
-        this.quickPulse = quickPulse;
-    }
-
-    public boolean isDisableTelemetry() {
-        return disableTelemetry;
-    }
-
-    public void setDisableTelemetry(boolean disableTelemetry) {
-        this.disableTelemetry = disableTelemetry;
-    }
-
     public TelemetryModulesXmlElement getModules() {
         return modules;
     }
@@ -123,9 +89,5 @@ public class ApplicationInsightsXmlConfiguration {
 
     public PerformanceCountersXmlElement getPerformance() {
         return performance;
-    }
-
-    public void setPerformance(PerformanceCountersXmlElement performance) {
-        this.performance = performance;
     }
 }

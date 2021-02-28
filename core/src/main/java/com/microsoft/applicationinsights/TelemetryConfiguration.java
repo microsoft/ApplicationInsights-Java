@@ -60,8 +60,6 @@ public final class TelemetryConfiguration {
 
     private TelemetryChannel channel;
 
-    private boolean trackingIsDisabled = false;
-
     /**
      * Gets the active {@link com.microsoft.applicationinsights.TelemetryConfiguration} instance loaded from the
      * ApplicationInsights.xml file. If the configuration file does not exist, the active configuration instance is
@@ -124,29 +122,6 @@ public final class TelemetryConfiguration {
      */
     public synchronized void setChannel(TelemetryChannel channel) {
         this.channel = channel;
-    }
-
-    /**
-     * Gets value indicating whether sending of telemetry to Application Insights is disabled.
-     *
-     * This disable tracking setting value is used by default by all {@link com.microsoft.applicationinsights.TelemetryClient}
-     * instances created in the application.
-     *
-     * @return True if tracking is disabled.
-     */
-    public boolean isTrackingDisabled() {
-        return trackingIsDisabled;
-    }
-
-    /**
-     * Sets value indicating whether sending of telemetry to Application Insights is disabled.
-     *
-     * This disable tracking setting value is used by default by all {@link com.microsoft.applicationinsights.TelemetryClient}
-     * instances created in the application.
-     * @param disable True to disable tracking.
-     */
-    public void setTrackingIsDisabled(boolean disable) {
-        trackingIsDisabled = disable;
     }
 
     /**

@@ -21,11 +21,7 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
-import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,44 +212,6 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     }
 
     /**
-     * @deprecated
-     * Gets the Dependency Kind property.
-     * @return Dependency Kind property.
-     */
-    @Deprecated
-    public DependencyKind getDependencyKind() {
-        DependencyKind result = DependencyKind.Other;
-        String type = data.getType();
-        if (!LocalStringsUtils.isNullOrEmpty(type)) {
-            try {
-                result = Enum.valueOf(DependencyKind.class, type);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t) {
-                try {
-                    logger.error("Exception while getting dependency kind: Type is empty");
-                    logger.trace("Exception while getting dependency kind: Type is empty", t);
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Dependency Kind property.
-     * @param value Dependency Kind property.
-     */
-    @Deprecated
-    public void setDependencyKind(DependencyKind value) {
-        data.setType(value.toString());
-    }
-
-    /**
      * Gets the Type property.
      * @return type property.
      */
@@ -302,45 +260,6 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
      */
     public void setSuccess(boolean value) {
         data.setSuccess(value);
-    }
-
-    /**
-     * @deprecated
-     * Gets the Async property.
-     * @return True if async.
-     */
-    @Deprecated
-    public Boolean getAsync() {
-        return false;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Async property.
-     * @param value True if async.
-     */
-    @Deprecated
-    public void setAsync(Boolean value) {
-
-    }
-
-    /**
-     * @deprecated
-     * Gets the Dependency Source property.
-     * @return Dependency Source property.
-     */
-    @Deprecated
-    public DependencySourceType getDependencySource() {
-        return DependencySourceType.Undefined;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Dependency Source property.
-     * @param value Dependency Source property.
-     */
-    @Deprecated
-    public void setDependencySource(DependencySourceType value) {
     }
 
     /**

@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
-import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -38,8 +36,7 @@ public final class RemoteDependencyTelemetryTest {
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
         assertNull(telemetry.getStdDev());
-        assertEquals(DependencyKind.Other, telemetry.getDependencyKind());
-        assertEquals(DependencySourceType.Undefined, telemetry.getDependencySource());
+        assertEquals("Other", telemetry.getType());
         assertTrue(telemetry.getProperties().isEmpty());
     }
 
@@ -52,8 +49,7 @@ public final class RemoteDependencyTelemetryTest {
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
         assertNull(telemetry.getStdDev());
-        assertEquals(DependencyKind.Other, telemetry.getDependencyKind());
-        assertEquals(DependencySourceType.Undefined, telemetry.getDependencySource());
+        assertEquals("Other", telemetry.getType());
         assertTrue(telemetry.getProperties().isEmpty());
     }
 
@@ -75,7 +71,6 @@ public final class RemoteDependencyTelemetryTest {
         assertNull(telemetry.getMin());
         assertNull(telemetry.getMax());
         assertNull(telemetry.getStdDev());
-        assertEquals(DependencySourceType.Undefined, telemetry.getDependencySource());
         assertTrue(telemetry.getProperties().isEmpty());
     }
 
@@ -147,18 +142,10 @@ public final class RemoteDependencyTelemetryTest {
     }
 
     @Test
-    public void testDependencyKind() {
+    public void testDependencyType() {
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
 
-        telemetry.setDependencyKind(DependencyKind.Http);
-        assertEquals(DependencyKind.Http, telemetry.getDependencyKind());
-    }
-
-    @Test
-    public void getAndSetDependencySourceDoNotThrow() {
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry("MockName");
-
-        telemetry.setDependencySource(DependencySourceType.Aic);
-        telemetry.getDependencySource();
+        telemetry.setType("Http");
+        assertEquals("Http", telemetry.getType());
     }
 }

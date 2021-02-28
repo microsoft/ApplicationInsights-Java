@@ -106,28 +106,6 @@ public final class DeviceContextTest {
     }
 
     @Test
-    public void testSetRoleInstance() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
-        DeviceContext context = new DeviceContext(map);
-        context.setRoleInstance("mock");
-
-        assertEquals("mock", context.getRoleInstance());
-        assertEquals(1, map.size());
-        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceRoleInstance()));
-    }
-
-    @Test
-    public void testSetRoleName() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
-        DeviceContext context = new DeviceContext(map);
-        context.setRoleName("mock");
-
-        assertEquals("mock", context.getRoleName());
-        assertEquals(1, map.size());
-        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceRoleName()));
-    }
-
-    @Test
     public void testSetScreenResolution() {
         ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
         DeviceContext context = new DeviceContext(map);

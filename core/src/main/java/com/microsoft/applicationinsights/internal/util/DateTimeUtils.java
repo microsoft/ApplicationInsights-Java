@@ -37,24 +37,6 @@ public class DateTimeUtils {
     private DateTimeUtils() {
     }
 
-    public static Date getDateTimeNow() {
-        return new Date();
-    }
-
-    public static Date addToDate(Date date, int field, int amount) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.add(field, amount);
-
-        return calendar.getTime();
-    }
-
-    public static long getDateDiff(Date laterDate, Date date, TimeUnit timeUnit) {
-        long diffInMs = laterDate.getTime() - date.getTime();
-
-        return timeUnit.convert(diffInMs, TimeUnit.MILLISECONDS);
-    }
-
     /**
      * Parses the given round-trip date string (e.g. '2015-05-26T07') into Date object.
      * @param roundTripString The string to parse.
