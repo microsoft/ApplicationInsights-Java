@@ -22,7 +22,6 @@ import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.internal.schemav2.SessionStateData;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
 import java.lang.reflect.Type;

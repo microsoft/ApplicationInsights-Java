@@ -1,7 +1,5 @@
 package com.microsoft.applicationinsights.smoketest.exceptions;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.concurrent.TimeUnit;
 
 public class TimeoutException extends SmokeTestException {

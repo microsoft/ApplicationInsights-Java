@@ -22,8 +22,6 @@ package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
-import java.util.Collections;
-import java.util.Map;
 
 import net.bytebuddy.jar.asm.ClassReader;
 import net.bytebuddy.jar.asm.ClassVisitor;
@@ -37,7 +35,6 @@ import static net.bytebuddy.jar.asm.Opcodes.ACC_PUBLIC;
 import static net.bytebuddy.jar.asm.Opcodes.ACONST_NULL;
 import static net.bytebuddy.jar.asm.Opcodes.ARETURN;
 import static net.bytebuddy.jar.asm.Opcodes.ASM7;
-import static net.bytebuddy.jar.asm.Opcodes.INVOKESTATIC;
 
 // this is used to supplement old versions of RequestTelemetry with getters from the latest version of
 // RequestTelemetry
