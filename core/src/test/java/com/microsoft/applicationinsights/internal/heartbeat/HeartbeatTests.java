@@ -94,8 +94,6 @@ public class HeartbeatTests {
 
   @Test
   public void initializationOfTelemetryClientDoesNotResetHeartbeat() {
-    TelemetryClient client = new TelemetryClient();
-
     boolean origIsEnabled = true;
     String origExcludedHbProvider = "FakeProvider";
     long originalInterval = 0;
@@ -114,7 +112,6 @@ public class HeartbeatTests {
       }
     }
 
-    TelemetryClient client2 = new TelemetryClient();
     for (TelemetryModule module :TelemetryConfiguration.getActive().getTelemetryModules()) {
       if (module instanceof HeartBeatModule) {
         Assert.assertNotEquals(((HeartBeatModule)module).isHeartBeatEnabled(), origIsEnabled);
@@ -128,7 +125,6 @@ public class HeartbeatTests {
 
   @Test
   public void heartBeatIsEnabledByDefault() {
-    TelemetryClient client = new TelemetryClient();
     List<TelemetryModule> modules = TelemetryConfiguration.getActive().getTelemetryModules();
     System.out.println(modules.size());
     boolean hasHeartBeatModule = false;

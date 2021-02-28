@@ -113,15 +113,6 @@ public final class JsonTelemetryDataSerializer {
         out.value(value);
     }
 
-    public void write(String name, Short value) throws IOException {
-        if (value == null) {
-            return;
-        }
-
-        writeName(name);
-        out.value(value);
-    }
-
     public void write(String name, long value) throws IOException {
         writeName(name);
         out.value(value);
@@ -148,15 +139,6 @@ public final class JsonTelemetryDataSerializer {
 
         writeName(name);
         out.value(value);
-    }
-
-    public void write(String name, Date value) throws IOException {
-        if (value == null) {
-            return;
-        }
-
-        writeName(name);
-        out.value(LocalStringsUtils.getDateFormatter().format(value));
     }
 
     public void write(String name, String value, int len) throws IOException {

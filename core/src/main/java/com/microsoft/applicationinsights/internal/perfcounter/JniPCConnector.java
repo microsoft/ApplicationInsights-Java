@@ -279,10 +279,6 @@ public final class JniPCConnector {
     }
 
     private static class JNIPerformanceCounterConnectorException extends Exception {
-        public JNIPerformanceCounterConnectorException(String s) {
-            super(s);
-        }
-
         public JNIPerformanceCounterConnectorException(String s, Throwable throwable) {
             super(s, throwable);
         }

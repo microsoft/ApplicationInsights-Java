@@ -13,9 +13,9 @@ import static org.junit.Assert.*;
 
 public class JmxDataFetcherTest {
     public interface StubMXBean {
-        public int getIntSample();
-        public double getDoubleSample();
-        public long getLongSample();
+        int getIntSample();
+        double getDoubleSample();
+        long getLongSample();
     }
 
     public static class TestStub implements StubMXBean {
