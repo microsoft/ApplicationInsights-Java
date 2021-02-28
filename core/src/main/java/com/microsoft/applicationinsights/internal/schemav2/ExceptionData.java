@@ -52,11 +52,6 @@ public class ExceptionData extends Domain
     private SeverityLevel severityLevel;
 
     /**
-     * Backing field for property ProblemId.
-     */
-    private String problemId;
-
-    /**
      * Backing field for property Properties.
      */
     private ConcurrentMap<String, String> properties;
@@ -106,20 +101,6 @@ public class ExceptionData extends Domain
     }
 
     /**
-     * Gets the ProblemId property.
-     */
-    public String getProblemId() {
-        return this.problemId;
-    }
-
-    /**
-     * Sets the ProblemId property.
-     */
-    public void setProblemId(String value) {
-        this.problemId = value;
-    }
-
-    /**
      * Gets the Properties property.
      */
     public ConcurrentMap<String, String> getProperties() {
@@ -127,13 +108,6 @@ public class ExceptionData extends Domain
             this.properties = new ConcurrentHashMap<String, String>();
         }
         return this.properties;
-    }
-
-    /**
-     * Sets the Properties property.
-     */
-    public void setProperties(ConcurrentMap<String, String> value) {
-        this.properties = value;
     }
 
     /**

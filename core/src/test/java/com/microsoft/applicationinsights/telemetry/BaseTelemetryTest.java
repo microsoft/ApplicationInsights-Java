@@ -47,9 +47,6 @@ public final class BaseTelemetryTest {
 
         private static final String BASE_TYPE = "StubData";
 
-        public int numberOfCallsToAdditionalSanitize;
-
-
         public StubTelemetry() {
         }
 

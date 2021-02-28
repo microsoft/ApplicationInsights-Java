@@ -216,8 +216,4 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     public String getBaseTypeName() {
         return BASE_TYPE;
     }
-
-    public String getProblemId() {
-        return getData().getProblemId();
-    }
 }
