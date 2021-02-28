@@ -22,20 +22,6 @@ public class HeartbeatDefaultPayload {
   }
 
   /**
-   * Returns true if the input string is reserved keyword in any of the providers
-   * @param keyword string to test
-   * @return true if keyword in providers
-   */
-  public static boolean isDefaultKeyword(String keyword) {
-    for (HeartBeatPayloadProviderInterface payloadProvider : defaultPayloadProviders) {
-      if (payloadProvider.isKeyword(keyword)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
    * Callable which delegates calls to providers for adding payload.
    * @param disabledFields the properties which are disabled by user
    * @param disabledProviders providers which are disabled by users
