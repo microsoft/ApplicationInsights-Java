@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import java.io.IOException;
-
 import com.google.common.base.Preconditions;
 
 /**

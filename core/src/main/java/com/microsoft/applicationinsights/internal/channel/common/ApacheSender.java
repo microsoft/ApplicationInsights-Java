@@ -26,7 +26,6 @@ import java.io.IOException;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 

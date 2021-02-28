@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.TelemetryConfigurationTestHelper;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;

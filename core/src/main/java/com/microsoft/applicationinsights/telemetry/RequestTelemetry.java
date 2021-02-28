@@ -21,10 +21,8 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.apache.http.HttpStatus;
 
 import java.net.MalformedURLException;

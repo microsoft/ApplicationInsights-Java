@@ -22,13 +22,8 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import java.net.URI;
-import java.text.StringCharacterIterator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 import com.google.common.base.Strings;
-import org.apache.http.annotation.Obsolete;
 
 /**
  * Created by gupele on 1/7/2015.

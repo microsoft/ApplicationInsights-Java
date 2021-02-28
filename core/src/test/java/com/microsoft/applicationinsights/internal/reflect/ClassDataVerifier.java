@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.reflect;
 
-import java.lang.reflect.Method;
-
 /**
  * Created by gupele on 5/26/2015.
  */

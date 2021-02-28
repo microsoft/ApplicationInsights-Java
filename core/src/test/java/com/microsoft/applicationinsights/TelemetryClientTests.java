@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Date;
 import java.util.LinkedList;
 
@@ -41,8 +40,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

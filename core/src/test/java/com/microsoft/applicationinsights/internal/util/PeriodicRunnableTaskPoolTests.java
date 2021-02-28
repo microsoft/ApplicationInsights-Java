@@ -1,8 +1,6 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import org.junit.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;

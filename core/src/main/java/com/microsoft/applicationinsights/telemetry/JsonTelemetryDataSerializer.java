@@ -22,13 +22,11 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.squareup.moshi.JsonWriter;
 
 /**

@@ -26,8 +26,6 @@ import org.apache.http.StatusLine;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.File;
-
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 

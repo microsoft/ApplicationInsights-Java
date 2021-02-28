@@ -41,8 +41,6 @@ import com.microsoft.applicationinsights.internal.channel.common.TransmissionPol
 import com.microsoft.applicationinsights.internal.channel.common.TransmissionPolicyStateFetcher;
 import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl;
 
-import javax.annotation.Nullable;
-
 /**
  * Created by gupele on 1/15/2015.
  */

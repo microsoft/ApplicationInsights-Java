@@ -23,9 +23,7 @@ package com.microsoft.applicationinsights.internal.util;
 
 import com.microsoft.applicationinsights.common.CommonUtils;
 
-import java.lang.management.OperatingSystemMXBean;
 import java.util.Locale;
-import java.util.Properties;
 
 /**
  * A view into the context information specific to device information.

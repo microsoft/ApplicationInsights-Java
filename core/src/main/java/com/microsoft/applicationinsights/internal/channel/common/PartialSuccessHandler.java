@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.apache.http.HttpStatus;
 
 import com.google.gson.Gson;

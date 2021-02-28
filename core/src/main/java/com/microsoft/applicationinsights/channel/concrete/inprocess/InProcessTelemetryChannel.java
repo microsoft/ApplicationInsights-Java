@@ -24,12 +24,8 @@ package com.microsoft.applicationinsights.channel.concrete.inprocess;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
-import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.lang.ref.WeakReference;
 import java.util.Map;
 
 /**

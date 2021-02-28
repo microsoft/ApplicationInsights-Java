@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 
 /**
  * Created by gupele on 3/15/2015.

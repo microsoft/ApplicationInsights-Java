@@ -30,7 +30,6 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
-import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

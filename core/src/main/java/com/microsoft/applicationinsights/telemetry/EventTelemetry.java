@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 import java.util.concurrent.ConcurrentMap;
 

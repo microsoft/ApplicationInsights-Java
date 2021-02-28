@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.util.ArrayList;
-
 import com.microsoft.applicationinsights.internal.config.PerformanceCountersXmlElement;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import org.slf4j.Logger;

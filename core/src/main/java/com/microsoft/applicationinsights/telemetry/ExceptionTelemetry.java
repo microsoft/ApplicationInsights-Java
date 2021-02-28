@@ -25,7 +25,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 import java.util.ArrayList;
 import java.util.List;
