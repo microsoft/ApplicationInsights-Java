@@ -83,7 +83,7 @@ public enum QuickPulse implements Stoppable {
                 if (!initialized) {
                     initialized = true;
                     final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-                    ApacheSender apacheSender = ApacheSenderFactory.INSTANCE.create();
+                    ApacheSender apacheSender = ApacheSenderFactory.INSTANCE.get();
                     ArrayBlockingQueue<HttpPost> sendQueue = new ArrayBlockingQueue<HttpPost>(256, true);
 
                     quickPulseDataSender = new DefaultQuickPulseDataSender(apacheSender, sendQueue);

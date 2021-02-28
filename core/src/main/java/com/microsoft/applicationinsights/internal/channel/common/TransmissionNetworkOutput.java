@@ -118,7 +118,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
         if (StringUtils.isNotEmpty(serverUri)) {
             logger.warn("Setting the endpoint via the <Channel> element is deprecated and will be removed in a future version. Use the top-level element <ConnectionString>.");
         }
-        httpClient = ApacheSenderFactory.INSTANCE.create();
+        httpClient = ApacheSenderFactory.INSTANCE.get();
         this.transmissionPolicyManager = transmissionPolicyManager;
         stopped = false;
         if (logger.isTraceEnabled()) {
@@ -164,7 +164,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 // POST the transmission data to the endpoint
                 request = createTransmissionPostRequest(transmission);
                 httpClient.enhanceRequest(request);
-                response = httpClient.sendPostRequest(request);
+                response = httpClient.sendRequest(request);
                 HttpEntity respEntity = response.getEntity();
                 code = response.getStatusLine().getStatusCode();
                 reason = response.getStatusLine().getReasonPhrase();

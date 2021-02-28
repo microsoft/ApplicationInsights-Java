@@ -26,17 +26,19 @@ import java.io.IOException;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 
 /**
  * Created by gupele on 6/4/2015.
  */
 public interface ApacheSender {
-    final static int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
-    final static int REQUEST_TIMEOUT_IN_MILLIS = 60000;
-    final static int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
+    int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
+    int REQUEST_TIMEOUT_IN_MILLIS = 60000;
+    int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
 
-    HttpResponse sendPostRequest(HttpPost post) throws IOException, FriendlyException;
+    HttpResponse sendRequest(HttpUriRequest post) throws IOException, FriendlyException;
 
     void dispose(HttpResponse response);
 
