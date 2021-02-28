@@ -165,6 +165,7 @@ public class BytecodeUtil {
         void trackRequest(String id, String name, URL url, Date timestamp, Long duration, String responseCode, boolean success,
                           String source, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics);
 
+        // TODO also handle cases where ExceptionTelemetry parsedStack is used directly instead of indirectly through Exception
         void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics);
 
         void flush();
