@@ -36,19 +36,6 @@ public class HeartbeatDefaultPayload {
   }
 
   /**
-   * This is used to add additional default providers. Used in SpringBoot Module
-   * @param payloadProviderInterface
-   * @return true if payloadProvider is added successfully
-   */
-  public static boolean addDefaultPayLoadProvider(HeartBeatPayloadProviderInterface payloadProviderInterface) {
-    if (payloadProviderInterface != null) {
-      defaultPayloadProviders.add(payloadProviderInterface);
-      return true;
-    }
-    return false;
-  }
-
-  /**
    * Callable which delegates calls to providers for adding payload.
    * @param disabledFields the properties which are disabled by user
    * @param disabledProviders providers which are disabled by users

@@ -28,8 +28,6 @@ import java.util.ArrayList;
  */
 public class PerformanceCountersXmlElement {
 
-    private boolean useBuiltIn = true;
-
     private long collectionFrequencyInSec = 60;
 
     private PerformanceCounterJvmSectionXmlElement jvmSection;
@@ -44,14 +42,6 @@ public class PerformanceCountersXmlElement {
 
     public void setJmxXmlElements(ArrayList<JmxXmlElement> jmxXmlElements) {
         jmxWrapper.jmxXmlElements = jmxXmlElements;
-    }
-
-    public boolean isUseBuiltIn() {
-        return useBuiltIn;
-    }
-
-    public void setUseBuiltIn(boolean useBuiltIn) {
-        this.useBuiltIn = useBuiltIn;
     }
 
     public ArrayList<WindowsPerformanceCounterXmlElement> getWindowsPCs() {
