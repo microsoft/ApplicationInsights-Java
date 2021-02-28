@@ -36,6 +36,10 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class Envelope
 {
+    /**
+     * Backing field for property Ver.
+     */
+    private static final int ver = 1;
 
     /**
      * Backing field for property Name.
@@ -158,7 +162,7 @@ public class Envelope
      */
     protected void serializeContent(JsonTelemetryDataSerializer writer) throws IOException
     {
-        writer.write("ver", 1);
+        writer.write("ver", ver);
         writer.writeRequired("name", name, 1024);
         writer.writeRequired("time", time, 64);
         if (this.sampleRate > 0.0d) {

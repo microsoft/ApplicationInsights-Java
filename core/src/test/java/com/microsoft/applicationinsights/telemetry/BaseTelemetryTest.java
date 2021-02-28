@@ -58,11 +58,6 @@ public final class BaseTelemetryTest {
         }
 
         @Override
-        public int getVer() {
-            return 0;
-        }
-
-        @Override
         protected StubDomainData getData() {
             return null;
         }

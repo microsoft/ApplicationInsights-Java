@@ -84,11 +84,6 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
         this.data.setSuccess(success);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     /**
      * Gets the dependency Id.
      */

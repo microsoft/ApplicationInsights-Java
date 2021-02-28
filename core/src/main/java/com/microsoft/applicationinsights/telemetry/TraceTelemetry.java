@@ -69,11 +69,6 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
         setSeverityLevel(severityLevel);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     /**
      * Gets the message text. For example, the text that would normally be written to a log file line.
      * @return The message.

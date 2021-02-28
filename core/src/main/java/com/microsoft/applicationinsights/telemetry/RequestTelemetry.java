@@ -105,11 +105,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
         setSuccess(success);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     /**
      * Gets a map of application-defined request metrics.
      * @return The map of metrics

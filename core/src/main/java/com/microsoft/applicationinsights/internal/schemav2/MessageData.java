@@ -37,7 +37,7 @@ public class MessageData extends Domain
     /**
      * Backing field for property Ver.
      */
-    private int ver = 2;
+    private final int ver = 2;
 
     /**
      * Backing field for property Message.
@@ -60,20 +60,6 @@ public class MessageData extends Domain
     public MessageData()
     {
         this.InitializeFields();
-    }
-
-    /**
-     * Gets the Ver property.
-     */
-    public int getVer() {
-        return this.ver;
-    }
-
-    /**
-     * Sets the Ver property.
-     */
-    public void setVer(int value) {
-        this.ver = value;
     }
 
     /**

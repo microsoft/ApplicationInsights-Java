@@ -68,8 +68,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
         this.context = new TelemetryContext(properties, new ContextTagsMap());
     }
 
-    public abstract int getVer();
-
     /**
      * Gets date and time when event was recorded.
      *

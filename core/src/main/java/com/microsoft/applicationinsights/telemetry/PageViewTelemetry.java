@@ -65,11 +65,6 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
         setName(pageName);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     /**
      * Sets the name of the page view.
      * @param name The page view name.

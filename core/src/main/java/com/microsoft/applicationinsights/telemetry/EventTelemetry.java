@@ -64,11 +64,6 @@ public final class EventTelemetry extends BaseSampleSourceTelemetry<EventData> {
         this.setName(name);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     /**
      * Gets a map of application-defined event metrics.
      * These metrics appear along with the event in Search and Analytics, but appear under 'Custom Metrics' in Metrics Explorer.

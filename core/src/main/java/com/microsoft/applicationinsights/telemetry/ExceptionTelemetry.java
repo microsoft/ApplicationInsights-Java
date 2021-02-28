@@ -75,11 +75,6 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         this(exception, Integer.MAX_VALUE);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     public Exception getException() {
         return throwable instanceof Exception ? (Exception)throwable : null;
     }

@@ -62,11 +62,6 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
         data.getMetrics().add(metric);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     /**
      * Initializes the instance with a name and value
      * @param name The name of the metric. Length 1-150 characters.
