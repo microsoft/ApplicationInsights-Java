@@ -68,10 +68,6 @@ public class ApplicationInsightsXmlConfiguration {
         return channel;
     }
 
-    public void setChannel(ChannelXmlElement channel) {
-        this.channel = channel;
-    }
-
     public QuickPulseXmlElement getQuickPulse() {
         if (quickPulse == null) {
             quickPulse = new QuickPulseXmlElement();

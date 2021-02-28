@@ -58,11 +58,6 @@ public class Envelope
     private double sampleRate = 100.0;
 
     /**
-     * Backing field for property Seq.
-     */
-    private String seq;
-
-    /**
      * Backing field for property IKey.
      */
     private String iKey;
@@ -142,20 +137,6 @@ public class Envelope
     }
 
     /**
-     * Gets the Seq property.
-     */
-    public String getSeq() {
-        return this.seq;
-    }
-
-    /**
-     * Sets the Seq property.
-     */
-    public void setSeq(String value) {
-        this.seq = value;
-    }
-
-    /**
      * Gets the IKey property.
      */
     public String getIKey() {
@@ -224,7 +205,6 @@ public class Envelope
         if (this.sampleRate > 0.0d) {
             writer.write("sampleRate", sampleRate);
         }
-        writer.write("seq", seq, 64);
         writer.write("iKey", iKey, 40);
         writer.write("tags", tags);
         writer.write("data", data);

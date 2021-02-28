@@ -44,7 +44,6 @@ import org.apache.commons.lang3.StringUtils;
 public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private TelemetryContext context;
     private Date timestamp;
-    private String sequence;
 
     // this is temporary until we are convinced that telemetry are never re-used by codeless agent
     private volatile boolean used;
@@ -70,33 +69,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     }
 
     public abstract int getVer();
-
-    /**
-     * Sequence field used to track absolute order of uploaded events.
-     * It is a two-part value that includes a stable identifier for the current boot
-     * session and an incrementing identifier for each event added to the upload queue
-     * <p>
-     * The Sequence helps track how many events were fired and how many events were uploaded and
-     * enables identification of data lost during upload and de-duplication of events on the ingress server.
-     * <p>
-     * Gets the value that defines absolute order of the telemetry item.
-     *
-     * @return The sequence of the Telemetry.
-     */
-    @Override
-    public String getSequence() {
-        return sequence;
-    }
-
-    /**
-     * Sets the value that defines absolute order of the telemetry item.
-     *
-     * @param sequence The sequence of the Telemetry.
-     */
-    @Override
-    public void setSequence(String sequence) {
-        this.sequence = sequence;
-    }
 
     /**
      * Gets date and time when event was recorded.
@@ -154,7 +126,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
 
         setSampleRate(envelope);
         envelope.setIKey(context.getInstrumentationKey());
-        envelope.setSeq(sequence);
         Data<T> tmp = new Data<T>();
         tmp.setBaseData(getData());
         tmp.setBaseType(this.getBaseTypeName());
