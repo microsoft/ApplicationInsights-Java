@@ -66,22 +66,4 @@ public class BinaryCalculation {
     public String resultFormatted() {
         return getFormat().format(result());
     }
-
-    public static class TimestampedBinaryCalculation {
-        private final Date timestamp;
-        private final BinaryCalculation calc;
-        public TimestampedBinaryCalculation(BinaryCalculation bc) {
-            this(new Date(), bc);
-        }
-        public TimestampedBinaryCalculation(Date timestamp, BinaryCalculation bc) {
-            this.calc = bc;
-            this.timestamp = timestamp;
-        }
-        public Date getTimestamp() {
-            return timestamp;
-        }
-        public BinaryCalculation getCalculation() {
-            return calc;
-        }
-    }
 }

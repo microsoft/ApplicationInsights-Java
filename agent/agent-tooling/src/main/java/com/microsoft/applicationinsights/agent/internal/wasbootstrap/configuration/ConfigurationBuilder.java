@@ -280,10 +280,6 @@ public class ConfigurationBuilder {
 
     public static class ConfigurationException extends RuntimeException {
 
-        public ConfigurationException(String message) {
-            super(message);
-        }
-
         ConfigurationException(String message, Exception e) {
             super(message, e);
         }

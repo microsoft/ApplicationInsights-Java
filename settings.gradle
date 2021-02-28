@@ -44,7 +44,6 @@ include ':test:smoke:testApps'
 
 include ':test:smoke:framework:testCore'
 include ':test:smoke:framework:utils'
-include ':test:smoke:framework:testCases'
 include ':test:fakeIngestion:servlet'
 include ':test:fakeIngestion:standalone'
 

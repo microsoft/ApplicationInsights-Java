@@ -36,20 +36,12 @@ public class AiDockerClient {
         this.shellExecutor = shellExecutor;
     }
 
-    public String getCurrentUser() {
-        return this.currentUser;
-    }
-
     public String getShellExecutor() {
         return this.shellExecutor;
     }
 
     public static AiDockerClient createLinuxClient() {
         return new AiDockerClient(DEFAULT_LINUX_USER, DEFAULT_LINUX_SHELL);
-    }
-
-    public static AiDockerClient createWindowsClient() {
-        return new AiDockerClient(DEFAULT_WINDOWS_USER, DEFAULT_WINDOWS_SHELL);
     }
 
     private ProcessBuilder buildProcess(String... cmdLine) {
@@ -212,23 +204,6 @@ public class AiDockerClient {
         Process p = buildProcess("docker", "network", "rm", nameOrId).start();
         waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, "deleting network");
         return getFirstLineOfProcessOutput(p);
-    }
-
-    /**
-     * Returns container name for a running container. If the container id is not running, it returns null.
-     */
-    public String getRunningContainerName(String containerId) throws IOException, InterruptedException {
-        Process p = buildProcess("docker", "inspect", "--format","'{{.Name}}'", containerId).start();
-        waitForProcessToReturn(p, 10, TimeUnit.SECONDS, "inspect entity");
-        if (p.exitValue() == 1) {
-            return null;
-        }
-        String containerName = getFirstLineOfProcessOutput(p);
-        int start = findFirstLetterPosition(containerName);
-        int end = findLastLetterPosition(containerName);
-        // TODO handle -1
-        containerName = containerName.substring(start, end+1);
-        return containerName;
     }
 
     private static int findFirstLetterPosition(String input) {
