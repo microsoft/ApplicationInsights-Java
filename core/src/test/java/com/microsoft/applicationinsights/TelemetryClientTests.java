@@ -192,17 +192,6 @@ public final class TelemetryClientTests {
 
     // region Private methods
 
-    private static void verifyTraceTelemetry(Telemetry telemetry, SeverityLevel expectedSeverityLevel, Map<String, String> expectedProperties) {
-        assertNotNull(telemetry);
-        assertTrue(telemetry instanceof TraceTelemetry);
-
-        TraceTelemetry traceTelemetry = (TraceTelemetry)telemetry;
-        assertEquals(traceTelemetry.getSeverityLevel(), expectedSeverityLevel);
-        if (expectedProperties != null) {
-            assertEquals(traceTelemetry.getContext().getProperties(), expectedProperties);
-        }
-    }
-
     private void testUseConfigurationInstrumentatonKey(String contextInstrumentationKey) {
         TelemetryConfiguration configuration = new TelemetryConfiguration();
         TelemetryChannel mockChannel = Mockito.mock(TelemetryChannel.class);

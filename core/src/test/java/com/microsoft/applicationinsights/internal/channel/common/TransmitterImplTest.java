@@ -279,20 +279,4 @@ public final class TransmitterImplTest {
             }
         }
     }
-
-    private static ArrayList<String> toJson(List<Telemetry> telemetries) throws IOException {
-        ArrayList<String> asJsons = new ArrayList<String>();
-        for (Telemetry telemetry : telemetries) {
-
-            Buffer buffer = new Buffer();
-            JsonWriter writer = JsonWriter.of(buffer);
-            JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
-            telemetry.serialize(jsonWriter);
-            jsonWriter.close();
-            writer.close();
-            asJsons.add(new String(buffer.readByteArray(), Charsets.UTF_8));
-        }
-
-        return asJsons;
-    }
 }

@@ -48,7 +48,6 @@ public final class TelemetryConfiguration {
     private static volatile TelemetryConfiguration active;
 
     private String instrumentationKey;
-    private String normalizedInstrumentationKey;
     private String connectionString;
     private String roleName;
     private String roleInstance;
@@ -158,10 +157,6 @@ public final class TelemetryConfiguration {
         return instrumentationKey;
     }
 
-    public String getNormalizedInstrumentationKey() {
-        return normalizedInstrumentationKey;
-    }
-
     /**
      * Gets or sets the default instrumentation key for the application.
      *
@@ -179,7 +174,6 @@ public final class TelemetryConfiguration {
         }
 
         instrumentationKey = key;
-        normalizedInstrumentationKey = BaseTelemetry.normalizeInstrumentationKey(key);
     }
 
     public String getRoleName() {
