@@ -105,16 +105,6 @@ public final class TelemetryClientTests {
     }
 
     @Test
-    public void testTrackTelemetryWithDisabled() {
-        configuration.setTrackingIsDisabled(true);
-        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
-
-        client.track(mockTelemetry);
-
-        Mockito.verifyZeroInteractions(channel, mockTelemetry);
-    }
-
-    @Test
     public void testUseConfigurationInstrumentationKeyWithNull() {
         testUseConfigurationInstrumentatonKey(null);
     }
