@@ -19,20 +19,15 @@ import org.apache.commons.lang3.StringUtils;
 
 public class AiDockerClient {
 
-    public static String DEFAULT_WINDOWS_USER = "Administrator";
-    public static String DEFAULT_WINDOWS_SHELL = "cmd";
-
     public static String DEFAULT_LINUX_USER = "root";
     public static String DEFAULT_LINUX_SHELL = "bash";
 
-    private String currentUser;
     private String shellExecutor;
 
     public AiDockerClient(String user, String shellExecutor) {
         Preconditions.checkNotNull(user, "user");
         Preconditions.checkNotNull(shellExecutor, "shellExecutor");
 
-        this.currentUser = user;
         this.shellExecutor = shellExecutor;
     }
 
@@ -204,22 +199,5 @@ public class AiDockerClient {
         Process p = buildProcess("docker", "network", "rm", nameOrId).start();
         waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, "deleting network");
         return getFirstLineOfProcessOutput(p);
-    }
-
-    private static int findFirstLetterPosition(String input) {
-        for (int i = 0; i < input.length(); i++) {
-            if (Character.isAlphabetic(input.codePointAt(i))) {
-                return i;
-            }
-        }
-        return -1; // not found
-    }
-    private static  int findLastLetterPosition(String input) {
-        for (int i = input.length()-1; i >= 0; i--) {
-            if (Character.isAlphabetic(input.codePointAt(i)) || Character.isDigit(input.codePointAt(i))) {
-                return i;
-            }
-        }
-        return -1; // not found
     }
 }

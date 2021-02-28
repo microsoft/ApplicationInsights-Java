@@ -49,7 +49,7 @@ public class HttpHelper {
                 .build();
     }
 
-    public static String post(String url, String body) throws ClientProtocolException, IOException {
+    public static String post(String url, String body) throws IOException {
         CloseableHttpClient client = getHttpClient();
         try {
             HttpPost post = new HttpPost(url);

@@ -6,9 +6,6 @@ public class TimeoutException extends SmokeTestException {
     public TimeoutException(String componentName, long timeout, TimeUnit unit) {
         this(componentName, timeout, unit, "", null);
     }
-    public TimeoutException(String componentName, long timeout, TimeUnit unit, String message) {
-        this(componentName, timeout, unit, message, null);
-    }
     public TimeoutException(String componentName, long timeout, TimeUnit unit, Throwable cause) {
         this(componentName, timeout, unit, "", cause);
     }

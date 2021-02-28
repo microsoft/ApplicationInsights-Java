@@ -93,13 +93,6 @@ public class DataPoint
     }
 
     /**
-     * Gets the Kind property.
-     */
-    public DataPointType getKind() {
-        return this.kind;
-    }
-
-    /**
      * Sets the Kind property.
      */
     public void setKind(DataPointType value) {
