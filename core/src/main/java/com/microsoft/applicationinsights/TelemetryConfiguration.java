@@ -124,6 +124,10 @@ public final class TelemetryConfiguration {
         this.channel = channel;
     }
 
+    public boolean isTrackingDisabled() {
+        return true;
+    }
+
     /**
      * Gets the list of {@link ContextInitializer} objects that supply additional information about application.
      *

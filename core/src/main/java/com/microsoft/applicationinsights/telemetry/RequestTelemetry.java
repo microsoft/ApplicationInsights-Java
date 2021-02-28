@@ -41,7 +41,6 @@ import java.util.concurrent.ConcurrentMap;
 public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestData> {
     private Double samplingPercentage;
     private final RequestData data;
-    private String httpMethod;
 
     /**
      * Envelope Name for this telemetry.
@@ -241,10 +240,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
      */
     public void setUrl(URL url) {
         data.setUrl(url.toString());
-    }
-
-    public String getUrlString() {
-        return getData().getUrl();
     }
 
     /**
