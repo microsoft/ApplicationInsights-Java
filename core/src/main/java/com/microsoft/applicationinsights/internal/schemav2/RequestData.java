@@ -216,13 +216,6 @@ public class RequestData extends Domain
     }
 
     /**
-     * Sets the Properties property.
-     */
-    public void setProperties(ConcurrentMap<String, String> value) {
-        this.properties = value;
-    }
-
-    /**
      * Gets the Measurements property.
      */
     public ConcurrentMap<String, Double> getMeasurements() {
@@ -231,14 +224,6 @@ public class RequestData extends Domain
         }
         return this.measurements;
     }
-
-    /**
-     * Sets the Measurements property.
-     */
-    public void setMeasurements(ConcurrentMap<String, Double> value) {
-        this.measurements = value;
-    }
-
 
     /**
      * Serializes the beginning of this object to the passed in writer.
