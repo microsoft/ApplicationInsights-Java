@@ -138,14 +138,6 @@ public class TelemetryBuffer<T> {
     }
 
     /**
-     * Gets the maximum number of telemetries in a batch
-     * @return The maximum number of telemetries in a batch
-     */
-    public int getMaxTelemetriesInBatch() {
-        return this.maxTelemetriesInBatch;
-    }
-
-    /**
      * Sets the transmit buffer timeout in seconds
      * @param value The amount of time to wait before sending the buffer.
      */
@@ -158,14 +150,6 @@ public class TelemetryBuffer<T> {
                 flush();
             }
         }
-    }
-
-    /**
-     * Gets the transmit buffer timeout in seconds
-     * @return The transmit buffer timeout in seconds
-     */
-    public int getTransmitBufferTimeoutInSeconds() {
-        return this.transmitBufferTimeoutInSeconds;
     }
 
     /**

@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
-import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerObserver;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +48,7 @@ import org.slf4j.LoggerFactory;
  *
  * Created by gupele on 6/29/2015.
  */
-public final class TransmissionPolicyManager implements TransmissionHandlerObserver {
+public final class TransmissionPolicyManager implements TransmissionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionPolicyManager.class);
 
@@ -228,7 +227,6 @@ public final class TransmissionPolicyManager implements TransmissionHandlerObser
         }
     }
 
-    @Override
     public void addTransmissionHandler(TransmissionHandler handler) {
         if (handler != null) {
             this.transmissionHandlers.add(handler);

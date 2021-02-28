@@ -153,15 +153,9 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         return transmitterFactory;
     }
 
-    @VisibleForTesting
-    TelemetryConfiguration getConfiguration() {
-        return this.configuration;
-    }
-
     /**
      * Gets value indicating whether this channel is in developer mode.
      */
-    @Override
     public boolean isDeveloperMode() {
         return developerMode;
     }
@@ -173,7 +167,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
      *
      * @param developerMode true or false
      */
-    @Override
     public void setDeveloperMode(boolean developerMode) {
         if (developerMode != this.developerMode) {
             this.developerMode = developerMode;

@@ -149,33 +149,6 @@ public final class ReflectionUtils {
     }
 
     /**
-     *
-     * @param object - The instance we work with
-     * @param methodName - The method to activate
-     * @param value - The value to pass to the method
-     * @param argumentClass - The argument class
-     * @param <V> - Generic for value class
-     * @param <A> - Generic for argument class
-     * @return - True if method found and activation was ok, otherwise false.
-     */
-    public static <V, A> boolean activateMethod(Object object, String methodName, V value, A argumentClass) {
-        Class<?> clazz = object.getClass();
-        Method method = null;
-        try {
-            method = clazz.getDeclaredMethod(methodName, String.class);
-            method.invoke(object, value);
-            return true;
-        } catch (NoSuchMethodException e) {
-            logger.error("Failed to call method {} .NoSuchMethodException",  methodName);
-        } catch (InvocationTargetException e) {
-            logger.error("Failed to call method {} .InvocationTargetException",  methodName);
-        } catch (IllegalAccessException e) {
-            logger.error("Failed to call method {} .IllegalAccessException",  methodName);
-        }
-        return false;
-    }
-
-    /**
      * Generic method that creates instances based on their names and adds them to a Collection
      *
      * Note that the class does its 'best effort' to create an instance and will not fail the method
