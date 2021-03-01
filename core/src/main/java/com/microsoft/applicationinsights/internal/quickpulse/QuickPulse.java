@@ -25,6 +25,7 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
@@ -117,6 +118,36 @@ public enum QuickPulse {
                     QuickPulseDataCollector.INSTANCE.enable(configuration);
                 }
             }
+        }
+    }
+
+    /**
+     * Stopping the collection of performance data.
+     * @param timeout The timeout to wait for the stop to happen.
+     * @param timeUnit The time unit to use when waiting for the stop to happen.
+     */
+    public synchronized void stop(long timeout, TimeUnit timeUnit) {
+        if (!initialized) {
+            return;
+        }
+
+        coordinator.stop();
+        quickPulseDataSender.stop();
+
+        thread.interrupt();
+        senderThread.interrupt();
+        initialized = false;
+
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        try {
+            senderThread.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }
