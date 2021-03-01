@@ -2,7 +2,6 @@ package com.microsoft.ajl.simplecalc.model;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.Date;
 
 public class BinaryCalculation {
     private static DecimalFormat getDefaultFormat() {

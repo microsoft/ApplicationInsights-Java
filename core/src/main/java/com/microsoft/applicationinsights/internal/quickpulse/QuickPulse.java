@@ -25,7 +25,6 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
