@@ -94,7 +94,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
             if (!blockedThreads.isEmpty()) {
                 String uuid = LocalStringsUtils.generateRandomIntegerId();
 
-                mt.setValue((double)blockedThreads.size());
+                mt.setValue(blockedThreads.size());
                 mt.getContext().getOperation().setId(uuid);
 
                 TraceTelemetry trace = new TraceTelemetry(String.format("%s%s", "Suspected deadlocked threads: ", sb.toString()));

@@ -115,7 +115,7 @@ public class ActiveTransmissionLoaderTest {
             int i = 0;
             while (true) {
                 try {
-                    Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch((Transmission) anyObject());
+                    Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch(anyObject());
                     break;
                 } catch (Error e) {
                     ++i;

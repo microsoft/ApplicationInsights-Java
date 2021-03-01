@@ -248,7 +248,7 @@ public final class TelemetryBufferTest {
 
         testedBuffer.add("mockTelemetry");
 
-        Mockito.verify(mockSender, Mockito.times(1)).scheduleSend((TelemetriesTransmitter.TelemetriesFetcher) any(), anyLong(), (TimeUnit) anyObject());
+        Mockito.verify(mockSender, Mockito.times(1)).scheduleSend(any(), anyLong(), anyObject());
     }
 
     // Ignore warning from mock
@@ -268,7 +268,7 @@ public final class TelemetryBufferTest {
             testedBuffer.add("mockTelemetry");
         }
 
-        Mockito.verify(mockSender, Mockito.times(1)).scheduleSend((TelemetriesTransmitter.TelemetriesFetcher) any(), anyLong(), (TimeUnit) anyObject());
+        Mockito.verify(mockSender, Mockito.times(1)).scheduleSend(any(), anyLong(), anyObject());
         Mockito.verify(mockSender, Mockito.times(1)).sendNow(anyCollectionOf(String.class));
     }
 
@@ -349,7 +349,7 @@ public final class TelemetryBufferTest {
             testedBuffer.add("mockTelemetry");
         }
 
-        Mockito.verify(mockSender, Mockito.never()).scheduleSend((TelemetriesTransmitter.TelemetriesFetcher)any(), anyLong(), (TimeUnit)anyObject());
+        Mockito.verify(mockSender, Mockito.never()).scheduleSend(any(), anyLong(), anyObject());
         Mockito.verify(mockSender, Mockito.times(2)).sendNow(anyCollectionOf(String.class));
     }
 

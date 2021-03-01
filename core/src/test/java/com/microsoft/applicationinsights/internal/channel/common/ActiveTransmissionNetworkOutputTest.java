@@ -115,7 +115,7 @@ public class ActiveTransmissionNetworkOutputTest {
         ActiveTransmissionNetworkOutput tested;
         if (theTested == null) {
             mockOutput = Mockito.mock(TransmissionOutputSync.class);
-            Mockito.doReturn(true).when(mockOutput).sendSync((Transmission) anyObject());
+            Mockito.doReturn(true).when(mockOutput).sendSync(anyObject());
 
             TransmissionPolicyStateFetcher mockStateFetcher = Mockito.mock(TransmissionPolicyStateFetcher.class);
             Mockito.doReturn(TransmissionPolicy.UNBLOCKED).when(mockStateFetcher).getCurrentState();
@@ -132,7 +132,7 @@ public class ActiveTransmissionNetworkOutputTest {
         int waitCounter = 0;
         if (mockOutput != null) {
             try {
-                Mockito.verify(mockOutput, Mockito.times(expectedSends)).sendSync((Transmission) anyObject());
+                Mockito.verify(mockOutput, Mockito.times(expectedSends)).sendSync(anyObject());
                 Thread.sleep(1000);
             } catch (Error e) {
                 ++waitCounter;

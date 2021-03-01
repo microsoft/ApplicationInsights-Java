@@ -48,7 +48,7 @@ public class NonBlockingDispatcherTest {
     @Test
     public void testDispatchSuccessOfFirst() {
         TransmissionOutputAsync mockOutput1 = Mockito.mock(TransmissionOutputAsync.class);
-        Mockito.doReturn(true).when(mockOutput1).sendAsync((Transmission) anyObject());
+        Mockito.doReturn(true).when(mockOutput1).sendAsync(anyObject());
 
         TransmissionOutputAsync mockOutput2 = Mockito.mock(TransmissionOutputAsync.class);
 
@@ -57,25 +57,25 @@ public class NonBlockingDispatcherTest {
         Transmission transmission = new Transmission(new byte[2], "mockType", "mockEncoding");
         tested.dispatch(transmission);
 
-        Mockito.verify(mockOutput1, Mockito.times(1)).sendAsync((Transmission) anyObject());
-        Mockito.verify(mockOutput2, Mockito.never()).sendAsync((Transmission) anyObject());
+        Mockito.verify(mockOutput1, Mockito.times(1)).sendAsync(anyObject());
+        Mockito.verify(mockOutput2, Mockito.never()).sendAsync(anyObject());
     }
 
     @Test
     public void testDispatchFailureOfFirst() {
         TransmissionOutputAsync mockOutput1 = Mockito.mock(TransmissionOutputAsync.class);
-        Mockito.doReturn(false).when(mockOutput1).sendAsync((Transmission) anyObject());
+        Mockito.doReturn(false).when(mockOutput1).sendAsync(anyObject());
 
         TransmissionOutputAsync mockOutput2 = Mockito.mock(TransmissionOutputAsync.class);
-        Mockito.doReturn(true).when(mockOutput2).sendAsync((Transmission) anyObject());
+        Mockito.doReturn(true).when(mockOutput2).sendAsync(anyObject());
 
         NonBlockingDispatcher tested = new NonBlockingDispatcher(new TransmissionOutputAsync[] {mockOutput1, mockOutput2});
 
         Transmission transmission = new Transmission(new byte[2], "mockType", "mockEncoding");
         tested.dispatch(transmission);
 
-        Mockito.verify(mockOutput1, Mockito.times(1)).sendAsync((Transmission) anyObject());
-        Mockito.verify(mockOutput2, Mockito.times(1)).sendAsync((Transmission) anyObject());
+        Mockito.verify(mockOutput1, Mockito.times(1)).sendAsync(anyObject());
+        Mockito.verify(mockOutput2, Mockito.times(1)).sendAsync(anyObject());
     }
 
     private NonBlockingDispatcher createDispatcher() {
