@@ -27,7 +27,6 @@ import java.util.function.Consumer;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
-import com.microsoft.applicationinsights.alerting.alert.AlertTrigger;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,7 @@ public class AlertPipelines {
 
     // List of alert analysis pipelines for each metric type, entrypoint
     // for the pipeline is a rolling average
-    private final Map<AlertMetricType, RollingAverage> alertPipelines = new HashMap<>();
+    private final Map<AlertMetricType, AlertPipeline> alertPipelines = new HashMap<>();
 
     //Handler to notify when a breach happens
     private final Consumer<AlertBreach> alertHandler;
@@ -50,23 +49,24 @@ public class AlertPipelines {
     }
 
     public OptionalDouble getAverage(AlertMetricType type) {
-        RollingAverage rollingAverage = alertPipelines.get(type);
-        if (rollingAverage != null) {
-            return rollingAverage.calculateAverage();
+        AlertPipeline pipeline = alertPipelines.get(type);
+        if (pipeline != null) {
+            return pipeline.calculateAverage();
         } else {
             return OptionalDouble.empty();
         }
     }
 
     public void updateAlertConfig(AlertConfiguration newAlertConfig) {
-        RollingAverage pipelineEntryPoint = alertPipelines.get(newAlertConfig.getType());
-        if (pipelineEntryPoint == null) {
-            pipelineEntryPoint = new RollingAverage();
-            alertPipelines.put(newAlertConfig.getType(), pipelineEntryPoint);
+        AlertPipeline pipeline = alertPipelines.get(newAlertConfig.getType());
+        if (pipeline == null) {
+            pipeline = AlertPipeline.create(new RollingAverage(), newAlertConfig, this::dispatchAlert);
+            alertPipelines.put(newAlertConfig.getType(), pipeline);
+        } else {
+            pipeline.updateConfig(newAlertConfig);
         }
 
-        LOGGER.debug("Setting alert configuration for {}: {}", newAlertConfig.getType(), newAlertConfig.toString());
-        pipelineEntryPoint.setConsumer(new AlertTrigger(newAlertConfig, this::dispatchAlert));
+        LOGGER.debug("Set alert configuration for {}: {}", newAlertConfig.getType(), newAlertConfig.toString());
     }
 
     /**
@@ -98,7 +98,7 @@ public class AlertPipelines {
      * Route telemetry to the appropriate pipeline
      */
     public void process(TelemetryDataPoint telemetryDataPoint) {
-        RollingAverage pipeline = alertPipelines.get(telemetryDataPoint.getType());
+        AlertPipeline pipeline = alertPipelines.get(telemetryDataPoint.getType());
         if (pipeline != null) {
             pipeline.track(telemetryDataPoint);
         }

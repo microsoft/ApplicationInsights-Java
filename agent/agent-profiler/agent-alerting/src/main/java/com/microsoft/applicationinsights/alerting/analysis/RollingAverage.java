@@ -47,6 +47,10 @@ public class RollingAverage {
         this.timeSource = timeSource;
     }
 
+    public long getWindowLengthInSec() {
+        return windowLengthInSec;
+    }
+
     public RollingAverage setConsumer(Consumer<Double> consumer) {
         this.consumer = consumer;
         return this;

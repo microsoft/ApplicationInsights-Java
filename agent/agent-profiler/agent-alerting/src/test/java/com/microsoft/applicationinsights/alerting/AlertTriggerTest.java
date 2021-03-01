@@ -24,8 +24,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.alerting.alert.AlertTrigger;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
+import com.microsoft.applicationinsights.alerting.analysis.AlertPipelineTrigger;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import org.junit.*;
 
@@ -35,7 +35,7 @@ public class AlertTriggerTest {
     public void underThresholdDataDoesNotTrigger() {
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
         AtomicBoolean called = new AtomicBoolean(false);
-        AlertTrigger trigger = getAlertTrigger(config, called);
+        AlertPipelineTrigger trigger = getAlertTrigger(config, called);
         for (int i = 0; i < 100; i++) {
             trigger.accept(0.4);
         }
@@ -48,7 +48,7 @@ public class AlertTriggerTest {
 
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
         AtomicBoolean called = new AtomicBoolean(false);
-        AlertTrigger trigger = getAlertTrigger(config, called);
+        AlertPipelineTrigger trigger = getAlertTrigger(config, called);
 
         for (int i = 0; i < 100; i++) {
             trigger.accept(0.51);
@@ -62,7 +62,7 @@ public class AlertTriggerTest {
     public void doesNotReTriggerDueToCooldown() {
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
         AtomicBoolean called = new AtomicBoolean(false);
-        AlertTrigger trigger = getAlertTrigger(config, called);
+        AlertPipelineTrigger trigger = getAlertTrigger(config, called);
 
         for (int i = 0; i < 100; i++) {
             trigger.accept(0.51);
@@ -86,7 +86,7 @@ public class AlertTriggerTest {
     public void doesNotReTriggerAfterCooldown() throws InterruptedException {
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
         AtomicBoolean called = new AtomicBoolean(false);
-        AlertTrigger trigger = getAlertTrigger(config, called);
+        AlertPipelineTrigger trigger = getAlertTrigger(config, called);
 
         for (int i = 0; i < 100; i++) {
             trigger.accept(0.51);
@@ -107,13 +107,13 @@ public class AlertTriggerTest {
         Assert.assertTrue(called.get());
     }
 
-    private AlertTrigger getAlertTrigger(AlertConfiguration config, AtomicBoolean called) {
+    private AlertPipelineTrigger getAlertTrigger(AlertConfiguration config, AtomicBoolean called) {
         Consumer<AlertBreach> consumer = alert -> {
             Assert.assertEquals(AlertMetricType.CPU, alert.getType());
             Assert.assertEquals(config, alert.getAlertConfiguration());
             called.set(true);
         };
 
-        return new AlertTrigger(config, consumer);
+        return new AlertPipelineTrigger(config, consumer);
     }
 }
