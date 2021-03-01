@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class MockedAppInsightsIngestionServer {
-    public static final int DEFAULT_PORT = 60606;
+    public static final int DEFAULT_PORT = 6060;
 
     private final MockedAppInsightsIngestionServlet servlet;
     private final Server server;

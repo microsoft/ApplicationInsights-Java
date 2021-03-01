@@ -1,4 +1,4 @@
-jbosseap7
+wildfly11
 tomcat7
 tomcat85
 jetty9
