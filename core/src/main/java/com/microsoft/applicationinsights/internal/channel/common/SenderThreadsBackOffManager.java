@@ -48,16 +48,12 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
     // The back-off timeouts that will be used by sender threads when need to back-off.
     private long[] backOffTimeoutsInMilliseconds = null;
 
-    // All the thread local data
-    private final ArrayList<SenderThreadLocalBackOffData> allSendersData;
-
     // A way to distinct
     private final AtomicInteger threadsSecondsDifference = new AtomicInteger(-1);
 
     private SenderThreadLocalBackOffData senderThreadLocalData;
 
     public SenderThreadsBackOffManager(BackOffTimesPolicy backOffTimesContainer) {
-        allSendersData = new ArrayList<>();
         initializeBackOffTimeouts(backOffTimesContainer);
     }
 
@@ -74,12 +70,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
     @Override
     protected synchronized SenderThreadLocalBackOffData initialValue() {
         senderThreadLocalData = new SenderThreadLocalBackOffData(backOffTimeoutsInMilliseconds, threadsSecondsDifference.incrementAndGet() * 1000L);
-        registerSenderData(senderThreadLocalData);
         return senderThreadLocalData;
-    }
-
-    private synchronized void registerSenderData(SenderThreadLocalBackOffData senderData) {
-        allSendersData.add(senderData);
     }
 
     /**
