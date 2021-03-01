@@ -20,6 +20,7 @@ public class JmxDataFetcherTest {
         long getLongSample();
     }
 
+    @SuppressWarnings("unused")
     public static class TestStub implements StubMXBean {
         public int i;
         public double d;
