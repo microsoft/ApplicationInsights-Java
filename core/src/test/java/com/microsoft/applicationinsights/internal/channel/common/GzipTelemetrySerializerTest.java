@@ -113,13 +113,13 @@ public final class GzipTelemetrySerializerTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testNull() throws Exception {
+    public void testNull() {
         GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
         tested.serialize(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNoData() throws Exception {
+    public void testNoData() {
         GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
         tested.serialize(new ArrayList<>());
     }

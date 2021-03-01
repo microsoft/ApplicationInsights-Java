@@ -30,50 +30,50 @@ public final class TransmissionTest {
     private final static String MOCK_WEB_ENCODING_TYPE = "MockEncoding";
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNullContentType() throws Exception {
+    public void testNullContentType() {
         byte[] mockContent = new byte[2];
         new Transmission(mockContent, null, MOCK_WEB_ENCODING_TYPE);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testEmptyContentType() throws Exception {
+    public void testEmptyContentType() {
         byte[] mockContent = new byte[2];
         new Transmission(mockContent, "", MOCK_WEB_ENCODING_TYPE);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNullContentEncodingType() throws Exception {
+    public void testNullContentEncodingType() {
         byte[] mockContent = new byte[2];
         new Transmission(mockContent, MOCK_WEB_CONTENT_TYPE, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testEmptyContentEncodingType() throws Exception {
+    public void testEmptyContentEncodingType() {
         byte[] mockContent = new byte[2];
         new Transmission(mockContent, MOCK_WEB_CONTENT_TYPE, "");
     }
 
     @Test(expected = NullPointerException.class)
-    public void testNullContent() throws Exception {
+    public void testNullContent() {
         new Transmission(null, MOCK_WEB_CONTENT_TYPE, MOCK_WEB_ENCODING_TYPE);
     }
 
     @Test
-    public void testVersion() throws Exception {
+    public void testVersion() {
         Transmission tested = createMockTransmission();
 
         assertEquals(1, tested.getVersion());
     }
 
     @Test
-    public void testNumberOfSends() throws Exception {
+    public void testNumberOfSends() {
         Transmission tested = createMockTransmission();
 
         assertEquals(0, tested.getNumberOfSends());
     }
 
     @Test
-    public void testIncrementNumberOfSends() throws Exception {
+    public void testIncrementNumberOfSends() {
         Transmission tested = createMockTransmission();
 
         tested.incrementNumberOfSends();
@@ -81,14 +81,14 @@ public final class TransmissionTest {
     }
 
     @Test
-    public void testNumberOfPersistence() throws Exception {
+    public void testNumberOfPersistence() {
         Transmission tested = createMockTransmission();
 
         assertEquals(0, tested.getNumberOfPersistence());
     }
 
     @Test
-    public void testIncrementNumberOfPersistence() throws Exception {
+    public void testIncrementNumberOfPersistence() {
         Transmission tested = createMockTransmission();
 
         tested.incrementNumberOfPersistence();
@@ -96,7 +96,7 @@ public final class TransmissionTest {
     }
 
     @Test
-    public void testGetContent() throws Exception {
+    public void testGetContent() {
         byte[] mockContent = new byte[2];
         Transmission tested = new Transmission(mockContent, MOCK_WEB_CONTENT_TYPE, MOCK_WEB_ENCODING_TYPE);
 
@@ -104,14 +104,14 @@ public final class TransmissionTest {
     }
 
     @Test
-    public void testGetWebContentType() throws Exception {
+    public void testGetWebContentType() {
         Transmission tested = createMockTransmission();
 
         assertEquals(MOCK_WEB_CONTENT_TYPE, tested.getWebContentType());
     }
 
     @Test
-    public void testGetWebContentEncodingType() throws Exception {
+    public void testGetWebContentEncodingType() {
         Transmission tested = createMockTransmission();
 
         assertEquals(MOCK_WEB_ENCODING_TYPE, tested.getWebContentEncodingType());

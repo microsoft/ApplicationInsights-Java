@@ -149,7 +149,7 @@ public final class TransmitterImplTest {
                     }
 
                     @Override
-                    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
+                    public void serialize(JsonTelemetryDataSerializer writer) {
 
                     }
 
@@ -225,7 +225,7 @@ public final class TransmitterImplTest {
                     }
 
                     @Override
-                    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
+                    public void serialize(JsonTelemetryDataSerializer writer) {
 
                     }
 

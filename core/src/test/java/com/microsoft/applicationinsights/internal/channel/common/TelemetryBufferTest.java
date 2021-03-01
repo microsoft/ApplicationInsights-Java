@@ -170,7 +170,7 @@ public final class TelemetryBufferTest {
     };
 
     @Test(expected = NullPointerException.class)
-    public void testNullMaxTelemetriesEnforcer() throws Exception {
+    public void testNullMaxTelemetriesEnforcer() {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
         LimitsEnforcer sendEnforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 1, 200, 20, null);
@@ -179,7 +179,7 @@ public final class TelemetryBufferTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testNullSenderTimeoutEnforcer() throws Exception {
+    public void testNullSenderTimeoutEnforcer() {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
         LimitsEnforcer maxEnforcer = createDefaultBatchSizeEnforcer();
@@ -188,7 +188,7 @@ public final class TelemetryBufferTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNegativeBufferSizeSenderIsSet() throws Exception {
+    public void testNegativeBufferSizeSenderIsSet() {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
         LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(-1);
@@ -198,7 +198,7 @@ public final class TelemetryBufferTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testZeroBufferSizeSenderIsSet() throws Exception {
+    public void testZeroBufferSizeSenderIsSet() {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
         LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(0);
@@ -208,7 +208,7 @@ public final class TelemetryBufferTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNegativeBufferTimeoutSenderIsSet() throws Exception {
+    public void testNegativeBufferTimeoutSenderIsSet() {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
         LimitsEnforcer maxEnforcer = createDefaultBatchSizeEnforcer();
@@ -218,7 +218,7 @@ public final class TelemetryBufferTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testZeroBufferTimeoutSenderIsSet() throws Exception {
+    public void testZeroBufferTimeoutSenderIsSet() {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
         LimitsEnforcer maxEnforcer = createDefaultBatchSizeEnforcer();
@@ -228,7 +228,7 @@ public final class TelemetryBufferTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testNoSenderIsSet() throws Exception {
+    public void testNoSenderIsSet() {
 
         LimitsEnforcer maxEnforcer = createDefaultBatchSizeEnforcer();
         LimitsEnforcer sendEnforcer = createDefaultSenderTimeoutEnforcer();
@@ -237,7 +237,7 @@ public final class TelemetryBufferTest {
     }
 
     @Test
-    public void testAddOneTelemetry() throws Exception {
+    public void testAddOneTelemetry() {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
 
@@ -254,7 +254,7 @@ public final class TelemetryBufferTest {
     // Ignore warning from mock
     @SuppressWarnings("unchecked")
     @Test
-    public void testSendWhenBufferIsFullInNonDeveloperMode() throws Exception {
+    public void testSendWhenBufferIsFullInNonDeveloperMode() {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
         Mockito.doReturn(true).when(mockSender).sendNow(anyCollection());
         Mockito.doReturn(true).when(mockSender).scheduleSend(any(TelemetriesTransmitter.TelemetriesFetcher.class), anyLong(), any(TimeUnit.class));
@@ -274,7 +274,7 @@ public final class TelemetryBufferTest {
 
 
     @Test
-    public void testSendReturnsFalseOnScheduleSend() throws Exception {
+    public void testSendReturnsFalseOnScheduleSend() {
         class StubTelemetriesTransmitter implements TelemetriesTransmitter<String> {
             private int scheduleSendCounter = 2;
             private Collection<String> sendNowCollection;
@@ -337,7 +337,7 @@ public final class TelemetryBufferTest {
     }
 
     @Test
-    public void testSendWhenBufferIsFullInDeveloperMode() throws Exception {
+    public void testSendWhenBufferIsFullInDeveloperMode() {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
         LimitsEnforcer maxEnforcer = createEnforcerWithCurrentValue(1);
@@ -354,7 +354,7 @@ public final class TelemetryBufferTest {
     }
 
     @Test
-    public void testSendBufferAfterTimeoutExpires() throws Exception {
+    public void testSendBufferAfterTimeoutExpires() {
 
         MockSender mockSender = new MockSender()
                 .setExpectedNumberOfScheduleSendCalls(1)
@@ -376,7 +376,7 @@ public final class TelemetryBufferTest {
     }
 
     @Test
-    public void testSendBufferAfterTimeoutExpiresButBufferWasAlreadySent() throws Exception {
+    public void testSendBufferAfterTimeoutExpiresButBufferWasAlreadySent() {
         MockSender mockSender = new MockSender()
                 .setExpectedNumberOfScheduleSendCalls(1)
                 .setExpectedNumberOfSendNowCalls(1)
@@ -397,7 +397,7 @@ public final class TelemetryBufferTest {
     }
 
     @Test
-    public void testFlushWithZero() throws Exception {
+    public void testFlushWithZero() {
         TelemetriesTransmitter mockSender = Mockito.mock(TelemetriesTransmitter.class);
 
         // Create a buffer with max buffer size of 10 and timeout of 10 seconds
@@ -411,12 +411,12 @@ public final class TelemetryBufferTest {
     }
 
     @Test
-    public void testFlushWithOneInTheBuffer() throws Exception {
+    public void testFlushWithOneInTheBuffer() {
         testFlushWithData(1);
     }
 
     @Test
-    public void testFlushWithSevenInTheBuffer() throws Exception {
+    public void testFlushWithSevenInTheBuffer() {
         testFlushWithData(7);
     }
 

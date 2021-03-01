@@ -144,6 +144,6 @@ public class ActiveTransmissionNetworkOutputTest {
     }
 
     @Test
-    public void testStop() throws Exception {
+    public void testStop() {
     }
 }

@@ -39,7 +39,7 @@ public final class ProcessPerformanceCountersModule extends AbstractPerformanceC
         this(new ProcessBuiltInPerformanceCountersFactory());
     }
 
-    public ProcessPerformanceCountersModule(PerformanceCountersFactory factory) throws Exception {
+    public ProcessPerformanceCountersModule(PerformanceCountersFactory factory) {
         super(factory);
     }
 

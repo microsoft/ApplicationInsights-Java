@@ -74,7 +74,7 @@ public final class TelemetryClientTests {
         // Setting the channel to add the sent telemetries to a collection, so they could be verified in tests.
         Mockito.doAnswer(new Answer() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Object answer(InvocationOnMock invocation) {
                 Telemetry telemetry = ((Telemetry) invocation.getArguments()[0]);
                 eventsSent.add(telemetry);
 

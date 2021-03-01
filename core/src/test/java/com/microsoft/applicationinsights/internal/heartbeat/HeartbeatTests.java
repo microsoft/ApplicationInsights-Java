@@ -184,7 +184,7 @@ public class HeartbeatTests {
     Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
         .then(new Answer<Boolean>() {
               @Override
-              public Boolean answer(InvocationOnMock invocation) throws Throwable {
+              public Boolean answer(InvocationOnMock invocation) {
                         props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
                         return true;
                       }
@@ -259,7 +259,7 @@ public class HeartbeatTests {
     Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
         .then(new Answer<Boolean>() {
           @Override
-          public Boolean answer(InvocationOnMock invocation) throws Throwable {
+          public Boolean answer(InvocationOnMock invocation) {
             props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
             return true;
           }

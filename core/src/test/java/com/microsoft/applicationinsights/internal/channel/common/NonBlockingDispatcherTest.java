@@ -41,7 +41,7 @@ public class NonBlockingDispatcherTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testNullDispatch() throws Exception {
+    public void testNullDispatch() {
         createDispatcher().dispatch(null);
     }
 

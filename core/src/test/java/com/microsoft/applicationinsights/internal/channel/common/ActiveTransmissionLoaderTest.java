@@ -38,7 +38,7 @@ public class ActiveTransmissionLoaderTest {
     private final static String TEMP_TEST_FOLDER = "TransmissionTests";
 
     @Test(expected = NullPointerException.class)
-    public void testNullFileSystem() throws Exception {
+    public void testNullFileSystem() {
         new ActiveTransmissionLoader(null, Mockito.mock(TransmissionDispatcher.class), mockStateFetcher(), 1);
     }
 

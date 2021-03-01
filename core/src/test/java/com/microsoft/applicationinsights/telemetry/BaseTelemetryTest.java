@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
 public final class BaseTelemetryTest {
     private static class StubDomainData extends Domain {
         @Override
-        public void serialize(JsonTelemetryDataSerializer serializer) throws IOException {
+        public void serialize(JsonTelemetryDataSerializer serializer) {
 
         }
     }

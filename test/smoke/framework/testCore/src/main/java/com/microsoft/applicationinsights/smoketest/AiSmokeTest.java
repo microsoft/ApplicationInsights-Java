@@ -499,7 +499,7 @@ public abstract class AiSmokeTest {
         }
     }
 
-    private static void cleanUpDockerNetwork() throws Exception {
+    private static void cleanUpDockerNetwork() {
         if (networkId == null) {
             System.out.println("No network id....nothing to clean up");
             return;

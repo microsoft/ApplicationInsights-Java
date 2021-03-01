@@ -97,7 +97,7 @@ public class AiDockerClient {
         return getFirstLineOfProcessOutput(p);
     }
 
-    private static void flushStdout(Process p) throws IOException {
+    private static void flushStdout(Process p) {
         Preconditions.checkNotNull(p);
 
         try (Scanner r = new Scanner(p.getInputStream())) {

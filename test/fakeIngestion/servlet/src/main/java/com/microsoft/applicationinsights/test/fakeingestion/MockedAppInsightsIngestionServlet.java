@@ -152,7 +152,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         logit("caught: POST "+req.getPathInfo());
 
         switch (req.getPathInfo()) {
@@ -231,7 +231,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         System.out.println("caught: GET "+req.getPathInfo());
         switch (req.getPathInfo()) {
             case "/":
