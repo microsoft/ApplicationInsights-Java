@@ -50,7 +50,7 @@ final class QuickPulseNetworkHelper {
         request.addHeader(QPS_MACHINE_NAME_HEADER, machineName);
         request.addHeader(QPS_STREAM_ID_HEADER, quickPulseId);
         request.addHeader(QPS_INSTANCE_NAME_HEADER, instanceName);
-        request.addHeader(QPS_INVARIANT_VERSION_HEADER, QuickPulse.QP_INVARIANT_VERSION.toString());
+        request.addHeader(QPS_INVARIANT_VERSION_HEADER, Integer.toString(QuickPulse.QP_INVARIANT_VERSION));
         return request;
     }
 
