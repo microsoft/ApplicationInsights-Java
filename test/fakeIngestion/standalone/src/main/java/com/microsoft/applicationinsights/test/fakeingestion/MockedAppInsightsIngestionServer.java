@@ -63,10 +63,6 @@ public class MockedAppInsightsIngestionServer {
         return this.servlet.getItemCount();
     }
 
-    public Envelope nextItem() {
-        return this.servlet.nextItem();
-    }
-
     public int getCountForType(String type) {
         Preconditions.checkNotNull(type, "type");
         return getItemsEnvelopeDataType(type).size();
