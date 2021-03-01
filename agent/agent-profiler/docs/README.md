@@ -39,11 +39,6 @@ ApplicationInsights UI under the Performance, Profiler, Triggers UI.
     - Period in seconds that performance counters are sampled. This directly impacts the frequency that
       Alerting thresholds are evaluated. Alerting thresholds by default apply an average over the last 2 min,
       at the default of 60 seconds this will be 2 samples.
-- CUSTOM_UPLOAD_URL: String (default: empty)
-    - Can be set as either an environment variable.
-    - If you wish to upload your profiles to an Azure blob storage, you may provide a SAS url to this property.
-      All profiles will be uploaded to the given container. Generates SAS link must have only write privilege, but not
-      read and be within the expiration date at the time of the upload.
 
 Profiler may also be enabled via adding a config section to applicationinsights.json:
 

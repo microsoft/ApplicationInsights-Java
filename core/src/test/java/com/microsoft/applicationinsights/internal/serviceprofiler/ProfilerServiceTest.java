@@ -101,8 +101,6 @@ public class ProfilerServiceTest {
     }
 
     public void endToEndAlertTriggerCycle(boolean triggerNow, MetricTelemetry metricTelemetry, Consumer<EventTelemetry> assertTelemetry) throws InterruptedException {
-
-        AtomicBoolean uploadToCustomStoreCalled = new AtomicBoolean(false);
         AtomicBoolean profileInvoked = new AtomicBoolean(false);
         AtomicReference<EventTelemetry> serviceProfilerIndex = new AtomicReference<>();
 
@@ -112,7 +110,7 @@ public class ProfilerServiceTest {
 
         Supplier<String> appIdSupplier = () -> appId;
 
-        ServiceProfilerUploader serviceProfilerUploader = getServiceProfilerJFRUpload(uploadToCustomStoreCalled, clientV2, appIdSupplier);
+        ServiceProfilerUploader serviceProfilerUploader = getServiceProfilerJFRUpload(clientV2, appIdSupplier);
 
         JFRService jfrService = getJfrDaemon(profileInvoked);
 
@@ -157,7 +155,6 @@ public class ProfilerServiceTest {
             }
         }
 
-        Assert.assertTrue(uploadToCustomStoreCalled.get());
         Assert.assertTrue(profileInvoked.get());
 
         Assert.assertNotNull(serviceProfilerIndex.get());
@@ -185,23 +182,16 @@ public class ProfilerServiceTest {
         };
     }
 
-    private ServiceProfilerUploader getServiceProfilerJFRUpload(AtomicBoolean uploadToCustomStoreCalled, ServiceProfilerClientV2 clientV2, Supplier<String> appIdSupplier) {
+    private ServiceProfilerUploader getServiceProfilerJFRUpload(ServiceProfilerClientV2 clientV2, Supplier<String> appIdSupplier) {
         return new ServiceProfilerUploader(
                 clientV2,
                 machineName,
                 processId,
-                appIdSupplier,
-                "a-upload-url"
+                appIdSupplier
         ) {
             @Override
             protected Single<UploadFinishArgs> performUpload(UploadContext uploadContext, BlobAccessPass uploadPass, AsynchronousFileChannel fileChannel) {
                 return Single.just(new UploadFinishArgs(stampId, timeStamp));
-            }
-
-            @Override
-            protected void uploadToCustomStore(UploadContext uploadContext, File zippedTraceFile) {
-                //NOP
-                uploadToCustomStoreCalled.set(true);
             }
         };
     }

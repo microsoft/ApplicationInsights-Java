@@ -75,38 +75,16 @@ public class ServiceProfilerUploader {
     private final String machineName;
     private final Supplier<String> appIdSupplier;
     private final String processId;
-    private final URI customUploadUrl;
 
     public ServiceProfilerUploader(
             ServiceProfilerClientV2 serviceProfilerClient,
             String machineName,
             String processId,
             Supplier<String> appIdSupplier) {
-        this(
-                serviceProfilerClient,
-                machineName,
-                processId,
-                appIdSupplier,
-                System.getenv("CUSTOM_UPLOAD_URL")
-        );
-    }
-
-    public ServiceProfilerUploader(
-            ServiceProfilerClientV2 serviceProfilerClient,
-            String machineName,
-            String processId,
-            Supplier<String> appIdSupplier,
-            String customUploadUrl) {
         this.appIdSupplier = appIdSupplier;
         this.machineName = machineName;
         this.serviceProfilerClient = serviceProfilerClient;
         this.processId = processId;
-
-        if (customUploadUrl != null && !customUploadUrl.isEmpty()) {
-            this.customUploadUrl = URI.create(customUploadUrl);
-        } else {
-            this.customUploadUrl = null;
-        }
     }
 
     /**
@@ -176,11 +154,6 @@ public class ServiceProfilerUploader {
             // Zip up profile
             zippedTraceFile = createZippedTraceFile(uploadContext);
 
-            // If required upload trace to a custom storage location
-            if (customUploadUrl != null) {
-                uploadToCustomStore(uploadContext, zippedTraceFile);
-            }
-
             // Obtain permission to upload profile
             BlobAccessPass uploadPass = serviceProfilerClient.getUploadAccess(uploadContext.getProfileId());
             if (uploadPass == null) {
@@ -199,17 +172,6 @@ public class ServiceProfilerUploader {
             close(zippedTraceFile, null);
             return Single.error(new UploadFailedException(e));
         }
-    }
-
-    // Upload file into blob storage container
-    protected void uploadToCustomStore(UploadContext uploadContext, File zippedTraceFile) throws IOException {
-        // fire and forget as its only temporary
-        AsynchronousFileChannel file = AsynchronousFileChannel.open(zippedTraceFile.toPath());
-        File traceFile = uploadContext.getTraceFile();
-        uploadToAltBlobStore(customUploadUrl, traceFile, uploadContext, file)
-                .doFinally(file::close)
-                .subscribe(done -> LOGGER.info("Upload to custom address complete"),
-                        error -> LOGGER.error("Error while uploading file to blob store", error));
     }
 
     protected Single<UploadFinishArgs> performUpload(UploadContext uploadContext, BlobAccessPass uploadPass, AsynchronousFileChannel fileChannel) throws IOException {
@@ -236,31 +198,6 @@ public class ServiceProfilerUploader {
         return TransferManager
                 .uploadFileToBlockBlob(fileChannel, blobURL, UPLOAD_BLOCK_LENGTH, null, options)
                 .doFinally(() -> LOGGER.info("upload done"));
-    }
-
-    public Maybe<CommonRestResponse> uploadToAltBlobStore(URI customUploadUrl, File file, UploadContext uploadContext,
-                                                          AsynchronousFileChannel fileChannel) {
-        try {
-            if (customUploadUrl != null) {
-
-                // add file name to sas link
-                String url = customUploadUrl.toURL().toString();
-                String[] parts = url.split("\\?");
-                if (parts.length == 2) {
-                    String urlWithFile = parts[0] + "/" + file.getName() + "?" + parts[1];
-                    // No creds so assume a sas link
-                    return uploadToSasLink(new URL(urlWithFile), uploadContext, fileChannel)
-                            .toMaybe();
-                } else {
-                    throw new MalformedURLException("Malformed custom SAS link");
-                }
-            } else {
-                return Maybe.empty();
-            }
-        } catch (Exception e) {
-            LOGGER.error("Failed to upload", e);
-            return Maybe.error(e);
-        }
     }
 
     private void close(File zippedTraceFile, AsynchronousFileChannel fileChannel) {

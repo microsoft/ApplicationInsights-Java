@@ -53,17 +53,11 @@ public class ServiceProfilerUploaderTest {
                 serviceProfilerClient,
                 "a-machine-name",
                 "a-process-id",
-                appId::toString,
-                "a-upload-url"
+                appId::toString
         ) {
             @Override
             protected Single<UploadFinishArgs> performUpload(UploadContext uploadContext, BlobAccessPass uploadPass, AsynchronousFileChannel fileChannel) {
                 return Single.just(new UploadFinishArgs("a-stamp-id", "a-timestamp"));
-            }
-
-            @Override
-            protected void uploadToCustomStore(UploadContext uploadContext, File zippedTraceFile) {
-                //NOP
             }
         };
 
