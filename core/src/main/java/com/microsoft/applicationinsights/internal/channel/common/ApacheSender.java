@@ -41,8 +41,6 @@ public interface ApacheSender {
 
     void dispose(HttpResponse response);
 
-    void close();
-
     HttpClient getHttpClient();
 
     void enhanceRequest(HttpPost request);

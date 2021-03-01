@@ -12,6 +12,8 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class JmxDataFetcherTest {
+
+    @SuppressWarnings("unused")
     public interface StubMXBean {
         int getIntSample();
         double getDoubleSample();

@@ -111,12 +111,6 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
         return quickPulseStatus;
     }
 
-    @Override
-    public void stop() {
-        stopped = true;
-        quickPulseStatus = QuickPulseStatus.ERROR;
-    }
-
     private void onPostError(long sendTime) {
         if (stopped) {
             return;

@@ -177,11 +177,6 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
     this.disableDefaultProperties = excludedHeartBeatProperties;
   }
 
-  public void stop(long timeout, TimeUnit timeUnit) {
-    ThreadPoolUtils.stop(propertyUpdateService, timeout, timeUnit);
-    ThreadPoolUtils.stop(heartBeatSenderService, timeout, timeUnit);
-  }
-
   /**
    * Send the heartbeat item synchronously to application insights backend.
    */

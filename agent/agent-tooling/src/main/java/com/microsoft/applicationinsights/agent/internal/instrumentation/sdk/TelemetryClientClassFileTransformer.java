@@ -708,6 +708,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
 
     // DO NOT REMOVE
     // this is used during development for generating above bytecode
+    @SuppressWarnings("unused")
     public static class TC {
 
         private TelemetryConfiguration configuration;

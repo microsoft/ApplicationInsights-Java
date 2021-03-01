@@ -50,7 +50,7 @@ public final class BaseTelemetryTest {
         public StubTelemetry() {
         }
 
-        public StubTelemetry(String ignore) {
+        public StubTelemetry(@SuppressWarnings("unused") String ignored) {
             initialize(new ConcurrentHashMap<String, String>());
         }
 

@@ -28,6 +28,4 @@ interface QuickPulseDataSender extends Runnable {
     void startSending();
 
     QuickPulseStatus getQuickPulseStatus();
-
-    void stop();
 }

@@ -55,7 +55,6 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
     private final AtomicInteger threadsSecondsDifference = new AtomicInteger(-1);
 
     private SenderThreadLocalBackOffData senderThreadLocalData;
-    private boolean stopped;
 
     public SenderThreadsBackOffManager(BackOffTimesPolicy backOffTimesContainer) {
         allSendersData = new ArrayList<SenderThreadLocalBackOffData>();
@@ -80,10 +79,6 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
     }
 
     private synchronized void registerSenderData(SenderThreadLocalBackOffData senderData) {
-        if (stopped) {
-            senderData.stop();
-        }
-
         allSendersData.add(senderData);
     }
 

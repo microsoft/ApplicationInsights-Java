@@ -152,14 +152,6 @@ public final class TransmissionPolicyManager implements TransmissionHandler {
     }
 
     /**
-     * Stop this transmission thread from sending.
-     */
-    public synchronized void stop(long timeout, TimeUnit timeUnit) {
-        ThreadPoolUtils.stop(threads, timeout, timeUnit);
-        this.backoffManager.remove();
-    }
-
-    /**
      * Get the policy state fetcher
      * @return A {@link TransmissionPolicyStateFetcher} object
      */
