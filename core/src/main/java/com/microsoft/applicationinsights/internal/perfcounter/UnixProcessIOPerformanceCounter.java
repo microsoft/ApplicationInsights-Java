@@ -92,7 +92,7 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
     public Double getCurrentIOForCurrentProcess() {
         BufferedReader bufferedReader = null;
 
-        Double result = null;
+        Double result;
         UnixProcessIOtParser parser = new UnixProcessIOtParser();
         try {
             bufferedReader = new BufferedReader(new FileReader(getProcessFile()));

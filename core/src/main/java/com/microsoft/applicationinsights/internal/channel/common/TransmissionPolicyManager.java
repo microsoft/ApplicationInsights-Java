@@ -74,7 +74,7 @@ public final class TransmissionPolicyManager implements TransmissionHandler {
 
     // Keeps the current policy state of the transmission
     private final TransmissionPolicyState policyState = new TransmissionPolicyState();
-    private boolean throttlingIsEnabled = true;
+    private final boolean throttlingIsEnabled;
 
     private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
 

@@ -40,7 +40,7 @@ public class SimpleCalculatorServlet extends HttpServlet {
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        BinaryCalculation bc = null;
+        BinaryCalculation bc;
         try {
             bc = readParameters(request.getParameterMap());
         }

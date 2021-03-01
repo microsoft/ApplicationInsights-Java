@@ -43,7 +43,7 @@ public final class Sanitizer {
 
             // In case that the truncated string is invalid
             // URI we will not do nothing and let the Endpoint to drop the property
-            URI temp = null;
+            URI temp;
             try {
                 temp = new URI(urlAsString);
                 return temp;

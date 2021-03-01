@@ -112,7 +112,7 @@ public class ActiveTransmissionNetworkOutputTest {
 
     private void testSend(int amount, int expectedSends, ActiveTransmissionNetworkOutput theTested) throws InterruptedException {
         TransmissionOutputSync mockOutput = null;
-        ActiveTransmissionNetworkOutput tested = null;
+        ActiveTransmissionNetworkOutput tested;
         if (theTested == null) {
             mockOutput = Mockito.mock(TransmissionOutputSync.class);
             Mockito.doReturn(true).when(mockOutput).sendSync((Transmission) anyObject());
