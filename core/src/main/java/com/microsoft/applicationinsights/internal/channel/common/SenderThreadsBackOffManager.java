@@ -72,13 +72,6 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
         return currentThreadData.backOffTimerValue();
     }
 
-    public synchronized void stopAllSendersBackOffActivities() {
-        for (SenderThreadLocalBackOffData sender : allSendersData) {
-            sender.stop();
-        }
-        stopped = true;
-    }
-
     @Override
     protected synchronized SenderThreadLocalBackOffData initialValue() {
         senderThreadLocalData = new SenderThreadLocalBackOffData(backOffTimeoutsInMilliseconds, threadsSecondsDifference.incrementAndGet() * 1000L);
