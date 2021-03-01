@@ -32,18 +32,6 @@ public class PartialSuccessHandler implements TransmissionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(PartialSuccessHandler.class);
 
-    /**
-     * Ctor
-     *
-     * Constructs the PartialSuccessHandler object.
-     *
-     * @param policy
-     *            The {@link TransmissionPolicyManager} object that is needed to
-     *            control the back off policy.
-     */
-    public PartialSuccessHandler(TransmissionPolicyManager policy) {
-    }
-
     @Override
     public void onTransmissionSent(TransmissionHandlerArgs args) {
         validateTransmissionAndSend(args);
