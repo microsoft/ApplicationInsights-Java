@@ -13,11 +13,11 @@ public interface AlertPipelineMXBean {
 
     double getCurrentAverage();
 
-    boolean enabled();
+    boolean getEnabled();
 
     boolean isOffCooldown();
 
-    String lastAlertTime();
+    String getLastAlertTime();
 
     //Operations
     // - no operations currently implemented

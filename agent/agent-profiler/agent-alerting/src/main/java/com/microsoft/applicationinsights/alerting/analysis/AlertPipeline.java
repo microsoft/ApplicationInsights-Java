@@ -99,7 +99,7 @@ public class AlertPipeline implements AlertPipelineMXBean {
         return calculateAverage().orElse(0.0d);
     }
 
-    @Override public boolean enabled() {
+    @Override public boolean getEnabled() {
         return alertConfiguration.isEnabled();
     }
 
@@ -107,7 +107,7 @@ public class AlertPipeline implements AlertPipelineMXBean {
         return this.alertTrigger.isOffCooldown();
     }
 
-    @Override public String lastAlertTime() {
+    @Override public String getLastAlertTime() {
         return DateTimeFormatter.ISO_ZONED_DATE_TIME.format(this.alertTrigger.getLastAlertTime());
     }
 }
