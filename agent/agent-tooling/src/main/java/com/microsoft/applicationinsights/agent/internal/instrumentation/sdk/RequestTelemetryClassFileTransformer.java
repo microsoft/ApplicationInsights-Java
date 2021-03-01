@@ -21,6 +21,7 @@
 package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 
 import java.lang.instrument.ClassFileTransformer;
+import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
 
 import net.bytebuddy.jar.asm.ClassReader;
@@ -32,6 +33,8 @@ import org.objectweb.asm.util.ASMifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static net.bytebuddy.jar.asm.Opcodes.ACC_PRIVATE;
+import static net.bytebuddy.jar.asm.Opcodes.ACC_PROTECTED;
 import static net.bytebuddy.jar.asm.Opcodes.ACC_PUBLIC;
 import static net.bytebuddy.jar.asm.Opcodes.ACONST_NULL;
 import static net.bytebuddy.jar.asm.Opcodes.ARETURN;
@@ -81,6 +84,13 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
                                          String /*@Nullable*/[] exceptions) {
             if (name.equals("getSource") && descriptor.equals("()Ljava/lang/String;")) {
                 foundGetSourceMethod = true;
+            }
+            if (name.equals("getMetrics") && descriptor.equals("()Ljava/util/concurrent/ConcurrentMap;")
+                    && !Modifier.isPublic(access)) {
+                // getMetrics() was package-private prior to 2.2.0
+                // remove private and protected flags, add public flag
+                int updatedAccess = (access & ~ACC_PRIVATE & ~ACC_PROTECTED) | ACC_PUBLIC;
+                return super.visitMethod(updatedAccess, name, descriptor, signature, exceptions);
             }
             return super.visitMethod(access, name, descriptor, signature, exceptions);
         }
