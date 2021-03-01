@@ -113,7 +113,7 @@ public class SimpleCalculatorServlet extends HttpServlet {
         try {
             return Double.parseDouble(param);
         } catch (NumberFormatException e) {
-            throw new CalculatorParameterException(String.format("Left operand is not a number: %s", param), e);
+            throw new CalculatorParameterException(String.format(errMsgFmt, param), e);
         }
     }
 
