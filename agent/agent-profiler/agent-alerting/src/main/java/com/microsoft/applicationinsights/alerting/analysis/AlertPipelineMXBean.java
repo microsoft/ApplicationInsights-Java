@@ -15,7 +15,7 @@ public interface AlertPipelineMXBean {
 
     boolean enabled();
 
-    boolean isOnCooldown();
+    boolean isOffCooldown();
 
     String lastAlertTime();
 

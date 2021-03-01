@@ -46,14 +46,14 @@ public class AlertPipelineTrigger implements Consumer<Double> {
     @Override
     public void accept(Double telemetry) {
         if (alertConfig.isEnabled() && telemetry > alertConfig.getThreshold()) {
-            if (isOnCooldown()) {
+            if (isOffCooldown()) {
                 lastAlertTime = ZonedDateTime.now();
                 action.accept(new AlertBreach(alertConfig.getType(), telemetry, alertConfig));
             }
         }
     }
 
-    public boolean isOnCooldown() {
+    public boolean isOffCooldown() {
         ZonedDateTime coolDownCutOff = ZonedDateTime.now().minusSeconds(alertConfig.getCooldown());
         return lastAlertTime == null || lastAlertTime.isBefore(coolDownCutOff);
     }

@@ -103,8 +103,8 @@ public class AlertPipeline implements AlertPipelineMXBean {
         return alertConfiguration.isEnabled();
     }
 
-    @Override public boolean isOnCooldown() {
-        return this.alertTrigger.isOnCooldown();
+    @Override public boolean isOffCooldown() {
+        return this.alertTrigger.isOffCooldown();
     }
 
     @Override public String lastAlertTime() {
