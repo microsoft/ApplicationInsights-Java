@@ -102,7 +102,7 @@ public class Envelope
     /**
      * Gets the IKey property.
      */
-    // used by tests
+    // used by smoke tests
     public String getIKey() {
         return this.iKey;
     }
