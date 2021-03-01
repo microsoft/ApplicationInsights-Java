@@ -53,7 +53,7 @@ public class HttpHelper {
         CloseableHttpClient client = getHttpClient();
         try {
             HttpPost post = new HttpPost(url);
-            post.setEntity(new StringEntity("PING"));
+            post.setEntity(new StringEntity(body));
             CloseableHttpResponse resp1 = client.execute(post);
             return extractResponseBody(resp1);
         }
