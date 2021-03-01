@@ -29,8 +29,7 @@ public class PartialSuccessHandlerTest {
         args.setTransmission(new Transmission(new byte[] { 0 }, "testcontent", "testencoding"));
         args.setTransmissionDispatcher(mockedDispatcher);
         PartialSuccessHandler eh = new PartialSuccessHandler();
-        boolean result = eh.validateTransmissionAndSend(args);
-        return result;
+        return eh.validateTransmissionAndSend(args);
     }
 
     private boolean generateTransmissionWithPartialResult(String responseBody) {
@@ -41,8 +40,7 @@ public class PartialSuccessHandlerTest {
         args.setTransmissionDispatcher(mockedDispatcher);
         args.setResponseBody(responseBody);
         PartialSuccessHandler eh = new PartialSuccessHandler();
-        boolean result = eh.validateTransmissionAndSend(args);
-        return result;
+        return eh.validateTransmissionAndSend(args);
     }
 
     @Test

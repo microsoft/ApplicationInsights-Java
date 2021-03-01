@@ -82,7 +82,6 @@ public class NonBlockingDispatcherTest {
         TransmissionOutputAsync mockOutput1 = Mockito.mock(TransmissionOutputAsync.class);
         TransmissionOutputAsync mockOutput2 = Mockito.mock(TransmissionOutputAsync.class);
 
-        NonBlockingDispatcher tested = new NonBlockingDispatcher(new TransmissionOutputAsync[] {mockOutput1, mockOutput2});
-        return tested;
+        return new NonBlockingDispatcher(new TransmissionOutputAsync[] {mockOutput1, mockOutput2});
     }
 }

@@ -24,8 +24,7 @@ public class ThrottlingHandlerTest {
         args.setTransmission(new Transmission(new byte[] { 0 }, "testcontent", "testencoding"));
         args.setTransmissionDispatcher(mockedDispatcher);
         ThrottlingHandler eh = new ThrottlingHandler(tpm);
-        boolean result = eh.validateTransmissionAndSend(args);
-        return result;
+        return eh.validateTransmissionAndSend(args);
     }
 
     private boolean generateTransmissionWithStatusCodeAndHeader(int code, String retryHeader) {
@@ -37,8 +36,7 @@ public class ThrottlingHandlerTest {
         args.setTransmissionDispatcher(mockedDispatcher);
         args.setRetryHeader(new BasicHeader(RESPONSE_THROTTLING_HEADER, retryHeader));
         ThrottlingHandler eh = new ThrottlingHandler(tpm);
-        boolean result = eh.validateTransmissionAndSend(args);
-        return result;
+        return eh.validateTransmissionAndSend(args);
     }
 
     @Test

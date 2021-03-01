@@ -43,9 +43,8 @@ public class DateTimeUtils {
      */
     public static Date parseRoundTripDateString(String roundTripString) throws ParseException {
         SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
-        Date date = roundTripDateFormat.parse(roundTripString);
 
-        return date;
+        return roundTripDateFormat.parse(roundTripString);
     }
 
     /**

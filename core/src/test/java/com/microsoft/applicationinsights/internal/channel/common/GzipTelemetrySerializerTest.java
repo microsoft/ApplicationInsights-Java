@@ -216,8 +216,7 @@ public final class GzipTelemetrySerializerTest {
         HashMap<String, String> hash1 = new HashMap<>();
         hash1.put("mock" + index + "_1", "value1" + index + "_1");
         hash1.put("mock" + index + "_2", "value1" + index + "_2");
-        StubTelemetry stubTelemetry = new StubTelemetry("stub" + index, hash1);
 
-        return stubTelemetry;
+        return new StubTelemetry("stub" + index, hash1);
     }
 }

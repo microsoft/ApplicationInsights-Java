@@ -81,8 +81,7 @@ public final class ReflectionUtils {
             } else {
                 clazz = clazz.asSubclass(interfaceClass);
             }
-            T instance = (T)clazz.newInstance();
-            return instance;
+            return (T)clazz.newInstance();
         } catch (Exception e) {
             logger.error("Failed to create {}", className, e);
         }

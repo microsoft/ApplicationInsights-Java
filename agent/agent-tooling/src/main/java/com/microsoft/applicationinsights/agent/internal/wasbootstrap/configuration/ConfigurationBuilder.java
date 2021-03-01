@@ -307,8 +307,7 @@ public class ConfigurationBuilder {
             Buffer buffer = new Buffer();
             buffer.readFrom(in);
             try {
-                Configuration configuration = jsonAdapter.fromJson(buffer);
-                return configuration;
+                return jsonAdapter.fromJson(buffer);
             } catch(JsonDataException ex) {
                 if(strict) {
                     // Try extracting the configuration without failOnUnknown

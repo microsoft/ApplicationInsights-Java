@@ -415,8 +415,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
     private static ExceptionDetails getExceptionDetails(ExceptionData exceptionData) {
         List<ExceptionDetails> details = exceptionData.getExceptions();
-        ExceptionDetails ex = details.get(0);
-        return ex;
+        return details.get(0);
     }
 
     private void validateSlowTest(int expectedDurationSeconds, String operationName) throws Exception {

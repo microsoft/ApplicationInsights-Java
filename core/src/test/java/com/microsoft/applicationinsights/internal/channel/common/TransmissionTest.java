@@ -119,7 +119,6 @@ public final class TransmissionTest {
 
     private static Transmission createMockTransmission() {
         byte[] mockContent = new byte[2];
-        Transmission tested = new Transmission(mockContent, MOCK_WEB_CONTENT_TYPE, MOCK_WEB_ENCODING_TYPE);
-        return tested;
+        return new Transmission(mockContent, MOCK_WEB_CONTENT_TYPE, MOCK_WEB_ENCODING_TYPE);
     }
 }
