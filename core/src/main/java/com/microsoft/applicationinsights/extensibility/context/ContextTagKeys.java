@@ -69,14 +69,6 @@ public class ContextTagKeys
     // 16: Optional string DeviceVMName
     private String DeviceVMName;
 
-    // 17: Optional string DeviceRoleName
-    @Deprecated
-    private String DeviceRoleName;
-
-    // 18: Optional string DeviceRoleInstance
-    @Deprecated
-    private String DeviceRoleInstance;
-
     // 19: Optional string DeviceOEMName
     private String DeviceOEMName;
 
@@ -822,8 +814,6 @@ public class ContextTagKeys
         DeviceLocale = "ai.device.locale";
         DeviceType = "ai.device.type";
         DeviceVMName = "ai.device.vmName";
-        DeviceRoleName = "ai.device.roleName";
-        DeviceRoleInstance = "ai.device.roleInstance";
         DeviceOEMName = "ai.device.oemName";
         DeviceModel = "ai.device.model";
         DeviceNetwork = "ai.device.network";

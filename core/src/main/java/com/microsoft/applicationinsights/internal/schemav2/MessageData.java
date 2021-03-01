@@ -37,7 +37,7 @@ public class MessageData extends Domain
     /**
      * Backing field for property Ver.
      */
-    private final int ver = 2;
+    private static final int ver = 2;
 
     /**
      * Backing field for property Message.
