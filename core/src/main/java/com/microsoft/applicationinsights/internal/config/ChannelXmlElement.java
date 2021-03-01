@@ -78,7 +78,7 @@ public class ChannelXmlElement {
     }
 
     public Map<String, String> getData() {
-        HashMap<String, String> data = new HashMap<String, String>();
+        HashMap<String, String> data = new HashMap<>();
         if (developerMode) {
             data.put("DeveloperMode", "true");
         }

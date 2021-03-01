@@ -110,7 +110,7 @@ public class PartialSuccessHandlerTest {
         args.setTransmission(new Transmission(fourItems, "application/x-json-stream", "gzip"));
         args.setTransmissionDispatcher(mockedDispatcher);
         PartialSuccessHandler eh = new PartialSuccessHandler();
-        boolean result = eh.sendNewTransmissionFromStrings(args, new ArrayList<String>());
+        boolean result = eh.sendNewTransmissionFromStrings(args, new ArrayList<>());
         Assert.assertFalse(result);
     }
 
@@ -227,7 +227,7 @@ public class PartialSuccessHandlerTest {
         args.setTransmission(new Transmission(fourItems, "application/x-json-stream", "gzip"));
         args.setTransmissionDispatcher(mockedDispatcher);
         PartialSuccessHandler eh = new PartialSuccessHandler();
-        List<String> singleItem = new ArrayList<String>();
+        List<String> singleItem = new ArrayList<>();
         singleItem.add("{\"ver\":1,\"name\":\"Microsoft.ApplicationInsights.b69a3a06e25a425ba1a44e9ff6f13582.Event\",\"time\":\"2018-02-11T16:02:36.120-0500\",\"sampleRate\":100.0,\"iKey\":\"b69a3a06-e25a-425b-a1a4-4e9ff6f13582\",\"tags\":{\"ai.internal.sdkVersion\":\"java:2.0.0-beta-snapshot\",\"ai.device.id\":\"test.machine.name\",\"ai.device.locale\":\"en-US\",\"ai.internal.nodename\":\"test.machine.name\",\"ai.device.os\":\"Windows 10\",\"ai.device.roleInstance\":\"test.machine.name\",\"ai.device.osVersion\":\"Windows 10\",\"ai.session.id\":\"20180211160233\"},\"data\":{\"baseType\":\"EventData\",\"baseData\":{\"ver\":2,\"name\":\"TestEvent0\",\"properties\":null}}}\r\n");
         boolean result = eh.sendNewTransmissionFromStrings(args, singleItem);
         Assert.assertTrue(result);

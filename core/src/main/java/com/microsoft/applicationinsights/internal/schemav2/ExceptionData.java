@@ -74,7 +74,7 @@ public class ExceptionData extends Domain
      */
     public List<ExceptionDetails> getExceptions() {
         if (this.exceptions == null) {
-            this.exceptions = new ArrayList<ExceptionDetails>();
+            this.exceptions = new ArrayList<>();
         }
         return this.exceptions;
     }
@@ -105,7 +105,7 @@ public class ExceptionData extends Domain
      */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
-            this.properties = new ConcurrentHashMap<String, String>();
+            this.properties = new ConcurrentHashMap<>();
         }
         return this.properties;
     }
@@ -115,7 +115,7 @@ public class ExceptionData extends Domain
      */
     public ConcurrentMap<String, Double> getMeasurements() {
         if (this.measurements == null) {
-            this.measurements = new ConcurrentHashMap<String, Double>();
+            this.measurements = new ConcurrentHashMap<>();
         }
         return this.measurements;
     }

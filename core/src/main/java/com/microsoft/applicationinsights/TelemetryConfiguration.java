@@ -53,8 +53,8 @@ public final class TelemetryConfiguration {
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
-    private final List<ContextInitializer> contextInitializers =  new  CopyOnWriteArrayList<ContextInitializer>();
-    private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<TelemetryModule>();
+    private final List<ContextInitializer> contextInitializers = new CopyOnWriteArrayList<>();
+    private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
     private TelemetryChannel channel;
 

@@ -106,7 +106,7 @@ public final class TransmissionPolicyManager implements TransmissionHandler {
     public TransmissionPolicyManager(boolean throttlingIsEnabled) {
         suspensionDate = null;
         this.throttlingIsEnabled = throttlingIsEnabled;
-        this.transmissionHandlers = new ArrayList<TransmissionHandler>();
+        this.transmissionHandlers = new ArrayList<>();
         this.backoffManager = new SenderThreadsBackOffManager(new ExponentialBackOffTimesPolicy());
     }
 

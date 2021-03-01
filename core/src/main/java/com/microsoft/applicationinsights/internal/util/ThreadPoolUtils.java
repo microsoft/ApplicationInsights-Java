@@ -44,7 +44,7 @@ public final class ThreadPoolUtils {
                 maxNumberOfThreads,
                 defaultRemoveIdleThread,
                 TimeUnit.SECONDS,
-                new ArrayBlockingQueue<Runnable>(bufferSize));
+                new ArrayBlockingQueue<>(bufferSize));
     }
 
     /**

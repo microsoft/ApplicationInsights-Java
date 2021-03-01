@@ -82,7 +82,7 @@ public enum QuickPulse {
                     initialized = true;
                     final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
                     ApacheSender apacheSender = ApacheSenderFactory.INSTANCE.get();
-                    ArrayBlockingQueue<HttpPost> sendQueue = new ArrayBlockingQueue<HttpPost>(256, true);
+                    ArrayBlockingQueue<HttpPost> sendQueue = new ArrayBlockingQueue<>(256, true);
 
                     quickPulseDataSender = new DefaultQuickPulseDataSender(apacheSender, sendQueue);
 

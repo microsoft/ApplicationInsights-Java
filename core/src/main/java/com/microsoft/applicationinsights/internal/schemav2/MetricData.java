@@ -64,7 +64,7 @@ public class MetricData extends Domain
      */
     public List<DataPoint> getMetrics() {
         if (this.metrics == null) {
-            this.metrics = new ArrayList<DataPoint>();
+            this.metrics = new ArrayList<>();
         }
         return this.metrics;
     }
@@ -74,7 +74,7 @@ public class MetricData extends Domain
      */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
-            this.properties = new ConcurrentHashMap<String, String>();
+            this.properties = new ConcurrentHashMap<>();
         }
         return this.properties;
     }

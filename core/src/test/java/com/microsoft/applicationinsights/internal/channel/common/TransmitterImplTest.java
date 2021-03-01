@@ -126,7 +126,7 @@ public final class TransmitterImplTest {
             TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
             TransmissionsLoader mockLoader = Mockito.mock(TransmissionsLoader.class);
 
-            final List<Telemetry> telemetries = new ArrayList<Telemetry>();
+            final List<Telemetry> telemetries = new ArrayList<>();
             for (int i = 0; i < numberOfTransmissions; ++i) {
                 telemetries.add(new Telemetry() {
                     @Override
@@ -202,7 +202,7 @@ public final class TransmitterImplTest {
             TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
             TransmissionsLoader mockLoader = Mockito.mock(TransmissionsLoader.class);
 
-            final List<Telemetry> telemetries = new ArrayList<Telemetry>();
+            final List<Telemetry> telemetries = new ArrayList<>();
             for (int i = 0; i < numberOfTransmissions; ++i) {
                 telemetries.add(new Telemetry() {
                     @Override

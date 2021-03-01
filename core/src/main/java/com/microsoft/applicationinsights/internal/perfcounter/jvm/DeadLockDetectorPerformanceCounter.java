@@ -78,7 +78,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
         long[] threadIds = threadBean.findDeadlockedThreads();
         if (threadIds != null && threadIds.length > 0) {
-            ArrayList<Long> blockedThreads = new ArrayList<Long>();
+            ArrayList<Long> blockedThreads = new ArrayList<>();
 
             StringBuilder sb = new StringBuilder();
             for (long threadId : threadIds) {

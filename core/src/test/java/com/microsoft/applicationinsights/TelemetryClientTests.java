@@ -70,7 +70,7 @@ public final class TelemetryClientTests {
         channel = mock(TelemetryChannel.class);
         configuration.setChannel(channel);
 
-        eventsSent = new LinkedList<Telemetry>();
+        eventsSent = new LinkedList<>();
         // Setting the channel to add the sent telemetries to a collection, so they could be verified in tests.
         Mockito.doAnswer(new Answer() {
             @Override

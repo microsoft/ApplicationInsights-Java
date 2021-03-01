@@ -95,7 +95,7 @@ public class MessageData extends Domain
      */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
-            this.properties = new ConcurrentHashMap<String, String>();
+            this.properties = new ConcurrentHashMap<>();
         }
         return this.properties;
     }

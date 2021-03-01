@@ -60,7 +60,7 @@ public final class TelemetryContext {
      * Default Ctor
      */
     public TelemetryContext() {
-        this(new ConcurrentHashMap<String, String>(), new ContextTagsMap());
+        this(new ConcurrentHashMap<>(), new ContextTagsMap());
     }
 
     /**

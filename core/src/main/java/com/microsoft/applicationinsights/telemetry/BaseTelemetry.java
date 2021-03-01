@@ -122,7 +122,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
 
         setSampleRate(envelope);
         envelope.setIKey(context.getInstrumentationKey());
-        Data<T> tmp = new Data<T>();
+        Data<T> tmp = new Data<>();
         tmp.setBaseData(getData());
         tmp.setBaseType(this.getBaseTypeName());
         envelope.setData(tmp);

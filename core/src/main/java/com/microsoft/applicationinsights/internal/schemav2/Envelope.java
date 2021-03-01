@@ -119,7 +119,7 @@ public class Envelope
      */
     public ConcurrentMap<String, String> getTags() {
         if (this.tags == null) {
-            this.tags = new ConcurrentHashMap<String, String>();
+            this.tags = new ConcurrentHashMap<>();
         }
         return this.tags;
     }

@@ -148,7 +148,7 @@ public class ExceptionDetails
      */
     public List<StackFrame> getParsedStack() {
         if (this.parsedStack == null) {
-            this.parsedStack = new ArrayList<StackFrame>();
+            this.parsedStack = new ArrayList<>();
         }
         return this.parsedStack;
     }

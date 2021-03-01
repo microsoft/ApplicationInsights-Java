@@ -59,7 +59,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
                 }
 
                 if (backendResponse != null && (backendResponse.itemsAccepted < backendResponse.itemsReceived)) {
-                    List<String> newTransmission = new ArrayList<String>();
+                    List<String> newTransmission = new ArrayList<>();
                     for (BackendResponse.Error e : backendResponse.errors) {
                         switch (e.statusCode) {
                         case TransmissionSendResult.REQUEST_TIMEOUT:
@@ -100,7 +100,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
      * @return A List<> of each sent item
      */
     List<String> generateOriginalItems(TransmissionHandlerArgs args) {
-        List<String> originalItems = new ArrayList<String>();
+        List<String> originalItems = new ArrayList<>();
 
         if ("gzip".equalsIgnoreCase(args.getTransmission().getWebContentEncodingType())) {
 

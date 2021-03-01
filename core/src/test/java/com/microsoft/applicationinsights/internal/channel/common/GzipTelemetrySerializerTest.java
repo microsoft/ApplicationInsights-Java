@@ -121,7 +121,7 @@ public final class GzipTelemetrySerializerTest {
     @Test(expected = IllegalArgumentException.class)
     public void testNoData() throws Exception {
         GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
-        tested.serialize(new ArrayList<Telemetry>());
+        tested.serialize(new ArrayList<>());
     }
 
     @Test
@@ -142,10 +142,10 @@ public final class GzipTelemetrySerializerTest {
     private void testSerialization(int amount) throws Exception {
         GzipTelemetrySerializer tested = new GzipTelemetrySerializer();
 
-        List<Telemetry> telemetries = new ArrayList<Telemetry>(amount);
-        List<String> telemetriesSerialized = new ArrayList<String>(amount);
+        List<Telemetry> telemetries = new ArrayList<>(amount);
+        List<String> telemetriesSerialized = new ArrayList<>(amount);
 
-        HashMap<String, StubTelemetry> expected = new HashMap<String, StubTelemetry>();
+        HashMap<String, StubTelemetry> expected = new HashMap<>();
 
         for (int i = 0; i < amount; ++i) {
 
@@ -213,7 +213,7 @@ public final class GzipTelemetrySerializerTest {
     }
 
     private StubTelemetry createStubTelemetry(String index) {
-        HashMap<String, String> hash1 = new HashMap<String, String>();
+        HashMap<String, String> hash1 = new HashMap<>();
         hash1.put("mock" + index + "_1", "value1" + index + "_1");
         hash1.put("mock" + index + "_2", "value1" + index + "_2");
         StubTelemetry stubTelemetry = new StubTelemetry("stub" + index, hash1);

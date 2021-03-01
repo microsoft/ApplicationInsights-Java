@@ -74,7 +74,7 @@ public final class TelemetryBufferTest {
 
         private ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
 
-        private final BlockingQueue<ScheduledSendResult> queue = new ArrayBlockingQueue<ScheduledSendResult>(4);
+        private final BlockingQueue<ScheduledSendResult> queue = new ArrayBlockingQueue<>(4);
 
         public MockSender setExpectedTelemetriesNumberInSendNow(int expectedTelemetriesNumberInSendNow) {
             this.expectedTelemetriesNumberInSendNow = expectedTelemetriesNumberInSendNow;
@@ -305,8 +305,8 @@ public final class TelemetryBufferTest {
             }
         };
 
-        List<String> all = new ArrayList<String>();
-        List<String> expected = new ArrayList<String>();
+        List<String> all = new ArrayList<>();
+        List<String> expected = new ArrayList<>();
         for (int i = 0; i < 4; ++i) {
             String mockSerializedTelemetry = "mockTelemtry" + String.valueOf(i);
             all.add(mockSerializedTelemetry);

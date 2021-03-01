@@ -47,7 +47,7 @@ public class AddTypeXmlElement {
     }
 
     public Map<String, String> getData() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
 
         for (ParamXmlElement element : getParameters()) {
             map.put(element.getName(), element.getValue());

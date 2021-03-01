@@ -46,7 +46,7 @@ public class PerformanceCounterJvmSectionXmlElement {
     }
 
     public HashMap<String, JvmXmlElement> getJvmXmlElementsMap() {
-        HashMap<String, JvmXmlElement> jvmPcsMap = new HashMap<String, JvmXmlElement>();
+        HashMap<String, JvmXmlElement> jvmPcsMap = new HashMap<>();
         for (JvmXmlElement jvmPc : jvmXmlElements) {
             jvmPcsMap.put(jvmPc.getName(), jvmPc);
         }

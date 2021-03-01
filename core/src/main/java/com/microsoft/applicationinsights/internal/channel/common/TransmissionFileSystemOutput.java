@@ -101,8 +101,8 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
     private final AtomicLong size;
 
     /// Cache old files here to re-send to have better performance
-    private final ArrayList<File> cacheOfOldestFiles = new ArrayList<File>();
-    private final HashSet<String> filesThatAreBeingLoaded = new HashSet<String>();
+    private final ArrayList<File> cacheOfOldestFiles = new ArrayList<>();
+    private final HashSet<String> filesThatAreBeingLoaded = new HashSet<>();
 
     public TransmissionFileSystemOutput(String folderPath, String maxTransmissionStorageCapacity) {
         if (folderPath == null) {

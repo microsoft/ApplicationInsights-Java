@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 public class CloudContextTest {
     @Test
     public void testSetRoleInstance() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         CloudContext context = new CloudContext(map);
         final String expected = "mock-instance";
         context.setRoleInstance(expected);
@@ -21,7 +21,7 @@ public class CloudContextTest {
 
     @Test
     public void testSetRoleName() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         CloudContext context = new CloudContext(map);
         final String expected = "mock-role";
         context.setRole(expected);

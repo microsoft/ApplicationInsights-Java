@@ -74,7 +74,7 @@ public class TelemetryBuffer<T> {
 
                 ++generation;
                 List<T> readyToBeSent = telemetries;
-                telemetries = new ArrayList<T>();
+                telemetries = new ArrayList<>();
 
                 return readyToBeSent;
             }
@@ -213,7 +213,7 @@ public class TelemetryBuffer<T> {
 
         final List<T> readyToBeSent = telemetries;
 
-        telemetries = new ArrayList<T>(maxTelemetriesInBatch);
+        telemetries = new ArrayList<>(maxTelemetriesInBatch);
 
         return readyToBeSent;
     }

@@ -57,7 +57,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
     private SenderThreadLocalBackOffData senderThreadLocalData;
 
     public SenderThreadsBackOffManager(BackOffTimesPolicy backOffTimesContainer) {
-        allSendersData = new ArrayList<SenderThreadLocalBackOffData>();
+        allSendersData = new ArrayList<>();
         initializeBackOffTimeouts(backOffTimesContainer);
     }
 
@@ -99,7 +99,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
         }
 
         long[] injectedBackOffTimeoutsInSeconds = container.getBackOffTimeoutsInMillis();
-        ArrayList<Long> validBackOffTimeoutsInSeconds = new ArrayList<Long>();
+        ArrayList<Long> validBackOffTimeoutsInSeconds = new ArrayList<>();
         if (injectedBackOffTimeoutsInSeconds != null) {
             for (long backOffValue : injectedBackOffTimeoutsInSeconds) {
                 if (backOffValue <= 0) {

@@ -65,7 +65,7 @@ public enum PerformanceCounterContainer {
     public final static long DEFAULT_COLLECTION_FREQUENCY_IN_SEC = 60;
     private final static long MIN_COLLECTION_FREQUENCY_IN_SEC = 1;
 
-    private final ConcurrentMap<String, PerformanceCounter> performanceCounters = new ConcurrentHashMap<String, PerformanceCounter>();
+    private final ConcurrentMap<String, PerformanceCounter> performanceCounters = new ConcurrentHashMap<>();
 
     private volatile boolean initialized = false;
 

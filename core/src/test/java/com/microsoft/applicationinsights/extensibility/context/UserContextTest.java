@@ -32,7 +32,7 @@ import static org.junit.Assert.assertNull;
 public final class UserContextTest {
     @Test
     public void testSetId() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         UserContext context = new UserContext(map);
         context.setId("mock");
 
@@ -43,7 +43,7 @@ public final class UserContextTest {
 
     @Test
     public void testSetAccountId() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         UserContext context = new UserContext(map);
         context.setAccountId("mock");
 
@@ -54,7 +54,7 @@ public final class UserContextTest {
 
     @Test
     public void testSetAcquisitionDate() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         UserContext context = new UserContext(map);
         Date date = new Date();
         context.setAcquisitionDate(date);
@@ -65,7 +65,7 @@ public final class UserContextTest {
 
     @Test
     public void testSetAcquisitionNullDate() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         UserContext context = new UserContext(map);
         context.setAcquisitionDate(null);
 
@@ -76,7 +76,7 @@ public final class UserContextTest {
 
     @Test
     public void testSetUserAgent() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         UserContext context = new UserContext(map);
         context.setUserAgent("mock");
 
