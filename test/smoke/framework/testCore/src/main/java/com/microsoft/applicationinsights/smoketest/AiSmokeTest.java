@@ -649,7 +649,8 @@ public abstract class AiSmokeTest {
     }
 
     @AfterWithParams
-    public static void tearDownContainer() throws Exception {
+    public static void tearDownContainer(@SuppressWarnings("unused") String appServer, @SuppressWarnings("unused") String os,
+                                         @SuppressWarnings("unused") String jreVersion) throws Exception {
         stopAllContainers();
         cleanUpDockerNetwork();
         TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
