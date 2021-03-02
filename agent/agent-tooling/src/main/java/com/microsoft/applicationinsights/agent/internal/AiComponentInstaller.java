@@ -62,7 +62,6 @@ import com.microsoft.applicationinsights.internal.profiler.ProfilerService;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import org.apache.http.HttpHost;
