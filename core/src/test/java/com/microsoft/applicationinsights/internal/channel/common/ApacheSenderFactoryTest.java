@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.internal.channel.common;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataUtils;
 import com.microsoft.applicationinsights.internal.reflect.ClassDataVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -59,7 +58,7 @@ public final class ApacheSenderFactoryTest {
         Mockito.doReturn(isNewVersion).when(mockVerifier).verifyClassExists(anyString());
         field.set(ClassDataUtils.INSTANCE, mockVerifier);
 
-        ApacheSender sender = ApacheSenderFactory.INSTANCE.create();
+        ApacheSender sender = ApacheSenderFactory.INSTANCE.get();
         assertNotNull(sender);
         return sender;
     }

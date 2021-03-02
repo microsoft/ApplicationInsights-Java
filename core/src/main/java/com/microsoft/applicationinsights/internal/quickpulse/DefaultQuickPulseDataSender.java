@@ -59,7 +59,7 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
                 final long sendTime = System.nanoTime();
                 HttpResponse response = null;
                 try {
-                    response = apacheSender.sendPostRequest(post);
+                    response = apacheSender.sendRequest(post);
                     if (networkHelper.isSuccess(response)) {
                         final QuickPulseStatus quickPulseResultStatus = networkHelper.getQuickPulseStatus(response);
                         switch (quickPulseResultStatus) {
