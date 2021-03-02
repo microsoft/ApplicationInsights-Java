@@ -127,7 +127,6 @@ public class ProfilerService {
         if (initialised || !config.enabled()) {
             return;
         }
-        LOGGER.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
 
         initialised = true;
 

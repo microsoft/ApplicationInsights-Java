@@ -49,7 +49,6 @@ public class AlertingServiceFactory {
     }
 
     private static void addObserver(AlertingSubsystem alertingSubsystem, TelemetryObservers telemetryObservers) {
-        LOGGER.info("Registering observer on context");
         telemetryObservers.addObserver(new TelemetryObserver<MetricTelemetry>(MetricTelemetry.class) {
             @Override
             protected void process(MetricTelemetry telemetry) {

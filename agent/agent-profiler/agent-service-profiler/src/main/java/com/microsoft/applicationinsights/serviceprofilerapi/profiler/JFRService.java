@@ -91,7 +91,6 @@ public class JFRService implements ProfilerConfigurationHandler, Profiler {
      * @throws InstanceNotFoundException The JVM does not support JFR, or experimental option is not enabled.
      */
     public boolean initialize(ProfileHandler profileHandler, ScheduledExecutorService scheduledExecutorService) throws IOException, InstanceNotFoundException {
-        LOGGER.info("Initializing JFRDaemon");
         this.profileHandler = profileHandler;
         this.scheduledExecutorService = scheduledExecutorService;
 
@@ -103,7 +102,6 @@ public class JFRService implements ProfilerConfigurationHandler, Profiler {
             // connect to mbeans
             MBeanServerConnection mBeanServer = ManagementFactory.getPlatformMBeanServer();
             flightRecorderConnection = FlightRecorderConnection.connect(mBeanServer);
-            LOGGER.info("Flight recorder connected");
         } catch (Exception e) {
             LOGGER.error("Failed to connect to mbean", e);
             return false;
