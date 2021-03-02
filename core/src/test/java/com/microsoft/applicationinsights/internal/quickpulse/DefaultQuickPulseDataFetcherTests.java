@@ -2,11 +2,11 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
-import com.microsoft.applicationinsights.web.internal.correlation.mocks.MockStatusLine;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicHttpResponse;
+import org.apache.http.message.BasicStatusLine;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -67,12 +67,12 @@ public class DefaultQuickPulseDataFetcherTests {
         final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(apacheSender, null, "machine1",
                 "instance1", "role1", "qpid123");
 
-        HttpResponse response = new BasicHttpResponse(new MockStatusLine(new ProtocolVersion("a",1,2), 200, "OK"));
+        HttpResponse response = new BasicHttpResponse(new BasicStatusLine(new ProtocolVersion("a",1,2), 200, "OK"));
         response.addHeader("x-ms-qps-service-polling-interval-hint", "1000");
         response.addHeader("x-ms-qps-service-endpoint-redirect", "https://new.endpoint.com");
         response.addHeader("x-ms-qps-subscribed", "true");
 
-        Mockito.doReturn(response).when(apacheSender).sendPostRequest((HttpPost) notNull());
+        Mockito.doReturn(response).when(apacheSender).sendRequest((HttpPost) notNull());
         QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
 
         Assert.assertEquals(quickPulseHeaderInfo.getQuickPulseStatus(), QuickPulseStatus.QP_IS_ON);
