@@ -25,5 +25,5 @@ package com.microsoft.applicationinsights.internal.quickpulse;
  * Created by gupele on 12/15/2016.
  */
 interface QuickPulsePingSender {
-    QuickPulseStatus ping();
+    QuickPulseHeaderInfo ping(String redirectedEndpoint);
 }

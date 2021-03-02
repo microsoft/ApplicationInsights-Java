@@ -86,6 +86,7 @@ public class JsonConfigPolling implements Runnable {
                 if (!configuration.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
                     logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
                     TelemetryConfiguration.getActive().setConnectionString(configuration.connectionString);
+                    AppIdSupplier.startAppIdRetrieval();
                 }
 
                 if (configuration.sampling.percentage != lastReadSamplingPercentage) {

@@ -36,7 +36,7 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
 
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private final ApacheSender apacheSender;
-    private volatile QuickPulseStatus quickPulseStatus;
+    private volatile QuickPulseHeaderInfo quickPulseHeaderInfo;
     private volatile boolean stopped = false;
     private long lastValidTransmission = 0;
 
@@ -52,21 +52,21 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
         try {
             while (!stopped) {
                 HttpPost post = sendQueue.take();
-                if (quickPulseStatus != QuickPulseStatus.QP_IS_ON) {
+                if (quickPulseHeaderInfo.getQuickPulseStatus() != QuickPulseStatus.QP_IS_ON) {
                     continue;
                 }
 
                 final long sendTime = System.nanoTime();
                 HttpResponse response = null;
                 try {
-                    response = apacheSender.sendPostRequest(post);
+                    response = apacheSender.sendRequest(post);
                     if (networkHelper.isSuccess(response)) {
-                        final QuickPulseStatus quickPulseResultStatus = networkHelper.getQuickPulseStatus(response);
-                        switch (quickPulseResultStatus) {
+                        QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
+                        switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
                             case QP_IS_OFF:
                             case QP_IS_ON:
                                 lastValidTransmission = sendTime;
-                                quickPulseStatus = quickPulseResultStatus;
+                                this.quickPulseHeaderInfo = quickPulseHeaderInfo;
                                 break;
 
                             case ERROR:
@@ -90,7 +90,7 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
         } catch (Throwable t) {
             try {
                 stopped = true;
-                quickPulseStatus = QuickPulseStatus.ERROR;
+                quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -102,19 +102,19 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
     @Override
     public void startSending() {
         if (!stopped) {
-            quickPulseStatus = QuickPulseStatus.QP_IS_ON;
+            quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_ON);
         }
     }
 
     @Override
-    public QuickPulseStatus getQuickPulseStatus() {
-        return quickPulseStatus;
+    public QuickPulseHeaderInfo getQuickPulseHeaderInfo() {
+        return quickPulseHeaderInfo;
     }
 
     @Override
     public void stop() {
         stopped = true;
-        quickPulseStatus = QuickPulseStatus.ERROR;
+        quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);
     }
 
     private void onPostError(long sendTime) {
@@ -124,7 +124,7 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
 
         final double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
         if (timeFromLastValidTransmission >= 20.0) {
-            quickPulseStatus = QuickPulseStatus.ERROR;
+            quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);
         }
     }
 }

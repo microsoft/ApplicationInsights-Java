@@ -194,12 +194,6 @@
         </Or>
     </Match>
     <Match>
-        <!-- False positive. Inputs are not exposed to user -->
-        <Bug pattern="HTTP_PARAMETER_POLLUTION" />
-        <Class name="com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher" />
-        <Method name="createFetchTask" />
-    </Match>
-    <Match>
         <!-- False positive. There's a null check and it is initialized by MainEntryPoint as part of the startup procedures. -->
         <Bug pattern="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD" />
         <Class name="com.microsoft.applicationinsights.internal.channel.common.ApacheSender43" />

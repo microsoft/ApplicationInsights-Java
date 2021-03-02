@@ -36,6 +36,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -73,11 +74,11 @@ public final class ApacheSender43 implements ApacheSender {
     }
 
     @Override
-    public HttpResponse sendPostRequest(HttpPost post) throws IOException, FriendlyException {
+    public HttpResponse sendRequest(HttpUriRequest request) throws IOException, FriendlyException {
         try {
-            return getHttpClient().execute(post);
+            return getHttpClient().execute(request);
         } catch (SSLHandshakeException e) {
-            String completeUrl = "https://" + post.getURI().getHost();
+            String completeUrl = "https://" + request.getURI().getHost();
             throw SSLUtil.newSSLFriendlyException(completeUrl);
         }
     }

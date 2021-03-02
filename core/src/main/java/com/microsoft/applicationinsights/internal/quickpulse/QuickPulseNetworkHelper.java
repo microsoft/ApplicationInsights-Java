@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.util.Date;
 
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -33,7 +34,25 @@ import org.apache.http.client.methods.HttpPost;
 final class QuickPulseNetworkHelper {
     private final static long TICKS_AT_EPOCH = 621355968000000000L;
     private static final String HEADER_TRANSMISSION_TIME = "x-ms-qps-transmission-time";
-    private final static String QP_STATUS_HEADER = "x-ms-qps-subscribed";
+    private final static String QPS_STATUS_HEADER = "x-ms-qps-subscribed";
+    private final static String QPS_SERVICE_POLLING_INTERVAL_HINT  = "x-ms-qps-service-polling-interval-hint";
+    private final static String QPS_SERVICE_ENDPOINT_REDIRECT   = "x-ms-qps-service-endpoint-redirect";
+    private static final String QPS_INSTANCE_NAME_HEADER = "x-ms-qps-instance-name";
+    private static final String QPS_STREAM_ID_HEADER = "x-ms-qps-stream-id";
+    private static final String QPS_MACHINE_NAME_HEADER = "x-ms-qps-machine-name";
+    private static final String QPS_ROLE_NAME_HEADER = "x-ms-qps-role-name";
+    private static final String QPS_INVARIANT_VERSION_HEADER = "x-ms-qps-invariant-version";
+
+    public HttpPost buildPingRequest(Date currentDate, String address, String quickPulseId, String machineName, String roleName, String instanceName) {
+
+        HttpPost request = buildRequest(currentDate, address);
+        request.addHeader(QPS_ROLE_NAME_HEADER, roleName);
+        request.addHeader(QPS_MACHINE_NAME_HEADER, machineName);
+        request.addHeader(QPS_STREAM_ID_HEADER, quickPulseId);
+        request.addHeader(QPS_INSTANCE_NAME_HEADER, instanceName);
+        request.addHeader(QPS_INVARIANT_VERSION_HEADER, Integer.toString(QuickPulse.QP_INVARIANT_VERSION));
+        return request;
+    }
 
     public HttpPost buildRequest(Date currentDate, String address) {
         final long ticks = currentDate.getTime() * 10000 + TICKS_AT_EPOCH;
@@ -48,17 +67,31 @@ final class QuickPulseNetworkHelper {
         return responseCode == 200;
     }
 
-    public QuickPulseStatus getQuickPulseStatus(HttpResponse response) {
-        Header header = response.getFirstHeader(QP_STATUS_HEADER);
-        if (header != null) {
-            final String toPost = header.getValue();
-            if ("true".equalsIgnoreCase(toPost)) {
-                return QuickPulseStatus.QP_IS_ON;
-            } else {
-                return QuickPulseStatus.QP_IS_OFF;
+    public QuickPulseHeaderInfo getQuickPulseHeaderInfo(HttpResponse response) {
+        Header[] headers = response.getAllHeaders();
+        QuickPulseStatus status = QuickPulseStatus.ERROR;
+        long servicePollingIntervalHint = -1;
+        String serviceEndpointRedirect = null;
+        final QuickPulseHeaderInfo quickPulseHeaderInfo;
+
+        for (Header header: headers) {
+            if (QPS_STATUS_HEADER.equalsIgnoreCase(header.getName())) {
+                final String qpStatus = header.getValue();
+                if ("true".equalsIgnoreCase(qpStatus)) {
+                    status =  QuickPulseStatus.QP_IS_ON;
+                } else {
+                    status = QuickPulseStatus.QP_IS_OFF;
+                }
+            } else if (QPS_SERVICE_POLLING_INTERVAL_HINT.equalsIgnoreCase(header.getName())) {
+                final String servicePollingIntervalHintHeaderValue = header.getValue();
+                if (!LocalStringsUtils.isNullOrEmpty(servicePollingIntervalHintHeaderValue)) {
+                    servicePollingIntervalHint = Long.parseLong(servicePollingIntervalHintHeaderValue);
+                }
+            } else if (QPS_SERVICE_ENDPOINT_REDIRECT.equalsIgnoreCase(header.getName())) {
+                serviceEndpointRedirect = header.getValue();
             }
         }
-
-        return QuickPulseStatus.ERROR;
+        quickPulseHeaderInfo = new QuickPulseHeaderInfo(status, serviceEndpointRedirect, servicePollingIntervalHint);
+        return quickPulseHeaderInfo;
     }
 }

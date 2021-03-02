@@ -105,7 +105,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         // only safe now to resolve app id because SSL initialization
         // triggers loading of java.util.logging (starting with Java 8u231)
         // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
-        AppIdSupplier.registerAndTriggerResolution();
+        AppIdSupplier.registerAndStartAppIdRetrieval();
     }
 
     private static void start(Instrumentation instrumentation) {
@@ -148,9 +148,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         }
 
         if (config.proxy.host != null) {
-            HttpHost proxy = new HttpHost(config.proxy.host, config.proxy.port);
-            ApacheSender43.proxy = proxy;
-            CdsProfileFetcher.proxy = proxy;
+            ApacheSender43.proxy = new HttpHost(config.proxy.host, config.proxy.port);
         }
         AppIdSupplier appIdSupplier = new AppIdSupplier();
 
