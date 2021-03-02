@@ -73,42 +73,42 @@ public final class SanitizerTest {
 
 
     @Test
-    public void testSanitizeNullUri() throws Exception {
+    public void testSanitizeNullUri() {
         Sanitizer.sanitizeUri(null);
     }
 
     @Test
-    public void testSanitizeNonValidUri() throws Exception {
+    public void testSanitizeNonValidUri() {
         URI uri = Sanitizer.sanitizeUri(NON_VALID_URL);
         assertNull(uri);
     }
 
     @Test
-    public void testSanitizeValidUri() throws Exception {
+    public void testSanitizeValidUri() {
         URI uri = Sanitizer.sanitizeUri(VALID_URL);
         assertNotNull(uri);
     }
 
     @Test
-    public void testSafeStringToUrlWithNull() throws Exception {
+    public void testSafeStringToUrlWithNull() {
         URI url = Sanitizer.safeStringToUri(null);
         assertNull(url);
     }
 
     @Test
-    public void testSafeStringToUrlWithEmpty() throws Exception {
+    public void testSafeStringToUrlWithEmpty() {
         URI uri = Sanitizer.sanitizeUri("");
         assertNull(uri);
     }
 
     @Test
-    public void testSafeStringToUrlWithValid() throws Exception {
+    public void testSafeStringToUrlWithValid() {
         URI uri = Sanitizer.sanitizeUri(VALID_URL);
         assertNotNull(uri);
     }
 
     @Test
-    public void testSafeStringToUrlWithNonValid() throws Exception {
+    public void testSafeStringToUrlWithNonValid() {
         URI uri = Sanitizer.sanitizeUri(NON_VALID_URL);
         assertNull(uri);
     }

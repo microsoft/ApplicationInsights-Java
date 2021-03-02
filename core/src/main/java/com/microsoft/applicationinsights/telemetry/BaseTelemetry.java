@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.base.Charsets;
@@ -33,7 +32,6 @@ import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.squareup.moshi.JsonWriter;
 import okio.Buffer;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +42,6 @@ import org.apache.commons.lang3.StringUtils;
 public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private TelemetryContext context;
     private Date timestamp;
-    private String sequence;
 
     // this is temporary until we are convinced that telemetry are never re-used by codeless agent
     private volatile boolean used;
@@ -67,35 +64,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      */
     protected void initialize(ConcurrentMap<String, String> properties) {
         this.context = new TelemetryContext(properties, new ContextTagsMap());
-    }
-
-    public abstract int getVer();
-
-    /**
-     * Sequence field used to track absolute order of uploaded events.
-     * It is a two-part value that includes a stable identifier for the current boot
-     * session and an incrementing identifier for each event added to the upload queue
-     * <p>
-     * The Sequence helps track how many events were fired and how many events were uploaded and
-     * enables identification of data lost during upload and de-duplication of events on the ingress server.
-     * <p>
-     * Gets the value that defines absolute order of the telemetry item.
-     *
-     * @return The sequence of the Telemetry.
-     */
-    @Override
-    public String getSequence() {
-        return sequence;
-    }
-
-    /**
-     * Sets the value that defines absolute order of the telemetry item.
-     *
-     * @param sequence The sequence of the Telemetry.
-     */
-    @Override
-    public void setSequence(String sequence) {
-        this.sequence = sequence;
     }
 
     /**
@@ -139,17 +107,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     }
 
     /**
-     * @deprecated
-     * Makes sure the data to send is sanitized from bad chars, proper length etc.
-     */
-    @Override
-    @Deprecated
-    public void sanitize() {
-        Sanitizer.sanitizeProperties(this.getProperties());
-        additionalSanitize();
-    }
-
-    /**
      * Serializes this object in JSON format.
      *
      * @param writer The writer that helps with serializing into Json format
@@ -165,8 +122,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
 
         setSampleRate(envelope);
         envelope.setIKey(context.getInstrumentationKey());
-        envelope.setSeq(sequence);
-        Data<T> tmp = new Data<T>();
+        Data<T> tmp = new Data<>();
         tmp.setBaseData(getData());
         tmp.setBaseType(this.getBaseTypeName());
         envelope.setData(tmp);
@@ -208,12 +164,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     public void markUsed() {
         used = true;
     }
-
-    /**
-     * Concrete classes should implement this method
-     */
-    @Deprecated
-    protected abstract void additionalSanitize();
 
     /**
      * Concrete classes should implement this method which supplies the

@@ -58,7 +58,7 @@ public class JmxDataFetcher {
      */
     public static Map<String, Collection<Object>> fetch(String objectName, Collection<JmxAttributeData> attributes)
             throws Exception {
-        Map<String, Collection<Object>> result = new HashMap<String, Collection<Object>>();
+        Map<String, Collection<Object>> result = new HashMap<>();
 
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
@@ -82,7 +82,7 @@ public class JmxDataFetcher {
 
     private static Collection<Object> fetch(MBeanServer server, Set<ObjectName> objects, String attributeName)
             throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException {
-        ArrayList<Object> result = new ArrayList<Object>();
+        ArrayList<Object> result = new ArrayList<>();
 
         String[] inners = attributeName.split("\\.");
 

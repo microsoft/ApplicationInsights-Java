@@ -22,9 +22,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,7 +40,6 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     private final String appid = "DUMMYAPPID";
 
 
-    private final Queue<Envelope> telemetryReceived;
     @GuardedBy("multimapLock")
     private final ListMultimap<String, Envelope> type2envelope;
     private List<Predicate<Envelope>> filters;
@@ -57,7 +54,6 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     public static final String RETAIN_PAYLOADS_PARAMETER_KEY = "retainPayloads";
 
     public MockedAppInsightsIngestionServlet() {
-        telemetryReceived = new ConcurrentLinkedDeque<Envelope>();
         type2envelope = MultimapBuilder.treeKeys().arrayListValues().build();
         filters = new ArrayList<>();
         config = new MockedIngestionServletConfig();
@@ -105,28 +101,19 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
         this.filters.add(filter);
     }
 
-    public MockedIngestionServletConfig getIngestionConfig() {
-        return config;
-    }
-
     public void resetData() {
         logit("Clearing telemetry accumulator...");
-        telemetryReceived.clear();
         synchronized (multimapLock) {
             type2envelope.clear();
         }
     }
 
     public boolean hasData() {
-        return !telemetryReceived.isEmpty();
+        return !type2envelope.isEmpty();
     }
 
     public int getItemCount() {
-        return telemetryReceived.size();
-    }
-
-    public Envelope nextItem() {
-        return telemetryReceived.poll();
+        return type2envelope.size();
     }
 
     public List<Envelope> getItemsByType(String type) {
@@ -165,7 +152,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         logit("caught: POST "+req.getPathInfo());
 
         switch (req.getPathInfo()) {
@@ -205,7 +192,6 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
                                 String baseType = envelope.getData().getBaseType();
                                 if (filtersAllowItem(envelope)) {
                                     logit("Adding telemetry item: "+baseType);
-                                    telemetryReceived.offer(envelope);
                                     synchronized (multimapLock) {
                                         type2envelope.put(baseType, envelope);
                                     }
@@ -245,7 +231,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         System.out.println("caught: GET "+req.getPathInfo());
         switch (req.getPathInfo()) {
             case "/":

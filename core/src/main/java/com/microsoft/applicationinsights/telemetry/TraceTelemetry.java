@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
  * Telemetry type used for log messages.
@@ -69,11 +68,6 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
         setSeverityLevel(severityLevel);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     /**
      * Gets the message text. For example, the text that would normally be written to a log file line.
      * @return The message.
@@ -88,12 +82,6 @@ public final class TraceTelemetry extends BaseSampleSourceTelemetry<MessageData>
      */
     public void setMessage(String message) {
         data.setMessage(message);
-    }
-
-    @Override
-    @Deprecated
-    protected void additionalSanitize() {
-        data.setMessage(Sanitizer.sanitizeMessage(data.getMessage()));
     }
 
     @Override

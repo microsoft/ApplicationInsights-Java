@@ -19,25 +19,16 @@ import org.apache.commons.lang3.StringUtils;
 
 public class AiDockerClient {
 
-    public static String DEFAULT_WINDOWS_USER = "Administrator";
-    public static String DEFAULT_WINDOWS_SHELL = "cmd";
-
     public static String DEFAULT_LINUX_USER = "root";
     public static String DEFAULT_LINUX_SHELL = "bash";
 
-    private String currentUser;
     private String shellExecutor;
 
     public AiDockerClient(String user, String shellExecutor) {
         Preconditions.checkNotNull(user, "user");
         Preconditions.checkNotNull(shellExecutor, "shellExecutor");
 
-        this.currentUser = user;
         this.shellExecutor = shellExecutor;
-    }
-
-    public String getCurrentUser() {
-        return this.currentUser;
     }
 
     public String getShellExecutor() {
@@ -46,10 +37,6 @@ public class AiDockerClient {
 
     public static AiDockerClient createLinuxClient() {
         return new AiDockerClient(DEFAULT_LINUX_USER, DEFAULT_LINUX_SHELL);
-    }
-
-    public static AiDockerClient createWindowsClient() {
-        return new AiDockerClient(DEFAULT_WINDOWS_USER, DEFAULT_WINDOWS_SHELL);
     }
 
     private ProcessBuilder buildProcess(String... cmdLine) {
@@ -110,7 +97,7 @@ public class AiDockerClient {
         return getFirstLineOfProcessOutput(p);
     }
 
-    private static void flushStdout(Process p) throws IOException {
+    private static void flushStdout(Process p) {
         Preconditions.checkNotNull(p);
 
         try (Scanner r = new Scanner(p.getInputStream())) {
@@ -212,39 +199,5 @@ public class AiDockerClient {
         Process p = buildProcess("docker", "network", "rm", nameOrId).start();
         waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, "deleting network");
         return getFirstLineOfProcessOutput(p);
-    }
-
-    /**
-     * Returns container name for a running container. If the container id is not running, it returns null.
-     */
-    public String getRunningContainerName(String containerId) throws IOException, InterruptedException {
-        Process p = buildProcess("docker", "inspect", "--format","'{{.Name}}'", containerId).start();
-        waitForProcessToReturn(p, 10, TimeUnit.SECONDS, "inspect entity");
-        if (p.exitValue() == 1) {
-            return null;
-        }
-        String containerName = getFirstLineOfProcessOutput(p);
-        int start = findFirstLetterPosition(containerName);
-        int end = findLastLetterPosition(containerName);
-        // TODO handle -1
-        containerName = containerName.substring(start, end+1);
-        return containerName;
-    }
-
-    private static int findFirstLetterPosition(String input) {
-        for (int i = 0; i < input.length(); i++) {
-            if (Character.isAlphabetic(input.codePointAt(i))) {
-                return i;
-            }
-        }
-        return -1; // not found
-    }
-    private static  int findLastLetterPosition(String input) {
-        for (int i = input.length()-1; i >= 0; i--) {
-            if (Character.isAlphabetic(input.codePointAt(i)) || Character.isDigit(input.codePointAt(i))) {
-                return i;
-            }
-        }
-        return -1; // not found
     }
 }

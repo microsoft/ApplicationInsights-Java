@@ -95,15 +95,6 @@ public final class ApacheSender43 implements ApacheSender {
     }
 
     @Override
-    public void close() {
-        try {
-            ((CloseableHttpClient) getHttpClient()).close();
-        } catch (IOException e) {
-            logger.error("Failed to close http client, exception: {}", e.toString());
-        }
-    }
-
-    @Override
     public HttpClient getHttpClient() {
         synchronized (lock) {
             if (httpClient != null) {

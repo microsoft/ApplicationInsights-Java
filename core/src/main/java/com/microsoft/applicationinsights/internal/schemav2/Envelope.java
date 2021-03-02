@@ -24,7 +24,6 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.telemetry.JsonSerializable;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 
 import java.io.IOException;
@@ -35,12 +34,11 @@ import java.util.concurrent.ConcurrentMap;
  * Data contract class Envelope.
  */
 public class Envelope
-    implements JsonSerializable
 {
     /**
      * Backing field for property Ver.
      */
-    private int ver = 1;
+    private static final int ver = 1;
 
     /**
      * Backing field for property Name.
@@ -56,11 +54,6 @@ public class Envelope
      * Backing field for property SampleRate.
      */
     private double sampleRate = 100.0;
-
-    /**
-     * Backing field for property Seq.
-     */
-    private String seq;
 
     /**
      * Backing field for property IKey.
@@ -86,38 +79,10 @@ public class Envelope
     }
 
     /**
-     * Gets the Ver property.
-     */
-    public int getVer() {
-        return this.ver;
-    }
-
-    /**
-     * Sets the Ver property.
-     */
-    public void setVer(int value) {
-        this.ver = value;
-    }
-
-    /**
-     * Gets the Name property.
-     */
-    public String getName() {
-        return this.name;
-    }
-
-    /**
      * Sets the Name property.
      */
     public void setName(String value) {
         this.name = value;
-    }
-
-    /**
-     * Gets the Time property.
-     */
-    public String getTime() {
-        return this.time;
     }
 
     /**
@@ -128,13 +93,6 @@ public class Envelope
     }
 
     /**
-     * Gets the SampleRate property.
-     */
-    public double getSampleRate() {
-        return this.sampleRate;
-    }
-
-    /**
      * Sets the SampleRate property.
      */
     public void setSampleRate(double value) {
@@ -142,22 +100,9 @@ public class Envelope
     }
 
     /**
-     * Gets the Seq property.
-     */
-    public String getSeq() {
-        return this.seq;
-    }
-
-    /**
-     * Sets the Seq property.
-     */
-    public void setSeq(String value) {
-        this.seq = value;
-    }
-
-    /**
      * Gets the IKey property.
      */
+    // used by smoke tests
     public String getIKey() {
         return this.iKey;
     }
@@ -174,7 +119,7 @@ public class Envelope
      */
     public ConcurrentMap<String, String> getTags() {
         if (this.tags == null) {
-            this.tags = new ConcurrentHashMap<String, String>();
+            this.tags = new ConcurrentHashMap<>();
         }
         return this.tags;
     }
@@ -205,7 +150,6 @@ public class Envelope
      * Serializes the beginning of this object to the passed in writer.
      * @param writer The writer to serialize this object to.
      */
-    @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException
     {
         Preconditions.checkNotNull(writer, "writer must be a non-null value");
@@ -224,7 +168,6 @@ public class Envelope
         if (this.sampleRate > 0.0d) {
             writer.write("sampleRate", sampleRate);
         }
-        writer.write("seq", seq, 64);
         writer.write("iKey", iKey, 40);
         writer.write("tags", tags);
         writer.write("data", data);

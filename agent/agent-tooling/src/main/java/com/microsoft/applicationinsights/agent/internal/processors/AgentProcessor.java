@@ -85,7 +85,7 @@ public abstract class AgentProcessor {
                     // user specified key not found
                     return false;
                 }
-                if (attribute.value != null && !((String)existingAttributeValue).equals(attribute.value)) {
+                if (attribute.value != null && !existingAttributeValue.equals(attribute.value)) {
                     // user specified value doesn't match
                     return false;
                 }

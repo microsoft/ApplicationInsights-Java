@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.apache.http.HttpStatus;
 
 import com.google.gson.Gson;
@@ -32,18 +31,6 @@ import org.slf4j.LoggerFactory;
 public class PartialSuccessHandler implements TransmissionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(PartialSuccessHandler.class);
-
-    /**
-     * Ctor
-     *
-     * Constructs the PartialSuccessHandler object.
-     *
-     * @param policy
-     *            The {@link TransmissionPolicyManager} object that is needed to
-     *            control the back off policy.
-     */
-    public PartialSuccessHandler(TransmissionPolicyManager policy) {
-    }
 
     @Override
     public void onTransmissionSent(TransmissionHandlerArgs args) {
@@ -72,7 +59,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
                 }
 
                 if (backendResponse != null && (backendResponse.itemsAccepted < backendResponse.itemsReceived)) {
-                    List<String> newTransmission = new ArrayList<String>();
+                    List<String> newTransmission = new ArrayList<>();
                     for (BackendResponse.Error e : backendResponse.errors) {
                         switch (e.statusCode) {
                         case TransmissionSendResult.REQUEST_TIMEOUT:
@@ -113,7 +100,7 @@ public class PartialSuccessHandler implements TransmissionHandler {
      * @return A List<> of each sent item
      */
     List<String> generateOriginalItems(TransmissionHandlerArgs args) {
-        List<String> originalItems = new ArrayList<String>();
+        List<String> originalItems = new ArrayList<>();
 
         if ("gzip".equalsIgnoreCase(args.getTransmission().getWebContentEncodingType())) {
 
@@ -154,27 +141,6 @@ public class PartialSuccessHandler implements TransmissionHandler {
             }
         }
         return originalItems;
-    }
-
-    /**
-     * Sends a new transmission generated from the failed attempts from the original
-     * request.
-     *
-     * @param args
-     *            The {@link TransmissionHandlerArgs} object that contains the
-     *            {@link TransmissionDispatcher}
-     * @param newTransmission
-     *            The {@link List} of items to resent
-     * @return A pass/fail response
-     */
-    boolean sendNewTransmission(TransmissionHandlerArgs args, List<Telemetry> newTransmission) {
-        if (!newTransmission.isEmpty()) {
-            GzipTelemetrySerializer serializer = new GzipTelemetrySerializer();
-            Optional<Transmission> newT = serializer.serialize(newTransmission);
-            args.getTransmissionDispatcher().dispatch(newT.get());
-            return true;
-        }
-        return false;
     }
 
     boolean sendNewTransmissionFromStrings(TransmissionHandlerArgs args, List<String> newTransmission) {

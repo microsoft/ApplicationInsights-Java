@@ -109,7 +109,7 @@ public final class TransmissionFileSystemOutputTest {
 
     private TransmissionFileSystemOutput testSuccessfulSends(int amount, int expectedSuccess, Integer capacity, File testFolder) throws Exception {
         File folder = testFolder == null ? tmpFolder.newFolder(TEMP_TEST_FOLDER) : testFolder;
-        TransmissionFileSystemOutput tested = null;
+        TransmissionFileSystemOutput tested;
         try {
             tested = createAndSend(folder.getAbsolutePath(), amount, capacity);
 
@@ -128,7 +128,7 @@ public final class TransmissionFileSystemOutputTest {
     }
 
     private TransmissionFileSystemOutput createAndSend(String absoulutePath, int amount, Integer capacity) {
-        TransmissionFileSystemOutput tested = null;
+        TransmissionFileSystemOutput tested;
         if (capacity != null) {
             tested = new TransmissionFileSystemOutput(absoulutePath, String.valueOf(capacity));;
         } else {

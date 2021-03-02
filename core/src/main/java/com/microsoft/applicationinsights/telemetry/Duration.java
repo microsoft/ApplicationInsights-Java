@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import java.io.IOException;
-
 import com.google.common.base.Preconditions;
 
 /**
@@ -32,10 +30,6 @@ import com.google.common.base.Preconditions;
  * It has various constructors to let the user easily define an interval of time.
  */
 public final class Duration {
-
-    private final static String DAYS_FORMAT = "%02d.";
-    private final static String HH_MM_SS_FORMAT = "%02d:%02d:%02d";
-    private final static String MILLISECONDS_FORMAT = ".%03d0000";
 
     private final static long SECONDS_IN_ONE_MINUTE = 60;
     private final static long SECONDS_IN_ONE_HOUR = 3600;

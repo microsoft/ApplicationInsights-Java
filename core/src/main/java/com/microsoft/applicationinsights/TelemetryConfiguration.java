@@ -30,7 +30,6 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
-import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -48,19 +47,16 @@ public final class TelemetryConfiguration {
     private static volatile TelemetryConfiguration active;
 
     private String instrumentationKey;
-    private String normalizedInstrumentationKey;
     private String connectionString;
     private String roleName;
     private String roleInstance;
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
-    private final List<ContextInitializer> contextInitializers =  new  CopyOnWriteArrayList<ContextInitializer>();
-    private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<TelemetryModule>();
+    private final List<ContextInitializer> contextInitializers = new CopyOnWriteArrayList<>();
+    private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
     private TelemetryChannel channel;
-
-    private boolean trackingIsDisabled = false;
 
     /**
      * Gets the active {@link com.microsoft.applicationinsights.TelemetryConfiguration} instance loaded from the
@@ -126,27 +122,8 @@ public final class TelemetryConfiguration {
         this.channel = channel;
     }
 
-    /**
-     * Gets value indicating whether sending of telemetry to Application Insights is disabled.
-     *
-     * This disable tracking setting value is used by default by all {@link com.microsoft.applicationinsights.TelemetryClient}
-     * instances created in the application.
-     *
-     * @return True if tracking is disabled.
-     */
     public boolean isTrackingDisabled() {
-        return trackingIsDisabled;
-    }
-
-    /**
-     * Sets value indicating whether sending of telemetry to Application Insights is disabled.
-     *
-     * This disable tracking setting value is used by default by all {@link com.microsoft.applicationinsights.TelemetryClient}
-     * instances created in the application.
-     * @param disable True to disable tracking.
-     */
-    public void setTrackingIsDisabled(boolean disable) {
-        trackingIsDisabled = disable;
+        return true;
     }
 
     /**
@@ -179,10 +156,6 @@ public final class TelemetryConfiguration {
         return instrumentationKey;
     }
 
-    public String getNormalizedInstrumentationKey() {
-        return normalizedInstrumentationKey;
-    }
-
     /**
      * Gets or sets the default instrumentation key for the application.
      *
@@ -200,7 +173,6 @@ public final class TelemetryConfiguration {
         }
 
         instrumentationKey = key;
-        normalizedInstrumentationKey = BaseTelemetry.normalizeInstrumentationKey(key);
     }
 
     public String getRoleName() {

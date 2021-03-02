@@ -106,7 +106,7 @@ public final class JvmPerformanceCountersModule extends AbstractPerformanceCount
         }
 
         HashMap<String, JvmXmlElement> jvmPcsMap = jvmSection.getJvmXmlElementsMap();
-        HashSet<String> disabledJvmPCs = new HashSet<String>();
+        HashSet<String> disabledJvmPCs = new HashSet<>();
 
         for (String jvmPcName : JvmPCNames) {
             JvmXmlElement pc = jvmPcsMap.get(jvmPcName);

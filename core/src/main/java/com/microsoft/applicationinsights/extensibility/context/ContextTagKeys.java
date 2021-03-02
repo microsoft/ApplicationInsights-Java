@@ -69,14 +69,6 @@ public class ContextTagKeys
     // 16: Optional string DeviceVMName
     private String DeviceVMName;
 
-    // 17: Optional string DeviceRoleName
-    @Deprecated
-    private String DeviceRoleName;
-
-    // 18: Optional string DeviceRoleInstance
-    @Deprecated
-    private String DeviceRoleInstance;
-
     // 19: Optional string DeviceOEMName
     private String DeviceOEMName;
 
@@ -305,40 +297,6 @@ public class ContextTagKeys
      */
     public final void setDeviceVMName(String value) {
         this.DeviceVMName = value;
-    }
-
-    /**
-     * @return current value of DeviceRoleName property
-     * @deprecated use {@link #getCloudRole()}
-     */
-    @Deprecated
-    public final String getDeviceRoleName() {
-        return this.DeviceRoleName;
-    }
-
-    /**
-     * @param value new value of DeviceRoleName property
-     */
-    @Deprecated
-    public final void setDeviceRoleName(String value) {
-        this.DeviceRoleName = value;
-    }
-
-    /**
-     * @return current value of DeviceRoleInstance property
-     * @deprecated use {@link #getCloudRoleInstance()}
-     */
-    @Deprecated
-    public final String getDeviceRoleInstance() {
-        return this.DeviceRoleInstance;
-    }
-
-    /**
-     * @param value new value of DeviceRoleInstance property
-     */
-    @Deprecated
-    public final void setDeviceRoleInstance(String value) {
-        this.DeviceRoleInstance = value;
     }
 
     /**
@@ -856,8 +814,6 @@ public class ContextTagKeys
         DeviceLocale = "ai.device.locale";
         DeviceType = "ai.device.type";
         DeviceVMName = "ai.device.vmName";
-        DeviceRoleName = "ai.device.roleName";
-        DeviceRoleInstance = "ai.device.roleInstance";
         DeviceOEMName = "ai.device.oemName";
         DeviceModel = "ai.device.model";
         DeviceNetwork = "ai.device.network";

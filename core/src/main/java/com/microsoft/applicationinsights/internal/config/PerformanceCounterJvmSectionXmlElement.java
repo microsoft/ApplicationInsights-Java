@@ -33,10 +33,6 @@ public class PerformanceCounterJvmSectionXmlElement {
 
     private boolean enabled = true;
 
-    public ArrayList<JvmXmlElement> getJvmXmlElements() {
-        return jvmXmlElements;
-    }
-
     public void setJvmXmlElements(ArrayList<JvmXmlElement> jvmXmlElements) {
         this.jvmXmlElements = jvmXmlElements;
     }
@@ -50,7 +46,7 @@ public class PerformanceCounterJvmSectionXmlElement {
     }
 
     public HashMap<String, JvmXmlElement> getJvmXmlElementsMap() {
-        HashMap<String, JvmXmlElement> jvmPcsMap = new HashMap<String, JvmXmlElement>();
+        HashMap<String, JvmXmlElement> jvmPcsMap = new HashMap<>();
         for (JvmXmlElement jvmPc : jvmXmlElements) {
             jvmPcsMap.put(jvmPc.getName(), jvmPc);
         }

@@ -38,7 +38,6 @@ public class Agent {
         if (alreadyLoaded) {
             return;
         }
-        // Profiler.start();
         OpenTelemetryAgent.premain(agentArgs, inst, Agent.class);
         alreadyLoaded = true;
     }

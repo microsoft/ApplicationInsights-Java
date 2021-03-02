@@ -84,7 +84,7 @@ public class StatusFile {
     };
 
     private static final ThreadPoolExecutor WRITER_THREAD =
-            new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
+            new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
                     THREAD_FACTORY);
 
     private static boolean enabled;

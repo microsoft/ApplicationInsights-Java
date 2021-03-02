@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 public class ServletFuncs {
 
     protected static void geRrenderHtml(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws IOException {
         response.setContentType("text/html;charset=UTF-8");
         renderHtml(request, response.getWriter());
     }

@@ -8,7 +8,6 @@ import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.*;
 
 @UseAgent

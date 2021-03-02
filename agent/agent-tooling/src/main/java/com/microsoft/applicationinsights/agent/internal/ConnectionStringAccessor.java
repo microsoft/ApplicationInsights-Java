@@ -26,7 +26,6 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

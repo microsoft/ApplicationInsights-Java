@@ -37,7 +37,7 @@ public class MessageData extends Domain
     /**
      * Backing field for property Ver.
      */
-    private int ver = 2;
+    private static final int ver = 2;
 
     /**
      * Backing field for property Message.
@@ -60,20 +60,6 @@ public class MessageData extends Domain
     public MessageData()
     {
         this.InitializeFields();
-    }
-
-    /**
-     * Gets the Ver property.
-     */
-    public int getVer() {
-        return this.ver;
-    }
-
-    /**
-     * Sets the Ver property.
-     */
-    public void setVer(int value) {
-        this.ver = value;
     }
 
     /**
@@ -109,18 +95,10 @@ public class MessageData extends Domain
      */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
-            this.properties = new ConcurrentHashMap<String, String>();
+            this.properties = new ConcurrentHashMap<>();
         }
         return this.properties;
     }
-
-    /**
-     * Sets the Properties property.
-     */
-    public void setProperties(ConcurrentMap<String, String> value) {
-        this.properties = value;
-    }
-
 
     /**
      * Serializes the beginning of this object to the passed in writer.

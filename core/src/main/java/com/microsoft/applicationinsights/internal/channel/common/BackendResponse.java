@@ -12,6 +12,8 @@ class BackendResponse {
     int itemsAccepted;
     Error[] errors;
 
+    // used via reflection by gson
+    @SuppressWarnings("unused")
     static class Error {
         public int index;
         public int statusCode;

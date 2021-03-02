@@ -607,9 +607,11 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getTags", "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getMetrics", "()Ljava/util/concurrent/ConcurrentMap;", false);
             Label label4 = new Label();
             mv.visitLabel(label4);
-            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackRequest", "(Ljava/lang/String;Ljava/lang/String;Ljava/net/URL;Ljava/util/Date;Ljava/lang/Long;Ljava/lang/String;ZLjava/lang/String;Ljava/util/Map;Ljava/util/Map;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackRequest", "(Ljava/lang/String;Ljava/lang/String;Ljava/net/URL;Ljava/util/Date;Ljava/lang/Long;Ljava/lang/String;ZLjava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)V", false);
             mv.visitLabel(label1);
             Label label5 = new Label();
             mv.visitJumpInsn(GOTO, label5);
@@ -625,7 +627,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitInsn(RETURN);
             Label label7 = new Label();
             mv.visitLabel(label7);
-            mv.visitMaxs(10, 3);
+            mv.visitMaxs(11, 3);
             mv.visitEnd();
         }
 
@@ -706,6 +708,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
 
     // DO NOT REMOVE
     // this is used during development for generating above bytecode
+    @SuppressWarnings("unused")
     public static class TC {
 
         private TelemetryConfiguration configuration;
@@ -806,7 +809,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         private void agent$trackRequestTelemetry(RequestTelemetry t) {
             try {
                 BytecodeUtil.trackRequest(t.getId(), t.getName(), t.getUrl(), t.getTimestamp(), agent$toMillis(t.getDuration()),
-                        t.getResponseCode(), t.isSuccess(), t.getSource(), t.getProperties(), t.getContext().getTags());
+                        t.getResponseCode(), t.isSuccess(), t.getSource(), t.getProperties(), t.getContext().getTags(), t.getMetrics());
             } catch (MalformedURLException e) {
                 BytecodeUtil.logErrorOnce(e);
             }

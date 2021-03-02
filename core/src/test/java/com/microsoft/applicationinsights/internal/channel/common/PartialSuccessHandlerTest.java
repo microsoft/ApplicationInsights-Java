@@ -23,28 +23,24 @@ public class PartialSuccessHandlerTest {
             "{\"ver\":1,\"name\":\"Microsoft.ApplicationInsights.b69a3a06e25a425ba1a44e9ff6f13582.Event\",\"time\":\"2018-02-11T16:02:36.132-0500\",\"sampleRate\":100.0,\"iKey\":\"b69a3a06-e25a-425b-a1a4-4e9ff6f13582\",\"tags\":{\"ai.internal.sdkVersion\":\"java:2.0.0-beta-snapshot\",\"ai.device.id\":\"test.machine.name\",\"ai.device.locale\":\"en-US\",\"ai.internal.nodename\":\"test.machine.name\",\"ai.device.os\":\"Windows 10\",\"ai.device.roleInstance\":\"test.machine.name\",\"ai.device.osVersion\":\"Windows 10\",\"ai.session.id\":\"20180211160233\"},\"data\":{\"baseType\":\"EventData\",\"baseData\":{\"ver\":2,\"name\":\"TestEvent3\",\"properties\":null}}}";
 
     private boolean generateTransmissionWithStatusCode(int code) {
-        TransmissionPolicyManager tpm = new TransmissionPolicyManager(true);
         TransmissionDispatcher mockedDispatcher = Mockito.mock(TransmissionDispatcher.class);
         TransmissionHandlerArgs args = new TransmissionHandlerArgs();
         args.setResponseCode(code);
         args.setTransmission(new Transmission(new byte[] { 0 }, "testcontent", "testencoding"));
         args.setTransmissionDispatcher(mockedDispatcher);
-        PartialSuccessHandler eh = new PartialSuccessHandler(tpm);
-        boolean result = eh.validateTransmissionAndSend(args);
-        return result;
+        PartialSuccessHandler eh = new PartialSuccessHandler();
+        return eh.validateTransmissionAndSend(args);
     }
 
     private boolean generateTransmissionWithPartialResult(String responseBody) {
-        TransmissionPolicyManager tpm = new TransmissionPolicyManager(true);
         TransmissionDispatcher mockedDispatcher = Mockito.mock(TransmissionDispatcher.class);
         TransmissionHandlerArgs args = new TransmissionHandlerArgs();
         args.setResponseCode(206);
         args.setTransmission(new Transmission(fourItems, "application/x-json-stream", "gzip"));
         args.setTransmissionDispatcher(mockedDispatcher);
         args.setResponseBody(responseBody);
-        PartialSuccessHandler eh = new PartialSuccessHandler(tpm);
-        boolean result = eh.validateTransmissionAndSend(args);
-        return result;
+        PartialSuccessHandler eh = new PartialSuccessHandler();
+        return eh.validateTransmissionAndSend(args);
     }
 
     @Test
@@ -106,14 +102,13 @@ public class PartialSuccessHandlerTest {
 
     @Test
     public void failEmptyArrayList() {
-        TransmissionPolicyManager tpm = new TransmissionPolicyManager(true);
         TransmissionDispatcher mockedDispatcher = Mockito.mock(TransmissionDispatcher.class);
         TransmissionHandlerArgs args = new TransmissionHandlerArgs();
         args.setResponseCode(206);
         args.setTransmission(new Transmission(fourItems, "application/x-json-stream", "gzip"));
         args.setTransmissionDispatcher(mockedDispatcher);
-        PartialSuccessHandler eh = new PartialSuccessHandler(tpm);
-        boolean result = eh.sendNewTransmissionFromStrings(args, new ArrayList<String>());
+        PartialSuccessHandler eh = new PartialSuccessHandler();
+        boolean result = eh.sendNewTransmissionFromStrings(args, new ArrayList<>());
         Assert.assertFalse(result);
     }
 
@@ -224,14 +219,13 @@ public class PartialSuccessHandlerTest {
 
     @Test
     public void passSingleItemArrayList() {
-        TransmissionPolicyManager tpm = new TransmissionPolicyManager(true);
         TransmissionDispatcher mockedDispatcher = Mockito.mock(TransmissionDispatcher.class);
         TransmissionHandlerArgs args = new TransmissionHandlerArgs();
         args.setResponseCode(206);
         args.setTransmission(new Transmission(fourItems, "application/x-json-stream", "gzip"));
         args.setTransmissionDispatcher(mockedDispatcher);
-        PartialSuccessHandler eh = new PartialSuccessHandler(tpm);
-        List<String> singleItem = new ArrayList<String>();
+        PartialSuccessHandler eh = new PartialSuccessHandler();
+        List<String> singleItem = new ArrayList<>();
         singleItem.add("{\"ver\":1,\"name\":\"Microsoft.ApplicationInsights.b69a3a06e25a425ba1a44e9ff6f13582.Event\",\"time\":\"2018-02-11T16:02:36.120-0500\",\"sampleRate\":100.0,\"iKey\":\"b69a3a06-e25a-425b-a1a4-4e9ff6f13582\",\"tags\":{\"ai.internal.sdkVersion\":\"java:2.0.0-beta-snapshot\",\"ai.device.id\":\"test.machine.name\",\"ai.device.locale\":\"en-US\",\"ai.internal.nodename\":\"test.machine.name\",\"ai.device.os\":\"Windows 10\",\"ai.device.roleInstance\":\"test.machine.name\",\"ai.device.osVersion\":\"Windows 10\",\"ai.session.id\":\"20180211160233\"},\"data\":{\"baseType\":\"EventData\",\"baseData\":{\"ver\":2,\"name\":\"TestEvent0\",\"properties\":null}}}\r\n");
         boolean result = eh.sendNewTransmissionFromStrings(args, singleItem);
         Assert.assertTrue(result);
@@ -239,26 +233,24 @@ public class PartialSuccessHandlerTest {
 
     @Test
     public void passGenerateOriginalItemsGZIP() {
-        TransmissionPolicyManager tpm = new TransmissionPolicyManager(true);
         TransmissionDispatcher mockedDispatcher = Mockito.mock(TransmissionDispatcher.class);
         TransmissionHandlerArgs args = new TransmissionHandlerArgs();
         args.setResponseCode(206);
         args.setTransmission(new Transmission(fourItems, "application/x-json-stream", "gzip"));
         args.setTransmissionDispatcher(mockedDispatcher);
-        PartialSuccessHandler eh = new PartialSuccessHandler(tpm);
+        PartialSuccessHandler eh = new PartialSuccessHandler();
         List<String> originalItems = eh.generateOriginalItems(args);
         Assert.assertEquals(4, originalItems.size());
     }
 
     @Test
     public void passGenerateOriginalItemsNonGZIP() {
-        TransmissionPolicyManager tpm = new TransmissionPolicyManager(true);
         TransmissionDispatcher mockedDispatcher = Mockito.mock(TransmissionDispatcher.class);
         TransmissionHandlerArgs args = new TransmissionHandlerArgs();
         args.setResponseCode(206);
         args.setTransmission(new Transmission(fourItemsNonGZIP.getBytes(), "application/json", "utf8"));
         args.setTransmissionDispatcher(mockedDispatcher);
-        PartialSuccessHandler eh = new PartialSuccessHandler(tpm);
+        PartialSuccessHandler eh = new PartialSuccessHandler();
         List<String> originalItems = eh.generateOriginalItems(args);
         Assert.assertEquals(4, originalItems.size());
     }
