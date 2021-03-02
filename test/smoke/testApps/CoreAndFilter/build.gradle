@@ -1,8 +1,6 @@
 apply plugin: 'war'
 
 dependencies {
-    compileOnly aiAgentJar // this is just to force building the agent first
-
     compile 'com.microsoft.azure:applicationinsights-web:0.9.3' // testing against oldest version with trackDependency()
     testCompile aiCoreJar // the test code (not the app under test) needs a modern core jar (well, at least 1.0.8)
     compile 'com.google.guava:guava:20.0'

@@ -5,6 +5,11 @@ public class FriendlyException extends RuntimeException {
         super();
     }
 
+    public FriendlyException(String message, String action) {
+        // TODO can these constructors cascade?
+        super(populateFriendlyMessage(message, action));
+    }
+
     public FriendlyException(String banner, String message, String action, String note, Throwable cause) {
         super(populateFriendlyMessage(banner, message, action, note), cause);
     }
@@ -17,6 +22,34 @@ public class FriendlyException extends RuntimeException {
         super(populateFriendlyMessage(banner, "", action, ""), cause);
     }
 
+    // TODO consolidate with method below?
+    public String getMessageWithBanner(String banner) {
+        return new StringBuilder()
+                .append(System.lineSeparator())
+                .append("*************************")
+                .append(System.lineSeparator())
+                .append(banner)
+                .append(System.lineSeparator())
+                .append("*************************")
+                .append(getMessage()) // getMessage() is prefixed with lineSeparator already
+                .toString();
+    }
+
+    // TODO consolidate with method below
+    private static String populateFriendlyMessage(String description, String action) {
+        return new StringBuilder()
+                .append(System.lineSeparator())
+                .append("Description:")
+                .append(System.lineSeparator())
+                .append(description)
+                .append(System.lineSeparator())
+                .append(System.lineSeparator())
+                .append("Action:")
+                .append(System.lineSeparator())
+                .append(action)
+                .append(System.lineSeparator())
+                .toString();
+    }
     private static String populateFriendlyMessage(String banner, String description, String action, String note) {
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder.append(System.lineSeparator());

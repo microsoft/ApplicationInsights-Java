@@ -105,7 +105,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         final long sendTime = System.nanoTime();
         HttpResponse response = null;
         try {
-            response = apacheSender.sendPostRequest(request);
+            response = apacheSender.sendRequest(request);
             if (networkHelper.isSuccess(response)) {
                 final QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                 switch (quickPulseHeaderInfo.getQuickPulseStatus()) {

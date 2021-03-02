@@ -1,8 +1,6 @@
 apply plugin: 'war'
 
 dependencies {
-    compileOnly aiAgentJar // this is just to force building the agent first
-
     compile aiWebJar
 
     compile group: 'org.hsqldb', name: 'hsqldb', version: '2.3.6' // 2.4.0+ requires Java 8+
