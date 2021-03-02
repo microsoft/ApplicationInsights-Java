@@ -37,7 +37,7 @@ public interface ApacheSender {
     int REQUEST_TIMEOUT_IN_MILLIS = 60000;
     int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
 
-    HttpResponse sendRequest(HttpUriRequest post) throws IOException, FriendlyException;
+    HttpResponse sendRequest(HttpUriRequest request) throws IOException, FriendlyException;
 
     void dispose(HttpResponse response);
 
