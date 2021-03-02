@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,8 @@ import org.slf4j.LoggerFactory;
 final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulseCoordinator.class);
+    private String qpsServiceRedirectedEndpoint;
+    private long qpsServicePollingIntervalHintMillis;
 
     private volatile boolean stopped = false;
     private volatile boolean pingMode = true;
@@ -50,6 +53,8 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
         waitBetweenPingsInMS = initData.waitBetweenPingsInMS;
         waitBetweenPostsInMS = initData.waitBetweenPostsInMS;
         waitOnErrorInMS = initData.waitBetweenPingsInMS;
+        qpsServiceRedirectedEndpoint = null;
+        qpsServicePollingIntervalHintMillis = -1;
     }
 
     @Override
@@ -74,16 +79,19 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
     }
 
     private long sendData() {
-        dataFetcher.prepareQuickPulseDataForSend();
-        final QuickPulseStatus currentQPStatus = dataSender.getQuickPulseStatus();
-        switch (currentQPStatus) {
+        dataFetcher.prepareQuickPulseDataForSend(qpsServiceRedirectedEndpoint);
+        final QuickPulseHeaderInfo currentQuickPulseHeaderInfo = dataSender.getQuickPulseHeaderInfo();
+
+        this.handleReceivedHeaders(currentQuickPulseHeaderInfo);
+
+        switch (currentQuickPulseHeaderInfo.getQuickPulseStatus()) {
             case ERROR:
                 pingMode = true;
                 return waitOnErrorInMS;
 
             case QP_IS_OFF:
                 pingMode = true;
-                return waitBetweenPingsInMS;
+                return qpsServicePollingIntervalHintMillis > 0 ? qpsServicePollingIntervalHintMillis : waitBetweenPingsInMS;
 
             case QP_IS_ON:
                 return waitBetweenPostsInMS;
@@ -97,8 +105,9 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
     }
 
     private long ping() {
-        QuickPulseStatus pingResult = pingSender.ping();
-        switch (pingResult) {
+        QuickPulseHeaderInfo pingResult = pingSender.ping(qpsServiceRedirectedEndpoint);
+        this.handleReceivedHeaders(pingResult);
+        switch (pingResult.getQuickPulseStatus()) {
             case ERROR:
                 return waitOnErrorInMS;
 
@@ -107,13 +116,25 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
                 dataSender.startSending();
                 return waitBetweenPostsInMS;
             case QP_IS_OFF:
-                return waitBetweenPingsInMS;
+                return qpsServicePollingIntervalHintMillis > 0 ? qpsServicePollingIntervalHintMillis : waitBetweenPingsInMS;
 
             default:
                 logger.error( "Critical error while ping QP: unknown status, aborting");
                 QuickPulseDataCollector.INSTANCE.disable();
                 stopped = true;
                 return 0;
+        }
+    }
+
+    private void handleReceivedHeaders(QuickPulseHeaderInfo currentQuickPulseHeaderInfo) {
+        String redirectLink = currentQuickPulseHeaderInfo.getQpsServiceEndpointRedirect();
+        if (!LocalStringsUtils.isNullOrEmpty(redirectLink)) {
+            qpsServiceRedirectedEndpoint = redirectLink;
+        }
+
+        long newPollingInterval = currentQuickPulseHeaderInfo.getQpsServicePollingInterval();
+        if (newPollingInterval > 0) {
+            qpsServicePollingIntervalHintMillis = newPollingInterval;
         }
     }
 

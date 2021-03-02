@@ -1,22 +1,30 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.message.BasicHttpResponse;
+import org.apache.http.message.BasicStatusLine;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
+import org.mockito.Mockito;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.notNull;
+import static org.mockito.Mockito.*;
 
 @RunWith(JUnit4.class)
 public class DefaultQuickPulseDataFetcherTests {
 
     @Test
     public void testGetCurrentSdkVersion() {
-        DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration) null,
-                null, null);
+        DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration) null, null,
+                null, null,null);
         String sdkVersion = dataFetcher.getCurrentSdkVersion();
         assertNotNull(sdkVersion);
         Assert.assertNotEquals("java:unknown", sdkVersion);
@@ -26,7 +34,9 @@ public class DefaultQuickPulseDataFetcherTests {
     public void endpointIsFormattedCorrectlyWhenUsingConfig() {
         final TelemetryConfiguration config = new TelemetryConfiguration();
         config.setConnectionString("InstrumentationKey=testing-123");
-        final String endpointUrl = new DefaultQuickPulseDataFetcher(null, config, null, null).getEndpointUrl();
+        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, config, null, null,null,null);
+        final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
+        final String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
         try {
             URI uri = new URI(endpointUrl);
             assertNotNull(uri);
@@ -38,7 +48,10 @@ public class DefaultQuickPulseDataFetcherTests {
 
     @Test
     public void endpointIsFormattedCorrectlyWhenConfigIsNull() {
-        final String endpointUrl = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration)null, null, null).getEndpointUrl();
+        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration)null,
+                null,null, null,null);
+        final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
+        final String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
         try {
             URI uri = new URI(endpointUrl);
             assertNotNull(uri);
@@ -46,5 +59,24 @@ public class DefaultQuickPulseDataFetcherTests {
         } catch (URISyntaxException e) {
             fail("Not a valid uri: "+endpointUrl);
         }
+    }
+
+    @Test
+    public void endpointChangesWithRedirectHeaderAndGetNewPingInterval() throws IOException {
+        final ApacheSender apacheSender = mock(ApacheSender.class);
+        final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(apacheSender, null, "machine1",
+                "instance1", "role1", "qpid123");
+
+        HttpResponse response = new BasicHttpResponse(new BasicStatusLine(new ProtocolVersion("a",1,2), 200, "OK"));
+        response.addHeader("x-ms-qps-service-polling-interval-hint", "1000");
+        response.addHeader("x-ms-qps-service-endpoint-redirect", "https://new.endpoint.com");
+        response.addHeader("x-ms-qps-subscribed", "true");
+
+        Mockito.doReturn(response).when(apacheSender).sendRequest((HttpPost) notNull());
+        QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
+
+        Assert.assertEquals(quickPulseHeaderInfo.getQuickPulseStatus(), QuickPulseStatus.QP_IS_ON);
+        Assert.assertEquals(quickPulseHeaderInfo.getQpsServicePollingInterval(), 1000);
+        Assert.assertEquals(quickPulseHeaderInfo.getQpsServiceEndpointRedirect(), "https://new.endpoint.com");
     }
 }

@@ -44,6 +44,7 @@ import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 public enum QuickPulse implements Stoppable {
     INSTANCE;
 
+    public static final int QP_INVARIANT_VERSION = 1;
     private volatile boolean initialized = false;
     private Thread thread;
     private Thread senderThread;
@@ -89,15 +90,18 @@ public enum QuickPulse implements Stoppable {
                     quickPulseDataSender = new DefaultQuickPulseDataSender(apacheSender, sendQueue);
 
                     String instanceName = configuration.getRoleInstance();
+                    String roleName = configuration.getRoleName();
+                    String machineName = DeviceInfo.getHostName();
+
                     if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
-                        instanceName = DeviceInfo.getHostName();
+                        instanceName = machineName;
                     }
                     if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
                         instanceName = "Unknown host";
                     }
 
-                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(apacheSender, configuration, instanceName, quickPulseId);
-                    final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, configuration, instanceName, quickPulseId);
+                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(apacheSender, configuration, machineName, instanceName, roleName, quickPulseId);
+                    final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, configuration, machineName, instanceName, roleName, quickPulseId);
 
                     final QuickPulseCoordinatorInitData coordinatorInitData =
                             new QuickPulseCoordinatorInitDataBuilder()
