@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 public final class OperationContextTest {
     @Test
     public void testSetName() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         OperationContext context = new OperationContext(map);
         context.setName("mock");
 
@@ -41,7 +41,7 @@ public final class OperationContextTest {
 
     @Test
     public void testSetId() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         OperationContext context = new OperationContext(map);
         context.setId("mock");
 
@@ -53,7 +53,7 @@ public final class OperationContextTest {
     @Test
     public void testSetSyntheticSource() {
         final String source = "mockSource";
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         OperationContext context = new OperationContext(map);
         context.setSyntheticSource(source);
 

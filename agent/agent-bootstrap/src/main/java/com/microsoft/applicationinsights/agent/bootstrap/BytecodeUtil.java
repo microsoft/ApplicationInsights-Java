@@ -88,9 +88,9 @@ public class BytecodeUtil {
     }
 
     public static void trackRequest(String id, String name, URL url, Date timestamp, Long duration, String responseCode, boolean success,
-                                    String source, Map<String, String> properties, Map<String, String> tags) {
+                                    String source, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
         if (delegate != null) {
-            delegate.trackRequest(id, name, url, timestamp, duration, responseCode, success, source, properties, tags);
+            delegate.trackRequest(id, name, url, timestamp, duration, responseCode, success, source, properties, tags, metrics);
         }
     }
 
@@ -163,8 +163,9 @@ public class BytecodeUtil {
         void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags);
 
         void trackRequest(String id, String name, URL url, Date timestamp, Long duration, String responseCode, boolean success,
-                          String source, Map<String, String> properties, Map<String, String> tags);
+                          String source, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics);
 
+        // TODO also handle cases where ExceptionTelemetry parsedStack is used directly instead of indirectly through Exception
         void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics);
 
         void flush();

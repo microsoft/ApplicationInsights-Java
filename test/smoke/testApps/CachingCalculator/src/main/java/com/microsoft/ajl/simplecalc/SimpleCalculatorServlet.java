@@ -39,8 +39,8 @@ public class SimpleCalculatorServlet extends HttpServlet {
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        BinaryCalculation bc = null;
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        BinaryCalculation bc;
         try {
             bc = readParameters(request.getParameterMap());
         }
@@ -113,7 +113,7 @@ public class SimpleCalculatorServlet extends HttpServlet {
         try {
             return Double.parseDouble(param);
         } catch (NumberFormatException e) {
-            throw new CalculatorParameterException(String.format("Left operand is not a number: %s", param), e);
+            throw new CalculatorParameterException(String.format(errMsgFmt, param), e);
         }
     }
 

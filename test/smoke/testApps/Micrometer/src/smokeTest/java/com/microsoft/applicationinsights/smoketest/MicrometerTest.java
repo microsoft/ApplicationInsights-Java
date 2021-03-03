@@ -9,7 +9,6 @@ import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
-import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.*;
 
 import static org.junit.Assert.*;

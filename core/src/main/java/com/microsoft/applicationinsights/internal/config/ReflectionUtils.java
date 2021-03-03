@@ -22,8 +22,6 @@
 package com.microsoft.applicationinsights.internal.config;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -83,8 +81,7 @@ public final class ReflectionUtils {
             } else {
                 clazz = clazz.asSubclass(interfaceClass);
             }
-            T instance = (T)clazz.newInstance();
-            return instance;
+            return (T)clazz.newInstance();
         } catch (Exception e) {
             logger.error("Failed to create {}", className, e);
         }
@@ -146,33 +143,6 @@ public final class ReflectionUtils {
             logger.error("Failed to instantiate {}", className, e);
         }
         return null;
-    }
-
-    /**
-     *
-     * @param object - The instance we work with
-     * @param methodName - The method to activate
-     * @param value - The value to pass to the method
-     * @param argumentClass - The argument class
-     * @param <V> - Generic for value class
-     * @param <A> - Generic for argument class
-     * @return - True if method found and activation was ok, otherwise false.
-     */
-    public static <V, A> boolean activateMethod(Object object, String methodName, V value, A argumentClass) {
-        Class<?> clazz = object.getClass();
-        Method method = null;
-        try {
-            method = clazz.getDeclaredMethod(methodName, String.class);
-            method.invoke(object, value);
-            return true;
-        } catch (NoSuchMethodException e) {
-            logger.error("Failed to call method {} .NoSuchMethodException",  methodName);
-        } catch (InvocationTargetException e) {
-            logger.error("Failed to call method {} .InvocationTargetException",  methodName);
-        } catch (IllegalAccessException e) {
-            logger.error("Failed to call method {} .IllegalAccessException",  methodName);
-        }
-        return false;
     }
 
     /**

@@ -38,14 +38,6 @@ public class LocalStringsUtils {
         return value == null || value.isEmpty();
     }
 
-    public static String populateRequiredStringWithNullValue(String value, String parameterName, String telemetryType) {
-        if (isNullOrEmpty(value)) {
-            return parameterName + " is a required field for " + telemetryType;
-        }
-
-        return value;
-    }
-
     public static String generateRandomId(boolean removeDashes) {
         String uuid = UUID.randomUUID().toString();
 

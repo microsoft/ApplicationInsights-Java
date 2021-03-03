@@ -1,5 +1,5 @@
 /*
- * AppInsights-Java
+ * ApplicationInsights-Java
  * Copyright (c) Microsoft Corporation
  * All rights reserved.
  *
@@ -19,16 +19,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.internal.channel.common;
+package com.microsoft.applicationinsights.internal.reflect;
 
 /**
- * Created by gupele on 6/29/2015.
+ * Created by gupele on 5/26/2015.
  */
-interface TransmissionPolicyStateSetter {
-    /**
-     * Sets the current TransmissionPolicy state.
-     * @param newState The new value for current state
-     * @return true if the state changed (newState != currentState); false otherwise.
-     */
-    boolean setCurrentState(TransmissionPolicy newState);
+public interface ClassDataVerifier {
+    boolean verifyClassExists(String className);
+
+    boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes);
 }

@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 public final class ComponentContextTest {
     @Test
     public void testSetVersion() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         ComponentContext context = new ComponentContext(map);
         context.setVersion("version1");
 

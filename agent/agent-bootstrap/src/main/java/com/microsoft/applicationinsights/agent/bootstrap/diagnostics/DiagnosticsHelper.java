@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 

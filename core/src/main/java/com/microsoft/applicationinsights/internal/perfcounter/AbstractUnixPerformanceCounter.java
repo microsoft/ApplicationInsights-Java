@@ -58,11 +58,6 @@ abstract class AbstractUnixPerformanceCounter extends AbstractPerformanceCounter
         logger.error(format, args);
     }
 
-    protected void logPerfCounterErrorTrace(String format, Object... args) {
-        format = "Performance Counter " + getId() + ": Error in file '" + path + "': " + format;
-        logger.trace(format, args);
-    }
-
     protected File getProcessFile() {
         return processFile;
     }

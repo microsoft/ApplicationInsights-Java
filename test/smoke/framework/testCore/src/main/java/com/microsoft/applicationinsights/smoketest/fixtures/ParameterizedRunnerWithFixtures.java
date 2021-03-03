@@ -37,7 +37,7 @@ public class ParameterizedRunnerWithFixtures extends BlockJUnit4ClassRunnerWithP
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                final List<Throwable> errs = new ArrayList<Throwable>();
+                final List<Throwable> errs = new ArrayList<>();
                 try {
                     s.evaluate();
                 } catch (Throwable t) {

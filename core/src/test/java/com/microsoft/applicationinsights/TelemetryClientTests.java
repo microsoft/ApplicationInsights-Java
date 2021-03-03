@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Date;
 import java.util.LinkedList;
 
@@ -41,8 +40,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -73,11 +70,11 @@ public final class TelemetryClientTests {
         channel = mock(TelemetryChannel.class);
         configuration.setChannel(channel);
 
-        eventsSent = new LinkedList<Telemetry>();
+        eventsSent = new LinkedList<>();
         // Setting the channel to add the sent telemetries to a collection, so they could be verified in tests.
         Mockito.doAnswer(new Answer() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Object answer(InvocationOnMock invocation) {
                 Telemetry telemetry = ((Telemetry) invocation.getArguments()[0]);
                 eventsSent.add(telemetry);
 
@@ -102,16 +99,6 @@ public final class TelemetryClientTests {
     @Test(expected = IllegalArgumentException.class)
     public void testNullTrackTelemetry() {
         client.track(null);
-    }
-
-    @Test
-    public void testTrackTelemetryWithDisabled() {
-        configuration.setTrackingIsDisabled(true);
-        Telemetry mockTelemetry = Mockito.mock(Telemetry.class);
-
-        client.track(mockTelemetry);
-
-        Mockito.verifyZeroInteractions(channel, mockTelemetry);
     }
 
     @Test
@@ -201,17 +188,6 @@ public final class TelemetryClientTests {
     // endregion Track tests
 
     // region Private methods
-
-    private static void verifyTraceTelemetry(Telemetry telemetry, SeverityLevel expectedSeverityLevel, Map<String, String> expectedProperties) {
-        assertNotNull(telemetry);
-        assertTrue(telemetry instanceof TraceTelemetry);
-
-        TraceTelemetry traceTelemetry = (TraceTelemetry)telemetry;
-        assertEquals(traceTelemetry.getSeverityLevel(), expectedSeverityLevel);
-        if (expectedProperties != null) {
-            assertEquals(traceTelemetry.getContext().getProperties(), expectedProperties);
-        }
-    }
 
     private void testUseConfigurationInstrumentatonKey(String contextInstrumentationKey) {
         TelemetryConfiguration configuration = new TelemetryConfiguration();

@@ -25,7 +25,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,11 +74,6 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         this(exception, Integer.MAX_VALUE);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     public Exception getException() {
         return throwable instanceof Exception ? (Exception)throwable : null;
     }
@@ -95,26 +89,6 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     public void setException(Throwable throwable, int stackSize) {
         this.throwable = throwable;
         updateException(throwable, stackSize);
-    }
-
-    /**
-     * @deprecated
-     * Gets the value indicated where the exception was handled.
-     * @return The value indicating the exception
-     */
-    @Deprecated
-    public ExceptionHandledAt getExceptionHandledAt() {
-        return ExceptionHandledAt.Unhandled;
-    }
-
-    /**
-     * @deprecated
-     * Sets the value indicated where the exception was handled.
-     * @param value The value indicating the exception
-     */
-    @Deprecated
-    public void setExceptionHandledAt(ExceptionHandledAt value) {
-
     }
 
     /**
@@ -144,12 +118,6 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         this.samplingPercentage = samplingPercentage;
     }
 
-    @Deprecated
-    @Override
-    protected void additionalSanitize() {
-        Sanitizer.sanitizeMeasurements(this.getMetrics());
-    }
-
     @Override
     public ExceptionData getData() {
         return data;
@@ -160,7 +128,7 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     }
 
     private void updateException(Throwable throwable, int stackSize) {
-        ArrayList<ExceptionDetails> exceptions = new ArrayList<ExceptionDetails>();
+        ArrayList<ExceptionDetails> exceptions = new ArrayList<>();
         convertExceptionTree(throwable, null, exceptions, stackSize);
 
         data.setExceptions(exceptions);
@@ -246,9 +214,5 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     @Override
     public String getBaseTypeName() {
         return BASE_TYPE;
-    }
-
-    public String getProblemId() {
-        return getData().getProblemId();
     }
 }

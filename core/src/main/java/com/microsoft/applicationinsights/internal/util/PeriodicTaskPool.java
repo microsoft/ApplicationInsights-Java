@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.util;
 
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  * }}</pre>
  * @since 2.4.0
  */
-public class PeriodicTaskPool implements Stoppable {
+public class PeriodicTaskPool {
 
     private static final Logger logger = LoggerFactory.getLogger(PeriodicTaskPool.class);
 
@@ -121,7 +120,6 @@ public class PeriodicTaskPool implements Stoppable {
         return futureToCancel.cancel(true);
     }
 
-    @Override
     public void stop(long timeout, TimeUnit timeUnit) {
         periodicTaskService.shutdown();
         try {
@@ -211,10 +209,6 @@ public class PeriodicTaskPool implements Stoppable {
 
         public TimeUnit getUnit() {
             return unit;
-        }
-
-        public String getTaskId() {
-            return taskId;
         }
 
         @Override

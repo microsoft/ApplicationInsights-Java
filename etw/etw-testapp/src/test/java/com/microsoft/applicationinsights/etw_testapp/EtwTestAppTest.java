@@ -4,7 +4,6 @@
 package com.microsoft.applicationinsights.etw_testapp;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 public class EtwTestAppTest {
     @Test

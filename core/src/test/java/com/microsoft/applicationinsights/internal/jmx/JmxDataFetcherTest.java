@@ -12,12 +12,15 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class JmxDataFetcherTest {
+
+    @SuppressWarnings("unused")
     public interface StubMXBean {
-        public int getIntSample();
-        public double getDoubleSample();
-        public long getLongSample();
+        int getIntSample();
+        double getDoubleSample();
+        long getLongSample();
     }
 
+    @SuppressWarnings("unused")
     public static class TestStub implements StubMXBean {
         public int i;
         public double d;
@@ -50,7 +53,7 @@ public class JmxDataFetcherTest {
         ObjectName mxbeanName = new ObjectName("JSDKTests:type=TestStub3");
         TestStub testStub = new TestStub(1, 2.0, 3L);
         server.registerMBean(testStub, mxbeanName);
-        List<JmxAttributeData> attributes = new ArrayList<JmxAttributeData>();
+        List<JmxAttributeData> attributes = new ArrayList<>();
         attributes.add(new JmxAttributeData("Int", "WrongNameIntSample"));
         attributes.add(new JmxAttributeData("Double", "WrongNameDoubleSample"));
         attributes.add(new JmxAttributeData("Long", "WrongNameLongSample"));
@@ -63,7 +66,7 @@ public class JmxDataFetcherTest {
         ObjectName mxbeanName = new ObjectName("JSDKTests:type=TestStub1");
         TestStub testStub = new TestStub(1, 2.0, 3L);
         server.registerMBean(testStub, mxbeanName);
-        List<JmxAttributeData> attributes = new ArrayList<JmxAttributeData>();
+        List<JmxAttributeData> attributes = new ArrayList<>();
         attributes.add(new JmxAttributeData("Int", "IntSample"));
         JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes);
     }
@@ -75,7 +78,7 @@ public class JmxDataFetcherTest {
         TestStub testStub = new TestStub(1, 2.0, 3L);
         server.registerMBean(testStub, mxbeanName);
 
-        List<JmxAttributeData> attributes = new ArrayList<JmxAttributeData>();
+        List<JmxAttributeData> attributes = new ArrayList<>();
         attributes.add(new JmxAttributeData("Int", "IntSample"));
         attributes.add(new JmxAttributeData("Double", "DoubleSample"));
         attributes.add(new JmxAttributeData("Long", "LongSample"));

@@ -21,14 +21,7 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.internal.schemav2.DependencyKind;
-import com.microsoft.applicationinsights.internal.schemav2.DependencySourceType;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -37,8 +30,6 @@ import java.util.Map;
  * your application to external services such as databases or REST APIs.
  */
 public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<RemoteDependencyData> {
-
-    private static final Logger logger = LoggerFactory.getLogger(RemoteDependencyTelemetry.class);
 
     private Double samplingPercentage;
     private final RemoteDependencyData data;
@@ -88,11 +79,6 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
         this.data.setSuccess(success);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     /**
      * Gets the dependency Id.
      */
@@ -135,123 +121,6 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
      * @param commandName The command name.
      */
     public void setCommandName(String commandName) { this.data.setData(commandName); }
-
-    /**
-     * @deprecated
-     * Gets the Count property.
-     * @return Count property.
-     */
-    @Deprecated
-    public Integer getCount() {
-        return null;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Count property.
-     * @param value Count property.
-     */
-    @Deprecated
-    public void setCount(Integer value) {
-        //do nothing as this property is no longer in use
-    }
-
-    /**
-     * @deprecated
-     * Gets the Min property.
-     * @return Min property.
-     */
-    @Deprecated
-    public Double getMin() {
-        return null;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Min property.
-     * @param value Min property.
-     */
-    @Deprecated
-    public void setMin(Double value) {
-
-    }
-
-    /**
-     * @deprecated
-     * Gets the Max property.
-     * @return Max property.
-     */
-    @Deprecated
-    public Double getMax() {
-        return null;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Max property.
-     * @param value Max property.
-     */
-    @Deprecated
-    public void setMax(Double value) {
-
-    }
-
-    /**
-     * @deprecated
-     * Gets the Standard Deviation property.
-     * @return Standard Deviation property.
-     */
-    @Deprecated
-    public Double getStdDev() {
-        return null;
-    }
-
-    /**
-     * @deprecated
-     * Sets the StdDev property.
-     * @param value Standard Deviation property.
-     */
-    @Deprecated
-    public void setStdDev(Double value) {
-    }
-
-    /**
-     * @deprecated
-     * Gets the Dependency Kind property.
-     * @return Dependency Kind property.
-     */
-    @Deprecated
-    public DependencyKind getDependencyKind() {
-        DependencyKind result = DependencyKind.Other;
-        String type = data.getType();
-        if (!LocalStringsUtils.isNullOrEmpty(type)) {
-            try {
-                result = Enum.valueOf(DependencyKind.class, type);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t) {
-                try {
-                    logger.error("Exception while getting dependency kind: Type is empty");
-                    logger.trace("Exception while getting dependency kind: Type is empty", t);
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Dependency Kind property.
-     * @param value Dependency Kind property.
-     */
-    @Deprecated
-    public void setDependencyKind(DependencyKind value) {
-        data.setType(value.toString());
-    }
 
     /**
      * Gets the Type property.
@@ -305,45 +174,6 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     }
 
     /**
-     * @deprecated
-     * Gets the Async property.
-     * @return True if async.
-     */
-    @Deprecated
-    public Boolean getAsync() {
-        return false;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Async property.
-     * @param value True if async.
-     */
-    @Deprecated
-    public void setAsync(Boolean value) {
-
-    }
-
-    /**
-     * @deprecated
-     * Gets the Dependency Source property.
-     * @return Dependency Source property.
-     */
-    @Deprecated
-    public DependencySourceType getDependencySource() {
-        return DependencySourceType.Undefined;
-    }
-
-    /**
-     * @deprecated
-     * Sets the Dependency Source property.
-     * @param value Dependency Source property.
-     */
-    @Deprecated
-    public void setDependencySource(DependencySourceType value) {
-    }
-
-    /**
      * Gets the duration.
      * @return The duration.
      */
@@ -367,12 +197,6 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     @Override
     public void setSamplingPercentage(Double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
-    }
-
-    @Override
-    @Deprecated
-    protected void additionalSanitize() {
-        data.setName(Sanitizer.sanitizeName(data.getName()));
     }
 
     @Override

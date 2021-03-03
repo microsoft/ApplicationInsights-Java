@@ -28,10 +28,6 @@ public final class LimitsEnforcer {
 
     private int currentValue;
 
-    public Type getType() {
-        return type;
-    }
-
     public int getMaximum() {
         return maximum;
     }
@@ -100,10 +96,6 @@ public final class LimitsEnforcer {
 
     public static LimitsEnforcer createWithDefaultOnError(String propertyName, int minimum, int maximum, int defaultValue, Integer currentValue) {
         return new LimitsEnforcer(Type.DEFAULT_ON_ERROR, minimum, maximum, defaultValue, currentValue, propertyName);
-    }
-
-    public static LimitsEnforcer createWithDefaultOnError(int minimum, int maximum, int defaultValue, String propertyName, String currentValue) {
-        return new LimitsEnforcer(Type.DEFAULT_ON_ERROR, minimum, maximum, defaultValue, translate(propertyName, currentValue), propertyName);
     }
 
     public static LimitsEnforcer createWithClosestLimitOnError(String propertyName, int minimum, int maximum, int defaultValue, Integer currentValue) {

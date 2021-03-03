@@ -448,10 +448,6 @@ public abstract class AiSmokeTest {
         assertNotNull(String.format(fmt, "jreVersion"), jreVersion);
     }
 
-    protected void checkParams() {
-        checkParams(this.appServer, this.os, this.jreVersion);
-    }
-
     protected static void setupProperties(final String appServer, final String os, final String jreVersion) throws Exception {
         testProps.load(new FileReader(new File(Resources.getResource(TEST_CONFIG_FILENAME).toURI())));
         currentImageName = String.format("%s_%s_%s", appServer, os, jreVersion);
@@ -503,7 +499,7 @@ public abstract class AiSmokeTest {
         }
     }
 
-    private static void cleanUpDockerNetwork() throws Exception {
+    private static void cleanUpDockerNetwork() {
         if (networkId == null) {
             System.out.println("No network id....nothing to clean up");
             return;
@@ -653,7 +649,8 @@ public abstract class AiSmokeTest {
     }
 
     @AfterWithParams
-    public static void tearDownContainer(final String appServer, final String os, final String jreVersion) throws Exception {
+    public static void tearDownContainer(@SuppressWarnings("unused") String appServer, @SuppressWarnings("unused") String os,
+                                         @SuppressWarnings("unused") String jreVersion) throws Exception {
         stopAllContainers();
         cleanUpDockerNetwork();
         TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);

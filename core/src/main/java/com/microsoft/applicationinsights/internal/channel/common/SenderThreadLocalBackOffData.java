@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.base.Preconditions;
@@ -40,7 +39,6 @@ import com.google.common.base.Preconditions;
  */
 final class SenderThreadLocalBackOffData {
     private final ReentrantLock lock;
-    private final Condition backOffCondition;
     private int currentBackOffIndex;
     private boolean instanceIsActive;
     private final long addMilliseconds;
@@ -59,7 +57,6 @@ final class SenderThreadLocalBackOffData {
         currentBackOffIndex = -1;
         instanceIsActive = true;
         lock = new ReentrantLock();
-        backOffCondition = lock.newCondition();
         this.backOffTimeoutsInMillis = backOffTimeoutsInMillis;
         this.addMilliseconds = addMilliseconds;
     }
@@ -105,17 +102,4 @@ final class SenderThreadLocalBackOffData {
            lock.unlock();
        }
    }
-
-    /**
-     * Stop a waiting thread if there is one, and prevent that thread for backOffing.
-     */
-    public void stop() {
-        try {
-            lock.lock();
-            instanceIsActive = false;
-            backOffCondition.signal();
-        } finally {
-            lock.unlock();
-        }
-    }
 }

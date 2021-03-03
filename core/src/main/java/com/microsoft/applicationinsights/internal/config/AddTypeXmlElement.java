@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,12 +46,8 @@ public class AddTypeXmlElement {
         this.type = type;
     }
 
-    public void setParameters(ArrayList<ParamXmlElement> paramElements) {
-        this.paramElements = paramElements;
-    }
-
     public Map<String, String> getData() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
 
         for (ParamXmlElement element : getParameters()) {
             map.put(element.getName(), element.getValue());

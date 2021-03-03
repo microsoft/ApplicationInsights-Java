@@ -4,7 +4,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 
 import javax.annotation.Nullable;
 
-public interface ConfiguredTransmitterFactory<T> extends TransmitterFactory<T> {
+public interface ConfiguredTransmitterFactory<T> {
     /**
      * Either {@code configuration} or {@code endpoint} could be null, but one must be non-null.
      * @param configuration The configuration for the current TelemetryClient

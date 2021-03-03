@@ -2,9 +2,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
-import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import org.junit.*;
 

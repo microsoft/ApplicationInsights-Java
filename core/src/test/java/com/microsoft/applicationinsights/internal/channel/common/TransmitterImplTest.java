@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.TelemetrySerializer;
@@ -37,8 +36,6 @@ import com.microsoft.applicationinsights.internal.channel.TransmissionsLoader;
 import com.microsoft.applicationinsights.telemetry.JsonTelemetryDataSerializer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import com.squareup.moshi.JsonWriter;
-import okio.Buffer;
 import org.junit.*;
 import org.mockito.Mockito;
 
@@ -129,21 +126,12 @@ public final class TransmitterImplTest {
             TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
             TransmissionsLoader mockLoader = Mockito.mock(TransmissionsLoader.class);
 
-            final List<Telemetry> telemetries = new ArrayList<Telemetry>();
+            final List<Telemetry> telemetries = new ArrayList<>();
             for (int i = 0; i < numberOfTransmissions; ++i) {
                 telemetries.add(new Telemetry() {
                     @Override
                     public Date getTimestamp() {
                         return null;
-                    }
-
-                    @Override
-                    public String getSequence() {
-                        return null;
-                    }
-
-                    @Override
-                    public void setSequence(String sequence) {
                     }
 
                     @Override
@@ -161,12 +149,7 @@ public final class TransmitterImplTest {
                     }
 
                     @Override
-                    public void sanitize() {
-
-                    }
-
-                    @Override
-                    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
+                    public void serialize(JsonTelemetryDataSerializer writer) {
 
                     }
 
@@ -219,21 +202,12 @@ public final class TransmitterImplTest {
             TransmissionDispatcher mockDispatcher = Mockito.mock(TransmissionDispatcher.class);
             TransmissionsLoader mockLoader = Mockito.mock(TransmissionsLoader.class);
 
-            final List<Telemetry> telemetries = new ArrayList<Telemetry>();
+            final List<Telemetry> telemetries = new ArrayList<>();
             for (int i = 0; i < numberOfTransmissions; ++i) {
                 telemetries.add(new Telemetry() {
                     @Override
                     public Date getTimestamp() {
                         return null;
-                    }
-
-                    @Override
-                    public String getSequence() {
-                        return null;
-                    }
-
-                    @Override
-                    public void setSequence(String sequence) {
                     }
 
                     @Override
@@ -251,12 +225,7 @@ public final class TransmitterImplTest {
                     }
 
                     @Override
-                    public void sanitize() {
-
-                    }
-
-                    @Override
-                    public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
+                    public void serialize(JsonTelemetryDataSerializer writer) {
 
                     }
 
@@ -306,21 +275,5 @@ public final class TransmitterImplTest {
                 transmitter.shutdown(1L, TimeUnit.SECONDS);
             }
         }
-    }
-
-    private static ArrayList<String> toJson(List<Telemetry> telemetries) throws IOException {
-        ArrayList<String> asJsons = new ArrayList<String>();
-        for (Telemetry telemetry : telemetries) {
-
-            Buffer buffer = new Buffer();
-            JsonWriter writer = JsonWriter.of(buffer);
-            JsonTelemetryDataSerializer jsonWriter = new JsonTelemetryDataSerializer(writer);
-            telemetry.serialize(jsonWriter);
-            jsonWriter.close();
-            writer.close();
-            asJsons.add(new String(buffer.readByteArray(), Charsets.UTF_8));
-        }
-
-        return asJsons;
     }
 }

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -49,11 +48,11 @@ public class HttpHelper {
                 .build();
     }
 
-    public static String post(String url, String body) throws ClientProtocolException, IOException {
+    public static String post(String url, String body) throws IOException {
         CloseableHttpClient client = getHttpClient();
         try {
             HttpPost post = new HttpPost(url);
-            post.setEntity(new StringEntity("PING"));
+            post.setEntity(new StringEntity(body));
             CloseableHttpResponse resp1 = client.execute(post);
             return extractResponseBody(resp1);
         }

@@ -309,10 +309,6 @@ public class ConfigurationBuilder {
 
     public static class ConfigurationException extends RuntimeException {
 
-        public ConfigurationException(String message) {
-            super(message);
-        }
-
         ConfigurationException(String message, Exception e) {
             super(message, e);
         }
@@ -340,8 +336,7 @@ public class ConfigurationBuilder {
             Buffer buffer = new Buffer();
             buffer.readFrom(in);
             try {
-                Configuration configuration = jsonAdapter.fromJson(buffer);
-                return configuration;
+                return jsonAdapter.fromJson(buffer);
             } catch(JsonDataException ex) {
                 if(strict) {
                     // Try extracting the configuration without failOnUnknown
