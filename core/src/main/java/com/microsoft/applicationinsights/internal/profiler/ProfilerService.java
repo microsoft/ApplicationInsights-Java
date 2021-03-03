@@ -30,6 +30,7 @@ import javax.management.InstanceNotFoundException;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profiler.ProfileHandler;
@@ -87,7 +88,7 @@ public class ProfilerService {
                                                           TelemetryClient client) {
         if (INSTANCE == null) {
             appIdSupplier = getAppId(appIdSupplier);
-            ServiceProfilerClientV2 serviceProfilerClient = new ProfilerFrontendClientV2(config.getServiceProfilerFrontEndPoint(), instrumentationKey);
+            ServiceProfilerClientV2 serviceProfilerClient = new ProfilerFrontendClientV2(config.getServiceProfilerFrontEndPoint(), instrumentationKey, LazyHttpClient.getInstance());
 
             ServiceProfilerUploader uploader = new ServiceProfilerUploader(
                     serviceProfilerClient,
