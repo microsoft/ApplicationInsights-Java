@@ -577,7 +577,6 @@ public class Exporter implements SpanExporter {
     }
 
     private void exportEvents(SpanData span, Double samplingPercentage) {
-        boolean foundException = false;
         for (EventData event : span.getEvents()) {
             EventTelemetry telemetry = new EventTelemetry(event.getName());
             String operationId = span.getTraceId();
@@ -588,16 +587,11 @@ public class Exporter implements SpanExporter {
 
             if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
                     || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE) != null) {
-                // TODO Remove this boolean after we can confirm that the exception duplicate is a bug from the opentelmetry-java-instrumentation
-                //  tested 10/22, and SpringBootTest smoke test
-                if (!foundException) {
-                    // TODO map OpenTelemetry exception to Application Insights exception better
-                    String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
-                    if (stacktrace != null) {
-                        trackException(stacktrace, span, operationId, span.getSpanId(), samplingPercentage);
-                    }
+                // TODO map OpenTelemetry exception to Application Insights exception better
+                String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+                if (stacktrace != null) {
+                    trackException(stacktrace, span, operationId, span.getSpanId(), samplingPercentage);
                 }
-                foundException = true;
             } else {
                 track(telemetry, samplingPercentage);
             }
