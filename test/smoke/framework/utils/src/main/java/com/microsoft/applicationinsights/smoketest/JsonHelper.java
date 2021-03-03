@@ -37,7 +37,7 @@ public class JsonHelper {
             .create();
 
     private static class BaseDataContractDeserializer implements JsonDeserializer<Base> {
-        private final String discriminatorField = "baseType";
+        private static final String discriminatorField = "baseType";
 
         private final Map<String, Class<? extends Domain>> classMap;
 

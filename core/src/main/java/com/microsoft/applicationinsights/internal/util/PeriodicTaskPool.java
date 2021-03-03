@@ -54,11 +54,6 @@ public class PeriodicTaskPool {
      */
     private final ScheduledExecutorService periodicTaskService;
 
-    /**
-     * Number of threads in the TheadPool associated with periodicTaskService.
-     */
-    private final int poolSize;
-
     public PeriodicTaskPool(int poolSize, String poolName) {
         if (poolSize < 1) {
             throw new IllegalArgumentException("ThreadPool size should be at least 1.");
@@ -66,8 +61,7 @@ public class PeriodicTaskPool {
         if (StringUtils.isBlank(poolName)) {
             throw new IllegalArgumentException("poolName must be non-empty");
         }
-        this.poolSize = poolSize;
-        this.periodicTaskService = new ScheduledThreadPoolExecutor(this.poolSize,
+        this.periodicTaskService = new ScheduledThreadPoolExecutor(poolSize,
                 ThreadPoolUtils.createNamedDaemonThreadFactory(poolName));
         this.periodicTaskMap = new ConcurrentHashMap<>();
     }

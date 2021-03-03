@@ -43,7 +43,6 @@ public final class ActiveTransmissionFileSystemOutput implements TransmissionOut
     private final ThreadPoolExecutor threadPool;
     private final TransmissionOutputSync actualOutput;
     private final TransmissionPolicyStateFetcher transmissionPolicy;
-    private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
 
     public ActiveTransmissionFileSystemOutput(TransmissionOutputSync actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
         Preconditions.checkNotNull(transmissionPolicy, "transmissionPolicy must be a non-null value");
@@ -53,6 +52,7 @@ public final class ActiveTransmissionFileSystemOutput implements TransmissionOut
         this.transmissionPolicy = transmissionPolicy;
 
         threadPool = ThreadPoolUtils.newLimitedThreadPool(1, 3, 20L, 1024);
+        int instanceId = INSTANCE_ID_POOL.getAndIncrement();
         threadPool.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(ActiveTransmissionFileSystemOutput.class, instanceId));
     }
 

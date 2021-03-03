@@ -39,13 +39,12 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
     private final static int DEFAULT_MIN_NUMBER_OF_THREADS = 7;
     private final static int DEFAULT_MAX_NUMBER_OF_THREADS = 7;
     private final static long DEFAULT_REMOVE_IDLE_THREAD_TIMEOUT_IN_SECONDS = 60L;
-    private final static AtomicInteger INTSTANCE_ID_POOL = new AtomicInteger(1);
+    private final static AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1);
 
     private final int maxThreads;
     private final ThreadPoolExecutor outputThreads;
     private final TransmissionOutputSync actualOutput;
     private final TransmissionPolicyStateFetcher transmissionPolicy;
-    private final int instanceId = INTSTANCE_ID_POOL.getAndIncrement();
 
     public ActiveTransmissionNetworkOutput(TransmissionOutputSync actualOutput, TransmissionPolicyStateFetcher transmissionPolicy) {
         this(actualOutput, transmissionPolicy, DEFAULT_MAX_MESSAGES_IN_BUFFER);
@@ -63,6 +62,7 @@ public final class ActiveTransmissionNetworkOutput implements TransmissionOutput
                 maxThreads,
                 DEFAULT_REMOVE_IDLE_THREAD_TIMEOUT_IN_SECONDS,
                 maxMessagesInBuffer);
+        int instanceId = INSTANCE_ID_POOL.getAndIncrement();
         outputThreads.setThreadFactory(ThreadPoolUtils.createDaemonThreadFactory(ActiveTransmissionNetworkOutput.class, instanceId));
     }
 

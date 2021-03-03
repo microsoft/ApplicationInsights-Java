@@ -37,7 +37,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     public static final String PING = "PING";
     public static final String PONG = "PONG";
 
-    private final String appid = "DUMMYAPPID";
+    private static final String appid = "DUMMYAPPID";
 
 
     @GuardedBy("multimapLock")

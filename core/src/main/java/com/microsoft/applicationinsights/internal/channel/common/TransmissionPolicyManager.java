@@ -55,7 +55,7 @@ public final class TransmissionPolicyManager implements TransmissionHandler {
     private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1);
 
     private int instantRetryAmount = 3;         // Should always be set by the creator of this class
-    private final int INSTANT_RETRY_MAX = 10;   // Stops us from getting into an endless loop
+    private static final int INSTANT_RETRY_MAX = 10;   // Stops us from getting into an endless loop
 
     // Current thread backoff manager
     private final SenderThreadsBackOffManager backoffManager;
