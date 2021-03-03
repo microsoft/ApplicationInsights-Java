@@ -27,13 +27,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
 
     private final TelemetryConfiguration configuration;
-    private final ApacheSender apacheSender;
+    private final HttpClient httpClient;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private final String pingPrefix;
     private final String roleName;
@@ -57,9 +58,9 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private long lastValidTransmission = 0;
     private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
-    public DefaultQuickPulsePingSender(ApacheSender sender, TelemetryConfiguration configuration, String machineName, String instanceName, String roleName, String quickPulseId) {
+    public DefaultQuickPulsePingSender(HttpClient httpClient, TelemetryConfiguration configuration, String machineName, String instanceName, String roleName, String quickPulseId) {
         this.configuration = configuration;
-        this.apacheSender = sender;
+        this.httpClient = httpClient;
         this.roleName = roleName;
         this.instanceName = instanceName;
         this.machineName = machineName;
@@ -86,11 +87,11 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     }
 
     /**
-     * @deprecated Use {@link #DefaultQuickPulsePingSender(ApacheSender, TelemetryConfiguration, String, String, String, String)}
+     * @deprecated Use {@link #DefaultQuickPulsePingSender(HttpClient, TelemetryConfiguration, String, String, String, String)}
      */
     @Deprecated
-    public DefaultQuickPulsePingSender(final ApacheSender apacheSender, final String machineName, final String instanceName, final String roleName, final String quickPulseId) {
-        this(apacheSender, null, machineName, instanceName, roleName, quickPulseId);
+    public DefaultQuickPulsePingSender(final HttpClient httpClient, final String machineName, final String instanceName, final String roleName, final String quickPulseId) {
+        this(httpClient, null, machineName, instanceName, roleName, quickPulseId);
     }
 
     @Override
@@ -105,7 +106,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         final long sendTime = System.nanoTime();
         HttpResponse response = null;
         try {
-            response = apacheSender.sendRequest(request);
+            response = httpClient.execute(request);
             if (networkHelper.isSuccess(response)) {
                 final QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                 switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
@@ -126,7 +127,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
             // chomp
         } finally {
             if (response != null) {
-                apacheSender.dispose(response);
+                LazyHttpClient.dispose(response);
             }
         }
         return onPingError(sendTime);

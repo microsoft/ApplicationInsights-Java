@@ -200,7 +200,7 @@ public final class TransmissionPolicyManager implements TransmissionHandler {
 
         policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
         suspensionDate = null;
-        logger.info("App throttling is cancelled.");
+        logger.debug("App throttling is cancelled.");
     }
 
     private synchronized void createScheduler() {

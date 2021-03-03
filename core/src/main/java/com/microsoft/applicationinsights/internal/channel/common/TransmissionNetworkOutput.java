@@ -40,6 +40,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.entity.ByteArrayEntity;
@@ -78,7 +79,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
     private final TelemetryConfiguration configuration;
 
     // Use one instance for optimization
-    private final ApacheSender httpClient;
+    private final HttpClient httpClient;
 
     private final TransmissionPolicyManager transmissionPolicyManager;
 
@@ -93,7 +94,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
         if (StringUtils.isNotEmpty(serverUri)) {
             logger.warn("Setting the endpoint via the <Channel> element is deprecated and will be removed in a future version. Use the top-level element <ConnectionString>.");
         }
-        httpClient = ApacheSenderFactory.INSTANCE.get();
+        httpClient = LazyHttpClient.getInstance();
         this.transmissionPolicyManager = transmissionPolicyManager;
         stopped = false;
         if (logger.isTraceEnabled()) {
@@ -138,8 +139,8 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
             try {
                 // POST the transmission data to the endpoint
                 request = createTransmissionPostRequest(transmission);
-                httpClient.enhanceRequest(request);
-                response = httpClient.sendRequest(request);
+                LazyHttpClient.enhanceRequest(request);
+                response = httpClient.execute(request);
                 HttpEntity respEntity = response.getEntity();
                 code = response.getStatusLine().getStatusCode();
                 reason = response.getStatusLine().getReasonPhrase();
@@ -190,7 +191,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 if (request != null) {
                     request.releaseConnection();
                 }
-                httpClient.dispose(response);
+                LazyHttpClient.dispose(response);
 
                 if (code == HttpStatus.SC_BAD_REQUEST) {
                     networkExceptionStats.recordFailure("ingestion service returned 400 (" + reason + ")");
