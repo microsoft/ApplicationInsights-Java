@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.channel.common.ApacheSenderFactory;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
@@ -120,7 +120,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
             HttpResponse response;
             try {
-                response = ApacheSenderFactory.INSTANCE.get().sendRequest(request);
+                response = LazyHttpClient.getInstance().execute(request);
             } catch (Exception e) {
                 // TODO handle Friendly SSL exception
                 logger.debug(e.getMessage(), e);
