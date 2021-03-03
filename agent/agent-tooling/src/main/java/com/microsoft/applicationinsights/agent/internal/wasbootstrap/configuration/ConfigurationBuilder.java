@@ -200,7 +200,7 @@ public class ConfigurationBuilder {
 
         if (isTrimEmpty(config.role.name)) {
             // only use WEBSITE_SITE_NAME as a fallback
-            config.role.name = getEnvVar(WEBSITE_SITE_NAME);
+            config.role.name = getWebsiteSiteNameEnvVar();
         }
         config.role.name = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, config.role.name);
 
