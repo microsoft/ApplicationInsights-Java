@@ -174,12 +174,6 @@ public class Exporter implements SpanExporter {
         String instrumentationName = span.getInstrumentationLibraryInfo().getName();
         Matcher matcher = COMPONENT_PATTERN.matcher(instrumentationName);
         String stdComponent = matcher.matches() ? matcher.group(1) : null;
-        if ("jms".equals(stdComponent) && !span.getParentSpanContext().isValid() && kind == SpanKind.CONSUMER) {
-            // no need to capture these, at least is consistent with prior behavior
-            // these tend to be frameworks pulling messages which are then pushed to consumers
-            // where we capture them
-            return;
-        }
         if (kind == SpanKind.INTERNAL) {
             Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
             if (isLog != null && isLog) {
