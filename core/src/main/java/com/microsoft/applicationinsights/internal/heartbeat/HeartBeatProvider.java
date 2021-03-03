@@ -53,7 +53,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
   /**
    * Map to hold heartbeat properties
    */
-  private ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
+  private final ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
 
   /**
    * Interval at which heartbeat would be sent
@@ -68,12 +68,12 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
   /**
    * ThreadPool used for adding properties to concurrent dictionary
    */
-  private ExecutorService propertyUpdateService;
+  private final ExecutorService propertyUpdateService;
 
   /**
    * Threadpool used to send data heartbeat telemetry
    */
-  private ScheduledExecutorService heartBeatSenderService;
+  private final ScheduledExecutorService heartBeatSenderService;
 
   /**
    * Heartbeat enabled state

@@ -40,7 +40,7 @@ import com.google.common.base.Preconditions;
 final class SenderThreadLocalBackOffData {
     private final ReentrantLock lock;
     private int currentBackOffIndex;
-    private boolean instanceIsActive;
+    private final boolean instanceIsActive;
     private final long addMilliseconds;
     private final long[] backOffTimeoutsInMillis;
 

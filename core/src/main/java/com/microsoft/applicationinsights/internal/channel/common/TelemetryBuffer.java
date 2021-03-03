@@ -87,10 +87,10 @@ public class TelemetryBuffer<T> {
     /// The maximum amount of Telemetries in a batch. If the buffer is
     /// full before the timeout expired, we will need to send it anyway and not wait for the timeout to expire
     private int maxTelemetriesInBatch;
-    private LimitsEnforcer maxTelemetriesInBatchEnforcer;
+    private final LimitsEnforcer maxTelemetriesInBatchEnforcer;
 
     private int transmitBufferTimeoutInSeconds;
-    private LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer;
+    private final LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer;
 
     /// The Telemetry instances are kept here
     private List<T> telemetries;

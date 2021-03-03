@@ -11,7 +11,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class SamplingScoreGeneratorV2 {
 
-    private static Random random = new Random();
+    private static final Random random = new Random();
 
     /**
      * This method takes the telemetry and returns the hash of the operation id if it is present already

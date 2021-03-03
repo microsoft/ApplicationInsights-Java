@@ -74,7 +74,7 @@ import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryU
  */
 public final class JvmPerformanceCountersModule extends AbstractPerformanceCounterModule implements PerformanceCounterConfigurationAware {
 
-    private String[] JvmPCNames = {
+    private final String[] JvmPCNames = {
             DeadLockDetectorPerformanceCounter.NAME,
             JvmHeapMemoryUsedPerformanceCounter.NAME,
             GCPerformanceCounter.NAME

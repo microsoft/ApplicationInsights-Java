@@ -19,7 +19,7 @@ import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 public class SimpleTrackHttpRequestServlet extends HttpServlet {
 
     private static final long serialVersionUID = -1484210841610659769L;
-    private TelemetryClient client = new TelemetryClient();
+    private final TelemetryClient client = new TelemetryClient();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

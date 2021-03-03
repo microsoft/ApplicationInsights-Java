@@ -63,7 +63,7 @@ public class ActiveTransmissionNetworkOutputTest {
         final Condition stopCondition = lock.newCondition();
         final AtomicBoolean done = new AtomicBoolean();
         TransmissionOutputSync mock = new TransmissionOutputSync() {
-            private AtomicInteger counter = new AtomicInteger(0);
+            private final AtomicInteger counter = new AtomicInteger(0);
 
             @Override
             public boolean sendSync(Transmission transmission) {

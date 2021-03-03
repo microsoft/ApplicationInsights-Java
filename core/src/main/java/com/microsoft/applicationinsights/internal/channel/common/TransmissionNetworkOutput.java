@@ -72,15 +72,15 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
     // For future use: re-send a failed transmission back to the dispatcher
     private TransmissionDispatcher transmissionDispatcher;
 
-    private String serverUri;
+    private final String serverUri;
 
-    private volatile boolean stopped;
-    private volatile TelemetryConfiguration configuration;
+    private final boolean stopped;
+    private final TelemetryConfiguration configuration;
 
     // Use one instance for optimization
     private final ApacheSender httpClient;
 
-    private TransmissionPolicyManager transmissionPolicyManager;
+    private final TransmissionPolicyManager transmissionPolicyManager;
 
     public static TransmissionNetworkOutput create(TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
         return new TransmissionNetworkOutput(null, configuration, transmissionPolicyManager);

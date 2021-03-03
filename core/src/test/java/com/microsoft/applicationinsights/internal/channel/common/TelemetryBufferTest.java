@@ -60,11 +60,11 @@ public final class TelemetryBufferTest {
             }
         }
 
-        private AtomicInteger sendNowCallCounter = new AtomicInteger(0);
+        private final AtomicInteger sendNowCallCounter = new AtomicInteger(0);
 
-        private AtomicInteger scheduleSendCallCounter = new AtomicInteger(0);
+        private final AtomicInteger scheduleSendCallCounter = new AtomicInteger(0);
 
-        private AtomicInteger scheduleSendActualCallCounter = new AtomicInteger(0);
+        private final AtomicInteger scheduleSendActualCallCounter = new AtomicInteger(0);
 
         private int expectedTelemetriesNumberInSendNow;
         private int expectedTelemetriesNumberInScheduleSend;
@@ -72,7 +72,7 @@ public final class TelemetryBufferTest {
         private int expectedNumberOfScheduleSendCalls;
         private int expectedNumberOfScheduleSendRequests = 1;
 
-        private ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
+        private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
 
         private final BlockingQueue<ScheduledSendResult> queue = new ArrayBlockingQueue<>(4);
 

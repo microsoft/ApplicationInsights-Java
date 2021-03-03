@@ -77,8 +77,8 @@ public class JsonTelemetryDataSerializerTest {
         private int i2;
         private Long l1;
         private long l2;
-        private Map<String, Integer> m1 = new HashMap<>();
-        private List<String> list1 = new ArrayList<>();
+        private final Map<String, Integer> m1 = new HashMap<>();
+        private final List<String> list1 = new ArrayList<>();
         private com.microsoft.applicationinsights.internal.schemav2.SeverityLevel severity;
         private boolean b1;
         private short sh1;

@@ -66,7 +66,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     public static final String THROTTLING_ENABLED_NAME = "Throttling";
 
     private ConfiguredTransmitterFactory<T> transmitterFactory;
-    private AtomicLong itemsSent = new AtomicLong(0);
+    private final AtomicLong itemsSent = new AtomicLong(0);
 
     protected boolean isInitailized = false;
 

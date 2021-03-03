@@ -32,11 +32,11 @@ public class ApplicationInsightsXmlConfiguration {
 
     private String roleInstance;
 
-    private ChannelXmlElement channel = new ChannelXmlElement();
+    private final ChannelXmlElement channel = new ChannelXmlElement();
 
     private TelemetryModulesXmlElement modules;
 
-    private PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
+    private final PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
 
     private QuickPulseXmlElement quickPulse;
 

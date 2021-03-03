@@ -42,11 +42,11 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
 
     @GuardedBy("multimapLock")
     private final ListMultimap<String, Envelope> type2envelope;
-    private List<Predicate<Envelope>> filters;
+    private final List<Predicate<Envelope>> filters;
 
     private final Object multimapLock = new Object();
 
-    private MockedIngestionServletConfig config;
+    private final MockedIngestionServletConfig config;
 
     private final ExecutorService itemExecutor = Executors.newSingleThreadExecutor();
 

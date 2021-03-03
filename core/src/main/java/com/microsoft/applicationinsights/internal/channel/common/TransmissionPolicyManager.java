@@ -58,16 +58,16 @@ public final class TransmissionPolicyManager implements TransmissionHandler {
     private final int INSTANT_RETRY_MAX = 10;   // Stops us from getting into an endless loop
 
     // Current thread backoff manager
-    private SenderThreadsBackOffManager backoffManager;
+    private final SenderThreadsBackOffManager backoffManager;
 
     // List of transmission policies implemented as handlers
-    private List<TransmissionHandler> transmissionHandlers;
+    private final List<TransmissionHandler> transmissionHandlers;
 
     // The future date the the transmission is blocked
     private Date suspensionDate;
 
     // Make sure that we don't double block, we do that by keeping un up-to-date generation id
-    private AtomicLong generation = new AtomicLong(0);
+    private final AtomicLong generation = new AtomicLong(0);
 
     // A thread that will callback when the timeout expires
     private ScheduledThreadPoolExecutor threads;

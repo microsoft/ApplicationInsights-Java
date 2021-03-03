@@ -25,7 +25,7 @@ public class ThrottlingHandler implements TransmissionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ThrottlingHandler.class);
 
-    private TransmissionPolicyManager transmissionPolicyManager;
+    private final TransmissionPolicyManager transmissionPolicyManager;
     private final static String RESPONSE_RETRY_AFTER_DATE_FORMAT = "E, dd MMM yyyy HH:mm:ss";
 
     /**

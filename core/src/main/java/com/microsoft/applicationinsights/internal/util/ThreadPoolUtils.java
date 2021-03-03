@@ -98,7 +98,7 @@ public final class ThreadPoolUtils {
 
     public static ThreadFactory createNamedDaemonThreadFactory(final String poolName) {
         return new ThreadFactory(){
-            private AtomicInteger threadId = new AtomicInteger();
+            private final AtomicInteger threadId = new AtomicInteger();
             @Override
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);

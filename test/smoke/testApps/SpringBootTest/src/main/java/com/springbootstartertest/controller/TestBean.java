@@ -13,7 +13,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 @Service
 public class TestBean {
 
-    private CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build();
+    private final CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build();
 
     @Async
     public void asyncDependencyCall(DeferredResult<Integer> deferredResult) throws IOException {

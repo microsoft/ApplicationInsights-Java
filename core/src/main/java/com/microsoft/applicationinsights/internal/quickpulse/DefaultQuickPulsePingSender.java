@@ -49,13 +49,13 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private final TelemetryConfiguration configuration;
     private final ApacheSender apacheSender;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-    private String pingPrefix;
-    private String roleName;
-    private String instanceName;
-    private String machineName;
-    private String quickPulseId;
+    private final String pingPrefix;
+    private final String roleName;
+    private final String instanceName;
+    private final String machineName;
+    private final String quickPulseId;
     private long lastValidTransmission = 0;
-    private static volatile AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
+    private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
     public DefaultQuickPulsePingSender(ApacheSender sender, TelemetryConfiguration configuration, String machineName, String instanceName, String roleName, String quickPulseId) {
         this.configuration = configuration;
