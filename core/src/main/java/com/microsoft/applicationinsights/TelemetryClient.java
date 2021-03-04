@@ -53,7 +53,7 @@ public class TelemetryClient {
 
     private static final Object TELEMETRY_CONTEXT_LOCK = new Object();
 
-    private static AtomicLong generateCounter = new AtomicLong(0);
+    private static final AtomicLong generateCounter = new AtomicLong(0);
     /**
      * Initializes a new instance of the TelemetryClient class. Send telemetry with the specified configuration.
      * @param configuration The configuration this instance will work with.

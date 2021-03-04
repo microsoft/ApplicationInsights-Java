@@ -51,8 +51,6 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
     // A way to distinct
     private final AtomicInteger threadsSecondsDifference = new AtomicInteger(-1);
 
-    private SenderThreadLocalBackOffData senderThreadLocalData;
-
     public SenderThreadsBackOffManager(BackOffTimesPolicy backOffTimesContainer) {
         initializeBackOffTimeouts(backOffTimesContainer);
     }
@@ -69,8 +67,7 @@ final class SenderThreadsBackOffManager extends ThreadLocal<SenderThreadLocalBac
 
     @Override
     protected synchronized SenderThreadLocalBackOffData initialValue() {
-        senderThreadLocalData = new SenderThreadLocalBackOffData(backOffTimeoutsInMilliseconds, threadsSecondsDifference.incrementAndGet() * 1000L);
-        return senderThreadLocalData;
+        return new SenderThreadLocalBackOffData(backOffTimeoutsInMilliseconds, threadsSecondsDifference.incrementAndGet() * 1000L);
     }
 
     /**

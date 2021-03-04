@@ -73,15 +73,14 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
     // For future use: re-send a failed transmission back to the dispatcher
     private TransmissionDispatcher transmissionDispatcher;
 
-    private String serverUri;
+    private final String serverUri;
 
-    private volatile boolean stopped;
-    private volatile TelemetryConfiguration configuration;
+    private final TelemetryConfiguration configuration;
 
     // Use one instance for optimization
     private final HttpClient httpClient;
 
-    private TransmissionPolicyManager transmissionPolicyManager;
+    private final TransmissionPolicyManager transmissionPolicyManager;
 
     public static TransmissionNetworkOutput create(TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
         return new TransmissionNetworkOutput(null, configuration, transmissionPolicyManager);
@@ -96,7 +95,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
         }
         httpClient = LazyHttpClient.getInstance();
         this.transmissionPolicyManager = transmissionPolicyManager;
-        stopped = false;
         if (logger.isTraceEnabled()) {
             logger.trace("{} using endpoint {}", TransmissionNetworkOutput.class.getSimpleName(), getIngestionEndpoint());
         }
@@ -123,91 +121,89 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
      */
     @Override
     public boolean sendSync(Transmission transmission) {
-        if (!stopped) {
-            // If we're not stopped but in a blocked state then fail to second transmission output
-            if (transmissionPolicyManager.getTransmissionPolicyState().getCurrentState() != TransmissionPolicy.UNBLOCKED) {
+        // If we're not stopped but in a blocked state then fail to second transmission output
+        if (transmissionPolicyManager.getTransmissionPolicyState().getCurrentState() != TransmissionPolicy.UNBLOCKED) {
+            return false;
+        }
+
+        HttpResponse response = null;
+        HttpPost request = null;
+        int code = 0;
+        String reason = null;
+        String respString = null;
+        Throwable ex = null;
+        Header retryAfterHeader = null;
+        try {
+            // POST the transmission data to the endpoint
+            request = createTransmissionPostRequest(transmission);
+            LazyHttpClient.enhanceRequest(request);
+            response = httpClient.execute(request);
+            HttpEntity respEntity = response.getEntity();
+            code = response.getStatusLine().getStatusCode();
+            reason = response.getStatusLine().getReasonPhrase();
+            respString = EntityUtils.toString(respEntity);
+            retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
+
+            // After we reach our instant retry limit we should fail to second transmission output
+            if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() > this.transmissionPolicyManager.getMaxInstantRetries()) {
                 return false;
+            } else if (code == HttpStatus.SC_OK) {
+                // If we've completed then clear the back off flags as the channel does not need
+                // to be throttled
+                transmissionPolicyManager.clearBackoff();
+                // Increment Success Counter
+                networkExceptionStats.recordSuccess();
             }
-
-            HttpResponse response = null;
-            HttpPost request = null;
-            int code = 0;
-            String reason = null;
-            String respString = null;
-            Throwable ex = null;
-            Header retryAfterHeader = null;
+            return true;
+        } catch (ConnectionPoolTimeoutException e) {
+            networkExceptionStats.recordFailure("connection pool timeout exception: " + e, e);
+        } catch (SocketException e) {
+            networkExceptionStats.recordFailure("socket exception: " + e, e);
+        } catch (SocketTimeoutException e) {
+            networkExceptionStats.recordFailure("socket timeout exception: " + e, e);
+        } catch (UnknownHostException e) {
+            networkExceptionStats.recordFailure("wrong host address or cannot reach address due to network issues: " + e, e);
+        } catch (IOException e) {
+            networkExceptionStats.recordFailure("I/O exception: " + e, e);
+        } catch (FriendlyException e) {
+            ex = e;
+            // TODO should this be merged into networkExceptionStats?
+            if(!friendlyExceptionThrown.getAndSet(true)) {
+                logger.error(e.getMessage());
+            }
+        } catch (Exception e) {
+            networkExceptionStats.recordFailure("unexpected exception: " + e, e);
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
+            ex = t;
             try {
-                // POST the transmission data to the endpoint
-                request = createTransmissionPostRequest(transmission);
-                LazyHttpClient.enhanceRequest(request);
-                response = httpClient.execute(request);
-                HttpEntity respEntity = response.getEntity();
-                code = response.getStatusLine().getStatusCode();
-                reason = response.getStatusLine().getReasonPhrase();
-                respString = EntityUtils.toString(respEntity);
-                retryAfterHeader = response.getFirstHeader(RESPONSE_THROTTLING_HEADER);
-
-                // After we reach our instant retry limit we should fail to second transmission output
-                if (code > HttpStatus.SC_PARTIAL_CONTENT && transmission.getNumberOfSends() > this.transmissionPolicyManager.getMaxInstantRetries()) {
-                    return false;
-                } else if (code == HttpStatus.SC_OK) {
-                    // If we've completed then clear the back off flags as the channel does not need
-                    // to be throttled
-                    transmissionPolicyManager.clearBackoff();
-                    // Increment Success Counter
-                    networkExceptionStats.recordSuccess();
-                }
-                return true;
-            } catch (ConnectionPoolTimeoutException e) {
-                networkExceptionStats.recordFailure("connection pool timeout exception: " + e, e);
-            } catch (SocketException e) {
-                networkExceptionStats.recordFailure("socket exception: " + e, e);
-            } catch (SocketTimeoutException e) {
-                networkExceptionStats.recordFailure("socket timeout exception: " + e, e);
-            } catch (UnknownHostException e) {
-                networkExceptionStats.recordFailure("wrong host address or cannot reach address due to network issues: " + e, e);
-            } catch (IOException e) {
-                networkExceptionStats.recordFailure("I/O exception: " + e, e);
-            } catch (FriendlyException e) {
-                ex = e;
-                // TODO should this be merged into networkExceptionStats?
-                if(!friendlyExceptionThrown.getAndSet(true)) {
-                    logger.error(e.getMessage());
-                }
-            } catch (Exception e) {
-                networkExceptionStats.recordFailure("unexpected exception: " + e, e);
+                networkExceptionStats.recordFailure("unexpected exception: " + t, t);
             } catch (ThreadDeath td) {
                 throw td;
-            } catch (Throwable t) {
-                ex = t;
-                try {
-                    networkExceptionStats.recordFailure("unexpected exception: " + t, t);
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            } finally {
-                if (request != null) {
-                    request.releaseConnection();
-                }
-                LazyHttpClient.dispose(response);
+            } catch (Throwable t2) {
+                // chomp
+            }
+        } finally {
+            if (request != null) {
+                request.releaseConnection();
+            }
+            LazyHttpClient.dispose(response);
 
-                if (code == HttpStatus.SC_BAD_REQUEST) {
-                    networkExceptionStats.recordFailure("ingestion service returned 400 (" + reason + ")");
-                } else if (code != HttpStatus.SC_OK) {
-                    // Invoke the listeners for handling things like errors
-                    // The listeners will handle the back off logic as well as the dispatch
-                    // operation
-                    TransmissionHandlerArgs args = new TransmissionHandlerArgs();
-                    args.setTransmission(transmission);
-                    args.setTransmissionDispatcher(transmissionDispatcher);
-                    args.setResponseBody(respString);
-                    args.setResponseCode(code);
-                    args.setException(ex);
-                    args.setRetryHeader(retryAfterHeader);
-                    this.transmissionPolicyManager.onTransmissionSent(args);
-                }
+            if (code == HttpStatus.SC_BAD_REQUEST) {
+                networkExceptionStats.recordFailure("ingestion service returned 400 (" + reason + ")");
+            } else if (code != HttpStatus.SC_OK) {
+                // Invoke the listeners for handling things like errors
+                // The listeners will handle the back off logic as well as the dispatch
+                // operation
+                TransmissionHandlerArgs args = new TransmissionHandlerArgs();
+                args.setTransmission(transmission);
+                args.setTransmissionDispatcher(transmissionDispatcher);
+                args.setResponseBody(respString);
+                args.setResponseCode(code);
+                args.setException(ex);
+                args.setRetryHeader(retryAfterHeader);
+                this.transmissionPolicyManager.onTransmissionSent(args);
             }
         }
         // If we end up here we've hit an error code we do not expect (403, 401, 400,

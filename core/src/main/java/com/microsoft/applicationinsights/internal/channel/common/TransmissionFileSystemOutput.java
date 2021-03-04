@@ -90,7 +90,7 @@ public final class TransmissionFileSystemOutput implements TransmissionOutputSyn
             "Unable to store telemetry to disk (telemetry will be discarded):");
 
     /// The folder in which we save transmission files
-    private File folder;
+    private final File folder;
 
     /// Capacity is the size of disk that we are can use
     private long capacityInBytes = DEFAULT_CAPACITY_MEGABYTES * 1024 * 1024;

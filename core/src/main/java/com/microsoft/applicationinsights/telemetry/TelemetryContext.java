@@ -42,8 +42,8 @@ import java.util.concurrent.ConcurrentMap;
  * be used in the portal to filter the telemetry that used this context.
  */
 public final class TelemetryContext {
-    private ConcurrentMap<String,String> properties;
-    private ContextTagsMap tags;
+    private final ConcurrentMap<String,String> properties;
+    private final ContextTagsMap tags;
 
     private String instrumentationKey;
     private String normalizedInstrumentationKey = "";

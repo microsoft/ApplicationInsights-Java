@@ -44,7 +44,7 @@ public class Exceptions {
     static class Parser {
 
         private ExceptionDetails current;
-        private List<ExceptionDetails> list = new ArrayList<>();
+        private final List<ExceptionDetails> list = new ArrayList<>();
 
         void process(String line) {
             if (line.charAt(0) != '\t') {

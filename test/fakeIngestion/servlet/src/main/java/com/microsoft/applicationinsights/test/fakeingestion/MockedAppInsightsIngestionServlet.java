@@ -37,16 +37,16 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     public static final String PING = "PING";
     public static final String PONG = "PONG";
 
-    private final String appid = "DUMMYAPPID";
+    private static final String appid = "DUMMYAPPID";
 
 
     @GuardedBy("multimapLock")
     private final ListMultimap<String, Envelope> type2envelope;
-    private List<Predicate<Envelope>> filters;
+    private final List<Predicate<Envelope>> filters;
 
     private final Object multimapLock = new Object();
 
-    private MockedIngestionServletConfig config;
+    private final MockedIngestionServletConfig config;
 
     private final ExecutorService itemExecutor = Executors.newSingleThreadExecutor();
 

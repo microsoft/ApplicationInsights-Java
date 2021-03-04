@@ -18,7 +18,7 @@ public class ErrorHandler implements TransmissionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ErrorHandler.class);
 
-    private TransmissionPolicyManager transmissionPolicyManager;
+    private final TransmissionPolicyManager transmissionPolicyManager;
 
     /**
      * Ctor

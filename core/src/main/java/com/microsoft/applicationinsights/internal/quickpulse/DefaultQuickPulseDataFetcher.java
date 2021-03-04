@@ -46,7 +46,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private final TelemetryConfiguration config;
     private final String ikey;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-    private String postPrefix;
+    private final String postPrefix;
     private final String sdkVersion;
 
     public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryConfiguration config, String machineName,

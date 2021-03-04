@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Created by gupele on 6/29/2015.
  */
 final class TransmissionPolicyState implements TransmissionPolicyStateFetcher {
-    private AtomicReference<TransmissionPolicy> currentState = new AtomicReference<>(TransmissionPolicy.UNBLOCKED);
+    private final AtomicReference<TransmissionPolicy> currentState = new AtomicReference<>(TransmissionPolicy.UNBLOCKED);
 
     @Override
     public TransmissionPolicy getCurrentState() {

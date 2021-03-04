@@ -43,7 +43,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
                 hasItem(
                         new TypeSafeMatcher<EventData>() {
                             final String name = "EventDataTest";
-                            Matcher<String> nameMatcher = Matchers.equalTo(name);
+                            final Matcher<String> nameMatcher = Matchers.equalTo(name);
 
                             @Override
                             protected boolean matchesSafely(EventData item) {
@@ -64,11 +64,11 @@ public class SpringbootSmokeTest extends AiSmokeTest {
                             final String expectedName = "EventDataPropertyTest";
                             final String expectedPropertyValue = "value";
                             final Double expectedMetricValue = 1d;
-                            Matcher<Map<? extends String, ? extends Double>> metricMatcher =
+                            final Matcher<Map<? extends String, ? extends Double>> metricMatcher =
                                     Matchers.hasEntry(expectedKey, expectedMetricValue);
-                            Matcher<Map<? extends String, ? extends String>> propertyMatcher =
+                            final Matcher<Map<? extends String, ? extends String>> propertyMatcher =
                                     Matchers.hasEntry(expectedKey, expectedPropertyValue);
-                            Matcher<String> nameMatcher = Matchers.equalTo(expectedName);
+                            final Matcher<String> nameMatcher = Matchers.equalTo(expectedName);
 
                             @Override
                             public void describeTo(Description description) {

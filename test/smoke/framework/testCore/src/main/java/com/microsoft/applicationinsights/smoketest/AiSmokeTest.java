@@ -138,7 +138,7 @@ public abstract class AiSmokeTest {
 
     protected static short currentPortNumber = BASE_PORT_NUMBER;
 
-    private static List<DependencyContainer> dependencyImages = new ArrayList<>();
+    private static final List<DependencyContainer> dependencyImages = new ArrayList<>();
     protected static AtomicReference<ContainerInfo> currentContainerInfo = new AtomicReference<>();
     protected static Deque<ContainerInfo> allContainers = new ArrayDeque<>();
     protected static String currentImageName;

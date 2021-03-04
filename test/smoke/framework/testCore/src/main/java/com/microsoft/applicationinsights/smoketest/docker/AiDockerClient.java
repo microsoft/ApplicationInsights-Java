@@ -22,7 +22,7 @@ public class AiDockerClient {
     public static String DEFAULT_LINUX_USER = "root";
     public static String DEFAULT_LINUX_SHELL = "bash";
 
-    private String shellExecutor;
+    private final String shellExecutor;
 
     public AiDockerClient(String user, String shellExecutor) {
         Preconditions.checkNotNull(user, "user");

@@ -32,7 +32,7 @@ public class PerformanceCountersXmlElement {
 
     private PerformanceCounterJvmSectionXmlElement jvmSection;
 
-    private JmxWrapperXmlElement jmxWrapper = new JmxWrapperXmlElement();
+    private final JmxWrapperXmlElement jmxWrapper = new JmxWrapperXmlElement();
 
     public ArrayList<JmxXmlElement> getJmxXmlElements() {
         return jmxWrapper.jmxXmlElements;

@@ -32,7 +32,7 @@ public class AddTypeXmlElement {
 
     private String type;
 
-    private ArrayList<ParamXmlElement> paramElements = new ArrayList<>();
+    private final ArrayList<ParamXmlElement> paramElements = new ArrayList<>();
 
     public String getType() {
         return type;
