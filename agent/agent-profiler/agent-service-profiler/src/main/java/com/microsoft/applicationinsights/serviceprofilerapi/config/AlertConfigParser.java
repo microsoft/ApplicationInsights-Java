@@ -76,7 +76,7 @@ public class AlertConfigParser {
 
         Map<String, ParseConfigValue<DefaultConfigurationBuilder>> parsers = new HashMap<>();
         parsers.put("sampling-profiling-duration", new ParseConfigValue<>(true, (config, arg) -> config.setSamplingProfileDuration(Long.parseLong(arg))));
-        parsers.put("sampling-rate", new ParseConfigValue<>(true, (config, arg) -> config.setSamplingRate(Integer.parseInt(arg))));
+        parsers.put("sampling-rate", new ParseConfigValue<>(true, (config, arg) -> config.setSamplingRate(Double.parseDouble(arg))));
         parsers.put("sampling-enabled", new ParseConfigValue<>(true, (config, arg) -> config.setSamplingEnabled(Boolean.parseBoolean(arg))));
 
         return parseConfig(new DefaultConfigurationBuilder(), tokens, parsers).createDefaultConfiguration();

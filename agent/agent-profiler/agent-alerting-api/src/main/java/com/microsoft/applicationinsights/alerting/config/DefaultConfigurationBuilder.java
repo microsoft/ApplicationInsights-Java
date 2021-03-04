@@ -22,7 +22,7 @@ package com.microsoft.applicationinsights.alerting.config;
 
 public class DefaultConfigurationBuilder {
     private boolean samplingEnabled;
-    private int samplingRate;
+    private double samplingRate;
     private long samplingProfileDuration;
 
     public DefaultConfigurationBuilder setSamplingEnabled(boolean samplingEnabled) {
@@ -30,7 +30,7 @@ public class DefaultConfigurationBuilder {
         return this;
     }
 
-    public DefaultConfigurationBuilder setSamplingRate(int samplingRate) {
+    public DefaultConfigurationBuilder setSamplingRate(double samplingRate) {
         this.samplingRate = samplingRate;
         return this;
     }

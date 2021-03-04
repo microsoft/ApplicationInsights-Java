@@ -25,10 +25,10 @@ import java.util.Objects;
 public class DefaultConfiguration {
 
     private final boolean samplingEnabled;
-    private final int samplingRate;
+    private final double samplingRate;
     private final long samplingProfileDuration;
 
-    public DefaultConfiguration(boolean samplingEnabled, int samplingRate, long samplingProfileDuration) {
+    public DefaultConfiguration(boolean samplingEnabled, double samplingRate, long samplingProfileDuration) {
         this.samplingEnabled = samplingEnabled;
         this.samplingRate = samplingRate;
         this.samplingProfileDuration = samplingProfileDuration;
@@ -47,7 +47,7 @@ public class DefaultConfiguration {
         return Objects.hash(samplingEnabled, samplingRate, samplingProfileDuration);
     }
 
-    public int getSamplingRate() {
+    public double getSamplingRate() {
         return samplingRate;
     }
 

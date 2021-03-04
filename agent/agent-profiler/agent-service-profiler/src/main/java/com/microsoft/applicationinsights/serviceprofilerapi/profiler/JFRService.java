@@ -71,9 +71,6 @@ public class JFRService implements ProfilerConfigurationHandler, Profiler {
 
     private AlertConfiguration periodicConfig;
 
-    //Periodic profile execution
-    private ScheduledFuture<?> periodicJob;
-
     public JFRService(ServiceProfilerServiceConfig configuration) {
         periodicConfig = new AlertConfiguration(
                 AlertMetricType.PERIODIC,
@@ -107,19 +104,7 @@ public class JFRService implements ProfilerConfigurationHandler, Profiler {
             return false;
         }
 
-        periodicJob = schedulePeriodicJob(periodicConfig);
-
         return true;
-    }
-
-    private ScheduledFuture<?> schedulePeriodicJob(AlertConfiguration periodicConfig) {
-        //TODO Currently periodic profiling is not supported
-        if (periodicConfig.isEnabled()) {
-            return null;
-            //return executorService.scheduleAtFixedRate(this::performPeriodicProfile, periodicConfig.getCooldown(), periodicConfig.getCooldown(), TimeUnit.SECONDS);
-        } else {
-            return null;
-        }
     }
 
     /**
@@ -128,20 +113,8 @@ public class JFRService implements ProfilerConfigurationHandler, Profiler {
     @Override
     public void updateConfiguration(ProfilerConfiguration newConfig) {
         LOGGER.debug("Received config {}", newConfig.getLastModified());
-        DefaultConfiguration newDefaultConfig = AlertConfigParser.toAlertingConfig(newConfig).getDefaultConfiguration();
-        periodicConfig = new AlertConfiguration(
-                AlertMetricType.PERIODIC,
-                newDefaultConfig.getSamplingEnabled(),
-                0.0f,
-                newDefaultConfig.getSamplingProfileDuration(),
-                newDefaultConfig.getSamplingRate()
-        );
 
-        if (periodicJob != null) {
-            periodicJob.cancel(true);
-        }
-        periodicJob = schedulePeriodicJob(periodicConfig);
-
+        // TODO update periodic profile configuration
     }
 
     protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
