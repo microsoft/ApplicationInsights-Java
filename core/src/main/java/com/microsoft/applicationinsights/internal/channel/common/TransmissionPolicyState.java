@@ -26,15 +26,14 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Created by gupele on 6/29/2015.
  */
-final class TransmissionPolicyState implements TransmissionPolicyStateFetcher, TransmissionPolicyStateSetter {
-    private AtomicReference<TransmissionPolicy> currentState = new AtomicReference<>(TransmissionPolicy.UNBLOCKED);
+final class TransmissionPolicyState implements TransmissionPolicyStateFetcher {
+    private final AtomicReference<TransmissionPolicy> currentState = new AtomicReference<>(TransmissionPolicy.UNBLOCKED);
 
     @Override
     public TransmissionPolicy getCurrentState() {
         return currentState.get();
     }
 
-    @Override
     public boolean setCurrentState(TransmissionPolicy newState) {
         return this.currentState.getAndSet(newState) != newState;
     }

@@ -34,7 +34,7 @@ final class UnixProcessIOtParser {
     private static final String READ_BYTES_PART = "read_bytes:";
     private static final String WRITE_BYTES_PART = "write_bytes:";
 
-    private UnixParsingState state = new UnixParsingState(2);
+    private final UnixParsingState state = new UnixParsingState(2);
     private boolean readBytesDone = false;
     private boolean writeBytesDone = false;
 

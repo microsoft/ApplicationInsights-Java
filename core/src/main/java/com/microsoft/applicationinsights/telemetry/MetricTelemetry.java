@@ -25,7 +25,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 
 /**
  * Telemetry type used to track metrics sent to Azure Application Insights.
@@ -62,11 +61,6 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
         data.getMetrics().add(metric);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     /**
      * Initializes the instance with a name and value
      * @param name The name of the metric. Length 1-150 characters.
@@ -77,14 +71,6 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
         this();
         setName(name);
         metric.setValue(value);
-    }
-
-    /**
-     * Indicate that this metric is a custom performance counter and should be sent to the performance counters table.
-     * This sets 'CustomPerfCounter'='true' key/value pair in this metric's properties.
-     */
-    public void markAsCustomPerfCounter(){
-        data.getProperties().put("CustomPerfCounter", "true");
     }
 
     /**
@@ -188,12 +174,6 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
         metric.setStdDev(value); updateKind();
     }
 
-    @Deprecated
-    @Override
-    protected void additionalSanitize() {
-        metric.setName(Sanitizer.sanitizeName(metric.getName()));
-    }
-
     @Override
     protected MetricData getData() {
         return data;
@@ -219,9 +199,4 @@ public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     public String getBaseTypeName() {
         return BASE_TYPE;
     }
-
-    public DataPointType getKind() {
-        return metric.getKind();
-    }
-
 }

@@ -36,12 +36,7 @@ public class Exceptions {
     public static List<ExceptionDetails> fullParse(String str) {
         Parser parser = new Parser();
         for (String line : lineSplitter.split(str)) {
-            try {
-                parser.process(line);
-            } catch (ParseException e) {
-                logger.error(e.getMessage());
-                return new ArrayList<>();
-            }
+            parser.process(line);
         }
         return parser.getDetails();
     }
@@ -49,9 +44,9 @@ public class Exceptions {
     static class Parser {
 
         private ExceptionDetails current;
-        private List<ExceptionDetails> list = new ArrayList<>();
+        private final List<ExceptionDetails> list = new ArrayList<>();
 
-        void process(String line) throws ParseException {
+        void process(String line) {
             if (line.charAt(0) != '\t') {
                 if (current != null) {
                     list.add(current);

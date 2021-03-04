@@ -39,7 +39,7 @@ public class ExceptionData extends Domain
     /**
      * Backing field for property Ver.
      */
-    private int ver = 2;
+    private static final int ver = 2;
 
     /**
      * Backing field for property Exceptions.
@@ -50,11 +50,6 @@ public class ExceptionData extends Domain
      * Backing field for property SeverityLevel.
      */
     private SeverityLevel severityLevel;
-
-    /**
-     * Backing field for property ProblemId.
-     */
-    private String problemId;
 
     /**
      * Backing field for property Properties.
@@ -75,25 +70,11 @@ public class ExceptionData extends Domain
     }
 
     /**
-     * Gets the Ver property.
-     */
-    public int getVer() {
-        return this.ver;
-    }
-
-    /**
-     * Sets the Ver property.
-     */
-    public void setVer(int value) {
-        this.ver = value;
-    }
-
-    /**
      * Gets the Exceptions property.
      */
     public List<ExceptionDetails> getExceptions() {
         if (this.exceptions == null) {
-            this.exceptions = new ArrayList<ExceptionDetails>();
+            this.exceptions = new ArrayList<>();
         }
         return this.exceptions;
     }
@@ -120,34 +101,13 @@ public class ExceptionData extends Domain
     }
 
     /**
-     * Gets the ProblemId property.
-     */
-    public String getProblemId() {
-        return this.problemId;
-    }
-
-    /**
-     * Sets the ProblemId property.
-     */
-    public void setProblemId(String value) {
-        this.problemId = value;
-    }
-
-    /**
      * Gets the Properties property.
      */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
-            this.properties = new ConcurrentHashMap<String, String>();
+            this.properties = new ConcurrentHashMap<>();
         }
         return this.properties;
-    }
-
-    /**
-     * Sets the Properties property.
-     */
-    public void setProperties(ConcurrentMap<String, String> value) {
-        this.properties = value;
     }
 
     /**
@@ -155,18 +115,10 @@ public class ExceptionData extends Domain
      */
     public ConcurrentMap<String, Double> getMeasurements() {
         if (this.measurements == null) {
-            this.measurements = new ConcurrentHashMap<String, Double>();
+            this.measurements = new ConcurrentHashMap<>();
         }
         return this.measurements;
     }
-
-    /**
-     * Sets the Measurements property.
-     */
-    public void setMeasurements(ConcurrentMap<String, Double> value) {
-        this.measurements = value;
-    }
-
 
     /**
      * Serializes the beginning of this object to the passed in writer.
@@ -178,7 +130,6 @@ public class ExceptionData extends Domain
         writer.write("ver", ver);
         writer.write("exceptions", exceptions);
         writer.write("severityLevel", severityLevel);
-        writer.write("problemId", problemId, 1024);
         writer.write("properties", properties);
         writer.write("measurements", measurements);
     }

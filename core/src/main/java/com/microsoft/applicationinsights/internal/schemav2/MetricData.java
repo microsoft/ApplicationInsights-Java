@@ -39,7 +39,7 @@ public class MetricData extends Domain
     /**
      * Backing field for property Ver.
      */
-    private int ver = 2;
+    private static final int ver = 2;
 
     /**
      * Backing field for property Metrics.
@@ -60,34 +60,13 @@ public class MetricData extends Domain
     }
 
     /**
-     * Gets the Ver property.
-     */
-    public int getVer() {
-        return this.ver;
-    }
-
-    /**
-     * Sets the Ver property.
-     */
-    public void setVer(int value) {
-        this.ver = value;
-    }
-
-    /**
      * Gets the Metrics property.
      */
     public List<DataPoint> getMetrics() {
         if (this.metrics == null) {
-            this.metrics = new ArrayList<DataPoint>();
+            this.metrics = new ArrayList<>();
         }
         return this.metrics;
-    }
-
-    /**
-     * Sets the Metrics property.
-     */
-    public void setMetrics(List<DataPoint> value) {
-        this.metrics = value;
     }
 
     /**
@@ -95,18 +74,10 @@ public class MetricData extends Domain
      */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
-            this.properties = new ConcurrentHashMap<String, String>();
+            this.properties = new ConcurrentHashMap<>();
         }
         return this.properties;
     }
-
-    /**
-     * Sets the Properties property.
-     */
-    public void setProperties(ConcurrentMap<String, String> value) {
-        this.properties = value;
-    }
-
 
     /**
      * Serializes the beginning of this object to the passed in writer.

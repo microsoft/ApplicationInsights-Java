@@ -24,20 +24,10 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 /**
  * Created by gupele on 3/16/2015.
  */
-@SuppressWarnings("deprecation")
 public class UnixParsingState {
-    // TODO v3 fields private
-    /**
-     * @deprecated use {@link #getDoneCounter()} and {@link #setDoneCounter(int)}
-     */
-    @Deprecated
-    public int doneCounter;
+    private int doneCounter;
 
-    /**
-     * @deprecated use {@link #getDoneCounter()} and {@link #setDoneCounter(int)}
-     */
-    @Deprecated
-    public double returnValue;
+    private double returnValue;
 
     public UnixParsingState(int doneCounter) {
         this.doneCounter = doneCounter;
@@ -47,20 +37,12 @@ public class UnixParsingState {
         return doneCounter;
     }
 
-    public void setDoneCounter(int doneCounter) {
-        this.doneCounter = doneCounter;
-    }
-
     public void decrementDoneCounter() {
         this.doneCounter--;
     }
 
     public double getReturnValue() {
         return returnValue;
-    }
-
-    public void setReturnValue(double returnValue) {
-        this.returnValue = returnValue;
     }
 
     public void addToReturnValue(double addend) {

@@ -28,20 +28,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
-import com.microsoft.applicationinsights.internal.channel.common.ApacheSenderFactory;
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 
 /**
  * Created by gupele on 12/4/2016.
  */
-public enum QuickPulse implements Stoppable {
+public enum QuickPulse {
     INSTANCE;
 
     public static final int QP_INVARIANT_VERSION = 1;
@@ -84,10 +83,10 @@ public enum QuickPulse implements Stoppable {
                 if (!initialized) {
                     initialized = true;
                     final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-                    ApacheSender apacheSender = ApacheSenderFactory.INSTANCE.get();
-                    ArrayBlockingQueue<HttpPost> sendQueue = new ArrayBlockingQueue<HttpPost>(256, true);
+                    HttpClient httpClient = LazyHttpClient.getInstance();
+                    ArrayBlockingQueue<HttpPost> sendQueue = new ArrayBlockingQueue<>(256, true);
 
-                    quickPulseDataSender = new DefaultQuickPulseDataSender(apacheSender, sendQueue);
+                    quickPulseDataSender = new DefaultQuickPulseDataSender(httpClient, sendQueue);
 
                     String instanceName = configuration.getRoleInstance();
                     String roleName = configuration.getRoleName();
@@ -100,7 +99,7 @@ public enum QuickPulse implements Stoppable {
                         instanceName = "Unknown host";
                     }
 
-                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(apacheSender, configuration, machineName, instanceName, roleName, quickPulseId);
+                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, configuration, machineName, instanceName, roleName, quickPulseId);
                     final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, configuration, machineName, instanceName, roleName, quickPulseId);
 
                     final QuickPulseCoordinatorInitData coordinatorInitData =
@@ -131,7 +130,6 @@ public enum QuickPulse implements Stoppable {
      * @param timeout The timeout to wait for the stop to happen.
      * @param timeUnit The time unit to use when waiting for the stop to happen.
      */
-    @Override
     public synchronized void stop(long timeout, TimeUnit timeUnit) {
         if (!initialized) {
             return;

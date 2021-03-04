@@ -65,7 +65,7 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
         if (!Strings.isNullOrEmpty(line)) {
             String[] rawStringValues = line.split(" ");
 
-            ArrayList<String> stringValues = new ArrayList<String>(rawStringValues.length - 1);
+            ArrayList<String> stringValues = new ArrayList<>(rawStringValues.length - 1);
             for (int i = 1; i < rawStringValues.length; ++i) {
                 String stringValue = rawStringValues[i];
                 if (Strings.isNullOrEmpty(stringValue)) {

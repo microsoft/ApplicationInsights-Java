@@ -24,10 +24,10 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-
-import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
 
 /**
  * Created by gupele on 12/12/2016.
@@ -35,15 +35,15 @@ import com.microsoft.applicationinsights.internal.channel.common.ApacheSender;
 final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
 
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-    private final ApacheSender apacheSender;
+    private final HttpClient httpClient;
     private volatile QuickPulseHeaderInfo quickPulseHeaderInfo;
     private volatile boolean stopped = false;
     private long lastValidTransmission = 0;
 
     private final ArrayBlockingQueue<HttpPost> sendQueue;
 
-    public DefaultQuickPulseDataSender(final ApacheSender apacheSender, final ArrayBlockingQueue<HttpPost> sendQueue) {
-        this.apacheSender = apacheSender;
+    public DefaultQuickPulseDataSender(final HttpClient httpClient, final ArrayBlockingQueue<HttpPost> sendQueue) {
+        this.httpClient = httpClient;
         this.sendQueue = sendQueue;
     }
 
@@ -59,7 +59,7 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
                 final long sendTime = System.nanoTime();
                 HttpResponse response = null;
                 try {
-                    response = apacheSender.sendRequest(post);
+                    response = httpClient.execute(post);
                     if (networkHelper.isSuccess(response)) {
                         QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                         switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
@@ -81,7 +81,7 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
                     onPostError(sendTime);
                 } finally {
                     if (response != null) {
-                        apacheSender.dispose(response);
+                        LazyHttpClient.dispose(response);
                     }
                 }
             }

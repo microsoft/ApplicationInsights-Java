@@ -153,7 +153,7 @@ public class ConfigurationTest {
 
     @Test
     public void shouldUseDefaults() throws IOException {
-        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+        envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
         envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
 
         Configuration configuration = loadConfiguration();
@@ -180,7 +180,7 @@ public class ConfigurationTest {
     @Test
     public void shouldOverrideRoleName() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_ROLE_NAME", "role name from env");
-        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+        envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
@@ -190,22 +190,33 @@ public class ConfigurationTest {
 
     @Test
     public void shouldOverrideRoleNameWithWebsiteEnvVar() throws IOException {
-        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+        envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
         Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("role name from website env", configuration.role.name);
+        assertEquals("Role Name From Website Env", configuration.role.name);
     }
 
     @Test
     public void shouldNotOverrideRoleNameWithWebsiteEnvVar() throws IOException {
-        envVars.set("WEBSITE_SITE_NAME", "role name from website env");
+        envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
         assertEquals("Something Good", configuration.role.name);
+    }
+
+    @Test
+    public void shouldOverrideRoleNameWithLowercaseWebsiteEnvVarOnAzFn() throws IOException {
+        envVars.set("FUNCTIONS_WORKER_RUNTIME", "java");
+        envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
+
+        Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("role name from website env", configuration.role.name);
     }
 
     @Test

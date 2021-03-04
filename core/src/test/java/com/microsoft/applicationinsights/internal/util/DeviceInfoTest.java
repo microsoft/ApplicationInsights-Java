@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 public class DeviceInfoTest {
 
     @Test
-    public void testSimpleLocale() throws IOException {
+    public void testSimpleLocale() {
         Locale.setDefault(new Locale("en", "us"));
         String tag = DeviceInfo.getLocale();
 
@@ -42,7 +42,7 @@ public class DeviceInfoTest {
     }
 
     @Test
-    public void testSpecialLocale() throws IOException {
+    public void testSpecialLocale() {
         Locale.setDefault(new Locale("iw", "il"));
         String tag = DeviceInfo.getLocale();
 
@@ -50,7 +50,7 @@ public class DeviceInfoTest {
     }
 
     @Test
-    public void testBadLocale() throws IOException {
+    public void testBadLocale() {
         Locale.setDefault(new Locale("BadLocale"));
         String tag = DeviceInfo.getLocale();
 

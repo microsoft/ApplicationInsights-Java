@@ -69,24 +69,10 @@ public class StackFrame
     }
 
     /**
-     * Gets the Level property.
-     */
-    public int getLevel() {
-        return this.level;
-    }
-
-    /**
      * Sets the Level property.
      */
     public void setLevel(int value) {
         this.level = value;
-    }
-
-    /**
-     * Gets the Method property.
-     */
-    public String getMethod() {
-        return this.method;
     }
 
     /**
@@ -97,24 +83,10 @@ public class StackFrame
     }
 
     /**
-     * Gets the Assembly property.
-     */
-    public String getAssembly() {
-        return this.assembly;
-    }
-
-    /**
      * Sets the Assembly property.
      */
     public void setAssembly(String value) {
         this.assembly = value;
-    }
-
-    /**
-     * Gets the FileName property.
-     */
-    public String getFileName() {
-        return this.fileName;
     }
 
     /**
@@ -125,19 +97,11 @@ public class StackFrame
     }
 
     /**
-     * Gets the Line property.
-     */
-    public int getLine() {
-        return this.line;
-    }
-
-    /**
      * Sets the Line property.
      */
     public void setLine(int value) {
         this.line = value;
     }
-
 
     /**
      * Serializes the beginning of this object to the passed in writer.

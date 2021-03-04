@@ -2,7 +2,6 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletException;

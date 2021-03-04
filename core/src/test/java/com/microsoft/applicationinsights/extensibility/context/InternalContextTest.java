@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 public final class InternalContextTest {
     @Test
     public void testSetAgentVersion() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         InternalContext context = new InternalContext(map);
         context.setAgentVersion("mock");
 
@@ -41,7 +41,7 @@ public final class InternalContextTest {
 
     @Test
     public void testSetSdkVersion() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         InternalContext context = new InternalContext(map);
         context.setSdkVersion("mock");
 

@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewData> {
     private Double samplingPercentage;
-    private PageViewData data;
+    private final PageViewData data;
 
     /**
      * Envelope Name for this telemetry.
@@ -65,11 +65,6 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
         setName(pageName);
     }
 
-    @Override
-    public int getVer() {
-        return getData().getVer();
-    }
-
     /**
      * Sets the name of the page view.
      * @param name The page view name.
@@ -97,10 +92,6 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
         }
 
         return result;
-    }
-
-    public String getUrlString() {
-        return getData().getUrl();
     }
 
     /**
@@ -146,14 +137,6 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     }
 
     @Override
-    @Deprecated
-    protected void additionalSanitize() {
-        data.setName(Sanitizer.sanitizeName(data.getName()));
-        Sanitizer.sanitizeMeasurements(this.getMetrics());
-        Sanitizer.sanitizeUri(data.getUrl());
-    }
-
-    @Override
     protected PageViewData getData() {
         return data;
     }
@@ -166,9 +149,5 @@ public final class PageViewTelemetry extends BaseSampleSourceTelemetry<PageViewD
     @Override
     public String getBaseTypeName() {
         return BASE_TYPE;
-    }
-
-    public Duration getDurationObject() {
-        return getData().getDuration();
     }
 }

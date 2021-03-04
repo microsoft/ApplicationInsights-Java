@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.context.CloudContext;
 import com.microsoft.applicationinsights.extensibility.context.ComponentContext;
 import com.microsoft.applicationinsights.extensibility.context.DeviceContext;
@@ -30,7 +29,6 @@ import com.microsoft.applicationinsights.extensibility.context.LocationContext;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
-import com.microsoft.applicationinsights.internal.util.MapUtil;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -44,8 +42,8 @@ import java.util.concurrent.ConcurrentMap;
  * be used in the portal to filter the telemetry that used this context.
  */
 public final class TelemetryContext {
-    private ConcurrentMap<String,String> properties;
-    private ContextTagsMap tags;
+    private final ConcurrentMap<String,String> properties;
+    private final ContextTagsMap tags;
 
     private String instrumentationKey;
     private String normalizedInstrumentationKey = "";
@@ -62,7 +60,7 @@ public final class TelemetryContext {
      * Default Ctor
      */
     public TelemetryContext() {
-        this(new ConcurrentHashMap<String, String>(), new ContextTagsMap());
+        this(new ConcurrentHashMap<>(), new ContextTagsMap());
     }
 
     /**

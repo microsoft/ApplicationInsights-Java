@@ -55,8 +55,7 @@ public final class SenderThreadLocalDataTest {
     }
 
     private SenderThreadLocalBackOffData createSenderThreadLocalData(long[] backOffs) {
-        SenderThreadLocalBackOffData sender = new SenderThreadLocalBackOffData(backOffs, 0);
-        return sender;
+        return new SenderThreadLocalBackOffData(backOffs, 0);
     }
 
     private static void verifyOnDoneSending(SenderThreadLocalBackOffData sender) {

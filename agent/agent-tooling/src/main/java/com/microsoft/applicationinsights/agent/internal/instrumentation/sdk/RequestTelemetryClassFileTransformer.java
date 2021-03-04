@@ -21,23 +21,24 @@
 package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 
 import java.lang.instrument.ClassFileTransformer;
+import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
-import java.util.Collections;
-import java.util.Map;
 
 import net.bytebuddy.jar.asm.ClassReader;
 import net.bytebuddy.jar.asm.ClassVisitor;
 import net.bytebuddy.jar.asm.ClassWriter;
 import net.bytebuddy.jar.asm.MethodVisitor;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.objectweb.asm.util.ASMifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static net.bytebuddy.jar.asm.Opcodes.ACC_PRIVATE;
+import static net.bytebuddy.jar.asm.Opcodes.ACC_PROTECTED;
 import static net.bytebuddy.jar.asm.Opcodes.ACC_PUBLIC;
 import static net.bytebuddy.jar.asm.Opcodes.ACONST_NULL;
 import static net.bytebuddy.jar.asm.Opcodes.ARETURN;
 import static net.bytebuddy.jar.asm.Opcodes.ASM7;
-import static net.bytebuddy.jar.asm.Opcodes.INVOKESTATIC;
 
 // this is used to supplement old versions of RequestTelemetry with getters from the latest version of
 // RequestTelemetry
@@ -84,6 +85,13 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
             if (name.equals("getSource") && descriptor.equals("()Ljava/lang/String;")) {
                 foundGetSourceMethod = true;
             }
+            if (name.equals("getMetrics") && descriptor.equals("()Ljava/util/concurrent/ConcurrentMap;")
+                    && !Modifier.isPublic(access)) {
+                // getMetrics() was package-private prior to 2.2.0
+                // remove private and protected flags, add public flag
+                int updatedAccess = (access & ~ACC_PRIVATE & ~ACC_PROTECTED) | ACC_PUBLIC;
+                return super.visitMethod(updatedAccess, name, descriptor, signature, exceptions);
+            }
             return super.visitMethod(access, name, descriptor, signature, exceptions);
         }
 
@@ -106,11 +114,12 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
     // DO NOT REMOVE
     // this is used during development for generating above bytecode
     public static void main(String[] args) throws Exception {
-        // ASMifier.main(new String[]{RDT.class.getName()});
+        ASMifier.main(new String[]{RDT.class.getName()});
     }
 
     // DO NOT REMOVE
     // this is used during development for generating above bytecode
+    @SuppressWarnings("unused")
     public static class RDT {
 
         public String getSource() {

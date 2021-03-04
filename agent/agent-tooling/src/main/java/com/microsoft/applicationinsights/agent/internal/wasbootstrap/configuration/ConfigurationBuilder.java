@@ -226,7 +226,7 @@ public class ConfigurationBuilder {
 
         if (isTrimEmpty(config.role.name)) {
             // only use WEBSITE_SITE_NAME as a fallback
-            config.role.name = getEnvVar(WEBSITE_SITE_NAME);
+            config.role.name = getWebsiteSiteNameEnvVar();
         }
         config.role.name = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, config.role.name);
 
@@ -265,7 +265,7 @@ public class ConfigurationBuilder {
         String value = getEnvVar(WEBSITE_SITE_NAME);
         // TODO is the best way to identify running as Azure Functions worker?
         // TODO is this the correct way to match role name from Azure Functions IIS host?
-        if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+        if (value != null && "java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
             // special case for Azure Functions
             return value.toLowerCase(Locale.ENGLISH);
         }
@@ -309,10 +309,6 @@ public class ConfigurationBuilder {
 
     public static class ConfigurationException extends RuntimeException {
 
-        public ConfigurationException(String message) {
-            super(message);
-        }
-
         ConfigurationException(String message, Exception e) {
             super(message, e);
         }
@@ -340,8 +336,7 @@ public class ConfigurationBuilder {
             Buffer buffer = new Buffer();
             buffer.readFrom(in);
             try {
-                Configuration configuration = jsonAdapter.fromJson(buffer);
-                return configuration;
+                return jsonAdapter.fromJson(buffer);
             } catch(JsonDataException ex) {
                 if(strict) {
                     // Try extracting the configuration without failOnUnknown

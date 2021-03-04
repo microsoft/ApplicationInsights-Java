@@ -94,7 +94,7 @@ public class AiLegacyPropagator implements TextMapPropagator {
         try {
             traceId = legacyOperationId;
         } catch (IllegalArgumentException e) {
-            logger.info("Request-Id root part is not compatible with trace-id.");
+            logger.debug("Request-Id root part is not compatible with trace-id.");
             // see behavior specified at
             // https://github.com/microsoft/ApplicationInsights-Java/issues/1174
             traceId = TraceId.fromLongs(random.nextLong(), random.nextLong());

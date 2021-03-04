@@ -38,10 +38,10 @@ public class LongTestController {
     public TaskScheduler scheduler;
 
     private static class EventStats {
-        private int count;
-        private int exceptionCount;
-        private BigInteger totalNanos;
-        private BigInteger exceptionNanos;
+        private final int count;
+        private final int exceptionCount;
+        private final BigInteger totalNanos;
+        private final BigInteger exceptionNanos;
 
         public EventStats() {
             this(0,0,BigInteger.ZERO, BigInteger.ZERO);
@@ -89,12 +89,12 @@ public class LongTestController {
     }
 
     private static class TestStats {
-        private AtomicLong startTime = new AtomicLong();
-        private AtomicLong stopTime = new AtomicLong();
-        private AtomicBoolean running = new AtomicBoolean();
-        private AtomicReference<EventStats> infoStats = new AtomicReference<>(new EventStats());
-        private AtomicReference<EventStats> warnStats = new AtomicReference<>(new EventStats());
-        private AtomicReference<EventStats> errorStats = new AtomicReference<>(new EventStats());
+        private final AtomicLong startTime = new AtomicLong();
+        private final AtomicLong stopTime = new AtomicLong();
+        private final AtomicBoolean running = new AtomicBoolean();
+        private final AtomicReference<EventStats> infoStats = new AtomicReference<>(new EventStats());
+        private final AtomicReference<EventStats> warnStats = new AtomicReference<>(new EventStats());
+        private final AtomicReference<EventStats> errorStats = new AtomicReference<>(new EventStats());
 
         @Override
         public String toString() {
@@ -112,8 +112,8 @@ public class LongTestController {
     }
 
     private static class EventConfig {
-        private double chance;
-        private String message;
+        private final double chance;
+        private final String message;
         public EventConfig(double chance, String message) {
             this.chance = chance;
             this.message = message;
@@ -125,11 +125,11 @@ public class LongTestController {
     }
 
     private static class TestConfig {
-        private EventConfig info = new EventConfig(1.0, "Info");
-        private EventConfig warn = new EventConfig(0.2, "Warning");
-        private EventConfig warnException = new EventConfig(0.5, "Warn Exception");
-        private EventConfig error = new EventConfig(1/15.0, "Error");
-        private EventConfig errorException = new EventConfig(0.5, "Error Exception");
+        private final EventConfig info = new EventConfig(1.0, "Info");
+        private final EventConfig warn = new EventConfig(0.2, "Warning");
+        private final EventConfig warnException = new EventConfig(0.5, "Warn Exception");
+        private final EventConfig error = new EventConfig(1/15.0, "Error");
+        private final EventConfig errorException = new EventConfig(0.5, "Error Exception");
         private Duration period;
 
         @Override
@@ -144,7 +144,7 @@ public class LongTestController {
         }
     }
 
-    private AtomicReference<ScheduledFuture<?>> future = new AtomicReference<>();
+    private final AtomicReference<ScheduledFuture<?>> future = new AtomicReference<>();
     private TestStats currentStats = null;
     private TestStats previousStats = null;
 

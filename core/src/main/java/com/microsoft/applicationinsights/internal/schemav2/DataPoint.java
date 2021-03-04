@@ -95,6 +95,7 @@ public class DataPoint
     /**
      * Gets the Kind property.
      */
+    // used by smoke tests
     public DataPointType getKind() {
         return this.kind;
     }

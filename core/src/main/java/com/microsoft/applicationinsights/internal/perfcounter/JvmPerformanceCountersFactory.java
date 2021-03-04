@@ -41,11 +41,11 @@ public class JvmPerformanceCountersFactory implements PerformanceCountersFactory
     private static final Logger logger = LoggerFactory.getLogger(JvmPerformanceCountersFactory.class);
 
     private boolean isEnabled = true;
-    private HashSet<String> disabledJvmPCs = new HashSet<String>();
+    private HashSet<String> disabledJvmPCs = new HashSet<>();
 
     @Override
     public Collection<PerformanceCounter> getPerformanceCounters() {
-        ArrayList<PerformanceCounter> pcs = new ArrayList<PerformanceCounter>();
+        ArrayList<PerformanceCounter> pcs = new ArrayList<>();
         if (isEnabled) {
             addDeadLockDetector(pcs);
             addJvmMemoryPerformanceCounter(pcs);

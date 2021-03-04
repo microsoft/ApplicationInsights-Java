@@ -75,6 +75,7 @@ public class StatusFileTests {
     @Test
     public void siteLogDirHasPrecedenceOverHome() {
         String homeDir = "/this/is/wrong";
+        envVars.set(StatusFile.HOME_ENV_VAR, homeDir);
         String siteLogDir = "/the/correct/dir";
         System.setProperty("site.logdir", siteLogDir);
         StatusFile.init();

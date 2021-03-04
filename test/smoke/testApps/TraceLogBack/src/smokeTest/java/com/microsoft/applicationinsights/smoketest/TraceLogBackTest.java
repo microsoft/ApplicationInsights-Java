@@ -4,8 +4,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.microsoft.applicationinsights.internal.schemav2.*;
-import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 public class SimpleTrackMetricServlet extends HttpServlet {
 
     private static final long serialVersionUID = -7579571044049925445L;
-    private TelemetryClient client = new TelemetryClient();
+    private final TelemetryClient client = new TelemetryClient();
 
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)

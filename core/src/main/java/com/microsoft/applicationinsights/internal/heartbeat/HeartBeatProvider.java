@@ -2,7 +2,6 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.apache.commons.lang3.StringUtils;
@@ -22,13 +21,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * <p>
  *  Concrete implementation of Heartbeat functionality. This class implements
- *  {@link com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface} and
- *  {@link com.microsoft.applicationinsights.internal.shutdown.Stoppable}
+ *  {@link com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface}
  * </p>
  *
  * @author Dhaval Doshi
  */
-public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable {
+public class HeartBeatProvider implements HeartBeatProviderInterface {
 
   private static final Logger logger = LoggerFactory.getLogger(HeartBeatProvider.class);
 
@@ -55,7 +53,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
   /**
    * Map to hold heartbeat properties
    */
-  private ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
+  private final ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
 
   /**
    * Interval at which heartbeat would be sent
@@ -70,12 +68,12 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
   /**
    * ThreadPool used for adding properties to concurrent dictionary
    */
-  private ExecutorService propertyUpdateService;
+  private final ExecutorService propertyUpdateService;
 
   /**
    * Threadpool used to send data heartbeat telemetry
    */
-  private ScheduledExecutorService heartBeatSenderService;
+  private final ScheduledExecutorService heartBeatSenderService;
 
   /**
    * Heartbeat enabled state
@@ -89,18 +87,6 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
     this.heartbeatsSent = 0;
     this.propertyUpdateService = Executors.newCachedThreadPool(ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "propertyUpdateService"));
     this.heartBeatSenderService = Executors.newSingleThreadScheduledExecutor( ThreadPoolUtils.createDaemonThreadFactory(HeartBeatProvider.class, "heartBeatSenderService"));
-  }
-
-  @Override
-  public String getInstrumentationKey() {
-    return this.telemetryClient.getContext().getInstrumentationKey();
-  }
-
-  @Override
-  public void setInstrumentationKey(String key) {
-    if (this.telemetryClient != null && key != null) {
-      this.telemetryClient.getContext().setInstrumentationKey(key);
-    }
   }
 
   @Override
@@ -142,34 +128,6 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
       logger.warn("cannot add property without property name");
     }
     return isAdded;
-  }
-
-  @Override
-  public boolean setHeartBeatProperty(String propertyName, String propertyValue,
-      boolean isHealthy) {
-
-    boolean setResult = false;
-    if (!StringUtils.isEmpty(propertyName)) {
-
-      if (!heartbeatProperties.containsKey(propertyName)) {
-        logger.trace("The property {} is not already present. It will be added", propertyName);
-      }
-      if (HeartbeatDefaultPayload.isDefaultKeyword(propertyName)) {
-        logger.warn("heartbeat beat property specified {} is a reserved property", propertyName);
-        return false;
-      }
-
-      HeartBeatPropertyPayload payload = new HeartBeatPropertyPayload();
-      payload.setHealthy(isHealthy);
-      payload.setPayloadValue(propertyValue);
-      heartbeatProperties.put(propertyName, payload);
-      setResult = true;
-
-    }
-    else {
-      logger.warn("cannot set property without property name");
-    }
-    return setResult;
   }
 
   @Override
@@ -217,17 +175,6 @@ public class HeartBeatProvider implements HeartBeatProviderInterface, Stoppable 
   @Override
   public void setExcludedHeartBeatProperties(List<String> excludedHeartBeatProperties) {
     this.disableDefaultProperties = excludedHeartBeatProperties;
-  }
-
-  @Override
-  public boolean containsHeartBeatProperty(String key) {
-    return heartbeatProperties.containsKey(key);
-  }
-
-  @Override
-  public void stop(long timeout, TimeUnit timeUnit) {
-    ThreadPoolUtils.stop(propertyUpdateService, timeout, timeUnit);
-    ThreadPoolUtils.stop(heartBeatSenderService, timeout, timeUnit);
   }
 
   /**
