@@ -37,6 +37,7 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
+import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +89,7 @@ public class AlertingSubsystem {
                 new AlertConfigurationBuilder().setType(AlertMetricType.CPU).setEnabled(false).setThreshold(0).setProfileDuration(0).setCooldown(0).createAlertConfiguration(),
                 new AlertConfigurationBuilder().setType(AlertMetricType.MEMORY).setEnabled(false).setThreshold(0).setProfileDuration(0).setCooldown(0).createAlertConfiguration(),
                 new DefaultConfiguration(false, 0, 0),
-                new CollectionPlanConfiguration(false, "", ZonedDateTime.now(), 0, "")));
+                new CollectionPlanConfiguration(false, EngineMode.immediate, ZonedDateTime.now(), 0, "")));
         return alertingSubsystem;
     }
 
@@ -104,11 +105,10 @@ public class AlertingSubsystem {
                     while (true) {
                         try {
                             process(workQueue.take());
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            throw e;
                         } catch (Exception e) {
-                            if (e instanceof InterruptedException) {
-                                Thread.currentThread().interrupt();
-                                throw e;
-                            }
                             LOGGER.error("Exception while evaluating alert", e);
                         } catch (Error e) {
                             LOGGER.error("Exception while evaluating alert", e);
@@ -191,7 +191,7 @@ public class AlertingSubsystem {
         CollectionPlanConfiguration config = alertConfig.getCollectionPlanConfiguration();
 
         boolean shouldTrigger = config.isSingle() &&
-                config.getMode().equals("immediate") &&
+                config.getMode() == EngineMode.immediate &&
                 ZonedDateTime.now().isBefore(config.getExpiration()) &&
                 !manualTriggersExecuted.contains(config.getSettingsMoniker());
 

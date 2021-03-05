@@ -26,12 +26,28 @@ import java.util.Objects;
 public class CollectionPlanConfiguration {
 
     private final boolean single;
-    private final String mode;
+    private final EngineMode mode;
     private final ZonedDateTime expiration;
     private final long immediateProfilingDuration;
     private final String settingsMoniker;
 
-    public CollectionPlanConfiguration(boolean single, String mode, ZonedDateTime expiration, long immediateProfilingDuration, String settingsMoniker) {
+
+    public enum EngineMode {
+        unknown,
+        standby,
+        sampling,
+        immediate;
+
+        public static EngineMode parse(String value) {
+            try {
+                return EngineMode.valueOf(value.toLowerCase());
+            } catch (IllegalArgumentException e) {
+                return unknown;
+            }
+        }
+    }
+
+    public CollectionPlanConfiguration(boolean single, EngineMode mode, ZonedDateTime expiration, long immediateProfilingDuration, String settingsMoniker) {
         this.single = single;
         this.mode = mode;
         this.expiration = expiration;
@@ -43,7 +59,7 @@ public class CollectionPlanConfiguration {
         return single;
     }
 
-    public String getMode() {
+    public EngineMode getMode() {
         return mode;
     }
 

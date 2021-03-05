@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
+import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import org.junit.*;
 
@@ -44,7 +45,7 @@ public class AlertingSubsystemTest {
                         new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
                         new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
                         new DefaultConfiguration(true, 5, 120),
-                        new CollectionPlanConfiguration(true, "immediate", ZonedDateTime.now(), 120, "a-settings-moniker")
+                        new CollectionPlanConfiguration(true, EngineMode.immediate, ZonedDateTime.now(), 120, "a-settings-moniker")
                 )
         );
         return monitor;
@@ -80,7 +81,7 @@ public class AlertingSubsystemTest {
                         new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
                         new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
                         new DefaultConfiguration(true, 5, 120),
-                        new CollectionPlanConfiguration(true, "immediate", ZonedDateTime.now().plus(100, ChronoUnit.SECONDS), 120, "a-settings-moniker")
+                        new CollectionPlanConfiguration(true, EngineMode.immediate, ZonedDateTime.now().plus(100, ChronoUnit.SECONDS), 120, "a-settings-moniker")
                 )
         );
 
@@ -99,7 +100,7 @@ public class AlertingSubsystemTest {
                         new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
                         new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
                         new DefaultConfiguration(true, 5, 120),
-                        new CollectionPlanConfiguration(true, "immediate", ZonedDateTime.now().minus(100, ChronoUnit.SECONDS), 120, "a-settings-moniker")
+                        new CollectionPlanConfiguration(true, EngineMode.immediate, ZonedDateTime.now().minus(100, ChronoUnit.SECONDS), 120, "a-settings-moniker")
                 )
         );
 

@@ -35,7 +35,7 @@ public class RollingAverage {
     private final TimeSource timeSource;
     private final List<TelemetryDataPoint> telemetryDataPoints = new ArrayList<>();
     private Consumer<Double> consumer;
-    private static final int DEFAULT_ROLLING_AVERAGE_WINDOW_IN_SEC = Integer.parseInt(System.getProperty("ROLLING_AVERAGE_WINDOW_IN_SEC", "120"));
+    private static final int DEFAULT_ROLLING_AVERAGE_WINDOW_IN_SEC = Integer.parseInt(System.getProperty("applicationinsights.preview.profiler.rolling-average-window-in-sec", "120"));
 
     public RollingAverage() {
         windowLengthInSec = DEFAULT_ROLLING_AVERAGE_WINDOW_IN_SEC;

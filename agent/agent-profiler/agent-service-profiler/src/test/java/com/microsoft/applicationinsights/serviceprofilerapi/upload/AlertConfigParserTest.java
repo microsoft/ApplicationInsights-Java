@@ -24,6 +24,7 @@ import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
+import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.AlertConfigParser;
@@ -59,7 +60,7 @@ public class AlertConfigParserTest {
         Assert.assertEquals(new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400), config.getCpuAlert());
         Assert.assertEquals(new AlertConfiguration(AlertMetricType.CPU, true, 20, 120, 14400), config.getMemoryAlert());
         Assert.assertEquals(new DefaultConfiguration(true, 5, 120), config.getDefaultConfiguration());
-        Assert.assertEquals(new CollectionPlanConfiguration(true, "immediate", CollectionPlanConfigurationBuilder.parseBinaryDate(5249157885138288517L), 120, "a-settings-moniker"),
+        Assert.assertEquals(new CollectionPlanConfiguration(true, EngineMode.immediate, CollectionPlanConfigurationBuilder.parseBinaryDate(5249157885138288517L), 120, "a-settings-moniker"),
                 config.getCollectionPlanConfiguration());
 
     }

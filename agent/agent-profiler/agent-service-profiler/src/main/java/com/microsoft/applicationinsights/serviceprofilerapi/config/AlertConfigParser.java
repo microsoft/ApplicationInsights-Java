@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
+import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfigurationBuilder;
@@ -52,14 +53,14 @@ public class AlertConfigParser {
     //--single --mode immediate --immediate-profiling-duration 120  --expiration 5249143304354868449 --settings-moniker Portal_b5bd7880-7406-4058-a6f8-3ea0102706b1
     private static CollectionPlanConfiguration parseCollectionPlan(String collectionPlan) {
         if (collectionPlan == null) {
-            return new CollectionPlanConfiguration(false, "", Instant.ofEpochMilli(0).atZone(ZoneOffset.UTC), 0, "");
+            return new CollectionPlanConfiguration(false, EngineMode.immediate, Instant.ofEpochMilli(0).atZone(ZoneOffset.UTC), 0, "");
         }
 
         String[] tokens = collectionPlan.split(" ");
 
         Map<String, ParseConfigValue<CollectionPlanConfigurationBuilder>> parsers = new HashMap<>();
         parsers.put("single", new ParseConfigValue<>(false, (config, arg) -> config.setCollectionPlanSingle(true)));
-        parsers.put("mode", new ParseConfigValue<>(true, (config, arg) -> config.setMode(arg)));
+        parsers.put("mode", new ParseConfigValue<>(true, (config, arg) -> config.setMode(EngineMode.parse(arg))));
         parsers.put("expiration", new ParseConfigValue<>(true, (config, arg) -> config.setExpiration(Long.parseLong(arg))));
         parsers.put("immediate-profiling-duration", new ParseConfigValue<>(true, (config, arg) -> config.setImmediateProfilingDuration(Long.parseLong(arg))));
         parsers.put("settings-moniker", new ParseConfigValue<>(true, (config, arg) -> config.setSettingsMoniker(arg)));

@@ -25,9 +25,11 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
+import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
+
 public class CollectionPlanConfigurationBuilder {
     private boolean single = false;
-    private String mode;
+    private EngineMode mode;
     private ZonedDateTime expiration;
     private long immediateProfilingDuration;
     private String settingsMoniker;
@@ -41,7 +43,7 @@ public class CollectionPlanConfigurationBuilder {
         return this;
     }
 
-    public CollectionPlanConfigurationBuilder setMode(String mode) {
+    public CollectionPlanConfigurationBuilder setMode(EngineMode mode) {
         this.mode = mode;
         return this;
     }
