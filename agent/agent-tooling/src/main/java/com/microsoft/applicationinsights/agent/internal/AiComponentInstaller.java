@@ -149,7 +149,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         if (config.proxy.host != null) {
             LazyHttpClient.proxy = new HttpHost(config.proxy.host, config.proxy.port);
         }
-        AppIdSupplier appIdSupplier = new AppIdSupplier();
+        AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
 
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
