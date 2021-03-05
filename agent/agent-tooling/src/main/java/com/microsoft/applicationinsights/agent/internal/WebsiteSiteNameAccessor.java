@@ -23,32 +23,25 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
-import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
-import io.opentelemetry.instrumentation.api.aisdk.AiConnectionString;
+import io.opentelemetry.instrumentation.api.aisdk.AiWebsiteSiteName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConnectionStringAccessor implements AiConnectionString.Accessor {
+public class WebsiteSiteNameAccessor implements AiWebsiteSiteName.Accessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConnectionStringAccessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebsiteSiteNameAccessor.class);
 
     @Override
     public boolean hasValue() {
-        // check for instrumentation key value is sufficient here because it's updated each time when the connection string is updated.
-        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        return !Strings.isNullOrEmpty(instrumentationKey);
+        String roleName = TelemetryConfiguration.getActive().getRoleName();
+        return !Strings.isNullOrEmpty(roleName);
     }
 
     @Override
     public void setValue(String value) {
         if (!Strings.isNullOrEmpty(value)) {
-            TelemetryConfiguration.getActive().setConnectionString(value);
-            // now that we know the user has opted in to tracing, we need to init the propagator and sampler
-            DelegatingPropagator.getInstance().setUpStandardDelegate();
-            // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
-            DelegatingSampler.getInstance().setAlwaysOnDelegate();
-            logger.info("Set connection string lazily for the Azure Function Consumption Plan.");
+            TelemetryConfiguration.getActive().setRoleName(value);
+            logger.debug("Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.", value);
         }
     }
 }
