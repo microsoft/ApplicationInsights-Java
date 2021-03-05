@@ -26,7 +26,7 @@ public class AzureFunctionsInstrumentationHelper {
     String enableAgent = System.getenv("APPLICATIONINSIGHTS_ENABLE_AGENT");
     logger.info("lazySetOptIn: {}", lazySetOptIn);
     logger.info("APPLICATIONINSIGHTS_ENABLE_AGENT: {}", enableAgent);
-    if (!shouldUpdateConnectionString(lazySetOptIn, enableAgent)) {
+    if (!shouldSetConnectionString(lazySetOptIn, enableAgent)) {
       return;
     }
 
@@ -58,7 +58,7 @@ public class AzureFunctionsInstrumentationHelper {
     }
   }
 
-  static boolean shouldUpdateConnectionString(boolean lazySetOptIn, String enableAgent) {
+  static boolean shouldSetConnectionString(boolean lazySetOptIn, String enableAgent) {
     if (lazySetOptIn) {
       // when LazySetOptIn is on, enable agent if APPLICATIONINSIGHTS_ENABLE_AGENT is null or true
       if (enableAgent == null || Boolean.parseBoolean(enableAgent)) {
