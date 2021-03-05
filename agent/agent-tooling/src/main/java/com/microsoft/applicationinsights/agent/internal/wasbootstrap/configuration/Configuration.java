@@ -421,11 +421,11 @@ public class Configuration {
     public transient long lastModifiedTime;
 
     public static class ProfilerConfiguration {
-        public int configPollPeriod = -1;
-        public int periodicRecordingDuration = -1;
-        public int periodicRecordingInterval = -1;
+        public int configPollPeriodSeconds = 60;
+        public int periodicRecordingDurationSeconds = 120;
+        public int periodicRecordingIntervalSeconds = 60 * 60;
         public String serviceProfilerFrontEndPoint = null;
-        public boolean enable = false;
+        public boolean enabled = false;
     }
 
     public static class PerformanceCountersConfiguration {

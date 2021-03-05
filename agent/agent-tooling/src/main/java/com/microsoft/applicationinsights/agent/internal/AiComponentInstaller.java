@@ -202,11 +202,11 @@ public class AiComponentInstaller implements ComponentInstaller {
 
     private static ServiceProfilerServiceConfig formServiceProfilerConfig(ProfilerConfiguration configuration) {
         return new ServiceProfilerServiceConfig(
-                configuration.configPollPeriod,
-                configuration.periodicRecordingDuration,
-                configuration.periodicRecordingInterval,
+                configuration.configPollPeriodSeconds,
+                configuration.periodicRecordingDurationSeconds,
+                configuration.periodicRecordingIntervalSeconds,
                 configuration.serviceProfilerFrontEndPoint,
-                configuration.enable
+                configuration.enabled
         );
     }
 

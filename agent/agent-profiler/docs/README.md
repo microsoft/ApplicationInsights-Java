@@ -32,10 +32,10 @@ Configuration of the profiler triggering settings, such as thresholds and profil
 ApplicationInsights UI under the Performance, Profiler, Triggers UI.
 
 - APPLICATIONINSIGHTS_PROFILER_ENABLE: boolean (default false)
-    - Can be set as either an environment variable or property to enable the profiler.
+    - Can be set as either an environment variable to enable the profiler.
     - While profiling is in beta it must be actively enabled.
 - APPLICATIONINSIGHTS_PERFORMANCE_COUNTERS_FREQUENCY: int (default 60)
-    - Can be set as either an environment variable or property to enable the profiler.
+    - Can be set as either an environment variable to enable the profiler.
     - Period in seconds that performance counters are sampled. This directly impacts the frequency that
       Alerting thresholds are evaluated. Alerting thresholds by default apply an average over the last 2 min,
       at the default of 60 seconds this will be 2 samples.
@@ -44,8 +44,8 @@ Profiler may also be enabled via adding a config section to applicationinsights.
 
 ```
     profilerConfiguration {
-        configPollPeriod: 60,
-        enable: true
+        configPollPeriodSeconds: 60,
+        enabled: true
     }
 ```
 

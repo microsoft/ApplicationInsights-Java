@@ -88,19 +88,11 @@ public class ConfigurationBuilder {
         return config;
     }
 
-    private static String getEnvVarOrPropertyWithDefault(String name, String defaultValue) {
-        String override = getEnvVarOrProperty(name, name);
-        if (override == null) {
-            return defaultValue;
-        }
-        return override;
-    }
-
     private static void overlayProfilerConfiguration(Configuration config) {
-        config.profilerConfiguration.enable = Boolean
-                .parseBoolean(getEnvVarOrPropertyWithDefault(APPLICATIONINSIGHTS_PROFILER_ENABLE, Boolean.toString(config.profilerConfiguration.enable)));
+        config.profilerConfiguration.enabled = Boolean
+                .parseBoolean(overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_ENABLE, Boolean.toString(config.profilerConfiguration.enabled)));
         config.profilerConfiguration.serviceProfilerFrontEndPoint =
-                getEnvVarOrPropertyWithDefault(APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT, config.profilerConfiguration.serviceProfilerFrontEndPoint);
+                overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT, config.profilerConfiguration.serviceProfilerFrontEndPoint);
     }
 
     private static void loadLogCaptureEnvVar(Configuration config) {
@@ -205,12 +197,6 @@ public class ConfigurationBuilder {
         for (ConfigurationWarnMessage configurationWarnMessage : configurationWarnMessages) {
             configurationWarnMessage.warn(logger);
         }
-    }
-
-    // never returns empty string (empty string is normalized to null)
-    private static String getEnvVarOrProperty(String envVarName, String propertyName) {
-        String value = trimAndEmptyToNull(System.getenv(envVarName));
-        return value != null ? value : trimAndEmptyToNull(System.getProperty(propertyName));
     }
 
     public static void overlayEnvVars(Configuration config) throws IOException {
