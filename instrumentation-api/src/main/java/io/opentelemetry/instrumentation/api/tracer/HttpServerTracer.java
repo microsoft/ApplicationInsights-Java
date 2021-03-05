@@ -13,7 +13,7 @@ import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;

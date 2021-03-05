@@ -10,7 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
+import io.opentelemetry.instrumentation.api.aisdk.AiConnectionString;
+import io.opentelemetry.instrumentation.api.aisdk.AiWebsiteSiteName;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -33,30 +34,31 @@ public class AzureFunctionsInstrumentationHelperTest {
       "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/";
 
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
+  private static final String WEBSITE_SITE_NAME = "fake_site_name";
 
   @Test
   @DisplayName("LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is TRUE")
   public void enableLazySetWithLazySetOptInOffEnableAgentOn() {
-    assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
+    assertTrue(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(false, "true"));
   }
 
   @Test
   @DisplayName("LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is FALSE")
   public void disableLazySetWithLazySetOptInOffEnableAgentOff() {
-    assertFalse(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "false"));
+    assertFalse(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(false, "false"));
   }
 
   @Test
   @DisplayName("LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is NULL")
   public void disableLazySetWithLazySetOptInOffEnableAgentNull() {
-    assertFalse(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, null));
+    assertFalse(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(false, null));
   }
 
   @Test
   @DisplayName(
       "LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is TRUE")
   public void disableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNull() {
-    assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
+    assertTrue(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(false, "true"));
     MockedAccessor accessor = new MockedAccessor();
     AiConnectionString.setAccessor(accessor);
     AzureFunctionsInstrumentationHelper.setConnectionString(null, null);
@@ -67,18 +69,23 @@ public class AzureFunctionsInstrumentationHelperTest {
   @DisplayName(
       "LazySetOptIn is FALSE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent is TRUE")
   public void disableLazySetWithLazySetOptInOffConnectionStringNotNullInstrumentationKeyNull() {
-    assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
+    assertTrue(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(false, "true"));
     MockedAccessor accessor = new MockedAccessor();
     AiConnectionString.setAccessor(accessor);
     AzureFunctionsInstrumentationHelper.setConnectionString(CONNECTION_STRING, null);
     assertEquals(accessor.connectionString, CONNECTION_STRING);
+
+    MockedWebsiteSiteNameAccessor websiteSiteNameAccessor = new MockedWebsiteSiteNameAccessor();
+    AiWebsiteSiteName.setAccessor(websiteSiteNameAccessor);
+    AzureFunctionsInstrumentationHelper.setWebsiteSiteName(WEBSITE_SITE_NAME);
+    assertEquals(websiteSiteNameAccessor.websiteSiteName, WEBSITE_SITE_NAME);
   }
 
   @Test
   @DisplayName(
       "LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE")
   public void enableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNotNull() {
-    assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
+    assertTrue(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(false, "true"));
     MockedAccessor accessor = new MockedAccessor();
     AiConnectionString.setAccessor(accessor);
     AzureFunctionsInstrumentationHelper.setConnectionString(null, INSTRUMENTATION_KEY);
@@ -88,26 +95,26 @@ public class AzureFunctionsInstrumentationHelperTest {
   @Test
   @DisplayName("LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is TRUE")
   public void enableLazySetWithLazySetOptInOnEnableAgentOn() {
-    assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(true, "true"));
+    assertTrue(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(true, "true"));
   }
 
   @Test
   @DisplayName("LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is FALSE")
   public void disableLazySetWithLazySetOptInOnEnableAgentOff() {
-    assertFalse(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(true, "false"));
+    assertFalse(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(true, "false"));
   }
 
   @Test
   @DisplayName("LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is NULL")
   public void enableLazySetWithLazySetOptInOnEnableAgentNull() {
-    assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(true, null));
+    assertTrue(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(true, null));
   }
 
   @Test
   @DisplayName(
       "LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is TRUE")
   public void disableLazySetWithLazySetOptInOnConnectionStringNullAndInstrumentationKeyNull() {
-    assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(true, "true"));
+    assertTrue(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(true, "true"));
     MockedAccessor accessor = new MockedAccessor();
     AiConnectionString.setAccessor(accessor);
     AzureFunctionsInstrumentationHelper.setConnectionString(null, null);
@@ -118,7 +125,7 @@ public class AzureFunctionsInstrumentationHelperTest {
   @DisplayName(
       "LazySetOptIn is TRUE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent is TRUE")
   public void enableLazySetWithLazySetOptInOnConnectionStringNotNullInstrumentationKeyNull() {
-    assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
+    assertTrue(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(false, "true"));
     MockedAccessor accessor = new MockedAccessor();
     AiConnectionString.setAccessor(accessor);
     AzureFunctionsInstrumentationHelper.setConnectionString(CONNECTION_STRING, null);
@@ -129,7 +136,7 @@ public class AzureFunctionsInstrumentationHelperTest {
   @DisplayName(
       "LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE")
   public void enableLazySetWithLazySetOptInOnConnectionStringNullInstrumentationKeyNotNull() {
-    assertTrue(AzureFunctionsInstrumentationHelper.shouldSetConnectionString(false, "true"));
+    assertTrue(AzureFunctionsInstrumentationHelper.shouldUpdateConnectionString(false, "true"));
     MockedAccessor accessor = new MockedAccessor();
     AiConnectionString.setAccessor(accessor);
     AzureFunctionsInstrumentationHelper.setConnectionString(null, INSTRUMENTATION_KEY);
@@ -147,6 +154,20 @@ public class AzureFunctionsInstrumentationHelperTest {
     @Override
     public void setValue(String value) {
       connectionString = value;
+    }
+  }
+
+  private class MockedWebsiteSiteNameAccessor implements AiWebsiteSiteName.Accessor {
+    private String websiteSiteName;
+
+    @Override
+    public boolean hasValue() {
+      return websiteSiteName != null && !websiteSiteName.isEmpty();
+    }
+
+    @Override
+    public void setValue(String value) {
+      websiteSiteName = value;
     }
   }
 }

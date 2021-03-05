@@ -5,7 +5,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.azurefunctions;
 
-import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
+import io.opentelemetry.instrumentation.api.aisdk.AiConnectionString;
+import io.opentelemetry.instrumentation.api.aisdk.AiWebsiteSiteName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,25 +15,27 @@ public class AzureFunctionsInstrumentationHelper {
   private static final Logger logger =
       LoggerFactory.getLogger(AzureFunctionsInstrumentationHelper.class);
 
-  public static void lazilySetConnectionString() {
+  public static void lazilySetConnectionStringAndWebsiteSiteName() {
     // race condition (two initial requests happening at the same time) is not a worry here
     // because at worst they both enter the condition below and update the connection string
-    if (AiConnectionString.hasConnectionString()) {
-      return;
+    if (AiConnectionString.hasConnectionString() && AiWebsiteSiteName.hasWebsiteSiteName()) {
+        return;
     }
 
     boolean lazySetOptIn = Boolean.parseBoolean(System.getProperty("LazySetOptIn"));
-    String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
-    String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
     String enableAgent = System.getenv("APPLICATIONINSIGHTS_ENABLE_AGENT");
     logger.info("lazySetOptIn: {}", lazySetOptIn);
     logger.info("APPLICATIONINSIGHTS_ENABLE_AGENT: {}", enableAgent);
-
-    if (!shouldSetConnectionString(lazySetOptIn, enableAgent)) {
+    if (!shouldUpdateConnectionString(lazySetOptIn, enableAgent)) {
       return;
     }
 
+    String connectionString = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
+    String instrumentationKey = System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
     setConnectionString(connectionString, instrumentationKey);
+
+    String websiteSiteName = System.getenv("WEBSITE_SITE_NAME");
+    setWebsiteSiteName(websiteSiteName);
   }
 
   static void setConnectionString(String connectionString, String instrumentationKey) {
@@ -49,7 +52,13 @@ public class AzureFunctionsInstrumentationHelper {
     }
   }
 
-  static boolean shouldSetConnectionString(boolean lazySetOptIn, String enableAgent) {
+  static void setWebsiteSiteName(String websiteSiteName) {
+    if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
+      AiWebsiteSiteName.setWebsiteSiteName(websiteSiteName);
+    }
+  }
+
+  static boolean shouldUpdateConnectionString(boolean lazySetOptIn, String enableAgent) {
     if (lazySetOptIn) {
       // when LazySetOptIn is on, enable agent if APPLICATIONINSIGHTS_ENABLE_AGENT is null or true
       if (enableAgent == null || Boolean.parseBoolean(enableAgent)) {
