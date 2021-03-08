@@ -141,7 +141,7 @@ class SpringBootBasedTest extends HttpServerTest<ConfigurableApplicationContext>
   }
 
   @Override
-  boolean sendsBackAiTargetAppId() {
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
     true
   }
 

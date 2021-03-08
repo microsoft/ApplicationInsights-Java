@@ -61,7 +61,7 @@ class GlassFishServerTest extends HttpServerTest<GlassFish> implements AgentTest
   }
 
   @Override
-  boolean sendsBackAiTargetAppId() {
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
     true
   }
 
