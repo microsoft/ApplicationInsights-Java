@@ -127,8 +127,8 @@ public class Servlet3HttpServerTracer extends ServletHttpServerTracer<HttpServle
       if (spanName != null) {
         span.updateName(spanName);
         ServletSpanNaming.setServletUpdatedServerSpanName(context);
-        injectAppIdIntoResponse(response);
       }
+      injectAppIdIntoResponse(response);
     }
 
     return updateContext(context, request);
