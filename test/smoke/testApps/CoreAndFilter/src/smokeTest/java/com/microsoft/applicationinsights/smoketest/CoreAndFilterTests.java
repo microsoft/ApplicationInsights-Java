@@ -359,7 +359,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(false, rd.getSuccess());
         assertEquals("404", rd.getResponseCode());
 
-        assertEquals("/CoreAndFilter/autoFailedRequestWithResultCode", rdEnvelope.getTags().get("ai.operation.name"));
+        assertEquals("/CoreAndFilter/*", rdEnvelope.getTags().get("ai.operation.name"));
     }
 
     @Test

@@ -33,7 +33,7 @@ public class LettuceTest extends AiSmokeTest {
         assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
         assertEquals("GET", rdd.getName());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Lettuce/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

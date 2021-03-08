@@ -60,7 +60,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Test
@@ -85,7 +85,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Test
@@ -114,7 +114,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals(query, rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Test
@@ -140,7 +140,7 @@ public class JdbcTest extends AiSmokeTest {
         // assertEquals(" [Batch of 3]", rdd.getProperties().get("Args"));
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Ignore // OpenTelemetry auto-instrumentation does not support non- prepared statement batching yet
@@ -168,7 +168,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals(" [Batch]", rdd.getProperties().get("Args"));
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Test
@@ -201,7 +201,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Test
@@ -233,7 +233,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Test
@@ -258,7 +258,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Test
@@ -283,7 +283,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Test
@@ -308,7 +308,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Test
@@ -333,7 +333,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Ignore("FIXME: need custom container with oracle db")
@@ -359,7 +359,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     @Ignore("FIXME: need custom container with oracle db")
@@ -385,7 +385,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
