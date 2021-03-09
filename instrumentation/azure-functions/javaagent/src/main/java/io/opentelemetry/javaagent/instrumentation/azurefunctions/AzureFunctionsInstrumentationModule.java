@@ -61,7 +61,7 @@ public class AzureFunctionsInstrumentationModule extends InstrumentationModule {
       @Advice.OnMethodEnter(suppress = Throwable.class)
       public static Scope methodEnter(@Advice.Argument(0) final Object request)
           throws ReflectiveOperationException {
-        AzureFunctionsInstrumentationHelper.lazilySetConnectionStringAndWebsiteSiteName();
+        AzureFunctionsInstrumentationHelper.lazilyLoadConfiguration();
 
         final Object traceContext =
             InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
