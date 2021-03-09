@@ -1,0 +1,19 @@
+apply from: "$rootDir/gradle/instrumentation.gradle"
+
+muzzle {
+  pass {
+    group = "com.microsoft.azure"
+    module = "applicationinsights-web"
+    versions = "[2.3.0,)"
+  }
+}
+
+dependencies {
+  library group: 'com.microsoft.azure', name: 'applicationinsights-web', version: '2.3.0'
+
+  testImplementation project(':instrumentation:opentelemetry-annotations-1.0:javaagent')
+
+  testImplementation deps.opentelemetryExtAnnotations
+
+  testImplementation 'javax.servlet:javax.servlet-api:3.0.1'
+}
