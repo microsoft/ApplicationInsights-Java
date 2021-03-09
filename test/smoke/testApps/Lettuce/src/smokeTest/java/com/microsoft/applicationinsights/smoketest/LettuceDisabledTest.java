@@ -21,7 +21,7 @@ public class LettuceDisabledTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("HTTP GET", rd.getName());
+        assertEquals("/Lettuce/*", rd.getName());
         assertEquals("200", rd.getResponseCode());
 
         // sleep a bit and make sure no lettuce dependencies are reported
