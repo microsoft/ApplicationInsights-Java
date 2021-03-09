@@ -36,7 +36,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
     }
 
     @Test
@@ -58,7 +58,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
     }
 
     @Test
@@ -80,7 +80,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
     }
 
     @Test
@@ -102,7 +102,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
     }
 
     @Test
@@ -124,7 +124,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
     }
 
     @Ignore // OpenTelemetry Auto-Instrumentation does not support OkHttp 2
@@ -147,7 +147,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
     }
 
     @Test
@@ -169,7 +169,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("www.bing.com", rdd.getTarget());
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com/search?q=spaces%20test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
     }
 
     @Test
@@ -192,7 +192,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertEquals("HTTP GET", rdd.getName());
         // TODO investigate why %2520 is captured instead of %20
         assertEquals("https://www.bing.com/search?q=spaces%2520test", rdd.getData());
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

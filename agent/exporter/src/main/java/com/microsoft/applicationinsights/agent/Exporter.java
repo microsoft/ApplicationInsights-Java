@@ -528,6 +528,15 @@ public class Exporter implements SpanExporter {
         requestData.setId(span.getSpanId());
         requestData.getContext().getOperation().setId(span.getTraceId());
 
+        String locationIp = attributes.get(SemanticAttributes.HTTP_CLIENT_IP);
+        if (locationIp == null) {
+            // only use net.peer.ip if http.client_ip is not available
+            locationIp = attributes.get(SemanticAttributes.NET_PEER_IP);
+        }
+        if (locationIp != null) {
+            requestData.getContext().getLocation().setIp(locationIp);
+        }
+
         String aiLegacyParentId = span.getSpanContext().getTraceState().get("ai-legacy-parent-id");
         if (aiLegacyParentId != null) {
             // see behavior specified at https://github.com/microsoft/ApplicationInsights-Java/issues/1174
