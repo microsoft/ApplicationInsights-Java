@@ -1,5 +1,4 @@
 apply from: "$rootDir/gradle/instrumentation-library.gradle"
-apply plugin: "net.ltgt.errorprone"
 
 dependencies {
   library group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.0.0'
