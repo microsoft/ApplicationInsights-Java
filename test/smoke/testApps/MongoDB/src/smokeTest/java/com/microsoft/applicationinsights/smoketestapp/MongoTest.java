@@ -45,7 +45,7 @@ public class MongoTest extends AiSmokeTest {
         assertEquals("{\"find\": \"test\", \"$db\": \"?\"}", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/MongoDB/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
