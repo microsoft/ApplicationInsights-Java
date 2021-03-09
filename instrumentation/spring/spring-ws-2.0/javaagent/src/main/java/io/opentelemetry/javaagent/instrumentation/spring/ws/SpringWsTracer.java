@@ -21,16 +21,17 @@ public class SpringWsTracer extends BaseTracer {
   }
 
   public Context startSpan(Method method) {
+    Context parentContext = Context.current();
     Span span =
-        spanBuilder(spanNameForMethod(method), SpanKind.INTERNAL)
+        spanBuilder(parentContext, spanNameForMethod(method), SpanKind.INTERNAL)
             .setAttribute(SemanticAttributes.CODE_NAMESPACE, method.getDeclaringClass().getName())
             .setAttribute(SemanticAttributes.CODE_FUNCTION, method.getName())
             .startSpan();
-    return Context.current().with(span);
+    return parentContext.with(span);
   }
 
   @Override
   protected String getInstrumentationName() {
-    return "io.opentelemetry.javaagent.spring-ws";
+    return "io.opentelemetry.javaagent.spring-ws-2.0";
   }
 }

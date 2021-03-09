@@ -23,26 +23,19 @@ public class WithSpanTracer extends BaseTracer {
 
   private static final Logger log = LoggerFactory.getLogger(WithSpanTracer.class);
 
-  // we can't conditionally start a span in startSpan() below, because the caller won't know
-  // whether to call end() or not on the Span in the returned Context
-  public boolean shouldStartSpan(Context context, SpanKind kind) {
-    // don't create a nested span if you're not supposed to.
-    return shouldStartSpan(kind, context);
-  }
-
   public Context startSpan(
-      Context context, WithSpan applicationAnnotation, Method method, SpanKind kind) {
+      Context parentContext, WithSpan applicationAnnotation, Method method, SpanKind kind) {
     Span span =
-        spanBuilder(spanNameForMethodWithAnnotation(applicationAnnotation, method), kind)
-            .setParent(context)
+        spanBuilder(
+                parentContext, spanNameForMethodWithAnnotation(applicationAnnotation, method), kind)
             .startSpan();
     if (kind == SpanKind.SERVER) {
-      return withServerSpan(context, span);
+      return withServerSpan(parentContext, span);
     }
     if (kind == SpanKind.CLIENT) {
-      return withClientSpan(context, span);
+      return withClientSpan(parentContext, span);
     }
-    return context.with(span);
+    return parentContext.with(span);
   }
 
   /**
@@ -78,6 +71,6 @@ public class WithSpanTracer extends BaseTracer {
 
   @Override
   protected String getInstrumentationName() {
-    return "io.opentelemetry.javaagent.opentelemetry-annotations";
+    return "io.opentelemetry.javaagent.opentelemetry-annotations-1.0";
   }
 }

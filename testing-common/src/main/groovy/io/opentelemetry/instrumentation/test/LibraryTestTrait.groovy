@@ -7,6 +7,7 @@ package io.opentelemetry.instrumentation.test
 
 
 import io.opentelemetry.instrumentation.testing.LibraryTestRunner
+
 /**
  * A trait which initializes instrumentation library tests, including a test span exporter. All
  * library tests should implement this trait.

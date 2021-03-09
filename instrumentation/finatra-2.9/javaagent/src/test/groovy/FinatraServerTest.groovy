@@ -69,7 +69,7 @@ class FinatraServerTest extends HttpServerTest<HttpServer> implements AgentTestT
   }
 
   @Override
-  boolean sendsBackAiTargetAppId() {
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
     true
   }
 

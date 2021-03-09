@@ -83,7 +83,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     // whether to call end() or not on the Span in the returned Context
 
     Context parentContext = extract(request, getGetter());
-    SpanBuilder builder = tracer.spanBuilder(spanName).setSpanKind(SERVER).setParent(parentContext);
+    SpanBuilder builder = spanBuilder(parentContext, spanName, SERVER);
 
     if (startTimestamp >= 0) {
       builder.setStartTimestamp(startTimestamp, TimeUnit.NANOSECONDS);
@@ -95,8 +95,14 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     onConnectionAndRequest(span, connection, request);
 
     Context context = withServerSpan(parentContext, span);
+    context = customizeContext(context, request);
     attachServerContext(context, storage);
 
+    return context;
+  }
+
+  /** Override in subclass to customize context that is returned by {@code startSpan}. */
+  protected Context customizeContext(Context context, REQUEST request) {
     return context;
   }
 
@@ -150,7 +156,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
 
   public Span getServerSpan(STORAGE storage) {
     Context attachedContext = getServerContext(storage);
-    return attachedContext == null ? null : getCurrentServerSpan(attachedContext);
+    return attachedContext == null ? null : ServerSpan.fromContextOrNull(attachedContext);
   }
 
   /**

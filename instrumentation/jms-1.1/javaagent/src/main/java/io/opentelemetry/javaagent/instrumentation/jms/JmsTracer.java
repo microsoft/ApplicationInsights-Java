@@ -41,13 +41,6 @@ public class JmsTracer extends BaseTracer {
 
   public Context startConsumerSpan(
       MessageDestination destination, String operation, Message message, long startTime) {
-    SpanBuilder spanBuilder =
-        tracer
-            .spanBuilder(spanName(destination, operation))
-            .setSpanKind(CONSUMER)
-            .setStartTimestamp(startTime, TimeUnit.MILLISECONDS)
-            .setAttribute(SemanticAttributes.MESSAGING_OPERATION, operation);
-
     Context parentContext = Context.root();
     if (message != null && "process".equals(operation)) {
       // TODO use BaseTracer.extract() which has context leak detection
@@ -57,20 +50,25 @@ public class JmsTracer extends BaseTracer {
               .getTextMapPropagator()
               .extract(Context.root(), message, GETTER);
     }
-    spanBuilder.setParent(parentContext);
+
+    SpanBuilder spanBuilder =
+        spanBuilder(parentContext, spanName(destination, operation), CONSUMER)
+            .setStartTimestamp(startTime, TimeUnit.MILLISECONDS)
+            .setAttribute(SemanticAttributes.MESSAGING_OPERATION, operation);
 
     afterStart(spanBuilder, destination, message);
     return parentContext.with(spanBuilder.startSpan());
   }
 
   public Context startProducerSpan(MessageDestination destination, Message message) {
-    SpanBuilder span = tracer.spanBuilder(spanName(destination, "send")).setSpanKind(PRODUCER);
+    Context parentContext = Context.current();
+    SpanBuilder span = spanBuilder(parentContext, spanName(destination, "send"), PRODUCER);
     afterStart(span, destination, message);
-    return Context.current().with(span.startSpan());
+    return parentContext.with(span.startSpan());
   }
 
   public Scope startProducerScope(Context context, Message message) {
-    GlobalOpenTelemetry.getPropagators().getTextMapPropagator().inject(context, message, SETTER);
+    inject(context, message, SETTER);
     return context.makeCurrent();
   }
 
@@ -163,6 +161,6 @@ public class JmsTracer extends BaseTracer {
 
   @Override
   protected String getInstrumentationName() {
-    return "io.opentelemetry.javaagent.jms";
+    return "io.opentelemetry.javaagent.jms-1.1";
   }
 }
