@@ -42,8 +42,9 @@ public class Servlet3Advice {
       // We are inside nested servlet/filter/app-server span, don't create new span
       if (Servlet3HttpServerTracer.needsRescoping(attachedContext)) {
         attachedContext =
-            tracer().updateContext(attachedContext, servletOrFilter, httpServletRequest,
-                httpServletResponse);
+            tracer()
+                .updateContext(
+                    attachedContext, servletOrFilter, httpServletRequest, httpServletResponse);
         scope = attachedContext.makeCurrent();
         return;
       }
@@ -52,8 +53,9 @@ public class Servlet3Advice {
       // instrumentation, if needed update span with info from current request.
       Context currentContext = Java8BytecodeBridge.currentContext();
       Context updatedContext =
-          tracer().updateContext(currentContext, servletOrFilter, httpServletRequest,
-              httpServletResponse);
+          tracer()
+              .updateContext(
+                  currentContext, servletOrFilter, httpServletRequest, httpServletResponse);
       if (updatedContext != currentContext) {
         // runOnceUnderAppServer updated context, need to re-scope
         scope = updatedContext.makeCurrent();
@@ -68,8 +70,9 @@ public class Servlet3Advice {
       // In case it was created by app server integration we need to update it with info from
       // current request.
       Context updatedContext =
-          tracer().updateContext(currentContext, servletOrFilter, httpServletRequest,
-              httpServletResponse);
+          tracer()
+              .updateContext(
+                  currentContext, servletOrFilter, httpServletRequest, httpServletResponse);
       if (currentContext != updatedContext) {
         // updateContext updated context, need to re-scope
         scope = updatedContext.makeCurrent();

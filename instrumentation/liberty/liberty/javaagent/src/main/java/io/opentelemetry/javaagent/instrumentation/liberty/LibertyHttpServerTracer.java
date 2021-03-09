@@ -18,7 +18,7 @@ public class LibertyHttpServerTracer extends Servlet3HttpServerTracer {
   }
 
   public Context startSpan(HttpServletRequest request, HttpServletResponse response) {
-    return startSpan(request, response,"HTTP " + request.getMethod());
+    return startSpan(request, response, "HTTP " + request.getMethod());
   }
 
   @Override

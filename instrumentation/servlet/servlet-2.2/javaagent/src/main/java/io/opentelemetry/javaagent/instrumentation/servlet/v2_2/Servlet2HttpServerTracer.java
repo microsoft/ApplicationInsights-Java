@@ -28,8 +28,8 @@ public class Servlet2HttpServerTracer extends ServletHttpServerTracer<ResponseWi
     return context;
   }
 
-  public Context updateContext(Context context, HttpServletRequest request,
-      HttpServletResponse response) {
+  public Context updateContext(
+      Context context, HttpServletRequest request, HttpServletResponse response) {
     Span span = ServerSpan.fromContextOrNull(context);
     if (span != null && ServletSpanNaming.shouldUpdateServerSpanName(context)) {
       span.updateName(getSpanName(request));

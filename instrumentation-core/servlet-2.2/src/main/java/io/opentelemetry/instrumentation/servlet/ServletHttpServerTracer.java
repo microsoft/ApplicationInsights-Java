@@ -28,7 +28,8 @@ public abstract class ServletHttpServerTracer<RESPONSE>
 
   private static final Logger log = LoggerFactory.getLogger(ServletHttpServerTracer.class);
 
-  public Context startSpan(HttpServletRequest request, HttpServletResponse response, String spanName) {
+  public Context startSpan(
+      HttpServletRequest request, HttpServletResponse response, String spanName) {
     injectAppIdIntoResponse(response);
     return startSpan(request, request, request, spanName);
   }

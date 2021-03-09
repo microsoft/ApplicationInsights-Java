@@ -38,7 +38,8 @@ public class Servlet2Advice {
 
     Context serverContext = tracer().getServerContext(httpServletRequest);
     if (serverContext != null) {
-      Context updatedContext = tracer().updateContext(serverContext, httpServletRequest, httpServletResponse);
+      Context updatedContext =
+          tracer().updateContext(serverContext, httpServletRequest, httpServletResponse);
       if (updatedContext != serverContext) {
         // updateContext updated context, need to re-scope
         scope = updatedContext.makeCurrent();
