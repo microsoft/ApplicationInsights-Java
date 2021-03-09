@@ -66,10 +66,10 @@ public class ConfigurationBuilder {
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
 
-    private static final String APPLICATIONINSIGHTS_PROFILER_ENABLE = "APPLICATIONINSIGHTS_PROFILER_ENABLE";
+    private static final String APPLICATIONINSIGHTS_PROFILER_ENABLED = "APPLICATIONINSIGHTS_PROFILER_ENABLED";
     private static final String APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT = "APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT";
 
-    private static final String APPLICATIONINSIGHTS_PERFORMANCE_COUNTERS_FREQUENCY = "APPLICATIONINSIGHTS_PERFORMANCE_COUNTERS_FREQUENCY";
+    private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS = "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
 
     // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
     private static final List<ConfigurationWarnMessage> configurationWarnMessages = new CopyOnWriteArrayList<>();
@@ -89,10 +89,10 @@ public class ConfigurationBuilder {
     }
 
     private static void overlayProfilerConfiguration(Configuration config) {
-        config.profilerConfiguration.enabled = Boolean
-                .parseBoolean(overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_ENABLE, Boolean.toString(config.profilerConfiguration.enabled)));
-        config.profilerConfiguration.serviceProfilerFrontEndPoint =
-                overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT, config.profilerConfiguration.serviceProfilerFrontEndPoint);
+        config.preview.profiler.enabled = Boolean
+                .parseBoolean(overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_ENABLED, Boolean.toString(config.preview.profiler.enabled)));
+        config.preview.profiler.serviceProfilerFrontEndPoint =
+                overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT, config.preview.profiler.serviceProfilerFrontEndPoint);
     }
 
     private static void loadLogCaptureEnvVar(Configuration config) {
@@ -225,8 +225,9 @@ public class ConfigurationBuilder {
         config.sampling.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
         config.selfDiagnostics.level = overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL, config.selfDiagnostics.level);
-        config.performanceCountersConfiguration.collectionFrequencyInSec =
-                overlayWithEnvVar(APPLICATIONINSIGHTS_PERFORMANCE_COUNTERS_FREQUENCY, config.performanceCountersConfiguration.collectionFrequencyInSec);
+
+        config.preview.metricIntervalSeconds =
+                (int) overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS, config.preview.metricIntervalSeconds);
 
         loadLogCaptureEnvVar(config);
         loadJmxMetricsEnvVar(config);

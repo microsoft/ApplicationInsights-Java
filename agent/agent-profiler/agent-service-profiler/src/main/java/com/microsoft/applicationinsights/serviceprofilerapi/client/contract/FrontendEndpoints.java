@@ -28,7 +28,7 @@ package com.microsoft.applicationinsights.serviceprofilerapi.client.contract;
  * <p>This class is intended for internal Java profiler use.
  */
 public class FrontendEndpoints {
-    public static final String PRODUCT_GLBOAL = "https://agent.azureserviceprofiler.net";
+    public static final String PRODUCT_GLOBAL = "https://agent.azureserviceprofiler.net";
     public static final String TEST_GLOBAL = "https://agent-test.azureserviceprofiler.net";
 
 }

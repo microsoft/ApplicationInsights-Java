@@ -65,7 +65,7 @@ public class ServiceProfilerServiceConfig {
     }
 
     public String getServiceProfilerFrontEndPoint() {
-        return serviceProfilerFrontEndPoint != null ? serviceProfilerFrontEndPoint : FrontendEndpoints.PRODUCT_GLBOAL;
+        return serviceProfilerFrontEndPoint != null ? serviceProfilerFrontEndPoint : FrontendEndpoints.PRODUCT_GLOBAL;
     }
 
     public boolean enabled() {

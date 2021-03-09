@@ -31,11 +31,11 @@ The agent-profiler subsystem provides a system for:
 Configuration of the profiler triggering settings, such as thresholds and profiling periods can be performed within the
 ApplicationInsights UI under the Performance, Profiler, Triggers UI.
 
-- APPLICATIONINSIGHTS_PROFILER_ENABLE: boolean (default false)
-    - Can be set as either an environment variable to enable the profiler.
+- APPLICATIONINSIGHTS_PROFILER_ENABLED: boolean (default false)
+    - Can be set as an environment variable to enable the profiler.
     - While profiling is in beta it must be actively enabled.
-- APPLICATIONINSIGHTS_PERFORMANCE_COUNTERS_FREQUENCY: int (default 60)
-    - Can be set as either an environment variable to enable the profiler.
+- APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS: int (default 60)
+    - Can be set as an environment variabl.
     - Period in seconds that performance counters are sampled. This directly impacts the frequency that
       Alerting thresholds are evaluated. Alerting thresholds by default apply an average over the last 2 min,
       at the default of 60 seconds this will be 2 samples.
@@ -43,9 +43,11 @@ ApplicationInsights UI under the Performance, Profiler, Triggers UI.
 Profiler may also be enabled via adding a config section to applicationinsights.json:
 
 ```
-    profilerConfiguration {
-        configPollPeriodSeconds: 60,
-        enabled: true
+    preview {
+        profiler {
+            configPollPeriodSeconds: 60,
+            enabled: true
+        }
     }
 ```
 

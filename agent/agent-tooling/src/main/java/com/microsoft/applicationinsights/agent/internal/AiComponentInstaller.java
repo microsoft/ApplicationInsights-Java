@@ -163,7 +163,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         ProfilerService.initialize(
                 appIdSupplier::get,
                 SystemInformation.INSTANCE.getProcessId(),
-                formServiceProfilerConfig(config.profilerConfiguration),
+                formServiceProfilerConfig(config.preview.profiler),
                 configuration.getRoleInstance(),
                 configuration.getInstrumentationKey(),
                 telemetryClient
@@ -284,9 +284,6 @@ public class AiComponentInstaller implements ComponentInstaller {
             jmxXmls.add(jmxXml);
         }
         xmlConfiguration.getPerformance().setJmxXmlElements(jmxXmls);
-        if (config.performanceCountersConfiguration.collectionFrequencyInSec != -1) {
-            xmlConfiguration.getPerformance().setCollectionFrequencyInSec((long) config.performanceCountersConfiguration.collectionFrequencyInSec);
-        }
 
         xmlConfiguration.getPerformance().setCollectionFrequencyInSec(config.preview.metricIntervalSeconds);
 

@@ -46,8 +46,6 @@ public class Configuration {
     public Proxy proxy = new Proxy();
     public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
     public PreviewConfiguration preview = new PreviewConfiguration();
-    public ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
-    public PerformanceCountersConfiguration performanceCountersConfiguration = new PerformanceCountersConfiguration();
 
     // this is just here to detect if using old format in order to give a helpful error message
     public Map<String, Object> instrumentationSettings;
@@ -159,6 +157,8 @@ public class Configuration {
         public LiveMetrics liveMetrics = new LiveMetrics();
         // config reload only supports connection string and sampling percentage
         public boolean configReloadEnabled;
+
+        public ProfilerConfiguration profiler = new ProfilerConfiguration();
     }
 
     public static class LiveMetrics {
@@ -426,9 +426,5 @@ public class Configuration {
         public int periodicRecordingIntervalSeconds = 60 * 60;
         public String serviceProfilerFrontEndPoint = null;
         public boolean enabled = false;
-    }
-
-    public static class PerformanceCountersConfiguration {
-        public double collectionFrequencyInSec = -1;
     }
 }
