@@ -7,6 +7,8 @@ package io.opentelemetry.instrumentation.testing;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.javaagent.testing.common.AgentTestingExporterAccess;
 import io.opentelemetry.javaagent.testing.common.AgentTestingMicrometerDelegateAccess;
 import io.opentelemetry.javaagent.testing.common.TestAgentListenerAccess;
@@ -53,6 +55,11 @@ public final class AgentTestRunner implements InstrumentationTestRunner {
   public void clearAllExportedData() {
     AgentTestingExporterAccess.reset();
     AgentTestingMicrometerDelegateAccess.reset();
+  }
+
+  @Override
+  public OpenTelemetry getOpenTelemetry() {
+    return GlobalOpenTelemetry.get();
   }
 
   @Override

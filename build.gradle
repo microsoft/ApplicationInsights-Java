@@ -37,7 +37,7 @@ allprojects {
   apply from: "$rootDir/gradle/dependencies.gradle"
   apply from: "$rootDir/gradle/util.gradle"
 
-  version = '0.17.0+ai.patch.1'
+  version = '1.0.0+ai.patch.1'
 }
 
 repositories {

@@ -5,8 +5,6 @@
 
 package io.opentelemetry.javaagent.instrumentation.spring.batch.step;
 
-import static io.opentelemetry.api.trace.SpanKind.INTERNAL;
-
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
 import org.springframework.batch.core.StepExecution;
@@ -21,11 +19,11 @@ public class StepExecutionTracer extends BaseTracer {
   public Context startSpan(StepExecution stepExecution) {
     String jobName = stepExecution.getJobExecution().getJobInstance().getJobName();
     String stepName = stepExecution.getStepName();
-    return startSpan("BatchJob " + jobName + "." + stepName, INTERNAL);
+    return startSpan("BatchJob " + jobName + "." + stepName);
   }
 
   @Override
   protected String getInstrumentationName() {
-    return "io.opentelemetry.javaagent.spring-batch";
+    return "io.opentelemetry.javaagent.spring-batch-3.0";
   }
 }

@@ -141,7 +141,7 @@ class SpringBootBasedTest extends HttpServerTest<ConfigurableApplicationContext>
   }
 
   @Override
-  boolean sendsBackAiTargetAppId() {
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
     true
   }
 
@@ -190,7 +190,9 @@ class SpringBootBasedTest extends HttpServerTest<ConfigurableApplicationContext>
       if (endpoint == PATH_PARAM) {
         name getContextPath() + "/path/{id}/param"
       } else if (endpoint == AUTH_ERROR) {
-        name "/error"
+        name getContextPath() + "/error"
+      } else if (endpoint == LOGIN) {
+        name 'HTTP POST'
       } else {
         name endpoint.resolvePath(address).path
       }

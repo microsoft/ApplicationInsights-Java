@@ -8,6 +8,7 @@ package io.opentelemetry.javaagent.instrumentation.liberty;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class LibertyHttpServerTracer extends Servlet3HttpServerTracer {
   private static final LibertyHttpServerTracer TRACER = new LibertyHttpServerTracer();
@@ -16,11 +17,8 @@ public class LibertyHttpServerTracer extends Servlet3HttpServerTracer {
     return TRACER;
   }
 
-  public Context startSpan(HttpServletRequest request) {
-    // using request method as span name as server isn't ready for calling request.getServletPath()
-    // span name will be updated a bit later when calling request.getServletPath() works
-    // see LibertyUpdateSpanAdvice
-    return startSpan(request, request, request, "HTTP " + request.getMethod());
+  public Context startSpan(HttpServletRequest request, HttpServletResponse response) {
+    return startSpan(request, response, "HTTP " + request.getMethod());
   }
 
   @Override
