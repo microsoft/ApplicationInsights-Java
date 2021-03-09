@@ -24,8 +24,8 @@ public final class ConfigInitializer {
   // configured, and so using slf4j here would initialize slf4j-simple before we have a chance to
   // configure the logging levels
 
-  private static final String CONFIGURATION_FILE_PROPERTY = "otel.javaagent.config";
-  private static final String CONFIGURATION_FILE_ENV_VAR = "OTEL_JAVAAGENT_CONFIG";
+  private static final String CONFIGURATION_FILE_PROPERTY = "otel.javaagent.configuration-file";
+  private static final String CONFIGURATION_FILE_ENV_VAR = "OTEL_JAVAAGENT_CONFIGURATION_FILE";
 
   public static void initialize() {
     Config.internalInitializeConfig(create(loadSpiConfiguration(), loadConfigurationFile()));

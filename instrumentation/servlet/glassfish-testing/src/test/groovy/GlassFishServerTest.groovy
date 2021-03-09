@@ -25,13 +25,8 @@ import org.glassfish.embeddable.archive.ScatteredArchive
 class GlassFishServerTest extends HttpServerTest<GlassFish> implements AgentTestTrait {
 
   @Override
-  URI buildAddress() {
-    return new URI("http://localhost:$port/$contextPath/")
-  }
-
-  @Override
   String getContextPath() {
-    "test-gf"
+    "/test-gf"
   }
 
   @Override
@@ -66,7 +61,7 @@ class GlassFishServerTest extends HttpServerTest<GlassFish> implements AgentTest
   }
 
   @Override
-  boolean sendsBackAiTargetAppId() {
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
     true
   }
 
@@ -86,5 +81,13 @@ class GlassFishServerTest extends HttpServerTest<GlassFish> implements AgentTest
         sendErrorSpan(trace, index, parent)
         break
     }
+  }
+
+  @Override
+  String expectedServerSpanName(ServerEndpoint endpoint) {
+    if (endpoint == NOT_FOUND) {
+      return getContextPath() + "/*"
+    }
+    return super.expectedServerSpanName(endpoint)
   }
 }

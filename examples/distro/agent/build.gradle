@@ -39,7 +39,8 @@ tasks {
     mergeServiceFiles {
       include("inst/META-INF/services/*")
     }
-    exclude("**/module-info.class")
+    exclude '**/module-info.class'
+    exclude 'META-INF/jandex.idx' // from caffeine
 
     relocatePackages(it)
 

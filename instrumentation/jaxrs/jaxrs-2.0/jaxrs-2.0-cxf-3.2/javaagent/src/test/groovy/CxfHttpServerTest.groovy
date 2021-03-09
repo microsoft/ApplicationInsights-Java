@@ -40,8 +40,7 @@ class CxfHttpServerTest extends JaxRsHttpServerTest<Server> {
   }
 
   @Override
-  boolean sendsBackAiTargetAppId() {
-    // jetty instrumentation doesn't support app id exchange
-    return false
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    return true
   }
 }

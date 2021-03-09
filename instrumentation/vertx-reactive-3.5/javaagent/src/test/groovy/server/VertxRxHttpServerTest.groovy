@@ -70,7 +70,7 @@ class VertxRxHttpServerTest extends HttpServerTest<Vertx> implements AgentTestTr
   }
 
   @Override
-  boolean sendsBackAiTargetAppId() {
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
     true
   }
 

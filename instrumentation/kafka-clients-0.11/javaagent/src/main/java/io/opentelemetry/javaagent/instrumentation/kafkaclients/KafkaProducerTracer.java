@@ -23,7 +23,7 @@ public class KafkaProducerTracer extends BaseTracer {
   }
 
   public Context startProducerSpan(Context parentContext, ProducerRecord<?, ?> record) {
-    SpanBuilder span = spanBuilder(spanNameOnProduce(record), PRODUCER).setParent(parentContext);
+    SpanBuilder span = spanBuilder(parentContext, spanNameOnProduce(record), PRODUCER);
     onProduce(span, record);
     return parentContext.with(span.startSpan());
   }
@@ -60,6 +60,6 @@ public class KafkaProducerTracer extends BaseTracer {
 
   @Override
   protected String getInstrumentationName() {
-    return "io.opentelemetry.javaagent.kafka-clients";
+    return "io.opentelemetry.javaagent.kafka-clients-0.11";
   }
 }

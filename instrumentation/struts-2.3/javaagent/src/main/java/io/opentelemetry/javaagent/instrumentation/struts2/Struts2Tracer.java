@@ -5,13 +5,17 @@
 
 package io.opentelemetry.javaagent.instrumentation.struts2;
 
+import static io.opentelemetry.api.trace.SpanKind.INTERNAL;
+
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.servlet.ServletContextPath;
+import io.opentelemetry.instrumentation.api.servlet.ServletSpanNaming;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
+import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 public class Struts2Tracer extends BaseTracer {
@@ -29,7 +33,7 @@ public class Struts2Tracer extends BaseTracer {
     String method = actionInvocation.getProxy().getMethod();
     String spanName = spanNameForMethod(actionClass, method);
 
-    SpanBuilder strutsSpan = tracer.spanBuilder(spanName).setParent(parentContext);
+    SpanBuilder strutsSpan = spanBuilder(parentContext, spanName, INTERNAL);
 
     strutsSpan.setAttribute(SemanticAttributes.CODE_NAMESPACE, actionClass.getName());
     if (method != null) {
@@ -41,7 +45,7 @@ public class Struts2Tracer extends BaseTracer {
 
   // Handle cases where action parameters are encoded into URL path
   public void updateServerSpanName(Context context, ActionProxy actionProxy) {
-    Span serverSpan = getCurrentServerSpan(context);
+    Span serverSpan = ServerSpan.fromContextOrNull(context);
     if (serverSpan == null) {
       return;
     }
@@ -63,20 +67,13 @@ public class Struts2Tracer extends BaseTracer {
       result = "/" + result;
     }
 
-    if (!result.contains("{")) {
-      // If there are no braces, then there are no path parameters encoded in
-      // the action name, so let's not change existing server span name, because
-      // path is good enough. Wildcards like * in action name may glue
-      // several endpoints into one action name, which we do not want -- we want
-      // normalize parameters, not actions.
-      return;
-    }
-
     serverSpan.updateName(ServletContextPath.prepend(context, result));
+    // prevent servlet integration from doing further updates to server span name
+    ServletSpanNaming.setServletUpdatedServerSpanName(context);
   }
 
   @Override
   protected String getInstrumentationName() {
-    return "io.opentelemetry.javaagent.struts";
+    return "io.opentelemetry.javaagent.struts-2.3";
   }
 }

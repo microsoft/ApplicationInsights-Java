@@ -108,7 +108,7 @@ class RatpackHttpServerTest extends HttpServerTest<EmbeddedApp> implements Agent
   }
 
   @Override
-  boolean sendsBackAiTargetAppId() {
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
     true
   }
 
