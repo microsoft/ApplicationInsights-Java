@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.serviceprofilerapi.client.contract;
 
+import com.azure.storage.blob.BlobUrlParts;
 import com.squareup.moshi.Json;
 
 /**
@@ -46,5 +47,9 @@ public class BlobAccessPass extends StampBlobUri {
             return uriWithSasToken;
         }
         return getBlobUri() + sasToken;
+    }
+
+    public String getBlobName() {
+        return BlobUrlParts.parse(getUriWithSasToken()).getBlobName();
     }
 }

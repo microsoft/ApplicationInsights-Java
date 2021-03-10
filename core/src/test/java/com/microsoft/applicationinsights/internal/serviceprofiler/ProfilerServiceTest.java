@@ -22,7 +22,6 @@ package com.microsoft.applicationinsights.internal.serviceprofiler;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.AsynchronousFileChannel;
 import java.nio.charset.UnsupportedCharsetException;
 import java.time.Duration;
 import java.time.Instant;
@@ -43,15 +42,15 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.Blob
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JFRService;
+import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.jfr.Recording;
-import io.reactivex.Single;
 import org.junit.*;
 import org.mockito.Mockito;
+import reactor.core.publisher.Mono;
 
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
@@ -190,8 +189,8 @@ public class ProfilerServiceTest {
                 appIdSupplier
         ) {
             @Override
-            protected Single<UploadFinishArgs> performUpload(UploadContext uploadContext, BlobAccessPass uploadPass, AsynchronousFileChannel fileChannel) {
-                return Single.just(new UploadFinishArgs(stampId, timeStamp));
+            protected Mono<UploadFinishArgs> performUpload(UploadContext uploadContext, BlobAccessPass uploadPass, File file) {
+                return Mono.just(new UploadFinishArgs(stampId, timeStamp));
             }
         };
     }

@@ -24,21 +24,20 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.channels.AsynchronousFileChannel;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.microsoft.applicationinsights.profileUploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
-import com.microsoft.applicationinsights.profileUploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
-import io.reactivex.Single;
 import org.junit.*;
+import reactor.core.publisher.Mono;
 
 public class ServiceProfilerUploaderTest {
     @Test
@@ -56,8 +55,8 @@ public class ServiceProfilerUploaderTest {
                 appId::toString
         ) {
             @Override
-            protected Single<UploadFinishArgs> performUpload(UploadContext uploadContext, BlobAccessPass uploadPass, AsynchronousFileChannel fileChannel) {
-                return Single.just(new UploadFinishArgs("a-stamp-id", "a-timestamp"));
+            protected Mono<UploadFinishArgs> performUpload(UploadContext uploadContext, BlobAccessPass uploadPass, File file) {
+                return Mono.just(new UploadFinishArgs("a-stamp-id", "a-timestamp"));
             }
         };
 

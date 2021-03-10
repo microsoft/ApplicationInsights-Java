@@ -25,19 +25,26 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.zip.GZIPOutputStream;
 
+import com.azure.core.http.rest.Response;
+import com.azure.storage.blob.BlobAsyncClient;
+import com.azure.storage.blob.BlobContainerAsyncClient;
+import com.azure.storage.blob.BlobContainerClientBuilder;
+import com.azure.storage.blob.models.BlobHttpHeaders;
+import com.azure.storage.blob.models.BlockBlobItem;
+import com.azure.storage.blob.models.ParallelTransferOptions;
+import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import com.microsoft.applicationinsights.profileUploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.profileUploader.UploadResult;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
@@ -49,19 +56,10 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.Time
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.OsPlatformProvider;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
-import com.microsoft.azure.storage.blob.AnonymousCredentials;
-import com.microsoft.azure.storage.blob.BlockBlobURL;
-import com.microsoft.azure.storage.blob.CommonRestResponse;
-import com.microsoft.azure.storage.blob.Metadata;
-import com.microsoft.azure.storage.blob.PipelineOptions;
-import com.microsoft.azure.storage.blob.TransferManager;
-import com.microsoft.azure.storage.blob.TransferManagerUploadToBlockBlobOptions;
-import com.microsoft.azure.storage.blob.models.BlobHTTPHeaders;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 /**
  * Uploads profiles to the service profiler endpoint
@@ -69,7 +67,7 @@ import org.slf4j.LoggerFactory;
 public class ServiceProfilerUploader {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProfilerUploader.class);
     private static final Random RANDOM = new Random();
-    private static final int UPLOAD_BLOCK_LENGTH = 8 * 1024 * 1024;
+    private static final long UPLOAD_BLOCK_LENGTH = 8 * 1024 * 1024;
 
     private final ServiceProfilerClientV2 serviceProfilerClient;
     private final String machineName;
@@ -90,7 +88,7 @@ public class ServiceProfilerUploader {
     /**
      * Upload a given JFR file and return associated metadata of the uploaded profile
      */
-    public Single<UploadResult> uploadJfrFile(
+    public Mono<UploadResult> uploadJfrFile(
             String triggerName,
             long timestamp,
             File file,
@@ -99,7 +97,7 @@ public class ServiceProfilerUploader {
         String appId = appIdSupplier.get();
         if (appId == null || appId.isEmpty()) {
             LOGGER.error("Failed to upload due to lack of appId");
-            return Single.error(new UploadFailedException("Failed to upload due to lack of appId"));
+            return Mono.error(new UploadFailedException("Failed to upload due to lack of appId"));
         }
         UUID profileId = UUID.randomUUID();
 
@@ -146,7 +144,7 @@ public class ServiceProfilerUploader {
     /**
      * Upload profile to service profiler
      */
-    public Single<UploadFinishArgs> uploadTrace(UploadContext uploadContext) {
+    public Mono<UploadFinishArgs> uploadTrace(UploadContext uploadContext) {
 
         File zippedTraceFile = null;
 
@@ -157,54 +155,50 @@ public class ServiceProfilerUploader {
             // Obtain permission to upload profile
             BlobAccessPass uploadPass = serviceProfilerClient.getUploadAccess(uploadContext.getProfileId());
             if (uploadPass == null) {
-                close(zippedTraceFile, null);
-                return Single.error(new UploadFailedException("Failed to obtain upload pass"));
+                close(zippedTraceFile);
+                return Mono.error(new UploadFailedException("Failed to obtain upload pass"));
             }
 
-            AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(zippedTraceFile.toPath());
-            File finalZippedTraceFile = zippedTraceFile;
-
             // perform upload then finally close file
-            return performUpload(uploadContext, uploadPass, fileChannel)
-                    .doFinally(() -> close(finalZippedTraceFile, fileChannel));
+            File finalZippedTraceFile = zippedTraceFile;
+            return performUpload(uploadContext, uploadPass, zippedTraceFile)
+                    .doFinally((signal) -> close(finalZippedTraceFile));
         } catch (Exception e) {
             LOGGER.error("Upload of the trace file failed", e);
-            close(zippedTraceFile, null);
-            return Single.error(new UploadFailedException(e));
+            close(zippedTraceFile);
+            return Mono.error(new UploadFailedException(e));
         }
     }
 
-    protected Single<UploadFinishArgs> performUpload(UploadContext uploadContext, BlobAccessPass uploadPass, AsynchronousFileChannel fileChannel) throws IOException {
-        return uploadFile(uploadContext, uploadPass, fileChannel)
-                .map(response -> reportUploadComplete(uploadContext.getProfileId(), response));
-    }
-
-    protected Single<CommonRestResponse> uploadFile(UploadContext uploadContext, BlobAccessPass uploadPass, AsynchronousFileChannel fileChannel)
-            throws IOException {
-        LOGGER.debug("SAS token: {}", uploadPass.getUriWithSasToken());
-        URL sasUrl = new URL(uploadPass.getUriWithSasToken());
-        return uploadToSasLink(sasUrl, uploadContext, fileChannel);
+    protected Mono<UploadFinishArgs> performUpload(UploadContext uploadContext, BlobAccessPass uploadPass, File file) throws IOException {
+        return uploadToSasLink(uploadPass, uploadContext, file)
+                .flatMap(response -> {
+                    try {
+                        return Mono.just(reportUploadComplete(uploadContext.getProfileId(), response));
+                    } catch (UploadFailedException e) {
+                        return Mono.error(e);
+                    }
+                });
     }
 
     /**
      * Upload the given file to a blob storage defined by a sas link
      */
-    private Single<CommonRestResponse> uploadToSasLink(URL sasUrl, UploadContext uploadContext, AsynchronousFileChannel fileChannel) throws IOException {
-        BlockBlobURL blobURL = new BlockBlobURL(sasUrl,
-                BlockBlobURL.createPipeline(new AnonymousCredentials(), new PipelineOptions()));
+    private Mono<Response<BlockBlobItem>> uploadToSasLink(BlobAccessPass uploadPass, UploadContext uploadContext, File file) throws MalformedURLException {
+        URL sasUrl = new URL(uploadPass.getUriWithSasToken());
+        LOGGER.debug("SAS token: {}", uploadPass.getUriWithSasToken());
 
-        TransferManagerUploadToBlockBlobOptions options = createBlockBlobOptions(uploadContext);
+        BlobUploadFromFileOptions options = createBlockBlobOptions(file, uploadContext);
+        BlobContainerAsyncClient blobContainerClient = new BlobContainerClientBuilder().endpoint(sasUrl.toString()).buildAsyncClient();
 
-        return TransferManager
-                .uploadFileToBlockBlob(fileChannel, blobURL, UPLOAD_BLOCK_LENGTH, null, options)
-                .doFinally(() -> LOGGER.info("upload done"));
+        BlobAsyncClient blobClient = blobContainerClient.getBlobAsyncClient(uploadPass.getBlobName());
+        return blobClient
+                .uploadFromFileWithResponse(options)
+                .doFinally((done) -> LOGGER.info("upload done"));
     }
 
-    private void close(File zippedTraceFile, AsynchronousFileChannel fileChannel) {
+    private void close(File zippedTraceFile) {
         try {
-            if (fileChannel != null) {
-                fileChannel.close();
-            }
             deletePathRecursive(zippedTraceFile);
         } catch (Exception e) {
             LOGGER.warn("An error occurred when closing the zipped trace file", e);
@@ -214,13 +208,13 @@ public class ServiceProfilerUploader {
     /**
      * Report the success of an upload or throw an exception
      */
-    protected UploadFinishArgs reportUploadComplete(UUID profileId, CommonRestResponse response) throws UploadFailedException {
-        int statusCode = response.statusCode();
+    protected UploadFinishArgs reportUploadComplete(UUID profileId, Response<BlockBlobItem> response) throws UploadFailedException {
+        int statusCode = response.getStatusCode();
         // Success 2xx
         if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
             ArtifactAcceptedResponse uploadResponse;
             try {
-                uploadResponse = serviceProfilerClient.reportUploadFinish(profileId, response.eTag());
+                uploadResponse = serviceProfilerClient.reportUploadFinish(profileId, response.getValue().getETag());
             } catch (URISyntaxException | ClientClosedException | IOException e) {
                 throw new UploadFailedException(e);
             }
@@ -233,16 +227,13 @@ public class ServiceProfilerUploader {
                 throw new UploadFailedException("Report upoad finish failed");
             }
         } else {
-            LOGGER.error("Upload of the trace file to block BLOB failed: {} {}", statusCode, response.response().body());
+            LOGGER.error("Upload of the trace file to block BLOB failed: {}", statusCode);
             throw new UploadFailedException("Upload of the trace file to block BLOB failed " + statusCode);
         }
     }
 
-    private TransferManagerUploadToBlockBlobOptions createBlockBlobOptions(UploadContext uploadContext) {
-        BlobHTTPHeaders httpHeaders = new BlobHTTPHeaders()
-                .withBlobContentEncoding("gzip");
-
-        Metadata metadata = new Metadata();
+    private BlobUploadFromFileOptions createBlockBlobOptions(File file, UploadContext uploadContext) {
+        HashMap<String, String> metadata = new HashMap<>();
 
         metadata.put(BlobMetadataConstants.DATA_CUBE_META_NAME, uploadContext.getDataCube().toString().toLowerCase());
         metadata.put(BlobMetadataConstants.MACHINE_NAME_META_NAME, uploadContext.getMachineName());
@@ -251,8 +242,14 @@ public class ServiceProfilerUploader {
         metadata.put(BlobMetadataConstants.OS_PLATFORM_META_NAME, OsPlatformProvider.getOSPlatformDescription());
         metadata.put(BlobMetadataConstants.TRACE_FILE_FORMAT_META_NAME, "Netperf");
 
-        return new TransferManagerUploadToBlockBlobOptions(null,
-                httpHeaders, metadata, null, null);
+        String fullFilePath = file
+                .getAbsoluteFile()
+                .toString();
+
+        return new BlobUploadFromFileOptions(fullFilePath)
+                .setHeaders(new BlobHttpHeaders().setContentEncoding("gzip"))
+                .setMetadata(metadata)
+                .setParallelTransferOptions(new ParallelTransferOptions().setBlockSizeLong(UPLOAD_BLOCK_LENGTH));
     }
 
     /**

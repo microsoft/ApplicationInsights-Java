@@ -21,6 +21,7 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.profiler;
 
 import java.io.File;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
@@ -28,7 +29,6 @@ import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profileUploader.UploadResult;
 import com.microsoft.applicationinsights.profiler.ProfileHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
-import io.reactivex.functions.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +67,7 @@ public class JfrUploadService implements ProfileHandler {
                         e -> LOGGER.error("Failed to upload file", e));
     }
 
-    private Consumer<UploadResult> onUploadComplete() {
+    private Consumer<? super UploadResult> onUploadComplete() {
         return done -> {
             uploadCompleteHandler.notify(done);
             LOGGER.info("Uploading of profile complete");
