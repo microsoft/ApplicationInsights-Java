@@ -18,6 +18,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.List;
@@ -61,7 +62,7 @@ public class AzureFunctionsInstrumentationModule extends InstrumentationModule {
       @Advice.OnMethodEnter(suppress = Throwable.class)
       public static Scope methodEnter(@Advice.Argument(0) final Object request)
           throws ReflectiveOperationException {
-        AzureFunctionsInstrumentationHelper.lazilySetConnectionString();
+        AiLazyConfiguration.lazyLoad();
 
         final Object traceContext =
             InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
