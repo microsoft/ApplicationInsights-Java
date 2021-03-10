@@ -82,21 +82,15 @@ public class ConfigurationBuilderTest {
     }
 
     public void testGetJsonEncodingExceptionMessage() {
-        String pathNull = ConfigurationBuilder.getJsonEncodingExceptionMessage("path/to/file",null);
-        String pathEmpty = ConfigurationBuilder.getJsonEncodingExceptionMessage("path/to/file","");
-        String pathValid = ConfigurationBuilder.getJsonEncodingExceptionMessage("path/to/file","has a malformed JSON at path $.role.");
-        String pathInvalidAndNull = ConfigurationBuilder.getJsonEncodingExceptionMessage("path/to/file","has a malformed JSON at path $.null.[0]");
-        String pathInvalid = ConfigurationBuilder.getJsonEncodingExceptionMessage("path/to/file","has a malformed JSON at path $.");
+        String pathNull = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file",null);
+        String pathEmpty = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file","");
+        String pathValid = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file","has a malformed JSON at path $.role.");
+        String pathInvalidAndNull = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file","has a malformed JSON at path $.null.[0]");
+        String pathInvalid = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file","has a malformed JSON at path $.");
         assertEquals("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n",pathNull);
         assertEquals("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n",pathEmpty);
         assertEquals("Application Insights Java agent's configuration file path/to/file has a malformed JSON at path $.role.\n",pathValid);
         assertEquals("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n",pathInvalid);
         assertEquals("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n",pathInvalidAndNull);
     }
-
-
-
-
-
-
 }
