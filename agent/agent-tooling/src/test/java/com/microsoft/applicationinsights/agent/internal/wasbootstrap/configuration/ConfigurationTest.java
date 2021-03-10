@@ -71,11 +71,27 @@ public class ConfigurationTest {
 
     @Test
     public void shouldParseFromEnvVar() throws IOException {
-        envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", "{\"connectionString\": \"InstrumentationKey=55555555-5555-5555-5555-555555555555\"}");
+        String jmxMetricsJson = "[{" +
+                "\"objectName\": \"java.lang:type=ClassLoading\"," +
+                "\"attribute\": \"LoadedClassCount\"," +
+                "\"display\": \"Loaded Class Count from EnvVar\"}," +
+                "{\"objectName\": \"java.lang:type=MemoryPool," +
+                "name=Code Cache\",\"attribute\": \"Usage.used\"," +
+                "\"display\": \"Code Cache Used from EnvVar\"}]";
+        String contentJson = "{\"connectionString\": \"InstrumentationKey=55555555-5555-5555-5555-555555555555\"," +
+                " \"jmxMetrics\": " + jmxMetricsJson + "}";
+        envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
 
         Configuration configuration = ConfigurationBuilder.create(Paths.get("."));
 
         assertEquals("InstrumentationKey=55555555-5555-5555-5555-555555555555", configuration.connectionString);
+
+        List<JmxMetric> jmxMetrics = parseJmxMetricsJson(jmxMetricsJson);
+        assertEquals(2, jmxMetrics.size());
+        assertEquals(3, configuration.jmxMetrics.size());
+        assertEquals(jmxMetrics.get(0).name, configuration.jmxMetrics.get(0).name); // class count is overridden by the env var
+        assertEquals(jmxMetrics.get(1).name, configuration.jmxMetrics.get(1).name); // code cache is overridden by the env var
+        assertEquals(configuration.jmxMetrics.get(2).name, "Current Thread Count");
     }
 
     @Test
