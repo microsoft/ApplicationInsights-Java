@@ -42,7 +42,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,12 +67,6 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
     private final CloseableHttpClient httpClient;
 
     private boolean closed;
-
-    public ProfilerFrontendClientV2(String hostUrl, String instrumentationKey) {
-        this(hostUrl, instrumentationKey, HttpClientBuilder
-                .create()
-                .build());
-    }
 
     public ProfilerFrontendClientV2(String hostUrl, String instrumentationKey, CloseableHttpClient httpClient) {
         this.hostUrl = hostUrl;

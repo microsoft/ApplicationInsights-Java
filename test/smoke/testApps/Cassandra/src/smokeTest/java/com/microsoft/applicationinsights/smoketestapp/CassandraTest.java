@@ -42,10 +42,10 @@ public class CassandraTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
         assertEquals("cassandra", rdd.getType());
         assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
-        assertEquals("select * from test.test", rdd.getName());
+        assertEquals("SELECT test", rdd.getName());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "HTTP GET");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Cassandra/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

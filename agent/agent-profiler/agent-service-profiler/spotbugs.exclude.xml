@@ -20,7 +20,7 @@
                 <Method name="uploadToCustomStore" />
             </And>
             <And>
-                <Class name="com.microsoft.applicationinsights.serviceprofilerapi.profiler.jfr.JfrUploadService" />
+                <Class name="com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrUploadService" />
                 <Method name="receive" />
             </And>
             <And>

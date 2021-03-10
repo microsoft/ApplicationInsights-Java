@@ -31,7 +31,7 @@ public class CassandraDisabledTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("HTTP GET", rd.getName());
+        assertEquals("/Cassandra/*", rd.getName());
         assertEquals("200", rd.getResponseCode());
 
         // sleep a bit and make sure no cassandra dependencies are reported

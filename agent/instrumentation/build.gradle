@@ -8,7 +8,7 @@ repositories {
     mavenLocal()
 }
 
-def instrumentationVersion = '0.17.0+ai.patch.1-alpha'
+def instrumentationVersion = '1.0.0+ai.patch.1-alpha'
 
 dependencies {
     compile project(':agent:agent-tooling')
@@ -21,6 +21,7 @@ dependencies {
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-cassandra-3.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-cassandra-4.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-classloaders', version: instrumentationVersion
+    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-eclipse-osgi-3.6', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-executors', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-grpc-1.5', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-http-url-connection', version: instrumentationVersion
