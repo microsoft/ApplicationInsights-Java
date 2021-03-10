@@ -16,5 +16,5 @@ dependencies {
     compile group: 'org.springframework.kafka', name: 'spring-kafka', version: '2.3.1.RELEASE'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
 
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
 }
