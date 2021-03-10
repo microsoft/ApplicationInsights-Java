@@ -152,13 +152,13 @@ public class ConfigurationTest {
         assertEquals(ProcessorType.attribute, attributesExtractConfig.type);
         assertEquals("attributes/extract", attributesExtractConfig.processorName);
         assertEquals(1, attributesExtractConfig.actions.size());
-        assertEquals(ProcessorActionType.extract, attributesExtractConfig.actions.get(0).action);
-        assertEquals("http.url", attributesExtractConfig.actions.get(0).key);
-        assertEquals(1, attributesExtractConfig.actions.size());
+        assertEquals(ProcessorActionType.extract,attributesExtractConfig.actions.get(0).action);
+        assertEquals("http.url",attributesExtractConfig.actions.get(0).key);
+        assertEquals(1,attributesExtractConfig.actions.size());
         assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute);
         assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute.extractAttributePattern);
-        assertEquals(4, attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.size());
-        assertEquals("httpProtocol", attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.get(0));
+        assertEquals(4,attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.size());
+        assertEquals("httpProtocol",attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.get(0));
     }
 
     @Test
@@ -278,6 +278,23 @@ public class ConfigurationTest {
         ConfigurationBuilder.overlayEnvVars(configuration);
 
         assertEquals("TRACE", configuration.instrumentation.logging.level);
+    }
+
+    @Test
+    public void shouldOverrideJmxMetrics() throws IOException {
+        String jmxMetricsJson = "[{'objectName': 'java.lang:type=ClassLoading','attribute': 'LoadedClassCount','display': 'Loaded Class Count from EnvVar'}," +
+                "{'objectName': 'java.lang:type=MemoryPool,name=Code Cache','attribute': 'Usage.used','display': 'Code Cache Used from EnvVar'}]";
+        envVars.set("APPLICATIONINSIGHTS_JMX_METRICS", jmxMetricsJson);
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        List<JmxMetric> jmxMetrics = parseJmxMetricsJson(jmxMetricsJson);
+        assertEquals(2, jmxMetrics.size());
+        assertEquals(3, configuration.jmxMetrics.size());
+        assertEquals(jmxMetrics.get(0).name, configuration.jmxMetrics.get(0).name); // class count is overridden by the env var
+        assertEquals(jmxMetrics.get(1).name, configuration.jmxMetrics.get(1).name); // code cache is overridden by the env var
+        assertEquals(configuration.jmxMetrics.get(2).name, "Current Thread Count");
     }
 
     @Test

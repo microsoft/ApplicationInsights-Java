@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -36,7 +37,9 @@ import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonEncodingException;
+import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 import okio.Buffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +57,7 @@ public class ConfigurationBuilder {
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
 
+    private static final String APPLICATIONINSIGHTS_JMX_METRICS = "APPLICATIONINSIGHTS_JMX_METRICS";
     private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE = "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
     private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL = "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL";
@@ -84,6 +88,21 @@ public class ConfigurationBuilder {
         String loggingEnvVar = getEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL);
         if (loggingEnvVar != null) {
             config.instrumentation.logging.level = loggingEnvVar;
+        }
+    }
+
+    // TODO deprecate this
+    private static void loadJmxMetricsEnvVar(Configuration config) throws IOException {
+        String jmxMetricsEnvVarJson = getEnvVar(APPLICATIONINSIGHTS_JMX_METRICS);
+
+        // JmxMetrics env variable has higher precedence over jmxMetrics config from applicationinsights.json
+        if (jmxMetricsEnvVarJson != null && !jmxMetricsEnvVarJson.isEmpty()) {
+            Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
+            Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
+            JsonReader reader = JsonReader.of(new Buffer().writeUtf8(jmxMetricsEnvVarJson));
+            reader.setLenient(true);
+            JsonAdapter<List<JmxMetric>> jsonAdapter = moshi.adapter(listOfJmxMetrics);
+            config.jmxMetrics = jsonAdapter.fromJson(reader);
         }
     }
 
@@ -203,6 +222,7 @@ public class ConfigurationBuilder {
         config.selfDiagnostics.level = overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL, config.selfDiagnostics.level);
 
         loadLogCaptureEnvVar(config);
+        loadJmxMetricsEnvVar(config);
 
         addDefaultJmxMetricsIfNotPresent(config);
 
