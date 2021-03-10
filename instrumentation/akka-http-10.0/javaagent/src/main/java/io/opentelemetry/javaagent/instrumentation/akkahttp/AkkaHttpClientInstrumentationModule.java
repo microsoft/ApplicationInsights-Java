@@ -17,6 +17,7 @@ import akka.http.scaladsl.model.HttpResponse;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Collections;
@@ -144,9 +145,7 @@ public class AkkaHttpClientInstrumentationModule extends InstrumentationModule {
     }
   }
 
-  // not sure why, but Java 8 compiler needs TextMapSetter to be fully qualified here
-  public static class InjectAdapter
-      implements io.opentelemetry.context.propagation.TextMapSetter<AkkaHttpHeaders> {
+  public static class InjectAdapter implements TextMapSetter<AkkaHttpHeaders> {
 
     public static final InjectAdapter SETTER = new InjectAdapter();
 
