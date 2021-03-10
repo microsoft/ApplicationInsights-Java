@@ -290,6 +290,10 @@ public class ConfigurationBuilder {
         ConfigurationException(String message, Exception e) {
             super(message, e);
         }
+
+        ConfigurationException(String message) {
+            super(message);
+        }
     }
 
     public static class ConfigurationWarnMessage {
@@ -339,15 +343,15 @@ public class ConfigurationBuilder {
         Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
         JsonAdapter<Configuration> jsonAdapter = strict ? moshi.adapter(Configuration.class).failOnUnknown() :
                 moshi.adapter(Configuration.class);
+        Configuration configuration;
         try {
-            return jsonAdapter.fromJson(content);
+            configuration = jsonAdapter.fromJson(content);
         } catch(JsonDataException ex) {
             if(strict) {
                 // Try extracting the configuration without failOnUnknown
-                Configuration configuration = getConfigurationFromEnvVar(content, false);
+                configuration = getConfigurationFromEnvVar(content, false);
                 // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
                 configurationWarnMessages.add(new ConfigurationWarnMessage(getJsonEncodingExceptionMessageForEnvVar(ex.getMessage())));
-                return configuration;
             } else {
                 throw new FriendlyException(getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()),
                         "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
@@ -358,6 +362,13 @@ public class ConfigurationBuilder {
         } catch(Exception e) {
             throw new ConfigurationException("Error parsing configuration from env var: " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT, e);
         }
+
+        if (configuration.connectionString != null) {
+            throw new ConfigurationException("\"connectionString\" attribute is not supported inside of "
+                    + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT + ", please use "
+                    + APPLICATIONINSIGHTS_CONNECTION_STRING + " to specify the connection string");
+        }
+        return configuration;
     }
 
     static String getJsonEncodingExceptionMessageForFile(Path configPath, String message) {
