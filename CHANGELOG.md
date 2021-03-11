@@ -1,5 +1,34 @@
 # CHANGELOG
 
+# Version 3.0.3-BETA
+* Extra attributes in `applicationinsights.json` (e.g. typos) are logged as warnings at startup
+  [#1459](https://github.com/microsoft/ApplicationInsights-Java/issues/1459)
+* Better 2.x SDK interop
+  [#1454](https://github.com/microsoft/ApplicationInsights-Java/issues/1454)
+* Fix for ClassNotFoundException when deploying some JBoss ear files
+  [#1465](https://github.com/microsoft/ApplicationInsights-Java/issues/1465)
+* Fix configuration for disabling spring boot actuator metrics
+  [#1478](https://github.com/microsoft/ApplicationInsights-Java/issues/1478)
+* Add env vars for disabling instrumentation
+  [#1495](https://github.com/microsoft/ApplicationInsights-Java/issues/1495)
+* Removed the undocumented micrometer reportingIntervalSeconds,
+  and instead, added preview configuration `metricIntervalSeconds` that controls all metrics:
+  [#1507](https://github.com/microsoft/ApplicationInsights-Java/pull/1507)
+* Changed undocumented reload of connection string and sampling percentage to be preview and opt-in
+  [#1507](https://github.com/microsoft/ApplicationInsights-Java/pull/1507)
+* Additional reactor-netty and kotlin coroutine instrumentation
+  [#1511](https://github.com/microsoft/ApplicationInsights-Java/pull/1511)
+* Improved error messages for network connectivity issues
+  [#1483](https://github.com/microsoft/ApplicationInsights-Java/pull/1483)
+* Support for roles in Live metrics
+  [#1510](https://github.com/microsoft/ApplicationInsights-Java/pull/1510)
+* Fixed role name on Azure Functions
+  [#1526](https://github.com/microsoft/ApplicationInsights-Java/pull/1526)
+* Populate client IP
+  [#1538](https://github.com/microsoft/ApplicationInsights-Java/pull/1538)
+* Support for role name in Azure Functions consumption plan
+  [#1537](https://github.com/microsoft/ApplicationInsights-Java/pull/1537)
+
 # Version 3.0.2 GA
 * Fix App Services logback parser exceptions.
 * Log instead of throwing exception on unbridged API [#1442](https://github.com/microsoft/ApplicationInsights-Java/issues/1442)
