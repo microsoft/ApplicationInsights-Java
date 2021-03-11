@@ -78,14 +78,14 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
             DelegatingPropagator.getInstance().setUpStandardDelegate();
             // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
             DelegatingSampler.getInstance().setAlwaysOnDelegate();
-            logger.debug("Set connection string lazily for the Azure Function Consumption Plan.");
+            logger.info("Set connection string {} lazily for the Azure Function Consumption Plan.", value);
         }
     }
 
     static void setWebsiteSiteName(String websiteSiteName) {
         if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
             TelemetryConfiguration.getActive().setRoleName(websiteSiteName);
-            logger.debug("Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.", websiteSiteName);
+            logger.info("Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.", websiteSiteName);
         }
     }
 
