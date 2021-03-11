@@ -26,6 +26,8 @@
   [#1526](https://github.com/microsoft/ApplicationInsights-Java/pull/1526)
 * Populate client IP
   [#1538](https://github.com/microsoft/ApplicationInsights-Java/pull/1538)
+* Support for role name in Azure Functions consumption plan
+  [#1537](https://github.com/microsoft/ApplicationInsights-Java/pull/1537)
 
 # Version 3.0.2 GA
 * Fix App Services logback parser exceptions.
