@@ -14,10 +14,10 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
-      - name: Set up JDK 8 for running Gradle
+      - name: Set up JDK 11 for running Gradle
         uses: actions/setup-java@v1
         with:
-          java-version: 8
+          java-version: 11
       - id: set-matrix
         # "grep -v skipWinNative" is used to skip the warning message "Skipping build of :etw:native because skipWinNative=true"
         run: echo "::set-output name=matrix::{\"module\":[\"$(./gradlew -q :test:smoke:testApps:listTestApps | grep -v skipWinNative | xargs echo | sed 's/ /","/g')\"]}"
@@ -31,10 +31,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: setup-test-java
-        name: Set up JDK 8 for running Gradle
+        name: Set up JDK 11 for running Gradle
         uses: actions/setup-java@v1
         with:
-          java-version: 8
+          java-version: 11
       - name: Build otel-fork
         run: |
           git submodule init
