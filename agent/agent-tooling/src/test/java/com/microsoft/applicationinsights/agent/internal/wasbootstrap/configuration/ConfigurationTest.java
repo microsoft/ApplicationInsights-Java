@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Paths;
 import java.util.List;
 
 import com.google.common.base.Charsets;
@@ -13,6 +14,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorMatchType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonReader;
@@ -66,6 +68,44 @@ public class ConfigurationTest {
         assertEquals("/var/log/applicationinsights/abc.log", configuration.selfDiagnostics.file.path);
         assertEquals(10, configuration.selfDiagnostics.file.maxSizeMb);
         assertEquals(2, configuration.selfDiagnostics.file.maxHistory);
+    }
+
+    @Test
+    public void shouldParseFromEnvVar() throws IOException {
+        String jmxMetricsJson = "[{" +
+                "\"objectName\":\"java.lang:type=ClassLoading\"," +
+                "\"attribute\":\"LoadedClassCount\"," +
+                "\"display\":\"Loaded Class Count from EnvVar\"}," +
+                "{\"objectName\":\"java.lang:type=MemoryPool," +
+                "name=Code Cache\",\"attribute\":\"Usage.used\"," +
+                "\"display\":\"Code Cache Used from EnvVar\"}]";
+        String contentJson = "{\"jmxMetrics\": " + jmxMetricsJson + "," +
+                "\"role\":{" +
+                "\"name\":\"testrole\"" +
+                "}}";
+        envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
+        envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=11111111-1111-1111-1111-111111111111");
+
+        Configuration configuration = ConfigurationBuilder.create(Paths.get("."));
+
+        assertEquals("InstrumentationKey=11111111-1111-1111-1111-111111111111", configuration.connectionString);
+        assertEquals("testrole", configuration.role.name);
+
+        List<JmxMetric> jmxMetrics = parseJmxMetricsJson(jmxMetricsJson);
+        assertEquals(2, jmxMetrics.size());
+        assertEquals(3, configuration.jmxMetrics.size());
+        assertEquals(jmxMetrics.get(0).name, configuration.jmxMetrics.get(0).name); // class count is overridden by the env var
+        assertEquals(jmxMetrics.get(1).name, configuration.jmxMetrics.get(1).name); // code cache is overridden by the env var
+        assertEquals(configuration.jmxMetrics.get(2).name, "Current Thread Count");
+    }
+
+    @Test(expected = ConfigurationException.class)
+    public void shouldThrowFromEnvVarIfEmbeddedConnectionString() throws IOException {
+        String contentJson = "{\"connectionString\":\"InstrumentationKey=55555555-5555-5555-5555-555555555555\"," +
+                "\"role\":{\"name\":\"testrole\"}}";
+        envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
+
+        ConfigurationBuilder.create(Paths.get("."));
     }
 
     @Test
