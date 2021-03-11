@@ -37,7 +37,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
