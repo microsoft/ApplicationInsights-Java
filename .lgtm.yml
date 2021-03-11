@@ -1,6 +1,11 @@
+path_classifiers:
+  submodule:
+    - otel
 extraction:
-    java:
-        before_index:
-            - ./otel/gradlew --project-dir ./otel publishToMavenLocal
-        index:
-            java_version: 7
+  java:
+    index:
+      java_version: 11
+      build_command: |
+        # needs Java 11, otherwise this could be done in before_index
+        ./otel/gradlew --project-dir ./otel --no-daemon publishToMavenLocal
+        ./gradlew --no-daemon testClasses

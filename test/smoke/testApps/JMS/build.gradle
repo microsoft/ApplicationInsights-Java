@@ -15,5 +15,5 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-activemq', version: '2.1.7.RELEASE'
 
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
 }

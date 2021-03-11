@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import io.opentelemetry.instrumentation.api.aiappid.AiAppId;
+import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
