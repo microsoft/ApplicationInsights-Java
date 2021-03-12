@@ -8,7 +8,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile 'org.mockito:mockito-core:1.10.19'
 
-    compile(project(":agent:agent-profiler:agent-alerting"))
+    compile(project(":agent:agent-profiler:agent-alerting-api"))
     compile(project(":agent:agent-profiler:agent-profiler-api"))
     compile group: 'com.microsoft.jfr', name: 'jfr-streaming', version: '1.0.0'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'

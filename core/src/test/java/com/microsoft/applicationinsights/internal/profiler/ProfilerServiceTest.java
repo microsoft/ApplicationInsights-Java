@@ -49,7 +49,7 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.Arti
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
-import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JFRService;
+import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
@@ -118,7 +118,7 @@ public class ProfilerServiceTest {
 
         ServiceProfilerUploader serviceProfilerUploader = getServiceProfilerJFRUpload(clientV2, appIdSupplier);
 
-        JFRService jfrService = getJfrDaemon(profileInvoked);
+        JfrProfiler jfrProfiler = getJfrDaemon(profileInvoked);
 
         Object monitor = new Object();
 
@@ -152,7 +152,7 @@ public class ProfilerServiceTest {
         service.set(new JfrProfilerService(
                 () -> appId,
                 new ServiceProfilerServiceConfig(1, 2, 3, "localhost", true),
-                jfrService,
+                jfrProfiler,
                 ProfilerServiceInitializer.updateAlertingConfig(alertService),
                 ProfilerServiceInitializer.sendServiceProfilerIndex(client),
                 clientV2,
@@ -202,8 +202,8 @@ public class ProfilerServiceTest {
         return service.get();
     }
 
-    private JFRService getJfrDaemon(AtomicBoolean profileInvoked) {
-        return new JFRService(new ServiceProfilerServiceConfig(1, 2, 3, "localhost", true)) {
+    private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) {
+        return new JfrProfiler(new ServiceProfilerServiceConfig(1, 2, 3, "localhost", true)) {
             @Override protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
                 profileInvoked.set(true);
                 Recording recording = Mockito.mock(Recording.class);

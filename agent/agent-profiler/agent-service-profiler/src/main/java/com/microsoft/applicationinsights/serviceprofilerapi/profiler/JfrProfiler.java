@@ -53,8 +53,8 @@ import org.slf4j.LoggerFactory;
  * - Instantiates FlightRecorder subsystem
  * - Creates profiles on demand
  */
-public class JFRService implements ProfilerConfigurationHandler, Profiler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JFRService.class);
+public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JfrProfiler.class);
 
     // service execution context
     private ScheduledExecutorService scheduledExecutorService;
@@ -68,7 +68,10 @@ public class JFRService implements ProfilerConfigurationHandler, Profiler {
 
     private AlertConfiguration periodicConfig;
 
-    public JFRService(ServiceProfilerServiceConfig configuration) {
+    private final Object activeRecordingLock = new Object();
+    private Recording activeRecording = null;
+
+    public JfrProfiler(ServiceProfilerServiceConfig configuration) {
         periodicConfig = new AlertConfiguration(
                 AlertMetricType.PERIODIC,
                 false,
@@ -119,6 +122,18 @@ public class JFRService implements ProfilerConfigurationHandler, Profiler {
         executeProfile(duration, uploadNewRecording(alertBreach, recordingStart));
     }
 
+    private Recording startRecording() {
+        synchronized (activeRecordingLock) {
+            if (activeRecording != null) {
+                LOGGER.warn("Alert received, however a profile is already in progress, ignoring request.");
+                return null;
+            }
+
+            activeRecording = flightRecorderConnection.newRecording(recordingOptions, recordingConfiguration);
+            return activeRecording;
+        }
+    }
+
     /**
      * Perform a profile and notify the handler
      */
@@ -130,13 +145,18 @@ public class JFRService implements ProfilerConfigurationHandler, Profiler {
             LOGGER.error("Flight recorder not initialised");
             return;
         }
-        Recording recording = flightRecorderConnection.newRecording(recordingOptions, recordingConfiguration);
+
+        Recording newRecording = startRecording();
+
+        if (newRecording == null) {
+            return;
+        }
 
         try {
-            recording.start();
+            newRecording.start();
 
             //schedule closing the recording
-            scheduledExecutorService.schedule(() -> handler.accept(recording),
+            scheduledExecutorService.schedule(() -> handler.accept(newRecording),
                     duration.getSeconds(),
                     TimeUnit.SECONDS);
 
@@ -192,8 +212,16 @@ public class JFRService implements ProfilerConfigurationHandler, Profiler {
                         }
                     }
                 }
+
+                clearActiveRecording();
             }
         };
+    }
+
+    private void clearActiveRecording() {
+        synchronized (activeRecordingLock) {
+            activeRecording = null;
+        }
     }
 
     /**

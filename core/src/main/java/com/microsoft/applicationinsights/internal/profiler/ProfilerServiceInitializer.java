@@ -83,7 +83,8 @@ public class ProfilerServiceInitializer {
                                                String instrumentationKey,
                                                TelemetryClient client,
                                                CloseableHttpClient httpClient) {
-        if (!initialized && config.enabled()) { initialized = true;
+        if (!initialized && config.enabled()) {
+            initialized = true;
             ProfilerServiceFactory factory = null;
 
             try {

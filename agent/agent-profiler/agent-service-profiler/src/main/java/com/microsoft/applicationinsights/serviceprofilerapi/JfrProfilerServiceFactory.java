@@ -12,7 +12,7 @@ import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
-import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JFRService;
+import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import org.apache.http.impl.client.CloseableHttpClient;
 
@@ -46,7 +46,7 @@ public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
             INSTANCE = new JfrProfilerService(
                     appIdSupplier,
                     config,
-                    new JFRService(config),
+                    new JfrProfiler(config),
                     profilerConfigurationHandler,
                     uploadCompleteObserver,
                     serviceProfilerClient,
