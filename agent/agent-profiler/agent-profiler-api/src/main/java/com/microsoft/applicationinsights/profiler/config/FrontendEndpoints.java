@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.serviceprofilerapi.client.contract;
+package com.microsoft.applicationinsights.profiler.config;
 
 /**
  * {@code FrontendEndpoints} class defines well-known addresses for Application Insights Service

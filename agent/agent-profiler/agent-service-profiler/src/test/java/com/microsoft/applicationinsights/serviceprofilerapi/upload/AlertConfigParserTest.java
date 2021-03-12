@@ -27,7 +27,7 @@ import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigura
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import com.microsoft.applicationinsights.serviceprofilerapi.config.AlertConfigParser;
+import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import org.junit.*;
 
 public class AlertConfigParserTest {

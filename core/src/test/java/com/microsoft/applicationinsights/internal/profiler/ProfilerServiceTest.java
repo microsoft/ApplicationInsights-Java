@@ -18,7 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.internal.serviceprofiler;
+package com.microsoft.applicationinsights.internal.profiler;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,21 +27,28 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
-import com.microsoft.applicationinsights.internal.profiler.ProfilerService;
+import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import com.microsoft.applicationinsights.profiler.ProfilerService;
+import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
+import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.serviceprofilerapi.JfrProfilerService;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
-import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerServiceConfig;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JFRService;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
@@ -64,7 +71,7 @@ public class ProfilerServiceTest {
     final String jfrExtension = "jfr";
 
     @Test
-    public void endToEndAlertTriggerCpu() throws InterruptedException {
+    public void endToEndAlertTriggerCpu() throws InterruptedException, ExecutionException {
         endToEndAlertTriggerCycle(
                 false,
                 new MetricTelemetry(TOTAL_CPU_PC_METRIC_NAME, 100.0),
@@ -76,7 +83,7 @@ public class ProfilerServiceTest {
     }
 
     @Test
-    public void endToEndAlertTriggerMemory() throws InterruptedException {
+    public void endToEndAlertTriggerMemory() throws InterruptedException, ExecutionException {
         endToEndAlertTriggerCycle(
                 false,
                 new MetricTelemetry(HEAP_MEM_USED_PERCENTAGE, 100.0),
@@ -88,7 +95,7 @@ public class ProfilerServiceTest {
     }
 
     @Test
-    public void endToEndAlertTriggerManual() throws InterruptedException {
+    public void endToEndAlertTriggerManual() throws InterruptedException, ExecutionException {
         endToEndAlertTriggerCycle(
                 true,
                 new MetricTelemetry(HEAP_MEM_USED_PERCENTAGE, 0.0),
@@ -99,7 +106,7 @@ public class ProfilerServiceTest {
                 });
     }
 
-    public void endToEndAlertTriggerCycle(boolean triggerNow, MetricTelemetry metricTelemetry, Consumer<EventTelemetry> assertTelemetry) throws InterruptedException {
+    public void endToEndAlertTriggerCycle(boolean triggerNow, MetricTelemetry metricTelemetry, Consumer<EventTelemetry> assertTelemetry) throws InterruptedException, ExecutionException {
         AtomicBoolean profileInvoked = new AtomicBoolean(false);
         AtomicReference<EventTelemetry> serviceProfilerIndex = new AtomicReference<>();
 
@@ -128,16 +135,32 @@ public class ProfilerServiceTest {
             }
         };
 
-        ProfilerService service = new ProfilerService(
+        ScheduledExecutorService serviceProfilerExecutorService = Executors.newScheduledThreadPool(2,
+                ThreadPoolUtils.createDaemonThreadFactory(ProfilerServiceFactory.class, "ServiceProfilerService")
+        );
+
+        ScheduledExecutorService alertServiceExecutorService = Executors.newSingleThreadScheduledExecutor(
+                ThreadPoolUtils.createDaemonThreadFactory(ProfilerServiceFactory.class, "ServiceProfilerAlertingService")
+        );
+
+        AtomicReference<ProfilerService> service = new AtomicReference<>();
+        AlertingSubsystem alertService = AlertingServiceFactory.create(
+                alert -> awaitReferenceSet(service).getProfiler().accept(alert),
+                TelemetryObservers.INSTANCE,
+                alertServiceExecutorService);
+
+        service.set(new JfrProfilerService(
                 () -> appId,
                 new ServiceProfilerServiceConfig(1, 2, 3, "localhost", true),
                 jfrService,
+                ProfilerServiceInitializer.updateAlertingConfig(alertService),
+                ProfilerServiceInitializer.sendServiceProfilerIndex(client),
                 clientV2,
                 serviceProfilerUploader,
-                client
-        );
-
-        service.initialize();
+                serviceProfilerExecutorService
+        )
+                .initialize()
+                .get());
 
         // Wait up to 10 seconds
         for (int i = 0; i < 100; i++) {
@@ -165,6 +188,18 @@ public class ProfilerServiceTest {
         Assert.assertEquals(processId, serviceProfilerIndex.get().getProperties().get("ProcessId"));
         Assert.assertEquals(stampId, serviceProfilerIndex.get().getProperties().get("StampId"));
         assertTelemetry.accept(serviceProfilerIndex.get());
+    }
+
+    private ProfilerService awaitReferenceSet(AtomicReference<ProfilerService> service) {
+        //Wait for up to 10 seconds
+        for (int i = 0; i < 100 && service.get() == null; i++) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return service.get();
     }
 
     private JFRService getJfrDaemon(AtomicBoolean profileInvoked) {

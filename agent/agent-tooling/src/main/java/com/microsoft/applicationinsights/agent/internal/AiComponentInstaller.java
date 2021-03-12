@@ -58,10 +58,10 @@ import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
 import com.microsoft.applicationinsights.internal.config.ParamXmlElement;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
-import com.microsoft.applicationinsights.internal.profiler.ProfilerService;
+import com.microsoft.applicationinsights.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import org.apache.http.HttpHost;
@@ -160,7 +160,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
 
-        ProfilerService.initialize(
+        ProfilerServiceInitializer.initialize(
                 appIdSupplier::get,
                 SystemInformation.INSTANCE.getProcessId(),
                 formServiceProfilerConfig(config.preview.profiler),

@@ -18,9 +18,8 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.serviceprofilerapi.config;
+package com.microsoft.applicationinsights.profiler.config;
 
-import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.FrontendEndpoints;
 
 /**
  * Configuration of the service profiler subsystem

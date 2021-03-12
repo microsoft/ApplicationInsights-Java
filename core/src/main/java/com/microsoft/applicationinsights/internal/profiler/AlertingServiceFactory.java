@@ -21,12 +21,13 @@
 package com.microsoft.applicationinsights.internal.profiler;
 
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
+import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
-import com.microsoft.applicationinsights.profiler.Profiler;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryObserver;
 import org.slf4j.Logger;
@@ -37,11 +38,11 @@ import static com.microsoft.applicationinsights.internal.perfcounter.Constants.T
 /**
  * Creates AlertMonitor and wires it up to observe telemetry.
  */
-public class AlertingServiceFactory {
+public class AlertingServiceFactory  {
     private static final Logger LOGGER = LoggerFactory.getLogger(AlertingServiceFactory.class);
 
-    public static AlertingSubsystem create(Profiler profiler, TelemetryObservers telemetryObservers, ExecutorService executorService) {
-        AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(profiler, executorService);
+    public static AlertingSubsystem create(Consumer<AlertBreach> alertAction, TelemetryObservers telemetryObservers, ExecutorService executorService) {
+        AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertAction, executorService);
 
         addObserver(alertingSubsystem, telemetryObservers);
 

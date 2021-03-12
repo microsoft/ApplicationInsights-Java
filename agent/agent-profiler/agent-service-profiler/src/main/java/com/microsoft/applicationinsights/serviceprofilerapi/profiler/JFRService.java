@@ -39,7 +39,7 @@ import com.microsoft.applicationinsights.profiler.ProfileHandler;
 import com.microsoft.applicationinsights.profiler.Profiler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
-import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.jfr.FlightRecorderConnection;
 import com.microsoft.jfr.JfrStreamingException;
 import com.microsoft.jfr.Recording;
@@ -254,7 +254,6 @@ public class JFRService implements ProfilerConfigurationHandler, Profiler {
      */
     @Override
     public void accept(AlertBreach alertBreach) {
-
         switch (alertBreach.getType()) {
             case CPU:
                 performCpuProfile(alertBreach);

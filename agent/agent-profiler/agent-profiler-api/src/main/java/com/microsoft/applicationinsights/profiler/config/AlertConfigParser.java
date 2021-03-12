@@ -18,7 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.serviceprofilerapi.config;
+package com.microsoft.applicationinsights.profiler.config;
 
 import java.time.Instant;
 import java.time.ZoneOffset;

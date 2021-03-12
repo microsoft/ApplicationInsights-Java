@@ -27,6 +27,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
+import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
