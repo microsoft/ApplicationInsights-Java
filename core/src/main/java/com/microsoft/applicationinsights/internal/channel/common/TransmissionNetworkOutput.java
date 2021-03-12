@@ -136,7 +136,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
         try {
             // POST the transmission data to the endpoint
             request = createTransmissionPostRequest(transmission);
-            LazyHttpClient.enhanceRequest(request);
             response = httpClient.execute(request);
             HttpEntity respEntity = response.getEntity();
             code = response.getStatusLine().getStatusCode();

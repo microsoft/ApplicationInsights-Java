@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 public class ConfigurationBuilder {
 
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_CONFIGURATION_FILE";
+    private static final String APPLICATIONINSIGHTS_CONFIGURATION_CONTENT = "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT";
 
     private static final String APPLICATIONINSIGHTS_CONNECTION_STRING = "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
@@ -56,12 +57,15 @@ public class ConfigurationBuilder {
     private static final String APPLICATIONINSIGHTS_ROLE_NAME = "APPLICATIONINSIGHTS_ROLE_NAME";
     private static final String APPLICATIONINSIGHTS_ROLE_INSTANCE = "APPLICATIONINSIGHTS_ROLE_INSTANCE";
 
+    // this is undocumented and may be removed in the future
     private static final String APPLICATIONINSIGHTS_JMX_METRICS = "APPLICATIONINSIGHTS_JMX_METRICS";
     private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE = "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
     private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL = "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL";
 
     private static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL = "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL";
+
+    private static final String APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT = "APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT";
 
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
@@ -102,6 +106,7 @@ public class ConfigurationBuilder {
         }
     }
 
+    // TODO deprecate this
     private static void loadJmxMetricsEnvVar(Configuration config) throws IOException {
         String jmxMetricsEnvVarJson = getEnvVar(APPLICATIONINSIGHTS_JMX_METRICS);
 
@@ -162,6 +167,11 @@ public class ConfigurationBuilder {
     }
 
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
+        String configurationContent = System.getenv(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
+        if (configurationContent != null && !configurationContent.isEmpty()) {
+            return getConfigurationFromEnvVar(configurationContent, true);
+        }
+
         if (DiagnosticsHelper.isAnyCodelessAttach()) {
             // codeless attach only supports configuration via environment variables (for now at least)
             return new Configuration();
@@ -228,6 +238,8 @@ public class ConfigurationBuilder {
 
         config.preview.metricIntervalSeconds =
                 (int) overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS, config.preview.metricIntervalSeconds);
+
+        config.preview.openTelemetryApiSupport = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT, config.preview.openTelemetryApiSupport);
 
         loadLogCaptureEnvVar(config);
         loadJmxMetricsEnvVar(config);
@@ -299,6 +311,10 @@ public class ConfigurationBuilder {
         ConfigurationException(String message, Exception e) {
             super(message, e);
         }
+
+        ConfigurationException(String message) {
+            super(message);
+        }
     }
 
     public static class ConfigurationWarnMessage {
@@ -329,23 +345,63 @@ public class ConfigurationBuilder {
                     // Try extracting the configuration without failOnUnknown
                     Configuration configuration = getConfigurationFromConfigFile(configPath, false);
                     // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
-                    configurationWarnMessages.add(new ConfigurationWarnMessage(getJsonEncodingExceptionMessage(configPath.toAbsolutePath().toString(), ex.getMessage())));
+                    configurationWarnMessages.add(new ConfigurationWarnMessage(getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage())));
                     return configuration;
                 } else {
-                    throw new FriendlyException(getJsonEncodingExceptionMessage(configPath.toAbsolutePath().toString(), ex.getMessage()),
+                    throw new FriendlyException(getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage()),
                             "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
                 }
             } catch (JsonEncodingException ex) {
-                throw new FriendlyException(getJsonEncodingExceptionMessage(configPath.toAbsolutePath().toString(), ex.getMessage()),
+                throw new FriendlyException(getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage()),
                         "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
             } catch(Exception e) {
-                throw new ConfigurationException("Error parsing configuration file: " + configPath.toAbsolutePath().toString(), e);
+                throw new ConfigurationException("Error parsing configuration from file: " + configPath.toAbsolutePath().toString(), e);
             }
         }
     }
 
-    static String getJsonEncodingExceptionMessage(String configPath, String message) {
-        String defaultMessage = "Application Insights Java agent's configuration file "+ configPath + " has a malformed JSON\n";
+    static Configuration getConfigurationFromEnvVar(String content, boolean strict) {
+        Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
+        JsonAdapter<Configuration> jsonAdapter = strict ? moshi.adapter(Configuration.class).failOnUnknown() :
+                moshi.adapter(Configuration.class);
+        Configuration configuration;
+        try {
+            configuration = jsonAdapter.fromJson(content);
+        } catch(JsonDataException ex) {
+            if(strict) {
+                // Try extracting the configuration without failOnUnknown
+                configuration = getConfigurationFromEnvVar(content, false);
+                // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
+                configurationWarnMessages.add(new ConfigurationWarnMessage(getJsonEncodingExceptionMessageForEnvVar(ex.getMessage())));
+            } else {
+                throw new FriendlyException(getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()),
+                        "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+            }
+        } catch (JsonEncodingException ex) {
+            throw new FriendlyException(getJsonEncodingExceptionMessageForEnvVar(ex.getMessage()),
+                    "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
+        } catch(Exception e) {
+            throw new ConfigurationException("Error parsing configuration from env var: " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT, e);
+        }
+
+        if (configuration.connectionString != null) {
+            throw new ConfigurationException("\"connectionString\" attribute is not supported inside of "
+                    + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT + ", please use "
+                    + APPLICATIONINSIGHTS_CONNECTION_STRING + " to specify the connection string");
+        }
+        return configuration;
+    }
+
+    static String getJsonEncodingExceptionMessageForFile(Path configPath, String message) {
+        return getJsonEncodingExceptionMessage("file " + configPath.toAbsolutePath().toString(), message);
+    }
+
+    static String getJsonEncodingExceptionMessageForEnvVar(String message) {
+        return getJsonEncodingExceptionMessage("env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT, message);
+    }
+
+    static String getJsonEncodingExceptionMessage(String location, String message) {
+        String defaultMessage = "Application Insights Java agent's configuration "+ location + " has a malformed JSON\n";
         if(message == null) {
             return defaultMessage;
         }
@@ -354,7 +410,7 @@ public class ConfigurationBuilder {
         // Cannot skip unexpected NAME at $.httpProxy
         // Removing the 'Cannot Skip' string from the message.
         if(message.toLowerCase().contains("cannot skip")) {
-            return "Application Insights Java agent's configuration file "+ configPath +
+            return "Application Insights Java agent's configuration "+ location +
                     " has the following JSON issue: "+message.toLowerCase().replaceAll("cannot skip","") +"\n";
         }
 
@@ -370,7 +426,7 @@ public class ConfigurationBuilder {
         // Use JsonReader.setLenient(true) to accept malformed JSON at path $.selfDiagnostics
         int jsonAttributeIndex = message.lastIndexOf("$.");
         if(jsonAttributeIndex > 0 && jsonAttributeIndex < message.length() -2) {
-            return "Application Insights Java agent's configuration file "+ configPath +
+            return "Application Insights Java agent's configuration "+ location +
                     " has a malformed JSON at path "+message.substring(jsonAttributeIndex) +"\n";
         } else {
             return defaultMessage;

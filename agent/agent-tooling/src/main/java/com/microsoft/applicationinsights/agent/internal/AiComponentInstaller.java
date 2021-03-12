@@ -62,7 +62,7 @@ import com.microsoft.applicationinsights.internal.profiler.ProfilerService;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerServiceConfig;
-import io.opentelemetry.instrumentation.api.aiconnectionstring.AiConnectionString;
+import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -171,7 +171,7 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         // this is for Azure Function Linux consumption plan support.
         if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-            AiConnectionString.setAccessor(new ConnectionStringAccessor());
+            AiLazyConfiguration.setAccessor(new LazyConfigurationAccessor());
         }
 
         // this is currently used by Micrometer instrumentation in addition to 2.x SDK

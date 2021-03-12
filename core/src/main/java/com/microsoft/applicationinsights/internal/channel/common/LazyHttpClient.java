@@ -15,6 +15,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -83,16 +84,6 @@ public class LazyHttpClient extends CloseableHttpClient {
         }
     }
 
-    public static void enhanceRequest(HttpPost request) {
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(REQUEST_TIMEOUT_IN_MILLIS)
-                .setSocketTimeout(REQUEST_TIMEOUT_IN_MILLIS)
-                .setConnectTimeout(REQUEST_TIMEOUT_IN_MILLIS)
-                .build();
-
-        request.setConfig(requestConfig);
-    }
-
     private static CloseableHttpClient init() {
         if (safeToInitLatch != null) {
             try {
@@ -118,12 +109,20 @@ public class LazyHttpClient extends CloseableHttpClient {
                         .build());
         cm.setMaxTotal(DEFAULT_MAX_TOTAL_CONNECTIONS);
         cm.setDefaultMaxPerRoute(DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+        cm.setDefaultSocketConfig(SocketConfig.custom()
+                .setSoTimeout(REQUEST_TIMEOUT_IN_MILLIS)
+                .build());
         HttpClientBuilder builder = HttpClients.custom()
                 // need to set empty User-Agent, otherwise Breeze ingestion service will put the Apache HttpClient User-Agent header
                 // into the client_Browser field for all telemetry that doesn't explicitly set it's own UserAgent
                 // (ideally Breeze would only have this behavior for ingestion directly from browsers)
                 // (not setting User-Agent header at all would be a good option, but Apache HttpClient doesn't have a simple way to do that)
                 .setUserAgent("")
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setConnectionRequestTimeout(REQUEST_TIMEOUT_IN_MILLIS)
+                        .setSocketTimeout(REQUEST_TIMEOUT_IN_MILLIS)
+                        .setConnectTimeout(REQUEST_TIMEOUT_IN_MILLIS)
+                        .build())
                 .setConnectionManager(cm)
                 .useSystemProperties();
         if (proxy != null) {
