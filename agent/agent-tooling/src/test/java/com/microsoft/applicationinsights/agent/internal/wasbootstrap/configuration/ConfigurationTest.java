@@ -338,6 +338,16 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void shouldOverrideSelfDiagnosticsFilePath() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH", "/tmp/ai.log");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("/tmp/ai.log", configuration.selfDiagnostics.file.path);
+    }
+
+    @Test
     public void shouldOverridePreviewOtelApiSupport() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT", "true");
 
