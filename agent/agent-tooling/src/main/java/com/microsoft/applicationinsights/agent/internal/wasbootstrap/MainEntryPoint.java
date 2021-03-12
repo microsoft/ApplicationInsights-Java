@@ -21,9 +21,12 @@
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Locale;
 
@@ -158,7 +161,7 @@ public class MainEntryPoint {
                 String tmpDir = System.getProperty("java.io.tmpdir");
                 File file = new File(tmpDir, "applicationinsights.log");
                 try {
-                    FileWriter out = new FileWriter(file);
+                    Writer out = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
                     out.write(message);
                     out.close();
                 } catch (Throwable ignored2) {
