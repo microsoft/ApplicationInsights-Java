@@ -328,6 +328,26 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void shouldOverrideSelfDiagnosticsLevel() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", "DEBUG");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("DEBUG", configuration.selfDiagnostics.level);
+    }
+
+    @Test
+    public void shouldOverridePreviewOtelApiSupport() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT", "true");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertTrue(configuration.preview.openTelemetryApiSupport);
+    }
+
+    @Test
     public void shouldOverrideInstrumentationCassandraEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED", "false");
 
