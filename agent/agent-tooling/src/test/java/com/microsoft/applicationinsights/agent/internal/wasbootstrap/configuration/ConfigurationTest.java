@@ -348,6 +348,16 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void shouldOverridePreviewLiveMetricsEnabled() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED", "false");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertFalse(configuration.preview.liveMetrics.enabled);
+    }
+
+    @Test
     public void shouldOverrideInstrumentationCassandraEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED", "false");
 
