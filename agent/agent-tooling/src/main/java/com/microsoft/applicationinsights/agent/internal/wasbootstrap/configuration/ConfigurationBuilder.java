@@ -67,6 +67,7 @@ public class ConfigurationBuilder {
     public static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH = "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH";
 
     private static final String APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT = "APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT";
+    private static final String APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED = "APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED";
 
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
@@ -222,6 +223,7 @@ public class ConfigurationBuilder {
         config.selfDiagnostics.file.path = overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, config.selfDiagnostics.file.path);
 
         config.preview.openTelemetryApiSupport = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT, config.preview.openTelemetryApiSupport);
+        config.preview.liveMetrics.enabled = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED, config.preview.liveMetrics.enabled);
 
         loadLogCaptureEnvVar(config);
         loadJmxMetricsEnvVar(config);
