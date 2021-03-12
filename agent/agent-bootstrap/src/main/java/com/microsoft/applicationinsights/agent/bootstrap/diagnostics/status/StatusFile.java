@@ -125,7 +125,7 @@ public class StatusFile {
 
     // visible for testing
     static boolean shouldWrite() {
-        return enabled && DiagnosticsHelper.isAppServiceCodeless();
+        return enabled && DiagnosticsHelper.isAppSvcAttachForLoggingPurposes();
     }
 
     public static <T> void putValueAndWrite(String key, T value) {
