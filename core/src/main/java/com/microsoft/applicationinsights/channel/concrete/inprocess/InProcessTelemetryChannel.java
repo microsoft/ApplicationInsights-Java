@@ -24,7 +24,10 @@ package com.microsoft.applicationinsights.channel.concrete.inprocess;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
+import com.microsoft.applicationinsights.telemetry.StatsbeatMetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -50,6 +53,8 @@ import java.util.Map;
  */
 public final class InProcessTelemetryChannel extends TelemetryChannelBase<Telemetry> {
 
+    private static final Logger logger = LoggerFactory.getLogger(InProcessTelemetryChannel.class);
+
     public InProcessTelemetryChannel(TelemetryConfiguration configuration) {
         super(configuration);
     }
@@ -64,7 +69,13 @@ public final class InProcessTelemetryChannel extends TelemetryChannelBase<Teleme
         if (telemetry.previouslyUsed()) {
             throw new IllegalStateException("Telemetry was previously used: " + telemetry);
         }
-        telemetryBuffer.add(telemetry);
+        if (telemetry instanceof StatsbeatMetricTelemetry) {
+            statsTelemetryBuffer.add((StatsbeatMetricTelemetry) telemetry);
+            logger.debug("############################ add StatsbeatMetricTelemetry to statsTelemetryBuffer");
+        } else {
+            telemetryBuffer.add(telemetry);
+            logger.debug("############################ add regular MetricTelemetry to telemetryBuffer");
+        }
         return true;
     }
 

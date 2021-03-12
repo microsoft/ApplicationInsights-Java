@@ -204,6 +204,7 @@ public enum TelemetryConfigurationFactory {
 
     @SuppressWarnings("unchecked")
     private List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
+        logger.debug("################################## getCollectionFrequencyInSec: {}", performanceConfigurationData.getCollectionFrequencyInSec() / 60.0);
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceConfigurationData.getCollectionFrequencyInSec());
 
         ArrayList<TelemetryModule> modules = new ArrayList<>();

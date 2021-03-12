@@ -50,6 +50,7 @@ public final class TelemetryConfiguration {
     private String connectionString;
     private String roleName;
     private String roleInstance;
+    private String sdkVersion;
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
@@ -166,7 +167,6 @@ public final class TelemetryConfiguration {
      * @throws IllegalArgumentException when the new value is null or empty
      */
     public void setInstrumentationKey(String key) {
-
         // A non null, non empty instrumentation key is a must
         if (Strings.isNullOrEmpty(key)) {
             throw new IllegalArgumentException("key");
@@ -206,6 +206,14 @@ public final class TelemetryConfiguration {
 
     public EndpointProvider getEndpointProvider() {
         return endpointProvider;
+    }
+
+    public String getSdkVersion() {
+        return sdkVersion;
+    }
+
+    public void setSdkVersion(String sdkVersion) {
+        this.sdkVersion = sdkVersion;
     }
 
     /**

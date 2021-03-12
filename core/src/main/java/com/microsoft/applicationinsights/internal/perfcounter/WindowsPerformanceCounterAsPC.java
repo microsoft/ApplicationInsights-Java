@@ -23,13 +23,14 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.telemetry.StatsbeatMetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,8 +58,8 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
         Preconditions.checkState(SystemInformation.INSTANCE.isWindows(), "Must be used under Windows OS.");
 
         register(Constants.TOTAL_CPU_PC_CATEGORY_NAME, Constants.CPU_PC_COUNTER_NAME, Constants.INSTANCE_NAME_TOTAL, Constants.TOTAL_CPU_PC_METRIC_NAME);
-        register(Constants.PROCESS_CATEGORY, Constants.PROCESS_IO_PC_COUNTER_NAME, JniPCConnector.translateInstanceName(JniPCConnector.PROCESS_SELF_INSTANCE_NAME),
-                Constants.PROCESS_IO_PC_METRIC_NAME);
+        //register(Constants.PROCESS_CATEGORY, Constants.PROCESS_IO_PC_COUNTER_NAME, JniPCConnector.translateInstanceName(JniPCConnector.PROCESS_SELF_INSTANCE_NAME),
+                //Constants.PROCESS_IO_PC_METRIC_NAME);
 
         if (pcs.isEmpty()) {
             // Failed to register, the performance counter is not needed.
@@ -70,13 +71,13 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
     public void report(TelemetryClient telemetryClient) {
         for (Map.Entry<String, String> entry : pcs.entrySet()) {
             try {
-                double value = JniPCConnector.getValueOfPerformanceCounter(entry.getKey());
-                if (value < 0) {
-                    reportError(value, entry.getValue());
-                } else {
-                    send(telemetryClient, value, entry.getValue());
-                    logger.trace("Sent performance counter for '{}': '{}'", entry.getValue(), value);
-                }
+//                double value = JniPCConnector.getValueOfPerformanceCounter(entry.getKey());
+//                if (value < 0) {
+//                    reportError(value, entry.getValue());
+//                } else {
+                    send(telemetryClient, 0, entry.getValue());
+                    //logger.trace("Sent performance counter for '{}': '{}'", entry.getValue(), value);
+//                }
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable e) {
@@ -98,9 +99,22 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
         return ID;
     }
 
+    private final AtomicInteger counter = new AtomicInteger();
+
     private void send(TelemetryClient telemetryClient, double value, String metricName) {
-        MetricTelemetry telemetry = new MetricTelemetry(metricName, value);
-        telemetryClient.track(telemetry);
+//        MetricTelemetry telemetry = new MetricTelemetry(metricName, value);
+//        telemetryClient.track(telemetry);
+        StatsbeatMetricTelemetry statsbeat = new StatsbeatMetricTelemetry("statsbeat", counter.incrementAndGet());
+        statsbeat.getProperties().put("rp", "azure function");
+        statsbeat.getProperties().put("attach", "codeless");
+        statsbeat.getProperties().put("cikey", telemetryClient.getContext().getInstrumentationKey());
+        statsbeat.getProperties().put("instrumentation", String.valueOf(4503599627894848L)); // set bit 6, 19, 52
+        statsbeat.getProperties().put("feature", String.valueOf(7881299347898368L)); // set bit 50, 51, 52
+        statsbeat.getProperties().put("os", "Windows");
+        statsbeat.getProperties().put("language", "java");
+        statsbeat.getProperties().put("version", telemetryClient.getContext().getInternal().getSdkVersion().substring(5));
+        telemetryClient.track(statsbeat);
+        logger.debug("########################## Statsbeat counter: {}", counter.get());
     }
 
     /**
@@ -114,6 +128,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
         String key = JniPCConnector.addPerformanceCounter(category, counter, instance);
         if (!Strings.isNullOrEmpty(key)) {
             try {
+                logger.debug("##################### metricName: {}", metricName);
                 pcs.put(key, metricName);
             } catch (ThreadDeath td) {
                 throw td;

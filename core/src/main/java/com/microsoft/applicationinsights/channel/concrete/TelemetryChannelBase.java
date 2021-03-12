@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
+import com.microsoft.applicationinsights.telemetry.StatsbeatMetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,9 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
     protected boolean isInitailized = false;
 
     protected TelemetriesTransmitter<T> telemetriesTransmitter;
+    protected TelemetriesTransmitter<StatsbeatMetricTelemetry> statsTelemetriesTransmitter;
     protected TelemetryBuffer<T> telemetryBuffer;
+    protected TelemetryBuffer<StatsbeatMetricTelemetry> statsTelemetryBuffer;
 
     private boolean developerMode = false;
 
@@ -136,7 +139,9 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
 
         final ConfiguredTransmitterFactory<T> transmitterFactory = getTransmitterFactory();
         telemetriesTransmitter = transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
+        statsTelemetriesTransmitter = (TelemetriesTransmitter<StatsbeatMetricTelemetry>) transmitterFactory.create("https://westus-0.in.applicationinsights.azure.com/v2/track", maxTransmissionStorageCapacity, throttling, maxInstantRetry);
         telemetryBuffer = new TelemetryBuffer<>(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
+        statsTelemetryBuffer = new TelemetryBuffer<StatsbeatMetricTelemetry>(statsTelemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
 
         setDeveloperMode(developerMode);
         isInitailized = true;

@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.base.Charsets;
+import com.microsoft.applicationinsights.internal.perfcounter.WindowsPerformanceCounterAsPC;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
@@ -35,6 +36,8 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.squareup.moshi.JsonWriter;
 import okio.Buffer;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Superclass for all telemetry data classes.
@@ -42,6 +45,10 @@ import org.apache.commons.lang3.StringUtils;
 public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private TelemetryContext context;
     private Date timestamp;
+    private String sequence;
+    protected String telemetryName;
+
+    private static final Logger logger = LoggerFactory.getLogger(BaseTelemetry.class);
 
     // this is temporary until we are convinced that telemetry are never re-used by codeless agent
     private volatile boolean used;
@@ -64,6 +71,14 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      */
     protected void initialize(ConcurrentMap<String, String> properties) {
         this.context = new TelemetryContext(properties, new ContextTagsMap());
+    }
+
+    public String getTelemetryName() {
+        return telemetryName;
+    }
+
+    public void setTelemetryName(String telemetryName) {
+        this.telemetryName = telemetryName;
     }
 
     /**
@@ -115,10 +130,14 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
 
-        String telemetryName = getTelemetryName(context.getNormalizedInstrumentationKey(), this.getEnvelopName());
+        if (this.telemetryName == null || this.telemetryName.isEmpty()) {
+            this.telemetryName = getTelemetryName(context.getNormalizedInstrumentationKey(), this.getEnvelopName());
+        } else {
+            logger.debug("asse");
+        }
 
         Envelope envelope = new Envelope();
-        envelope.setName(telemetryName);
+        envelope.setName(this.telemetryName);
 
         setSampleRate(envelope);
         envelope.setIKey(context.getInstrumentationKey());
