@@ -21,8 +21,12 @@
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Locale;
 
@@ -134,18 +138,33 @@ public class MainEntryPoint {
             try {
                 // IF the startupLogger failed to be initialized due to configuration syntax error, try initializing it here
                 Path agentPath = new File(bootstrapURL.toURI()).toPath();
-                startupLogger = configureLogging(new SelfDiagnostics(), agentPath);
+                SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
+                selfDiagnostics.file.path = ConfigurationBuilder.overlayWithEnvVar(
+                        ConfigurationBuilder.APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, selfDiagnostics.file.path);
+                startupLogger = configureLogging(selfDiagnostics, agentPath);
                 if (isFriendlyException) {
                     startupLogger.error(message);
                 } else {
                     startupLogger.error(message, t);
                 }
-            } catch (Throwable e) {
-                // If the startupLogger still have some issues being initialized, just print the error stack trace
+            } catch (Throwable ignored) {
+                // this is a last resort in cases where the JVM doesn't have write permission to the directory where the agent lives
+                // and the user has not specified APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH
+
+                // If the startupLogger still have some issues being initialized, print the error stack trace to stderr
                 if (isFriendlyException) {
                     System.err.println(message);
                 } else {
                     t.printStackTrace();
+                }
+                // and write to a temp file because some environments do not have (easy) access to stderr
+                String tmpDir = System.getProperty("java.io.tmpdir");
+                File file = new File(tmpDir, "applicationinsights.log");
+                try {
+                    Writer out = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+                    out.write(message);
+                    out.close();
+                } catch (Throwable ignored2) {
                 }
             }
         }
