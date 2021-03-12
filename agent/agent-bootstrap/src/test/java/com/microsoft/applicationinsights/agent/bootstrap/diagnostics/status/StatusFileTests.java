@@ -129,13 +129,13 @@ public class StatusFileTests {
     @Test
     public void ifEnabledVarHasInvalidValueThenItIsEnabled() throws Exception {
         envVars.set(StatusFile.STATUS_FILE_ENABLED_ENV_VAR, "42");
-        DiagnosticsTestHelper.setIsAppServiceCodeless(true);
+        DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
         runWriteFileTest(true);
     }
 
     @Test
     public void writesCorrectFile() throws Exception {
-        DiagnosticsTestHelper.setIsAppServiceCodeless(true);
+        DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
         runWriteFileTest(true);
     }
 
@@ -171,7 +171,7 @@ public class StatusFileTests {
 
     @Test
     public void doesNotWriteIfNotAppService() throws Exception {
-        DiagnosticsTestHelper.setIsAppServiceCodeless(false); // just to be sure
+        DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(false); // just to be sure
 
         final File tempFolder = this.tempFolder.newFolder();
         StatusFile.directory = tempFolder.getAbsolutePath();
@@ -189,7 +189,7 @@ public class StatusFileTests {
     public void putValueAndWriteOverwritesCurrentFile() throws Exception {
         final String key = "write-test";
         try {
-            DiagnosticsTestHelper.setIsAppServiceCodeless(true);
+            DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
 
 
             final File tempFolder = this.tempFolder.newFolder();
@@ -210,7 +210,7 @@ public class StatusFileTests {
             assertMapHasExpectedInformation(map, key, value);
 
         } finally {
-            DiagnosticsTestHelper.setIsAppServiceCodeless(false);
+            DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(false);
             StatusFile.CONSTANT_VALUES.remove(key);
         }
     }

@@ -160,11 +160,6 @@ public class ConfigurationBuilder {
             return getConfigurationFromEnvVar(configurationContent, true);
         }
 
-        if (DiagnosticsHelper.isAnyCodelessAttach()) {
-            // codeless attach only supports configuration via environment variables (for now at least)
-            return new Configuration();
-        }
-
         String configPathStr = getConfigPath();
         if (configPathStr != null) {
             Path configPath = agentJarPath.resolveSibling(configPathStr);

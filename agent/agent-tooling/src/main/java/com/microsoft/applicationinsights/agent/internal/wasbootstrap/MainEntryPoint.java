@@ -154,7 +154,7 @@ public class MainEntryPoint {
     private static Logger configureLogging(SelfDiagnostics selfDiagnostics, Path agentPath) {
         String logbackXml;
         String destination = selfDiagnostics.destination;
-        if (DiagnosticsHelper.isAppServiceCodeless()) {
+        if (DiagnosticsHelper.isAppSvcAttachForLoggingPurposes()) {
             // User-accessible IPA log file. Enabled by default.
             if ("false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_LOG_FILE_ENABLED_ENV_VAR))) {
                 System.setProperty("ai.config.appender.user-logdir.location", "");

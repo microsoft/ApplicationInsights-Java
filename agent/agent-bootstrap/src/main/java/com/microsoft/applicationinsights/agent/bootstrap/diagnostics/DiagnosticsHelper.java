@@ -25,11 +25,9 @@ public class DiagnosticsHelper {
 	public static final String IPA_ETW_PROVIDER_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_ETW_PROVIDER_ENABLED";
 
     // visible for testing
-    static volatile boolean appServiceCodeless;
+    static volatile boolean appSvcAttachForLoggingPurposes;
 
-    private static volatile boolean aksCodeless;
-
-    private static volatile boolean functionsCodeless;
+    private static volatile char attachChar;
 
     private static final boolean isWindows;
 
@@ -46,47 +44,40 @@ public class DiagnosticsHelper {
 
     public static void setAgentJarFile(Path agentPath) {
         if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
-            appServiceCodeless = true;
+            appSvcAttachForLoggingPurposes = true;
+            if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+                attachChar = 'f';
+            } else {
+                attachChar = 'a';
+            }
         } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
-            aksCodeless = true;
+            attachChar = 'k';
         } else if (Files.exists(agentPath.resolveSibling("functions.codeless"))) {
-            functionsCodeless = true;
+            attachChar = 'f';
+        } else if (Files.exists(agentPath.resolveSibling("springcloud.codeless"))) {
+            attachChar = 's';
         }
     }
 
-    public static boolean isAppServiceCodeless() {
-        return appServiceCodeless;
+    public static boolean isAnyAttach() {
+        return attachChar != 0;
     }
 
-    public static boolean isAksCodeless() {
-        return aksCodeless;
+    // returns 0 if not attach
+    public static char attachChar() {
+        return attachChar;
     }
 
-    public static boolean isFunctionsCodeless() {
-        return functionsCodeless;
-    }
-
-    public static boolean isAnyCodelessAttach() {
-        return appServiceCodeless || aksCodeless || functionsCodeless;
+    // this also applies to Azure Functions running on App Services
+    public static boolean isAppSvcAttachForLoggingPurposes() {
+        return appSvcAttachForLoggingPurposes;
     }
 
     public static ApplicationMetadataFactory getMetadataFactory() {
         return METADATA_FACTORY;
     }
 
-	public static String getCodelessResourceType() {
-        if (appServiceCodeless) {
-            return "appsvc";
-        } else if (aksCodeless) {
-            return "aks";
-        } else if (functionsCodeless) {
-            return "functions";
-        }
-        return null;
-	}
-
 	public static boolean isOsWindows() {
         return isWindows;
     }
-
 }
