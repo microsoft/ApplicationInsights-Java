@@ -26,12 +26,10 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.squareup.moshi.JsonAdapter;
@@ -75,9 +73,8 @@ public class ConfigurationBuilder {
     // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
     private static final List<ConfigurationWarnMessage> configurationWarnMessages = new CopyOnWriteArrayList<>();
 
-    public static Configuration create(Path agentJarPath) throws IOException {
+    public static Configuration create(Path agentJarPath, RpConfiguration rpConfiguration) throws IOException {
         Configuration config = loadConfigurationFile(agentJarPath);
-        overlayEnvVars(config);
         if (config.instrumentation.micrometer.reportingIntervalSeconds != 60) {
             configurationWarnMessages.add(new ConfigurationWarnMessage(
                     "micrometer \"reportingIntervalSeconds\" setting leaked out previously" +
@@ -85,6 +82,11 @@ public class ConfigurationBuilder {
                             " please use \"preview\": { \"metricIntervalSeconds\" } instead now" +
                             " (and note that metricIntervalSeconds applies to all auto-collected metrics," +
                             " not only micrometer)"));
+        }
+        overlayEnvVars(config);
+        // rp configuration should always be last (so it takes precedence)
+        if (rpConfiguration != null) {
+            overlayRpConfiguration(config, rpConfiguration);
         }
         return config;
     }
@@ -231,6 +233,15 @@ public class ConfigurationBuilder {
         addDefaultJmxMetricsIfNotPresent(config);
 
         loadInstrumentationEnabledEnvVars(config);
+    }
+
+    private static void overlayRpConfiguration(Configuration config, RpConfiguration rpConfiguration)  {
+        if (rpConfiguration.connectionString != null) {
+            config.connectionString = rpConfiguration.connectionString;
+        }
+        if (rpConfiguration.sampling != null) {
+            config.sampling.percentage = rpConfiguration.sampling.percentage;
+        }
     }
 
     private static String getConfigPath() {
@@ -420,20 +431,12 @@ public class ConfigurationBuilder {
         if (!Files.exists(configPath)) {
             throw new IllegalStateException("config file does not exist: " + configPath);
         }
-        
-        BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
-        // important to read last modified before reading the file, to prevent possible race condition
-        // where file is updated after reading it but before reading last modified, and then since
-        // last modified doesn't change after that, the new updated file will not be read afterwards
-        long lastModifiedTime = attributes.lastModifiedTime().toMillis();
         Configuration configuration = getConfigurationFromConfigFile(configPath, true);
         if (configuration.instrumentationSettings != null) {
             throw new IllegalStateException("It looks like you are using an old applicationinsights.json file" +
                     " which still has \"instrumentationSettings\", please see the docs for the new format:" +
                     " https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
         }
-        configuration.configPath = configPath;
-        configuration.lastModifiedTime = lastModifiedTime;
         return configuration;
     }
 }
