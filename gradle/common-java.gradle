@@ -134,7 +134,6 @@ if (hasProperty("JDKToUse")) {
 } else {
     logger.info("JDKToUse not found. Using default")
 }
-updateTestDirectories()
 
 sourceSets {
     integrationTest {

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -16,26 +15,30 @@ import org.apache.http.util.EntityUtils;
 
 public class HttpHelper {
 
-    public static String getAndEnsureSampled(String url) throws UnsupportedOperationException, IOException {
+    public static int getResponseCodeEnsuringSampled(String url) throws UnsupportedOperationException, IOException {
         HttpGet httpGet = new HttpGet(url);
         // traceId=27272727272727272727272727272727 is known to produce a score of 0.66 (out of 100)
         // so will be sampled as long as samplingPercentage > 1%
         httpGet.setHeader("traceparent", "00-27272727272727272727272727272727-1111111111111111-01");
-        return get(httpGet);
+        return getResponseCode(httpGet);
     }
 
     public static String get(String url) throws UnsupportedOperationException, IOException {
-        return get(new HttpGet(url));
+        return getBody(new HttpGet(url));
     }
 
-    private static String get(HttpGet httpGet) throws UnsupportedOperationException, IOException {
-        CloseableHttpClient client = getHttpClient();
-        try {
+    private static String getBody(HttpGet httpGet) throws UnsupportedOperationException, IOException {
+        try (CloseableHttpClient client = getHttpClient()) {
             CloseableHttpResponse resp1 = client.execute(httpGet);
             return extractResponseBody(resp1);
         }
-        finally {
-            client.close();
+    }
+
+    private static int getResponseCode(HttpGet httpGet) throws UnsupportedOperationException, IOException {
+        try (CloseableHttpClient client = getHttpClient()) {
+            CloseableHttpResponse resp1 = client.execute(httpGet);
+            EntityUtils.consume(resp1.getEntity());
+            return resp1.getStatusLine().getStatusCode();
         }
     }
 
@@ -45,11 +48,11 @@ public class HttpHelper {
                 .build();
     }
 
-    public static String post(String url, String body) throws ClientProtocolException, IOException {
+    public static String post(String url, String body) throws IOException {
         CloseableHttpClient client = getHttpClient();
         try {
             HttpPost post = new HttpPost(url);
-            post.setEntity(new StringEntity("PING"));
+            post.setEntity(new StringEntity(body));
             CloseableHttpResponse resp1 = client.execute(post);
             return extractResponseBody(resp1);
         }

@@ -2,8 +2,8 @@ package com.microsoft.ajl.simple;
 
 public class Greetings {
 
-    private long timestamp;
-    private String message;
+    private final long timestamp;
+    private final String message;
 
     public Greetings(long timestamp, String message) {
         this.timestamp = timestamp;

@@ -21,10 +21,8 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import org.apache.http.HttpStatus;
 
 import java.net.MalformedURLException;
@@ -41,7 +39,6 @@ import java.util.concurrent.ConcurrentMap;
 public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestData> {
     private Double samplingPercentage;
     private final RequestData data;
-    private String httpMethod;
 
     /**
      * Envelope Name for this telemetry.
@@ -103,11 +100,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
         setDuration(duration);
         setResponseCode(responseCode);
         setSuccess(success);
-    }
-
-    @Override
-    public int getVer() {
-        return getData().getVer();
     }
 
     /**
@@ -248,36 +240,12 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
         data.setUrl(url.toString());
     }
 
-    public String getUrlString() {
-        return getData().getUrl();
-    }
-
     /**
      * Sets request url.
      * @param url The url to store
      */
     public void setUrl(String url) {
         data.setUrl(url);
-    }
-
-    /**
-     * @deprecated
-     * Gets the HTTP method of the request.
-     * @return The HTTP method
-     */
-    @Deprecated
-    public String getHttpMethod() {
-        return httpMethod;
-    }
-
-    /**
-     * @deprecated
-     * Sets the HTTP method of the request.
-     * @param httpMethod The HTTP method
-     */
-    @Deprecated
-    public void setHttpMethod(String httpMethod) {
-        this.httpMethod = httpMethod;
     }
 
     @Override
@@ -288,15 +256,6 @@ public final class RequestTelemetry extends BaseSampleSourceTelemetry<RequestDat
     @Override
     public void setSamplingPercentage(Double samplingPercentage) {
         this.samplingPercentage = samplingPercentage;
-    }
-
-    @Override
-    @Deprecated
-    protected void additionalSanitize() {
-        data.setName(Sanitizer.sanitizeName(data.getName()));
-        data.setId(Sanitizer.sanitizeName(data.getId()));
-        Sanitizer.sanitizeMeasurements(getMetrics());
-        Sanitizer.sanitizeUri(data.getUrl());
     }
 
     @Override

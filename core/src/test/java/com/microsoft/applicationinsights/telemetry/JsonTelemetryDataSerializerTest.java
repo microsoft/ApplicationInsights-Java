@@ -49,16 +49,8 @@ public class JsonTelemetryDataSerializerTest {
             serializer.write("s2", s2, 15);
         }
 
-        public String getS1() {
-            return s1;
-        }
-
         public void setS1(String s1) {
             this.s1 = s1;
-        }
-
-        public String getS2() {
-            return s2;
         }
 
         public void setS2(String s2) {
@@ -76,19 +68,17 @@ public class JsonTelemetryDataSerializerTest {
             }
 
             TestClassWithStrings that = (TestClassWithStrings)other;
-            return this.s1.equals(that.getS1()) && this.s2.equals(that.getS2());
+            return this.s1.equals(that.s1) && this.s2.equals(that.s2);
         }
     }
 
     private final static class StubClass implements JsonSerializable, Serializable {
         private int i1;
         private int i2;
-        private String s1;
         private Long l1;
         private long l2;
-        private String s2;
-        private Map<String, Integer> m1 = new HashMap<String, Integer>();
-        private List<String> list1 = new ArrayList<String>();
+        private final Map<String, Integer> m1 = new HashMap<>();
+        private final List<String> list1 = new ArrayList<>();
         private com.microsoft.applicationinsights.internal.schemav2.SeverityLevel severity;
         private boolean b1;
         private short sh1;
@@ -97,95 +87,43 @@ public class JsonTelemetryDataSerializerTest {
         private double d1;
         private Double d2;
 
-        public int getI1() {
-            return i1;
-        }
-
         public void setI1(int i1) {
             this.i1 = i1;
-        }
-
-        public int getI2() {
-            return i2;
         }
 
         public void setI2(int i2) {
             this.i2 = i2;
         }
 
-        public String getS1() {
-            return s1;
-        }
-
-        public void setS1(String s1) {
-            this.s1 = s1;
-        }
-
-        public Long getL1() {
-            return l1;
-        }
-
         public void setL1(Long l1) {
             this.l1 = l1;
-        }
-
-        public long getL2() {
-            return l2;
         }
 
         public void setL2(long l2) {
             this.l2 = l2;
         }
 
-        public String getS2() {
-            return s2;
-        }
-
-        public void setS2(String s2) {
-            this.s2 = s2;
-        }
-
         public Map<String, Integer> getM1() {
             return m1;
-        }
-
-        public void setM1(Map<String, Integer> m1) {
-            this.m1 = m1;
         }
 
         public List<String> getList1() {
             return list1;
         }
 
-        public void setList1(List<String> list1) {
-            this.list1 = list1;
-        }
-
         public void setSeverity(com.microsoft.applicationinsights.internal.schemav2.SeverityLevel severity) {
             this.severity = severity;
         }
 
-        public boolean getB1() { return b1; }
-
         public void setB1(boolean b1) { this.b1 = b1; }
-
-        public short getSh1() { return sh1; }
 
         public void setSh1(short  sh1) { this.sh1 = sh1; }
 
-        public float getF1() { return f1; }
-
         public void setF1(float f1) { this.f1 = f1; }
-
-        public Float getF2() { return f2; }
 
         public void setF2(Float f2) { this.f2 = f2; }
 
-        public double getD1() { return d1; }
-
         public void setD1(double d1) { this.d1 = d1; }
-
-        public Double getD2() { return d2; }
 
         public void setD2(Double d2) { this.d2 = d2; }
 
@@ -193,10 +131,8 @@ public class JsonTelemetryDataSerializerTest {
         public void serialize(JsonTelemetryDataSerializer serializer) throws IOException {
             serializer.write("i1", i1);
             serializer.write("i2", i2);
-            serializer.writeRequired("s1", s1, 10);
             serializer.write("l1", l1);
             serializer.write("l2", l2);
-            serializer.write("s2", s2, 15);
             serializer.write("m1", m1);
             serializer.write("list1", list1);
             serializer.write("severity", severity);
@@ -220,10 +156,9 @@ public class JsonTelemetryDataSerializerTest {
 
             StubClass that = (StubClass)other;
             return
-                    this.s1.equals(that.getS1()) && this.s2.equals(that.getS2()) &&
-                    this.i1 == that.getI1() && this.i2 == that.getI2() &&
-                            (this.l1 == null ? that.getL1() == null : this.l1.equals(getL1())) && this.l2 == that.getL2() &&
-                    this.list1.equals(that.getList1()) && this.m1.equals(that.getM1());
+                    this.i1 == that.i1 && this.i2 == that.i2 &&
+                            (this.l1 == null ? that.l1 == null : this.l1.equals(l1)) && this.l2 == that.l2 &&
+                    this.list1.equals(that.list1) && this.m1.equals(that.m1);
         }
     }
 

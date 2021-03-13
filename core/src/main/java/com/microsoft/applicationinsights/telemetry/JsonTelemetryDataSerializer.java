@@ -22,13 +22,11 @@
 package com.microsoft.applicationinsights.telemetry;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.squareup.moshi.JsonWriter;
 
 /**
@@ -113,15 +111,6 @@ public final class JsonTelemetryDataSerializer {
         out.value(value);
     }
 
-    public void write(String name, Short value) throws IOException {
-        if (value == null) {
-            return;
-        }
-
-        writeName(name);
-        out.value(value);
-    }
-
     public void write(String name, long value) throws IOException {
         writeName(name);
         out.value(value);
@@ -148,15 +137,6 @@ public final class JsonTelemetryDataSerializer {
 
         writeName(name);
         out.value(value);
-    }
-
-    public void write(String name, Date value) throws IOException {
-        if (value == null) {
-            return;
-        }
-
-        writeName(name);
-        out.value(LocalStringsUtils.getDateFormatter().format(value));
     }
 
     public void write(String name, String value, int len) throws IOException {

@@ -25,7 +25,7 @@ public class HelloController {
     }
 
     @RequestMapping("/simple")
-    public String simple() throws InterruptedException {
+    public String simple() {
 
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 10203)
                 .usePlaintext()

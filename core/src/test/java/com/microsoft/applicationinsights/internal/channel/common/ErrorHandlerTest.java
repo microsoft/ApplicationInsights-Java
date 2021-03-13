@@ -23,8 +23,7 @@ public class ErrorHandlerTest {
         args.setTransmission(new Transmission(new byte[] { 0 }, "testcontent", "testencoding"));
         args.setTransmissionDispatcher(mockedDispatcher);
         ErrorHandler eh = new ErrorHandler(tpm);
-        boolean result = eh.validateTransmissionAndSend(args);
-        return result;
+        return eh.validateTransmissionAndSend(args);
     }
 
     @Test

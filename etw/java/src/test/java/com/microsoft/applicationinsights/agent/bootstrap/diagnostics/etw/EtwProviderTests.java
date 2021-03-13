@@ -59,7 +59,7 @@ public class EtwProviderTests {
         }
     }
 
-    private static IpaEtwEventBase PROTOTYPE = new IpaInfo();
+    private static final IpaEtwEventBase PROTOTYPE = new IpaInfo();
     private static final long EVENT_STATS_TIMER_PERIOD_MILLISECONDS;
     static {
         PROTOTYPE.setAppName("EtwProvider-tests");

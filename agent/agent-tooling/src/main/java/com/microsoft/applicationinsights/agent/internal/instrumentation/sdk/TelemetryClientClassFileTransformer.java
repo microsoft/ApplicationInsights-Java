@@ -29,8 +29,8 @@ import java.util.Date;
 
 import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
+import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -65,7 +65,6 @@ import static net.bytebuddy.jar.asm.Opcodes.DLOAD;
 import static net.bytebuddy.jar.asm.Opcodes.DUP;
 import static net.bytebuddy.jar.asm.Opcodes.GETFIELD;
 import static net.bytebuddy.jar.asm.Opcodes.GOTO;
-import static net.bytebuddy.jar.asm.Opcodes.ICONST_1;
 import static net.bytebuddy.jar.asm.Opcodes.ICONST_M1;
 import static net.bytebuddy.jar.asm.Opcodes.IFEQ;
 import static net.bytebuddy.jar.asm.Opcodes.IFNONNULL;
@@ -602,13 +601,17 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "isSuccess", "()Z", false);
             mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getSource", "()Ljava/lang/String;", false);
+            mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getProperties", "()Ljava/util/Map;", false);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getContext", "()L" + unshadedPrefix + "/telemetry/TelemetryContext;", false);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getTags", "()Ljava/util/concurrent/ConcurrentMap;", false);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RequestTelemetry", "getMetrics", "()Ljava/util/concurrent/ConcurrentMap;", false);
             Label label4 = new Label();
             mv.visitLabel(label4);
-            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackRequest", "(Ljava/lang/String;Ljava/lang/String;Ljava/net/URL;Ljava/util/Date;Ljava/lang/Long;Ljava/lang/String;ZLjava/util/Map;Ljava/util/Map;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackRequest", "(Ljava/lang/String;Ljava/lang/String;Ljava/net/URL;Ljava/util/Date;Ljava/lang/Long;Ljava/lang/String;ZLjava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)V", false);
             mv.visitLabel(label1);
             Label label5 = new Label();
             mv.visitJumpInsn(GOTO, label5);
@@ -624,7 +627,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitInsn(RETURN);
             Label label7 = new Label();
             mv.visitLabel(label7);
-            mv.visitMaxs(9, 3);
+            mv.visitMaxs(11, 3);
             mv.visitEnd();
         }
 
@@ -705,6 +708,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
 
     // DO NOT REMOVE
     // this is used during development for generating above bytecode
+    @SuppressWarnings("unused")
     public static class TC {
 
         private TelemetryConfiguration configuration;
@@ -805,7 +809,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         private void agent$trackRequestTelemetry(RequestTelemetry t) {
             try {
                 BytecodeUtil.trackRequest(t.getId(), t.getName(), t.getUrl(), t.getTimestamp(), agent$toMillis(t.getDuration()),
-                        t.getResponseCode(), t.isSuccess(), t.getProperties(), t.getContext().getTags());
+                        t.getResponseCode(), t.isSuccess(), t.getSource(), t.getProperties(), t.getContext().getTags(), t.getMetrics());
             } catch (MalformedURLException e) {
                 BytecodeUtil.logErrorOnce(e);
             }

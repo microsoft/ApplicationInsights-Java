@@ -2,10 +2,13 @@ package com.springbootstartertest.smoketest;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
+import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
@@ -40,7 +43,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
                 hasItem(
                         new TypeSafeMatcher<EventData>() {
                             final String name = "EventDataTest";
-                            Matcher<String> nameMatcher = Matchers.equalTo(name);
+                            final Matcher<String> nameMatcher = Matchers.equalTo(name);
 
                             @Override
                             protected boolean matchesSafely(EventData item) {
@@ -61,11 +64,11 @@ public class SpringbootSmokeTest extends AiSmokeTest {
                             final String expectedName = "EventDataPropertyTest";
                             final String expectedPropertyValue = "value";
                             final Double expectedMetricValue = 1d;
-                            Matcher<Map<? extends String, ? extends Double>> metricMatcher =
+                            final Matcher<Map<? extends String, ? extends Double>> metricMatcher =
                                     Matchers.hasEntry(expectedKey, expectedMetricValue);
-                            Matcher<Map<? extends String, ? extends String>> propertyMatcher =
+                            final Matcher<Map<? extends String, ? extends String>> propertyMatcher =
                                     Matchers.hasEntry(expectedKey, expectedPropertyValue);
-                            Matcher<String> nameMatcher = Matchers.equalTo(expectedName);
+                            final Matcher<String> nameMatcher = Matchers.equalTo(expectedName);
 
                             @Override
                             public void describeTo(Description description) {
@@ -91,7 +94,20 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-        List<Envelope> edList = mockedIngestion.waitForItemsInOperation("ExceptionData", 2, operationId);
+        List<Envelope> edList = mockedIngestion.waitForItems(new Predicate<Envelope>() {
+            @Override
+            public boolean apply(Envelope input) {
+                if (!"ExceptionData".equals(input.getData().getBaseType())) {
+                    return false;
+                }
+                if (!operationId.equals(input.getTags().get("ai.operation.id"))) {
+                    return false;
+                }
+                // lastly, filter out ExceptionData captured from tomcat logger
+                ExceptionData data = (ExceptionData) ((Data<?>) input.getData()).getBaseData();
+                return !data.getProperties().containsKey("LoggerName");
+            }
+        }, 2, 10, TimeUnit.SECONDS);
 
         Envelope rddEnvelope = rddList.get(0);
         Envelope edEnvelope1 = edList.get(0);
@@ -135,7 +151,10 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd3 =
                 (RemoteDependencyData) ((Data) rddEnvelope3.getData()).getBaseData();
 
+        assertTrue(rd.getSuccess());
         assertEquals("/SpringBootTest/asyncDependencyCall", rd.getName());
+        assertEquals("200", rd.getResponseCode());
+
         assertEquals("TestController.asyncDependencyCall", rdd1.getName());
         assertEquals("HTTP GET", rdd2.getName());
         assertEquals("https://www.bing.com", rdd2.getData());

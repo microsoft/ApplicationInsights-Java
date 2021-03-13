@@ -30,7 +30,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
-import com.microsoft.applicationinsights.internal.util.MapUtil;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -42,10 +41,8 @@ import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import com.microsoft.applicationinsights.telemetry.SupportSampling;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.Tracer;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,7 +154,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     @Override
     public void trackRequest(String id, String name, URL url, Date timestamp, @Nullable Long duration, String responseCode, boolean success,
-                             Map<String, String> properties, Map<String, String> tags) {
+                             String source, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
@@ -174,8 +171,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         telemetry.setResponseCode(responseCode);
         telemetry.setSuccess(success);
+        telemetry.setSource(source);
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
+        telemetry.getMetrics().putAll(metrics);
 
         track(telemetry);
     }
@@ -222,8 +221,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     private static void track(Telemetry telemetry) {
         SpanContext context = Span.current().getSpanContext();
         if (context.isValid()) {
-            String traceId = context.getTraceIdAsHexString();
-            String spanId = context.getSpanIdAsHexString();
+            String traceId = context.getTraceId();
+            String spanId = context.getSpanId();
             telemetry.getContext().getOperation().setId(traceId);
             telemetry.getContext().getOperation().setParentId(spanId);
         }

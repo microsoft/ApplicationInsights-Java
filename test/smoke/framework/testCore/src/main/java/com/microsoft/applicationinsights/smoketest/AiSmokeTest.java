@@ -2,13 +2,11 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
@@ -140,7 +138,7 @@ public abstract class AiSmokeTest {
 
     protected static short currentPortNumber = BASE_PORT_NUMBER;
 
-    private static List<DependencyContainer> dependencyImages = new ArrayList<>();
+    private static final List<DependencyContainer> dependencyImages = new ArrayList<>();
     protected static AtomicReference<ContainerInfo> currentContainerInfo = new AtomicReference<>();
     protected static Deque<ContainerInfo> allContainers = new ArrayDeque<>();
     protected static String currentImageName;
@@ -223,17 +221,6 @@ public abstract class AiSmokeTest {
             }
             finally {
                 System.out.println("\nFinished gathering logs.");
-            }
-        }
-
-        private void runTailLastLog(String containerId) {
-            System.out.println("\nFetching appserver logs");
-            try {
-                docker.execOnContainer(containerId, docker.getShellExecutor(), "tailLastLog.sh");
-            }
-            catch (Exception e) {
-                System.err.println("Error executing tailLastLog.sh");
-                e.printStackTrace();
             }
         }
     };
@@ -461,10 +448,6 @@ public abstract class AiSmokeTest {
         assertNotNull(String.format(fmt, "jreVersion"), jreVersion);
     }
 
-    protected void checkParams() {
-        checkParams(this.appServer, this.os, this.jreVersion);
-    }
-
     protected static void setupProperties(final String appServer, final String os, final String jreVersion) throws Exception {
         testProps.load(new FileReader(new File(Resources.getResource(TEST_CONFIG_FILENAME).toURI())));
         currentImageName = String.format("%s_%s_%s", appServer, os, jreVersion);
@@ -501,7 +484,7 @@ public abstract class AiSmokeTest {
     protected static void checkMockedIngestionHealth() throws Exception {
         String ok = HttpHelper.get("http://localhost:"+mockedIngestion.getPort()+"/");
         assertEquals(MockedAppInsightsIngestionServlet.ENDPOINT_HEALTH_CHECK_RESPONSE, ok);
-        String postResponse = HttpHelper.post("http://localhost:60606/v2/track", MockedAppInsightsIngestionServlet.PING);
+        String postResponse = HttpHelper.post("http://localhost:6060/v2/track", MockedAppInsightsIngestionServlet.PING);
         assertEquals(MockedAppInsightsIngestionServlet.PONG, postResponse);
     }
 
@@ -516,7 +499,7 @@ public abstract class AiSmokeTest {
         }
     }
 
-    private static void cleanUpDockerNetwork() throws Exception {
+    private static void cleanUpDockerNetwork() {
         if (networkId == null) {
             System.out.println("No network id....nothing to clean up");
             return;
@@ -666,7 +649,8 @@ public abstract class AiSmokeTest {
     }
 
     @AfterWithParams
-    public static void tearDownContainer(final String appServer, final String os, final String jreVersion) throws Exception {
+    public static void tearDownContainer(@SuppressWarnings("unused") String appServer, @SuppressWarnings("unused") String os,
+                                         @SuppressWarnings("unused") String jreVersion) throws Exception {
         stopAllContainers();
         cleanUpDockerNetwork();
         TimeUnit.MILLISECONDS.sleep(DELAY_AFTER_CONTAINER_STOP_MILLISECONDS);
@@ -733,7 +717,7 @@ public abstract class AiSmokeTest {
     }
 
     protected static void waitForUrl(String url, long timeout, TimeUnit timeoutUnit, String appName) throws InterruptedException {
-        String rval = null;
+        int rval = 404;
         Stopwatch watch = Stopwatch.createStarted();
         do {
             if (watch.elapsed(timeoutUnit) > timeout) {
@@ -742,19 +726,15 @@ public abstract class AiSmokeTest {
 
             try {
                 TimeUnit.MILLISECONDS.sleep(250);
-                rval = HttpHelper.getAndEnsureSampled(url);
+                rval = HttpHelper.getResponseCodeEnsuringSampled(url);
             }
             catch (InterruptedException ie) {
                 throw ie;
             }
             catch (Exception e) {
-                continue;
             }
-            if (rval != null && rval.contains("404")) {
-                rval = null;
-            }
-        } while (rval == null);
-        assertFalse(String.format("Empty response from '%s'. Health check urls should return something non-empty", url), rval.isEmpty());
+        } while (rval == 404);
+        assertEquals(200, rval);
     }
 
     protected static void waitForUrlWithRetries(String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries) {

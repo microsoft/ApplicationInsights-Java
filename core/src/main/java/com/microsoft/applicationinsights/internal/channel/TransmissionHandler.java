@@ -1,8 +1,6 @@
 package com.microsoft.applicationinsights.internal.channel;
 
 /**
- * An interface that is used to create a concrete class that is called by the the {@link TransmissionHandlerObserver}
- * <p>
  * This is used to implement classes like {@link com.microsoft.applicationinsights.internal.channel.common.ErrorHandler}
  * and {@link com.microsoft.applicationinsights.internal.channel.common.PartialSuccessHandler}.
  * @author jamdavi

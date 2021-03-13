@@ -31,7 +31,7 @@ import static org.junit.Assert.assertNull;
 public final class SessionContextTest {
     @Test
     public void testSetId() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         SessionContext context = new SessionContext(map);
         context.setId("mock");
 
@@ -42,7 +42,7 @@ public final class SessionContextTest {
 
     @Test
     public void testSetIsFirstNull() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         SessionContext context = new SessionContext(map);
         context.setIsFirst(null);
 
@@ -53,7 +53,7 @@ public final class SessionContextTest {
 
     @Test
     public void testSetIsFirstTrue() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         SessionContext context = new SessionContext(map);
         context.setIsFirst(true);
 
@@ -64,7 +64,7 @@ public final class SessionContextTest {
 
     @Test
     public void testSetIsNewSessionNull() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         SessionContext context = new SessionContext(map);
         context.setIsNewSession(null);
 
@@ -75,7 +75,7 @@ public final class SessionContextTest {
 
     @Test
     public void testSetIsNewSessionTrue() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         SessionContext context = new SessionContext(map);
         context.setIsNewSession(true);
 

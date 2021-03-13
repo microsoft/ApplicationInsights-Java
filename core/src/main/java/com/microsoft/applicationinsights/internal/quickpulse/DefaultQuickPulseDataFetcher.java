@@ -26,6 +26,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
@@ -45,31 +46,38 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private final TelemetryConfiguration config;
     private final String ikey;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-    private String postPrefix;
+    private final String postPrefix;
     private final String sdkVersion;
 
-    public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryConfiguration config,
-                                        String instanceName, String quickPulseId) {
-        this(sendQueue, config, null, instanceName, quickPulseId);
+    public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryConfiguration config, String machineName,
+                                        String instanceName, String roleName, String quickPulseId) {
+        this(sendQueue, config, null, machineName, instanceName, roleName, quickPulseId);
     }
 
     @Deprecated
-    public DefaultQuickPulseDataFetcher(final ArrayBlockingQueue<HttpPost> sendQueue, final String ikey, final String instanceName, final String quickPulseId) {
-        this(sendQueue, null, ikey, instanceName, quickPulseId);
+    public DefaultQuickPulseDataFetcher(final ArrayBlockingQueue<HttpPost> sendQueue, final String ikey, final String machineName, final String instanceName, final String quickPulseId) {
+        this(sendQueue, null, ikey, machineName, instanceName, quickPulseId);
     }
 
-    private DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryConfiguration config, String ikey, String instanceName, String quickPulseId) {
+    private DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryConfiguration config, String ikey, String machineName,
+                                         String instanceName, String roleName, String quickPulseId) {
         this.sendQueue = sendQueue;
         this.config = config;
         this.ikey = ikey;
         sdkVersion = getCurrentSdkVersion();
         final StringBuilder sb = new StringBuilder();
+
+        if (!LocalStringsUtils.isNullOrEmpty(roleName)) {
+            roleName = "\"" + roleName + "\"";
+        }
+
         sb.append("[{");
         formatDocuments(sb);
         sb.append("\"Instance\": \"").append(instanceName).append("\",");
         sb.append("\"InstrumentationKey\": \"").append(ikey).append("\",");
-        sb.append("\"InvariantVersion\": 1,");
-        sb.append("\"MachineName\": \"").append(instanceName).append("\",");
+        sb.append("\"InvariantVersion\": ").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
+        sb.append("\"MachineName\": \"").append(machineName).append("\",");
+        sb.append("\"RoleName\": ").append(roleName).append(",");
         sb.append("\"StreamId\": \"").append(quickPulseId).append("\",");
         postPrefix = sb.toString();
         if (logger.isTraceEnabled()) {
@@ -86,12 +94,13 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     }
 
     @Override
-    public void prepareQuickPulseDataForSend() {
+    public void prepareQuickPulseDataForSend(String redirectedEndpoint) {
         try {
             QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
 
             final Date currentDate = new Date();
-            final HttpPost request = networkHelper.buildRequest(currentDate, getEndpointUrl());
+            final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
+            final HttpPost request = networkHelper.buildRequest(currentDate, this.getEndpointUrl(endpointPrefix));
 
             final ByteArrayEntity postEntity = buildPostEntity(counters);
 
@@ -114,11 +123,12 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     }
 
     @VisibleForTesting
-    String getEndpointUrl() {
-        return getQuickPulseEndpoint() + "/post?ikey=" + getInstrumentationKey();
+    String getEndpointUrl(String endpointPrefix) {
+        return endpointPrefix + "/post?ikey=" + getInstrumentationKey();
     }
 
-    private String getQuickPulseEndpoint() {
+    @VisibleForTesting
+    String getQuickPulseEndpoint() {
          return config == null ? QP_BASE_URI : config.getEndpointProvider().getLiveEndpointURL().toString();
     }
 

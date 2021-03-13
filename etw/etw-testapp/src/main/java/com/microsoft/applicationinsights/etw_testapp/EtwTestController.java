@@ -24,7 +24,7 @@ public class EtwTestController {
             @RequestParam(name = "e", required = false, defaultValue = "false") boolean hasException)
     {
         String msg = "Hit /" + level + " ";
-        int n = -1;
+        int n;
         Throwable t = null;
         switch (level.toLowerCase()) {
             case "info":

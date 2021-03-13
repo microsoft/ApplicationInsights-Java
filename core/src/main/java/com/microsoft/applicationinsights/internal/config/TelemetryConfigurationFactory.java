@@ -94,7 +94,6 @@ public enum TelemetryConfigurationFactory {
         if (!channelIsConfigured) {
             logger.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
         }
-        configuration.setTrackingIsDisabled(applicationInsightsConfig.isDisableTelemetry());
 
         setTelemetryModules(applicationInsightsConfig, configuration);
 
@@ -207,7 +206,7 @@ public enum TelemetryConfigurationFactory {
     private List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceConfigurationData.getCollectionFrequencyInSec());
 
-        ArrayList<TelemetryModule> modules = new ArrayList<TelemetryModule>();
+        ArrayList<TelemetryModule> modules = new ArrayList<>();
 
         List<String> performanceModuleNames = new ArrayList<>();
         if (performanceModuleNames.size() == 0) {
@@ -266,13 +265,13 @@ public enum TelemetryConfigurationFactory {
                 return;
             }
 
-            HashMap<String, Collection<JmxAttributeData>> data = new HashMap<String, Collection<JmxAttributeData>>();
+            HashMap<String, Collection<JmxAttributeData>> data = new HashMap<>();
 
             // Build a map of object name to its requested attributes
             for (JmxXmlElement jmxElement : jmxXmlElements) {
                 Collection<JmxAttributeData> collection = data.get(jmxElement.getObjectName());
                 if (collection == null) {
-                    collection = new ArrayList<JmxAttributeData>();
+                    collection = new ArrayList<>();
                     data.put(jmxElement.getObjectName(), collection);
                 }
 
@@ -374,7 +373,7 @@ public enum TelemetryConfigurationFactory {
      * @param configuration TelemetryConfiguration Instance
      */
     private void addHeartBeatModule(TelemetryConfiguration configuration) {
-        HeartBeatModule module = new HeartBeatModule(new HashMap<String, String>());
+        HeartBeatModule module = new HeartBeatModule(new HashMap<>());
         configuration.getTelemetryModules().add(module);
     }
 

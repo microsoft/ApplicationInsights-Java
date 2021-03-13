@@ -25,15 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 
 /**
  * Created by gupele on 3/15/2015.
  */
 public class ChannelXmlElement {
-
-    private String endpointAddress;
 
     private String maxTelemetryBufferCapacity;
 
@@ -57,72 +53,24 @@ public class ChannelXmlElement {
         this.type = type;
     }
 
-    /**
-     * @deprecated Use {@link TelemetryConfiguration#getEndpointProvider()} and {@link EndpointProvider#getIngestionEndpoint()}.
-     */
-    @Deprecated
-    public String getEndpointAddress() {
-        return endpointAddress;
-    }
-
     public void setThrottling(boolean throttling) {
         this.throttling = throttling;
-    }
-
-    public boolean getThrottling() {
-        return throttling;
-    }
-
-    /**
-     * @deprecated Use {@link TelemetryConfiguration#setConnectionString(String)}.
-     */
-    @Deprecated
-    public void setEndpointAddress(String endpointAddress) {
-        this.endpointAddress = endpointAddress;
-    }
-
-    public boolean getDeveloperMode() {
-        return developerMode;
     }
 
     public void setDeveloperMode(boolean developerMode) {
         this.developerMode = developerMode;
     }
 
-    public String getMaxTelemetryBufferCapacity() {
-        return maxTelemetryBufferCapacity;
-    }
-
     public void setMaxTelemetryBufferCapacity(String maxTelemetryBufferCapacity) {
         this.maxTelemetryBufferCapacity = maxTelemetryBufferCapacity;
-    }
-
-    public String getFlushIntervalInSeconds() {
-        return flushIntervalInSeconds;
     }
 
     public void setFlushIntervalInSeconds(String flushIntervalInSeconds) {
         this.flushIntervalInSeconds = flushIntervalInSeconds;
     }
 
-    /**
-     * @deprecated Use {@link #getMaxTransmissionStorageFilesCapacityInMB()}
-     */
-    @Deprecated
-    public String isMaxTransmissionStorageFilesCapacityInMB() {
-        return maxTransmissionStorageFilesCapacityInMB;
-    }
-
-    public String getMaxTransmissionStorageFilesCapacityInMB() {
-        return maxTransmissionStorageFilesCapacityInMB;
-    }
-
     public void setMaxTransmissionStorageFilesCapacityInMB(String maxTransmissionStorageFilesCapacityInMB) {
         this.maxTransmissionStorageFilesCapacityInMB = maxTransmissionStorageFilesCapacityInMB;
-    }
-
-    public String getMaxInstantRetry() {
-        return maxInstantRetry;
     }
 
     public void setMaxInstantRetry(String maxInstantRetry) {
@@ -130,15 +78,10 @@ public class ChannelXmlElement {
     }
 
     public Map<String, String> getData() {
-        HashMap<String, String> data = new HashMap<String, String>();
+        HashMap<String, String> data = new HashMap<>();
         if (developerMode) {
             data.put("DeveloperMode", "true");
         }
-
-        if (!Strings.isNullOrEmpty(endpointAddress)) {
-            data.put("EndpointAddress", endpointAddress);
-        }
-
 
         if (!Strings.isNullOrEmpty(maxTelemetryBufferCapacity)) {
             data.put("MaxTelemetryBufferCapacity", maxTelemetryBufferCapacity);

@@ -1,0 +1,8 @@
+{
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:6060/",
+  "instrumentation": {
+    "jdbc": {
+      "enabled": false
+    }
+  }
+}

@@ -133,8 +133,6 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
 
     private volatile boolean shutdown;
 
-    private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
-
     public TransmitterImpl(TransmissionDispatcher transmissionDispatcher, TelemetrySerializer serializer, TransmissionsLoader transmissionsLoader) {
         Preconditions.checkNotNull(transmissionDispatcher, "transmissionDispatcher must be non-null value");
         Preconditions.checkNotNull(serializer, "serializer must be non-null value");
@@ -145,6 +143,7 @@ public final class TransmitterImpl implements TelemetriesTransmitter<Telemetry> 
 
         semaphore = new Semaphore(MAX_PENDING_SCHEDULE_REQUESTS);
 
+        int instanceId = INSTANCE_ID_POOL.getAndIncrement();
         threadPool = Executors.newScheduledThreadPool(2, ThreadPoolUtils.createDaemonThreadFactory(TransmitterImpl.class, instanceId));
 
         this.transmissionsLoader = transmissionsLoader;

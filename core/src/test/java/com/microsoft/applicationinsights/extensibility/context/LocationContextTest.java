@@ -31,7 +31,7 @@ import static org.junit.Assert.assertNull;
 public final class LocationContextTest {
     @Test
     public void testSetBadIp() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         LocationContext context = new LocationContext(map);
         context.setIp("a.255.255.255");
 
@@ -42,7 +42,7 @@ public final class LocationContextTest {
 
     @Test
     public void testSetIp() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         LocationContext context = new LocationContext(map);
         context.setIp("127.255.255.255");
 

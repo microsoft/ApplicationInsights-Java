@@ -31,18 +31,6 @@ import java.util.concurrent.TimeUnit;
 public interface TelemetryChannel {
 
     /**
-     *  Gets value indicating whether this channel is in developer mode.
-     * @return The developer mode.
-     */
-    boolean isDeveloperMode();
-
-    /**
-     *  Sets value indicating whether this channel is in developer mode.
-     * @param value True for applying develoer mode
-     */
-    void setDeveloperMode(boolean value);
-
-    /**
      *  Sends a Telemetry instance through the channel.
      * @param item The Telemetry item to send.
      */

@@ -8,7 +8,6 @@ import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.*;
 
 @UseAgent
@@ -66,9 +65,10 @@ public class KafkaTest extends AiSmokeTest {
         assertEquals("HTTP GET", rdd3.getName());
         assertEquals("https://www.bing.com", rdd3.getData());
 
-        assertParentChild(rdd1.getId(), rdEnvelope1, rddEnvelope2);
-        assertParentChild(rdd2.getId(), rddEnvelope1, rdEnvelope2);
-        assertParentChild(rd2.getId(), rddEnvelope2, rddEnvelope3);
+        assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
+        assertParentChild(rdd1.getId(), rddEnvelope1, rddEnvelope2);
+        assertParentChild(rdd2.getId(), rddEnvelope2, rdEnvelope2);
+        assertParentChild(rd2.getId(), rdEnvelope2, rddEnvelope3);
     }
 
     private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {

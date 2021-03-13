@@ -84,7 +84,7 @@ public class StatusFile {
     };
 
     private static final ThreadPoolExecutor WRITER_THREAD =
-            new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
+            new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
                     THREAD_FACTORY);
 
     private static boolean enabled;
@@ -125,7 +125,7 @@ public class StatusFile {
 
     // visible for testing
     static boolean shouldWrite() {
-        return enabled && DiagnosticsHelper.isAppServiceCodeless();
+        return enabled && DiagnosticsHelper.isAppSvcAttachForLoggingPurposes();
     }
 
     public static <T> void putValueAndWrite(String key, T value) {

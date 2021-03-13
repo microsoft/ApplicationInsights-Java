@@ -50,22 +50,4 @@ public class CommonUtils {
       return null;
     }
   }
-
-  /**
-   * This method is used to test if the given class is loaded in the specified ClassLoader
-   * @param classSignature Fully Qualified signature of class
-   * @param classLoader ClassLoader under consideration
-   * @return true if class is loaded otherwise false
-   */
-  public static boolean isClassPresentOnClassPath(String classSignature, ClassLoader classLoader) {
-
-    try {
-      Class.forName(classSignature, false, classLoader);
-      return true;
-    } catch (ClassNotFoundException e) {
-      logger.debug(
-          "Specified class {} is not present on the classpath", classSignature);
-      return false;
-    }
-  }
 }

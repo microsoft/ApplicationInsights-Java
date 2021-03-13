@@ -19,7 +19,7 @@ import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 @WebServlet(description = "Performs given calculation", urlPatterns = { "/trackTrace" })
 public class SimpleTrackTraceServlet extends HttpServlet {
     private static final long serialVersionUID = -633683109556605395L;
-    private TelemetryClient client = new TelemetryClient();
+    private final TelemetryClient client = new TelemetryClient();
 
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)

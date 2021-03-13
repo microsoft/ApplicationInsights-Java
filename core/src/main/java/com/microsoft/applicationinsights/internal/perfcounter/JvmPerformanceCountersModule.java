@@ -74,7 +74,7 @@ import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryU
  */
 public final class JvmPerformanceCountersModule extends AbstractPerformanceCounterModule implements PerformanceCounterConfigurationAware {
 
-    private String[] JvmPCNames = {
+    private final String[] JvmPCNames = {
             DeadLockDetectorPerformanceCounter.NAME,
             JvmHeapMemoryUsedPerformanceCounter.NAME,
             GCPerformanceCounter.NAME
@@ -106,7 +106,7 @@ public final class JvmPerformanceCountersModule extends AbstractPerformanceCount
         }
 
         HashMap<String, JvmXmlElement> jvmPcsMap = jvmSection.getJvmXmlElementsMap();
-        HashSet<String> disabledJvmPCs = new HashSet<String>();
+        HashSet<String> disabledJvmPCs = new HashSet<>();
 
         for (String jvmPcName : JvmPCNames) {
             JvmXmlElement pc = jvmPcsMap.get(jvmPcName);

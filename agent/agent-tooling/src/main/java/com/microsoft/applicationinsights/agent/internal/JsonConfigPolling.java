@@ -29,14 +29,12 @@ import java.nio.file.attribute.FileTime;
 import java.util.concurrent.Executors;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.Sampling;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.ConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,6 +86,7 @@ public class JsonConfigPolling implements Runnable {
                 if (!configuration.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
                     logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
                     TelemetryConfiguration.getActive().setConnectionString(configuration.connectionString);
+                    AppIdSupplier.startAppIdRetrieval();
                 }
 
                 if (configuration.sampling.percentage != lastReadSamplingPercentage) {

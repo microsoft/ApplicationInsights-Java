@@ -1,5 +1,4 @@
 import org.apache.tools.ant.filters.ReplaceTokens;
-import static org.apache.tools.ant.taskdefs.condition.Os.*;
 
 apply plugin: 'base'
 
@@ -85,11 +84,6 @@ subprojects {
 
         outputs.upToDateWhen { false } // let docker determine if something needs to be built
 
-        doFirst {
-            if (!dockerExe) {
-                throw new GradleException("Please set environment variable DOCKER_EXE to the absolute path of the docker executable")
-            }
-        }
         doLast {
             copy {
                 from "$projectDir/resources/linux"
@@ -114,7 +108,7 @@ subprojects {
                 def tag = df.name.minus('.dockerfile').replace('.', '_')
                 exec {
                     workingDir df.getParentFile().absolutePath
-                    executable dockerExe
+                    executable 'docker'
                     args 'build', '--pull', '-f', df.name, '-t', tag, '.'
                 }
             }
@@ -148,14 +142,14 @@ task resetDockerEnv {
     doLast {
         def os = new ByteArrayOutputStream()
         exec {
-            executable dockerExe
+            executable 'docker'
             args 'ps', '-q'
             standardOutput = os
         }
         def dockerPs = os.toString().split('\\s+')
         if (dockerPs.length > 0) {
             exec {
-                executable dockerExe
+                executable 'docker'
                 ['stop', *dockerPs].each {
                     args it
                 }
@@ -163,17 +157,17 @@ task resetDockerEnv {
         }
         logger.info "Pruning containers..."
         exec {
-            executable dockerExe
+            executable 'docker'
             args 'container', 'prune', '-f'
         }
         logger.info "Pruning networks..."
         exec {
-            executable dockerExe
+            executable 'docker'
             args 'network', 'prune', '-f'
         }
         logger.info "Pruning images..."
         exec {
-            executable dockerExe
+            executable 'docker'
             args 'image', 'prune', '-f'
         }
     }
@@ -217,25 +211,4 @@ def getConfigSet(File universeFile, File includesFile, File excludesFile) {
 
     def resultantSet = includeSet.intersect(universalSet.minus(excludeSet)).plus(uniqueIncludes)
     return resultantSet
-}
-
-def verifyDockerInstallation() {
-    exec {
-        executable dockerExe
-        args 'version'
-    }
-}
-
-def getCurrentDockerServerArch() {
-    verifyDockerInstallation()
-    def dockerVersionOutput = new ByteArrayOutputStream()
-    exec {
-        executable dockerExe
-        args 'version'
-        standardOutput = dockerVersionOutput
-        errorOutput = new ByteArrayOutputStream()
-    }.assertNormalExitValue()
-    String strOut = dockerVersionOutput.toString().trim()
-    def m = strOut =~ /(?ism).+?Server:.+?OS\/Arch:\s+(\w+?)\//
-    return m[0][1];
 }

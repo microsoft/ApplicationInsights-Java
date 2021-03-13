@@ -128,16 +128,6 @@
                 </Or>
             </And>
             <And>
-                <!-- The configuration file path is only read from trusted sources. -->
-                <Class name="com.microsoft.applicationinsights.internal.config.ConfigurationFileLocator"/>
-                <Or>
-                    <Method name="getConfigurationAbsolutePath"/>
-                    <Method name="getConfigurationFile"/>
-                    <Method name="getConfigurationFromLibraryLocation"/> <!-- the jar file path; same reasoning -->
-                    <Method name="normalizeUrlToFile"/>
-                </Or>
-            </And>
-            <And>
                 <!-- This path is read from trusted sources (file containing *ix process stats). -->
                 <Class name="com.microsoft.applicationinsights.internal.perfcounter.AbstractUnixPerformanceCounter"/>
                 <Method name="&lt;init&gt;"/>
@@ -183,12 +173,6 @@
                 <Method name="getTempDir" params="" returns="java.io.File" />
             </And>
         </Or>
-    </Match>
-    <Match>
-        <!-- False positive. Inputs are not exposed to user -->
-        <Bug pattern="HTTP_PARAMETER_POLLUTION" />
-        <Class name="com.microsoft.applicationinsights.web.internal.correlation.CdsProfileFetcher" />
-        <Method name="createFetchTask" />
     </Match>
     <Match>
         <!-- False positive. There's a null check and it is initialized by MainEntryPoint as part of the startup procedures. -->

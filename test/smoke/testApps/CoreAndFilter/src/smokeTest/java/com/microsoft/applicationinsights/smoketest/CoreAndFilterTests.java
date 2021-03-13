@@ -2,7 +2,9 @@ package com.microsoft.applicationinsights.smoketest;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
@@ -357,7 +359,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(false, rd.getSuccess());
         assertEquals("404", rd.getResponseCode());
 
-        assertEquals("/CoreAndFilter/autoFailedRequestWithResultCode", rdEnvelope.getTags().get("ai.operation.name"));
+        assertEquals("/CoreAndFilter/*", rdEnvelope.getTags().get("ai.operation.name"));
     }
 
     @Test
@@ -379,12 +381,25 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        List<Envelope> edList = mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
+        List<Envelope> edList = mockedIngestion.waitForItems(new Predicate<Envelope>() {
+            @Override
+            public boolean apply(Envelope input) {
+                if (!"ExceptionData".equals(input.getData().getBaseType())) {
+                    return false;
+                }
+                if (!operationId.equals(input.getTags().get("ai.operation.id"))) {
+                    return false;
+                }
+                // lastly, filter out ExceptionData captured from tomcat logger
+                ExceptionData data = (ExceptionData) ((Data<?>) input.getData()).getBaseData();
+                return !data.getProperties().containsKey("LoggerName");
+            }
+        }, 1, 10, TimeUnit.SECONDS);
 
         Envelope edEnvelope = edList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        ExceptionData ed = (ExceptionData) ((Data) edEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
         assertFalse(rd.getSuccess());
 
@@ -400,8 +415,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
     private static ExceptionDetails getExceptionDetails(ExceptionData exceptionData) {
         List<ExceptionDetails> details = exceptionData.getExceptions();
-        ExceptionDetails ex = details.get(0);
-        return ex;
+        return details.get(0);
     }
 
     private void validateSlowTest(int expectedDurationSeconds, String operationName) throws Exception {

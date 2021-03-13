@@ -33,8 +33,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
-import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerObserver;
-import com.microsoft.applicationinsights.internal.shutdown.Stoppable;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,33 +48,33 @@ import org.slf4j.LoggerFactory;
  *
  * Created by gupele on 6/29/2015.
  */
-public final class TransmissionPolicyManager implements Stoppable, TransmissionHandlerObserver {
+public final class TransmissionPolicyManager implements TransmissionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmissionPolicyManager.class);
 
     private static final AtomicInteger INSTANCE_ID_POOL = new AtomicInteger(1);
 
     private int instantRetryAmount = 3;         // Should always be set by the creator of this class
-    private final int INSTANT_RETRY_MAX = 10;   // Stops us from getting into an endless loop
+    private static final int INSTANT_RETRY_MAX = 10;   // Stops us from getting into an endless loop
 
     // Current thread backoff manager
-    private SenderThreadsBackOffManager backoffManager;
+    private final SenderThreadsBackOffManager backoffManager;
 
     // List of transmission policies implemented as handlers
-    private List<TransmissionHandler> transmissionHandlers;
+    private final List<TransmissionHandler> transmissionHandlers;
 
     // The future date the the transmission is blocked
     private Date suspensionDate;
 
     // Make sure that we don't double block, we do that by keeping un up-to-date generation id
-    private AtomicLong generation = new AtomicLong(0);
+    private final AtomicLong generation = new AtomicLong(0);
 
     // A thread that will callback when the timeout expires
     private ScheduledThreadPoolExecutor threads;
 
     // Keeps the current policy state of the transmission
     private final TransmissionPolicyState policyState = new TransmissionPolicyState();
-    private boolean throttlingIsEnabled = true;
+    private final boolean throttlingIsEnabled;
 
     private final int instanceId = INSTANCE_ID_POOL.getAndIncrement();
 
@@ -108,7 +106,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
     public TransmissionPolicyManager(boolean throttlingIsEnabled) {
         suspensionDate = null;
         this.throttlingIsEnabled = throttlingIsEnabled;
-        this.transmissionHandlers = new ArrayList<TransmissionHandler>();
+        this.transmissionHandlers = new ArrayList<>();
         this.backoffManager = new SenderThreadsBackOffManager(new ExponentialBackOffTimesPolicy());
     }
 
@@ -151,15 +149,6 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
         createScheduler();
 
         doSuspend(policy, suspendInSeconds);
-    }
-
-    /**
-     * Stop this transmission thread from sending.
-     */
-    @Override
-    public synchronized void stop(long timeout, TimeUnit timeUnit) {
-        ThreadPoolUtils.stop(threads, timeout, timeUnit);
-        this.backoffManager.remove();
     }
 
     /**
@@ -211,7 +200,7 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
 
         policyState.setCurrentState(TransmissionPolicy.UNBLOCKED);
         suspensionDate = null;
-        logger.info("App throttling is cancelled.");
+        logger.debug("App throttling is cancelled.");
     }
 
     private synchronized void createScheduler() {
@@ -230,7 +219,6 @@ public final class TransmissionPolicyManager implements Stoppable, TransmissionH
         }
     }
 
-    @Override
     public void addTransmissionHandler(TransmissionHandler handler) {
         if (handler != null) {
             this.transmissionHandlers.add(handler);
