@@ -138,12 +138,12 @@ public class AttributeProcessor extends AgentProcessor {
         if (existingValue == null) {
             return span;
         }
-        Matcher matcher = actionObj.extractAttribute.extractAttributePattern.matcher(existingValue);
+        Matcher matcher = actionObj.extractAttribute.pattern.matcher(existingValue);
         if (!matcher.matches()) {
             return span;
         }
         AttributesBuilder builder = span.getAttributes().toBuilder();
-        for (String groupName : actionObj.extractAttribute.extractAttributeGroupNames) {
+        for (String groupName : actionObj.extractAttribute.groupNames) {
             builder.put(groupName, matcher.group(groupName));
         }
         return new MySpanData(span, builder.build());
