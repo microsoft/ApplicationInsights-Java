@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <included>
-    <property scope="local" name="ai.appsvc.logfile.name" value="applicationinsights-extension" />
-    <property scope="local" name="ai.appsvc.logfile.ext" value=".log" />
-    <property scope="local" name="ai.appsvc.logfile.old.ext" value="${ai.appsvc.logfile.ext}.old" />
-
     <!-- internal troubleshooting/diagnostics logs -->
     <appender name="DIAGNOSTICS_FILE" class="com.microsoft.applicationinsights.agent.shadow.ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY}/${ai.appsvc.logfile.name}${ai.appsvc.logfile.ext}</file>
+        <file>${APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY}/applicationinsights-extension.log</file>
         <rollingPolicy class="com.microsoft.applicationinsights.agent.shadow.ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY}/${ai.appsvc.logfile.name}-%d{yyyy-MM-dd}.%i${ai.appsvc.logfile.old.ext}</fileNamePattern>
+            <fileNamePattern>${APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY}/applicationinsights-extension-%d{yyyy-MM-dd}.%i.log.old</fileNamePattern>
             <maxHistory>1</maxHistory>
             <totalSizeCap>10MB</totalSizeCap>
             <maxFileSize>5MB</maxFileSize>
@@ -30,5 +26,4 @@
     <root>
         <appender-ref ref="DIAGNOSTICS_FILE" /><!-- optional; platform dependent -->
     </root>
-
 </included>

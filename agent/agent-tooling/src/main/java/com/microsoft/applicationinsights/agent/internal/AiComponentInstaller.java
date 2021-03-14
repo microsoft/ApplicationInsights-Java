@@ -196,11 +196,11 @@ public class AiComponentInstaller implements ComponentInstaller {
 
     @Nullable
     private static String getCodelessSdkNamePrefix() {
-        if (!DiagnosticsHelper.isAnyAttach()) {
+        if (!DiagnosticsHelper.isRpIntegration()) {
             return null;
         }
         StringBuilder sdkNamePrefix = new StringBuilder(4);
-        sdkNamePrefix.append(DiagnosticsHelper.attachChar());
+        sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
         if (SystemInformation.INSTANCE.isWindows()) {
             sdkNamePrefix.append("w");
         } else if (SystemInformation.INSTANCE.isUnix()) {

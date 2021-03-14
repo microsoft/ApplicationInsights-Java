@@ -19,7 +19,6 @@ logger-config/common\.xml
 logger-config/console\.appender\.xml
 logger-config/file\.appender\.xml
 rp-logger-config/
-rp-logger-config/user-logfile\.appender\.xml
 rp-logger-config/diagnostics\.appender\.xml
 rp-logger-config/etw.appender\.xml
 applicationinsights-java-etw-provider-x86-64\.dll

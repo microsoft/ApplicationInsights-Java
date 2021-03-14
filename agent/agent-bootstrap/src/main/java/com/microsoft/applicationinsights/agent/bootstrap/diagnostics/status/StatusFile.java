@@ -60,10 +60,10 @@ public class StatusFile {
     static final String STATUS_FILE_DIRECTORY = "/status";
 
     // visible for testing
-    static final String STATUS_FILE_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_STATUS_FILE_ENABLED";
+    static String logDir;
 
     // visible for testing
-    static String directory;
+    static String statusDir;
 
     private static final Object lock = new Object();
 
@@ -87,8 +87,6 @@ public class StatusFile {
             new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
                     THREAD_FACTORY);
 
-    private static boolean enabled;
-
     static {
         WRITER_THREAD.allowCoreThreadTimeOut(true);
         CONSTANT_VALUES.put("AppType", "java");
@@ -100,24 +98,26 @@ public class StatusFile {
         VALUE_FINDERS.add(mf.getInstrumentationKey());
         VALUE_FINDERS.add(mf.getExtensionVersion());
 
-        init();
+        logDir = initLogDir();
+        statusDir = logDir + STATUS_FILE_DIRECTORY;
     }
 
     // visible for testing
-    static void init() {
-        enabled = !"false".equalsIgnoreCase(System.getenv(STATUS_FILE_ENABLED_ENV_VAR));
-        final String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
-        final String statusFileRelativePath = DEFAULT_APPLICATIONINSIGHTS_LOGDIR + STATUS_FILE_DIRECTORY;
+    static String initLogDir() {
+        // TODO document here which app svcs platforms / containers provide site.log system property?
+        String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
         if (siteLogDir != null && !siteLogDir.isEmpty()) {
-            directory = siteLogDir + statusFileRelativePath;
-        } else {
-            final String homeDir = System.getenv(HOME_ENV_VAR);
-            if (homeDir != null && !homeDir.isEmpty()) {
-                directory = homeDir  + DEFAULT_LOGDIR + statusFileRelativePath;
-            } else {
-                directory = DEFAULT_HOME_DIR + DEFAULT_LOGDIR + statusFileRelativePath;
-            }
+            return siteLogDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
         }
+        String homeDir = System.getenv(HOME_ENV_VAR);
+        if (homeDir != null && !homeDir.isEmpty()) {
+            return homeDir  + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+        }
+        return DEFAULT_HOME_DIR + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+    }
+
+    public static String getLogDir() {
+        return logDir;
     }
 
     private StatusFile() {
@@ -125,7 +125,7 @@ public class StatusFile {
 
     // visible for testing
     static boolean shouldWrite() {
-        return enabled && DiagnosticsHelper.isAppSvcAttachForLoggingPurposes();
+        return DiagnosticsHelper.useAppSvcRpIntegrationLogging();
     }
 
     public static <T> void putValueAndWrite(String key, T value) {
@@ -165,7 +165,7 @@ public class StatusFile {
                 // the executor should prevent more than one thread from executing this block.
                 // this is just a safeguard
                 synchronized (lock) {
-                    final File file = new File(directory, fileName);
+                    final File file = new File(statusDir, fileName);
                     boolean dirsWereCreated = file.getParentFile().mkdirs();
 
                     Logger logger = loggingInitialized ? LoggerFactory.getLogger(StatusFile.class) : null;

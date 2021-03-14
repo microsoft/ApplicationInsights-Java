@@ -173,6 +173,13 @@ public class ConfigurationBuilder {
             }
         }
 
+        if (DiagnosticsHelper.isRpIntegration()) {
+            // users do not have write access to agent directory in rp integrations
+            // and rp integrations should not use applicationinsights.json because that makes it difficult to merge
+            // rp intent and user intent
+            return new Configuration();
+        }
+
         Path configPath = agentJarPath.resolveSibling("applicationinsights.json");
         if (Files.exists(configPath)) {
             return loadJsonConfigFile(configPath);
