@@ -86,7 +86,7 @@ public class ConfigurationTest {
         envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=11111111-1111-1111-1111-111111111111");
 
-        Configuration configuration = ConfigurationBuilder.create(Paths.get("."), rpConfiguration);
+        Configuration configuration = ConfigurationBuilder.create(Paths.get("."), null);
 
         assertEquals("InstrumentationKey=11111111-1111-1111-1111-111111111111", configuration.connectionString);
         assertEquals("testrole", configuration.role.name);
@@ -105,7 +105,7 @@ public class ConfigurationTest {
                 "\"role\":{\"name\":\"testrole\"}}";
         envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
 
-        ConfigurationBuilder.create(Paths.get("."), rpConfiguration);
+        ConfigurationBuilder.create(Paths.get("."), null);
     }
 
     @Test
