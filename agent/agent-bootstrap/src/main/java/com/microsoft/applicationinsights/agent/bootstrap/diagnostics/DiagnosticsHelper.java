@@ -13,6 +13,7 @@ public class DiagnosticsHelper {
 
     // visible for testing
     static volatile boolean useAppSvcRpIntegrationLogging;
+    private static volatile boolean useFunctionsRpIntegrationLogging;
 
     private static volatile char rpIntegrationChar;
 
@@ -41,7 +42,7 @@ public class DiagnosticsHelper {
             rpIntegrationChar = 'k';
         } else if (Files.exists(agentPath.resolveSibling("functions.codeless"))) {
             rpIntegrationChar = 'f';
-            useAppSvcRpIntegrationLogging = true;
+            useFunctionsRpIntegrationLogging = true;
         } else if (Files.exists(agentPath.resolveSibling("springcloud.codeless"))) {
             rpIntegrationChar = 's';
         }
@@ -59,6 +60,11 @@ public class DiagnosticsHelper {
     // this also applies to Azure Functions running on App Services
     public static boolean useAppSvcRpIntegrationLogging() {
         return useAppSvcRpIntegrationLogging;
+    }
+
+    // this also applies to Azure Functions running on App Services
+    public static boolean useFunctionsRpIntegrationLogging() {
+        return useFunctionsRpIntegrationLogging;
     }
 
     public static ApplicationMetadataFactory getMetadataFactory() {
