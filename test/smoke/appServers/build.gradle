@@ -212,27 +212,3 @@ def getConfigSet(File universeFile, File includesFile, File excludesFile) {
     def resultantSet = includeSet.intersect(universalSet.minus(excludeSet)).plus(uniqueIncludes)
     return resultantSet
 }
-<<<<<<< HEAD
-
-def verifyDockerInstallation() {
-    exec {
-        executable dockerExe
-        args 'version'
-    }
-}
-
-def getCurrentDockerServerArch() {
-    verifyDockerInstallation()
-    def dockerVersionOutput = new ByteArrayOutputStream()
-    exec {
-        executable dockerExe
-        args 'version'
-        standardOutput = dockerVersionOutput
-        errorOutput = new ByteArrayOutputStream()
-    }.assertNormalExitValue()
-    String strOut = dockerVersionOutput.toString().trim()
-    def m = strOut =~ /(?ism).+?Server:.+?OS\/Arch:\s+(\w+?)\//
-    return m[0][1];
-}
-=======
->>>>>>> legacy-sdk
