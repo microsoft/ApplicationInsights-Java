@@ -1,5 +1,9 @@
 apply plugin: 'java-library'
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     compile 'com.google.guava:guava:23.0'
     compile 'junit:junit:4.12'
