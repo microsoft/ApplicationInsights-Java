@@ -8,7 +8,6 @@ subprojects {
     apply plugin: 'java'
 
     repositories {
-        jcenter()
         mavenCentral()
         mavenLocal() // this is needed to resolve aiAgentJar transitive dependencies, at least in gRPC:extractIncludeProto
     }
