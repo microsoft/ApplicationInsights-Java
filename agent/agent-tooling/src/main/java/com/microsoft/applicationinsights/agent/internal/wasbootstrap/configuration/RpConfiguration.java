@@ -34,7 +34,7 @@ public class RpConfiguration {
 
     public String connectionString;
     // intentionally null, so that we can tell if rp is providing or not
-    public Sampling sampling;
+    public Sampling sampling = new Sampling();
 
     public static class Sampling {
 
