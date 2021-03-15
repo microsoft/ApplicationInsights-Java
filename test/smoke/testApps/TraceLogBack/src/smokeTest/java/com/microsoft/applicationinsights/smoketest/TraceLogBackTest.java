@@ -9,20 +9,10 @@ import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import com.microsoft.applicationinsights.internal.schemav2.SeverityLevel;
-
-import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
 
 @RequestCapturing(enabled = false)
 public class TraceLogBackTest extends AiSmokeTest {
-
-    @Before
-    public void skipJbosseap6AndJbosseap7Image() {
-        // this doesn't work with jbosseap6 and jbosseap7;
-        Assume.assumeFalse(currentImageName.contains("jbosseap6"));
-        Assume.assumeFalse(currentImageName.contains("jbosseap7"));
-    }
 
     @Test
     @TargetUri("/traceLogBack")

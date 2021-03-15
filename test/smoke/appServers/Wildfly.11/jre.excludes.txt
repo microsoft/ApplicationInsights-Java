@@ -1,0 +1,2 @@
+azul/zulu-openjdk:7
+azul/zulu-openjdk:11

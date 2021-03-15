@@ -4,7 +4,7 @@
 
     <!-- The key from the portal: -->
 
-    <ConnectionString>InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606</ConnectionString>
+    <ConnectionString>InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:6060</ConnectionString>
 
     <!-- HTTP request component (not required for bare API) -->
 

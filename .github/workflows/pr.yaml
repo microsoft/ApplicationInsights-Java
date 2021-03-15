@@ -1,0 +1,51 @@
+name: PR build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - legacy-sdk
+
+jobs:
+  setup-smoke-test-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Set up JDK 8 for running Gradle
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - id: set-matrix
+        # "grep -v skipWinNative" is used to skip the warning message "Skipping build of :etw:native because skipWinNative=true"
+        run: echo "::set-output name=matrix::{\"module\":[\"$(./gradlew -q :test:smoke:testApps:listTestApps | grep -v skipWinNative | xargs echo | sed 's/ /","/g')\"]}"
+
+  smoke-test:
+    needs: setup-smoke-test-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.setup-smoke-test-matrix.outputs.matrix)}}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - id: setup-test-java
+        name: Set up JDK 8 for running Gradle
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - name: Test
+        run: ./gradlew ${{ matrix.module }}:smokeTest --no-daemon
+
+  accept-pr:
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      # run this action to get workflow conclusion
+      # You can get conclusion by env (env.WORKFLOW_CONCLUSION)
+      - uses: technote-space/workflow-conclusion-action@v1
+      - name: Fail build
+        if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure
+        run: exit 1
