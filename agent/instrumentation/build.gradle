@@ -38,7 +38,12 @@ dependencies {
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jms-1.1', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-kafka-clients-0.11', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-kafka-streams-0.11', version: instrumentationVersion
-    compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-kotlinx-coroutines', version: instrumentationVersion
+    compile (group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-kotlinx-coroutines', version: instrumentationVersion) {
+        // TODO fix this upstream
+        exclude group: 'org.jetbrains.kotlin'
+        exclude group: 'org.jetbrains.kotlinx'
+        exclude group: 'org.jetbrains', module: 'annotations'
+    }
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-4.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-5.0', version: instrumentationVersion
     compile group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-5.1', version: instrumentationVersion
