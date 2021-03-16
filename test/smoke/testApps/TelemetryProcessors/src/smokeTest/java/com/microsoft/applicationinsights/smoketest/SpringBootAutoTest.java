@@ -8,7 +8,7 @@ import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-@UseAgent("telemetryprocessor")
+@UseAgent("telemetryprocessors")
 public class SpringBootAutoTest extends AiSmokeTest {
 
     @Test
