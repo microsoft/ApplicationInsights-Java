@@ -68,56 +68,10 @@ test:
       arguments: 'test'
       fail_on_stderr: false
       testresults:
-        - title: ':core Unit Test Results'
+        - title: ':Unit Test Results'
           type: 'junit'
-          from: 'core/build/test-results/text'
           include:
-            - '**/*'
-        - title: ':agent Unit Test Results'
-          type: 'junit'
-          from: 'agent/build/test-results/test'
-          include:
-            - '**/*'
-        - title: ':ApplciationInsightsInternalLogger Unit Test Results'
-          type: 'junit'
-          from: 'ApplciationInsightsInternalLogger/build/test-results/test'
-          include:
-            - '**/*'
-        - title: ':azure-application-insights-spring-boot-starter Unit Test Results'
-          type: 'junit'
-          from: 'azure-application-insights-spring-boot-starter/build/test-results/test'
-          include:
-            - '**/*'
-        - title: ':web Unit Test Results'
-          type: 'junit'
-          from: 'web/build/test-results/test'
-          include:
-            - '**/*'
-        - title: ':web-auto Unit Test Results'
-          type: 'junit'
-          from: 'web-auto/build/test-results/test'
-          include:
-            - '**/*'
-        - title: ':logging:common Unit Test Results'
-          type: 'junit'
-          from: 'logging/common/build/test-results/test'
-          include:
-            - '**/*'
-        - title: ':logging:log4j1_2 Unit Test Results'
-          type: 'junit'
-          from: 'logging/log4j1_2/build/test-results/test'
-          include:
-            - '**/*'
-        - title: ':logging:log4j2 Unit Test Results'
-          type: 'junit'
-          from: 'logging/log4j2/build/test-results/test'
-          include:
-            - '**/*'
-        - title: ':logging:logback Unit Test Results'
-          type: 'junit'
-          from: 'logging/logback/build/test-results/test'
-          include:
-            - '**/*'
+            - '**/build/test-results/test/**/*'
       logs:
         - to: 'Test Logs'
           include:
