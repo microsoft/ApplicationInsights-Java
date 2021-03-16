@@ -37,7 +37,7 @@ final class ExponentialBackOffTimesPolicy implements BackOffTimesPolicy {
     private static final long TWO_MINUTES_IN_MILLIS = 120000;
     private static final long FOUR_MINUTES_IN_MILLIS = 240000;
     private static final long SIX_MINUTES_IN_MILLIS = 360000;
-    private static long[] s_exponentialBackOffInMillis = new long[] {
+    private static final long[] s_exponentialBackOffInMillis = new long[] {
             FIVE_SECONDS_IN_MILLIS,
             TEN_SECONDS_IN_MILLIS,
             FIVE_SECONDS_IN_MILLIS,

@@ -17,7 +17,7 @@ import com.microsoft.applicationinsights.telemetry.Duration;
 @WebServlet(description = "Performs given calculation", urlPatterns = { "/trackDependency" })
 public class SimpleTrackDependencyServlet extends HttpServlet {
     private static final long serialVersionUID = -5145497408200255321L;
-    private TelemetryClient client = new TelemetryClient();
+    private final TelemetryClient client = new TelemetryClient();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

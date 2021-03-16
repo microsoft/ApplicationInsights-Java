@@ -1,11 +1,10 @@
 package com.microsoft.applicationinsights.smoketest;
 
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.junit.*;
 
 @UseAgent
 public class SpringBootAutoTest extends AiSmokeTest {
@@ -14,11 +13,12 @@ public class SpringBootAutoTest extends AiSmokeTest {
     @TargetUri("/delayedSystemExit")
     public void doDelayedSystemExitTest() throws Exception {
         mockedIngestion.waitForItems("RequestData", 1);
-        mockedIngestion.waitForItems("MessageData", 1);
-
-        List<MessageData> messageData = mockedIngestion.getTelemetryDataByType("MessageData");
-
-        assertEquals(1, messageData.size());
-        assertEquals("this is an error right before shutdown", messageData.get(0).getMessage());
+        mockedIngestion.waitForItem(input -> {
+            if (!"MessageData".equals(input.getData().getBaseType())) {
+                return false;
+            }
+            MessageData data = (MessageData) ((Data<?>) input.getData()).getBaseData();
+            return data.getMessage().equals("this is an error right before shutdown");
+        }, 10, TimeUnit.SECONDS);
     }
 }

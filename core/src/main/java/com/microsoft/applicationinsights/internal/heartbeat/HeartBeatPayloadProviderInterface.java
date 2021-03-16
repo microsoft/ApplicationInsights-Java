@@ -25,13 +25,6 @@ public interface HeartBeatPayloadProviderInterface {
   String getName();
 
   /**
-   * Tells if the input string is a reserved property.
-   * @param keyword string to test
-   * @return true if input string is reserved keyword
-   */
-  boolean isKeyword(String keyword);
-
-  /**
    * Returns a callable which can be executed to set the payload based on the parameters.
    * @param disableFields List of Properties to be excluded from payload
    * @param provider The current heartbeat provider

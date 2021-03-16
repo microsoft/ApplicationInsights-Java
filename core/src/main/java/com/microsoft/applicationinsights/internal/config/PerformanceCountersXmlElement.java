@@ -28,15 +28,11 @@ import java.util.ArrayList;
  */
 public class PerformanceCountersXmlElement {
 
-    private boolean useBuiltIn = true;
-
     private long collectionFrequencyInSec = 60;
 
     private PerformanceCounterJvmSectionXmlElement jvmSection;
 
-    private JmxWrapperXmlElement jmxWrapper = new JmxWrapperXmlElement();
-
-    private WindowsPCWrapperXmlElement windowsPCWrapper = new WindowsPCWrapperXmlElement();
+    private final JmxWrapperXmlElement jmxWrapper = new JmxWrapperXmlElement();
 
     public ArrayList<JmxXmlElement> getJmxXmlElements() {
         return jmxWrapper.jmxXmlElements;
@@ -44,22 +40,6 @@ public class PerformanceCountersXmlElement {
 
     public void setJmxXmlElements(ArrayList<JmxXmlElement> jmxXmlElements) {
         jmxWrapper.jmxXmlElements = jmxXmlElements;
-    }
-
-    public boolean isUseBuiltIn() {
-        return useBuiltIn;
-    }
-
-    public void setUseBuiltIn(boolean useBuiltIn) {
-        this.useBuiltIn = useBuiltIn;
-    }
-
-    public ArrayList<WindowsPerformanceCounterXmlElement> getWindowsPCs() {
-        return windowsPCWrapper.windowsPCs;
-    }
-
-    public void setWindowsPCs(ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs) {
-        windowsPCWrapper.windowsPCs = windowsPCs;
     }
 
     public long getCollectionFrequencyInSec() {
@@ -81,10 +61,5 @@ public class PerformanceCountersXmlElement {
     public static class JmxWrapperXmlElement {
 
         private ArrayList<JmxXmlElement> jmxXmlElements;
-    }
-
-    public static class WindowsPCWrapperXmlElement {
-
-        private ArrayList<WindowsPerformanceCounterXmlElement> windowsPCs;
     }
 }

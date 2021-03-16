@@ -154,7 +154,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     @Override
     public void trackRequest(String id, String name, URL url, Date timestamp, @Nullable Long duration, String responseCode, boolean success,
-                             String source, Map<String, String> properties, Map<String, String> tags) {
+                             String source, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
@@ -174,6 +174,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.setSource(source);
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
+        telemetry.getMetrics().putAll(metrics);
 
         track(telemetry);
     }

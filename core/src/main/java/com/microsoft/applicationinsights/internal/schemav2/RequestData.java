@@ -38,7 +38,7 @@ public class RequestData extends Domain
     /**
      * Backing field for property Ver.
      */
-    private int ver = 2;
+    private static final int ver = 2;
 
     /**
      * Backing field for property Id.
@@ -91,20 +91,6 @@ public class RequestData extends Domain
     public RequestData()
     {
         this.InitializeFields();
-    }
-
-    /**
-     * Gets the Ver property.
-     */
-    public int getVer() {
-        return this.ver;
-    }
-
-    /**
-     * Sets the Ver property.
-     */
-    public void setVer(int value) {
-        this.ver = value;
     }
 
     /**
@@ -210,16 +196,9 @@ public class RequestData extends Domain
      */
     public ConcurrentMap<String, String> getProperties() {
         if (this.properties == null) {
-            this.properties = new ConcurrentHashMap<String, String>();
+            this.properties = new ConcurrentHashMap<>();
         }
         return this.properties;
-    }
-
-    /**
-     * Sets the Properties property.
-     */
-    public void setProperties(ConcurrentMap<String, String> value) {
-        this.properties = value;
     }
 
     /**
@@ -227,18 +206,10 @@ public class RequestData extends Domain
      */
     public ConcurrentMap<String, Double> getMeasurements() {
         if (this.measurements == null) {
-            this.measurements = new ConcurrentHashMap<String, Double>();
+            this.measurements = new ConcurrentHashMap<>();
         }
         return this.measurements;
     }
-
-    /**
-     * Sets the Measurements property.
-     */
-    public void setMeasurements(ConcurrentMap<String, Double> value) {
-        this.measurements = value;
-    }
-
 
     /**
      * Serializes the beginning of this object to the passed in writer.

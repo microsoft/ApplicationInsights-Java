@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.TelemetryConfigurationTestHelper;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
@@ -37,20 +36,20 @@ public class HeartbeatTests {
 
   @Test
   public void initializeHeartBeatModuleDoesNotThrow() {
-    HeartBeatModule module = new HeartBeatModule(new HashMap<String, String>());
+    HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.initialize(null);
   }
 
   @Test
   public void initializeHeartBeatTwiceDoesNotFail() {
-    HeartBeatModule module = new HeartBeatModule(new HashMap<String, String>());
+    HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.initialize(null);
     module.initialize(null);
   }
 
   @Test
   public void initializeHeartBeatDefaultsAreSetCorrectly() throws Exception {
-    HeartBeatModule module = new HeartBeatModule(new HashMap<String, String>());
+    HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.initialize(null);
 
     Thread.sleep(100);
@@ -82,7 +81,7 @@ public class HeartbeatTests {
 
   @Test
   public void canExtendHeartBeatPayload() throws Exception {
-    HeartBeatModule module = new HeartBeatModule(new HashMap<String, String>());
+    HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.initialize(new TelemetryConfiguration());
 
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
@@ -94,8 +93,6 @@ public class HeartbeatTests {
 
   @Test
   public void initializationOfTelemetryClientDoesNotResetHeartbeat() {
-    TelemetryClient client = new TelemetryClient();
-
     boolean origIsEnabled = true;
     String origExcludedHbProvider = "FakeProvider";
     long originalInterval = 0;
@@ -114,7 +111,6 @@ public class HeartbeatTests {
       }
     }
 
-    TelemetryClient client2 = new TelemetryClient();
     for (TelemetryModule module :TelemetryConfiguration.getActive().getTelemetryModules()) {
       if (module instanceof HeartBeatModule) {
         Assert.assertNotEquals(((HeartBeatModule)module).isHeartBeatEnabled(), origIsEnabled);
@@ -128,7 +124,6 @@ public class HeartbeatTests {
 
   @Test
   public void heartBeatIsEnabledByDefault() {
-    TelemetryClient client = new TelemetryClient();
     List<TelemetryModule> modules = TelemetryConfiguration.getActive().getTelemetryModules();
     System.out.println(modules.size());
     boolean hasHeartBeatModule = false;
@@ -166,7 +161,7 @@ public class HeartbeatTests {
 
   @Test
   public void canDisableHeartBeatPropertyProviderPriorToInitialize() throws  Exception {
-    HeartBeatModule module = new HeartBeatModule(new HashMap<String, String>());
+    HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.setExcludedHeartBeatPropertiesProvider(Arrays.asList("Base", "webapps"));
 
 
@@ -189,7 +184,7 @@ public class HeartbeatTests {
     Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
         .then(new Answer<Boolean>() {
               @Override
-              public Boolean answer(InvocationOnMock invocation) throws Throwable {
+              public Boolean answer(InvocationOnMock invocation) {
                         props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
                         return true;
                       }
@@ -198,7 +193,7 @@ public class HeartbeatTests {
     List<String> disabledProviders = new ArrayList<>();
     disabledProviders.add("Default");
     disabledProviders.add("webapps");
-    Callable<Boolean> callable = HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<String>(),
+    Callable<Boolean> callable = HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<>(),
         disabledProviders, mockProvider);
 
     callable.call();
@@ -264,14 +259,14 @@ public class HeartbeatTests {
     Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
         .then(new Answer<Boolean>() {
           @Override
-          public Boolean answer(InvocationOnMock invocation) throws Throwable {
+          public Boolean answer(InvocationOnMock invocation) {
             props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
             return true;
           }
         });
     DefaultHeartBeatPropertyProvider defaultProvider = new DefaultHeartBeatPropertyProvider();
 
-    HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<String>(), new ArrayList<String>(),
+    HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<>(), new ArrayList<>(),
         mockProvider).call();
     Field field = defaultProvider.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
@@ -291,30 +286,6 @@ public class HeartbeatTests {
   }
 
   @Test
-  public void canSetPropertyWithoutAddingItFirst() {
-    HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(null);
-    Assert.assertTrue(provider.setHeartBeatProperty("test01", "test val", true));
-    Assert.assertTrue(provider.setHeartBeatProperty("test01", "test val", true));
-  }
-
-  @Test
-  public void cannotSetValueOfDefaultPayloadProperties() throws Exception {
-    HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(null);
-    DefaultHeartBeatPropertyProvider defaultBase = new DefaultHeartBeatPropertyProvider();
-
-    //for callable to complete
-    Thread.sleep(100);
-    Field field = defaultBase.getClass().getDeclaredField("defaultFields");
-    field.setAccessible(true);
-    Set<String> defaultFields = (Set<String>)field.get(defaultBase);
-    for (String key : defaultFields) {
-      Assert.assertFalse(provider.setHeartBeatProperty(key, "test", true));
-    }
-  }
-
-  @Test
   public void cannotAddUnknownDefaultProperty() throws Exception {
     DefaultHeartBeatPropertyProvider base = new DefaultHeartBeatPropertyProvider();
     String testKey = "testKey";
@@ -324,7 +295,7 @@ public class HeartbeatTests {
     Set<String> defaultFields = (Set<String>)field.get(base);
     defaultFields.add(testKey);
     HeartBeatProvider provider = new HeartBeatProvider();
-    base.setDefaultPayload(new ArrayList<String>(), provider).call();
+    base.setDefaultPayload(new ArrayList<>(), provider).call();
     Method m = provider.getClass().getDeclaredMethod("gatherData");
     m.setAccessible(true);
     Telemetry t = (Telemetry)m.invoke(provider);

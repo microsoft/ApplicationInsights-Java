@@ -36,7 +36,7 @@ import static com.microsoft.applicationinsights.internal.perfcounter.Constants.P
  * The class knows how to supply the io usage of the current process under the Unix OS.
  *
  * When activated the class will calculate the io usage based on the data under /proc/[pid]/io
- * file and will create a {@link com.microsoft.applicationinsights.telemetry.PerformanceCounterTelemetry}
+ * file and will create a {@link com.microsoft.applicationinsights.telemetry.MetricTelemetry}
  * that will contain that data per the amount of time elapsed from the last check in seconds.
  *
  * Created by gupele on 3/8/2015.
@@ -92,7 +92,7 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
     public Double getCurrentIOForCurrentProcess() {
         BufferedReader bufferedReader = null;
 
-        Double result = null;
+        Double result;
         UnixProcessIOtParser parser = new UnixProcessIOtParser();
         try {
             bufferedReader = new BufferedReader(new FileReader(getProcessFile()));

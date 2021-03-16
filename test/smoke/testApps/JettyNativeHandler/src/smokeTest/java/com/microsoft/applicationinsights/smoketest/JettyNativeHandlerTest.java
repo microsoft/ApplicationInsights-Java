@@ -22,6 +22,7 @@ public class JettyNativeHandlerTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
-        assertEquals("SimpleHandlerEx.handle", rd.getName());
+        assertEquals("HTTP GET", rd.getName());
+        assertEquals("200", rd.getResponseCode());
     }
 }

@@ -44,10 +44,6 @@ class ContextTagsMap implements ConcurrentMap<String, String> {
 
     private final ConcurrentMap<String, String> tags = new ConcurrentHashMap<>();
 
-    private static String sanitizeKey(String key) {
-        return key;
-    }
-
     private static String truncate(String value, int maxLength) {
         if (value != null && value.length() > maxLength) {
             value = StringUtils.truncate(value, maxLength);

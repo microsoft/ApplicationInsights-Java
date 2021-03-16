@@ -23,9 +23,7 @@ package com.microsoft.applicationinsights.internal.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by yonisha on 2/5/2015.
@@ -37,24 +35,6 @@ public class DateTimeUtils {
     private DateTimeUtils() {
     }
 
-    public static Date getDateTimeNow() {
-        return new Date();
-    }
-
-    public static Date addToDate(Date date, int field, int amount) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.add(field, amount);
-
-        return calendar.getTime();
-    }
-
-    public static long getDateDiff(Date laterDate, Date date, TimeUnit timeUnit) {
-        long diffInMs = laterDate.getTime() - date.getTime();
-
-        return timeUnit.convert(diffInMs, TimeUnit.MILLISECONDS);
-    }
-
     /**
      * Parses the given round-trip date string (e.g. '2015-05-26T07') into Date object.
      * @param roundTripString The string to parse.
@@ -63,9 +43,8 @@ public class DateTimeUtils {
      */
     public static Date parseRoundTripDateString(String roundTripString) throws ParseException {
         SimpleDateFormat roundTripDateFormat = new SimpleDateFormat(ROUND_TRIP_DATE_FORMAT);
-        Date date = roundTripDateFormat.parse(roundTripString);
 
-        return date;
+        return roundTripDateFormat.parse(roundTripString);
     }
 
     /**

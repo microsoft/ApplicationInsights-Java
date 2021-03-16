@@ -22,7 +22,7 @@ public class MoshiJsonFormatterTests {
     }
 
     @Test
-    public void formatterSerializesSimpleMap() throws Exception {
+    public void formatterSerializesSimpleMap() {
         Map<String, Object> m = new HashMap<>();
         m.put("s1", "v1");
         m.put("int1", 123);
@@ -31,7 +31,7 @@ public class MoshiJsonFormatterTests {
     }
 
     @Test
-    public void formatterWithPrettyPrintPrintsPretty() throws Exception {
+    public void formatterWithPrettyPrintPrintsPretty() {
         Map<String, Object> m = new HashMap<>();
         m.put("s1", "v1");
         m.put("int1", 123);

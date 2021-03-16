@@ -8,8 +8,8 @@ subprojects {
     apply plugin: 'java'
 
     repositories {
-        jcenter()
         mavenCentral()
+        mavenLocal() // this is needed to resolve aiAgentJar transitive dependencies, at least in gRPC:extractIncludeProto
     }
 
     sourceSets {
@@ -29,6 +29,8 @@ subprojects {
     }
 
     dependencies {
+        compileOnly aiAgentJar // this is just to force building the agent first
+
         smokeTestCompile project(':test:smoke:framework:testCore')
         smokeTestCompile project(':test:smoke:framework:utils')
         smokeTestCompile 'org.hamcrest:hamcrest-core:1.3'
@@ -49,7 +51,7 @@ subprojects {
             dependencyContainers.each { dc ->
                 logger.info "Pulling $dc..."
                 exec {
-                    executable dockerExe
+                    executable 'docker'
                     args 'pull', "$dc"
                 }
             }
@@ -115,5 +117,14 @@ subprojects {
         doLast {
             println "$it.name complete. HTML reports: $reports.html.destination"
         }
+    }
+}
+
+tasks.register("listTestApps") {
+    group = "Help"
+    description = "List all available test apps"
+    doFirst {
+        subprojects.collect { it.path }
+                   .each { println it }
     }
 }

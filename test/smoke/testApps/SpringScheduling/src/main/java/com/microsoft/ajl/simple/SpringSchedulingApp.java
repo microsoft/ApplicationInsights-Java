@@ -18,7 +18,7 @@ public class SpringSchedulingApp extends SpringBootServletInitializer {
     }
 
     @Scheduled(fixedRate = 100)
-    public void fixedRateScheduler() throws IOException {
+    public void fixedRateScheduler() {
         System.out.println("Hello world.");
     }
 }

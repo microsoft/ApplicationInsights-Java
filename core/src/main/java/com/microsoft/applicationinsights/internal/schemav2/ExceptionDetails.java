@@ -95,13 +95,6 @@ public class ExceptionDetails
     }
 
     /**
-     * Gets the OuterId property.
-     */
-    public int getOuterId() {
-        return this.outerId;
-    }
-
-    /**
      * Sets the OuterId property.
      */
     public void setOuterId(int value) {
@@ -137,24 +130,10 @@ public class ExceptionDetails
     }
 
     /**
-     * Gets the HasFullStack property.
-     */
-    public boolean getHasFullStack() {
-        return this.hasFullStack;
-    }
-
-    /**
      * Sets the HasFullStack property.
      */
     public void setHasFullStack(boolean value) {
         this.hasFullStack = value;
-    }
-
-    /**
-     * Gets the Stack property.
-     */
-    public String getStack() {
-        return this.stack;
     }
 
     /**
@@ -169,7 +148,7 @@ public class ExceptionDetails
      */
     public List<StackFrame> getParsedStack() {
         if (this.parsedStack == null) {
-            this.parsedStack = new ArrayList<StackFrame>();
+            this.parsedStack = new ArrayList<>();
         }
         return this.parsedStack;
     }

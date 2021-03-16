@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorAttribute;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorIncludeExclude;
-import com.microsoft.applicationinsights.agent.bootstrap.configuration.Configuration.ProcessorMatchType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorAttribute;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorMatchType;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -85,7 +85,7 @@ public abstract class AgentProcessor {
                     // user specified key not found
                     return false;
                 }
-                if (attribute.value != null && !((String)existingAttributeValue).equals(attribute.value)) {
+                if (attribute.value != null && !existingAttributeValue.equals(attribute.value)) {
                     // user specified value doesn't match
                     return false;
                 }

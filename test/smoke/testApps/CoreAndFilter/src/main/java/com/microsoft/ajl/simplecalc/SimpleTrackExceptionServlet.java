@@ -20,7 +20,7 @@ import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 @WebServlet(description = "Performs given calculation", urlPatterns = { "/trackException" })
 public class SimpleTrackExceptionServlet extends HttpServlet {
     private static final long serialVersionUID = 9009843523432371365L;
-    private TelemetryClient client = new TelemetryClient();
+    private final TelemetryClient client = new TelemetryClient();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

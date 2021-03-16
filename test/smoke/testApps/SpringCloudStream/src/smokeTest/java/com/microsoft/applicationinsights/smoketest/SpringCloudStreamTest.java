@@ -49,6 +49,16 @@ public class SpringCloudStreamTest extends AiSmokeTest {
         RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
 
+        if (!rdd1.getName().equals("GreetingsController.sendMessage")) {
+            RemoteDependencyData rddTemp = rdd1;
+            rdd1 = rdd2;
+            rdd2 = rddTemp;
+
+            Envelope rddEnvelopeTemp = rddEnvelope1;
+            rddEnvelope1 = rddEnvelope2;
+            rddEnvelope2 = rddEnvelopeTemp;
+        }
+
         assertEquals("/sendMessage", rd1.getName());
         assertEquals("GreetingsController.sendMessage", rdd1.getName());
 
@@ -59,8 +69,9 @@ public class SpringCloudStreamTest extends AiSmokeTest {
         assertEquals("greetings", rd2.getSource());
         assertEquals("greetings process", rd2.getName());
 
-        assertParentChild(rdd1.getId(), rdEnvelope1, rddEnvelope2);
-        assertParentChild(rdd2.getId(), rddEnvelope1, rdEnvelope2);
+        assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
+        assertParentChild(rdd1.getId(), rddEnvelope1, rddEnvelope2);
+        assertParentChild(rdd2.getId(), rddEnvelope2, rdEnvelope2);
     }
 
     private static void assertParentChild(String parentId, Envelope parentEnvelope, Envelope childEnvelope) {

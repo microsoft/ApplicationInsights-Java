@@ -37,7 +37,7 @@ dependencies {
 
     compile 'com.google.guava:guava:27.1-android'
 
-    compile ('io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.16.0+ai.patch.1') {
+    compile ('io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:1.0.0+ai.patch.1-alpha') {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-jaeger'
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-logging'
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-otlp'
@@ -46,7 +46,7 @@ dependencies {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-zipkin'
         exclude group: 'io.grpc', module: 'grpc-netty'
     }
-    compile 'io.opentelemetry.javaagent:opentelemetry-javaagent-spi:0.16.0+ai.patch.1'
+    compile 'io.opentelemetry.javaagent:opentelemetry-javaagent-spi:1.0.0+ai.patch.1-alpha'
     // TODO sync bytebuddy version with version from auto-tooling (above)
     compile group: 'net.bytebuddy', name: 'byte-buddy', version: '1.10.10'
 
@@ -64,8 +64,8 @@ dependencies {
     compile 'org.slf4j:jcl-over-slf4j:1.7.30'
 
     compile(project(':agent:exporter'))
-    compile 'io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator:0.16.0-alpha'
-    compile 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:0.16.0-alpha'
+    compile 'io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator:1.0.0-alpha'
+    compile 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.0.0-alpha'
 
     compileOnly(project(':agent:agent-bootstrap'))
     testCompile(project(':agent:agent-bootstrap'))

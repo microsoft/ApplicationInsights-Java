@@ -45,7 +45,7 @@ public final class WindowsPerformanceCounterAsPC extends AbstractWindowsPerforma
     private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "WindowsPerformanceCounterAsPC";
 
     // Performance counter key and its metric name that is relevant when sending.
-    private final HashMap<String, String> pcs = new HashMap<String, String>();
+    private final HashMap<String, String> pcs = new HashMap<>();
 
     /**
      * Registers the 'built-in' Windows performance counters that are not fetched from the JVM JMX.

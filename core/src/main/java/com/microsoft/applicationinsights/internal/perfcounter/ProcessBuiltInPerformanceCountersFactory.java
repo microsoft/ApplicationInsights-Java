@@ -75,7 +75,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
      * @return An array of generic performance counters.
      */
     private ArrayList<PerformanceCounter> getMutualPerformanceCounters() {
-        ArrayList<PerformanceCounter> performanceCounters = new ArrayList<PerformanceCounter>();
+        ArrayList<PerformanceCounter> performanceCounters = new ArrayList<>();
 
         performanceCounters.add(new ProcessCpuPerformanceCounter());
         performanceCounters.add(new ProcessMemoryPerformanceCounter());

@@ -74,7 +74,7 @@ public class TelemetryBuffer<T> {
 
                 ++generation;
                 List<T> readyToBeSent = telemetries;
-                telemetries = new ArrayList<T>();
+                telemetries = new ArrayList<>();
 
                 return readyToBeSent;
             }
@@ -87,10 +87,10 @@ public class TelemetryBuffer<T> {
     /// The maximum amount of Telemetries in a batch. If the buffer is
     /// full before the timeout expired, we will need to send it anyway and not wait for the timeout to expire
     private int maxTelemetriesInBatch;
-    private LimitsEnforcer maxTelemetriesInBatchEnforcer;
+    private final LimitsEnforcer maxTelemetriesInBatchEnforcer;
 
     private int transmitBufferTimeoutInSeconds;
-    private LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer;
+    private final LimitsEnforcer transmitBufferTimeoutInSecondsEnforcer;
 
     /// The Telemetry instances are kept here
     private List<T> telemetries;
@@ -138,14 +138,6 @@ public class TelemetryBuffer<T> {
     }
 
     /**
-     * Gets the maximum number of telemetries in a batch
-     * @return The maximum number of telemetries in a batch
-     */
-    public int getMaxTelemetriesInBatch() {
-        return this.maxTelemetriesInBatch;
-    }
-
-    /**
      * Sets the transmit buffer timeout in seconds
      * @param value The amount of time to wait before sending the buffer.
      */
@@ -158,14 +150,6 @@ public class TelemetryBuffer<T> {
                 flush();
             }
         }
-    }
-
-    /**
-     * Gets the transmit buffer timeout in seconds
-     * @return The transmit buffer timeout in seconds
-     */
-    public int getTransmitBufferTimeoutInSeconds() {
-        return this.transmitBufferTimeoutInSeconds;
     }
 
     /**
@@ -229,7 +213,7 @@ public class TelemetryBuffer<T> {
 
         final List<T> readyToBeSent = telemetries;
 
-        telemetries = new ArrayList<T>(maxTelemetriesInBatch);
+        telemetries = new ArrayList<>(maxTelemetriesInBatch);
 
         return readyToBeSent;
     }

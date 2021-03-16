@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
 public final class BaseTelemetryTest {
     private static class StubDomainData extends Domain {
         @Override
-        public void serialize(JsonTelemetryDataSerializer serializer) throws IOException {
+        public void serialize(JsonTelemetryDataSerializer serializer) {
 
         }
     }
@@ -47,24 +47,11 @@ public final class BaseTelemetryTest {
 
         private static final String BASE_TYPE = "StubData";
 
-        public int numberOfCallsToAdditionalSanitize;
-
-
         public StubTelemetry() {
         }
 
-        public StubTelemetry(String d) {
-            initialize(new ConcurrentHashMap<String, String>());
-        }
-
-        @Override
-        public int getVer() {
-            return 0;
-        }
-
-        @Override
-        protected void additionalSanitize() {
-            ++numberOfCallsToAdditionalSanitize;
+        public StubTelemetry(@SuppressWarnings("unused") String ignored) {
+            initialize(new ConcurrentHashMap<>());
         }
 
         @Override
@@ -89,7 +76,6 @@ public final class BaseTelemetryTest {
 
         assertNull(telemetry.getContext());
         assertNull(telemetry.getTimestamp());
-        assertNull(telemetry.getSequence());
     }
 
     @Test
@@ -101,17 +87,6 @@ public final class BaseTelemetryTest {
         assertTrue(telemetry.getContext().getTags().isEmpty());
         assertTrue(telemetry.getProperties().isEmpty());
         assertNull(telemetry.getTimestamp());
-        assertNull(telemetry.getSequence());
-    }
-
-    @Test
-    public void testSetSequence() {
-        StubTelemetry telemetry = new StubTelemetry();
-
-        String mockSequence = "MockSequence";
-        telemetry.setSequence(mockSequence);
-
-        assertEquals(mockSequence, telemetry.getSequence());
     }
 
     @Test

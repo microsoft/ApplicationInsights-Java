@@ -120,7 +120,7 @@ public enum QuickPulseDataCollector {
         }
     }
 
-    private AtomicReference<Counters> counters = new AtomicReference<Counters>(null);
+    private final AtomicReference<Counters> counters = new AtomicReference<>(null);
     private final MemoryMXBean memory;
     private final CpuPerformanceCounterCalculator cpuPerformanceCounterCalculator;
 

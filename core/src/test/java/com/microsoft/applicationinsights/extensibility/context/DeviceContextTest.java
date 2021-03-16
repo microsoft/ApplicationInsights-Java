@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 public final class DeviceContextTest {
     @Test
     public void testSetId() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         DeviceContext context = new DeviceContext(map);
         context.setId("mock");
 
@@ -41,7 +41,7 @@ public final class DeviceContextTest {
 
     @Test
     public void testSetLanguage() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         DeviceContext context = new DeviceContext(map);
         context.setLanguage("mock");
 
@@ -52,7 +52,7 @@ public final class DeviceContextTest {
 
     @Test
     public void testSetModel() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         DeviceContext context = new DeviceContext(map);
         context.setModel("mock");
 
@@ -63,7 +63,7 @@ public final class DeviceContextTest {
 
     @Test
     public void testSetNetworkType() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         DeviceContext context = new DeviceContext(map);
         context.setNetworkType("mock");
 
@@ -74,7 +74,7 @@ public final class DeviceContextTest {
 
     @Test
     public void testSetOemName() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         DeviceContext context = new DeviceContext(map);
         context.setOemName("mock");
 
@@ -85,7 +85,7 @@ public final class DeviceContextTest {
 
     @Test
     public void testSetOperatingSystem() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         DeviceContext context = new DeviceContext(map);
         context.setOperatingSystem("mock");
 
@@ -96,7 +96,7 @@ public final class DeviceContextTest {
 
     @Test
     public void testSetOperatingSystemVersion() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         DeviceContext context = new DeviceContext(map);
         context.setOperatingSystemVersion("mock");
 
@@ -106,30 +106,8 @@ public final class DeviceContextTest {
     }
 
     @Test
-    public void testSetRoleInstance() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
-        DeviceContext context = new DeviceContext(map);
-        context.setRoleInstance("mock");
-
-        assertEquals("mock", context.getRoleInstance());
-        assertEquals(1, map.size());
-        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceRoleInstance()));
-    }
-
-    @Test
-    public void testSetRoleName() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
-        DeviceContext context = new DeviceContext(map);
-        context.setRoleName("mock");
-
-        assertEquals("mock", context.getRoleName());
-        assertEquals(1, map.size());
-        assertEquals("mock", map.get(ContextTagKeys.getKeys().getDeviceRoleName()));
-    }
-
-    @Test
     public void testSetScreenResolution() {
-        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
         DeviceContext context = new DeviceContext(map);
         context.setScreenResolution("mock");
 

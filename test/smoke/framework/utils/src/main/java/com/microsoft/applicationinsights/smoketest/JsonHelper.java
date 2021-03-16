@@ -20,10 +20,8 @@ import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 import com.microsoft.applicationinsights.internal.schemav2.PageViewData;
-import com.microsoft.applicationinsights.internal.schemav2.PerformanceCounterData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.internal.schemav2.SessionStateData;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
 import java.lang.reflect.Type;
@@ -39,7 +37,7 @@ public class JsonHelper {
             .create();
 
     private static class BaseDataContractDeserializer implements JsonDeserializer<Base> {
-        private final String discriminatorField = "baseType";
+        private static final String discriminatorField = "baseType";
 
         private final Map<String, Class<? extends Domain>> classMap;
 
@@ -52,8 +50,6 @@ public class JsonHelper {
                 MessageData.class,
                 MetricData.class,
                 RemoteDependencyData.class,
-                PerformanceCounterData.class,
-                SessionStateData.class,
                 PageViewData.class
             };
 
