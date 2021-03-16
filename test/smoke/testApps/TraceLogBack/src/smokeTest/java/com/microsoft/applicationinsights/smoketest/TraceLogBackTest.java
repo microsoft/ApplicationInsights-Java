@@ -21,7 +21,7 @@ public class TraceLogBackTest extends AiSmokeTest {
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
         logs.sort(Comparator.comparing(MessageData::getSeverityLevel));
@@ -33,17 +33,23 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
         assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
+        assertEquals("test", md1.getProperties().get("LoggerName"));
         // TODO add MDC instrumentation for jboss logging
-        if (!currentImageName.contains("wildfly")) {
+        if (currentImageName.contains("wildfly")) {
+            assertEquals(3, md1.getProperties().size());
+        } else {
             assertEquals("MDC value", md1.getProperties().get("MDC key"));
+            assertEquals(4, md1.getProperties().size());
         }
-        assertParentChild(rd, rdEnvelope, mdEnvelope1, "/TraceLogBack/traceLogBack");
 
         assertEquals("This is logback error.", md2.getMessage());
         assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
         assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
-        assertFalse(md2.getProperties().containsKey("MDC key"));
+        assertEquals("test", md2.getProperties().get("LoggerName"));
+        assertEquals(3, md2.getProperties().size());
+
+        assertParentChild(rd, rdEnvelope, mdEnvelope1, "/TraceLogBack/traceLogBack");
         assertParentChild(rd, rdEnvelope, mdEnvelope2, "/TraceLogBack/traceLogBack");
     }
 
@@ -58,21 +64,23 @@ public class TraceLogBackTest extends AiSmokeTest {
 
         Envelope edEnvelope = edList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        ExceptionData ed = (ExceptionData) ((Data) edEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
-        List<ExceptionDetails> details = ed.getExceptions();
-        ExceptionDetails ex = details.get(0);
-
-        assertEquals("Fake Exception", ex.getMessage());
+        assertEquals("Fake Exception", ed.getExceptions().get(0).getMessage());
         assertEquals(SeverityLevel.Error, ed.getSeverityLevel());
         assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
         assertEquals("Logger", ed.getProperties().get("SourceType"));
         assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
+        assertEquals("test", ed.getProperties().get("LoggerName"));
         // TODO add MDC instrumentation for jboss logging
-        if (!currentImageName.contains("wildfly")) {
+        if (currentImageName.contains("wildfly")) {
+            assertEquals(4, ed.getProperties().size());
+        } else {
             assertEquals("MDC value", ed.getProperties().get("MDC key"));
+            assertEquals(5, ed.getProperties().size());
         }
+
         assertParentChild(rd, rdEnvelope, edEnvelope, "/TraceLogBack/traceLogBackWithException");
     }
 

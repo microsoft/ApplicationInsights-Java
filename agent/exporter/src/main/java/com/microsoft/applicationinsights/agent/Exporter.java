@@ -557,11 +557,6 @@ public class Exporter implements SpanExporter {
 
         requestData.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
-        String description = span.getStatus().getDescription();
-        if (description != null) {
-            requestData.getProperties().put("statusDescription", description);
-        }
-
         setExtraAttributes(requestData, attributes);
 
         Double samplingPercentage = attributes.get(AI_SAMPLING_PERCENTAGE_KEY);

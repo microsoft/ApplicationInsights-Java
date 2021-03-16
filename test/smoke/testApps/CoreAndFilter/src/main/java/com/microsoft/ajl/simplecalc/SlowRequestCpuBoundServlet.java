@@ -11,20 +11,12 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * Servlet implementation class SimpleTestRequestSlowWithResponseTime
- */
 @WebServlet(description = "calls request slow w/o Thread.sleep", urlPatterns = "/slowLoop")
 public class SlowRequestCpuBoundServlet extends HttpServlet {
 
-    private static final long serialVersionUID = 3007663491446163538L;
     private static final BigDecimal MAX_VALUE = BigDecimal.valueOf(1_000);
     private static final ThreadLocalRandom rand = ThreadLocalRandom.current();
 
-
-    /**
-     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         final long startTime = System.currentTimeMillis();

@@ -26,13 +26,14 @@ public class JedisTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-        assertTrue(rdd.getSuccess());
+        assertEquals("EXISTS", rdd.getName());
         assertEquals("redis", rdd.getType());
         assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
-        assertEquals("EXISTS", rdd.getName());
+        assertTrue(rdd.getProperties().isEmpty());
+        assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/CachingCalculator/index.jsp");
     }

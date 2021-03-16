@@ -25,12 +25,12 @@ public class HeartBeatTest extends AiSmokeTest {
         List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate("HeartbeatState"), 2, 70, TimeUnit.SECONDS);
         assertEquals(2, metrics.size());
 
-        MetricData data = (MetricData) ((Data) metrics.get(0).getData()).getBaseData();
+        MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();
         assertNotNull(data.getProperties().get("jreVersion"));
         assertNotNull(data.getProperties().get("sdkVersion"));
         assertNotNull(data.getProperties().get("osVersion"));
         assertNotNull(data.getProperties().get("processSessionId"));
-
+        assertEquals(4, data.getProperties().size());
     }
 
     private static Predicate<Envelope> getMetricPredicate(String name) {

@@ -113,7 +113,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         Envelope edEnvelope1 = edList.get(0);
 
         RequestData rd = getTelemetryDataForType(0, "RequestData");
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
         System.out.println("Response code after exception: " + rd.getResponseCode());
         int code = -123;
         try {
@@ -143,23 +143,32 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         Envelope rddEnvelope2 = rddList.get(1);
         Envelope rddEnvelope3 = rddList.get(2);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd1 =
-                (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
+                (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd2 =
-                (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
+                (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
         RemoteDependencyData rdd3 =
-                (RemoteDependencyData) ((Data) rddEnvelope3.getData()).getBaseData();
+                (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
-        assertTrue(rd.getSuccess());
         assertEquals("/SpringBootTest/asyncDependencyCall", rd.getName());
         assertEquals("200", rd.getResponseCode());
+        assertTrue(rd.getProperties().isEmpty());
+        assertTrue(rd.getSuccess());
 
         assertEquals("TestController.asyncDependencyCall", rdd1.getName());
+        assertTrue(rdd1.getProperties().isEmpty());
+        assertTrue(rdd1.getSuccess());
+
         assertEquals("HTTP GET", rdd2.getName());
         assertEquals("https://www.bing.com", rdd2.getData());
-        assertEquals("TestController.asyncDependencyCall", rdd3.getName());
         assertEquals("www.bing.com", rdd2.getTarget());
+        assertTrue(rdd2.getProperties().isEmpty());
+        assertTrue(rdd2.getSuccess());
+
+        assertEquals("TestController.asyncDependencyCall", rdd3.getName());
+        assertTrue(rdd3.getProperties().isEmpty());
+        assertTrue(rdd3.getSuccess());
 
         assertParentChild(rdd1.getId(), rdEnvelope, rddEnvelope2);
         assertParentChild(rdd1.getId(), rdEnvelope, rddEnvelope3);

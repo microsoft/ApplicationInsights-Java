@@ -11,12 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
-/**
- * Servlet implementation class SimpleTrackDependencyServlet
- */
 @WebServlet(description = "Performs given calculation", urlPatterns = { "/trackDependency" })
 public class SimpleTrackDependencyServlet extends HttpServlet {
-    private static final long serialVersionUID = -5145497408200255321L;
+
     private final TelemetryClient client = new TelemetryClient();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

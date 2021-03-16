@@ -389,7 +389,7 @@ public abstract class AiSmokeTest {
                     if (!"RequestData".equals(input.getData().getBaseType())) {
                         return false;
                     }
-                    RequestData data = (RequestData) ((Data) input.getData()).getBaseData();
+                    RequestData data = (RequestData) ((Data<?>) input.getData()).getBaseData();
                     return contextRootUrl.equals(data.getUrl()) && "200".equals(data.getResponseCode());
                 }
             }, requestTelemetryFromHealthCheckTimeout, TimeUnit.SECONDS);

@@ -84,7 +84,7 @@ public class MockedAppInsightsIngestionServer {
         List<Envelope> items = getItemsEnvelopeDataType("MessageData");
         List<T> dataItems = new ArrayList<>();
         for (Envelope e : items) {
-            String message = ((MessageData) ((Data) e.getData()).getBaseData()).getMessage();
+            String message = ((MessageData) ((Data<?>) e.getData()).getBaseData()).getMessage();
             if (e.getTags().containsKey("ai.operation.id") && !ignoreMessageData(message)) {
                 Data<T> dt = (Data<T>) e.getData();
                 dataItems.add(dt.getBaseData());
@@ -141,7 +141,7 @@ public class MockedAppInsightsIngestionServer {
                         || !input.getTags().containsKey("ai.operation.id")) {
                     return false;
                 }
-                String message = ((MessageData) ((Data) input.getData()).getBaseData()).getMessage();
+                String message = ((MessageData) ((Data<?>) input.getData()).getBaseData()).getMessage();
                 return !ignoreMessageData(message);
             }
         }, numItems, 10, TimeUnit.SECONDS);
