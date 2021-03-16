@@ -8,7 +8,7 @@ import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-@UseAgent("spanprocessor")
+@UseAgent("telemetryprocessors")
 public class SpringBootAutoTest extends AiSmokeTest {
 
     @Test
@@ -21,7 +21,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
         assertEquals("testValue1", rd.getProperties().get("attribute1"));
         assertEquals("testValue2", rd.getProperties().get("attribute2"));
         assertNotNull(rd.getProperties().get("httpPath"));
-        assertEquals("/DataScrubbing/test",rd.getProperties().get("httpPath"));
+        assertEquals("/TelemetryProcessors/test",rd.getProperties().get("httpPath"));
     }
 
     @Test

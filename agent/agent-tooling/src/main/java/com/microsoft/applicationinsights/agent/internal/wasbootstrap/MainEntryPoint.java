@@ -37,6 +37,8 @@ import com.microsoft.applicationinsights.agent.internal.AiComponentInstaller;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SelfDiagnostics;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfigurationBuilder;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import org.slf4j.Logger;
@@ -47,23 +49,18 @@ import org.slf4j.event.Level;
 // this class initializes configuration and logging before passing control to opentelemetry-java-instrumentation
 public class MainEntryPoint {
 
+    private static RpConfiguration rpConfiguration;
     private static Configuration configuration;
-    private static Path configPath;
-    private static long lastModifiedTime;
 
     private MainEntryPoint() {
     }
 
+    public static RpConfiguration getRpConfiguration() {
+        return rpConfiguration;
+    }
+
     public static Configuration getConfiguration() {
         return configuration;
-    }
-
-    public static Path getConfigPath() {
-        return configPath;
-    }
-
-    public static long getLastModifiedTime() {
-        return lastModifiedTime;
     }
 
     // TODO turn this into an interceptor
@@ -75,9 +72,8 @@ public class MainEntryPoint {
             Path agentPath = new File(bootstrapURL.toURI()).toPath();
             DiagnosticsHelper.setAgentJarFile(agentPath);
             // configuration is only read this early in order to extract logging configuration
-            configuration = ConfigurationBuilder.create(agentPath);
-            configPath = configuration.configPath;
-            lastModifiedTime = configuration.lastModifiedTime;
+            rpConfiguration = RpConfigurationBuilder.create(agentPath);
+            configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
             startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
             ConfigurationBuilder.logConfigurationWarnMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");

@@ -4,7 +4,6 @@
       "processors" : [
         {
           "type": "attribute",
-          "processorName": "attributes/insert",
           "actions": [
             {
               "key": "attribute1",
@@ -21,22 +20,22 @@
               "value": "sensitiveData1",
               "action": "insert"
             }
-          ]
+          ],
+          "id": "attributes/insert"
         },
         {
           "type": "attribute",
-          "processorName": "attributes/update",
           "actions": [
             {
               "key": "attribute1",
               "value": "testValue1",
               "action": "update"
             }
-          ]
+          ],
+          "id": "attributes/update"
         },
         {
           "type": "attribute",
-          "processorName": "attributes/maskSensitiveData",
           "include":{
             "matchType":"regexp",
             "spanNames":[
@@ -49,11 +48,11 @@
               "value":"redacted",
               "action":"update"
             }
-          ]
+          ],
+          "id": "attributes/maskSensitiveData"
         },
         {
           "type": "span",
-          "processorName": "attributes/fromAttributeTest",
           "include":{
             "matchType":"regexp",
             "spanNames":[
@@ -65,18 +64,19 @@
               "attribute1","attribute2"
             ],
             "separator": "::"
-          }
+          },
+          "id": "attributes/fromAttributeTest"
         },
         {
           "type": "attribute",
-          "processorName": "attributes/extract",
           "actions": [
             {
               "key": "http.url",
               "pattern": "https?://[^/]+(?<httpPath>/[^?]*)",
               "action": "extract"
             }
-          ]
+          ],
+          "id": "attributes/extract"
         }
       ]
     }
