@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +28,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 
@@ -166,8 +164,6 @@ public class Configuration {
         // so safer to only allow single interval for now
         public int metricIntervalSeconds = 60;
         public LiveMetrics liveMetrics = new LiveMetrics();
-        // config reload only supports connection string and sampling percentage
-        public boolean configReloadEnabled;
     }
 
     public static class LiveMetrics {
@@ -463,11 +459,4 @@ public class Configuration {
     private static boolean isEmpty(String str) {
         return str == null || str.trim().isEmpty();
     }
-
-    // transient so that Moshi will ignore when binding from json
-    public transient Path configPath;
-
-    // transient so that Moshi will ignore when binding from json
-    public transient long lastModifiedTime;
-
 }
