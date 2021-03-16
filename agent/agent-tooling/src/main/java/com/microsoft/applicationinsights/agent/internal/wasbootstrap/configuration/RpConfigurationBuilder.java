@@ -55,7 +55,7 @@ public class RpConfigurationBuilder {
 
     public static RpConfiguration loadJsonConfigFile(Path configPath) throws IOException{
         if (!Files.exists(configPath)) {
-            throw new IllegalStateException("config file does not exist: " + configPath);
+            throw new IllegalStateException("rp config file does not exist: " + configPath);
         }
 
         BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);

@@ -85,6 +85,7 @@ public class ConfigurationBuilder {
         }
         overlayEnvVars(config);
         // rp configuration should always be last (so it takes precedence)
+        // currently applicationinsights-rp.json is only used by Azure Spring Cloud
         if (rpConfiguration != null) {
             overlayRpConfiguration(config, rpConfiguration);
         }
@@ -159,8 +160,8 @@ public class ConfigurationBuilder {
     }
 
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
-        String configurationContent = System.getenv(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
-        if (configurationContent != null && !configurationContent.isEmpty()) {
+        String configurationContent = getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
+        if (configurationContent != null) {
             return getConfigurationFromEnvVar(configurationContent, true);
         }
 
@@ -200,8 +201,8 @@ public class ConfigurationBuilder {
         config.connectionString = overlayWithEnvVar(APPLICATIONINSIGHTS_CONNECTION_STRING, config.connectionString);
         if (config.connectionString == null) {
             // this is for backwards compatibility only
-            String instrumentationKey = System.getenv(APPINSIGHTS_INSTRUMENTATIONKEY);
-            if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
+            String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY);
+            if (instrumentationKey != null) {
                 // TODO log an info message recommending APPLICATIONINSIGHTS_CONNECTION_STRING
                 config.connectionString = "InstrumentationKey=" + instrumentationKey;
             }
@@ -236,8 +237,9 @@ public class ConfigurationBuilder {
     }
 
     private static void overlayRpConfiguration(Configuration config, RpConfiguration rpConfiguration)  {
-        if (rpConfiguration.connectionString != null) {
-            config.connectionString = rpConfiguration.connectionString;
+        String connectionString = rpConfiguration.connectionString;
+        if (!isTrimEmpty(connectionString)) {
+            config.connectionString = connectionString;
         }
         if (rpConfiguration.sampling != null) {
             config.sampling.percentage = rpConfiguration.sampling.percentage;
