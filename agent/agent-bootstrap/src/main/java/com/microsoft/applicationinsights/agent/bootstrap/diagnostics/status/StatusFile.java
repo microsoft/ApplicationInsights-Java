@@ -63,7 +63,7 @@ public class StatusFile {
     static String logDir;
 
     // visible for testing
-    static String statusDir;
+    static String directory;
 
     private static final Object lock = new Object();
 
@@ -99,7 +99,7 @@ public class StatusFile {
         VALUE_FINDERS.add(mf.getExtensionVersion());
 
         logDir = initLogDir();
-        statusDir = logDir + STATUS_FILE_DIRECTORY;
+        directory = logDir + STATUS_FILE_DIRECTORY;
     }
 
     // visible for testing
@@ -165,7 +165,7 @@ public class StatusFile {
                 // the executor should prevent more than one thread from executing this block.
                 // this is just a safeguard
                 synchronized (lock) {
-                    final File file = new File(statusDir, fileName);
+                    final File file = new File(directory, fileName);
                     boolean dirsWereCreated = file.getParentFile().mkdirs();
 
                     Logger logger = loggingInitialized ? LoggerFactory.getLogger(StatusFile.class) : null;

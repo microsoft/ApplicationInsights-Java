@@ -191,7 +191,8 @@ public class Configuration {
             if (DiagnosticsHelper.useFunctionsRpIntegrationLogging() && !DiagnosticsHelper.isOsWindows()) {
                 return "/var/log/applicationinsights/" + DEFAULT_NAME;
             }
-            throw new IllegalStateException("Unexpected RP integration");
+            // azure spring cloud
+            return DEFAULT_NAME;
         }
     }
 

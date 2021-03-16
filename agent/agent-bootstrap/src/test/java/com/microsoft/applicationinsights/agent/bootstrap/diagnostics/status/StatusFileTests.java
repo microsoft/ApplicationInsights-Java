@@ -119,7 +119,7 @@ public class StatusFileTests {
         assertTrue("Verify temp folder is directory", tempFolder.isDirectory());
         assertThat("Verify temp folder is empty", tempFolder.list(), emptyArray());
 
-        StatusFile.statusDir = tempFolder.getAbsolutePath();
+        StatusFile.directory = tempFolder.getAbsolutePath();
         StatusFile.write();
         pauseForFileWrite();
 
@@ -149,7 +149,7 @@ public class StatusFileTests {
         DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(false); // just to be sure
 
         final File tempFolder = this.tempFolder.newFolder();
-        StatusFile.statusDir = tempFolder.getAbsolutePath();
+        StatusFile.directory = tempFolder.getAbsolutePath();
         assertTrue(tempFolder.isDirectory());
         assertThat("Before write()", tempFolder.list(), emptyArray());
         StatusFile.write();
@@ -168,7 +168,7 @@ public class StatusFileTests {
 
 
             final File tempFolder = this.tempFolder.newFolder();
-            StatusFile.statusDir = tempFolder.getAbsolutePath();
+            StatusFile.directory = tempFolder.getAbsolutePath();
             assertTrue(tempFolder.isDirectory());
             assertThat(tempFolder.list(), emptyArray());
             StatusFile.write();
