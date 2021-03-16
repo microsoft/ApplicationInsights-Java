@@ -4,7 +4,6 @@
       "processors": [
         {
           "type": "attribute",
-          "processorName": "attributes/insert",
           "actions": [
             {
               "key": "attribute1",
@@ -16,11 +15,11 @@
               "fromAttribute": "anotherKey",
               "action": "insert"
             }
-          ]
+          ],
+          "id": "attributes/insert"
         },
         {
           "type": "attribute",
-          "processorName": "attributes/update",
           "actions": [
             {
               "key": "boo",
@@ -32,11 +31,11 @@
               "value": "redacted",
               "action": "update"
             }
-          ]
+          ],
+          "id": "attributes/update"
         },
         {
           "type": "attribute",
-          "processorName": "attributes/selectiveProcessing",
           "include": {
             "matchType": "strict",
             "spanNames": [
@@ -62,11 +61,11 @@
               "key": "duplicate_key",
               "action": "delete"
             }
-          ]
+          ],
+          "id": "attributes/selectiveProcessing"
         },
         {
           "type": "log",
-          "processorName": "log/updateName",
           "include":{
             "matchType":"regexp",
             "logNames":[
@@ -78,22 +77,22 @@
               "loggerName"
             ],
             "separator": "::"
-          }
+          },
+          "id": "log/updateName"
         },
         {
           "type": "log",
-          "processorName": "log/extractAttributes",
           "name": {
             "toAttributes": {
               "rules": [
                 "^/api/v1/document/(?<documentId>.*)/update$"
               ]
             }
-          }
+          },
+          "id": "log/extractAttributes"
         },
         {
           "type": "span",
-          "processorName": "span/updateName",
           "include":{
             "matchType":"regexp",
             "spanNames":[
@@ -105,29 +104,30 @@
               "loggerName"
             ],
             "separator": "::"
-          }
+          },
+          "id": "span/updateName"
         },
         {
           "type": "span",
-          "processorName": "span/extractAttributes",
           "name": {
             "toAttributes": {
               "rules": [
                 "^/api/v1/document/(?<documentId>.*)/update$"
               ]
             }
-          }
+          },
+          "id": "span/extractAttributes"
         },
         {
           "type": "attribute",
-          "processorName": "attributes/extract",
           "actions": [
             {
               "key": "http.url",
               "pattern": "^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)",
               "action": "extract"
             }
-          ]
+          ],
+          "id": "attributes/extract"
         }
       ]
     }
