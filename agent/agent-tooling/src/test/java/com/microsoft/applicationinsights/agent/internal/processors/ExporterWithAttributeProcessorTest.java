@@ -37,7 +37,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "noAction";
+        config.id = "noAction";
         SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
         Span span = tracer.spanBuilder("my span")
@@ -57,7 +57,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "inValidConfigTestWithNoValueInAction";
+        config.id = "inValidConfigTestWithNoValueInAction";
         config.include = new ProcessorIncludeExclude();
         config.include.matchType = ProcessorMatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
@@ -86,7 +86,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "inValidConfigTestWithInvalidInclude";
+        config.id = "inValidConfigTestWithInvalidInclude";
         config.include = new ProcessorIncludeExclude();
         config.include.matchType = ProcessorMatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
@@ -115,7 +115,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "actionDelete";
+        config.id = "actionDelete";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
         action.action = ProcessorActionType.delete;
@@ -151,7 +151,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "actionInsert";
+        config.id = "actionInsert";
         ProcessorAction action = new ProcessorAction();
         action.key = "testNewKey";
         action.value = "testNewValue";
@@ -187,7 +187,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "actionInsertAndUpdate";
+        config.id = "actionInsertAndUpdate";
         ProcessorAction action = new ProcessorAction();
         action.key = "testNewKey";
         action.value = "testNewValue";
@@ -229,7 +229,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "actionInsertAndUpdate";
+        config.id = "actionInsertAndUpdate";
         ProcessorAction action = new ProcessorAction();
         action.key = "testNewKey";
         action.value = "testNewValue";
@@ -270,7 +270,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "actionInsertWithDuplicate";
+        config.id = "actionInsertWithDuplicate";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
         action.value = "testNewValue";
@@ -307,7 +307,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "actionInsertFromAttribute";
+        config.id = "actionInsertFromAttribute";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey3";
         action.fromAttribute = "testKey2";
@@ -345,7 +345,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "actionSimpleUpdate";
+        config.id = "actionSimpleUpdate";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
         action.action = ProcessorActionType.update;
@@ -379,7 +379,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "actionUpdateFromAttributeUpdate";
+        config.id = "actionUpdateFromAttributeUpdate";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
         action.action = ProcessorActionType.update;
@@ -413,7 +413,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "complexAction";
+        config.id = "complexAction";
         ProcessorAction updateAction = new ProcessorAction();
         updateAction.key = "testKey";
         updateAction.action = ProcessorActionType.update;
@@ -452,7 +452,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "simpleInclude";
+        config.id = "simpleInclude";
         config.include = new ProcessorIncludeExclude();
         config.include.matchType = ProcessorMatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
@@ -511,7 +511,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "simpleIncludeRegex";
+        config.id = "simpleIncludeRegex";
         config.include = new ProcessorIncludeExclude();
         config.include.matchType = ProcessorMatchType.regexp;
         config.include.spanNames = Arrays.asList("svc.*", "test.*");
@@ -570,7 +570,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "invalidRegex";
+        config.id = "invalidRegex";
         config.include = new ProcessorIncludeExclude();
         config.include.matchType = ProcessorMatchType.regexp;
         config.include.spanNames = Collections.singletonList("***");
@@ -620,7 +620,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "simpleIncludeRegexValue";
+        config.id = "simpleIncludeRegexValue";
         config.include = new ProcessorIncludeExclude();
         config.include.matchType = ProcessorMatchType.regexp;
         config.include.spanNames = Arrays.asList("svc.*", "test.*");
@@ -692,7 +692,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "simpleIncludeRegexNoValue";
+        config.id = "simpleIncludeRegexNoValue";
         config.include = new ProcessorIncludeExclude();
         config.include.matchType = ProcessorMatchType.regexp;
         config.include.spanNames = Arrays.asList("svc.*", "test.*");
@@ -763,7 +763,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "simpleIncludeHash";
+        config.id = "simpleIncludeHash";
         config.include = new ProcessorIncludeExclude();
         config.include.matchType = ProcessorMatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB", "svcC");
@@ -822,7 +822,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "simpleExclude";
+        config.id = "simpleExclude";
         config.exclude = new ProcessorIncludeExclude();
         config.exclude.matchType = ProcessorMatchType.strict;
         config.exclude.spanNames = Arrays.asList("svcA", "svcB");
@@ -881,7 +881,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "simpleExcludeRegex";
+        config.id = "simpleExcludeRegex";
         config.exclude = new ProcessorIncludeExclude();
         config.exclude.matchType = ProcessorMatchType.regexp;
         config.exclude.spanNames = Collections.singletonList("svc.*");
@@ -942,7 +942,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "multiInclude";
+        config.id = "multiInclude";
         config.include = new ProcessorIncludeExclude();
         config.include.matchType = ProcessorMatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
@@ -1008,7 +1008,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "multiExclude";
+        config.id = "multiExclude";
         config.exclude = new ProcessorIncludeExclude();
         config.exclude.matchType = ProcessorMatchType.strict;
         config.exclude.spanNames = Arrays.asList("svcA", "svcB");
@@ -1077,7 +1077,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "selectiveProcessing";
+        config.id = "selectiveProcessing";
         config.include = new ProcessorIncludeExclude();
         config.exclude = new ProcessorIncludeExclude();
         config.include.matchType = ProcessorMatchType.strict;
@@ -1142,7 +1142,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "actionExtract";
+        config.id = "actionExtract";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
         String regex="^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)";
@@ -1185,7 +1185,7 @@ public class ExporterWithAttributeProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.attribute;
-        config.processorName = "actionExtract";
+        config.id = "actionExtract";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
         String regex="^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)";
