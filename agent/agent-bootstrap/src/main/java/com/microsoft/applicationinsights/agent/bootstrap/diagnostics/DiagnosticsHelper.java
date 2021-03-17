@@ -7,27 +7,15 @@ public class DiagnosticsHelper {
     private DiagnosticsHelper() { }
 
     /**
-     * Values: true|false
-     * Default: true
-     */
-    public static final String IPA_LOG_FILE_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_LOG_FILE_ENABLED";
-
-    /**
      * Default: "" (meaning diagnostics file output is disabled)
      */
-    public static final String INTERNAL_LOG_OUTPUT_DIR_ENV_VAR = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
-
-    /**
-     * Windows only. Cannot be enabled on non-windows OS.
-     * Values: true|false
-     * Default: true
-     */
-	public static final String IPA_ETW_PROVIDER_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_ETW_PROVIDER_ENABLED";
+    public static final String APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
 
     // visible for testing
-    static volatile boolean appSvcAttachForLoggingPurposes;
+    static volatile boolean useAppSvcRpIntegrationLogging;
+    private static volatile boolean useFunctionsRpIntegrationLogging;
 
-    private static volatile char attachChar;
+    private static volatile char rpIntegrationChar;
 
     private static final boolean isWindows;
 
@@ -44,33 +32,39 @@ public class DiagnosticsHelper {
 
     public static void setAgentJarFile(Path agentPath) {
         if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
-            appSvcAttachForLoggingPurposes = true;
             if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-                attachChar = 'f';
+                rpIntegrationChar = 'f';
             } else {
-                attachChar = 'a';
+                rpIntegrationChar = 'a';
             }
+            useAppSvcRpIntegrationLogging = true;
         } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
-            attachChar = 'k';
+            rpIntegrationChar = 'k';
         } else if (Files.exists(agentPath.resolveSibling("functions.codeless"))) {
-            attachChar = 'f';
+            rpIntegrationChar = 'f';
+            useFunctionsRpIntegrationLogging = true;
         } else if (Files.exists(agentPath.resolveSibling("springcloud.codeless"))) {
-            attachChar = 's';
+            rpIntegrationChar = 's';
         }
     }
 
-    public static boolean isAnyAttach() {
-        return attachChar != 0;
+    public static boolean isRpIntegration() {
+        return rpIntegrationChar != 0;
     }
 
-    // returns 0 if not attach
-    public static char attachChar() {
-        return attachChar;
+    // returns 0 if not rp integration
+    public static char rpIntegrationChar() {
+        return rpIntegrationChar;
     }
 
     // this also applies to Azure Functions running on App Services
-    public static boolean isAppSvcAttachForLoggingPurposes() {
-        return appSvcAttachForLoggingPurposes;
+    public static boolean useAppSvcRpIntegrationLogging() {
+        return useAppSvcRpIntegrationLogging;
+    }
+
+    // this also applies to Azure Functions running on App Services
+    public static boolean useFunctionsRpIntegrationLogging() {
+        return useFunctionsRpIntegrationLogging;
     }
 
     public static ApplicationMetadataFactory getMetadataFactory() {

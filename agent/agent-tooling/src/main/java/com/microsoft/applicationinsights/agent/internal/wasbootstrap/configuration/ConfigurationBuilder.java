@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.squareup.moshi.JsonAdapter;
@@ -174,6 +175,13 @@ public class ConfigurationBuilder {
                 // fail fast any time configuration is invalid
                 throw new IllegalStateException("could not find requested configuration file: " + configPathStr);
             }
+        }
+
+        if (DiagnosticsHelper.isRpIntegration()) {
+            // users do not have write access to agent directory in rp integrations
+            // and rp integrations should not use applicationinsights.json because that makes it difficult to merge
+            // rp intent and user intent
+            return new Configuration();
         }
 
         Path configPath = agentJarPath.resolveSibling("applicationinsights.json");

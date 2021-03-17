@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -179,9 +181,26 @@ public class Configuration {
 
     public static class DestinationFile {
 
-        public String path = "applicationinsights.log"; // relative to the directory where agent jar is located
+        private static final String DEFAULT_NAME = "applicationinsights.json";
+
+        public String path = getDefaultPath();
         public int maxSizeMb = 5;
         public int maxHistory = 1;
+
+        private static String getDefaultPath() {
+            if (!DiagnosticsHelper.isRpIntegration()) {
+                // this will be relative to the directory where agent jar is located
+                return DEFAULT_NAME;
+            }
+            if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+                return StatusFile.getLogDir() + "/" + DEFAULT_NAME;
+            }
+            if (DiagnosticsHelper.useFunctionsRpIntegrationLogging() && !DiagnosticsHelper.isOsWindows()) {
+                return "/var/log/applicationinsights/" + DEFAULT_NAME;
+            }
+            // azure spring cloud
+            return DEFAULT_NAME;
+        }
     }
 
     public static class ProcessorConfig {

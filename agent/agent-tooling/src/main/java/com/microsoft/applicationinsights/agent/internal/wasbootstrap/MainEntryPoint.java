@@ -169,20 +169,15 @@ public class MainEntryPoint {
     private static Logger configureLogging(SelfDiagnostics selfDiagnostics, Path agentPath) {
         String logbackXml;
         String destination = selfDiagnostics.destination;
-        if (DiagnosticsHelper.isAppSvcAttachForLoggingPurposes()) {
-            // User-accessible IPA log file. Enabled by default.
-            if ("false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_LOG_FILE_ENABLED_ENV_VAR))) {
-                System.setProperty("ai.config.appender.user-logdir.location", "");
-            }
-
+        if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
             // Diagnostics IPA log file location. Disabled by default.
-            final String internalLogOutputLocation = System.getenv(DiagnosticsHelper.INTERNAL_LOG_OUTPUT_DIR_ENV_VAR);
+            final String internalLogOutputLocation = System.getenv(DiagnosticsHelper.APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY);
             if (internalLogOutputLocation == null || internalLogOutputLocation.isEmpty()) {
                 System.setProperty("ai.config.appender.diagnostics.location", "");
             }
 
-            // Diagnostics IPA ETW provider. Windows-only. Enabled by default.
-            if (!DiagnosticsHelper.isOsWindows() || "false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_ETW_PROVIDER_ENABLED_ENV_VAR))) {
+            // Diagnostics IPA ETW provider. Windows-only.
+            if (!DiagnosticsHelper.isOsWindows()) {
                 System.setProperty("ai.config.appender.etw.location", "");
             }
             logbackXml = "applicationinsights.appsvc.logback.xml";
