@@ -21,7 +21,6 @@
 
 // region Shared java configuration
 
-import org.gradle.internal.os.OperatingSystem;
 import org.gradle.api.tasks.testing.logging.TestLogEvent;
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
 
@@ -31,8 +30,8 @@ apply plugin: 'checkstyle'
 apply plugin: 'org.owasp.dependencycheck'
 apply plugin: 'com.github.spotbugs'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 configurations {
     compileClasspath.resolutionStrategy.activateDependencyLocking()
@@ -103,36 +102,38 @@ jacocoTestReport {
     }
 }
 
-if (hasProperty("JDKToUse")) {
-    logger.info("using $JDKToUse to compile and run tests")
-    def javaExecutablesPath = new File(JDKToUse, 'bin')
-    def javaExecutables = [:].withDefault { execName ->
-        def execNameToUse = execName
-        if (OperatingSystem.current().isWindows()){
-            execNameToUse = execName + ".exe"
-        }
-        def executable = new File(javaExecutablesPath, execNameToUse)
-        assert executable.exists(): "There is no ${execName} executable in ${javaExecutablesPath}"
-        executable
+updateTestDirectories()
+
+// setting this variable is highly recommended
+def java7JreDir = System.env.'JAVA_JRE_7'
+def isJava7 = JavaVersion.current().isJava7()
+def isJava7Compatible = JavaVersion.current().isJava7Compatible()
+
+if (!isJava7Compatible) {
+    logger.error "The current JDK version isn't compatible with Java 7: "+JavaVersion.current()+". Please upgrade JDK 1.7+"
+    if (isBuildServer || isRelease) {
+        throw new GradleException("incompatible JDK version: ${JavaVersion.current()}; needs 1.7+")
     }
-    tasks.withType(AbstractCompile) {
-        options.with {
-            fork = true
-            forkOptions.executable = javaExecutables.javac
-            forkOptions.javaHome = file(JDKToUse)
-        }
+}
+if (java7JreDir) {
+    def jre7libDir = fileTree(dir: "$java7JreDir/lib", include: '*.jar')
+    if (!jre7libDir.any()) {
+        throw new GradleException("Invalid JAVA_JRE_7 directory. ${jre7libDir.dir} was empty")
     }
-    tasks.withType(Javadoc) {
-        executable = javaExecutables.javadoc
-    }
-    tasks.withType(Test) {
-        executable = javaExecutables.java
-    }
-    tasks.withType(JavaExec) {
-        executable = javaExecutables.java
+
+    tasks.withType(JavaCompile) {
+        options.bootstrapClasspath = jre7libDir
     }
 } else {
-    logger.info("JDKToUse not found. Using default")
+    def msg = "IMPORTANT: Environment variable 'JAVA_JRE_7' is not defined - Install JRE 7 and set 'JAVA_JRE_7' to prevent runtime compatibility issues!"
+    if (!isJava7) {
+        if (isBuildServer || isRelease) {
+            logger.error msg
+            throw new GradleException("JAVA_JRE_7 must be set")
+        } else {
+            logger.warn msg
+        }
+    }
 }
 
 sourceSets {

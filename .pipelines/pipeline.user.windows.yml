@@ -29,6 +29,9 @@ restore:
           include:
             - '**/*.log'
     - !!defaultcommand
+      name: 'Install Java 7 JRE'
+      command: '.scripts/installJava7jre.cmd'
+    - !!defaultcommand
       name: 'Install Java 8 JDK'
       command: '.scripts/installJava8jdk.cmd'
     - !!defaultcommand
