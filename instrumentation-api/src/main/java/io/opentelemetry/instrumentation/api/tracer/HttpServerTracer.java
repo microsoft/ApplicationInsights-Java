@@ -73,8 +73,11 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     Context parentContext = extract(request, getGetter());
     SpanBuilder spanBuilder = spanBuilder(parentContext, spanName, SERVER);
 
-    final String sourceAppId = Span.fromContext(parentContext).getSpanContext().getTraceState()
-        .get(AiAppId.TRACESTATE_KEY);
+    final String sourceAppId =
+        Span.fromContext(parentContext)
+            .getSpanContext()
+            .getTraceState()
+            .get(AiAppId.TRACESTATE_KEY);
     if (sourceAppId != null && !sourceAppId.isEmpty()) {
       spanBuilder.setAttribute(AiAppId.SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME, sourceAppId);
     }

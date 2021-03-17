@@ -29,8 +29,8 @@ public abstract class ServletHttpServerTracer<RESPONSE>
 
   private static final Logger log = LoggerFactory.getLogger(ServletHttpServerTracer.class);
 
-  public Context startSpan(HttpServletRequest request, HttpServletResponse response,
-      String spanName) {
+  public Context startSpan(
+      HttpServletRequest request, HttpServletResponse response, String spanName) {
 
     injectAppIdIntoResponse(response);
 
@@ -81,13 +81,13 @@ public abstract class ServletHttpServerTracer<RESPONSE>
   protected String url(HttpServletRequest httpServletRequest) {
     try {
       return new URI(
-          httpServletRequest.getScheme(),
-          null,
-          httpServletRequest.getServerName(),
-          httpServletRequest.getServerPort(),
-          httpServletRequest.getRequestURI(),
-          httpServletRequest.getQueryString(),
-          null)
+              httpServletRequest.getScheme(),
+              null,
+              httpServletRequest.getServerName(),
+              httpServletRequest.getServerPort(),
+              httpServletRequest.getRequestURI(),
+              httpServletRequest.getQueryString(),
+              null)
           .toString();
     } catch (URISyntaxException e) {
       log.debug("Failed to construct request URI", e);
