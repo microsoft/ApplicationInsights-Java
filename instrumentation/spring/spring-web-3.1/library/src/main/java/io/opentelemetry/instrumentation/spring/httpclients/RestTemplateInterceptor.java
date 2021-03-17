@@ -19,6 +19,7 @@ public final class RestTemplateInterceptor implements ClientHttpRequestIntercept
 
   private final RestTemplateTracer tracer;
 
+  // TODO: create a SpringWebTracing class that follows the new library instrumentation pattern
   public RestTemplateInterceptor(OpenTelemetry openTelemetry) {
     this.tracer = new RestTemplateTracer(openTelemetry);
   }
@@ -36,7 +37,9 @@ public final class RestTemplateInterceptor implements ClientHttpRequestIntercept
       ClientHttpResponse response = execution.execute(request, body);
       tracer.end(context, response);
       return response;
+    } catch (Throwable t) {
+      tracer.endExceptionally(context, t);
+      throw t;
     }
-    // TODO: endExceptionally?
   }
 }

@@ -74,20 +74,14 @@ configured to send data to
 at `http://localhost:4317`.
 
 Configuration parameters are passed as Java system properties (`-D` flags) or
-as environment variables. See below for a full list of environment variables. For example:
+as environment variables. See [the configuration documentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/agent-config.md)
+for the full list of configuration items. For example:
 ```
 java -javaagent:path/to/opentelemetry-javaagent-all.jar \
+     -Dotel.resource.attributes=service.name=your-service-name \
      -Dotel.traces.exporter=zipkin \
      -jar myapp.jar
 ```
-
-Specify the external exporter JAR file using the `otel.exporter.jar` system property:
-```
-java -javaagent:path/to/opentelemetry-javaagent-all.jar \
-     -Dotel.exporter.jar=path/to/external-exporter.jar \
-     -jar myapp.jar
-```
-
 
 ## Configuring the Agent
 

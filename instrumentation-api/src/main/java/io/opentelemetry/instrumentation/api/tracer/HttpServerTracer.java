@@ -10,7 +10,6 @@ import static io.opentelemetry.api.trace.SpanKind.SERVER;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
@@ -44,17 +43,6 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     super();
   }
 
-  /**
-   * Prefer to pass in an OpenTelemetry instance, rather than just a Tracer, so you don't have to
-   * use the GlobalOpenTelemetry Propagator instance.
-   *
-   * @deprecated prefer to pass in an OpenTelemetry instance, instead.
-   */
-  @Deprecated
-  public HttpServerTracer(Tracer tracer) {
-    super(tracer);
-  }
-
   public HttpServerTracer(OpenTelemetry openTelemetry) {
     super(openTelemetry);
   }
@@ -83,18 +71,26 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
     // whether to call end() or not on the Span in the returned Context
 
     Context parentContext = extract(request, getGetter());
-    SpanBuilder builder = spanBuilder(parentContext, spanName, SERVER);
+    SpanBuilder spanBuilder = spanBuilder(parentContext, spanName, SERVER);
 
-    if (startTimestamp >= 0) {
-      builder.setStartTimestamp(startTimestamp, TimeUnit.NANOSECONDS);
+    final String sourceAppId =
+        Span.fromContext(parentContext)
+            .getSpanContext()
+            .getTraceState()
+            .get(AiAppId.TRACESTATE_KEY);
+    if (sourceAppId != null && !sourceAppId.isEmpty()) {
+      spanBuilder.setAttribute(AiAppId.SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME, sourceAppId);
     }
 
-    Span span = builder.startSpan();
-    onConnection(span, connection);
-    onRequest(span, request);
-    onConnectionAndRequest(span, connection, request);
+    if (startTimestamp >= 0) {
+      spanBuilder.setStartTimestamp(startTimestamp, TimeUnit.NANOSECONDS);
+    }
 
-    Context context = withServerSpan(parentContext, span);
+    onConnection(spanBuilder, connection);
+    onRequest(spanBuilder, request);
+    onConnectionAndRequest(spanBuilder, connection, request);
+
+    Context context = withServerSpan(parentContext, spanBuilder.startSpan());
     context = customizeContext(context, request);
     attachServerContext(context, storage);
 
@@ -126,6 +122,7 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
    * Convenience method. Delegates to {@link #endExceptionally(Context, Throwable, Object)}, passing
    * {@code response} value of {@code null}.
    */
+  @Override
   public void endExceptionally(Context context, Throwable throwable) {
     endExceptionally(context, throwable, null);
   }
@@ -144,8 +141,8 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
    */
   public void endExceptionally(
       Context context, Throwable throwable, RESPONSE response, long timestamp) {
+    onException(context, throwable);
     Span span = Span.fromContext(context);
-    onError(span, unwrapThrowable(throwable));
     if (response == null) {
       setStatus(span, 500);
     } else {
@@ -166,25 +163,22 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
   @Nullable
   public abstract Context getServerContext(STORAGE storage);
 
-  protected void onConnection(Span span, CONNECTION connection) {
-    span.setAttribute(SemanticAttributes.NET_PEER_IP, peerHostIP(connection));
+  protected void onConnection(SpanBuilder spanBuilder, CONNECTION connection) {
+    // TODO: use NetPeerAttributes here
+    spanBuilder.setAttribute(SemanticAttributes.NET_PEER_IP, peerHostIP(connection));
     Integer port = peerPort(connection);
     // Negative or Zero ports might represent an unset/null value for an int type.  Skip setting.
     if (port != null && port > 0) {
-      span.setAttribute(SemanticAttributes.NET_PEER_PORT, (long) port);
+      spanBuilder.setAttribute(SemanticAttributes.NET_PEER_PORT, (long) port);
     }
   }
 
-  protected void onRequest(Span span, REQUEST request) {
-    final String sourceAppId = span.getSpanContext().getTraceState().get(AiAppId.TRACESTATE_KEY);
-    if (sourceAppId != null && !sourceAppId.isEmpty()) {
-      span.setAttribute(AiAppId.SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME, sourceAppId);
-    }
+  protected void onRequest(SpanBuilder spanBuilder, REQUEST request) {
+    spanBuilder.setAttribute(SemanticAttributes.HTTP_METHOD, method(request));
+    spanBuilder.setAttribute(
+        SemanticAttributes.HTTP_USER_AGENT, requestHeader(request, USER_AGENT));
 
-    span.setAttribute(SemanticAttributes.HTTP_METHOD, method(request));
-    span.setAttribute(SemanticAttributes.HTTP_USER_AGENT, requestHeader(request, USER_AGENT));
-
-    setUrl(span, request);
+    setUrl(spanBuilder, request);
 
     // TODO set resource name from URL.
   }
@@ -200,20 +194,21 @@ public abstract class HttpServerTracer<REQUEST, RESPONSE, CONNECTION, STORAGE> e
   which is the recommended value for http.target attribute. Therefore we cannot use any of the
   recommended combinations of attributes and are forced to use http.url.
    */
-  private void setUrl(Span span, REQUEST request) {
-    span.setAttribute(SemanticAttributes.HTTP_URL, url(request));
+  private void setUrl(SpanBuilder spanBuilder, REQUEST request) {
+    spanBuilder.setAttribute(SemanticAttributes.HTTP_URL, url(request));
   }
 
-  protected void onConnectionAndRequest(Span span, CONNECTION connection, REQUEST request) {
+  protected void onConnectionAndRequest(
+      SpanBuilder spanBuilder, CONNECTION connection, REQUEST request) {
     String flavor = flavor(connection, request);
     if (flavor != null) {
       // remove HTTP/ prefix to comply with semantic conventions
       if (flavor.startsWith("HTTP/")) {
         flavor = flavor.substring("HTTP/".length());
       }
-      span.setAttribute(SemanticAttributes.HTTP_FLAVOR, flavor);
+      spanBuilder.setAttribute(SemanticAttributes.HTTP_FLAVOR, flavor);
     }
-    span.setAttribute(SemanticAttributes.HTTP_CLIENT_IP, clientIP(connection, request));
+    spanBuilder.setAttribute(SemanticAttributes.HTTP_CLIENT_IP, clientIP(connection, request));
   }
 
   private String clientIP(CONNECTION connection, REQUEST request) {

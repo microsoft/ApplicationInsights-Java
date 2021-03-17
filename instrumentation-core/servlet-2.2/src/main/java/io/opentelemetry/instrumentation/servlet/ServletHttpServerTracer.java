@@ -6,6 +6,7 @@
 package io.opentelemetry.instrumentation.servlet;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
@@ -30,8 +31,17 @@ public abstract class ServletHttpServerTracer<RESPONSE>
 
   public Context startSpan(
       HttpServletRequest request, HttpServletResponse response, String spanName) {
+
     injectAppIdIntoResponse(response);
-    return startSpan(request, request, request, spanName);
+
+    Context context = startSpan(request, request, request, spanName);
+
+    SpanContext spanContext = Span.fromContext(context).getSpanContext();
+    // we do this e.g. so that servlet containers can use these values in their access logs
+    request.setAttribute("traceId", spanContext.getTraceId());
+    request.setAttribute("spanId", spanContext.getSpanId());
+
+    return context;
   }
 
   @Override
@@ -113,32 +123,22 @@ public abstract class ServletHttpServerTracer<RESPONSE>
   }
 
   @Override
-  public void onRequest(Span span, HttpServletRequest request) {
-    // we do this e.g. so that servlet containers can use these values in their access logs
-    request.setAttribute("traceId", span.getSpanContext().getTraceId());
-    request.setAttribute("spanId", span.getSpanContext().getSpanId());
-
-    super.onRequest(span, request);
-  }
-
-  @Override
   protected TextMapGetter<HttpServletRequest> getGetter() {
     return HttpServletRequestGetter.GETTER;
   }
 
   public void addUnwrappedThrowable(Context context, Throwable throwable) {
     if (AppServerBridge.shouldRecordException(context)) {
-      addThrowable(Span.fromContext(context), unwrapThrowable(throwable));
+      onException(context, throwable);
     }
   }
 
   @Override
   protected Throwable unwrapThrowable(Throwable throwable) {
-    Throwable result = throwable;
-    if (throwable instanceof ServletException && throwable.getCause() != null) {
-      result = throwable.getCause();
+    if (throwable.getCause() != null && throwable instanceof ServletException) {
+      throwable = throwable.getCause();
     }
-    return super.unwrapThrowable(result);
+    return super.unwrapThrowable(throwable);
   }
 
   public void setPrincipal(Context context, HttpServletRequest request) {

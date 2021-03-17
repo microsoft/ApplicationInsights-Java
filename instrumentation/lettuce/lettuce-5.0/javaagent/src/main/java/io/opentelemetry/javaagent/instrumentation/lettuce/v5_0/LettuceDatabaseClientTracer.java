@@ -7,8 +7,8 @@ package io.opentelemetry.javaagent.instrumentation.lettuce.v5_0;
 
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.protocol.RedisCommand;
-import io.opentelemetry.javaagent.instrumentation.api.db.RedisCommandSanitizer;
-import io.opentelemetry.javaagent.instrumentation.lettuce.LettuceArgSplitter;
+import io.opentelemetry.instrumentation.api.db.RedisCommandSanitizer;
+import io.opentelemetry.instrumentation.lettuce.common.LettuceArgSplitter;
 import java.util.Collections;
 import java.util.List;
 

@@ -24,6 +24,7 @@ These are the supported libraries and frameworks:
 | [Apache Dubbo](https://github.com/apache/dubbo/)                                                                                      | 2.7+                           |
 | [Apache HttpAsyncClient](https://hc.apache.org/index.html)                                                                            | 4.1+                           |
 | [Apache HttpClient](https://hc.apache.org/index.html)                                                                                 | 2.0+                           |
+| [Apache RocketMQ](https://rocketmq.apache.org/)                                                                                       | 4.8+                           |
 | [Apache Wicket](https://wicket.apache.org/)                                                                                           | 8.0+                           |
 | [Armeria](https://armeria.dev)                                                                                                        | 1.3+                           |
 | [AsyncHttpClient](https://github.com/AsyncHttpClient/async-http-client)                                                               | 1.9+                           |
@@ -32,10 +33,11 @@ These are the supported libraries and frameworks:
 | [Cassandra Driver](https://github.com/datastax/java-driver)                                                                           | 3.0+                           |
 | [Couchbase Client](https://github.com/couchbase/couchbase-java-client)                                                                | 2.0+ (not including 3.x yet)   |
 | [Dropwizard Views](https://www.dropwizard.io/en/latest/manual/views.html)                                                             | 0.7+                           |
-| [Elasticsearch API](https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/index.html)                                 | 5.0+ (not including 7.x yet)   |
+| [Elasticsearch API](https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/index.html)                                 | 5.0+                           |
 | [Elasticsearch REST Client](https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/index.html)                        | 5.0+                           |
 | [Finatra](https://github.com/twitter/finatra)                                                                                         | 2.9+                           |
 | [Geode Client](https://geode.apache.org/)                                                                                             | 1.4+                           |
+| [Grails](https://grails.org/)                                                                                                         | 3.0+                           |
 | [Google HTTP Client](https://github.com/googleapis/google-http-java-client)                                                           | 1.19+                          |
 | [Grizzly](https://javaee.github.io/grizzly/httpserverframework.html)                                                                  | 2.0+ (disabled by default)     |
 | [gRPC](https://github.com/grpc/grpc-java)                                                                                             | 1.5+                           |
@@ -83,6 +85,7 @@ These are the supported libraries and frameworks:
 | [Spymemcached](https://github.com/couchbase/spymemcached)                                                                             | 2.12+                          |
 | [Struts2](https://github.com/apache/struts)                                                                                           | 2.3+                           |
 | [Twilio](https://github.com/twilio/twilio-java)                                                                                       | 6.6+ (not including 8.x yet)   |
+| [Undertow](https://undertow.io/)                                                                                                      | 1.4+                           |
 | [Vert.x](https://vertx.io)                                                                                                            | 3.0+                           |
 | [Vert.x RxJava2](https://vertx.io/docs/vertx-rx/java2/)                                                                               | 3.5+                           |
 
