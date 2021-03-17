@@ -9,9 +9,10 @@ import static io.opentelemetry.javaagent.instrumentation.jdbc.JdbcUtils.connecti
 
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.db.SqlStatementInfo;
+import io.opentelemetry.instrumentation.api.db.SqlStatementSanitizer;
 import io.opentelemetry.instrumentation.api.tracer.DatabaseClientTracer;
-import io.opentelemetry.javaagent.instrumentation.api.db.SqlStatementInfo;
-import io.opentelemetry.javaagent.instrumentation.api.db.SqlStatementSanitizer;
+import io.opentelemetry.instrumentation.api.tracer.net.NetPeerAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.InetSocketAddress;
 import java.sql.Connection;
@@ -22,6 +23,10 @@ import java.sql.Statement;
 
 public class JdbcTracer extends DatabaseClientTracer<DbInfo, String, SqlStatementInfo> {
   private static final JdbcTracer TRACER = new JdbcTracer();
+
+  private JdbcTracer() {
+    super(NetPeerAttributes.INSTANCE);
+  }
 
   public static JdbcTracer tracer() {
     return TRACER;

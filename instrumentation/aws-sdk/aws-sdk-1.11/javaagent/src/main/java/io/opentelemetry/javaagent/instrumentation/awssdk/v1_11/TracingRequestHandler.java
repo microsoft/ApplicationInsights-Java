@@ -5,104 +5,75 @@
 
 package io.opentelemetry.javaagent.instrumentation.awssdk.v1_11;
 
-import static io.opentelemetry.javaagent.instrumentation.awssdk.v1_11.AwsSdkClientTracer.tracer;
-import static io.opentelemetry.javaagent.instrumentation.awssdk.v1_11.RequestMeta.CONTEXT_SCOPE_PAIR_CONTEXT_KEY;
-
 import com.amazonaws.AmazonWebServiceRequest;
 import com.amazonaws.Request;
 import com.amazonaws.Response;
+import com.amazonaws.handlers.HandlerContextKey;
 import com.amazonaws.handlers.RequestHandler2;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import java.util.List;
+import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.instrumentation.awssdk.v1_11.AwsSdkTracing;
 
-/** Tracing Request Handler. */
+/**
+ * A {@link RequestHandler2} for use in the agent. Unlike library instrumentation, the agent will
+ * also instrument the underlying HTTP client, and we must set the context as current to be able to
+ * suppress it. Also unlike library instrumentation, we are able to instrument the SDK's internal
+ * classes to handle buggy behavior related to exceptions that can cause scopes to never be closed
+ * otherwise which would be disastrous. We hope there won't be anymore significant changes to this
+ * legacy SDK that would cause these workarounds to break in the future.
+ */
+// NB: If the error-handling workarounds stop working, we should consider introducing the same
+// x-amzn-request-id header check in Apache instrumentation for suppressing spans that we have in
+// Netty instrumentation.
 public class TracingRequestHandler extends RequestHandler2 {
 
-  private final ContextStore<AmazonWebServiceRequest, RequestMeta> contextStore;
+  public static final HandlerContextKey<Scope> SCOPE =
+      new HandlerContextKey<>(Scope.class.getName());
 
-  public TracingRequestHandler(ContextStore<AmazonWebServiceRequest, RequestMeta> contextStore) {
-    this.contextStore = contextStore;
-  }
+  public static final RequestHandler2 tracingHandler =
+      AwsSdkTracing.newBuilder(GlobalOpenTelemetry.get())
+          .setCaptureExperimentalSpanAttributes(
+              Config.get()
+                  .getBooleanProperty(
+                      "otel.instrumentation.aws-sdk.experimental-span-attributes", false))
+          .build()
+          .newRequestHandler();
 
   @Override
   public void beforeRequest(Request<?> request) {
-
-    AmazonWebServiceRequest originalRequest = request.getOriginalRequest();
-    SpanKind kind = (isSqsProducer(originalRequest) ? SpanKind.PRODUCER : SpanKind.CLIENT);
-
-    RequestMeta requestMeta = contextStore.get(originalRequest);
-    Context parentContext = Context.current();
-    if (!tracer().shouldStartSpan(parentContext)) {
-      return;
+    tracingHandler.beforeRequest(request);
+    Context context = AwsSdkTracing.getOpenTelemetryContext(request);
+    // it is possible that context is not  set by lib's handler
+    if (context != null) {
+      Scope scope = context.makeCurrent();
+      request.addHandlerContext(SCOPE, scope);
     }
-    Context context = tracer().startSpan(kind, parentContext, request, requestMeta);
-    Scope scope = context.makeCurrent();
-    request.addHandlerContext(CONTEXT_SCOPE_PAIR_CONTEXT_KEY, new ContextScopePair(context, scope));
-  }
-
-  private boolean isSqsProducer(AmazonWebServiceRequest request) {
-    return request
-        .getClass()
-        .getName()
-        .equals("com.amazonaws.services.sqs.model.SendMessageRequest");
   }
 
   @Override
   public AmazonWebServiceRequest beforeMarshalling(AmazonWebServiceRequest request) {
-    if (SqsReceiveMessageRequestAccess.isInstance(request)) {
-      if (!SqsReceiveMessageRequestAccess.getAttributeNames(request)
-          .contains(SqsParentContext.AWS_TRACE_SYSTEM_ATTRIBUTE)) {
-        SqsReceiveMessageRequestAccess.withAttributeNames(
-            request, SqsParentContext.AWS_TRACE_SYSTEM_ATTRIBUTE);
-      }
-    }
-    return request;
+    return tracingHandler.beforeMarshalling(request);
   }
 
   @Override
   public void afterResponse(Request<?> request, Response<?> response) {
-    if (SqsReceiveMessageRequestAccess.isInstance(request.getOriginalRequest())) {
-      afterConsumerResponse(request, response);
-    }
-    // close outstanding "client" span
-    ContextScopePair scope = request.getHandlerContext(CONTEXT_SCOPE_PAIR_CONTEXT_KEY);
-    if (scope == null) {
-      return;
-    }
-    request.addHandlerContext(CONTEXT_SCOPE_PAIR_CONTEXT_KEY, null);
-    scope.closeScope();
-    tracer().end(scope.getContext(), response);
-  }
-
-  /** Create and close CONSUMER span for each message consumed. */
-  private void afterConsumerResponse(Request<?> request, Response<?> response) {
-    Object receiveMessageResult = response.getAwsResponse();
-    List<?> messages = SqsReceiveMessageResultAccess.getMessages(receiveMessageResult);
-    for (Object message : messages) {
-      createConsumerSpan(message, request, response);
-    }
-  }
-
-  private void createConsumerSpan(Object message, Request<?> request, Response<?> response) {
-    Context parentContext =
-        SqsParentContext.ofSystemAttributes(SqsMessageAccess.getAttributes(message));
-    AmazonWebServiceRequest originalRequest = request.getOriginalRequest();
-    RequestMeta requestMeta = contextStore.get(originalRequest);
-    Context context = tracer().startSpan(SpanKind.CONSUMER, parentContext, request, requestMeta);
-    tracer().end(context, response);
+    tracingHandler.afterResponse(request, response);
   }
 
   @Override
   public void afterError(Request<?> request, Response<?> response, Exception e) {
-    ContextScopePair scope = request.getHandlerContext(CONTEXT_SCOPE_PAIR_CONTEXT_KEY);
+    tracingHandler.afterError(request, response, e);
+    finish(request);
+  }
+
+  private static void finish(Request<?> request) {
+    Scope scope = request.getHandlerContext(SCOPE);
     if (scope == null) {
       return;
     }
-    request.addHandlerContext(CONTEXT_SCOPE_PAIR_CONTEXT_KEY, null);
-    scope.closeScope();
-    tracer().endExceptionally(scope.getContext(), e);
+    scope.close();
+    request.addHandlerContext(SCOPE, null);
   }
 }

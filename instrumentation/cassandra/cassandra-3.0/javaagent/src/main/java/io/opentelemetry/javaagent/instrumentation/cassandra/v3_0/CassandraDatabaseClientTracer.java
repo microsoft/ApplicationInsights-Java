@@ -11,10 +11,10 @@ import com.datastax.driver.core.Session;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.db.SqlStatementInfo;
+import io.opentelemetry.instrumentation.api.db.SqlStatementSanitizer;
 import io.opentelemetry.instrumentation.api.tracer.DatabaseClientTracer;
-import io.opentelemetry.instrumentation.api.tracer.utils.NetPeerUtils;
-import io.opentelemetry.javaagent.instrumentation.api.db.SqlStatementInfo;
-import io.opentelemetry.javaagent.instrumentation.api.db.SqlStatementSanitizer;
+import io.opentelemetry.instrumentation.api.tracer.net.NetPeerAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes.DbSystemValues;
 import java.net.InetSocketAddress;
@@ -23,6 +23,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class CassandraDatabaseClientTracer
     extends DatabaseClientTracer<Session, String, SqlStatementInfo> {
   private static final CassandraDatabaseClientTracer TRACER = new CassandraDatabaseClientTracer();
+
+  private CassandraDatabaseClientTracer() {
+    super(NetPeerAttributes.INSTANCE);
+  }
 
   public static CassandraDatabaseClientTracer tracer() {
     return TRACER;
@@ -104,7 +108,7 @@ public class CassandraDatabaseClientTracer
   public void end(Context context, ExecutionInfo executionInfo) {
     Span span = Span.fromContext(context);
     Host host = executionInfo.getQueriedHost();
-    NetPeerUtils.INSTANCE.setNetPeer(span, host.getSocketAddress());
+    NetPeerAttributes.INSTANCE.setNetPeer(span, host.getSocketAddress());
     end(context);
   }
 }
