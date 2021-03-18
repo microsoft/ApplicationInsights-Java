@@ -64,7 +64,8 @@ public class ProfilerServiceInitializer {
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
                                                String instrumentationKey,
-                                               TelemetryClient client) {
+                                               TelemetryClient client,
+                                               String userAgent) {
         initialize(
                 appIdSupplier,
                 processId,
@@ -72,7 +73,8 @@ public class ProfilerServiceInitializer {
                 machineName,
                 instrumentationKey,
                 client,
-                LazyHttpClient.getInstance()
+                LazyHttpClient.getInstance(),
+                userAgent
         );
     }
 
@@ -82,7 +84,8 @@ public class ProfilerServiceInitializer {
                                                String machineName,
                                                String instrumentationKey,
                                                TelemetryClient client,
-                                               CloseableHttpClient httpClient) {
+                                               CloseableHttpClient httpClient,
+                                               String userAgent) {
         if (!initialized && config.enabled()) {
             initialized = true;
             ProfilerServiceFactory factory = null;
@@ -117,7 +120,8 @@ public class ProfilerServiceInitializer {
                     machineName,
                     instrumentationKey,
                     httpClient,
-                    serviceProfilerExecutorService
+                    serviceProfilerExecutorService,
+                    userAgent
             );
 
             serviceProfilerExecutorService.submit(() -> {

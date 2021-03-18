@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
@@ -166,7 +167,8 @@ public class AiComponentInstaller implements ComponentInstaller {
                 formServiceProfilerConfig(config.preview.profiler),
                 configuration.getRoleInstance(),
                 configuration.getInstrumentationKey(),
-                telemetryClient
+                telemetryClient,
+                formApplicationInsightsUserAgent()
         );
 
         // this is for Azure Function Linux consumption plan support.
@@ -198,6 +200,15 @@ public class AiComponentInstaller implements ComponentInstaller {
                 JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime(), config.sampling.percentage);
             }
         }
+    }
+
+    private static String formApplicationInsightsUserAgent() {
+        String aiVersion = SdkVersionFinder.readVersion();
+        String javaVersion = System.getProperty("java.version");
+        String osName = System.getProperty("os.name");
+        String arch = System.getProperty("os.arch");
+        String userName = "Microsoft-ApplicationInsights-Java-Profiler/" + aiVersion + "  (Java/" + javaVersion + "; " + osName + "; " + arch + ")";
+        return userName;
     }
 
     private static ServiceProfilerServiceConfig formServiceProfilerConfig(ProfilerConfiguration configuration) {

@@ -33,9 +33,10 @@ public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
             String machineName,
             String instrumentationKey,
             CloseableHttpClient httpClient,
-            ScheduledExecutorService serviceProfilerExecutorService) {
+            ScheduledExecutorService serviceProfilerExecutorService,
+            String userAgent) {
         if (INSTANCE == null) {
-            ServiceProfilerClientV2 serviceProfilerClient = new ProfilerFrontendClientV2(config.getServiceProfilerFrontEndPoint(), instrumentationKey, httpClient);
+            ServiceProfilerClientV2 serviceProfilerClient = new ProfilerFrontendClientV2(config.getServiceProfilerFrontEndPoint(), instrumentationKey, httpClient, userAgent);
 
             ServiceProfilerUploader uploader = new ServiceProfilerUploader(
                     serviceProfilerClient,

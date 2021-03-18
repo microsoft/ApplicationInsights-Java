@@ -19,6 +19,7 @@ public interface ProfilerServiceFactory {
             String machineName,
             String instrumentationKey,
             CloseableHttpClient httpClient,
-            ScheduledExecutorService serviceProfilerExecutorService
+            ScheduledExecutorService serviceProfilerExecutorService,
+            String userAgent
     );
 }

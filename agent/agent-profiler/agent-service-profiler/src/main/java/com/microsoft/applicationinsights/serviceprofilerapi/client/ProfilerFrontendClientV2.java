@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.Time
 import com.squareup.moshi.Moshi.Builder;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpResponseException;
@@ -65,14 +66,20 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
     private final String hostUrl;
     private final String instrumentationKey;
     private final CloseableHttpClient httpClient;
+    private final String userAgent;
 
     private boolean closed;
 
-    public ProfilerFrontendClientV2(String hostUrl, String instrumentationKey, CloseableHttpClient httpClient) {
+    public ProfilerFrontendClientV2(String hostUrl, String instrumentationKey, CloseableHttpClient httpClient, String userAgent) {
         this.hostUrl = hostUrl;
         this.instrumentationKey = instrumentationKey;
         this.httpClient = httpClient;
+        this.userAgent = userAgent;
         closed = false;
+    }
+
+    public ProfilerFrontendClientV2(String hostUrl, String instrumentationKey, CloseableHttpClient httpClient) {
+        this(hostUrl, instrumentationKey, httpClient, null);
     }
 
     /**
@@ -122,6 +129,9 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
         }
 
         HttpPost request = new HttpPost(requestUri);
+        if (userAgent != null) {
+            request.setHeader(HttpHeaders.USER_AGENT, userAgent);
+        }
 
         return httpClient
                 .execute(request, response -> {
