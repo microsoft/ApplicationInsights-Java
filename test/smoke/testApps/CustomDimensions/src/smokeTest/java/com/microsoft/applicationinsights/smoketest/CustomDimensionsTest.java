@@ -19,10 +19,12 @@ public class CustomDimensionsTest extends AiSmokeTest {
 
         Envelope rdEnvelope = rdList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         assertEquals("value", rd.getProperties().get("test"));
         assertEquals("/root", rd.getProperties().get("home"));
+        assertEquals(2, rd.getProperties().size());
+        assertTrue(rd.getSuccess());
 
         assertEquals("123", rdEnvelope.getTags().get("ai.application.ver"));
 

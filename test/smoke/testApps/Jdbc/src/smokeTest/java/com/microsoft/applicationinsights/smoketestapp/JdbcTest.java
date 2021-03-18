@@ -50,14 +50,17 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertEquals("select * from abc where xyz = ?", rdd.getName());
         assertEquals("SQL", rdd.getType());
         assertEquals("testdb", rdd.getTarget());
-        assertEquals("select * from abc where xyz = ?", rdd.getName());
         assertEquals("select * from abc where xyz = ?", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -75,14 +78,17 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertEquals("select * from abc", rdd.getName());
         assertEquals("SQL", rdd.getType());
         assertEquals("testdb", rdd.getTarget());
-        assertEquals("select * from abc", rdd.getName());
         assertEquals("select * from abc", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -100,18 +106,21 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         String largeStr = " /*" + Strings.repeat("a", 2000) + "*/";
         String query = "select * from abc" + largeStr;
         String truncatedQuery = query.substring(0, Math.min(query.length(), 1024));
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertEquals(truncatedQuery, rdd.getName());
         assertEquals("SQL", rdd.getType());
         assertEquals("testdb", rdd.getTarget());
-        assertEquals(truncatedQuery, rdd.getName());
         assertEquals(query, rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -129,15 +138,18 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertEquals("insert into abc (xyz) values (?)", rdd.getName());
         assertEquals("SQL", rdd.getType());
         assertEquals("testdb", rdd.getTarget());
-        assertEquals("insert into abc (xyz) values (?)", rdd.getName());
         assertEquals("insert into abc (xyz) values (?)", rdd.getData());
         // assertEquals(" [Batch of 3]", rdd.getProperties().get("Args"));
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -156,16 +168,20 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertEquals("insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');" +
+                " insert into abc (xyz) values ('v')", rdd.getName());
         assertEquals("SQL", rdd.getType());
         assertEquals("testdb", rdd.getTarget());
-        assertEquals("insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u'); insert into abc (xyz) values ('v')", rdd.getName());
         assertEquals("insert into abc (xyz) values ('t'); insert into abc (xyz) values ('u');" +
                 " insert into abc (xyz) values ('v')", rdd.getData());
         assertEquals(" [Batch]", rdd.getProperties().get("Args"));
+        assertEquals(1, rdd.getProperties().size());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -177,7 +193,7 @@ public class JdbcTest extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         Envelope rddEnvelope = mockedIngestion.waitForItem(new Predicate<Envelope>() {
             @Override
@@ -185,20 +201,23 @@ public class JdbcTest extends AiSmokeTest {
                 if (!input.getData().getBaseType().equals("RemoteDependencyData")) {
                     return false;
                 }
-                RemoteDependencyData rdd = (RemoteDependencyData) ((Data) input.getData()).getBaseData();
+                RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) input.getData()).getBaseData();
                 // the old agent captured several internal queries, e.g. "SHOW WARNINGS"
                 return rdd.getData().equals("select * from abc where xyz = ?");
             }
         }, 10, TimeUnit.SECONDS);
 
 
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("SQL", rdd.getType());
         assertEquals("mysql", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
-        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -210,7 +229,7 @@ public class JdbcTest extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         Envelope rddEnvelope = mockedIngestion.waitForItem(new Predicate<Envelope>() {
             @Override
@@ -218,19 +237,22 @@ public class JdbcTest extends AiSmokeTest {
                 if (!input.getData().getBaseType().equals("RemoteDependencyData")) {
                     return false;
                 }
-                RemoteDependencyData rdd = (RemoteDependencyData) ((Data) input.getData()).getBaseData();
+                RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) input.getData()).getBaseData();
                 // the old agent captured several internal queries, e.g. "SHOW WARNINGS"
                 return rdd.getData().equals("select * from abc");
             }
         }, 10, TimeUnit.SECONDS);
 
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("SQL", rdd.getType());
         assertEquals("mysql", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
-        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("select * from abc", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -248,14 +270,17 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("SQL", rdd.getType());
         assertEquals("postgres", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
-        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -273,14 +298,17 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("SQL", rdd.getType());
         assertEquals("postgres", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
-        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("select * from abc", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -298,14 +326,16 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
+
+        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("SQL", rdd.getType());
         assertEquals("mssql", rdd.getTarget()); // this is the db.system
-        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -323,14 +353,17 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("SQL", rdd.getType());
         assertEquals("mssql", rdd.getTarget()); // this is the db.system
-        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("select * from abc", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -349,14 +382,17 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("SQL", rdd.getType());
         assertEquals("oracle", rdd.getTarget()); // this is the db.system
-        assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
@@ -375,14 +411,17 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("SQL", rdd.getType());
         assertEquals("oracle", rdd.getTarget()); // this is the db.system
-        assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("select * from abc", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");

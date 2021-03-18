@@ -16,7 +16,7 @@ public class SimpleTestTraceLogBackWithExceptionServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ServletFuncs.geRrenderHtml(request, response);
 
-        Logger logger = LoggerFactory.getLogger("root");
+        Logger logger = LoggerFactory.getLogger("test");
         MDC.put("MDC key", "MDC value");
         logger.error("This is an exception!", new Exception("Fake Exception"));
         MDC.remove("MDC key");

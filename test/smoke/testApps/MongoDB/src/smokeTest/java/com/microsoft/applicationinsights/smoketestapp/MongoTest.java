@@ -35,14 +35,19 @@ public class MongoTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertEquals("/MongoDB/*", rd.getName());
+        assertEquals("200", rd.getResponseCode());
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertEquals("find testdb.test", rdd.getName());
         assertEquals("mongodb", rdd.getType());
         assertTrue(rdd.getTarget().matches("dependency[0-9]+/testdb"));
-        assertEquals("find testdb.test", rdd.getName());
         assertEquals("{\"find\": \"test\", \"$db\": \"?\"}", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/MongoDB/*");

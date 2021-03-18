@@ -10,17 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
 
-/**
- * Servlet implementation class SimpleTrackTraceServlet
- */
 @WebServlet(description = "calls trackPageView twice; once vanilla, once with properties", urlPatterns = {"/trackPageView"})
 public class SimpleTrackPageViewServlet extends HttpServlet {
-    private static final long serialVersionUID = -633683109556605395L;
+
     private final TelemetryClient client = new TelemetryClient();
 
-    /**
-     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         client.trackPageView("test-page");
 
