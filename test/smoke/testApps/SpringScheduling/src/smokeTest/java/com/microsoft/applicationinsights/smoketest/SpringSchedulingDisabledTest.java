@@ -17,11 +17,12 @@ public class SpringSchedulingDisabledTest extends AiSmokeTest {
     public void fixedRateSchedulerTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
         Envelope rdEnvelope = rdList.get(0);
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        assertTrue(rd.getSuccess());
         assertEquals("/SpringScheduling/scheduler", rd.getName());
         assertEquals("200", rd.getResponseCode());
+        assertTrue(rd.getProperties().isEmpty());
+        assertTrue(rd.getSuccess());
 
         // sleep a bit and make sure no spring scheduling "requests" are reported
         Thread.sleep(5000);

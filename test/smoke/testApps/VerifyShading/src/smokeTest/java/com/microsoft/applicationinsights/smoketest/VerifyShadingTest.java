@@ -19,7 +19,7 @@ public class VerifyShadingTest extends AiSmokeTest {
 
         Envelope rdEnvelope = rdList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
     }

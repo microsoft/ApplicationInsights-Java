@@ -12,13 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 
-/**
- * Servlet implementation class SimpleTrackHttpRequestServlet
- */
 @WebServlet(description = "Performs given calculation", urlPatterns = { "/trackHttpRequest" })
 public class SimpleTrackHttpRequestServlet extends HttpServlet {
 
-    private static final long serialVersionUID = -1484210841610659769L;
     private final TelemetryClient client = new TelemetryClient();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

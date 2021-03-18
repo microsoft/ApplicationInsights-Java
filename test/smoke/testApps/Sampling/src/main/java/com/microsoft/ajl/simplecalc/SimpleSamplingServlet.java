@@ -11,12 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 
-/**
- * Servlet implementation class SimpleFixedRateSamplingServlet
- */
 @WebServlet(description = "sends 100 event telemetry items with different op ids", urlPatterns = { "/sampling" })
 public class SimpleSamplingServlet extends HttpServlet {
-    private static final long serialVersionUID = -5889330779672565409L;
+
     private final TelemetryClient client = new TelemetryClient();
 
     private final AtomicInteger count = new AtomicInteger();

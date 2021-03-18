@@ -22,7 +22,7 @@ public class SpringSchedulingTest extends AiSmokeTest {
                 if (!"RequestData".equals(input.getData().getBaseType())) {
                     return false;
                 }
-                RequestData data = (RequestData) ((Data) input.getData()).getBaseData();
+                RequestData data = (RequestData) ((Data<?>) input.getData()).getBaseData();
                 return data.getName().equals("/SpringScheduling/scheduler");
             }
         }, 10, TimeUnit.SECONDS);
@@ -34,7 +34,7 @@ public class SpringSchedulingTest extends AiSmokeTest {
                 if (!"RequestData".equals(input.getData().getBaseType())) {
                     return false;
                 }
-                RequestData data = (RequestData) ((Data) input.getData()).getBaseData();
+                RequestData data = (RequestData) ((Data<?>) input.getData()).getBaseData();
                 return data.getName().equals("SpringSchedulingApp.fixedRateScheduler");
             }
         }, 2, 10, TimeUnit.SECONDS);

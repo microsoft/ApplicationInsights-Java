@@ -27,14 +27,17 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertTrue(rd.getProperties().isEmpty());
+        assertTrue(rd.getSuccess());
+
+        assertEquals("myspanname", rdd.getName());
         // ideally want these on rd, but can't get SERVER span yet
         // see https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1726#issuecomment-731890267
+        assertEquals("myuser", rddEnvelope.getTags().get("ai.user.id"));
         assertEquals("myvalue1", rdd.getProperties().get("myattr1"));
         assertEquals("myvalue2", rdd.getProperties().get("myattr2"));
-        assertEquals("myuser", rddEnvelope.getTags().get("ai.user.id"));
-        assertEquals("myspanname", rdd.getName());
-
-        assertTrue(rd.getSuccess());
+        assertEquals(2, rdd.getProperties().size());
+        assertTrue(rdd.getSuccess());
 
         assertParentChild(rd.getId(), rdEnvelope, rddEnvelope);
     }
@@ -65,10 +68,16 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
             rddEnvelope2 = rddEnvelopeTemp;
         }
 
-        assertEquals("TestController.testAnnotations", rdd1.getName());
-        assertEquals("TestController.underAnnotation", rdd2.getName());
-
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertEquals("TestController.testAnnotations", rdd1.getName());
+        assertTrue(rdd1.getProperties().isEmpty());
+        assertTrue(rdd1.getSuccess());
+
+        assertEquals("TestController.underAnnotation", rdd2.getName());
+        assertTrue(rdd2.getProperties().isEmpty());
+        assertTrue(rdd2.getSuccess());
 
         assertParentChild(rd.getId(), rdEnvelope, rddEnvelope1);
         assertParentChild(rdd1.getId(), rddEnvelope1, rddEnvelope2);

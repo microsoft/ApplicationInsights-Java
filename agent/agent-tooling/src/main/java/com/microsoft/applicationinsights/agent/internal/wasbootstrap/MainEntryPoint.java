@@ -37,6 +37,8 @@ import com.microsoft.applicationinsights.agent.internal.AiComponentInstaller;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SelfDiagnostics;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfigurationBuilder;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import org.slf4j.Logger;
@@ -47,23 +49,18 @@ import org.slf4j.event.Level;
 // this class initializes configuration and logging before passing control to opentelemetry-java-instrumentation
 public class MainEntryPoint {
 
+    private static RpConfiguration rpConfiguration;
     private static Configuration configuration;
-    private static Path configPath;
-    private static long lastModifiedTime;
 
     private MainEntryPoint() {
     }
 
+    public static RpConfiguration getRpConfiguration() {
+        return rpConfiguration;
+    }
+
     public static Configuration getConfiguration() {
         return configuration;
-    }
-
-    public static Path getConfigPath() {
-        return configPath;
-    }
-
-    public static long getLastModifiedTime() {
-        return lastModifiedTime;
     }
 
     // TODO turn this into an interceptor
@@ -75,9 +72,8 @@ public class MainEntryPoint {
             Path agentPath = new File(bootstrapURL.toURI()).toPath();
             DiagnosticsHelper.setAgentJarFile(agentPath);
             // configuration is only read this early in order to extract logging configuration
-            configuration = ConfigurationBuilder.create(agentPath);
-            configPath = configuration.configPath;
-            lastModifiedTime = configuration.lastModifiedTime;
+            rpConfiguration = RpConfigurationBuilder.create(agentPath);
+            configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
             startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
             ConfigurationBuilder.logConfigurationWarnMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
@@ -173,20 +169,15 @@ public class MainEntryPoint {
     private static Logger configureLogging(SelfDiagnostics selfDiagnostics, Path agentPath) {
         String logbackXml;
         String destination = selfDiagnostics.destination;
-        if (DiagnosticsHelper.isAppSvcAttachForLoggingPurposes()) {
-            // User-accessible IPA log file. Enabled by default.
-            if ("false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_LOG_FILE_ENABLED_ENV_VAR))) {
-                System.setProperty("ai.config.appender.user-logdir.location", "");
-            }
-
+        if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
             // Diagnostics IPA log file location. Disabled by default.
-            final String internalLogOutputLocation = System.getenv(DiagnosticsHelper.INTERNAL_LOG_OUTPUT_DIR_ENV_VAR);
+            final String internalLogOutputLocation = System.getenv(DiagnosticsHelper.APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY);
             if (internalLogOutputLocation == null || internalLogOutputLocation.isEmpty()) {
                 System.setProperty("ai.config.appender.diagnostics.location", "");
             }
 
-            // Diagnostics IPA ETW provider. Windows-only. Enabled by default.
-            if (!DiagnosticsHelper.isOsWindows() || "false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_ETW_PROVIDER_ENABLED_ENV_VAR))) {
+            // Diagnostics IPA ETW provider. Windows-only.
+            if (!DiagnosticsHelper.isOsWindows()) {
                 System.setProperty("ai.config.appender.etw.location", "");
             }
             logbackXml = "applicationinsights.appsvc.logback.xml";

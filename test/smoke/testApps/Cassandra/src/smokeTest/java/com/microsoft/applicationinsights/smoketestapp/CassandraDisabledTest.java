@@ -30,9 +30,10 @@ public class CassandraDisabledTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        assertTrue(rd.getSuccess());
         assertEquals("/Cassandra/*", rd.getName());
         assertEquals("200", rd.getResponseCode());
+        assertTrue(rd.getProperties().isEmpty());
+        assertTrue(rd.getSuccess());
 
         // sleep a bit and make sure no cassandra dependencies are reported
         Thread.sleep(5000);

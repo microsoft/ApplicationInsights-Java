@@ -14,12 +14,9 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
 import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 
-/**
- * Servlet Servlet implementation class SimpleTrackExceptionServlet
- */
 @WebServlet(description = "Performs given calculation", urlPatterns = { "/trackException" })
 public class SimpleTrackExceptionServlet extends HttpServlet {
-    private static final long serialVersionUID = 9009843523432371365L;
+
     private final TelemetryClient client = new TelemetryClient();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -46,5 +43,4 @@ public class SimpleTrackExceptionServlet extends HttpServlet {
         et.setSeverityLevel(SeverityLevel.Error);
         client.track(et);
     }
-
 }
