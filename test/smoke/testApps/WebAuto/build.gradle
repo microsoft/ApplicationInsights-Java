@@ -3,7 +3,7 @@ apply plugin: 'war'
 dependencies {
     compile aiWebAutoJar
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 }
 
 sourceCompatibility = 1.8

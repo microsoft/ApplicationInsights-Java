@@ -27,7 +27,6 @@ repositories {
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
-apply from: "$buildScriptsDir/provided-configuration.gradle"
 
 configurations {
     jni64 {
@@ -36,10 +35,6 @@ configurations {
     jni32 {
         transitive = false
     }
-    provided {
-        transitive = false
-    }
-    testRuntime.extendsFrom provided
 }
 
 def jniSrcDir = 'src/main/jni'

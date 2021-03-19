@@ -22,5 +22,5 @@ dependencies {
     // this dependency is needed to make wildfly happy
     compile group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.3'
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 }

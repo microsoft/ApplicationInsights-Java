@@ -7,7 +7,7 @@ dependencies {
     compile group: 'org.mongodb', name: 'mongodb-driver', version: '3.11.0'
     compile group: 'com.google.guava', name: 'guava', version: '27.1-android'
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 }
 
 sourceCompatibility = 1.8
