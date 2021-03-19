@@ -31,9 +31,6 @@ apply plugin: 'checkstyle'
 apply plugin: 'org.owasp.dependencycheck'
 apply plugin: 'com.github.spotbugs'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
 configurations {
     compileClasspath.resolutionStrategy.activateDependencyLocking()
     runtimeClasspath.resolutionStrategy.activateDependencyLocking()

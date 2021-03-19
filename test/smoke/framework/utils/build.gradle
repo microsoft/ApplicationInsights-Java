@@ -15,4 +15,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-sourceCompatibility = 1.8
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}

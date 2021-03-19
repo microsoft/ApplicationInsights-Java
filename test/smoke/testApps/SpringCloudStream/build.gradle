@@ -3,11 +3,6 @@ plugins {
     id 'org.springframework.boot' version '2.2.0.RELEASE'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
-
 ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
 
@@ -17,4 +12,8 @@ dependencies {
     compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-stream-kafka', version: '2.2.1.RELEASE'
     compile group: 'org.springframework.kafka', name: 'spring-kafka', version: '2.3.1.RELEASE'
     compile group: 'org.springframework', name: 'spring-tx', version: '5.2.0.RELEASE'
+}
+
+tasks.withType(JavaCompile) {
+    options.release.set(8)
 }

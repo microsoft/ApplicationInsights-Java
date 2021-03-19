@@ -11,11 +11,6 @@ buildscript {
 
 apply plugin: 'org.springframework.boot'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
-
 dependencies {
     compile springBootStarterJar
     compile 'com.google.guava:guava:27.1-android'
@@ -42,3 +37,7 @@ bootWar {
 
 ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + '.war'
+
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}

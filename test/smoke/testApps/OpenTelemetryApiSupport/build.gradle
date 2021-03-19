@@ -1,9 +1,8 @@
 apply plugin: 'war'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}
 
 war {
     // this is done to remove the version from the archive file name
