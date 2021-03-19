@@ -22,11 +22,12 @@
 package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
+import java.util.Collections;
 
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
-import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import org.junit.*;
 import org.junit.contrib.java.lang.system.*;
@@ -55,10 +56,10 @@ public class RpConfigurationPollingTest {
         rpConfiguration.lastModifiedTime = 0;
 
         TelemetryConfiguration.getActive().setConnectionString(rpConfiguration.connectionString);
-        Global.setSamplingPercentage(SamplingPercentage.roundToNearest(rpConfiguration.sampling.percentage));
+        Global.setSamplingPercentage(ConfigurationBuilder.roundToNearest(rpConfiguration.sampling.percentage));
 
         // when
-        new RpConfigurationPolling(rpConfiguration).run();
+        new RpConfigurationPolling(rpConfiguration, Collections.emptyList()).run();
 
         // then
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
@@ -75,12 +76,12 @@ public class RpConfigurationPollingTest {
         rpConfiguration.lastModifiedTime = 0;
 
         TelemetryConfiguration.getActive().setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-        Global.setSamplingPercentage(SamplingPercentage.roundToNearest(90));
+        Global.setSamplingPercentage(ConfigurationBuilder.roundToNearest(90));
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=00000000-0000-0000-0000-000000000000");
         envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "90");
 
         // when
-        new RpConfigurationPolling(rpConfiguration).run();
+        new RpConfigurationPolling(rpConfiguration, Collections.emptyList()).run();
 
         // then
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());

@@ -8,7 +8,7 @@ import java.util.Objects;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.NameConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorMatchType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ToAttributeConfig;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
@@ -193,7 +193,7 @@ public class ExporterWithSpanProcessorTest {
         config.name = new NameConfig();
         config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.strict;
+        config.include.matchType = MatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
@@ -381,10 +381,10 @@ public class ExporterWithSpanProcessorTest {
         config.id = "ExtractAttributesWithIncludeExclude";
         config.name = new NameConfig();
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.regexp;
+        config.include.matchType = MatchType.regexp;
         config.include.spanNames = Arrays.asList("^(.*?)/(.*?)$");
         config.exclude = new ProcessorIncludeExclude();
-        config.exclude.matchType = ProcessorMatchType.strict;
+        config.exclude.matchType = MatchType.strict;
         config.exclude.spanNames = Arrays.asList("donot/change");
         config.name.toAttributes = new ToAttributeConfig();
         config.name.toAttributes.rules = Arrays.asList("(?<operationwebsite>.*?)$");

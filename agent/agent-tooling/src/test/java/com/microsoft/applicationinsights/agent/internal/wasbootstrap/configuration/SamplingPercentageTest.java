@@ -1,8 +1,8 @@
-package com.microsoft.applicationinsights.agent.internal.sampling;
+package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
 import org.junit.*;
 
-import static com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage.roundToNearest;
+import static com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.roundToNearest;
 import static org.junit.Assert.*;
 
 public class SamplingPercentageTest {

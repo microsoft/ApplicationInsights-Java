@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.Exporter;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
@@ -37,7 +36,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
         if (config.connectionString != null) {
             DelegatingPropagator.getInstance().setUpStandardDelegate();
-            DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(Global.getSamplingPercentage()));
+            DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(config.sampling.percentage, config.preview.sampling.overrides));
         } else {
             // in Azure Functions, we configure later on, once we know user has opted in to tracing
             // (note: the default for DelegatingPropagator is to not propagate anything

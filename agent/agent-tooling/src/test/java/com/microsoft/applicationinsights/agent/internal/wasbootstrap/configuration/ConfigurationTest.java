@@ -12,7 +12,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.PreviewConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorActionType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorMatchType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.squareup.moshi.JsonAdapter;
@@ -135,10 +135,10 @@ public class ConfigurationTest {
         ProcessorConfig selectiveConfig = preview.processors.get(2);
         assertEquals(ProcessorType.attribute, selectiveConfig.type);
         assertEquals("attributes/selectiveProcessing", selectiveConfig.id);
-        assertEquals(ProcessorMatchType.strict, selectiveConfig.include.matchType);
+        assertEquals(MatchType.strict, selectiveConfig.include.matchType);
         assertEquals(2, selectiveConfig.include.spanNames.size());
         assertEquals("svcA", selectiveConfig.include.spanNames.get(0));
-        assertEquals(ProcessorMatchType.strict, selectiveConfig.exclude.matchType);
+        assertEquals(MatchType.strict, selectiveConfig.exclude.matchType);
         assertEquals(1, selectiveConfig.exclude.attributes.size());
         assertEquals("redact_trace", selectiveConfig.exclude.attributes.get(0).key);
         assertEquals("false", selectiveConfig.exclude.attributes.get(0).value);
@@ -149,7 +149,7 @@ public class ConfigurationTest {
         ProcessorConfig logUpdateNameConfig = preview.processors.get(3);
         assertEquals(ProcessorType.log, logUpdateNameConfig.type);
         assertEquals("log/updateName", logUpdateNameConfig.id);
-        assertEquals(ProcessorMatchType.regexp, logUpdateNameConfig.include.matchType);
+        assertEquals(MatchType.regexp, logUpdateNameConfig.include.matchType);
         assertEquals(1, logUpdateNameConfig.include.logNames.size());
         assertEquals(".*password.*", logUpdateNameConfig.include.logNames.get(0));
         assertEquals(1, logUpdateNameConfig.name.fromAttributes.size());
@@ -165,7 +165,7 @@ public class ConfigurationTest {
         ProcessorConfig spanUpdateNameConfig = preview.processors.get(5);
         assertEquals(ProcessorType.span, spanUpdateNameConfig.type);
         assertEquals("span/updateName", spanUpdateNameConfig.id);
-        assertEquals(ProcessorMatchType.regexp, spanUpdateNameConfig.include.matchType);
+        assertEquals(MatchType.regexp, spanUpdateNameConfig.include.matchType);
         assertEquals(1, spanUpdateNameConfig.include.spanNames.size());
         assertEquals(".*password.*", spanUpdateNameConfig.include.spanNames.get(0));
         assertEquals(1, spanUpdateNameConfig.name.fromAttributes.size());
