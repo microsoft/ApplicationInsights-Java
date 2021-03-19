@@ -181,7 +181,7 @@ public class Configuration {
 
     public static class DestinationFile {
 
-        private static final String DEFAULT_NAME = "applicationinsights.json";
+        private static final String DEFAULT_NAME = "applicationinsights.log";
 
         public String path = getDefaultPath();
         public int maxSizeMb = 5;
