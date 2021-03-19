@@ -21,8 +21,6 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
  * DEALINGS IN THE SOFTWARE.
  */
 
-// region Common configurations
-
 plugins {
     id 'idea'
 
@@ -36,10 +34,6 @@ plugins {
 ext.buildScriptsDir = "$rootDir/gradle"
 
 apply from: "$buildScriptsDir/common.gradle"
-
-// endregion Common configurations
-
-// region Root project script
 
 ext {
     isBuildServer = (System.properties["isBuildServer"] ?: "false").toBoolean()
@@ -85,15 +79,6 @@ allprojects {
         }
     }
 
-    tasks.withType(JavaCompile) {
-        doFirst {
-            logger.info("sourceCompatibility = $sourceCompatibility")
-            logger.info("tatgetCompatibility = $targetCompatibility")
-            logger.info("options.bootstrapClasspath = $options.bootstrapClasspath")
-            logger.info("options.compilerArgs = $options.compilerArgs")
-        }
-    }
-
     tasks.withType(ShadowJar) {
         exclude 'META-INF/maven/**'
         exclude 'META-INF/LICENSE*'
@@ -108,10 +93,3 @@ allprojects {
         from "${rootProject.projectDir}/LICENSE"
     }
 }
-
-wrapper {
-    distributionType = Wrapper.DistributionType.ALL
-}
-
-// endregion Root project script
-
