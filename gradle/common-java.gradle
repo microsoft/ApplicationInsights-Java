@@ -52,6 +52,7 @@ spotbugs {
         excludeFilter = spotbugsExcludeFile
     }
 }
+spotbugsTest.enabled = false
 
 spotbugsTest.enabled = false
 
