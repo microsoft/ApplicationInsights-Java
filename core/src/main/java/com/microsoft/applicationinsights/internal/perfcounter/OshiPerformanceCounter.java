@@ -26,6 +26,8 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oshi.SystemInfo;
+import oshi.hardware.CentralProcessor;
+import oshi.hardware.CentralProcessor.TickType;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
 
@@ -33,51 +35,71 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
     private static final Logger logger = LoggerFactory.getLogger(OshiPerformanceCounter.class);
     private static final String ID = Constants.PERFORMANCE_COUNTER_PREFIX + "OshiPerformanceCounter";
-    private final static double MILLIS_IN_SECOND = 1000;
-    private long prevCollectionInMillis = -1;
-    private double prevProcessIO;
-    private double currentProcessIO;
-    private OSProcess processInfo;
-    private double prevTotalProcessorTime;
-    private double currentTotalProcessorTime;
+
+    private static final double MILLIS_IN_SECOND = 1000;
+
+    private long prevCollectionTimeMillis;
+    private long prevProcessBytes;
+    private long prevTotalProcessorMillis;
+
+    private final OSProcess processInfo;
+    private final CentralProcessor processor;
 
     public OshiPerformanceCounter() {
         SystemInfo systemInfo = new SystemInfo();
         OperatingSystem osInfo = systemInfo.getOperatingSystem();
         processInfo = osInfo.getProcess(osInfo.getProcessId());
-        processInfo.updateAttributes();
+        processor = systemInfo.getHardware().getProcessor();
 
-        currentProcessIO = (double) (processInfo.getBytesRead() + processInfo.getBytesWritten());
-        prevProcessIO = currentProcessIO;
-
-        currentTotalProcessorTime = processInfo.getUserTime() + processInfo.getKernelTime();
-        prevTotalProcessorTime = currentTotalProcessorTime;
+        // grab values early, so that we will have something to report the first time report() is called
+        updateAttributes(processInfo);
+        prevCollectionTimeMillis = System.currentTimeMillis();
+        prevProcessBytes = getProcessBytes(processInfo);
+        prevTotalProcessorMillis = getTotalProcessorMillis(processor);
     }
 
-    @Override public String getId() {
+    @Override
+    public String getId() {
         return ID;
     }
 
-    @Override public void report(TelemetryClient telemetryClient) {
-        processInfo.updateAttributes();
+    @Override
+    public void report(TelemetryClient telemetryClient) {
+        long currCollectionTimeMillis = System.currentTimeMillis();
+        updateAttributes(processInfo);
+        long currProcessBytes = getProcessBytes(processInfo);
+        long currTotalProcessorMillis = getTotalProcessorMillis(processor);
 
-        long currentCollectionInMillis = System.currentTimeMillis();
-        currentProcessIO = (double) (processInfo.getBytesRead() + processInfo.getBytesWritten());
-        currentTotalProcessorTime = processInfo.getUserTime() + processInfo.getKernelTime();
-        if (prevCollectionInMillis != -1) {
-            double timeElapsedInSeconds = (currentCollectionInMillis - prevCollectionInMillis) / MILLIS_IN_SECOND;
-            double processIo = (currentProcessIO - prevProcessIO) / timeElapsedInSeconds;
-            send(telemetryClient, processIo, Constants.PROCESS_IO_PC_METRIC_NAME);
-            logger.trace("Sent performance counter for '{}': '{}'", Constants.PROCESS_IO_PC_METRIC_NAME, processIo);
+        double elapsedMillis = currCollectionTimeMillis - prevCollectionTimeMillis;
+        double elapsedSeconds = elapsedMillis / MILLIS_IN_SECOND;
+        double processBytes = (currProcessBytes - prevProcessBytes) / elapsedSeconds;
+        send(telemetryClient, processBytes, Constants.PROCESS_IO_PC_METRIC_NAME);
+        logger.trace("Sent performance counter for '{}': '{}'", Constants.PROCESS_IO_PC_METRIC_NAME, processBytes);
 
-            double processorTime = (currentTotalProcessorTime - prevTotalProcessorTime) / timeElapsedInSeconds;
-            send(telemetryClient, processorTime, Constants.TOTAL_CPU_PC_METRIC_NAME);
-            logger.trace("Sent performance counter for '{}': '{}'", Constants.TOTAL_CPU_PC_METRIC_NAME, processorTime);
+        double processorLoad = (currTotalProcessorMillis - prevTotalProcessorMillis) / (elapsedMillis * processor.getLogicalProcessorCount());
+        double processorPercentage = 100 * processorLoad;
+        send(telemetryClient, processorPercentage, Constants.TOTAL_CPU_PC_METRIC_NAME);
+        logger.trace("Sent performance counter for '{}': '{}'", Constants.TOTAL_CPU_PC_METRIC_NAME, processorPercentage);
+
+        prevCollectionTimeMillis = currCollectionTimeMillis;
+        prevProcessBytes = currProcessBytes;
+        prevTotalProcessorMillis = currTotalProcessorMillis;
+    }
+
+    private static void updateAttributes(OSProcess processInfo) {
+        if (!processInfo.updateAttributes()) {
+            logger.debug("could not update process attributes");
         }
+    }
 
-        prevProcessIO = currentProcessIO;
-        prevTotalProcessorTime = currentTotalProcessorTime;
-        prevCollectionInMillis = currentCollectionInMillis;
+    // must call updateAttributes on processInfo before calling this method
+    private static long getProcessBytes(OSProcess processInfo) {
+        return processInfo.getBytesRead() + processInfo.getBytesWritten();
+    }
+
+    private static long getTotalProcessorMillis(CentralProcessor processor) {
+        long[] systemCpuLoadTicks = processor.getSystemCpuLoadTicks();
+        return systemCpuLoadTicks[TickType.USER.getIndex()] + systemCpuLoadTicks[TickType.SYSTEM.getIndex()];
     }
 
     private void send(TelemetryClient telemetryClient, double value, String metricName) {
