@@ -48,19 +48,6 @@
                 <Class name="com.microsoft.applicationinsights.internal.channel.common.PartialSuccessHandler" />
                 <Method name="generateOriginalItems" />
             </And>
-            <And>
-                <Class name="com.microsoft.applicationinsights.internal.perfcounter.UnixProcessIOPerformanceCounter" />
-                <Method name="getCurrentIOForCurrentProcess" />
-            </And>
-            <And>
-                <Class name="com.microsoft.applicationinsights.internal.perfcounter.UnixTotalCpuPerformanceCounter" />
-                <Method name="getLineOfData" />
-            </And>
-            <And>
-                <Class name="com.microsoft.applicationinsights.internal.perfcounter.UnixTotalMemoryPerformanceCounter" />
-                <Method name="getTotalAvailableMemory" />
-            </And>
-
             <!-- the following instances could specify encoding if needed by the server -->
             <And>
                 <Class name="com.microsoft.applicationinsights.internal.quickpulse.DefaultQuickPulsePingSender" />
@@ -126,11 +113,6 @@
                     <Method name="&lt;init&gt;"/>
                     <Method name="createTemporaryFile"/>
                 </Or>
-            </And>
-            <And>
-                <!-- This path is read from trusted sources (file containing *ix process stats). -->
-                <Class name="com.microsoft.applicationinsights.internal.perfcounter.AbstractUnixPerformanceCounter"/>
-                <Method name="&lt;init&gt;"/>
             </And>
             <And>
                 <!-- The paths here are either immutable or read from trusted sources -->

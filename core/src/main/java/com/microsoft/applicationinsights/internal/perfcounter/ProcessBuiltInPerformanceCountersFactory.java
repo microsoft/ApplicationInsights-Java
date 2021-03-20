@@ -90,8 +90,6 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
      */
     private Collection<PerformanceCounter> getUnixPerformanceCounters() {
         ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
-        performanceCounters.add(new UnixProcessIOPerformanceCounter());
-        performanceCounters.add(new UnixTotalCpuPerformanceCounter());
         performanceCounters.add(new OshiPerformanceCounter());
         return performanceCounters;
     }
@@ -102,21 +100,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
      */
     private Collection<PerformanceCounter> getWindowsPerformanceCounters() {
         ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
-
-        try {
-            performanceCounters.add(new OshiPerformanceCounter());
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable e) {
-            try {
-                logger.error("Failed to create OshiPerformanceCounter: '{}'", e.toString());
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-
+        performanceCounters.add(new OshiPerformanceCounter());
         return performanceCounters;
     }
 }
