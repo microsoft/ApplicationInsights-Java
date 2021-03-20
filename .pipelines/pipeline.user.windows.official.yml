@@ -34,6 +34,4 @@ build:
           exclude:
             - '**/build/libs/*-sources.jar'
             - '**/build/libs/*-javadoc.jar'
-            - 'logging/common/**/*'
-            - 'ApplicationInsightsInternalLogger/**/*'
             - 'buildSrc/**/*'
