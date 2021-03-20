@@ -25,7 +25,7 @@ echo "Installing Windows 10 SDK..."
 set "WINSDK_URL=https://download.microsoft.com/download/1/c/3/1c3d5161-d9e9-4e4b-9b43-b70fe8be268c/windowssdk/winsdksetup.exe"
 set "SDK_FEATURES=OptionId.WindowsPerformanceToolkit OptionId.NetFxSoftwareDevelopmentKit OptionId.DesktopCPPx64 OptionId.DesktopCPPx86"
 
-powershell -NoProfile -ExecutionPolicy Unrestricted -File "%~dp0Install-Something.ps1" -Install -Url "%WINSDK_URL%" -InstallerArgs "/features %SDK_FEATURES% /log %CDP_USER_SOURCE_FOLDER_CONTAINER_PATH%\WinSdkInstall\winsdk10install.log /norestart /q" -InstallationDirectory "C:\Program Files (x86)\Windows Kits\10" -HomeVar "APPINSIGHTS_WIN10_SDK_PATH" -CleanOnFinish || exit /B 1
+powershell -NoProfile -ExecutionPolicy Unrestricted -File "%~dp0install-something.ps1" -Install -Url "%WINSDK_URL%" -InstallerArgs "/features %SDK_FEATURES% /log %CDP_USER_SOURCE_FOLDER_CONTAINER_PATH%\WinSdkInstall\winsdk10install.log /norestart /q" -InstallationDirectory "C:\Program Files (x86)\Windows Kits\10" -HomeVar "APPINSIGHTS_WIN10_SDK_PATH" -CleanOnFinish || exit /B 1
 
 echo "C:\Program Files (x86)\Windows Kits\10"
 dir "C:\Program Files (x86)\Windows Kits\10"
