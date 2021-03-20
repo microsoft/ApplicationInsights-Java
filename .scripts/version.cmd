@@ -19,7 +19,7 @@ if errorlevel 1 (
     echo Error running '%GRADLE_CMD%' in '%PROJECT_ROOT%'
     exit /b 1
 )
-echo Running using version file to udpate build number...
+echo Running using version file to update build number...
 powershell.exe -NoProfile -ExecutionPolicy Unrestricted -File "%~dp0GenerateVersion.ps1"
 exit /b %ERRORLEVEL%
 

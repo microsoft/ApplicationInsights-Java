@@ -45,32 +45,37 @@ checkstyle {
     configProperties["rootDir"] = rootProject.projectDir
     showViolations = false
 }
+
 spotbugs {
+    ignoreFailures = false
     effort = 'max'
     reportLevel = 'medium'
-    showProgress = true
-    showStackTraces = true
-    ignoreFailures = true // FIXME: Ignoring for now.
-    toolVersion = '4.0.2'
+
+    def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
+    if (spotbugsExcludeFile.exists()) {
+        excludeFilter = spotbugsExcludeFile
+    }
 }
+
+spotbugsTest.enabled = false
 
 spotbugsMain {
     reports {
-        xml.enabled = true
         html.enabled = true
+        xml.enabled = true
+        html {
+            stylesheet = 'fancy-hist.xsl'
+        }
     }
 }
 
+dependencies {
+    // See https://find-sec-bugs.github.io/bugs.htm for bug pattern definitions
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
+}
+
 tasks.withType(JavaCompile) {
-    dependencies {
-        // See https://find-sec-bugs.github.io/bugs.htm for bug pattern definitions
-        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.+'
-    }
-    def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
-    if (spotbugsExcludeFile.exists() && !spotbugs.excludeFilter) {
-        logger.info "${project} using spotbugs exclude file ${spotbugsExcludeFile.absolutePath}"
-        spotbugs.excludeFilter = spotbugsExcludeFile
-    }
+    options.release.set(8)
 }
 
 tasks.withType(Checkstyle) {
@@ -101,38 +106,6 @@ jacocoTestReport {
         xml.enabled true
         html.enabled true
     }
-}
-
-if (hasProperty("JDKToUse")) {
-    logger.info("using $JDKToUse to compile and run tests")
-    def javaExecutablesPath = new File(JDKToUse, 'bin')
-    def javaExecutables = [:].withDefault { execName ->
-        def execNameToUse = execName
-        if (OperatingSystem.current().isWindows()){
-            execNameToUse = execName + ".exe"
-        }
-        def executable = new File(javaExecutablesPath, execNameToUse)
-        assert executable.exists(): "There is no ${execName} executable in ${javaExecutablesPath}"
-        executable
-    }
-    tasks.withType(AbstractCompile) {
-        options.with {
-            fork = true
-            forkOptions.executable = javaExecutables.javac
-            forkOptions.javaHome = file(JDKToUse)
-        }
-    }
-    tasks.withType(Javadoc) {
-        executable = javaExecutables.javadoc
-    }
-    tasks.withType(Test) {
-        executable = javaExecutables.java
-    }
-    tasks.withType(JavaExec) {
-        executable = javaExecutables.java
-    }
-} else {
-    logger.info("JDKToUse not found. Using default")
 }
 
 sourceSets {
@@ -245,17 +218,3 @@ tasks.withType(Test) {
 
 
 // endregion Shared java configuration
-
-// region Helper Methods
-
-def updateTestDirectories() {
-    if (this.hasProperty("testEnvName")) {
-        testResultsDirName = testResultsDirName + "/" + testEnvName
-        logger.info('Test results folder for project "' + project.name + '" set to "' + testResultsDir + '"')
-
-        testReportDirName = testReportDirName + "/" + testEnvName
-        logger.info('Test report folder for project "' + project.name + '" set to ' + testReportDirName + '"')
-    }
-}
-
-// endregion Helper Methods

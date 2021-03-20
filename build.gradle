@@ -23,19 +23,14 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 // region Common configurations
 
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.14'
-        classpath 'org.owasp:dependency-check-gradle:5.2.2'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
-        classpath 'gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.+'
-    }
+plugins {
+    id 'idea'
+
+    id "com.github.johnrengelman.shadow" version "6.1.0" apply false
+
+    id "org.owasp.dependencycheck" version "6.1.2"
+    id "com.diffplug.spotless" version "5.8.2"
+    id "com.github.spotbugs" version "4.6.0" apply false
 }
 
 ext.buildScriptsDir = "$rootDir/gradle"
@@ -46,7 +41,6 @@ apply from: "$buildScriptsDir/common.gradle"
 
 // region Root project script
 
-def rootProjectBuildFolder = "$rootDir/build"
 ext {
     isBuildServer = (System.properties["isBuildServer"] ?: "false").toBoolean()
     isRelease = (System.properties["isRelease"] ?: "false").toBoolean()
@@ -55,12 +49,6 @@ ext {
     }
     else {
         logger.lifecycle "Building on DESKTOP"
-    }
-}
-
-task clean {
-    doLast {
-        delete(rootProjectBuildFolder)
     }
 }
 
@@ -118,15 +106,6 @@ allprojects {
     tasks.withType(Jar) {
         from "${rootProject.projectDir}/NOTICE"
         from "${rootProject.projectDir}/LICENSE"
-    }
-
-    // Only run spotbugs against these configurations
-    def spotConfigs = ["main"]
-    tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
-        enabled = spotConfigs.contains(getBaseName())
-        if (!enabled) {
-            logger.info "Skipping $it"
-        }
     }
 }
 
