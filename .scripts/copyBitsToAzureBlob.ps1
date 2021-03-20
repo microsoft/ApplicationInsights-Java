@@ -12,10 +12,6 @@ param (
     [string]$SDKVersionNumber
 )
 
-Write-Host $ServicePrincipalKey
-Write-Host $ServicePrincipleClientId
-Write-Host $SDKVersionNumber
-
 $Env:AZCOPY_SPA_CLIENT_SECRET=$ServicePrincipalKey
 azcopy login --service-principal --application-id $ServicePrincipleClientId
 azcopy copy "$(System.DefaultWorkingDirectory)/_applicationinsights-java-Windows-Official-master/drop/outputs/build/Artifacts/agent/agent/build/libs/applicationinsights-agent-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
