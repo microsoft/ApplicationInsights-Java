@@ -21,45 +21,14 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import com.microsoft.applicationinsights.internal.config.PerformanceCountersXmlElement;
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * The class will be used when the SDK needs to add the 'built-in' performance counters.
  *
  * Created by gupele on 3/3/2015.
  */
-public final class ProcessPerformanceCountersModule extends AbstractPerformanceCounterModule implements PerformanceCounterConfigurationAware {
+public final class ProcessPerformanceCountersModule extends AbstractPerformanceCounterModule {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProcessPerformanceCountersModule.class);
-
-    public ProcessPerformanceCountersModule() throws Exception {
-        this(new ProcessBuiltInPerformanceCountersFactory());
-    }
-
-    public ProcessPerformanceCountersModule(PerformanceCountersFactory factory) {
-        super(factory);
-    }
-
-    /**
-     * This method checks for Windows performance counters from the configuration.
-     * The method will work only if the process is activated under Windows OS. The method will initialize
-     * the connection to the native code using {@link com.microsoft.applicationinsights.internal.perfcounter.JniPCConnector}
-     * and then will go through the requested performance counters, normalize them, and will hand them to the factory.
-     * @param configuration The configuration of that section
-     */
-    @Override
-    public void addConfigurationData(PerformanceCountersXmlElement configuration) {
-        if (!SystemInformation.INSTANCE.isWindows()) {
-            logger.trace("Windows performance counters are not relevant on this OS.");
-            return;
-        }
-
-        if (!JniPCConnector.initialize()) {
-            logger.error("Failed to initialize JNI connection.");
-            return;
-        }
+    public ProcessPerformanceCountersModule() {
+        super(new ProcessBuiltInPerformanceCountersFactory());
     }
 }

@@ -133,11 +133,6 @@
                 <Method name="&lt;init&gt;"/>
             </And>
             <And>
-                <!-- The DLL extraction path is read from trusted sources. -->
-                <Class name="com.microsoft.applicationinsights.internal.perfcounter.JniPCConnector"/>
-                <Method name="buildDllLocalPath"/>
-            </And>
-            <And>
                 <!-- The paths here are either immutable or read from trusted sources -->
                 <Class name="com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils" />
                 <Method name="getTempDir" />
@@ -161,11 +156,6 @@
                 <!-- Return value of mkdir is not helpful here. The next conditional checks if the target folder exists and is accessible. -->
                 <Class name="com.microsoft.applicationinsights.internal.channel.common.TransmissionFileSystemOutput" />
                 <Method name="&lt;init&gt;"/>
-            </And>
-            <And>
-                <!-- Return value of mkdirs is not helpful here. The next conditional checks if the target folder exists and is accessible. -->
-                <Class name="com.microsoft.applicationinsights.internal.perfcounter.JniPCConnector" />
-                <Method name="buildDllLocalPath" />
             </And>
             <And>
                 <!-- Callers are responsible for checking if this directory was created. -->

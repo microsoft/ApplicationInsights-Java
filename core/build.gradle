@@ -32,39 +32,6 @@ sourceSets {
     }
 }
 
-clean {
-    delete "${System.properties['java.io.tmpdir']}/AISDK/native" // see JniPCConnector.java for jni directory
-}
-
-// CURRENTLY the DLL being built on CI is not working, leading to this error on startup:
-//
-// ERROR c.m.a.i.perfcounter.JniPCConnector - Unexpected error initializing JNI Performance Counter library. Windows performance counters will not be used
-// java.lang.UnsatisfiedLinkError: C:\Users\trstalna\AppData\Local\Temp\AISDK\native\3.0.0-PREVIEW.7-SNAPSHOT\applicationinsights-core-native-win64.dll: Can't find dependent libraries
-//
-// and native windows perf counters do not get collected
-//
-// so instead of building the DLLs, we are currently just copying the previously built DLLs from 2.6.2 which work fine
-// (see copyTheDLL task below)
-
-/*
-import org.apache.tools.ant.taskdefs.condition.Os
-
-boolean skipWinNative = (System.properties['skipWinNative'] ?: 'false').toBoolean()
-if (skipWinNative) {
-    logger.warn 'Windows native components will not be built: skipWinNative=true'
-    if (isRelease) {
-        logger.error 'skipWinNative=true and isRelease=true'
-        throw new GradleException('Cannot use skipWinNative=true and isRelease=true')
-    }
-} else {
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        apply from: "native.gradle"
-    } else {
-        logger.warn("Native binaries build is only supported on Windows systems; native components will not be built.")
-    }
-}
-*/
-
 import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
 archivesBaseName = 'applicationinsights-core'
