@@ -124,6 +124,7 @@ tasks.register("listTestApps") {
     group = "Help"
     description = "List all available test apps"
     doFirst {
-        subprojects.collect { it.path }.each { println it }
+        subprojects.collect { it.path }
+                   .each { println it }
     }
 }
