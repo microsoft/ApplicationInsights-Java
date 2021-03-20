@@ -16,12 +16,12 @@ commons-logging:commons-logging:1.2
 eu.infomas:annotation-detector:3.0.5
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:1.0.0+ai.patch.1-alpha
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:1.0.0+ai.patch.1-alpha
-io.opentelemetry:opentelemetry-api:1.0.1
-io.opentelemetry:opentelemetry-context:1.0.1
+io.opentelemetry:opentelemetry-api:1.0.0
+io.opentelemetry:opentelemetry-context:1.0.0
 io.opentelemetry:opentelemetry-sdk-common:1.0.0
 io.opentelemetry:opentelemetry-sdk-trace:1.0.0
 io.opentelemetry:opentelemetry-sdk:1.0.0
-io.opentelemetry:opentelemetry-semconv:1.0.1-alpha
+io.opentelemetry:opentelemetry-semconv:1.0.0-alpha
 org.apache.commons:commons-lang3:3.11
 org.apache.commons:commons-text:1.9
 org.apache.httpcomponents:httpclient:4.5.13
