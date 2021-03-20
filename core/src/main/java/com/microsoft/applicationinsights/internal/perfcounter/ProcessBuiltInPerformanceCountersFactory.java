@@ -92,7 +92,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
         ArrayList<PerformanceCounter> performanceCounters = getMutualPerformanceCounters();
         performanceCounters.add(new UnixProcessIOPerformanceCounter());
         performanceCounters.add(new UnixTotalCpuPerformanceCounter());
-
+        performanceCounters.add(new OshiPerformanceCounter());
         return performanceCounters;
     }
 

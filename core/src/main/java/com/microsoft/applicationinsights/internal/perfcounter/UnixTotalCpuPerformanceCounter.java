@@ -84,8 +84,8 @@ final class UnixTotalCpuPerformanceCounter extends AbstractUnixPerformanceCounte
 
             double totalCpuUsage = calculateTotalCpuUsage(array);
 
-            logger.trace("Sending Performance Counter: {}: {}", TOTAL_CPU_PC_METRIC_NAME, totalCpuUsage);
-            MetricTelemetry telemetry = new MetricTelemetry(TOTAL_CPU_PC_METRIC_NAME, totalCpuUsage);
+            logger.trace("Sending Performance Counter: {}: {}", TOTAL_CPU_PC_METRIC_NAME + " FROM JNI", totalCpuUsage);
+            MetricTelemetry telemetry = new MetricTelemetry(TOTAL_CPU_PC_METRIC_NAME + " FROM JNI", totalCpuUsage);
             telemetryClient.track(telemetry);
         }
     }

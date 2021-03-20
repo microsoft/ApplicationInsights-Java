@@ -76,8 +76,8 @@ final class UnixProcessIOPerformanceCounter extends AbstractUnixPerformanceCount
             double value = (processIO - prevProcessIO) / timeElapsedInSeconds;
             prevProcessIO = processIO;
 
-            logger.trace("Sending Performance Counter: {} {}: {}", getProcessCategoryName(), PROCESS_IO_PC_METRIC_NAME, value);
-            MetricTelemetry telemetry = new MetricTelemetry(PROCESS_IO_PC_METRIC_NAME, value);
+            logger.trace("Sending Performance Counter: {} {}: {}", getProcessCategoryName(), PROCESS_IO_PC_METRIC_NAME + " FROM JNI", value);
+            MetricTelemetry telemetry = new MetricTelemetry(PROCESS_IO_PC_METRIC_NAME + " FROM JNI", value);
             telemetryClient.track(telemetry);
         }
 
