@@ -19,14 +19,15 @@ public class SpringBootAutoTest extends AiSmokeTest {
 
         Envelope rdEnvelope = rdList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         // TODO verify browser and other envelope tags somewhere else
         assertTrue(rdEnvelope.getTags().get("ai.user.userAgent").startsWith("Apache-HttpClient/"));
         assertNotNull(rdEnvelope.getTags().get("ai.location.ip"));
 
-        assertTrue(rd.getSuccess());
         assertEquals("/SpringBootAuto/test", rd.getName());
         assertEquals("200", rd.getResponseCode());
+        assertTrue(rd.getProperties().isEmpty());
+        assertTrue(rd.getSuccess());
     }
 }

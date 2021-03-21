@@ -44,10 +44,10 @@ public class SpringCloudStreamTest extends AiSmokeTest {
         Envelope rddEnvelope1 = rddList.get(0);
         Envelope rddEnvelope2 = rddList.get(1);
 
-        RequestData rd1 = (RequestData) ((Data) rdEnvelope1.getData()).getBaseData();
-        RequestData rd2 = (RequestData) ((Data) rdEnvelope2.getData()).getBaseData();
-        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
-        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
+        RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
+        RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
+        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
 
         if (!rdd1.getName().equals("GreetingsController.sendMessage")) {
             RemoteDependencyData rddTemp = rdd1;
@@ -60,14 +60,23 @@ public class SpringCloudStreamTest extends AiSmokeTest {
         }
 
         assertEquals("/sendMessage", rd1.getName());
-        assertEquals("GreetingsController.sendMessage", rdd1.getName());
+        assertTrue(rd1.getProperties().isEmpty());
+        assertTrue(rd1.getSuccess());
 
+        assertEquals("GreetingsController.sendMessage", rdd1.getName());
+        assertTrue(rdd1.getProperties().isEmpty());
+        assertTrue(rdd1.getSuccess());
+
+        assertEquals("greetings send", rdd2.getName());
         assertEquals("Queue Message | kafka", rdd2.getType());
         assertEquals("greetings", rdd2.getTarget());
-        assertEquals("greetings send", rdd2.getName());
+        assertTrue(rdd2.getProperties().isEmpty());
+        assertTrue(rdd2.getSuccess());
 
-        assertEquals("greetings", rd2.getSource());
         assertEquals("greetings process", rd2.getName());
+        assertEquals("greetings", rd2.getSource());
+        assertTrue(rd2.getProperties().isEmpty());
+        assertTrue(rd2.getSuccess());
 
         assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
         assertParentChild(rdd1.getId(), rddEnvelope1, rddEnvelope2);

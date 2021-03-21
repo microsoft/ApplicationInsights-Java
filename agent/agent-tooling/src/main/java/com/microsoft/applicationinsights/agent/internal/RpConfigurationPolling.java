@@ -23,79 +23,68 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.concurrent.Executors;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfigurationBuilder;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-public class JsonConfigPolling implements Runnable {
+public class RpConfigurationPolling implements Runnable {
 
-    private final Path path;
-    private volatile long lastModifiedTime;
-    private volatile double lastReadSamplingPercentage;
-    private static final Logger logger = LoggerFactory.getLogger(JsonConfigPolling.class);
+    private volatile RpConfiguration rpConfiguration;
+    private static final Logger logger = LoggerFactory.getLogger(RpConfigurationPolling.class);
 
     // visible for testing
-    JsonConfigPolling(Path path, long lastModifiedTime, double lastReadSamplingPercentage) {
-        this.path = path;
-        this.lastModifiedTime = lastModifiedTime;
-        this.lastReadSamplingPercentage = lastReadSamplingPercentage;
+    RpConfigurationPolling(RpConfiguration rpConfiguration) {
+        this.rpConfiguration = rpConfiguration;
     }
 
-    // passing in lastReadSamplingPercentage instead of using the real samplingPercentage, because the real
-    // samplingPercentage is rounded to nearest 100/N, and we want to know specifically when the underlying config value changes
-    // which is lastReadSamplingPercentage
-    public static void pollJsonConfigEveryMinute(Path path, long lastModifiedTime, double lastReadSamplingPercentage) {
-        Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(JsonConfigPolling.class))
-                .scheduleWithFixedDelay(new JsonConfigPolling(path, lastModifiedTime, lastReadSamplingPercentage), 60, 60, SECONDS);
+    public static void startPolling(RpConfiguration rpConfiguration) {
+        Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
+                .scheduleWithFixedDelay(new RpConfigurationPolling(rpConfiguration), 60, 60, SECONDS);
     }
 
     @Override
     public void run() {
-        if (path == null) {
-            logger.warn("JSON config path is null.");
+        if (rpConfiguration.configPath == null) {
+            logger.warn("rp configuration path is null");
             return;
         }
-
-        if (!Files.exists(path)) {
-            logger.warn(path + " doesn't exist.");
+        if (!Files.exists(rpConfiguration.configPath)) {
+            logger.warn("rp configuration path doesn't exist: {}", rpConfiguration.configPath);
             return;
         }
-
         try {
-            BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+            BasicFileAttributes attributes = Files.readAttributes(rpConfiguration.configPath, BasicFileAttributes.class);
             FileTime fileTime = attributes.lastModifiedTime();
-            if (lastModifiedTime != fileTime.toMillis()) {
-                lastModifiedTime = fileTime.toMillis();
-                Configuration configuration = ConfigurationBuilder.loadJsonConfigFile(path);
-                // important to overlay env vars here, so that we don't overwrite the value set by env var
-                ConfigurationBuilder.overlayEnvVars(configuration);
+            if (rpConfiguration.lastModifiedTime != fileTime.toMillis()) {
+                rpConfiguration.lastModifiedTime = fileTime.toMillis();
+                RpConfiguration newRpConfiguration = RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
-                if (!configuration.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
+                if (!newRpConfiguration.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
                     logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
-                    TelemetryConfiguration.getActive().setConnectionString(configuration.connectionString);
+                    TelemetryConfiguration.getActive().setConnectionString(newRpConfiguration.connectionString);
                     AppIdSupplier.startAppIdRetrieval();
                 }
 
-                if (configuration.sampling.percentage != lastReadSamplingPercentage) {
-                    logger.debug("Updating sampling percentage from {} to {}", lastReadSamplingPercentage, configuration.sampling.percentage);
-                    double roundedSamplingPercentage = SamplingPercentage.roundToNearest(configuration.sampling.percentage);
+                if (newRpConfiguration.sampling.percentage != rpConfiguration.sampling.percentage) {
+                    logger.debug("Updating sampling percentage from {} to {}", rpConfiguration.sampling.percentage, newRpConfiguration.sampling.percentage);
+                    double roundedSamplingPercentage = SamplingPercentage.roundToNearest(newRpConfiguration.sampling.percentage);
                     DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(roundedSamplingPercentage));
                     Global.setSamplingPercentage(roundedSamplingPercentage);
-                    lastReadSamplingPercentage = configuration.sampling.percentage;
+                    rpConfiguration.sampling.percentage = newRpConfiguration.sampling.percentage;
                 }
+                rpConfiguration = newRpConfiguration;
             }
         } catch (IOException e) {
             logger.error("Error occurred when polling json config file: {}", e.getMessage(), e);

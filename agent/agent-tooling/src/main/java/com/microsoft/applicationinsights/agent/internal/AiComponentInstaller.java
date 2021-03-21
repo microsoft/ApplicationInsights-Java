@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
@@ -46,6 +45,7 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Requ
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.extensibility.initializer.ResourceAttributesContextInitializer;
@@ -179,11 +179,9 @@ public class AiComponentInstaller implements ComponentInstaller {
             }
         });
 
-        if (config.preview.configReloadEnabled) {
-            Path configPath = MainEntryPoint.getConfigPath();
-            if (configPath != null) {
-                JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime(), config.sampling.percentage);
-            }
+        RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
+        if (rpConfiguration != null) {
+            RpConfigurationPolling.startPolling(rpConfiguration);
         }
     }
 
@@ -196,11 +194,11 @@ public class AiComponentInstaller implements ComponentInstaller {
 
     @Nullable
     private static String getCodelessSdkNamePrefix() {
-        if (!DiagnosticsHelper.isAnyAttach()) {
+        if (!DiagnosticsHelper.isRpIntegration()) {
             return null;
         }
         StringBuilder sdkNamePrefix = new StringBuilder(4);
-        sdkNamePrefix.append(DiagnosticsHelper.attachChar());
+        sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
         if (SystemInformation.INSTANCE.isWindows()) {
             sdkNamePrefix.append("w");
         } else if (SystemInformation.INSTANCE.isUnix()) {

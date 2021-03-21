@@ -55,8 +55,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         final String expectedName = "DependencyTest";
         final String expectedData = "commandName";
@@ -65,6 +65,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(expectedName, rdd.getName());
         assertEquals(expectedData, rdd.getData());
         assertEquals(expectedDuration, rdd.getDuration());
+        assertTrue(rdd.getProperties().isEmpty());
+        assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/CoreAndFilter/trackDependency");
     }
@@ -81,7 +83,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope edEnvelope1 = edList.get(0);
         Envelope edEnvelope2 = edList.get(1);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         List<EventData> events = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
         events.sort(new Comparator<EventData>() {
@@ -117,7 +119,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope edEnvelope2 = edList.get(1);
         Envelope edEnvelope3 = edList.get(2);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         final String expectedName = "This is track exception.";
         final String expectedProperties = "value";
@@ -190,8 +192,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope mdEnvelope = mdList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        MetricData md = (MetricData) ((Data) mdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        MetricData md = (MetricData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
         List<DataPoint> metrics = md.getMetrics();
         assertEquals(1, metrics.size());
@@ -222,7 +224,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         Envelope mdEnvelope2 = mdList.get(1);
         Envelope mdEnvelope3 = mdList.get(2);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         final List<MessageData> messages = mockedIngestion.getMessageDataInRequest();
         assertThat(messages, hasItem(
@@ -254,14 +256,14 @@ public class CoreAndFilterTests extends AiSmokeTest {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> pvdList = mockedIngestion.waitForItemsInOperation("PageViewData", 3, operationId);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         Envelope pvdEnvelope1 = null;
         Envelope pvdEnvelope2 = null;
         Envelope pvdEnvelope3 = null;
 
         for (Envelope pvdEnvelope : pvdList) {
-            PageViewData pv = (PageViewData) ((Data) pvdEnvelope.getData()).getBaseData();
+            PageViewData pv = (PageViewData) ((Data<?>) pvdEnvelope.getData()).getBaseData();
             if (pv.getName().equals("test-page")) {
                 pvdEnvelope1 = pvdEnvelope;
             } else if (pv.getName().equals("test-page-2")) {
@@ -273,9 +275,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
             }
         }
 
-        PageViewData pv1 = (PageViewData) ((Data) pvdEnvelope1.getData()).getBaseData();
-        PageViewData pv2 = (PageViewData) ((Data) pvdEnvelope2.getData()).getBaseData();
-        PageViewData pv3 = (PageViewData) ((Data) pvdEnvelope3.getData()).getBaseData();
+        PageViewData pv1 = (PageViewData) ((Data<?>) pvdEnvelope1.getData()).getBaseData();
+        PageViewData pv2 = (PageViewData) ((Data<?>) pvdEnvelope2.getData()).getBaseData();
+        PageViewData pv3 = (PageViewData) ((Data<?>) pvdEnvelope3.getData()).getBaseData();
 
         assertNotNull(pv1);
         assertEquals(new Duration(0), pv1.getDuration());
@@ -338,9 +340,9 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         Envelope pvdEnvelope = pvdList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        PageViewData pv = (PageViewData) ((Data) pvdEnvelope.getData()).getBaseData();
+        PageViewData pv = (PageViewData) ((Data<?>) pvdEnvelope.getData()).getBaseData();
         assertEquals("doPageView", pv.getName());
         assertEquals(new Duration(0), pv.getDuration());
 
@@ -354,7 +356,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         Envelope rdEnvelope = rdList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         assertEquals(false, rd.getSuccess());
         assertEquals("404", rd.getResponseCode());
@@ -423,7 +425,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         Envelope rdEnvelope = rdList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         long actual = rd.getDuration().getTotalMilliseconds();
         long expected = (new Duration(0, 0, 0, expectedDurationSeconds, 0).getTotalMilliseconds());

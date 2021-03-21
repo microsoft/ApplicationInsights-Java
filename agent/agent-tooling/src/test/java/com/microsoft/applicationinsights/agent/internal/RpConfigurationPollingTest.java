@@ -22,18 +22,18 @@
 package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
-import java.nio.file.Path;
 
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import org.junit.*;
 import org.junit.contrib.java.lang.system.*;
 
 import static org.junit.Assert.*;
 
-public class JsonConfigPollingTest {
+public class RpConfigurationPollingTest {
 
     @Rule
     public EnvironmentVariables envVars = new EnvironmentVariables();
@@ -48,12 +48,17 @@ public class JsonConfigPollingTest {
     @Test
     public void shouldUpdate() {
         // given
-        TelemetryConfiguration.getActive().setConnectionString("InstrumentationKey=11111111-1111-1111-1111-111111111111");
-        Global.setSamplingPercentage(SamplingPercentage.roundToNearest(90));
+        RpConfiguration rpConfiguration = new RpConfiguration();
+        rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
+        rpConfiguration.sampling.percentage = 90;
+        rpConfiguration.configPath = new File(Resources.getResource("applicationinsights-rp.json").getPath()).toPath();
+        rpConfiguration.lastModifiedTime = 0;
+
+        TelemetryConfiguration.getActive().setConnectionString(rpConfiguration.connectionString);
+        Global.setSamplingPercentage(SamplingPercentage.roundToNearest(rpConfiguration.sampling.percentage));
 
         // when
-        Path path = new File(Resources.getResource("applicationinsights.json").getPath()).toPath();
-        new JsonConfigPolling(path, 0, 90).run();
+        new RpConfigurationPolling(rpConfiguration).run();
 
         // then
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
@@ -61,20 +66,24 @@ public class JsonConfigPollingTest {
     }
 
     @Test
-    public void shouldNotUpdate() {
+    public void shouldStillUpdate() {
         // given
+        RpConfiguration rpConfiguration = new RpConfiguration();
+        rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
+        rpConfiguration.sampling.percentage = 90;
+        rpConfiguration.configPath = new File(Resources.getResource("applicationinsights-rp.json").getPath()).toPath();
+        rpConfiguration.lastModifiedTime = 0;
+
         TelemetryConfiguration.getActive().setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
         Global.setSamplingPercentage(SamplingPercentage.roundToNearest(90));
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=00000000-0000-0000-0000-000000000000");
         envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "90");
 
         // when
-        Path path = new File(Resources.getResource("applicationinsights.json").getPath()).toPath();
-        new JsonConfigPolling(path, 0, 90).run();
+        new RpConfigurationPolling(rpConfiguration).run();
 
         // then
-        // FIXME uncomment this after https://github.com/microsoft/ApplicationInsights-Java/pull/1431 is merged
-        // assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
-        assertEquals(Global.getSamplingPercentage(), SamplingPercentage.roundToNearest(90), 0);
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
+        assertEquals(Global.getSamplingPercentage(), 10, 0);
     }
 }
