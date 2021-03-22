@@ -25,12 +25,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
-import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfigurationBuilder;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -41,17 +43,20 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class RpConfigurationPolling implements Runnable {
 
-    private volatile RpConfiguration rpConfiguration;
     private static final Logger logger = LoggerFactory.getLogger(RpConfigurationPolling.class);
 
-    // visible for testing
-    RpConfigurationPolling(RpConfiguration rpConfiguration) {
-        this.rpConfiguration = rpConfiguration;
+    private volatile RpConfiguration rpConfiguration;
+    private final List<SamplingOverride> samplingOverrides;
+
+    public static void startPolling(RpConfiguration rpConfiguration, List<SamplingOverride> samplingOverrides) {
+        Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
+                .scheduleWithFixedDelay(new RpConfigurationPolling(rpConfiguration, samplingOverrides), 60, 60, SECONDS);
     }
 
-    public static void startPolling(RpConfiguration rpConfiguration) {
-        Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
-                .scheduleWithFixedDelay(new RpConfigurationPolling(rpConfiguration), 60, 60, SECONDS);
+    // visible for testing
+    RpConfigurationPolling(RpConfiguration rpConfiguration, List<SamplingOverride> samplingOverrides) {
+        this.rpConfiguration = rpConfiguration;
+        this.samplingOverrides = samplingOverrides;
     }
 
     @Override
@@ -79,8 +84,8 @@ public class RpConfigurationPolling implements Runnable {
 
                 if (newRpConfiguration.sampling.percentage != rpConfiguration.sampling.percentage) {
                     logger.debug("Updating sampling percentage from {} to {}", rpConfiguration.sampling.percentage, newRpConfiguration.sampling.percentage);
-                    double roundedSamplingPercentage = SamplingPercentage.roundToNearest(newRpConfiguration.sampling.percentage);
-                    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(roundedSamplingPercentage));
+                    double roundedSamplingPercentage = ConfigurationBuilder.roundToNearest(newRpConfiguration.sampling.percentage);
+                    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(roundedSamplingPercentage, samplingOverrides));
                     Global.setSamplingPercentage(roundedSamplingPercentage);
                     rpConfiguration.sampling.percentage = newRpConfiguration.sampling.percentage;
                 }

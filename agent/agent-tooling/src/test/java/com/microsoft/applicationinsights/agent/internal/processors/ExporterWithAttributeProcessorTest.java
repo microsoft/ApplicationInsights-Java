@@ -13,7 +13,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorAttribute;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorMatchType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ProcessorActionAdaptor;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
@@ -59,7 +59,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "inValidConfigTestWithNoValueInAction";
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.strict;
+        config.include.matchType = MatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
@@ -88,7 +88,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "inValidConfigTestWithInvalidInclude";
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.strict;
+        config.include.matchType = MatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
@@ -454,7 +454,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "simpleInclude";
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.strict;
+        config.include.matchType = MatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
@@ -513,7 +513,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "simpleIncludeRegex";
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.regexp;
+        config.include.matchType = MatchType.regexp;
         config.include.spanNames = Arrays.asList("svc.*", "test.*");
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
@@ -572,7 +572,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "invalidRegex";
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.regexp;
+        config.include.matchType = MatchType.regexp;
         config.include.spanNames = Collections.singletonList("***");
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
@@ -622,7 +622,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "simpleIncludeRegexValue";
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.regexp;
+        config.include.matchType = MatchType.regexp;
         config.include.spanNames = Arrays.asList("svc.*", "test.*");
         ProcessorAttribute attributeWithValue = new ProcessorAttribute();
         attributeWithValue.key = "testKey";
@@ -694,7 +694,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "simpleIncludeRegexNoValue";
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.regexp;
+        config.include.matchType = MatchType.regexp;
         config.include.spanNames = Arrays.asList("svc.*", "test.*");
         ProcessorAttribute attributeWithNoValue = new ProcessorAttribute();
         attributeWithNoValue.key = "testKey";
@@ -765,7 +765,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "simpleIncludeHash";
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.strict;
+        config.include.matchType = MatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB", "svcC");
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
@@ -824,7 +824,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "simpleExclude";
         config.exclude = new ProcessorIncludeExclude();
-        config.exclude.matchType = ProcessorMatchType.strict;
+        config.exclude.matchType = MatchType.strict;
         config.exclude.spanNames = Arrays.asList("svcA", "svcB");
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
@@ -883,7 +883,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "simpleExcludeRegex";
         config.exclude = new ProcessorIncludeExclude();
-        config.exclude.matchType = ProcessorMatchType.regexp;
+        config.exclude.matchType = MatchType.regexp;
         config.exclude.spanNames = Collections.singletonList("svc.*");
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
@@ -944,7 +944,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "multiInclude";
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.strict;
+        config.include.matchType = MatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
         config.include.attributes = new ArrayList<>();
         ProcessorAttribute attributeWithValue = new ProcessorAttribute();
@@ -1010,7 +1010,7 @@ public class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.attribute;
         config.id = "multiExclude";
         config.exclude = new ProcessorIncludeExclude();
-        config.exclude.matchType = ProcessorMatchType.strict;
+        config.exclude.matchType = MatchType.strict;
         config.exclude.spanNames = Arrays.asList("svcA", "svcB");
         config.exclude.attributes = new ArrayList<>();
         ProcessorAttribute attributeWithValue = new ProcessorAttribute();
@@ -1080,9 +1080,9 @@ public class ExporterWithAttributeProcessorTest {
         config.id = "selectiveProcessing";
         config.include = new ProcessorIncludeExclude();
         config.exclude = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.strict;
+        config.include.matchType = MatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
-        config.exclude.matchType = ProcessorMatchType.strict;
+        config.exclude.matchType = MatchType.strict;
         config.exclude.attributes = new ArrayList<>();
         ProcessorAttribute attributeWithValue = new ProcessorAttribute();
         attributeWithValue.key = "testKey";

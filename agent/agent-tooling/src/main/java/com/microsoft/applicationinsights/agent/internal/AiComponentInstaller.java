@@ -44,7 +44,6 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Quic
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.RequestTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
@@ -152,7 +151,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
-        Global.setSamplingPercentage(SamplingPercentage.roundToNearest(config.sampling.percentage));
+        Global.setSamplingPercentage(config.sampling.percentage);
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
 
@@ -181,7 +180,7 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
         if (rpConfiguration != null) {
-            RpConfigurationPolling.startPolling(rpConfiguration);
+            RpConfigurationPolling.startPolling(rpConfiguration, config.preview.sampling.overrides);
         }
     }
 

@@ -32,6 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
@@ -85,6 +86,7 @@ public class ConfigurationBuilder {
                             " not only micrometer)"));
         }
         overlayEnvVars(config);
+        applySamplingPercentageRounding(config);
         // rp configuration should always be last (so it takes precedence)
         // currently applicationinsights-rp.json is only used by Azure Spring Cloud
         if (rpConfiguration != null) {
@@ -205,7 +207,8 @@ public class ConfigurationBuilder {
         }
     }
 
-    public static void overlayEnvVars(Configuration config) throws IOException {
+    // visible for testing
+    static void overlayEnvVars(Configuration config) throws IOException {
         config.connectionString = overlayWithEnvVar(APPLICATIONINSIGHTS_CONNECTION_STRING, config.connectionString);
         if (config.connectionString == null) {
             // this is for backwards compatibility only
@@ -242,6 +245,13 @@ public class ConfigurationBuilder {
         addDefaultJmxMetricsIfNotPresent(config);
 
         loadInstrumentationEnabledEnvVars(config);
+    }
+
+    public static void applySamplingPercentageRounding(Configuration config) {
+        config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
+        for (SamplingOverride override : config.preview.sampling.overrides) {
+            override.percentage = roundToNearest(override.percentage, true);
+        }
     }
 
     private static void overlayRpConfiguration(Configuration config, RpConfiguration rpConfiguration)  {
@@ -448,5 +458,33 @@ public class ConfigurationBuilder {
                     " https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
         }
         return configuration;
+    }
+
+    // this is for external callers, where logging is ok
+    public static double roundToNearest(double samplingPercentage) {
+        return roundToNearest(samplingPercentage, false);
+    }
+
+    // visible for testing
+    private static double roundToNearest(double samplingPercentage, boolean doNotLogWarnMessages) {
+        if (samplingPercentage == 0) {
+            return 0;
+        }
+        double itemCount = 100 / samplingPercentage;
+        double rounded = 100.0 / Math.round(itemCount);
+
+        if (Math.abs(samplingPercentage - rounded) >= 1) {
+            // TODO include link to docs in this warning message
+            if (doNotLogWarnMessages) {
+                configurationWarnMessages.add(new ConfigurationWarnMessage(
+                        "the requested sampling percentage {} was rounded to nearest 100/N: {}", samplingPercentage, rounded));
+            } else {
+                // this is the "startup logger"
+                LoggerFactory.getLogger("com.microsoft.applicationinsights.agent")
+                        .warn("the requested sampling percentage {} was rounded to nearest 100/N: {}", samplingPercentage, rounded);
+            }
+        }
+
+        return rounded;
     }
 }
