@@ -14,6 +14,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 
+// TODO find a better name for this class (and MatcherGroup too)
 class SamplingOverrides {
 
     private final List<MatcherGroup> matcherGroups;
