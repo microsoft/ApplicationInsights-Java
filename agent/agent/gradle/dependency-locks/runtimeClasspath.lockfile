@@ -1,0 +1,18 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+ch.qos.logback.contrib:logback-json-classic:0.1.5
+ch.qos.logback.contrib:logback-json-core:0.1.5
+ch.qos.logback:logback-classic:1.2.3
+ch.qos.logback:logback-core:1.2.3
+com.squareup.moshi:moshi:1.9.3
+com.squareup.okio:okio:1.16.0
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:1.0.0+ai.patch.1-alpha
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:1.0.0+ai.patch.1-alpha
+io.opentelemetry.javaagent:opentelemetry-javaagent-api:1.0.0+ai.patch.1-alpha
+io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:1.0.0+ai.patch.1-alpha
+io.opentelemetry:opentelemetry-api-metrics:1.0.1-alpha
+io.opentelemetry:opentelemetry-api:1.0.1
+io.opentelemetry:opentelemetry-context:1.0.1
+io.opentelemetry:opentelemetry-semconv:1.0.1-alpha
+org.slf4j:slf4j-api:1.7.30

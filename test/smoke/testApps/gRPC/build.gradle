@@ -1,14 +1,7 @@
-buildscript {
-    dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
-    }
-}
-
 plugins {
     id 'java'
     id 'org.springframework.boot' version '2.1.7.RELEASE'
-    id 'com.google.protobuf'
-    id 'idea' // this adds generated gRPC classes to intellij
+    id 'com.google.protobuf' version '0.8.14'
 }
 
 sourceCompatibility = 1.8
