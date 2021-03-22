@@ -55,7 +55,13 @@ try
         Write-Host "Destination $Destination"
         if($Destination.ToString() -eq "C:\7-Zip") {
             Write-Host "Install 7-Zip to C:\7-Zip"
+            Write-Host "Source $Source"
             Start-Process -Wait -FilePath "$Source" -ArgumentList "/S"
+            if (-not (Test-Path "C:\7-Zip\7z.exe")) {
+                Write-Error "7-Zip wasn't installed successfully and C:\7-Zip\7z.exe does not exist."
+            } else {
+                Write-Host "C:\7-Zip\7z.exe exists now.";
+            }
         } else {
             Write-Error "Can't install 7-Zip somehow..."
         }
