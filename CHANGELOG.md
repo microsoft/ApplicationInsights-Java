@@ -15,6 +15,8 @@
   [#1565](https://github.com/microsoft/ApplicationInsights-Java/issues/1565)
 * Add sampling overrides that can be used to implement telemetry filtering
   [#1564](https://github.com/microsoft/ApplicationInsights-Java/issues/1564)
+* Switch native performance counter collection to use [OSHI](https://github.com/oshi/oshi)
+  [#1482](https://github.com/microsoft/ApplicationInsights-Java/issues/1482)
 
 # Version 3.0.3-BETA
 * Extra attributes in `applicationinsights.json` (e.g. typos) are logged as warnings at startup
