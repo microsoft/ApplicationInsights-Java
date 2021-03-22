@@ -25,7 +25,6 @@ class SamplingOverrides {
         }
     }
 
-    // returns -1 if no override
     MatcherGroup getOverride(Attributes attributes) {
         for (MatcherGroup matcherGroups : matcherGroups) {
             if (matcherGroups.matches(attributes)) {

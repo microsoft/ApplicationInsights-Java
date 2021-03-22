@@ -259,11 +259,11 @@ public class Configuration {
                     throw new FriendlyException("A telemetry filter configuration has an attribute with matchType regexp that is missing a \"value\".",
                             "Please provide a key under the attribute section of the filter configuration.");
                 }
-                isValidRegex(value);
+                validateRegex(value);
             }
         }
 
-        private static void isValidRegex(String value) throws FriendlyException {
+        private static void validateRegex(String value) throws FriendlyException {
             try {
                 Pattern.compile(value);
             } catch (PatternSyntaxException exception) {
