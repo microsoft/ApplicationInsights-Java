@@ -5,6 +5,7 @@ ch.qos.logback.contrib:logback-json-classic:0.1.5
 ch.qos.logback.contrib:logback-json-core:0.1.5
 ch.qos.logback:logback-classic:1.2.3
 ch.qos.logback:logback-core:1.2.3
+com.github.oshi:oshi-core:5.6.0
 com.google.code.findbugs:jsr305:3.0.2
 com.google.code.gson:gson:2.8.2
 com.google.errorprone:error_prone_annotations:2.2.0
@@ -35,6 +36,8 @@ io.opentelemetry:opentelemetry-sdk-trace:1.0.0
 io.opentelemetry:opentelemetry-sdk:1.0.0
 io.opentelemetry:opentelemetry-semconv:1.0.1-alpha
 net.bytebuddy:byte-buddy:1.10.10
+net.java.dev.jna:jna-platform:5.7.0
+net.java.dev.jna:jna:5.7.0
 org.apache.commons:commons-lang3:3.11
 org.apache.commons:commons-text:1.9
 org.apache.httpcomponents:httpclient:4.5.13

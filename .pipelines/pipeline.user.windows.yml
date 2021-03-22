@@ -21,14 +21,6 @@ static_analysis_options:
 restore:
   commands:
     - !!defaultcommand
-      name: 'Install Windows 8.1 SDK'
-      command: '.scripts/installWindows81Sdk.cmd'
-      logs:
-        - from: 'WinSdkInstall'
-          to: 'WinSdkInstall'
-          include:
-            - '**/*.log'
-    - !!defaultcommand
       name: 'Install Windows 10 SDK'
       command: '.scripts/installWindows10Sdk.cmd'
       logs:
