@@ -8,7 +8,7 @@ set ZIP_URL=https://www.7-zip.org/a/7z2101-x64.exe
 
 IF NOT EXIST %SEVEN_ZIP% (
     echo "%SEVEN_ZIP% does not exist yet."
-    powershell -NoProfile -ExecutionPolicy Unrestricted -File "%~dp0install-azcopy.ps1" -Url "%ZIP_URL%" -Destination "C:\7-Zip" -SkipUnzip -CleanOnFinish || exit /B 1
+    powershell -NoProfile -ExecutionPolicy Unrestricted -File "%~dp0install-azcopy.ps1" -Url "%ZIP_URL%" -Destination "C:\7-Zip" -SkipUnzip || exit /B 1
 
     IF EXIST %SEVEN_ZIP% (
       echo "Installed 7-Zip Successfully."

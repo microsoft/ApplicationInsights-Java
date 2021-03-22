@@ -51,8 +51,13 @@ try
 
     if ($SkipUnzip)
     {
+        Write-Host "Skipping Unzip"
+        Write-Host "Destination $Destination"
         if($Destination.ToString() -eq "C:\7-Zip") {
+            Write-Host "Install 7-Zip to C:\7-Zip"
             Start-Process -Wait -FilePath "$Source" -ArgumentList "/S"
+        } else {
+            Write-Error "Can't install 7-Zip somehow..."
         }
     }
     else
