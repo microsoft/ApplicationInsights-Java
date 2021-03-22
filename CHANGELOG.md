@@ -1,5 +1,21 @@
 # CHANGELOG
 
+# Version 3.0.3-BETA.2
+* Added env var `APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT` to enable preview OpenTelemetry API support
+  [#1548](https://github.com/microsoft/ApplicationInsights-Java/issues/1548)
+* Added env var `APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH` (and use that to log json config parsing errors)
+  [#1550](https://github.com/microsoft/ApplicationInsights-Java/issues/1550)
+* RP integration improvements
+  [#1551](https://github.com/microsoft/ApplicationInsights-Java/issues/1551),
+  [#1558](https://github.com/microsoft/ApplicationInsights-Java/issues/1558),
+  [#1559](https://github.com/microsoft/ApplicationInsights-Java/issues/1559)
+* Added env var `APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED` to disable live metrics
+  [#1552](https://github.com/microsoft/ApplicationInsights-Java/issues/1552)
+* Remove unwanted custom dimension that showed up in 3.0.3-BETA
+  [#1565](https://github.com/microsoft/ApplicationInsights-Java/issues/1565)
+* Add sampling overrides that can be used to implement telemetry filtering
+  [#1564](https://github.com/microsoft/ApplicationInsights-Java/issues/1564)
+
 # Version 3.0.3-BETA
 * Extra attributes in `applicationinsights.json` (e.g. typos) are logged as warnings at startup
   [#1459](https://github.com/microsoft/ApplicationInsights-Java/issues/1459)
