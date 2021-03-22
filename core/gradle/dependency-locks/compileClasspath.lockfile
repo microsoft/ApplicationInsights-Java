@@ -1,6 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+com.github.oshi:oshi-core:5.6.0
 com.google.code.findbugs:jsr305:3.0.2
 com.google.code.gson:gson:2.8.2
 com.google.errorprone:error_prone_annotations:2.2.0
@@ -14,10 +15,12 @@ commons-codec:commons-codec:1.11
 commons-io:commons-io:2.6
 commons-logging:commons-logging:1.2
 eu.infomas:annotation-detector:3.0.5
+net.java.dev.jna:jna-platform:5.7.0
+net.java.dev.jna:jna:5.7.0
 org.apache.commons:commons-lang3:3.11
 org.apache.commons:commons-text:1.9
 org.apache.httpcomponents:httpclient:4.5.13
 org.apache.httpcomponents:httpcore:4.4.13
 org.checkerframework:checker-compat-qual:2.5.2
 org.codehaus.mojo:animal-sniffer-annotations:1.17
-org.slf4j:slf4j-api:1.7.26
+org.slf4j:slf4j-api:1.7.30

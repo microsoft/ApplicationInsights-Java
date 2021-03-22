@@ -32,37 +32,6 @@ sourceSets {
     }
 }
 
-clean {
-    delete "${System.properties['java.io.tmpdir']}/AISDK/native" // see JniPCConnector.java for jni directory
-}
-
-// CURRENTLY the DLL being built on CI is not working, leading to this error on startup:
-//
-// ERROR c.m.a.i.perfcounter.JniPCConnector - Unexpected error initializing JNI Performance Counter library. Windows performance counters will not be used
-// java.lang.UnsatisfiedLinkError: C:\Users\trstalna\AppData\Local\Temp\AISDK\native\3.0.0-PREVIEW.7-SNAPSHOT\applicationinsights-core-native-win64.dll: Can't find dependent libraries
-//
-// and native windows perf counters do not get collected
-//
-// so instead of building the DLLs, we are currently just copying the previously built DLLs from 2.6.2 which work fine
-// (see copyTheDLL task below)
-
-import org.apache.tools.ant.taskdefs.condition.Os
-
-boolean skipWinNative = (System.properties['skipWinNative'] ?: 'false').toBoolean()
-if (skipWinNative) {
-    logger.warn 'Windows native components will not be built: skipWinNative=true'
-    if (isRelease) {
-        logger.error 'skipWinNative=true and isRelease=true'
-        throw new GradleException('Cannot use skipWinNative=true and isRelease=true')
-    }
-} else {
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        apply from: "native.gradle"
-    } else {
-        logger.warn("Native binaries build is only supported on Windows systems; native components will not be built.")
-    }
-}
-
 import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
 archivesBaseName = 'applicationinsights-core'
@@ -83,6 +52,7 @@ dependencies {
     compile ([group: 'com.google.code.gson', name: 'gson', version: '2.8.2'])
     // update transitive dependency version
     compile ([group: 'com.google.guava', name: 'guava', version: '27.1-android'])
+    compile ([group: 'com.github.oshi', name:'oshi-core',version:'5.6.0'])
     compile 'org.slf4j:slf4j-api:1.7.26'
     testCompile group: 'org.hamcrest', name:'hamcrest-core', version:'1.3'
     testCompile group: 'org.hamcrest', name:'hamcrest-library', version:'1.3'

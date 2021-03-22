@@ -2,6 +2,7 @@
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
 com.blogspot.mydailyjava:weak-lock-free:0.15
+com.github.oshi:oshi-core:5.6.0
 com.google.auto.service:auto-service-annotations:1.0-rc7
 com.google.auto.service:auto-service:1.0-rc7
 com.google.auto:auto-common:0.10
@@ -104,6 +105,8 @@ io.prometheus:simpleclient_common:0.9.0
 io.prometheus:simpleclient_httpserver:0.9.0
 net.bytebuddy:byte-buddy-agent:1.10.18
 net.bytebuddy:byte-buddy:1.10.18
+net.java.dev.jna:jna-platform:5.7.0
+net.java.dev.jna:jna:5.7.0
 org.apache.commons:commons-lang3:3.11
 org.apache.commons:commons-text:1.9
 org.apache.httpcomponents:httpclient:4.5.13
