@@ -13,7 +13,7 @@ To build the native resources, you'll need
 Java resources are built with same requirements as the SDK.
 
 The build should find the tools and Windows SDK, but if needed these environment variables are provided to locate the necessary tools and libraries:
-* `APPINSIGHTS_WIN_SDK_PATH`
+* `APPINSIGHTS_WIN10_SDK_PATH`
   * Location of Windows SDK
   * Default: `"%ProgramFiles(x86)%/Windows Kits/10"`
 * `APPINSIGHTS_VS_PATH`
@@ -21,7 +21,7 @@ The build should find the tools and Windows SDK, but if needed these environment
   * Default: `%ProgramFiles(x86)%/Microsoft Visual Studio 14.0`
 * `APPINSIGHTS_WIN_SDK_LIB_PATH`
   * Location of Windows 10 SDK library folder (for linker requirements)
-  * Default: `%APPINSIGHTS_WIN_SDK_PATH%/Lib/10.0.18362.0/um`
+  * Default: `%APPINSIGHTS_WIN10_SDK_PATH%/Lib/10.0.18362.0/um`
 
 
 ## Native Build Tasks
