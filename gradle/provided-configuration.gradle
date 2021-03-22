@@ -1,5 +1,0 @@
-configurations {
-    optional
-    provided
-    compileOnly.extendsFrom provided, optional
-}

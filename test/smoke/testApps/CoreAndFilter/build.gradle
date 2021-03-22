@@ -5,7 +5,7 @@ dependencies {
     testCompile aiCoreJar // the test code (not the app under test) needs a modern core jar (well, at least 1.0.8)
     compile 'com.google.guava:guava:20.0'
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 
     providedRuntime 'mysql:mysql-connector-java:5.1.44'
 
@@ -15,11 +15,6 @@ dependencies {
     testCompile group:'org.hamcrest', name:'hamcrest-library', version:'1.3'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
-
 war {
     // this is done to remove the version from the archive file name
     // to make span name verification simpler
@@ -28,3 +23,7 @@ war {
 
 ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + '.war'
+
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}

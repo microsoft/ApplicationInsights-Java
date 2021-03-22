@@ -36,8 +36,6 @@ import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
 archivesBaseName = 'applicationinsights-core'
 
-apply from: "$buildScriptsDir/provided-configuration.gradle"
-
 configurations {
     forTheDLL { transitive = false }
 }

@@ -1,13 +1,8 @@
 apply plugin: 'war'
 
 dependencies {
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 }
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
 
 war {
     // this is done to remove the version from the archive file name
@@ -17,3 +12,7 @@ war {
 
 ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + '.war'
+
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}
