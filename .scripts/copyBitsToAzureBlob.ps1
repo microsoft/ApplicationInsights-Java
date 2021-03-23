@@ -20,4 +20,8 @@ Write-Host "Jar path: $JarPath"
 $Env:AZCOPY_SPA_CLIENT_SECRET=$ServicePrincipalKey
 azcopy login --service-principal --application-id $ServicePrincipleClientId
 azcopy copy "$JarPath/applicationinsights-agent-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/applicationinsights-agent-$SDKVersionNumber-devtest.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/applicationinsights-agent-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/applicationinsights-agent-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/applicationinsights-agent-$SDKVersionNumber.pom" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
 Remove-Item Env:AZCOPY_SPA_CLIENT_SECRET
