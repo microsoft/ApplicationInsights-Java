@@ -262,6 +262,9 @@ public class ConfigurationBuilder {
         if (rpConfiguration.sampling != null) {
             config.sampling.percentage = rpConfiguration.sampling.percentage;
         }
+        if (rpConfiguration.ignoreRemoteParentNotSampled != null) {
+            config.preview.ignoreRemoteParentNotSampled = rpConfiguration.ignoreRemoteParentNotSampled;
+        }
     }
 
     private static String getConfigPath() {

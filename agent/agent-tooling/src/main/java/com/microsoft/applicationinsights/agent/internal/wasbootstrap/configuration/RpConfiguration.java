@@ -21,9 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.nio.file.Path;
 
-// currently only Azure Spring Cloud uses this
 public class RpConfiguration {
 
     // transient so that Moshi will ignore when binding from json
@@ -33,8 +34,13 @@ public class RpConfiguration {
     public transient long lastModifiedTime;
 
     public String connectionString;
+
     // intentionally null, so that we can tell if rp is providing or not
     public Sampling sampling = new Sampling();
+
+    // this is needed in Azure Functions because .NET SDK always propagates trace flags "00" (not sampled)
+    // null means do not override the users selection
+    public @Nullable Boolean ignoreRemoteParentNotSampled;
 
     public static class Sampling {
 

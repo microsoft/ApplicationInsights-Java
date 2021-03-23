@@ -47,6 +47,11 @@ public class TelemetryFilteringTestServlet extends HttpServlet {
             executeStatement(connection);
             connection.close();
             return 200;
+        } else if (pathInfo.equals("/login")) {
+            Connection connection = getHsqldbConnection();
+            executeStatement(connection);
+            connection.close();
+            return 200;
         } else if (pathInfo.equals("/noisy-jdbc")) {
             Connection connection = getHsqldbConnection();
             executeNoisyStatement(connection);

@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
@@ -46,17 +47,17 @@ public class RpConfigurationPolling implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(RpConfigurationPolling.class);
 
     private volatile RpConfiguration rpConfiguration;
-    private final List<SamplingOverride> samplingOverrides;
+    private final Configuration configuration;
 
-    public static void startPolling(RpConfiguration rpConfiguration, List<SamplingOverride> samplingOverrides) {
+    public static void startPolling(RpConfiguration rpConfiguration, Configuration configuration) {
         Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
-                .scheduleWithFixedDelay(new RpConfigurationPolling(rpConfiguration, samplingOverrides), 60, 60, SECONDS);
+                .scheduleWithFixedDelay(new RpConfigurationPolling(rpConfiguration, configuration), 60, 60, SECONDS);
     }
 
     // visible for testing
-    RpConfigurationPolling(RpConfiguration rpConfiguration, List<SamplingOverride> samplingOverrides) {
+    RpConfigurationPolling(RpConfiguration rpConfiguration, Configuration configuration) {
         this.rpConfiguration = rpConfiguration;
-        this.samplingOverrides = samplingOverrides;
+        this.configuration = configuration;
     }
 
     @Override
@@ -85,7 +86,7 @@ public class RpConfigurationPolling implements Runnable {
                 if (newRpConfiguration.sampling.percentage != rpConfiguration.sampling.percentage) {
                     logger.debug("Updating sampling percentage from {} to {}", rpConfiguration.sampling.percentage, newRpConfiguration.sampling.percentage);
                     double roundedSamplingPercentage = ConfigurationBuilder.roundToNearest(newRpConfiguration.sampling.percentage);
-                    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(roundedSamplingPercentage, samplingOverrides));
+                    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(roundedSamplingPercentage, configuration));
                     Global.setSamplingPercentage(roundedSamplingPercentage);
                     rpConfiguration.sampling.percentage = newRpConfiguration.sampling.percentage;
                 }

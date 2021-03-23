@@ -29,9 +29,13 @@ public class TelemetryFilteringSmokeTest extends AiSmokeTest {
         // wait ten more seconds to before checking that we didn't receive too many
         Thread.sleep(SECONDS.toMillis(10));
         int requestCount = mockedIngestion.getCountForType("RequestData");
-        // super super low chance that number of sampled requests is greater than 75
+        int dependencyCount = mockedIngestion.getCountForType("RemoteDependencyData");
+        // super super low chance that number of sampled requests/dependencies
+        // is less than 25 or greater than 75
         assertThat(requestCount, greaterThanOrEqualTo(25));
+        assertThat(dependencyCount, greaterThanOrEqualTo(25));
         assertThat(requestCount, lessThanOrEqualTo(75));
+        assertThat(dependencyCount, lessThanOrEqualTo(75));
     }
 
     @Test
