@@ -1,7 +1,7 @@
 @echo off
 
 echo "Installing 7-Zip Windows..."
-set SEVEN_ZIP=C:\7-Zip\7z.exe
+set SEVEN_ZIP=D:\7-Zip\7z.exe
 
 echo "7Zip root path: %SEVEN_ZIP%"
 set ZIP_URL_64=https://www.7-zip.org/a/7z2101-x64.exe
@@ -12,9 +12,9 @@ reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" 
 IF NOT EXIST %SEVEN_ZIP% (
     echo "%SEVEN_ZIP% does not exist yet."
     if %OS%==64BIT (
-        powershell -NoProfile -ExecutionPolicy Unrestricted -File "%~dp0install-azcopy.ps1" -Url "%ZIP_URL_64%" -Destination "C:\7-Zip" -SkipUnzip || exit /B 1
+        powershell -NoProfile -ExecutionPolicy Unrestricted -File "%~dp0install-azcopy.ps1" -Url "%ZIP_URL_64%" -Destination "D:\7-Zip" -SkipUnzip || exit /B 1
     ) else (
-        powershell -NoProfile -ExecutionPolicy Unrestricted -File "%~dp0install-azcopy.ps1" -Url "%ZIP_URL_32%" -Destination "C:\7-Zip" -SkipUnzip || exit /B 1
+        powershell -NoProfile -ExecutionPolicy Unrestricted -File "%~dp0install-azcopy.ps1" -Url "%ZIP_URL_32%" -Destination "D:\7-Zip" -SkipUnzip || exit /B 1
     )
 
     IF EXIST %SEVEN_ZIP% (
