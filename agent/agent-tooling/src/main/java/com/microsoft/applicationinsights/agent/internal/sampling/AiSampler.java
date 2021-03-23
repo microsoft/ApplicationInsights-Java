@@ -33,11 +33,21 @@ class AiSampler implements Sampler {
 
     private final SamplingResult dropDecision;
 
-    AiSampler(double samplingPercentage, SamplingOverrides samplingOverrides) {
+    private final BehaviorIfNoMatchingOverrides behaviorIfNoMatchingOverrides;
+
+    // samplingPercentage is still used in BehaviorIfNoMatchingOverrides.RECORD_AND_SAMPLE
+    // to set an approximate value for the span attribute "applicationinsights.internal.sampling_percentage"
+    //
+    // in the future the sampling percentage (or its invert "count") will be
+    // carried down by trace state to set the accurate value
+    AiSampler(double samplingPercentage, SamplingOverrides samplingOverrides,
+              BehaviorIfNoMatchingOverrides behaviorIfNoMatchingOverrides) {
         this.defaultSamplingPercentage = samplingPercentage;
         defaultRecordAndSampleResult = SamplingOverrides.getRecordAndSampleResult(defaultSamplingPercentage);
 
         this.samplingOverrides = samplingOverrides;
+
+        this.behaviorIfNoMatchingOverrides = behaviorIfNoMatchingOverrides;
 
         dropDecision = SamplingResult.create(SamplingDecision.DROP, Attributes.empty());
     }
@@ -52,17 +62,21 @@ class AiSampler implements Sampler {
 
         MatcherGroup override = samplingOverrides.getOverride(attributes);
 
-        double percentage;
-        SamplingResult recordAndSampleResult;
         if (override != null) {
-            percentage = override.getPercentage();
-            recordAndSampleResult = override.getRecordAndSampleResult();
-        } else {
-            // no overrides, so fall back to the default sampling percentage
-            percentage = defaultSamplingPercentage;
-            recordAndSampleResult = defaultRecordAndSampleResult;
+            return getSamplingResult(override.getPercentage(), override.getRecordAndSampleResult(), traceId, name);
         }
 
+        switch (behaviorIfNoMatchingOverrides) {
+            case RECORD_AND_SAMPLE:
+                return defaultRecordAndSampleResult;
+            case USE_DEFAULT_SAMPLING_PERCENTAGE:
+                return getSamplingResult(defaultSamplingPercentage, defaultRecordAndSampleResult, traceId, name);
+            default:
+                throw new IllegalStateException("Unexpected BehaviorIfNoMatchingOverrides: " + behaviorIfNoMatchingOverrides);
+        }
+    }
+
+    private SamplingResult getSamplingResult(double percentage, SamplingResult recordAndSampleResult, String traceId, String name) {
         if (percentage == 100) {
             // optimization, no need to calculate score in this case
             return recordAndSampleResult;
@@ -81,5 +95,10 @@ class AiSampler implements Sampler {
     @Override
     public String getDescription() {
         return "ApplicationInsights-specific trace id based sampler, with default sampling percentage: " + defaultSamplingPercentage;
+    }
+
+    enum BehaviorIfNoMatchingOverrides {
+        USE_DEFAULT_SAMPLING_PERCENTAGE,
+        RECORD_AND_SAMPLE
     }
 }
