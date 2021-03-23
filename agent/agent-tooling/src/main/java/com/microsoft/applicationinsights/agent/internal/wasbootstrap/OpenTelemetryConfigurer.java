@@ -36,7 +36,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
         if (config.connectionString != null) {
             DelegatingPropagator.getInstance().setUpStandardDelegate();
-            DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(config.sampling.percentage, config.preview.sampling.overrides));
+            DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(config.sampling.percentage, config));
         } else {
             // in Azure Functions, we configure later on, once we know user has opted in to tracing
             // (note: the default for DelegatingPropagator is to not propagate anything

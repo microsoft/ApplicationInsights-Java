@@ -180,7 +180,7 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
         if (rpConfiguration != null) {
-            RpConfigurationPolling.startPolling(rpConfiguration, config.preview.sampling.overrides);
+            RpConfigurationPolling.startPolling(rpConfiguration, config);
         }
     }
 
