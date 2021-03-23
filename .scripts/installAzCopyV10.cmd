@@ -12,10 +12,9 @@ if %OS%==64BIT (
     powershell -NoProfile -ExecutionPolicy Unrestricted -File "%~dp0install-azcopy.ps1" -Url "%ZIP_URL_32%" -Destination "C:\Program Files\AzCopy" -UpdatePath -CleanOnFinish || exit /B 1
 )
 
-echo "C:\Program Files\AzCopy"
-dir "C:\Program Files\AzCopy"
+IF EXIST "C:\Program Files\AzCopy\azcopy_windows_amd64_10.9.0\azcopy.exe" (
+    echo "AzCopy v10.9.0 was installed Successfully."
+) ELSE (
+    echo "ERROR: Failed to install AzCopy v10.9.0."
+)
 
-echo "C:\Program Files\AzCopy\azcopy_windows_amd64_10.9.0"
-dir "C:\Program Files\AzCopy\azcopy_windows_amd64_10.9.0"
-
-echo "Installed AzCopy v10.9.0 Successfully."
