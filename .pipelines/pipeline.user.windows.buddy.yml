@@ -32,9 +32,11 @@ build:
         - to: 'Artifacts'
           include:
             - '**/build/libs/*.jar'
-          exclude:
+            - '**/build/libs/*.jar'
             - '**/build/libs/*-sources.jar'
             - '**/build/libs/*-javadoc.jar'
+            - '**/build/libs/*.pom'
+          exclude:
             - 'logging/common/**/*'
             - 'ApplicationInsightsInternalLogger/**/*'
             - 'buildSrc/**/*'
