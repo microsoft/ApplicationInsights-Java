@@ -49,32 +49,11 @@ try
         }
     }
 
-    if ($SkipUnzip)
+    if (-not $SkipUnzip)
     {
-        if($Destination.ToString() -eq "C:\7-Zip") {
-            Start-Process -Wait -FilePath "$Source" -ArgumentList "/S"
-        }
-    }
-    else
-    {
-        if ($PathTo7Zip)
-        {
-            Write-Host "***"
-            Write-Host $PathTo7Zip.ToString()
-            Write-Host "***"
-            if (-not (Test-Path $PathTo7Zip))
-            {
-                Write-Error "7zip location still does not exist $PathTo7Zip"
-                exit
-            }
-            Expand-ArchiveWith7Zip -Source $Source -Destination $destination -ToolPath $PathTo7Zip
-        }
-        else
-        {
-            Write-Host "$PathTo7Zip does not exist"
-            Expand-ArchiveWith7Zip -Source $Source -Destination $destination
-        }
-        Write-Host "Finished unzipping to $destination"
+         Write-Host "Unzipping $Source to $Destination"
+         Expand-Archive -LiteralPath $Source -Destination $Destination -Force
+         Write-Host "Finished unzipping to $Destination"
     }
 }
 finally
