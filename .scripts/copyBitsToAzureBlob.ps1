@@ -7,12 +7,17 @@ param (
     [ValidateNotNullOrEmpty()]
     [string]$ServicePrincipleClientId,
 
+    [Parameter(Mandatory=$true, HelpMessage="Jar location")]
+    [ValidateNotNullOrEmpty()]
+    [string]$JarPath,
+
     [Parameter(Mandatory=$true, HelpMessage="applicationinsights-java version")]
     [ValidateNotNullOrEmpty()]
     [string]$SDKVersionNumber
 )
 
+Write-Host "Jar path: $JarPath"
 $Env:AZCOPY_SPA_CLIENT_SECRET=$ServicePrincipalKey
 azcopy login --service-principal --application-id $ServicePrincipleClientId
-azcopy copy "$(System.DefaultWorkingDirectory)/_applicationinsights-java-Windows-Official-master/drop/outputs/build/Artifacts/agent/agent/build/libs/applicationinsights-agent-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$JarPath/applicationinsights-agent-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
 Remove-Item Env:AZCOPY_SPA_CLIENT_SECRET
