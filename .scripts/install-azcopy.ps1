@@ -53,14 +53,13 @@ try
     {
         Write-Host "Skipping Unzip"
         Write-Host "Destination $Destination"
-        if($Destination.ToString() -eq "D:\7-Zip") {
-            Write-Host "Install 7-Zip to D:\7-Zip"
+        if($Destination.ToString() -eq "C:\7-Zip") {
             Write-Host "Source $Source"
             Start-Process -Wait -FilePath "$Source" -ArgumentList "/S"
-            if (-not (Test-Path "D:\7-Zip\7z.exe")) {
-                Write-Error "7-Zip wasn't installed successfully and D:\7-Zip\7z.exe does not exist."
+            if (-not (Test-Path "C:\7-Zip\7z.exe")) {
+                Write-Error "7-Zip wasn't installed successfully and C:\7-Zip\7z.exe does not exist."
             } else {
-                Write-Host "D:\7-Zip\7z.exe exists now.";
+                Write-Host "C:\7-Zip\7z.exe exists now.";
             }
         } else {
             Write-Error "Can't install 7-Zip somehow..."
@@ -68,25 +67,17 @@ try
     }
     else
     {
-        if ($PathTo7Zip)
-        {
-            Write-Host "***"
-            Write-Host $PathTo7Zip.ToString()
-            Write-Host "***"
-            if (-not (Test-Path $PathTo7Zip))
-            {
-                Write-Error "7zip location still does not exist $PathTo7Zip"
-                exit
-            }
-            Expand-ArchiveWith7Zip -Source $Source -Destination $destination -ToolPath $PathTo7Zip
-            #Compress-Archive -LiteralPath $Source -DestinationPath $destination
-        }
-        else
-        {
-            Write-Host "$PathTo7Zip does not exist"
-            Expand-ArchiveWith7Zip -Source $Source -Destination $destination
-        }
-        Write-Host "Finished unzipping to $destination"
+        Write-Host "Unzipping $Source to $Destination"
+        Expand-Archive -LiteralPath $Source -Destination $Destination -Force
+        Write-Host "Finished unzipping to $Destination"
+
+        #$process = Start-Process $Path -PassThru -Verbose -NoNewWindow -ArgumentList "x -aoa -y `"$Source`" -o`"$Destination`""
+        #$thePid = $process.Id
+        #$pn = [System.IO.Path]::GetFileNameWithoutExtension($Path)
+
+        #Trace-Message "Started EXE asynchronously. Process ID is $thePid"
+
+        #Wait-ForProcess -Process $process -Minutes $WaitMinutes
     }
 }
 finally
