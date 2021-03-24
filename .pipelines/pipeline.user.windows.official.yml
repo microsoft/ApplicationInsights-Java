@@ -8,11 +8,10 @@ build:
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
-      arguments: 'assemble -DisRelease=true -Pai.etw.native.build=release'
+      arguments: 'assemble prepare -DisRelease=true -Pai.etw.native.build=release'
       artifacts:
         - to: 'Artifacts'
           include:
-            - '**/build/libs/*.jar'
             - '**/build/libs/*.jar'
             - '**/build/libs/*-sources.jar'
             - '**/build/libs/*-javadoc.jar'
