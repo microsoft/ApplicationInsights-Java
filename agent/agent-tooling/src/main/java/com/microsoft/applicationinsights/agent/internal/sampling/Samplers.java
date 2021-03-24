@@ -11,7 +11,7 @@ public class Samplers {
                 AiSampler.BehaviorIfNoMatchingOverrides.USE_DEFAULT_SAMPLING_PERCENTAGE);
         AiSampler parentSampledSampler = new AiSampler(samplingPercentage, samplingOverrides,
                 AiSampler.BehaviorIfNoMatchingOverrides.RECORD_AND_SAMPLE);
-        // ignoreRemoteParentNotSampled is sometimes needed
+        // ignoreRemoteParentNotSampled is currently needed
         // because .NET SDK always propagates trace flags "00" (not sampled)
         Sampler remoteParentNotSampled = config.preview.ignoreRemoteParentNotSampled ? rootSampler : Sampler.alwaysOff();
         return Sampler.parentBasedBuilder(rootSampler)
