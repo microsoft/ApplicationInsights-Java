@@ -17,7 +17,7 @@ static_analysis_options:
     disable_tool_scan: false
     fail_on_error: true
 signing_options:
-  profile: '170'
+  profile: 'none'
 restore:
   commands:
     - !!defaultcommand
