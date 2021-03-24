@@ -1,7 +1,7 @@
 apply plugin: 'java-library'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -13,4 +13,6 @@ dependencies {
     compile project(':test:fakeIngestion:standalone')
 }
 
-sourceCompatibility = 1.8
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}

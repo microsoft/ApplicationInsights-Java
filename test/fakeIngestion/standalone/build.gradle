@@ -16,4 +16,6 @@ dependencies {
 
 mainClassName = 'com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer'
 
-sourceCompatibility = 1.8
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}

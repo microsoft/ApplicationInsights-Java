@@ -48,8 +48,6 @@ public final class ReflectionUtils {
 
         addClass(com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule.class);
         addClass(com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule.class);
-        addClass(com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule.class);
-
         addClass(com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer.class);
     }
 

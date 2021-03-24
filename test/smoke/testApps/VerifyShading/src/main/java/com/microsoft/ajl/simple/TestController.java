@@ -62,7 +62,6 @@ public class TestController {
         expectedEntries.add("logger-config/console\\.appender\\.xml");
         expectedEntries.add("logger-config/file\\.appender\\.xml");
         expectedEntries.add("rp-logger-config/");
-        expectedEntries.add("rp-logger-config/user-logfile\\.appender\\.xml");
         expectedEntries.add("rp-logger-config/diagnostics\\.appender\\.xml");
         expectedEntries.add("rp-logger-config/etw\\.appender\\.xml");
         expectedEntries.add("applicationinsights-java-etw-provider-x86-64\\.dll");

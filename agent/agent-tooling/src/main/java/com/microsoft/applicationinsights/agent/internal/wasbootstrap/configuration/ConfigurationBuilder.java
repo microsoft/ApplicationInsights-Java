@@ -26,13 +26,13 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
@@ -64,8 +64,10 @@ public class ConfigurationBuilder {
     private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL = "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL";
 
     private static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL = "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL";
+    public static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH = "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH";
 
     private static final String APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT = "APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT";
+    private static final String APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED = "APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED";
 
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
@@ -78,9 +80,8 @@ public class ConfigurationBuilder {
     // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
     private static final List<ConfigurationWarnMessage> configurationWarnMessages = new CopyOnWriteArrayList<>();
 
-    public static Configuration create(Path agentJarPath) throws IOException {
+    public static Configuration create(Path agentJarPath, RpConfiguration rpConfiguration) throws IOException {
         Configuration config = loadConfigurationFile(agentJarPath);
-        overlayEnvVars(config);
         if (config.instrumentation.micrometer.reportingIntervalSeconds != 60) {
             configurationWarnMessages.add(new ConfigurationWarnMessage(
                     "micrometer \"reportingIntervalSeconds\" setting leaked out previously" +
@@ -88,6 +89,13 @@ public class ConfigurationBuilder {
                             " please use \"preview\": { \"metricIntervalSeconds\" } instead now" +
                             " (and note that metricIntervalSeconds applies to all auto-collected metrics," +
                             " not only micrometer)"));
+        }
+        overlayEnvVars(config);
+        applySamplingPercentageRounding(config);
+        // rp configuration should always be last (so it takes precedence)
+        // currently applicationinsights-rp.json is only used by Azure Spring Cloud
+        if (rpConfiguration != null) {
+            overlayRpConfiguration(config, rpConfiguration);
         }
         return config;
     }
@@ -167,14 +175,9 @@ public class ConfigurationBuilder {
     }
 
     private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
-        String configurationContent = System.getenv(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
-        if (configurationContent != null && !configurationContent.isEmpty()) {
+        String configurationContent = getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
+        if (configurationContent != null) {
             return getConfigurationFromEnvVar(configurationContent, true);
-        }
-
-        if (DiagnosticsHelper.isAnyCodelessAttach()) {
-            // codeless attach only supports configuration via environment variables (for now at least)
-            return new Configuration();
         }
 
         String configPathStr = getConfigPath();
@@ -186,6 +189,13 @@ public class ConfigurationBuilder {
                 // fail fast any time configuration is invalid
                 throw new IllegalStateException("could not find requested configuration file: " + configPathStr);
             }
+        }
+
+        if (DiagnosticsHelper.isRpIntegration()) {
+            // users do not have write access to agent directory in rp integrations
+            // and rp integrations should not use applicationinsights.json because that makes it difficult to merge
+            // rp intent and user intent
+            return new Configuration();
         }
 
         Path configPath = agentJarPath.resolveSibling("applicationinsights.json");
@@ -209,12 +219,13 @@ public class ConfigurationBuilder {
         }
     }
 
-    public static void overlayEnvVars(Configuration config) throws IOException {
+    // visible for testing
+    static void overlayEnvVars(Configuration config) throws IOException {
         config.connectionString = overlayWithEnvVar(APPLICATIONINSIGHTS_CONNECTION_STRING, config.connectionString);
         if (config.connectionString == null) {
             // this is for backwards compatibility only
-            String instrumentationKey = System.getenv(APPINSIGHTS_INSTRUMENTATIONKEY);
-            if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
+            String instrumentationKey = getEnvVar(APPINSIGHTS_INSTRUMENTATIONKEY);
+            if (instrumentationKey != null) {
                 // TODO log an info message recommending APPLICATIONINSIGHTS_CONNECTION_STRING
                 config.connectionString = "InstrumentationKey=" + instrumentationKey;
             }
@@ -235,11 +246,13 @@ public class ConfigurationBuilder {
         config.sampling.percentage = overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
         config.selfDiagnostics.level = overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL, config.selfDiagnostics.level);
+        config.selfDiagnostics.file.path = overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, config.selfDiagnostics.file.path);
 
         config.preview.metricIntervalSeconds =
                 (int) overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS, config.preview.metricIntervalSeconds);
 
         config.preview.openTelemetryApiSupport = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT, config.preview.openTelemetryApiSupport);
+        config.preview.liveMetrics.enabled = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED, config.preview.liveMetrics.enabled);
 
         loadLogCaptureEnvVar(config);
         loadJmxMetricsEnvVar(config);
@@ -248,6 +261,26 @@ public class ConfigurationBuilder {
         overlayProfilerConfiguration(config);
 
         loadInstrumentationEnabledEnvVars(config);
+    }
+
+    public static void applySamplingPercentageRounding(Configuration config) {
+        config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
+        for (SamplingOverride override : config.preview.sampling.overrides) {
+            override.percentage = roundToNearest(override.percentage, true);
+        }
+    }
+
+    private static void overlayRpConfiguration(Configuration config, RpConfiguration rpConfiguration)  {
+        String connectionString = rpConfiguration.connectionString;
+        if (!isTrimEmpty(connectionString)) {
+            config.connectionString = connectionString;
+        }
+        if (rpConfiguration.sampling != null) {
+            config.sampling.percentage = rpConfiguration.sampling.percentage;
+        }
+        if (rpConfiguration.ignoreRemoteParentNotSampled != null) {
+            config.preview.ignoreRemoteParentNotSampled = rpConfiguration.ignoreRemoteParentNotSampled;
+        }
     }
 
     private static String getConfigPath() {
@@ -271,7 +304,7 @@ public class ConfigurationBuilder {
         return value;
     }
 
-    static String overlayWithEnvVar(String name, String defaultValue) {
+    public static String overlayWithEnvVar(String name, String defaultValue) {
         String value = getEnvVar(name);
         return value != null ? value : defaultValue;
     }
@@ -437,20 +470,40 @@ public class ConfigurationBuilder {
         if (!Files.exists(configPath)) {
             throw new IllegalStateException("config file does not exist: " + configPath);
         }
-        
-        BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
-        // important to read last modified before reading the file, to prevent possible race condition
-        // where file is updated after reading it but before reading last modified, and then since
-        // last modified doesn't change after that, the new updated file will not be read afterwards
-        long lastModifiedTime = attributes.lastModifiedTime().toMillis();
         Configuration configuration = getConfigurationFromConfigFile(configPath, true);
         if (configuration.instrumentationSettings != null) {
             throw new IllegalStateException("It looks like you are using an old applicationinsights.json file" +
                     " which still has \"instrumentationSettings\", please see the docs for the new format:" +
                     " https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
         }
-        configuration.configPath = configPath;
-        configuration.lastModifiedTime = lastModifiedTime;
         return configuration;
+    }
+
+    // this is for external callers, where logging is ok
+    public static double roundToNearest(double samplingPercentage) {
+        return roundToNearest(samplingPercentage, false);
+    }
+
+    // visible for testing
+    private static double roundToNearest(double samplingPercentage, boolean doNotLogWarnMessages) {
+        if (samplingPercentage == 0) {
+            return 0;
+        }
+        double itemCount = 100 / samplingPercentage;
+        double rounded = 100.0 / Math.round(itemCount);
+
+        if (Math.abs(samplingPercentage - rounded) >= 1) {
+            // TODO include link to docs in this warning message
+            if (doNotLogWarnMessages) {
+                configurationWarnMessages.add(new ConfigurationWarnMessage(
+                        "the requested sampling percentage {} was rounded to nearest 100/N: {}", samplingPercentage, rounded));
+            } else {
+                // this is the "startup logger"
+                LoggerFactory.getLogger("com.microsoft.applicationinsights.agent")
+                        .warn("the requested sampling percentage {} was rounded to nearest 100/N: {}", samplingPercentage, rounded);
+            }
+        }
+
+        return rounded;
     }
 }

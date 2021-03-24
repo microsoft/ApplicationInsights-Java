@@ -7,29 +7,15 @@ public class DiagnosticsHelper {
     private DiagnosticsHelper() { }
 
     /**
-     * Values: true|false
-     * Default: true
-     */
-    public static final String IPA_LOG_FILE_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_LOG_FILE_ENABLED";
-
-    /**
      * Default: "" (meaning diagnostics file output is disabled)
      */
-    public static final String INTERNAL_LOG_OUTPUT_DIR_ENV_VAR = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
-
-    /**
-     * Windows only. Cannot be enabled on non-windows OS.
-     * Values: true|false
-     * Default: true
-     */
-	public static final String IPA_ETW_PROVIDER_ENABLED_ENV_VAR = "APPLICATIONINSIGHTS_EXTENSION_ETW_PROVIDER_ENABLED";
+    public static final String APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY = "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
 
     // visible for testing
-    static volatile boolean appServiceCodeless;
+    static volatile boolean useAppSvcRpIntegrationLogging;
+    private static volatile boolean useFunctionsRpIntegrationLogging;
 
-    private static volatile boolean aksCodeless;
-
-    private static volatile boolean functionsCodeless;
+    private static volatile char rpIntegrationChar;
 
     private static final boolean isWindows;
 
@@ -46,47 +32,46 @@ public class DiagnosticsHelper {
 
     public static void setAgentJarFile(Path agentPath) {
         if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
-            appServiceCodeless = true;
+            if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+                rpIntegrationChar = 'f';
+            } else {
+                rpIntegrationChar = 'a';
+            }
+            useAppSvcRpIntegrationLogging = true;
         } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
-            aksCodeless = true;
+            rpIntegrationChar = 'k';
         } else if (Files.exists(agentPath.resolveSibling("functions.codeless"))) {
-            functionsCodeless = true;
+            rpIntegrationChar = 'f';
+            useFunctionsRpIntegrationLogging = true;
+        } else if (Files.exists(agentPath.resolveSibling("springcloud.codeless"))) {
+            rpIntegrationChar = 's';
         }
     }
 
-    public static boolean isAppServiceCodeless() {
-        return appServiceCodeless;
+    public static boolean isRpIntegration() {
+        return rpIntegrationChar != 0;
     }
 
-    public static boolean isAksCodeless() {
-        return aksCodeless;
+    // returns 0 if not rp integration
+    public static char rpIntegrationChar() {
+        return rpIntegrationChar;
     }
 
-    public static boolean isFunctionsCodeless() {
-        return functionsCodeless;
+    // this also applies to Azure Functions running on App Services
+    public static boolean useAppSvcRpIntegrationLogging() {
+        return useAppSvcRpIntegrationLogging;
     }
 
-    public static boolean isAnyCodelessAttach() {
-        return appServiceCodeless || aksCodeless || functionsCodeless;
+    // this also applies to Azure Functions running on App Services
+    public static boolean useFunctionsRpIntegrationLogging() {
+        return useFunctionsRpIntegrationLogging;
     }
 
     public static ApplicationMetadataFactory getMetadataFactory() {
         return METADATA_FACTORY;
     }
 
-	public static String getCodelessResourceType() {
-        if (appServiceCodeless) {
-            return "appsvc";
-        } else if (aksCodeless) {
-            return "aks";
-        } else if (functionsCodeless) {
-            return "functions";
-        }
-        return null;
-	}
-
 	public static boolean isOsWindows() {
         return isWindows;
     }
-
 }

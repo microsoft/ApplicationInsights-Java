@@ -21,8 +21,12 @@
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Locale;
 
@@ -33,6 +37,8 @@ import com.microsoft.applicationinsights.agent.internal.AiComponentInstaller;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SelfDiagnostics;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfigurationBuilder;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import org.slf4j.Logger;
@@ -43,23 +49,18 @@ import org.slf4j.event.Level;
 // this class initializes configuration and logging before passing control to opentelemetry-java-instrumentation
 public class MainEntryPoint {
 
+    private static RpConfiguration rpConfiguration;
     private static Configuration configuration;
-    private static Path configPath;
-    private static long lastModifiedTime;
 
     private MainEntryPoint() {
     }
 
+    public static RpConfiguration getRpConfiguration() {
+        return rpConfiguration;
+    }
+
     public static Configuration getConfiguration() {
         return configuration;
-    }
-
-    public static Path getConfigPath() {
-        return configPath;
-    }
-
-    public static long getLastModifiedTime() {
-        return lastModifiedTime;
     }
 
     // TODO turn this into an interceptor
@@ -71,9 +72,8 @@ public class MainEntryPoint {
             Path agentPath = new File(bootstrapURL.toURI()).toPath();
             DiagnosticsHelper.setAgentJarFile(agentPath);
             // configuration is only read this early in order to extract logging configuration
-            configuration = ConfigurationBuilder.create(agentPath);
-            configPath = configuration.configPath;
-            lastModifiedTime = configuration.lastModifiedTime;
+            rpConfiguration = RpConfigurationBuilder.create(agentPath);
+            configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
             startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
             ConfigurationBuilder.logConfigurationWarnMessages();
             MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
@@ -134,18 +134,33 @@ public class MainEntryPoint {
             try {
                 // IF the startupLogger failed to be initialized due to configuration syntax error, try initializing it here
                 Path agentPath = new File(bootstrapURL.toURI()).toPath();
-                startupLogger = configureLogging(new SelfDiagnostics(), agentPath);
+                SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
+                selfDiagnostics.file.path = ConfigurationBuilder.overlayWithEnvVar(
+                        ConfigurationBuilder.APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, selfDiagnostics.file.path);
+                startupLogger = configureLogging(selfDiagnostics, agentPath);
                 if (isFriendlyException) {
                     startupLogger.error(message);
                 } else {
                     startupLogger.error(message, t);
                 }
-            } catch (Throwable e) {
-                // If the startupLogger still have some issues being initialized, just print the error stack trace
+            } catch (Throwable ignored) {
+                // this is a last resort in cases where the JVM doesn't have write permission to the directory where the agent lives
+                // and the user has not specified APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH
+
+                // If the startupLogger still have some issues being initialized, print the error stack trace to stderr
                 if (isFriendlyException) {
                     System.err.println(message);
                 } else {
                     t.printStackTrace();
+                }
+                // and write to a temp file because some environments do not have (easy) access to stderr
+                String tmpDir = System.getProperty("java.io.tmpdir");
+                File file = new File(tmpDir, "applicationinsights.log");
+                try {
+                    Writer out = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+                    out.write(message);
+                    out.close();
+                } catch (Throwable ignored2) {
                 }
             }
         }
@@ -154,20 +169,15 @@ public class MainEntryPoint {
     private static Logger configureLogging(SelfDiagnostics selfDiagnostics, Path agentPath) {
         String logbackXml;
         String destination = selfDiagnostics.destination;
-        if (DiagnosticsHelper.isAppServiceCodeless()) {
-            // User-accessible IPA log file. Enabled by default.
-            if ("false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_LOG_FILE_ENABLED_ENV_VAR))) {
-                System.setProperty("ai.config.appender.user-logdir.location", "");
-            }
-
+        if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
             // Diagnostics IPA log file location. Disabled by default.
-            final String internalLogOutputLocation = System.getenv(DiagnosticsHelper.INTERNAL_LOG_OUTPUT_DIR_ENV_VAR);
+            final String internalLogOutputLocation = System.getenv(DiagnosticsHelper.APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY);
             if (internalLogOutputLocation == null || internalLogOutputLocation.isEmpty()) {
                 System.setProperty("ai.config.appender.diagnostics.location", "");
             }
 
-            // Diagnostics IPA ETW provider. Windows-only. Enabled by default.
-            if (!DiagnosticsHelper.isOsWindows() || "false".equalsIgnoreCase(System.getenv(DiagnosticsHelper.IPA_ETW_PROVIDER_ENABLED_ENV_VAR))) {
+            // Diagnostics IPA ETW provider. Windows-only.
+            if (!DiagnosticsHelper.isOsWindows()) {
                 System.setProperty("ai.config.appender.etw.location", "");
             }
             logbackXml = "applicationinsights.appsvc.logback.xml";

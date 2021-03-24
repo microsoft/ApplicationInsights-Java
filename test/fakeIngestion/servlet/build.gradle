@@ -7,11 +7,13 @@ repositories {
 
 dependencies {
     compile 'com.google.guava:guava:23.0'
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
     compile 'com.google.code.gson:gson:2.8.2'
     compile project(':core')
     compile project(':test:smoke:framework:utils')
 
 }
 
-sourceCompatibility = 1.8
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}

@@ -36,13 +36,18 @@ public class CassandraTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertEquals("/Cassandra/*", rd.getName());
+        assertEquals("200", rd.getResponseCode());
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertEquals("SELECT test", rdd.getName());
         assertEquals("cassandra", rdd.getType());
         assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
-        assertEquals("SELECT test", rdd.getName());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd, rdEnvelope, rddEnvelope, "/Cassandra/*");

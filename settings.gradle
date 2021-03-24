@@ -18,6 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+rootProject.name = 'applicationinsights-java'
 
 include 'instrumentation:azure-functions'
 
@@ -88,6 +89,7 @@ include ':test:smoke:testApps:ActuatorMetrics'
 include ':test:smoke:testApps:SystemExit'
 include ':test:smoke:testApps:VerifyShading'
 include ':test:smoke:testApps:JettyNativeHandler'
-include ':test:smoke:testApps:DataScrubbing'
+include ':test:smoke:testApps:TelemetryFiltering'
+include ':test:smoke:testApps:TelemetryProcessors'
 include ':test:smoke:testApps:OpenTelemetryApiSupport'
 

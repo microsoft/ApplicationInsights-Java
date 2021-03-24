@@ -5,7 +5,7 @@ dependencies {
     compile aiLog4j1_2Jar
     compile 'com.google.guava:guava:20.0'
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 
     smokeTestCompile 'com.google.guava:guava:23.0'
 
@@ -13,11 +13,6 @@ dependencies {
 
     compile group: 'log4j', name: 'log4j', version: '1.2.17'
 }
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
 
 war {
     // this is done to remove the version from the archive file name
@@ -27,3 +22,7 @@ war {
 
 ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + '.war'
+
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}

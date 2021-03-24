@@ -27,8 +27,8 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.one");
@@ -47,8 +47,8 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.two");
@@ -69,9 +69,9 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rddEnvelope = rddList.get(0);
         Envelope edEnvelope = edList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
-        ExceptionData ed = (ExceptionData) ((Data) edEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
+        ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.three");
@@ -95,8 +95,8 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject$NestedObject.four");
@@ -113,7 +113,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 4);
 
         Envelope rdEnvelope = rdList.get(0);
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         Envelope fiveEnvelope = null;
         Envelope sixEnvelope = null;
@@ -124,7 +124,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         RemoteDependencyData oneRdd = null;
         RemoteDependencyData twoRdd = null;
         for (Envelope loopEnvelope : rddList) {
-            RemoteDependencyData loopData = (RemoteDependencyData) ((Data) loopEnvelope.getData()).getBaseData();
+            RemoteDependencyData loopData = (RemoteDependencyData) ((Data<?>) loopEnvelope.getData()).getBaseData();
             if (loopData.getName().endsWith(".five")) {
                 fiveEnvelope = loopEnvelope;
                 fiveRdd = loopData;
@@ -178,8 +178,8 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.seven");
@@ -198,9 +198,9 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rddEnvelope1 = rddList.get(0);
         Envelope rddEnvelope2 = rddList.get(1);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
-        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
 
@@ -222,14 +222,14 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
 
         Envelope rdEnvelope = rdList.get(0);
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         Envelope nineEnvelope = null;
         Envelope httpEnvelope = null;
         RemoteDependencyData nineRdd = null;
         RemoteDependencyData httpRdd = null;
         for (Envelope loopEnvelope : rddList) {
-            RemoteDependencyData loopData = (RemoteDependencyData) ((Data) loopEnvelope.getData()).getBaseData();
+            RemoteDependencyData loopData = (RemoteDependencyData) ((Data<?>) loopEnvelope.getData()).getBaseData();
             if (loopData.getType().equals("OTHER")) {
                 nineEnvelope = loopEnvelope;
                 nineRdd = loopData;

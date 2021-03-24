@@ -3,11 +3,6 @@ plugins {
     id 'org.springframework.boot' version '2.1.7.RELEASE'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
-
 ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
 
@@ -16,4 +11,8 @@ dependencies {
 
     // needs to be same version used in fakeIngestion server
     compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.7.v20170914'
+}
+
+tasks.withType(JavaCompile) {
+    options.release.set(8)
 }

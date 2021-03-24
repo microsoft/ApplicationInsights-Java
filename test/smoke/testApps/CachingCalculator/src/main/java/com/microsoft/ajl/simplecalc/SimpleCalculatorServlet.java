@@ -3,7 +3,6 @@ package com.microsoft.ajl.simplecalc;
 import com.microsoft.ajl.simplecalc.model.BinaryCalculation;
 import com.microsoft.ajl.simplecalc.model.BinaryOperator;
 import com.microsoft.applicationinsights.TelemetryClient;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,12 +16,8 @@ import java.util.Map.Entry;
 
 import static com.microsoft.ajl.simplecalc.ParameterConstants.*;
 
-/**
- * Servlet implementation class SimpleCalculatorServlet
- */
 @WebServlet(description = "Performs given calculation", urlPatterns = { "/doCalc" })
 public class SimpleCalculatorServlet extends HttpServlet {
-    private static final long serialVersionUID = -633683109556605395L;
 
     private Jedis redis;
 
@@ -36,9 +31,6 @@ public class SimpleCalculatorServlet extends HttpServlet {
         }
     }
 
-    /**
-     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         BinaryCalculation bc;
         try {

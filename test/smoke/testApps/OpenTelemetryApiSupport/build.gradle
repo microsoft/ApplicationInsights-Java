@@ -1,9 +1,8 @@
 apply plugin: 'war'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}
 
 war {
     // this is done to remove the version from the archive file name
@@ -22,5 +21,5 @@ dependencies {
     compile group: 'io.opentelemetry', name: 'opentelemetry-api', version: '1.0.0'
     compile group: 'io.opentelemetry', name: 'opentelemetry-extension-annotations', version: '1.0.0'
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 }

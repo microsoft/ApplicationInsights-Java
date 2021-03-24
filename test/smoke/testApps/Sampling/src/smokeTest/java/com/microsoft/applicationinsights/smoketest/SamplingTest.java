@@ -21,7 +21,8 @@ public class SamplingTest extends AiSmokeTest {
         Thread.sleep(SECONDS.toMillis(10));
         int requestCount = mockedIngestion.getCountForType("RequestData");
         int eventCount = mockedIngestion.getCountForType("EventData");
-        // super super low chance that number of sampled requests/events is greater than 75
+        // super super low chance that number of sampled requests/events
+        // is less than 25 or greater than 75
         assertThat(requestCount, greaterThanOrEqualTo(25));
         assertThat(eventCount, greaterThanOrEqualTo(25));
         assertThat(requestCount, lessThanOrEqualTo(75));
