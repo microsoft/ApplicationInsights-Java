@@ -15,7 +15,7 @@ versioning:
 # excluding our source code from being scanned for code sign validation
 signing_options:
   profile: 'none'
-  codesign_validation_glob_pattern: 'f:regex|\.(jar|pom)$'  # recursively find files ending in .jar, .pom
+  codesign_validation_glob_pattern: '-:regex|\.(jar|pom)$;-|.gdn\\**'
 static_analysis_options:
   policheck_options:
     disable_tool_scan: false
