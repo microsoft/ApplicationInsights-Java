@@ -31,8 +31,10 @@ apply plugin: 'org.owasp.dependencycheck'
 apply plugin: 'com.github.spotbugs'
 
 configurations {
-    compileClasspath.resolutionStrategy.activateDependencyLocking()
-    runtimeClasspath.resolutionStrategy.activateDependencyLocking()
+    if (!project.hasProperty("includeProfiler")) {
+        compileClasspath.resolutionStrategy.activateDependencyLocking()
+        runtimeClasspath.resolutionStrategy.activateDependencyLocking()
+    }
 }
 
 checkstyle {
