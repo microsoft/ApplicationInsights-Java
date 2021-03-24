@@ -1,0 +1,9 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+com.squareup.moshi:moshi:1.9.3
+com.squareup.okio:okio:1.16.0
+commons-codec:commons-codec:1.9
+commons-logging:commons-logging:1.2
+org.apache.httpcomponents:httpclient:4.5.3
+org.apache.httpcomponents:httpcore:4.4.6
