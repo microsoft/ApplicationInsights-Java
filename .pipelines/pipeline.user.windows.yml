@@ -12,9 +12,9 @@ versioning:
     - !!defaultcommand
       name: 'Generate Version'
       command: '.scripts/version.cmd'
+# excluding our source code from being scanned for code sign validation
 signing_options:
-  profile: '170'
-  codesign_validation_glob_pattern: 'file|**/agent/agent/build/libs/applicationinsights-agent-*.jar'
+  profile: 'none'
 static_analysis_options:
   policheck_options:
     disable_tool_scan: false
