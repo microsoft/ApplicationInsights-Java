@@ -14,8 +14,7 @@ versioning:
       command: '.scripts/version.cmd'
 signing_options:
   profile: '170'
-  files_to_sign: 'applicationinsights-agent-*.jar'
-  search_root: '**/agent/agent/build/libs'
+  codesign_validation_glob_pattern: 'file|**/agent/agent/build/libs/applicationinsights-agent-*.jar'
 static_analysis_options:
   policheck_options:
     disable_tool_scan: false
