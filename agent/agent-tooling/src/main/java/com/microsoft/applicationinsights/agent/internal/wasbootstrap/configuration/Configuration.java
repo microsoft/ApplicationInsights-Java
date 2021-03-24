@@ -171,7 +171,9 @@ public class Configuration {
         // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics world,
         // so safer to only allow single interval for now
         public int metricIntervalSeconds = 60;
-        public boolean ignoreRemoteParentNotSampled;
+        // ignoreRemoteParentNotSampled is currently needed
+        // because .NET SDK always propagates trace flags "00" (not sampled)
+        public boolean ignoreRemoteParentNotSampled = true;
         public LiveMetrics liveMetrics = new LiveMetrics();
     }
 
