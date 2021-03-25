@@ -43,7 +43,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
     private static final Logger logger = LoggerFactory.getLogger(AppIdSupplier.class);
 
-    private static final AppIdSupplier INSTANCE = new AppIdSupplier();
+    public static final AppIdSupplier INSTANCE = new AppIdSupplier();
 
     // note: app id is used by distributed trace headers and (soon) jfr profiling
     public static void registerAndStartAppIdRetrieval() {

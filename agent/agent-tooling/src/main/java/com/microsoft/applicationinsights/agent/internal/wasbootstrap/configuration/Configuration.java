@@ -175,6 +175,8 @@ public class Configuration {
         // because .NET SDK always propagates trace flags "00" (not sampled)
         public boolean ignoreRemoteParentNotSampled = true;
         public LiveMetrics liveMetrics = new LiveMetrics();
+
+        public ProfilerConfiguration profiler = new ProfilerConfiguration();
     }
 
     public static class LiveMetrics {
@@ -547,6 +549,14 @@ public class Configuration {
         public String value;
         public String fromAttribute;
         public String pattern;
+    }
+
+    public static class ProfilerConfiguration {
+        public int configPollPeriodSeconds = 60;
+        public int periodicRecordingDurationSeconds = 120;
+        public int periodicRecordingIntervalSeconds = 60 * 60;
+        public String serviceProfilerFrontEndPoint = null;
+        public boolean enabled = false;
     }
 
     private static boolean isEmpty(String str) {

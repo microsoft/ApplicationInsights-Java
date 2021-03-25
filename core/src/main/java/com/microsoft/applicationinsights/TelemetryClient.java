@@ -30,6 +30,7 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
+import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
@@ -163,6 +164,8 @@ public class TelemetryClient {
                 // chomp
             }
         }
+
+        TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.consume(telemetry));
     }
 
     /**

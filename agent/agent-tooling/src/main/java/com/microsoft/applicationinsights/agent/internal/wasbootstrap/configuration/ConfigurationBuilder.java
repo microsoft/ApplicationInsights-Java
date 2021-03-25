@@ -72,6 +72,11 @@ public class ConfigurationBuilder {
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
 
+    private static final String APPLICATIONINSIGHTS_PROFILER_ENABLED = "APPLICATIONINSIGHTS_PROFILER_ENABLED";
+    private static final String APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT = "APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT";
+
+    private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS = "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
+
     // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
     private static final List<ConfigurationWarnMessage> configurationWarnMessages = new CopyOnWriteArrayList<>();
 
@@ -93,6 +98,13 @@ public class ConfigurationBuilder {
             overlayRpConfiguration(config, rpConfiguration);
         }
         return config;
+    }
+
+    private static void overlayProfilerConfiguration(Configuration config) {
+        config.preview.profiler.enabled = Boolean
+                .parseBoolean(overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_ENABLED, Boolean.toString(config.preview.profiler.enabled)));
+        config.preview.profiler.serviceProfilerFrontEndPoint =
+                overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT, config.preview.profiler.serviceProfilerFrontEndPoint);
     }
 
     private static void loadLogCaptureEnvVar(Configuration config) {
@@ -236,6 +248,9 @@ public class ConfigurationBuilder {
         config.selfDiagnostics.level = overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL, config.selfDiagnostics.level);
         config.selfDiagnostics.file.path = overlayWithEnvVar(APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, config.selfDiagnostics.file.path);
 
+        config.preview.metricIntervalSeconds =
+                (int) overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS, config.preview.metricIntervalSeconds);
+
         config.preview.openTelemetryApiSupport = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT, config.preview.openTelemetryApiSupport);
         config.preview.liveMetrics.enabled = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED, config.preview.liveMetrics.enabled);
 
@@ -243,6 +258,7 @@ public class ConfigurationBuilder {
         loadJmxMetricsEnvVar(config);
 
         addDefaultJmxMetricsIfNotPresent(config);
+        overlayProfilerConfiguration(config);
 
         loadInstrumentationEnabledEnvVars(config);
     }
