@@ -36,8 +36,7 @@ shadowJar {
     archiveClassifier = ''
 }
 
-def collectdLibDir = System.env.'COLLECTD_HOME'
-def collectDLibPath = new File(collectdLibDir, "lib/collectd-api.jar")
+def collectDLibPath = new File("lib/collectd-api.jar")
 
 if (!collectDLibPath.exists()) {
     throw new ProjectConfigurationException("Archive $collectDLibPath required for building CollectD plugin could not be found.", null)

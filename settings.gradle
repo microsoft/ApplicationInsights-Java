@@ -31,9 +31,7 @@ include 'logging:logback'
 include 'web'
 include 'web-auto'
 include 'azure-application-insights-spring-boot-starter'
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
-}
+include 'collectd'
 
 //include 'distributions'
 
