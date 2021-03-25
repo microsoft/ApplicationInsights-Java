@@ -11,9 +11,9 @@ param (
     [ValidateNotNullOrEmpty()]
     [string]$AgentJarPath,
 
-#    [Parameter(Mandatory=$true, HelpMessage="Collectd Jar Path")]
-#    [ValidateNotNullOrEmpty()]
-#    [string]$CollectdJarPath,
+    [Parameter(Mandatory=$true, HelpMessage="Collectd Jar Path")]
+    [ValidateNotNullOrEmpty()]
+    [string]$CollectdJarPath,
 
     [Parameter(Mandatory=$true, HelpMessage="Core Jar Path")]
     [ValidateNotNullOrEmpty()]
@@ -54,10 +54,10 @@ azcopy copy "$AgentJarPath/applicationinsights-agent-$SDKVersionNumber.jar" "htt
 azcopy copy "$AgentJarPath/applicationinsights-agent-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
 azcopy copy "$AgentJarPath/applicationinsights-agent-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
 azcopy copy "$AgentJarPath/applicationinsights-agent-$SDKVersionNumber.pom" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
-#azcopy copy "$CollectdJarPath/applicationinsights-collectd-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
-#azcopy copy "$CollectdJarPath/applicationinsights-collectd-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
-#azcopy copy "$CollectdJarPath/applicationinsights-collectd-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
-#azcopy copy "$CollectdJarPath/applicationinsights-collectd-$SDKVersionNumber.pom" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$CollectdJarPath/applicationinsights-collectd-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$CollectdJarPath/applicationinsights-collectd-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$CollectdJarPath/applicationinsights-collectd-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
+azcopy copy "$CollectdJarPath/applicationinsights-collectd-$SDKVersionNumber.pom" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
 azcopy copy "$CoreJarPath/applicationinsights-core-$SDKVersionNumber.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
 azcopy copy "$CoreJarPath/applicationinsights-core-$SDKVersionNumber-javadoc.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
 azcopy copy "$CoreJarPath/applicationinsights-core-$SDKVersionNumber-sources.jar" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/applicationinsights-sdk/java/$SDKVersionNumber/"
