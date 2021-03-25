@@ -26,10 +26,19 @@ import java.util.Collections;
 
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
+import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import org.junit.*;
 import org.junit.contrib.java.lang.system.*;
 
@@ -40,11 +49,17 @@ public class RpConfigurationPollingTest {
     @Rule
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
-    @AfterClass
-    public static void tearDown() {
+    @Before
+    public void beforeEach() {
+        // default sampler at startup is "Sampler.alwaysOff()", and this test relies on real sampler
+        DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(100, new Configuration()));
+    }
+
+    @After
+    public void afterEach() {
         // need to reset trace config back to default (with default sampler)
         // otherwise tests run after this can fail
-        DelegatingSampler.getInstance().setAlwaysOnDelegate();
+        DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(100, new Configuration()));
     }
 
     @Test
@@ -56,19 +71,25 @@ public class RpConfigurationPollingTest {
         rpConfiguration.configPath = new File(Resources.getResource("applicationinsights-rp.json").getPath()).toPath();
         rpConfiguration.lastModifiedTime = 0;
 
-        TelemetryConfiguration.getActive().setConnectionString(rpConfiguration.connectionString);
-        Global.setSamplingPercentage(ConfigurationBuilder.roundToNearest(rpConfiguration.sampling.percentage));
+        TelemetryConfiguration.getActive().setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        Global.setSamplingPercentage(100);
+
+        // pre-check
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
+        assertEquals(100, Global.getSamplingPercentage(), 0);
+        assertEquals(100, getCurrentSamplingPercentage(), 0);
 
         // when
         new RpConfigurationPolling(rpConfiguration, new Configuration()).run();
 
         // then
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
-        assertEquals(Global.getSamplingPercentage(), 10, 0);
+        assertEquals(10, Global.getSamplingPercentage(), 0);
+        assertEquals(10, getCurrentSamplingPercentage(), 0);
     }
 
     @Test
-    public void shouldStillUpdate() {
+    public void shouldUpdateEvenOverEnvVars() {
         // given
         RpConfiguration rpConfiguration = new RpConfiguration();
         rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
@@ -77,15 +98,36 @@ public class RpConfigurationPollingTest {
         rpConfiguration.lastModifiedTime = 0;
 
         TelemetryConfiguration.getActive().setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-        Global.setSamplingPercentage(ConfigurationBuilder.roundToNearest(90));
+        Global.setSamplingPercentage(100);
+
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=00000000-0000-0000-0000-000000000000");
         envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "90");
+
+        // pre-check
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
+        assertEquals(100, Global.getSamplingPercentage(), 0);
+        assertEquals(100, getCurrentSamplingPercentage(), 0);
 
         // when
         new RpConfigurationPolling(rpConfiguration, new Configuration()).run();
 
         // then
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
-        assertEquals(Global.getSamplingPercentage(), 10, 0);
+        assertEquals(10, Global.getSamplingPercentage(), 0);
+        assertEquals(10, getCurrentSamplingPercentage(), 0);
+    }
+
+    private double getCurrentSamplingPercentage() {
+        SpanContext spanContext = SpanContext.create(
+                "12341234123412341234123412341234",
+                "1234123412341234",
+                TraceFlags.getSampled(),
+                TraceState.getDefault());
+        Context parentContext = Context.root().with(Span.wrap(spanContext));
+        SamplingResult samplingResult =
+                DelegatingSampler.getInstance().shouldSample(parentContext, "12341234123412341234123412341234", "my span name",
+                        SpanKind.SERVER, Attributes.empty(), Collections.emptyList());
+        TraceState traceState = samplingResult.getUpdatedTraceState(TraceState.getDefault());
+        return Double.parseDouble(traceState.get(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE));
     }
 }

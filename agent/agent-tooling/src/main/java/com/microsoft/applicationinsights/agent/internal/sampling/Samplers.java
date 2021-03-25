@@ -13,6 +13,8 @@ public class Samplers {
                 AiSampler.BehaviorIfNoMatchingOverrides.RECORD_AND_SAMPLE);
         // ignoreRemoteParentNotSampled is currently needed
         // because .NET SDK always propagates trace flags "00" (not sampled)
+        // NOTE: once we start propagating sampling percentage over the wire, we can use that to know that we can
+        // respect upstream decision for remoteParentNotSampled
         Sampler remoteParentNotSampled = config.preview.ignoreRemoteParentNotSampled ? rootSampler : Sampler.alwaysOff();
         return Sampler.parentBasedBuilder(rootSampler)
                 .setRemoteParentNotSampled(remoteParentNotSampled)
