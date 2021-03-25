@@ -1,4 +1,6 @@
 # CHANGELOG
+# Version 3.0.3-BETA.3
+* Change default preview config setting
 
 # Version 3.0.3-BETA.2
 * Added env var `APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT` to enable preview OpenTelemetry API support
