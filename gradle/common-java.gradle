@@ -44,32 +44,33 @@ checkstyle {
     configProperties["rootDir"] = rootProject.projectDir
     showViolations = false
 }
+
 spotbugs {
+    ignoreFailures = false
     effort = 'max'
     reportLevel = 'medium'
-    showProgress = true
-    showStackTraces = true
-    ignoreFailures = true // FIXME: Ignoring for now.
-    toolVersion = '4.0.2'
+
+    def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
+    if (spotbugsExcludeFile.exists()) {
+        excludeFilter = spotbugsExcludeFile
+    }
 }
+
+spotbugsTest.enabled = false
 
 spotbugsMain {
     reports {
-        xml.enabled = true
         html.enabled = true
+        xml.enabled = true
+        html {
+            stylesheet = 'fancy-hist.xsl'
+        }
     }
 }
 
-tasks.withType(JavaCompile) {
-    dependencies {
-        // See https://find-sec-bugs.github.io/bugs.htm for bug pattern definitions
-        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.+'
-    }
-    def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
-    if (spotbugsExcludeFile.exists() && !spotbugs.excludeFilter) {
-        logger.info "${project} using spotbugs exclude file ${spotbugsExcludeFile.absolutePath}"
-        spotbugs.excludeFilter = spotbugsExcludeFile
-    }
+dependencies {
+    // See https://find-sec-bugs.github.io/bugs.htm for bug pattern definitions
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
 }
 
 tasks.withType(Checkstyle) {
@@ -101,8 +102,6 @@ jacocoTestReport {
         html.enabled true
     }
 }
-
-updateTestDirectories()
 
 // setting this variable is highly recommended
 def java7JreDir = System.env.'JAVA_JRE_7'
@@ -246,17 +245,3 @@ tasks.withType(Test) {
 
 
 // endregion Shared java configuration
-
-// region Helper Methods
-
-def updateTestDirectories() {
-    if (this.hasProperty("testEnvName")) {
-        testResultsDirName = testResultsDirName + "/" + testEnvName
-        logger.info('Test results folder for project "' + project.name + '" set to "' + testResultsDir + '"')
-
-        testReportDirName = testReportDirName + "/" + testEnvName
-        logger.info('Test report folder for project "' + project.name + '" set to ' + testReportDirName + '"')
-    }
-}
-
-// endregion Helper Methods
