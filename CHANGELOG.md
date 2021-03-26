@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# Version 2.6.3
+* Update xstream dependency [#1580](https://github.com/microsoft/ApplicationInsights-Java/issues/1479)
+* Upgrade gradle from 5.5.1 to 6.8.3
+* Switch to new build and release pipelines
+* Use GitHub Action for smoke tests
+
 # Version 2.6.2
 * Fixed NullPointer when testing with MockMvc ([#1281](https://github.com/microsoft/ApplicationInsights-Java/issues/1281))
 
