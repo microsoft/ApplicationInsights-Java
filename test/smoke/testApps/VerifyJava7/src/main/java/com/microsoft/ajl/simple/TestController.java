@@ -40,7 +40,7 @@ public class TestController {
             if (name.endsWith(".class")) {
                 VersionCapturingClassVisitor cv = new VersionCapturingClassVisitor();
                 new ClassReader(jarIn).accept(cv, 0);
-                if (name.equals("com/microsoft/applicationinsights/core/dependencies/xmlpull/mxp1/MXParser.class") && cv.version == 196653) {
+                if (name.equals("com/microsoft/applicationinsights/core/dependencies/xmlpull") && cv.version == 196653) {
                     // strange..
                     continue;
                 }
