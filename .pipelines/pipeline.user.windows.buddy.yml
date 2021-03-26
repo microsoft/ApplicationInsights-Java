@@ -32,7 +32,6 @@ build:
         - to: 'Artifacts'
           include:
             - '**/build/libs/*.jar'
-            - '**/build/libs/*.jar'
             - '**/build/libs/*-sources.jar'
             - '**/build/libs/*-javadoc.jar'
             - '**/build/libs/*.pom'
