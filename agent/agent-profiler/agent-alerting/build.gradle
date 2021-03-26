@@ -1,7 +1,6 @@
 group = 'io.opentelemetry.javaagent'
 
 apply from: "$buildScriptsDir/common-java.gradle"
-apply from: "$buildScriptsDir/publishing.gradle"
 
 dependencies {
 
