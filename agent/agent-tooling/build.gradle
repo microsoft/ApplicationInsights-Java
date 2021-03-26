@@ -31,6 +31,10 @@ repositories {
 }
 
 dependencies {
+    if (project.hasProperty("includeProfiler")) {
+        compile project(":agent:agent-profiler:agent-service-profiler")
+    }
+
     // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader
     // only complaint so far about moshi is that it doesn't give line numbers when there are json formatting errors
     compile 'com.squareup.moshi:moshi:1.8.0'

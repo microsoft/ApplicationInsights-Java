@@ -1,0 +1,9 @@
+group = 'io.opentelemetry.javaagent'
+
+apply from: "$buildScriptsDir/common-java.gradle"
+
+dependencies {
+    compile(project(":agent:agent-profiler:agent-alerting-api"))
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'
+    compile 'com.squareup.moshi:moshi:1.9.3'
+}

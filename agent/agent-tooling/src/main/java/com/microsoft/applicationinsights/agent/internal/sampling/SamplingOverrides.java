@@ -1,5 +1,7 @@
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -11,6 +13,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverrideAttribute;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 
@@ -35,21 +38,84 @@ class SamplingOverrides {
         return null;
     }
 
-    static SamplingResult getRecordAndSampleResult(double percentage) {
-        Attributes alwaysOnAttributes;
-        if (percentage != 100) {
-            alwaysOnAttributes = Attributes.of(Exporter.AI_SAMPLING_PERCENTAGE_KEY, percentage);
-        } else {
-            // the exporter assumes 100 when the AI_SAMPLING_PERCENTAGE_KEY attribute is not present
-            alwaysOnAttributes = Attributes.empty();
+    static SamplingResult getRecordAndSampleAndOverwriteTraceState(double samplingPercentage) {
+        return new TraceStateUpdatingSamplingResult(SamplingDecision.RECORD_AND_SAMPLE, toRoundedString(samplingPercentage), true);
+    }
+
+    static SamplingResult getRecordAndSampleAndAddTraceStateIfMissing(double samplingPercentage) {
+        return new TraceStateUpdatingSamplingResult(SamplingDecision.RECORD_AND_SAMPLE, toRoundedString(samplingPercentage), false);
+    }
+
+    // TODO write test for
+    //  * 33.33333333333
+    //  * 66.66666666666
+    //  * 1.123456
+    //  * 50.0
+    //  * 1.0
+    //  * 0
+    //  * 0.001
+    //  * 0.000001
+    // 5 digit of precision, and remove any trailing zeros beyond the decimal point
+    private static String toRoundedString(double percentage) {
+        BigDecimal bigDecimal = new BigDecimal(percentage);
+        bigDecimal = bigDecimal.round(new MathContext(5));
+        String formatted = bigDecimal.toString();
+        double dv = bigDecimal.doubleValue();
+        if (dv > 0 && dv < 1) {
+            while (formatted.endsWith("0")) {
+                formatted = formatted.substring(0, formatted.length() - 1);
+            }
         }
-        return SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE, alwaysOnAttributes);
+        return formatted;
+    }
+
+    private static final class TraceStateUpdatingSamplingResult implements SamplingResult {
+
+        private final SamplingDecision decision;
+        private final String samplingPercentage;
+        private final TraceState traceState;
+        private final boolean overwriteExisting;
+
+        private TraceStateUpdatingSamplingResult(SamplingDecision decision, String samplingPercentage,
+                                                 boolean overwriteExisting) {
+            this.decision = decision;
+            this.samplingPercentage = samplingPercentage;
+            this.overwriteExisting = overwriteExisting;
+            traceState = TraceState.builder().put(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE, samplingPercentage).build();
+        }
+
+        @Override
+        public SamplingDecision getDecision() {
+            return decision;
+        }
+
+        @Override
+        public Attributes getAttributes() {
+            return Attributes.empty();
+        }
+
+        @Override
+        public TraceState getUpdatedTraceState(TraceState parentTraceState) {
+            if (parentTraceState.isEmpty()) {
+                return traceState;
+            }
+            String existingSamplingPercentage = parentTraceState.get(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE);
+            if (samplingPercentage.equals(existingSamplingPercentage)) {
+                return parentTraceState;
+            }
+            if (existingSamplingPercentage != null && !overwriteExisting) {
+                return parentTraceState;
+            }
+            return parentTraceState.toBuilder()
+                    .put(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE, samplingPercentage)
+                    .build();
+        }
     }
 
     static class MatcherGroup {
         private final List<Predicate<Attributes>> predicates;
         private final double percentage;
-        private final SamplingResult recordAndSampleResult;
+        private final SamplingResult recordAndSampleAndOverwriteTraceState;
 
         private MatcherGroup(SamplingOverride override) {
             predicates = new ArrayList<>();
@@ -57,15 +123,15 @@ class SamplingOverrides {
                 predicates.add(toPredicate(attribute));
             }
             percentage = override.percentage;
-            recordAndSampleResult = SamplingOverrides.getRecordAndSampleResult(percentage);
+            recordAndSampleAndOverwriteTraceState = SamplingOverrides.getRecordAndSampleAndOverwriteTraceState(percentage);
         }
 
         double getPercentage() {
             return percentage;
         }
 
-        SamplingResult getRecordAndSampleResult() {
-            return recordAndSampleResult;
+        SamplingResult getRecordAndSampleAndOverwriteTraceState() {
+            return recordAndSampleAndOverwriteTraceState;
         }
 
         private boolean matches(Attributes attributes) {
