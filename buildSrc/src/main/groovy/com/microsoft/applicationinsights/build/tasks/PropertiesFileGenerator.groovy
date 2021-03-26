@@ -32,9 +32,10 @@ class PropsFileGen extends DefaultTask {
     private def generate() {
         def targetDir = targetFile.getParentFile()
         targetDir.mkdirs()
-        FileOutputStream out = new FileOutputStream(targetFile.getAbsolutePath())
-        props.store(out, comment)
-        out.close()
+        def p = props
+        targetFile.withOutputStream { out ->
+            p.store(out, comment)
+        }
     }
 
     private boolean propsAreEqual() {
@@ -43,8 +44,9 @@ class PropsFileGen extends DefaultTask {
         }
 
         Properties oldProps = new Properties();
-        FileInputStream inFileStream = new FileInputStream(targetFile);
-        oldProps.load(inFileStream);
+        targetFile.withInputStream { inFileStream ->
+            oldProps.load(inFileStream);
+        }
 
         return oldProps.equals(props);
     }

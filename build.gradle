@@ -23,20 +23,14 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 // region Common configurations
 
-buildscript {
-    repositories {
-        mavenCentral()
-        jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
-        classpath 'org.owasp:dependency-check-gradle:5.2.2'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
-        classpath 'com.github.spotbugs:spotbugs-gradle-plugin:3.0.0'
-    }
+plugins {
+    id 'idea'
+
+    id "com.github.johnrengelman.shadow" version "6.1.0" apply false
+
+    id "org.owasp.dependencycheck" version "6.1.2"
+    id "com.diffplug.spotless" version "5.8.2"
+    id "com.github.spotbugs" version "4.6.0" apply false
 }
 
 ext.buildScriptsDir = "$rootDir/gradle"
@@ -48,7 +42,6 @@ apply from: "$buildScriptsDir/test.gradle"
 
 // region Root project script
 
-def rootProjectBuildFolder = "$rootDir/build"
 ext {
     isBuildServer = (System.properties["isBuildServer"] ?: "false").toBoolean()
     isRelease = (System.properties["isRelease"] ?: "false").toBoolean()
@@ -57,12 +50,6 @@ ext {
     }
     else {
         logger.lifecycle "Building on DESKTOP"
-    }
-}
-
-task clean {
-    doLast {
-        delete(rootProjectBuildFolder)
     }
 }
 
@@ -76,6 +63,25 @@ allprojects {
                 it.canBeResolved
             }.each {
                 it.resolve()
+            }
+        }
+    }
+
+    tasks.register('resolveDependencies') {
+        enabled !configurations.isEmpty()
+        configurations.findAll { c ->
+            c.allDependencies.findAll { d ->
+                d instanceof ProjectDependency
+            }.each { d ->
+                dependsOn d.getDependencyProject().tasks.named('resolveDependencies')
+            }
+        }
+        doLast {
+            configurations.findAll {
+                it.canBeResolved
+            }.each {
+                logger.info "Resolving $it"
+                it.files
             }
         }
     }

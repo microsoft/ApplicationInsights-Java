@@ -36,6 +36,8 @@ gradle-app.setting
 .idea/tasks.xml
 .idea/dictionaries
 
+# Ignore iml
+.idea/ApplicationInsights-Java.iml
  
 # Sensitive or high-churn files: 
 .idea/dataSources.ids

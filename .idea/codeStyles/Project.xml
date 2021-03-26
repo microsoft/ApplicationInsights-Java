@@ -27,6 +27,9 @@
       </option>
       <option name="JD_ADD_BLANK_AFTER_PARM_COMMENTS" value="true" />
     </JavaCodeStyleSettings>
+    <ScalaCodeStyleSettings>
+      <option name="MULTILINE_STRING_CLOSING_QUOTES_ON_NEW_LINE" value="true" />
+    </ScalaCodeStyleSettings>
     <editorconfig>
       <option name="ENABLED" value="false" />
     </editorconfig>

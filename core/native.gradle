@@ -39,12 +39,14 @@ def programFilesX86 = System.env.'ProgramFiles(x86)' ?: 'C:\\Program Files (x86)
 def winSdkDir = "$programFilesX86\\Windows Kits\\8.1"
 if (System.env.APPINSIGHTS_WIN_SDK_PATH) {
     winSdkDir = System.env.APPINSIGHTS_WIN_SDK_PATH
-    println "Using custom Windows SDK path: $winSdkDir"
+    logger.info "Using custom Windows SDK path: $winSdkDir"
+} else {
+    logger.info "Using default Windows SDK path: $winSdkDir"
 }
 def vsToolsDir = "$programFilesX86\\Microsoft Visual Studio 14.0"
 if (System.env.APPINSIGHTS_VS_PATH) {
     vsToolsDir = System.env.APPINSIGHTS_VS_PATH
-    println "Using custom Visual Studio Tools path: $vsToolsDir"
+    logger.info "Using custom Visual Studio Tools path: $vsToolsDir"
 }
 
 idea {
@@ -57,8 +59,12 @@ idea {
 model {
     toolChains {
         visualCpp(VisualCpp) {
+            logger.info "Setting custom Windows SDK path: $winSdkDir"
             windowsSdkDir winSdkDir
-            installDir vsToolsDir
+            if (System.env.APPINSIGHTS_VS_PATH) {
+                logger.info "Setting custom VS Build Tools path: $vsToolsDir"
+                installDir vsToolsDir
+            }
         }
     }
     buildTypes {
@@ -86,27 +92,26 @@ model {
                 }
             }
 
-            if ((System.properties["isRelease"] ?: "false").toBoolean()) {
-                targetBuildTypes "release"
-            } else {
-                targetBuildTypes "debug"
-            }
-
             binaries.all {
-                if (delegate instanceof StaticLibraryBinarySpec) {
+                // Only build shared libraries
+                if (!(delegate instanceof SharedLibraryBinarySpec)) {
                     buildable = false
-                } else {
-                    assert (delegate instanceof SharedLibraryBinarySpec)
-                    sharedLibraryFile = ReconstructFileName(sharedLibraryFile, buildType, targetPlatform)
+                    return
+                }
+
+                sharedLibraryFile = ReconstructFileName(sharedLibraryFile, targetPlatform)
+                def shouldExport = project.properties.isRelease.asBoolean() == (buildType == buildTypes.release)
+                if (shouldExport) {
+                    logger.info "Adding \"$sharedLibraryFile.parentFile\" to sourceSets.main.resources"
+                    sourceSets.main.resources.srcDir sharedLibraryFile.parentFile
+                }
 
                     tasks.all { t ->
+                    t.enabled = !project.properties["core.native.artifacts.prebuilt"].asBoolean()
+                    if (shouldExport) {
                         logger.info "Adding \"processResources\".dependsOn \"$t\" (${t.getClass()})"
                         processResources.dependsOn t
                     }
-
-                    logger.info "Adding \"$sharedLibraryFile.parentFile\" to sourceSets.main.resources"
-                    sourceSets.main.resources.srcDir sharedLibraryFile.parentFile
-
                 }
                 if (toolChain in VisualCpp) {
                     // Visual Studio Compiler Options: https://msdn.microsoft.com/en-us/library/fwkeyyhe.aspx
@@ -173,9 +178,13 @@ sourceSets {
     }
 }
 
+tasks.register('windowsSharedLibrary') {
+    dependsOn windowsX64DebugSharedLibrary, windowsX86DebugSharedLibrary, windowsX64ReleaseSharedLibrary, windowsX86ReleaseSharedLibrary
+}
+
 // This function will reconstruct the file name based on the buildType and targetPlatform
-// New file name structure: <baseName><32|64>[dbg].<ext>
-def ReconstructFileName(File originalFile, BuildType buildType, NativePlatform targetPlatform) {
+// New file name structure: <baseName><32|64>.<ext>
+def ReconstructFileName(File originalFile, NativePlatform targetPlatform) {
     def originalFileName = originalFile.absolutePath
     def filePath = FilenameUtils.getFullPath(originalFileName)
     def baseName = FilenameUtils.getBaseName(originalFileName)
@@ -195,7 +204,7 @@ def ReconstructFileName(File originalFile, BuildType buildType, NativePlatform t
 
     def newName = "$baseName$bitnessPart.$extension"
     def newFile = new File(filePath, newName)
-    logger.info "Reconstructed file name: $originalFile => $newFile"
+    logger.debug "Reconstructed file name: $originalFile => $newFile"
     newFile
 }
 

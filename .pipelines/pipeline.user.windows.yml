@@ -1,0 +1,69 @@
+environment:
+  host:
+    os: 'windows'
+    flavor: 'server'
+    version: '2019'
+  runtime:
+    provider: 'appcontainer'
+    image: 'cdpxwin1809.azurecr.io/global/vse2019:latest'
+    source_mode: 'link'
+versioning:
+  commands:
+    - !!defaultcommand
+      name: 'Generate Version'
+      command: '.scripts/version.cmd'
+static_analysis_options:
+  policheck_options:
+    disable_tool_scan: false
+    fail_on_error: true
+signing_options:
+  profile: 'none'
+restore:
+  commands:
+    - !!defaultcommand
+      name: 'Install Windows 8.1 SDK'
+      command: '.scripts/installWindows81SDK.cmd'
+      logs:
+        - from: 'WinSdkInstall'
+          to: 'WinSdkInstall'
+          include:
+            - '**/*.log'
+    - !!defaultcommand
+      name: 'Install Java 7 JRE'
+      command: '.scripts/installJava7jre.cmd'
+    - !!defaultcommand
+      name: 'Install Java 8 JDK'
+      command: '.scripts/installJava8jdk.cmd'
+    - !!defaultcommand
+      name: 'Clean and Resolve Dependencies'
+      command: '.scripts/gradle.cmd'
+      arguments: 'clean resolveDependencies --refresh-dependencies'
+    - !!defaultcommand
+      name: 'List Installation Information'
+      command: '.scripts/dumpInstallationInfo.cmd'
+test:
+  commands:
+    # - !!defaultcommand
+    #   name: 'Gradle Static Analysis'
+    #   command: '.scripts/gradle.cmd'
+    #   arguments: 'check -x test'
+    #   logs:
+    #     - to: 'Checks Reports'
+    #       include:
+    #         - '**/build/reports/**/*'
+    #       exclude:
+    #         - '**/build/reports/tests/**/*'
+    - !!testcommand
+      name: 'ApplicationInsights-Java Unit Tests'
+      command: '.scripts/gradle.cmd'
+      arguments: 'test'
+      fail_on_stderr: false
+      testresults:
+        - title: ':Unit Test Results'
+          type: 'junit'
+          include:
+            - '**/build/test-results/test/**/*'
+      logs:
+        - to: 'Test Logs'
+          include:
+            - '**/build/reports/tests/**/*'

@@ -18,6 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+rootProject.name = 'applicationinsights-java'
 
 include 'ApplicationInsightsInternalLogger'
 
@@ -30,9 +31,7 @@ include 'logging:logback'
 include 'web'
 include 'web-auto'
 include 'azure-application-insights-spring-boot-starter'
-if (System.env.'COLLECTD_HOME') {
-    include 'collectd'
-}
+include 'collectd'
 
 //include 'distributions'
 

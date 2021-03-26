@@ -21,7 +21,6 @@
 
 // region Shared java configuration
 
-import org.gradle.internal.os.OperatingSystem;
 import org.gradle.api.tasks.testing.logging.TestLogEvent;
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
 
@@ -47,21 +46,31 @@ checkstyle {
 }
 
 spotbugs {
+    ignoreFailures = false
     effort = 'max'
     reportLevel = 'medium'
-    ignoreFailures = false
-    sourceSets = [sourceSets.main]
-}
 
-tasks.withType(JavaCompile) {
-    dependencies {
-        // See https://find-sec-bugs.github.io/bugs.htm for bug pattern definitions
-        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
-    }
     def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
     if (spotbugsExcludeFile.exists()) {
-        spotbugs.excludeFilter = spotbugsExcludeFile
+        excludeFilter = spotbugsExcludeFile
     }
+}
+
+spotbugsTest.enabled = false
+
+spotbugsMain {
+    reports {
+        html.enabled = true
+        xml.enabled = true
+        html {
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
+}
+
+dependencies {
+    // See https://find-sec-bugs.github.io/bugs.htm for bug pattern definitions
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
 }
 
 tasks.withType(Checkstyle) {
@@ -93,39 +102,6 @@ jacocoTestReport {
         html.enabled true
     }
 }
-
-if (hasProperty("JDKToUse")) {
-    logger.info("using $JDKToUse to compile and run tests")
-    def javaExecutablesPath = new File(JDKToUse, 'bin')
-    def javaExecutables = [:].withDefault { execName ->
-        def execNameToUse = execName
-        if (OperatingSystem.current().isWindows()){
-            execNameToUse = execName + ".exe"
-        }
-        def executable = new File(javaExecutablesPath, execNameToUse)
-        assert executable.exists(): "There is no ${execName} executable in ${javaExecutablesPath}"
-        executable
-    }
-    tasks.withType(AbstractCompile) {
-        options.with {
-            fork = true
-            forkOptions.executable = javaExecutables.javac
-            forkOptions.javaHome = file(JDKToUse)
-        }
-    }
-    tasks.withType(Javadoc) {
-        executable = javaExecutables.javadoc
-    }
-    tasks.withType(Test) {
-        executable = javaExecutables.java
-    }
-    tasks.withType(JavaExec) {
-        executable = javaExecutables.java
-    }
-} else {
-    logger.info("JDKToUse not found. Using default JAVA_HOME")
-}
-updateTestDirectories()
 
 // setting this variable is highly recommended
 def java7JreDir = System.env.'JAVA_JRE_7'
@@ -219,9 +195,9 @@ task vscodeJavaconfigFile(dependsOn: vscodeClasspathFile) {
     }
     ext.destFile = file("javaconfig.json")
     ext.config = [
-        sourcePath: sourceSets.collect{ it.java.srcDirs }.flatten().collect{ relativePath(it) },
-        classPathFile: relativePath(tasks.getByPath('vscodeClasspathFile').outputs.files.singleFile),
-        outputDirectory: relativePath(new File(buildDir, 'vscode-classes'))
+            sourcePath: sourceSets.collect{ it.java.srcDirs }.flatten().collect{ relativePath(it) },
+            classPathFile: relativePath(tasks.getByPath('vscodeClasspathFile').outputs.files.singleFile),
+            outputDirectory: relativePath(new File(buildDir, 'vscode-classes'))
     ]
     doLast {
         def jsonContent = groovy.json.JsonOutput.toJson(ext.config)
@@ -269,17 +245,3 @@ tasks.withType(Test) {
 
 
 // endregion Shared java configuration
-
-// region Helper Methods
-
-def updateTestDirectories() {
-    if (this.hasProperty("testEnvName")) {
-        testResultsDirName = testResultsDirName + "/" + testEnvName
-        logger.info('Test results folder for project "' + project.name + '" set to "' + testResultsDir + '"')
-
-        testReportDirName = testReportDirName + "/" + testEnvName
-        logger.info('Test report folder for project "' + project.name + '" set to ' + testReportDirName + '"')
-    }
-}
-
-// endregion Helper Methods
