@@ -16,9 +16,6 @@ build:
             - '**/*'
           exclude:
             - '**/*.pdb'
-          signing_options:
-            profile: external_distribution
-            sign_inline: true
       logs:
         - to: 'PerfCounters DLL Build Logs'
           from: 'core/build/tmp'
