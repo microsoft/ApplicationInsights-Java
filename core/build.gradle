@@ -80,9 +80,3 @@ task generateVersionProperties(type: PropsFileGen) {
 }
 
 processResources.dependsOn generateVersionProperties
-
-whenPomConfigured = { p ->
-    p.dependencies = []
-}
-
-// endregion Publishing properties
