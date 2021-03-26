@@ -20,7 +20,6 @@
  */
 
 apply from: "$buildScriptsDir/common-java.gradle"
-apply from: "$buildScriptsDir/publishing.gradle"
 
 def sdkVersionFileDir = "$project.buildDir/src/generated/main/resources"
 
@@ -81,11 +80,6 @@ task generateVersionProperties(type: PropsFileGen) {
 }
 
 processResources.dependsOn generateVersionProperties
-
-// region Publishing properties
-
-projectPomName = project.msftAppInsights + " Java SDK Core"
-projectPomDescription = "This is the core module of " + project.msftAppInsightsJavaSdk
 
 whenPomConfigured = { p ->
     p.dependencies = []

@@ -1,7 +1,6 @@
 group = 'io.opentelemetry.javaagent'
 
 apply from: "$buildScriptsDir/common-java.gradle"
-apply from: "$buildScriptsDir/publishing.gradle"
 
 dependencies {
 
@@ -11,6 +10,3 @@ dependencies {
     compile(project(":agent:agent-profiler:agent-alerting-api"))
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
 }
-
-projectPomName = project.msftAppInsights + " Java Agent Profiler"
-projectPomDescription = "This is the Agent Profiler module of " + project.msftAppInsightsJavaSdk
