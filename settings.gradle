@@ -54,6 +54,7 @@ include ':test:smoke:framework:utils'
 include ':test:fakeIngestion:servlet'
 include ':test:fakeIngestion:standalone'
 
+include ':test:smoke:testApps:AzureSdk'
 include ':test:smoke:testApps:CachingCalculator'
 include ':test:smoke:testApps:Cassandra'
 include ':test:smoke:testApps:CoreAndFilter'
