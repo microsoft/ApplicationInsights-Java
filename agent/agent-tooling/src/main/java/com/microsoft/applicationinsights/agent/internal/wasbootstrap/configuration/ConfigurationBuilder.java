@@ -67,6 +67,8 @@ public class ConfigurationBuilder {
     public static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH = "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH";
 
     private static final String APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT = "APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT";
+    private static final String APPLICATIONINSIGHTS_PREVIEW_AZURE_SDK_INSTRUMENTATION = "APPLICATIONINSIGHTS_PREVIEW_AZURE_SDK_INSTRUMENTATION";
+
     private static final String APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED = "APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED";
 
     private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
@@ -252,6 +254,8 @@ public class ConfigurationBuilder {
                 (int) overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS, config.preview.metricIntervalSeconds);
 
         config.preview.openTelemetryApiSupport = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT, config.preview.openTelemetryApiSupport);
+        config.preview.azureSdkInstrumentation = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_AZURE_SDK_INSTRUMENTATION, config.preview.azureSdkInstrumentation);
+
         config.preview.liveMetrics.enabled = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED, config.preview.liveMetrics.enabled);
 
         loadLogCaptureEnvVar(config);

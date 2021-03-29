@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure>
+  <deployment>
+    <exclude-subsystems>
+      <!-- this is needed to prevent wildfly from adding its own (old) version of jackson
+           since azure sdk uses a newer version -->
+      <subsystem name="jaxrs"/>
+    </exclude-subsystems>
+  </deployment>
+</jboss-deployment-structure>

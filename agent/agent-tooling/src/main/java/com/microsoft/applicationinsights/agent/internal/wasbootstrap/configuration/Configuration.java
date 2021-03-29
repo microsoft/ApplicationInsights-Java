@@ -167,6 +167,7 @@ public class Configuration {
         public SamplingPreview sampling = new SamplingPreview();
         public List<ProcessorConfig> processors = new ArrayList<>();
         public boolean openTelemetryApiSupport;
+        public boolean azureSdkInstrumentation;
         // applies to perf counters, default custom metrics, jmx metrics, and micrometer metrics
         // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics world,
         // so safer to only allow single interval for now

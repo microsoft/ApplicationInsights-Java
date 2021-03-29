@@ -10,42 +10,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-@UseAgent("opentelemetryapisupport")
-public class OpenTelemetryApiSupportTest extends AiSmokeTest {
+@UseAgent("azuresdk")
+public class AzureSdkTest extends AiSmokeTest {
 
     @Test
-    @TargetUri("/test-api")
-    public void testApi() throws Exception {
-        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
-
-        Envelope rdEnvelope = rdList.get(0);
-        String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-
-        Envelope rddEnvelope = rddList.get(0);
-
-        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
-
-        assertEquals("/OpenTelemetryApiSupport/test-api", rd.getName());
-        assertTrue(rd.getProperties().isEmpty());
-        assertTrue(rd.getSuccess());
-
-        assertEquals("myspanname", rdd.getName());
-        // ideally want these on rd, but can't get SERVER span yet
-        // see https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1726#issuecomment-731890267
-        assertEquals("myuser", rddEnvelope.getTags().get("ai.user.id"));
-        assertEquals("myvalue1", rdd.getProperties().get("myattr1"));
-        assertEquals("myvalue2", rdd.getProperties().get("myattr2"));
-        assertEquals(2, rdd.getProperties().size());
-        assertTrue(rdd.getSuccess());
-
-        assertParentChild(rd.getId(), rdEnvelope, rddEnvelope);
-    }
-
-    @Test
-    @TargetUri("/test-annotations")
-    public void testAnnotations() throws Exception {
+    @TargetUri("/test")
+    public void test() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
@@ -59,7 +29,7 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
         RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
 
-        if (!rdd1.getName().equals("TestController.testAnnotations")) {
+        if (!rdd1.getName().equals("TestController.test")) {
             RemoteDependencyData rddTemp = rdd1;
             rdd1 = rdd2;
             rdd2 = rddTemp;
@@ -69,15 +39,15 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
             rddEnvelope2 = rddEnvelopeTemp;
         }
 
-        assertEquals("/OpenTelemetryApiSupport/test-annotations", rd.getName());
+        assertEquals("/AzureSdk/test", rd.getName());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
 
-        assertEquals("TestController.testAnnotations", rdd1.getName());
+        assertEquals("TestController.test", rdd1.getName());
         assertTrue(rdd1.getProperties().isEmpty());
         assertTrue(rdd1.getSuccess());
 
-        assertEquals("TestController.underAnnotation", rdd2.getName());
+        assertEquals("hello", rdd2.getName());
         assertTrue(rdd2.getProperties().isEmpty());
         assertTrue(rdd2.getSuccess());
 
