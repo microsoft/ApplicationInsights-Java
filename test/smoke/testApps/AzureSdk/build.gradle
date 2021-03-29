@@ -18,8 +18,6 @@ dependencies {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
     compile group: "com.azure", name: "azure-core", version: "1.14.0"
-    // this dependency is needed to make wildfly happy
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.4'
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 }

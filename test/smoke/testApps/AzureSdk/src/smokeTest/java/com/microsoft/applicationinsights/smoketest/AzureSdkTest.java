@@ -29,6 +29,16 @@ public class AzureSdkTest extends AiSmokeTest {
         RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
         RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
 
+        if (!rdd1.getName().equals("TestController.test")) {
+            RemoteDependencyData rddTemp = rdd1;
+            rdd1 = rdd2;
+            rdd2 = rddTemp;
+
+            Envelope rddEnvelopeTemp = rddEnvelope1;
+            rddEnvelope1 = rddEnvelope2;
+            rddEnvelope2 = rddEnvelopeTemp;
+        }
+
         assertEquals("/AzureSdk/test", rd.getName());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
