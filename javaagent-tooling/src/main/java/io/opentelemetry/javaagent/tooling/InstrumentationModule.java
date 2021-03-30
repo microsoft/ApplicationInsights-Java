@@ -49,6 +49,9 @@ public abstract class InstrumentationModule {
   private static final Logger log = LoggerFactory.getLogger(InstrumentationModule.class);
   private static final Logger muzzleLog = LoggerFactory.getLogger("muzzleMatcher");
 
+  private static boolean classLoaderOptimizationOptOutFlag =
+      Boolean.getBoolean("classLoaderOptimizationOptOut");
+
   private static final String[] EMPTY = new String[0];
 
   // Added here instead of AgentInstaller's ignores because it's relatively
@@ -136,6 +139,7 @@ public abstract class InstrumentationModule {
     InstrumentationContextProvider contextProvider = getContextProvider();
 
     AgentBuilder agentBuilder = parentAgentBuilder;
+    log.info("classLoaderOptimizationOptOutFlag: {}", classLoaderOptimizationOptOutFlag);
     for (TypeInstrumentation typeInstrumentation : typeInstrumentations) {
       AgentBuilder.Identified.Extendable extendableAgentBuilder =
           agentBuilder
@@ -144,7 +148,10 @@ public abstract class InstrumentationModule {
                       typeInstrumentation.typeMatcher(),
                       "Instrumentation type matcher unexpected exception: " + getClass().getName()),
                   failSafe(
-                      moduleClassLoaderMatcher.and(typeInstrumentation.classLoaderOptimization()),
+                      classLoaderOptimizationOptOutFlag
+                          ? moduleClassLoaderMatcher
+                          : moduleClassLoaderMatcher.and(
+                              typeInstrumentation.classLoaderOptimization()),
                       "Instrumentation class loader matcher unexpected exception: "
                           + getClass().getName()))
               .and(NOT_DECORATOR_MATCHER)
