@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
@@ -55,6 +57,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
         setConnectionString(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"), System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
         setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
+        setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
     }
 
     static void setConnectionString(String connectionString, String instrumentationKey) {
@@ -86,6 +89,17 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
         if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
             TelemetryConfiguration.getActive().setRoleName(websiteSiteName);
             logger.info("Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.", websiteSiteName);
+        }
+    }
+
+    static void setSelfDiagnosticsLevel(String loggingLevel) {
+        if (loggingLevel != null && !loggingLevel.isEmpty()) {
+            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+            ch.qos.logback.classic.Logger logbackLogger = loggerContext.getLogger("com.microsoft.applicationinsights");
+            logbackLogger.setLevel(Level.toLevel(loggingLevel));
+            logger.debug("######################## Set self diagnostics level to {}", loggingLevel);
+        } else {
+            logger.debug("######################## {} is null or empty.", loggingLevel);
         }
     }
 
