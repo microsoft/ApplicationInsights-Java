@@ -39,6 +39,7 @@ public class KafkaTest extends AiSmokeTest {
         Envelope rdEnvelope1 = getRequestEnvelope(rdList, "/sendMessage");
         String operationId = rdEnvelope1.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic process");
         Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
