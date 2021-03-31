@@ -21,6 +21,7 @@ public class WebFluxTest extends AiSmokeTest {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
         mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -39,6 +40,7 @@ public class WebFluxTest extends AiSmokeTest {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
         mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -57,6 +59,7 @@ public class WebFluxTest extends AiSmokeTest {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
         mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 

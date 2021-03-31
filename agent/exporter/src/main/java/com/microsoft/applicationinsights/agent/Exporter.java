@@ -616,6 +616,12 @@ public class Exporter implements SpanExporter {
 
     private void exportEvents(SpanData span, Double samplingPercentage) {
         for (EventData event : span.getEvents()) {
+            boolean lettuce51 =
+                    span.getInstrumentationLibraryInfo().getName().equals("io.opentelemetry.javaagent.lettuce-5.1");
+            if (lettuce51 && event.getName().startsWith("redis.encode.")) {
+                // special case as these are noisy and come from the underlying library itself
+                continue;
+            }
             EventTelemetry telemetry = new EventTelemetry(event.getName());
             String operationId = span.getTraceId();
             telemetry.getContext().getOperation().setId(operationId);
