@@ -25,11 +25,15 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
@@ -57,7 +61,9 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
         setConnectionString(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"), System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
         setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
-        setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
+        String level = System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
+        logger.info("####################### level-new: {}", level);
+        setSelfDiagnosticsLevel(level);
     }
 
     static void setConnectionString(String connectionString, String instrumentationKey) {
@@ -94,13 +100,50 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
     static void setSelfDiagnosticsLevel(String loggingLevel) {
         if (loggingLevel != null && !loggingLevel.isEmpty()) {
-            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-            ch.qos.logback.classic.Logger logbackLogger = loggerContext.getLogger("com.microsoft.applicationinsights");
-            logbackLogger.setLevel(Level.toLevel(loggingLevel));
-            logger.debug("######################## Set self diagnostics level to {}", loggingLevel);
-        } else {
-            logger.debug("######################## {} is null or empty.", loggingLevel);
+            logger.info("######################## logginglevel-new {}", loggingLevel);
+            try {
+
+//                ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
+//                if (loggerFactory instanceof LoggerContext) {
+//                    logger.info("####################### loggerFactory is an instance of LoggrContext");
+//                    LoggerContext loggerContext = (LoggerContext) loggerFactory;
+//                    if (loggerContext == null) {
+//                        logger.error("####################### loggerContext is null");
+//                    }
+//                    logger.info("######################## loggerContext is not null");
+//                    List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
+//                    if (loggerList != null) {
+//                        logger.info("######################## loggerList.size:", loggerList.size());
+//                    } else {
+//                        logger.info("######################## loggerList is null");
+//                    }
+//                    loggerList.stream().forEach(tmpLogger -> tmpLogger.setLevel(Level.DEBUG));
+//                    logger.info("######################## logger.info should get logged");
+//                    logger.debug("######################## logger debug should get logged.");
+//                }
+                // applicationinsights.extension.diagnostics
+                // com.microsoft.applicationinsights.agent
+                Logger startupLogger = LoggerFactory.getLogger("applicationinsights.extension.diagnostics");
+                if (startupLogger instanceof ch.qos.logback.classic.Logger) {
+                    logger.info("######################## applicationinsights.extension.diagnostics is a logback logger");
+                    logger.info("######################## startupLogger.getname: {}", startupLogger.getName());
+                    ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger)startupLogger;
+                    logger.info("######################## logbacklogger.getName: {}", logbackLogger.getName());
+                    logger.info("######################## Level.toLevel: {}", Level.toLevel(loggingLevel));
+                    logbackLogger.setLevel(Level.DEBUG);
+                    logger.debug("######################## debug should get logged.");
+                    logbackLogger.debug("######################## logback logger debug should get logged.");
+                } else {
+                    logger.info("######################## applicationinsights.extension.diagnostics is not an instance of logback logger.");
+                }
+
+            } catch (Exception ex) {
+                logger.error("######################## ex: {}", ex.getMessage());
+                throw ex;
+            }
         }
+
+        logger.warn("######################## logger.warn should get logged");
     }
 
     static boolean shouldSetConnectionString(boolean lazySetOptIn, String enableAgent) {
