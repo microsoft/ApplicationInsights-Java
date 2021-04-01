@@ -51,7 +51,7 @@ public class CassandraTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Cassandra/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Cassandra/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
