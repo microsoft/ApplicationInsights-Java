@@ -96,7 +96,8 @@ public class Configuration {
 
         public String name;
         public String objectName;
-        public String attribute;
+        public String attribute = "";
+        public List<String> attributes = new ArrayList<>();
     }
 
     public static class Instrumentation {

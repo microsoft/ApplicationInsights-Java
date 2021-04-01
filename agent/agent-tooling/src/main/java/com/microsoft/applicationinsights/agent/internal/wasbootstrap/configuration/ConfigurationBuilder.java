@@ -136,6 +136,7 @@ public class ConfigurationBuilder {
             threadCountJmxMetric.objectName = "java.lang:type=Threading";
             threadCountJmxMetric.attribute = "ThreadCount";
             config.jmxMetrics.add(threadCountJmxMetric);
+            System.out.println("ThreadCount metric did not exist");
         }
         if (!jmxMetricExisted(config.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
             JmxMetric classCountJmxMetric = new JmxMetric();
@@ -148,7 +149,8 @@ public class ConfigurationBuilder {
 
     private static boolean jmxMetricExisted(List<Configuration.JmxMetric> jmxMetrics, String objectName, String attribute) {
         for (JmxMetric metric : jmxMetrics) {
-            if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
+            if (metric.objectName.equals(objectName) &&
+                    (metric.attribute.equals(attribute) || metric.attributes.contains(attribute))) {
                 return true;
             }
         }

@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 public class JmxDataFetcher {
 
     private static final Logger logger = LoggerFactory.getLogger(JmxDataFetcher.class);
+    private static ArrayList<JmxAttributeData> warningShown= new ArrayList<>();
 
     /**
      * Gets an object name and its attributes to fetch and will return the data.
@@ -72,13 +73,24 @@ public class JmxDataFetcher {
                 Collection<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
                 result.put(attribute.metricName, resultForAttribute);
             } catch (Exception e) {
-                logger.warn("Failed to fetch JMX object '{}' with attribute '{}': ", objectName, attribute.attribute);
-                throw e;
+                //Is it ok if we print out the exception text instead of throwing the exception so we can continue the loop?
+                //Is it ok to print out and log the exception once per metric so that we do not flood the logs?
+                if(!warningShown.contains(attribute)) {
+                    warningShown.add(attribute);
+                    System.out.println(e.toString());
+                    logger.error(e.toString());
+                    logger.warn("Failed to fetch JMX object '{}' with attribute '{}': ", objectName, attribute.attribute);
+                }
+
+                //throw e;
             }
         }
 
         return result;
     }
+
+    // objectName = "gc=*"
+    // attribute = "collectionTime"
 
     private static Collection<Object> fetch(MBeanServer server, Set<ObjectName> objects, String attributeName)
             throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException {

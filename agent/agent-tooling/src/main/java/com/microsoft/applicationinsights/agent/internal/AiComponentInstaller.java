@@ -280,11 +280,22 @@ public class AiComponentInstaller implements ComponentInstaller {
         // configure custom jmx metrics
         ArrayList<JmxXmlElement> jmxXmls = new ArrayList<>();
         for (JmxMetric jmxMetric : config.jmxMetrics) {
-            JmxXmlElement jmxXml = new JmxXmlElement();
-            jmxXml.setName(jmxMetric.name);
-            jmxXml.setObjectName(jmxMetric.objectName);
-            jmxXml.setAttribute(jmxMetric.attribute);
-            jmxXmls.add(jmxXml);
+            if (!jmxMetric.attribute.isEmpty()) {
+                JmxXmlElement jmxXml = new JmxXmlElement();
+                jmxXml.setName(jmxMetric.name);
+                jmxXml.setObjectName(jmxMetric.objectName);
+                jmxXml.setAttribute(jmxMetric.attribute);
+                jmxXmls.add(jmxXml);
+            }
+            else if (!jmxMetric.attributes.isEmpty()) {
+                for (String attribute : jmxMetric.attributes) {
+                    JmxXmlElement jmxXml = new JmxXmlElement();
+                    jmxXml.setName(getJmxDisplayName(jmxMetric.objectName) + attribute);
+                    jmxXml.setObjectName(jmxMetric.objectName);
+                    jmxXml.setAttribute(attribute);
+                    jmxXmls.add(jmxXml);
+                }
+            }
         }
         xmlConfiguration.getPerformance().setJmxXmlElements(jmxXmls);
 
@@ -296,6 +307,19 @@ public class AiComponentInstaller implements ComponentInstaller {
             xmlConfiguration.getChannel().setDeveloperMode(true);
         }
         return xmlConfiguration;
+    }
+
+    //assuming that every other element is not needed - such as "type", "worker", "name"
+    //assuming same set of delimiters in every object name
+    private static String getJmxDisplayName(String attribute) {
+        String nameParts[] = attribute.split("=|:|,");
+        String name = "";
+        if(nameParts!=null&&nameParts.length>0) {
+            for(int i=0; i<nameParts.length;i=i+2) {
+                name+= nameParts[i] + " / ";
+            }
+        }
+        return name;
     }
 
     private static ParamXmlElement newParamXml(String name, String value) {
