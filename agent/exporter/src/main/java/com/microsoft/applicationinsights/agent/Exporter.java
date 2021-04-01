@@ -613,7 +613,7 @@ public class Exporter implements SpanExporter {
             return name;
         }
         String httpMethod = span.getAttributes().get(SemanticAttributes.HTTP_METHOD);
-        if (httpMethod == null) {
+        if (Strings.isNullOrEmpty(httpMethod)) {
             return name;
         }
         return httpMethod + " " + name;
