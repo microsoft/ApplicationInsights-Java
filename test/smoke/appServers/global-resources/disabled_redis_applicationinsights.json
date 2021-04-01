@@ -4,5 +4,8 @@
     "redis": {
       "enabled": false
     }
+  },
+  "preview": {
+    "includeHttpMethodInOperationName": true
   }
 }

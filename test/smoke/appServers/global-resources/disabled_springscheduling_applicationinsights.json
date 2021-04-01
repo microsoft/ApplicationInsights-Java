@@ -4,5 +4,8 @@
     "springScheduling": {
       "enabled": false
     }
+  },
+  "preview": {
+    "includeHttpMethodInOperationName": true
   }
 }

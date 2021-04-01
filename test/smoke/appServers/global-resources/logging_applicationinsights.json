@@ -4,5 +4,8 @@
     "logging": {
       "level": "warn"
     }
+  },
+  "preview": {
+    "includeHttpMethodInOperationName": true
   }
 }

@@ -3,5 +3,8 @@
   "role": {
     "name": "testrolename",
     "instance": "testroleinstance"
+  },
+  "preview": {
+    "includeHttpMethodInOperationName": true
   }
 }

@@ -128,8 +128,11 @@ public class Exporter implements SpanExporter {
 
     private final TelemetryClient telemetryClient;
 
-    public Exporter(TelemetryClient telemetryClient) {
+    private final boolean includeHttpMethodInOperationName;
+
+    public Exporter(TelemetryClient telemetryClient, boolean includeHttpMethodInOperationName) {
         this.telemetryClient = telemetryClient;
+        this.includeHttpMethodInOperationName = includeHttpMethodInOperationName;
     }
 
     /**

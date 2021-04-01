@@ -4,6 +4,7 @@
     "percentage": 100
   },
   "preview": {
+    "includeHttpMethodInOperationName": true,
     "sampling": {
       "overrides": [
         {
