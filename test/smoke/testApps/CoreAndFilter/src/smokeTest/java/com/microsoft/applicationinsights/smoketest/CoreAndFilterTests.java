@@ -365,19 +365,19 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals(false, rd.getSuccess());
         assertEquals("404", rd.getResponseCode());
 
-        assertEquals("/CoreAndFilter/*", rdEnvelope.getTags().get("ai.operation.name"));
+        assertEquals("GET /CoreAndFilter/*", rdEnvelope.getTags().get("ai.operation.name"));
     }
 
     @Test
     @TargetUri(value="/requestSlow?sleeptime=25", timeout=35_000) // the servlet sleeps for 25 seconds
     public void testRequestSlowWithResponseTime() throws Exception {
-        validateSlowTest(25, "/CoreAndFilter/requestSlow");
+        validateSlowTest(25, "GET /CoreAndFilter/requestSlow");
     }
 
     @Test
     @TargetUri(value="/slowLoop?responseTime=25", timeout=35_000) // the servlet sleeps for 20 seconds
     public void testSlowRequestUsingCpuBoundLoop() throws Exception {
-        validateSlowTest(25, "/CoreAndFilter/slowLoop");
+        validateSlowTest(25, "GET /CoreAndFilter/slowLoop");
     }
 
     @Test
