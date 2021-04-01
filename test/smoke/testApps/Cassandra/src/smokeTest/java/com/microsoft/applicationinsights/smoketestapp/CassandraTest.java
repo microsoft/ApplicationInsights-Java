@@ -40,7 +40,7 @@ public class CassandraTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-        assertEquals("/Cassandra/*", rd.getName());
+        assertEquals("GET /Cassandra/*", rd.getName());
         assertEquals("200", rd.getResponseCode());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());

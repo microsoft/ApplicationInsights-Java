@@ -39,7 +39,7 @@ public class MongoTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-        assertEquals("/MongoDB/*", rd.getName());
+        assertEquals("GET /MongoDB/*", rd.getName());
         assertEquals("200", rd.getResponseCode());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());

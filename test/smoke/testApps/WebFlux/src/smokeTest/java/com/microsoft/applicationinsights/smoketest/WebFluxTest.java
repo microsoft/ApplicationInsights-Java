@@ -25,7 +25,7 @@ public class WebFluxTest extends AiSmokeTest {
 
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        assertEquals("/test/**", rd.getName());
+        assertEquals("GET /test/**", rd.getName());
         assertEquals("200", rd.getResponseCode());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
@@ -44,7 +44,7 @@ public class WebFluxTest extends AiSmokeTest {
 
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        assertEquals("/exception", rd.getName());
+        assertEquals("GET /exception", rd.getName());
         assertEquals("500", rd.getResponseCode());
         assertTrue(rd.getProperties().isEmpty());
         assertFalse(rd.getSuccess());
@@ -63,7 +63,7 @@ public class WebFluxTest extends AiSmokeTest {
 
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        assertEquals("/futureException", rd.getName());
+        assertEquals("GET /futureException", rd.getName());
         assertEquals("500", rd.getResponseCode());
         assertTrue(rd.getProperties().isEmpty());
         assertFalse(rd.getSuccess());
