@@ -5,17 +5,14 @@
 
 package io.opentelemetry.javaagent;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.security.CodeSource;
 import java.util.Arrays;
 import java.util.List;
@@ -187,24 +184,8 @@ public class OpenTelemetryAgent {
 
   private static boolean checkJarManifestMainClassIsThis(URL jarUrl, Class<?> premainClass)
       throws IOException {
-    URL manifestUrl = new URL("jar:" + jarUrl + "!/META-INF/MANIFEST.MF");
-    String mainClassLine = "Premain-Class: " + premainClass.getCanonicalName();
-    try (BufferedReader reader =
-        new BufferedReader(
-            new InputStreamReader(manifestUrl.openStream(), StandardCharsets.UTF_8))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        if (line.equals(mainClassLine)) {
-          return true;
-        }
-      }
-    }
-    throw new RuntimeException(
-        "opentelemetry-javaagent is not installed, because class '"
-            + thisClass.getCanonicalName()
-            + "' is located in '"
-            + jarUrl
-            + "'. Make sure you don't have this .class file anywhere, besides opentelemetry-javaagent.jar");
+    // removed because it causes slowness when jar file is signed on Java 8
+    return true;
   }
 
   /**
