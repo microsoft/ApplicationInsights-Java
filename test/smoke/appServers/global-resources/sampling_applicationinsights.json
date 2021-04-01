@@ -4,6 +4,6 @@
     "percentage": 50
   },
   "preview": {
-    "includeHttpMethodInOperationName": true
+    "httpMethodInOperationName": true
   }
 }

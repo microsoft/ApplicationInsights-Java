@@ -6,6 +6,6 @@
     "service.version": "123"
   },
   "preview": {
-    "includeHttpMethodInOperationName": true
+    "httpMethodInOperationName": true
   }
 }

@@ -5,6 +5,6 @@
     "instance": "testroleinstance"
   },
   "preview": {
-    "includeHttpMethodInOperationName": true
+    "httpMethodInOperationName": true
   }
 }

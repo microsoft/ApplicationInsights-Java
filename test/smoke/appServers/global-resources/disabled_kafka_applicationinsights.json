@@ -6,6 +6,6 @@
     }
   },
   "preview": {
-    "includeHttpMethodInOperationName": true
+    "httpMethodInOperationName": true
   }
 }

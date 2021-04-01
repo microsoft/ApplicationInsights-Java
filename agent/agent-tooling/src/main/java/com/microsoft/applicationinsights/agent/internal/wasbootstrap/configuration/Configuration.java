@@ -176,7 +176,7 @@ public class Configuration {
         // because .NET SDK always propagates trace flags "00" (not sampled)
         public boolean ignoreRemoteParentNotSampled = true;
         // TODO consider turning this on by default in 3.1.0
-        public boolean includeHttpMethodInOperationName;
+        public boolean httpMethodInOperationName;
         public LiveMetrics liveMetrics = new LiveMetrics();
 
         public ProfilerConfiguration profiler = new ProfilerConfiguration();

@@ -1,7 +1,7 @@
 {
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:6060/",
   "preview": {
-    "includeHttpMethodInOperationName": true,
+    "httpMethodInOperationName": true,
     "instrumentation": {
       "azureSdk": {
         "enabled": true

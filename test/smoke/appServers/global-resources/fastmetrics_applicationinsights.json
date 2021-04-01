@@ -4,6 +4,6 @@
     "metricIntervalSeconds": 5
   },
   "preview": {
-    "includeHttpMethodInOperationName": true
+    "httpMethodInOperationName": true
   }
 }
