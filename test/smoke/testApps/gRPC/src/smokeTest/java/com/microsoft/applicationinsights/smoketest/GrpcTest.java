@@ -18,7 +18,7 @@ public class GrpcTest extends AiSmokeTest {
     public void doSimpleTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
 
-        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "/simple");
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "/GET simple");
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
         String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
@@ -56,7 +56,7 @@ public class GrpcTest extends AiSmokeTest {
     public void doConversationTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
 
-        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "/conversation");
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /conversation");
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/Conversation");
         String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
