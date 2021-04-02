@@ -30,22 +30,25 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - name: Set up Java 11
+        uses: actions/setup-java@v1
         with:
           java-version: 11
       - name: Init and update otel submodule
         run: |
           git submodule init
           git submodule update
-      - uses: actions/cache@v2
+      - name: Restore cache
+        uses: actions/cache@v2
         # configuration from https://github.com/actions/cache/blob/main/examples.md#java---gradle
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: gradle-smoke-test-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          # the cache with the most recent creation date matching this will be used
           restore-keys: |
-            # the cache with the most recent creation date matching this will be used
+            gradle-smoke-test-
             gradle-
       - name: Build otel-fork
         run: |
@@ -54,6 +57,7 @@ jobs:
           #   "Cannot perform signing task ':instrumentation-api:signMavenPublication' because it has no configured signatory"
           ./gradlew publishToMavenLocal -x signMavenPublication
       - name: Test
+        # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew ${{ matrix.module }}:smokeTest --no-daemon
 
   accept-pr:
