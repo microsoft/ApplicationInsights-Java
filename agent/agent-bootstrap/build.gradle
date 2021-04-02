@@ -29,7 +29,7 @@ dependencies {
     }
     compile group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: '1.0.0+ai.patch.1-alpha'
     compile group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-api', version: '1.0.0+ai.patch.1-alpha'
-    compile 'ch.qos.logback:logback-classic:1.2.3'
+    compile group: 'ch.qos.logback', name:'logback-classic', version: '1.2.3'
     compile 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
 
     // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader
