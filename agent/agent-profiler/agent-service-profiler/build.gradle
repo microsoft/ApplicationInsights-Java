@@ -11,7 +11,7 @@ dependencies {
     compile(project(":agent:agent-profiler:agent-profiler-api"))
     compile group: 'com.microsoft.jfr', name: 'jfr-streaming', version: '1.0.0'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
     compile 'com.squareup.moshi:moshi:1.9.3'
     compile 'com.squareup.moshi:moshi-adapters:1.9.3'
     compile group: 'com.azure', name: 'azure-storage-blob', version: '12.10.0'
