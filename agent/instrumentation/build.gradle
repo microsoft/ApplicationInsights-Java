@@ -146,6 +146,7 @@ shadowJar {
     relocate "io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv"
     relocate "io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi"
     relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
+    relocate 'ch.qos.logback', "com.microsoft.applicationinsights.agent.shadow.ch.qos.logback"
 
     // this is for instrumentation on opentelemetry-api itself
     relocate "application.io.opentelemetry", "io.opentelemetry"
