@@ -23,7 +23,7 @@ public class SpringSchedulingTest extends AiSmokeTest {
                     return false;
                 }
                 RequestData data = (RequestData) ((Data<?>) input.getData()).getBaseData();
-                return data.getName().equals("/SpringScheduling/scheduler");
+                return data.getName().equals("GET /SpringScheduling/scheduler");
             }
         }, 10, TimeUnit.SECONDS);
 
