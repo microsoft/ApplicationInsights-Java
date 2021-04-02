@@ -39,6 +39,7 @@ public class SpringCloudStreamTest extends AiSmokeTest {
         Envelope rdEnvelope1 = rdList.get(0);
         String operationId = rdEnvelope1.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rdEnvelope2 = rdList.get(1);
         Envelope rddEnvelope1 = rddList.get(0);

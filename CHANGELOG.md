@@ -1,4 +1,15 @@
 # CHANGELOG
+# Version 3.0.3 GA
+* Suppress redis.encode.start/end custom events
+  [#1586](https://github.com/microsoft/ApplicationInsights-Java/issues/1586)
+* Add Azure SDK instrumentation preview
+  [#1585](https://github.com/microsoft/ApplicationInsights-Java/issues/1585)
+* Fix WebFlux HTTP client hanging on nested calls
+  [#1563](https://github.com/microsoft/ApplicationInsights-Java/issues/1563)
+* Fix instrumentation of reactor netty `HttpClient.from()`
+  [#1578](https://github.com/microsoft/ApplicationInsights-Java/issues/1578)
+
+
 # Version 3.0.3-BETA.3
 * Change default preview config setting
   [#1580](https://github.com/microsoft/ApplicationInsights-Java/issues/1580)
