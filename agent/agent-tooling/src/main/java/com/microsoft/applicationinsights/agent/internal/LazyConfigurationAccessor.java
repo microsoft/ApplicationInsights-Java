@@ -95,11 +95,14 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     }
 
     static void setSelfDiagnosticsLevel(String loggingLevel) {
-        logger.info("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
         if (loggingLevel != null && !loggingLevel.isEmpty()) {
             LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
             List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
+            logger.info("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
             loggerList.stream().forEach(tmpLogger -> tmpLogger.setLevel(Level.toLevel(loggingLevel)));
+            if (Level.toLevel(loggingLevel) == Level.DEBUG) {
+                logger.debug("This should get logged after the logging level update.");
+            }
         }
     }
 
