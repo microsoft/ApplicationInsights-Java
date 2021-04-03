@@ -173,15 +173,12 @@ public abstract class Config {
   }
 
   public void updateLogCaptureThreshold(String property, String value) {
-    logger.debug("############################## updateLogCaptureThreshold start ##############################");
     if (LOG_CAPTURE_THRESHOLD.equals(property)) {
       String level = getProperty(property);
       if (value != null && !value.isEmpty() && !value.equalsIgnoreCase(level)) {
         getAllProperties().replace(LOG_CAPTURE_THRESHOLD, level, value.toUpperCase());
-        assert (getProperty(LOG_CAPTURE_THRESHOLD).equalsIgnoreCase(value));
-        logger.debug("############################## update log capture threshold from {} to {}", level, value);
+        logger.info("Update {} from {} to {}", LOG_CAPTURE_THRESHOLD, level, value);
       }
     }
-    logger.debug("############################## updateLogCaptureThreshold end ##############################");
   }
 }
