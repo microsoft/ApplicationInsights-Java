@@ -66,6 +66,8 @@ public class LogbackSpans {
 
   private static Level getThreshold() {
     String level = Config.get().getProperty("otel.experimental.log.capture.threshold");
+    log.debug("##################### LogbackSpans::getThreshold:: {}", level);
+
     if (level == null) {
       return Level.OFF;
     }

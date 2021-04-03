@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoValue
 public abstract class Config {
@@ -25,6 +27,9 @@ public abstract class Config {
   // lazy initialized, so that javaagent can set it, and library instrumentation can fall back and
   // read system properties
   private static volatile Config INSTANCE = null;
+
+  private static final Logger logger = LoggerFactory.getLogger(Config.class);
+  private static final String LOG_CAPTURE_THRESHOLD = "otel.experimental.log.capture.threshold";
 
   /**
    * Sets the agent configuration singleton. This method is only supposed to be called once, from
@@ -165,5 +170,18 @@ public abstract class Config {
 
   public boolean isAgentDebugEnabled() {
     return getBooleanProperty("otel.javaagent.debug", false);
+  }
+
+  public void updateLogCaptureThreshold(String property, String value) {
+    logger.debug("############################## updateLogCaptureThreshold start ##############################");
+    if (LOG_CAPTURE_THRESHOLD.equals(property)) {
+      String level = getProperty(property);
+      if (value != null && !value.isEmpty() && !value.equalsIgnoreCase(level)) {
+        getAllProperties().replace(LOG_CAPTURE_THRESHOLD, level, value.toUpperCase());
+        assert (getProperty(LOG_CAPTURE_THRESHOLD).equalsIgnoreCase(value));
+        logger.debug("############################## update log capture threshold from {} to {}", level, value);
+      }
+    }
+    logger.debug("############################## updateLogCaptureThreshold end ##############################");
   }
 }
