@@ -24,8 +24,6 @@ plugins {
     id 'visual-studio'
 }
 
-// TODO honor skipWinNative property
-
 //def javaIncludeDir = new File(System.env.'JAVA_HOME', "include")
 def programFilesX86 = System.env.'ProgramFiles(x86)' ?: 'C:/Program Files (x86)'
 
