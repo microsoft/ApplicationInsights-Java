@@ -59,7 +59,6 @@ public class JavaUtilLoggingSpans {
 
   private static Level getThreshold() {
     String level = Config.get().getProperty("otel.experimental.log.capture.threshold");
-    log.debug("##################### JavaUtilLoggingSpans::getThreshold:: {}", level);
     if (level == null) {
       return Level.OFF;
     }
