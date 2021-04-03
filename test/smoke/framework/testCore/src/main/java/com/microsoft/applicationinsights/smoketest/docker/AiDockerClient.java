@@ -16,6 +16,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 public class AiDockerClient {
 
@@ -63,9 +64,11 @@ public class AiDockerClient {
 
         buildProcess(Arrays.asList("docker", "pull", image)).start().waitFor(30, TimeUnit.SECONDS);
 
-        String localIp = InetAddress.getLocalHost().getHostAddress();
-        List<String> cmd = new ArrayList<>();
-        cmd.addAll(Arrays.asList("docker", "run", "-d", "-p", portMapping, "--add-host=fakeingestion:"+localIp));
+        List<String> cmd = new ArrayList<>(Arrays.asList("docker", "run", "-d", "-p", portMapping));
+        if (SystemUtils.IS_OS_UNIX) {
+            // see https://stackoverflow.com/a/24326540/295416
+            cmd.addAll(Arrays.asList("--add-host", "host.docker.internal:host-gateway"));
+        }
         if (!dependencyContainer) {
             // port 5005 is exposed for hooking up IDE debugger
             cmd.addAll(Arrays.asList("-p", "5005:5005"));

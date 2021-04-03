@@ -41,8 +41,7 @@ public class LazyConfigurationAccessorTest {
      *                             VALID                 NULL               Enabled
      *                             NULL                  TRUE/FALSE/NULL    Disabled
      */
-    private static final String CONNECTION_STRING =
-            "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://fakeingestion:60606/";
+    private static final String CONNECTION_STRING = "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF";
 
     private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
     private static final String WEBSITE_SITE_NAME = "fake_site_name";
