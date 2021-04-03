@@ -150,7 +150,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         int totalItems = mockedIngestion.getItemCount();
         int expectedItems = 5;
-        assertEquals(String.format("There were %d extra telemetry items received.", expectedItems - totalItems),
+        assertEquals(String.format("There were %d extra telemetry items received.", totalItems - expectedItems),
                 expectedItems, totalItems);
 
         // TODO get HttpRequest data envelope and verify value
