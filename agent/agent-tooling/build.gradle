@@ -39,7 +39,7 @@ dependencies {
     // only complaint so far about moshi is that it doesn't give line numbers when there are json formatting errors
     compile 'com.squareup.moshi:moshi:1.8.0'
 
-    compile 'com.google.guava:guava:27.1-android'
+    compile group: 'com.google.guava', name: 'guava', version: versions.guava
 
     compile (group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-tooling', version: versions.opentelemetryInstrumentationAlpha) {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-jaeger'

@@ -11,6 +11,7 @@ ext {
             logback                          : "1.2.3",
             logbackJson                      : "0.1.5",
 
+            // TODO remove dependency on guava
             guava                            : "30.1-jre"
     ]
 }
