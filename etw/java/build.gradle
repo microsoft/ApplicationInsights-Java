@@ -54,7 +54,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 def buildNative = !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
 
 dependencies {
-    implementation 'org.slf4j:slf4j-api:1.7.26'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
     if (buildNative) {
         jni32 project(path: ':etw:native', configuration: "${project.properties['ai.etw.native.build']}X86RuntimeElements")

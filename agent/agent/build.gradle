@@ -95,7 +95,7 @@ archivesBaseName = 'applicationinsights-agent'
 
 dependencies {
     implementation project(':agent:agent-bootstrap')
-    devtest 'org.slf4j:slf4j-api:1.7.26'
+    devtest group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 }
 
 // region Publishing properties

@@ -36,6 +36,7 @@ plugins {
 ext.buildScriptsDir = "$rootDir/gradle"
 
 apply from: "$buildScriptsDir/common.gradle"
+apply from: "$buildScriptsDir/dependencies.gradle"
 
 ext {
     isBuildServer = (System.properties["isBuildServer"] ?: "false").toBoolean()

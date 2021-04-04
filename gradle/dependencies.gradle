@@ -1,0 +1,16 @@
+ext {
+    versions = [
+            opentelemetry                    : "1.0.0",
+            opentelemetryAlpha               : "1.0.0-alpha",
+            opentelemetryInstrumentationAlpha: "1.0.0+ai.patch.1-alpha",
+
+            // TODO sync bytebuddy version with version from io.opentelemetry.javaagent:javaagent-tooling
+            bytebuddy                        : "1.10.18",
+
+            slf4j                            : "1.7.30",
+            logback                          : "1.2.3",
+            logbackJson                      : "0.1.5",
+
+            guava                            : "30.1-jre"
+    ]
+}

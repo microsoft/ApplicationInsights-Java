@@ -52,7 +52,7 @@ dependencies {
     // update transitive dependency version
     compile ([group: 'com.google.guava', name: 'guava', version: '27.1-android'])
     compile ([group: 'com.github.oshi', name:'oshi-core',version:'5.6.0'])
-    compile 'org.slf4j:slf4j-api:1.7.26'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
     testCompile(project(":agent:agent-profiler:agent-service-profiler"))
     testCompile group: 'org.hamcrest', name:'hamcrest-core', version:'1.3'
     testCompile group: 'org.hamcrest', name:'hamcrest-library', version:'1.3'

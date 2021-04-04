@@ -24,13 +24,13 @@ task generateVersionProperties(type: PropsFileGen) {
 processResources.dependsOn generateVersionProperties
 
 dependencies {
-    compile (group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-bootstrap', version: '1.0.0+ai.patch.1-alpha') {
+    compile (group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-bootstrap', version: versions.opentelemetryInstrumentationAlpha) {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
-    compile group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: '1.0.0+ai.patch.1-alpha'
-    compile group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-api', version: '1.0.0+ai.patch.1-alpha'
-    compile 'ch.qos.logback:logback-classic:1.2.3'
-    compile 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
+    compile group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
+    compile group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-api', version: versions.opentelemetryInstrumentationAlpha
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: versions.logback
+    compile group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: versions.logbackJson
 
     // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader
     // only complaint so far about moshi is that it doesn't give line numbers when there are json formatting errors

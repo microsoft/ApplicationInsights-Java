@@ -41,7 +41,7 @@ dependencies {
 
     compile 'com.google.guava:guava:27.1-android'
 
-    compile ('io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:1.0.0+ai.patch.1-alpha') {
+    compile (group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-tooling', version: versions.opentelemetryInstrumentationAlpha) {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-jaeger'
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-logging'
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-otlp'
@@ -50,9 +50,8 @@ dependencies {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-zipkin'
         exclude group: 'io.grpc', module: 'grpc-netty'
     }
-    compile 'io.opentelemetry.javaagent:opentelemetry-javaagent-spi:1.0.0+ai.patch.1-alpha'
-    // TODO sync bytebuddy version with version from auto-tooling (above)
-    compile group: 'net.bytebuddy', name: 'byte-buddy', version: '1.10.10'
+    compile group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-spi', version: versions.opentelemetryInstrumentationAlpha
+    compile group: 'net.bytebuddy', name: 'byte-buddy', version: versions.bytebuddy
 
     compile group: 'org.ow2.asm', name: 'asm-util', version: '8.0.1'
 
@@ -65,11 +64,11 @@ dependencies {
         // in order to pick up logging from apache http client
         exclude group: 'commons-logging', module: 'commons-logging'
     }
-    compile 'org.slf4j:jcl-over-slf4j:1.7.30'
+    compile group: 'org.slf4j', name: 'jcl-over-slf4j', version: versions.slf4j
 
     compile(project(':agent:exporter'))
-    compile 'io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator:1.0.0-alpha'
-    compile 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.0.0-alpha'
+    compile group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-tracing-incubator', version: versions.opentelemetryAlpha
+    compile group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-autoconfigure', version: versions.opentelemetryAlpha
 
     compileOnly(project(':agent:agent-bootstrap'))
     testCompile(project(':agent:agent-bootstrap'))
