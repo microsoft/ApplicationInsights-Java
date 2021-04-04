@@ -60,7 +60,7 @@ public class SpringCloudStreamTest extends AiSmokeTest {
             rddEnvelope2 = rddEnvelopeTemp;
         }
 
-        assertEquals("/sendMessage", rd1.getName());
+        assertEquals("GET /sendMessage", rd1.getName());
         assertTrue(rd1.getProperties().isEmpty());
         assertTrue(rd1.getSuccess());
 

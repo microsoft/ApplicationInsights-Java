@@ -18,7 +18,7 @@ public class JmsTest extends AiSmokeTest {
     public void doMostBasicTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
 
-        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "/sendMessage");
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
         String operationId = rdEnvelope1.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
         assertEquals(0, mockedIngestion.getCountForType("EventData"));
@@ -35,7 +35,7 @@ public class JmsTest extends AiSmokeTest {
         RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
         RemoteDependencyData rdd3 = (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
-        assertEquals("/sendMessage", rd1.getName());
+        assertEquals("GET /sendMessage", rd1.getName());
         assertTrue(rd1.getProperties().isEmpty());
         assertTrue(rd1.getSuccess());
 
