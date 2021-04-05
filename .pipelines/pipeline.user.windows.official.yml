@@ -6,11 +6,11 @@ version:
 build:
   commands:
     - !!buildcommand
-      name: 'SetSrcAsArtifact'
-      command: '.scripts/gci.cmd' # this file is empty
+      name: 'CopyAndUploadSources'
+      command: '.scripts/copy-sources.cmd' # this file is empty
       artifacts:
-        - from: "s/" # source is checked out to C:/M/_work/3/b/46/_work/1/s/.git/
-          to: 'out'
+        - from: "source-temp/" # source is checked out to C:/M/_work/3/b/46/_work/1/s/.git/
+          to: 'Sources'
           include:
             - '**/*'
     - !!buildcommand
