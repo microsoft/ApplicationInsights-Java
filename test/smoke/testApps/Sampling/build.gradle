@@ -1,8 +1,8 @@
 apply plugin: 'war'
 
 dependencies {
-    compile aiWebJar
-    compile 'com.google.guava:guava:20.0'
+    implementation aiWebJar
+    implementation 'com.google.guava:guava:20.0'
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 
@@ -12,7 +12,7 @@ dependencies {
 
     testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
 
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
 }
 
 tasks.withType(JavaCompile) {

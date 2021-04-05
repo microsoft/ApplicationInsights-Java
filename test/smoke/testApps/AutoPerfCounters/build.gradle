@@ -1,8 +1,8 @@
 apply plugin: 'war'
 
 dependencies {
-    compile aiWebJar
-    compile 'com.google.guava:guava:20.0'
+    implementation aiWebJar
+    implementation 'com.google.guava:guava:20.0'
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 

@@ -1,9 +1,9 @@
 apply plugin: 'war'
 
 dependencies {
-    compile aiWebJar
-    compile 'com.google.guava:guava:20.0'
-    compile 'io.lettuce:lettuce-core:5.2.2.RELEASE'
+    implementation aiWebJar
+    implementation 'com.google.guava:guava:20.0'
+    implementation 'io.lettuce:lettuce-core:5.2.2.RELEASE'
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 
