@@ -20,7 +20,7 @@ build:
             - 'buildSrc/**/*'
     - !!buildcommand
       name: 'SetSrcAsArtifact'
-      command: 'gci.cmd' # this file is empty
+      command: '.scripts/gci.cmd' # this file is empty
       artifacts:
         - from: 'src/'
           to: 'out'
