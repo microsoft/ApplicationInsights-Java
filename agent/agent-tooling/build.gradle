@@ -73,6 +73,8 @@ dependencies {
     implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-autoconfigure', version: versions.opentelemetryAlpha
 
     compileOnly project(':agent:agent-bootstrap')
+    compileOnly group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
+
     testImplementation project(':agent:agent-bootstrap')
 
     testImplementation group: 'junit', name: 'junit', version: versions.junit

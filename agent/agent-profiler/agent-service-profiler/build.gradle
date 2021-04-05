@@ -7,13 +7,13 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: versions.junit
     testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
 
-    compile project(":agent:agent-profiler:agent-alerting-api")
-    compile project(":agent:agent-profiler:agent-profiler-api")
-    compile group: 'com.microsoft.jfr', name: 'jfr-streaming', version: versions.microsoftJfrStreaming
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
-    compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
-    compile group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
-    compile group: 'com.squareup.moshi', name: 'moshi-adapters', version: versions.moshi
-    compile group: 'com.azure', name: 'azure-storage-blob', version: versions.azureStorageBlob
-    compile group: 'com.microsoft.rest.v2', name: 'client-runtime', version: versions.azureClientRuntime
+    implementation project(":agent:agent-profiler:agent-alerting-api")
+    implementation project(":agent:agent-profiler:agent-profiler-api")
+    implementation group: 'com.microsoft.jfr', name: 'jfr-streaming', version: versions.microsoftJfrStreaming
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+    implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
+    implementation group: 'com.squareup.moshi', name: 'moshi-adapters', version: versions.moshi
+    implementation group: 'com.azure', name: 'azure-storage-blob', version: versions.azureStorageBlob
+    implementation group: 'com.microsoft.rest.v2', name: 'client-runtime', version: versions.azureClientRuntime
 }

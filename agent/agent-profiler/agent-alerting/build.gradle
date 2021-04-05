@@ -7,6 +7,6 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: versions.junit
     testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
 
-    compile project(":agent:agent-profiler:agent-alerting-api")
-    compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+    implementation project(":agent:agent-profiler:agent-alerting-api")
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 }
