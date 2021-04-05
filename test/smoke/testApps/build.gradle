@@ -24,18 +24,18 @@ subprojects {
     }
 
     configurations {
-        smokeTestCompile.extendsFrom testImplementation
+        smokeTestImplementation.extendsFrom testImplementation
         smokeTestRuntime.extendsFrom testRuntime
     }
 
     dependencies {
         compileOnly aiAgentJar // this is just to force building the agent first
 
-        smokeTestCompile project(':test:smoke:framework:testCore')
-        smokeTestCompile project(':test:smoke:framework:utils')
-        smokeTestCompile 'org.hamcrest:hamcrest-core:1.3'
-        smokeTestCompile 'org.hamcrest:hamcrest-library:1.3'
-        smokeTestCompile group: 'junit', name: 'junit', version: versions.junit
+        smokeTestImplementation project(':test:smoke:framework:testCore')
+        smokeTestImplementation project(':test:smoke:framework:utils')
+        smokeTestImplementation 'org.hamcrest:hamcrest-core:1.3'
+        smokeTestImplementation 'org.hamcrest:hamcrest-library:1.3'
+        smokeTestImplementation group: 'junit', name: 'junit', version: versions.junit
 
         testImplementation project(':test:smoke:framework:testCore') // not necessary; vs code bug workaround
         testImplementation project(':test:smoke:framework:utils')

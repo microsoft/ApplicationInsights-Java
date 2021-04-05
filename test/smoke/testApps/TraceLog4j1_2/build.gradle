@@ -7,7 +7,7 @@ dependencies {
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 
-    smokeTestCompile 'com.google.guava:guava:23.0'
+    smokeTestImplementation 'com.google.guava:guava:23.0'
 
     testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
 

@@ -9,7 +9,7 @@ dependencies {
 
     providedRuntime 'mysql:mysql-connector-java:5.1.44'
 
-    smokeTestCompile 'com.google.guava:guava:23.0'
+    smokeTestImplementation 'com.google.guava:guava:23.0'
     testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
 }
 

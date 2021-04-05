@@ -25,7 +25,7 @@ dependencies {
 }
 
 configurations {
-    smokeTestCompile.exclude group:'org.springframework.boot'
+    smokeTestImplementation.exclude group:'org.springframework.boot'
     smokeTestRuntime.exclude group:'org.springframework.boot'
 }
 
