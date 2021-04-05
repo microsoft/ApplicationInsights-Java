@@ -5,12 +5,12 @@ repositories {
 }
 
 dependencies {
-    compile group: 'com.google.code.gson', name: 'gson', version: versions.gson
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
-    compile group: 'com.google.guava', name: 'guava', version: versions.guava
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
-    compile group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
-    compile aiCoreJar
+    implementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
+    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
+    implementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
+    implementation aiCoreJar
 
     testImplementation group: 'junit', name: 'junit', version: versions.junit
 }
