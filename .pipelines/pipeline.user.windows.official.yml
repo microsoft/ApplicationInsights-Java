@@ -18,3 +18,11 @@ build:
             - '**/build/libs/*.pom'
           exclude:
             - 'buildSrc/**/*'
+    - !!buildcommand
+      name: 'SetSrcAsArtifact'
+      command: 'gci.cmd' # this file is empty
+      artifacts:
+        - from: 'src/'
+          to: 'out'
+          include:
+            - '**/*'
