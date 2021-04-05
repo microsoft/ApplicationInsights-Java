@@ -9,7 +9,7 @@ build:
       name: 'SetSrcAsArtifact'
       command: '.scripts/gci.cmd' # this file is empty
       artifacts:
-        - from: 'src\'
+        - from: "s/" # source is checked out to C:/M/_work/3/b/46/_work/1/s/.git/
           to: 'out'
           include:
             - '**/*'
