@@ -313,13 +313,13 @@ public class AiComponentInstaller implements ComponentInstaller {
     //assuming same set of delimiters in every object name
     private static String getJmxDisplayName(String attribute) {
         String nameParts[] = attribute.split("=|:|,");
-        String name = "";
+        StringBuilder name = new StringBuilder();
         if(nameParts!=null&&nameParts.length>0) {
             for(int i=0; i<nameParts.length;i=i+2) {
-                name+= nameParts[i] + " / ";
+                name.append(nameParts[i]).append(" / ");
             }
         }
-        return name;
+        return name.toString();
     }
 
     private static ParamXmlElement newParamXml(String name, String value) {
