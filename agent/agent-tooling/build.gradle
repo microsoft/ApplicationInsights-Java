@@ -53,8 +53,6 @@ dependencies {
     compile group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-spi', version: versions.opentelemetryInstrumentationAlpha
     compile group: 'net.bytebuddy', name: 'byte-buddy', version: versions.bytebuddy
 
-    compile group: 'org.ow2.asm', name: 'asm-util', version: versions.asm
-
     compile group: 'org.checkerframework', name: 'checker-qual', version: versions.checker
 
     compile(project(':core')) {

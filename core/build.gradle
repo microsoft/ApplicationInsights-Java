@@ -42,7 +42,6 @@ configurations {
 dependencies {
     compile project(":agent:agent-profiler:agent-profiler-api")
     compile project(":agent:agent-profiler:agent-alerting")
-    compile group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'
     compile group: 'commons-io', name: 'commons-io', version: versions.commonsIo
     compile group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
     compile group: 'org.apache.commons', name: 'commons-text', version: versions.commonsText
@@ -60,7 +59,7 @@ dependencies {
     testCompile group: 'org.mockito', name: 'mockito-core', version: versions.mockito
     testCompile group: 'com.github.stefanbirkner', name: 'system-rules', version: versions.systemRules
     testCompile group: 'com.google.code.gson', name: 'gson', version: versions.gson
-    testCompile group: 'io.github.hakky54', name: 'logcaptor', version: '2.3.1'
+    testCompile group: 'io.github.hakky54', name: 'logcaptor', version: versions.logcaptor
 
     testCompile project(":agent:agent-profiler:agent-service-profiler")
 

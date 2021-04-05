@@ -29,7 +29,6 @@ import net.bytebuddy.jar.asm.ClassVisitor;
 import net.bytebuddy.jar.asm.ClassWriter;
 import net.bytebuddy.jar.asm.MethodVisitor;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.objectweb.asm.util.ASMifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,8 +112,12 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
 
     // DO NOT REMOVE
     // this is used during development for generating above bytecode
-    public static void main(String[] args) throws Exception {
-        ASMifier.main(new String[]{RDT.class.getName()});
+    //
+    // to run this, add this dependency to agent-tooling.gradle:
+    //   compile group: 'org.ow2.asm', name: 'asm-util', version: '9.1'
+    //
+    public static void main(String[] args) {
+        // ASMifier.main(new String[]{RDT.class.getName()});
     }
 
     // DO NOT REMOVE
