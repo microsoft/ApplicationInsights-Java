@@ -18,5 +18,5 @@ dependencies {
 
     compile project(path: ':core')
 
-    testCompile group: 'junit', name: 'junit', version: versions.junit
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
 }

@@ -4,8 +4,8 @@ apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
 
-    testCompile group: 'junit', name: 'junit', version: versions.junit
-    testCompile group: 'org.mockito', name: 'mockito-core', version: versions.mockito
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
 
     compile project(":agent:agent-profiler:agent-alerting-api")
     compile project(":agent:agent-profiler:agent-profiler-api")

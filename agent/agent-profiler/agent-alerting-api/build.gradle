@@ -3,6 +3,6 @@ group = 'io.opentelemetry.javaagent'
 apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: versions.junit
-    testCompile group: 'org.mockito', name: 'mockito-core', version: versions.mockito
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
 }

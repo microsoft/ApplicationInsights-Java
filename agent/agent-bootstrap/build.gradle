@@ -38,9 +38,9 @@ dependencies {
 
     compile project(path: ':etw:java')
 
-    testCompile group: 'junit', name: 'junit', version: versions.junit
-    testCompile group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
-    testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
-    testCompile group: 'org.mockito', name: 'mockito-core', version: versions.mockito
-    testCompile group: 'com.github.stefanbirkner', name: 'system-rules', version: versions.systemRules
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
+    testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: versions.systemRules
 }

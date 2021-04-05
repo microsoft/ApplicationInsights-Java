@@ -53,15 +53,15 @@ dependencies {
     compile group: 'com.github.oshi', name:'oshi-core', version: versions.oshi
     compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
-    testCompile group: 'junit', name: 'junit', version: versions.junit
-    testCompile group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
-    testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
-    testCompile group: 'org.mockito', name: 'mockito-core', version: versions.mockito
-    testCompile group: 'com.github.stefanbirkner', name: 'system-rules', version: versions.systemRules
-    testCompile group: 'com.google.code.gson', name: 'gson', version: versions.gson
-    testCompile group: 'io.github.hakky54', name: 'logcaptor', version: versions.logcaptor
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
+    testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: versions.systemRules
+    testImplementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
+    testImplementation group: 'io.github.hakky54', name: 'logcaptor', version: versions.logcaptor
 
-    testCompile project(":agent:agent-profiler:agent-service-profiler")
+    testImplementation project(":agent:agent-profiler:agent-service-profiler")
 
     forTheDLL 'com.microsoft.azure:applicationinsights-core:2.6.2'
 }

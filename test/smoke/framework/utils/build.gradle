@@ -12,7 +12,7 @@ dependencies {
     compile group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
     compile aiCoreJar
 
-    testCompile group: 'junit', name: 'junit', version: versions.junit
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
 }
 
 tasks.withType(JavaCompile) {

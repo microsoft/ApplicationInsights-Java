@@ -10,7 +10,7 @@ dependencies {
 
     smokeTestCompile 'com.google.guava:guava:23.0'
 
-    testCompile 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
+    testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
 
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
 }
