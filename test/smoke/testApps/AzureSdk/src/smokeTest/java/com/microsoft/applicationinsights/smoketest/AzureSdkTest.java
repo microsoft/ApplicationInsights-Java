@@ -40,7 +40,7 @@ public class AzureSdkTest extends AiSmokeTest {
             rddEnvelope2 = rddEnvelopeTemp;
         }
 
-        assertEquals("/AzureSdk/test", rd.getName());
+        assertEquals("GET /AzureSdk/test", rd.getName());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
 

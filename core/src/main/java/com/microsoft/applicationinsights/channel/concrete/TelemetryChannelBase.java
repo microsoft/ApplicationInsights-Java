@@ -230,8 +230,8 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
             logger.debug("items sent till now: {}", itemsSent.get());
         }
 
-        if (isDeveloperMode()) {
-            writeTelemetryToDebugOutput(telemetry);
+        if (logger.isTraceEnabled()) {
+            logger.trace("{} sending telemetry: {}", this.getClass().getSimpleName(), telemetry.toString());
         }
     }
 
@@ -241,10 +241,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
      * @return true, if the send was successful, false if there was an error
      */
     protected abstract boolean doSend(Telemetry telemetry);
-
-    private void writeTelemetryToDebugOutput(Telemetry telemetry) {
-        logger.trace("{} sending telemetry: {}", this.getClass().getSimpleName(), telemetry.toString());
-    }
 
     protected abstract ConfiguredTransmitterFactory<T> createTransmitterFactory();
 

@@ -169,8 +169,4 @@ task copyLibsToGlobalArtifactsFolder(type: Copy) {
     dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive, generatePom
 }
 
-task prepare {
-    dependsOn copyLibsToGlobalArtifactsFolder
-}
-
 // endregion Publishing configuration

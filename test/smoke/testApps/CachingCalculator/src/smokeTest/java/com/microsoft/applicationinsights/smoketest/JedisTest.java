@@ -36,7 +36,7 @@ public class JedisTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CachingCalculator/index.jsp");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CachingCalculator/index.jsp");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

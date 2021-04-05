@@ -64,7 +64,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Test
@@ -93,7 +93,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Test
@@ -126,7 +126,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Test
@@ -156,7 +156,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Ignore // OpenTelemetry auto-instrumentation does not support non- prepared statement batching yet
@@ -189,7 +189,7 @@ public class JdbcTest extends AiSmokeTest {
         assertEquals(1, rdd.getProperties().size());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Test
@@ -225,7 +225,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Test
@@ -260,7 +260,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Test
@@ -289,7 +289,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Test
@@ -318,7 +318,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Test
@@ -346,7 +346,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Test
@@ -375,7 +375,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Ignore("FIXME: need custom container with oracle db")
@@ -405,7 +405,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     @Ignore("FIXME: need custom container with oracle db")
@@ -435,7 +435,7 @@ public class JdbcTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Jdbc/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

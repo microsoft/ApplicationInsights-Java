@@ -29,7 +29,7 @@ public class LettuceTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-        assertEquals("/Lettuce/*", rd.getName());
+        assertEquals("GET /Lettuce/*", rd.getName());
         assertEquals("200", rd.getResponseCode());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
@@ -40,7 +40,7 @@ public class LettuceTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/Lettuce/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Lettuce/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
