@@ -24,6 +24,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
@@ -40,7 +41,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /HttpClients/*");
     }
 
     @Test
@@ -51,6 +52,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
@@ -67,7 +69,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /HttpClients/*");
     }
 
     @Test
@@ -78,6 +80,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
@@ -94,7 +97,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /HttpClients/*");
     }
 
     @Test
@@ -105,6 +108,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
@@ -121,7 +125,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /HttpClients/*");
     }
 
     @Test
@@ -132,6 +136,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
@@ -148,7 +153,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /HttpClients/*");
     }
 
     @Ignore // OpenTelemetry Auto-Instrumentation does not support OkHttp 2
@@ -160,6 +165,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
@@ -176,7 +182,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /HttpClients/*");
     }
 
     @Test
@@ -187,6 +193,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
@@ -203,7 +210,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /HttpClients/*");
     }
 
     @Test
@@ -214,6 +221,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
@@ -231,7 +239,7 @@ public class HttpClientSmokeTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/HttpClients/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /HttpClients/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

@@ -61,6 +61,7 @@ public class TelemetryFilteringSmokeTest extends AiSmokeTest {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
@@ -74,7 +75,7 @@ public class TelemetryFilteringSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/TelemetryFiltering/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

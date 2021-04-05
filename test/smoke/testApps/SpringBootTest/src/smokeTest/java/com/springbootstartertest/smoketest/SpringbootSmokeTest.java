@@ -108,6 +108,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
                 return !data.getProperties().containsKey("LoggerName");
             }
         }, 2, 10, TimeUnit.SECONDS);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
         Envelope edEnvelope1 = edList.get(0);
@@ -138,6 +139,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope1 = rddList.get(0);
         Envelope rddEnvelope2 = rddList.get(1);
@@ -151,7 +153,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         RemoteDependencyData rdd3 =
                 (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
-        assertEquals("/SpringBootTest/asyncDependencyCall", rd.getName());
+        assertEquals("GET /SpringBootTest/asyncDependencyCall", rd.getName());
         assertEquals("200", rd.getResponseCode());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());

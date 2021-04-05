@@ -168,6 +168,7 @@ public class Configuration {
         public SamplingPreview sampling = new SamplingPreview();
         public List<ProcessorConfig> processors = new ArrayList<>();
         public boolean openTelemetryApiSupport;
+        public PreviewInstrumentation instrumentation = new PreviewInstrumentation();
         // applies to perf counters, default custom metrics, jmx metrics, and micrometer metrics
         // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics world,
         // so safer to only allow single interval for now
@@ -175,9 +176,19 @@ public class Configuration {
         // ignoreRemoteParentNotSampled is currently needed
         // because .NET SDK always propagates trace flags "00" (not sampled)
         public boolean ignoreRemoteParentNotSampled = true;
+        // TODO consider turning this on by default in 3.1.0
+        public boolean httpMethodInOperationName;
         public LiveMetrics liveMetrics = new LiveMetrics();
 
         public ProfilerConfiguration profiler = new ProfilerConfiguration();
+    }
+
+    public static class PreviewInstrumentation {
+        public AzureSdkInstrumentation azureSdk = new AzureSdkInstrumentation();
+    }
+
+    public static class AzureSdkInstrumentation {
+        public boolean enabled;
     }
 
     public static class LiveMetrics {
