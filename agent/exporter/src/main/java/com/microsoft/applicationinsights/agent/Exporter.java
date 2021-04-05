@@ -128,8 +128,11 @@ public class Exporter implements SpanExporter {
 
     private final TelemetryClient telemetryClient;
 
-    public Exporter(TelemetryClient telemetryClient) {
+    private final boolean httpMethodInOperationName;
+
+    public Exporter(TelemetryClient telemetryClient, boolean httpMethodInOperationName) {
         this.telemetryClient = telemetryClient;
+        this.httpMethodInOperationName = httpMethodInOperationName;
     }
 
     /**
@@ -204,7 +207,7 @@ public class Exporter implements SpanExporter {
         RemoteDependencyTelemetry remoteDependencyData = new RemoteDependencyTelemetry();
 
         addLinks(remoteDependencyData.getProperties(), span.getLinks());
-        remoteDependencyData.setName(span.getName());
+        remoteDependencyData.setName(getTelemetryName(span));
 
         Attributes attributes = span.getAttributes();
 
@@ -562,7 +565,7 @@ public class Exporter implements SpanExporter {
             requestData.setUrl(httpUrl);
         }
 
-        String name = span.getName();
+        String name = getTelemetryName(span);
         requestData.setName(name);
         requestData.getContext().getOperation().setName(name);
         requestData.setId(span.getSpanId());
@@ -602,6 +605,18 @@ public class Exporter implements SpanExporter {
         double samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         track(requestData, samplingPercentage);
         exportEvents(span, samplingPercentage);
+    }
+
+    private String getTelemetryName(SpanData span) {
+        String name = span.getName();
+        if (!httpMethodInOperationName || !name.startsWith("/")) {
+            return name;
+        }
+        String httpMethod = span.getAttributes().get(SemanticAttributes.HTTP_METHOD);
+        if (Strings.isNullOrEmpty(httpMethod)) {
+            return name;
+        }
+        return httpMethod + " " + name;
     }
 
     private static String nullAwareConcat(String str1, String str2, String separator) {

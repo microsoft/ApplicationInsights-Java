@@ -28,7 +28,7 @@ public class OpenTelemetryApiSupportDisabledTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-        assertEquals("/OpenTelemetryApiSupport/test-api", rd.getName());
+        assertEquals("GET /OpenTelemetryApiSupport/test-api", rd.getName());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
 

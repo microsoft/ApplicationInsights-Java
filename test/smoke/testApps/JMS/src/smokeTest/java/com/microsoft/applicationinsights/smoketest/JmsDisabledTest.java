@@ -27,7 +27,7 @@ public class JmsDisabledTest extends AiSmokeTest {
         Envelope rddEnvelope = rddList.get(0);
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-        assertEquals("/sendMessage", rd.getName());
+        assertEquals("GET /sendMessage", rd.getName());
         assertEquals("200", rd.getResponseCode());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());

@@ -28,7 +28,7 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-        assertEquals("/OpenTelemetryApiSupport/test-api", rd.getName());
+        assertEquals("GET /OpenTelemetryApiSupport/test-api", rd.getName());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
 
@@ -71,7 +71,7 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
             rddEnvelope2 = rddEnvelopeTemp;
         }
 
-        assertEquals("/OpenTelemetryApiSupport/test-annotations", rd.getName());
+        assertEquals("GET /OpenTelemetryApiSupport/test-annotations", rd.getName());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
 

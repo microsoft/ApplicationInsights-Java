@@ -30,7 +30,7 @@ public class MongoDisabledTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        assertEquals("/MongoDB/*", rd.getName());
+        assertEquals("GET /MongoDB/*", rd.getName());
         assertEquals("200", rd.getResponseCode());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());

@@ -75,7 +75,7 @@ public class TelemetryFilteringSmokeTest extends AiSmokeTest {
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/TelemetryFiltering/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /TelemetryFiltering/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
