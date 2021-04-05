@@ -22,7 +22,7 @@ build:
       name: 'SetSrcAsArtifact'
       command: '.scripts/gci.cmd' # this file is empty
       artifacts:
-        - from: 'src/'
+        - from: 'source/'
           to: 'out'
           include:
             - '**/*'
