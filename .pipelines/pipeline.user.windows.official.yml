@@ -7,7 +7,7 @@ build:
   commands:
     - !!buildcommand
       name: 'CopyAndUploadSources'
-      command: '.scripts/copy-sources.cmd' # this file is empty
+      command: '.scripts/copy-source.cmd' # this file is empty
       artifacts:
         - from: "source-temp/" # source is checked out to C:/M/_work/3/b/46/_work/1/s/.git/
           to: 'Sources'
