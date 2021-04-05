@@ -1,5 +1,3 @@
-import org.apache.tools.ant.taskdefs.condition.Os
-
 /*
  * ApplicationInsights-Java
  * Copyright (c) Microsoft Corporation
@@ -20,10 +18,29 @@ import org.apache.tools.ant.taskdefs.condition.Os
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
+plugins {
+    id 'com.gradle.enterprise' version '3.5'
+}
+
+def isCI = System.getenv("CI") != null
+gradleEnterprise {
+    buildScan {
+        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+        termsOfServiceAgree = 'yes'
+
+        if (isCI) {
+            publishAlways()
+            tag 'CI'
+        }
+    }
+}
+
 rootProject.name = 'applicationinsights-java'
 
 include 'instrumentation:azure-functions'
 
+import org.apache.tools.ant.taskdefs.condition.Os
 def buildNative = !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
 if (buildNative) {
     include 'etw:native'

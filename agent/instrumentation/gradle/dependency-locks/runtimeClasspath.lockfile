@@ -113,9 +113,6 @@ org.apache.commons:commons-lang3:3.11
 org.apache.commons:commons-text:1.9
 org.apache.httpcomponents:httpclient:4.5.13
 org.apache.httpcomponents:httpcore:4.4.13
-org.apache.logging.log4j:log4j-api:2.11.0
-org.apache.logging.log4j:log4j-core:2.11.0
-org.checkerframework:checker-qual-android:3.1.0
 org.checkerframework:checker-qual:3.5.0
 org.jetbrains.kotlin:kotlin-bom:1.4.21
 org.ow2.asm:asm-analysis:8.0.1

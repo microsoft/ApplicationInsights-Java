@@ -6,10 +6,10 @@ repositories {
 }
 
 dependencies {
-    compile 'com.google.guava:guava:23.0'
-    compile 'junit:junit:4.12'
+    compile group: 'com.google.guava', name: 'guava', version: versions.guava
+    compile group: 'junit', name: 'junit', version: versions.junit
     compile 'org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325'
-    compile 'com.google.code.gson:gson:2.8.2'
+    compile group: 'com.google.code.gson', name: 'gson', version: versions.gson
     compile project(':core')
     compile project(':test:fakeIngestion:servlet')
 }

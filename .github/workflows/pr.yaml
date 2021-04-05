@@ -29,8 +29,7 @@ jobs:
           ./gradlew publishToMavenLocal -x signMavenPublication
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
-        # TODO enable tests (currently a couple don't pass on linux)
-        run: ./gradlew check -x test --stacktrace
+        run: ./gradlew check --stacktrace
 
   setup-smoke-test-matrix:
     runs-on: ubuntu-latest

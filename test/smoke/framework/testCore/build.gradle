@@ -5,9 +5,9 @@ repositories {
 }
 
 dependencies {
-    compile 'com.google.guava:guava:23.0'
-    compile 'junit:junit:4.12'
-    compile 'org.apache.commons:commons-lang3:3.7'
+    compile group: 'com.google.guava', name: 'guava', version: versions.guava
+    compile group: 'junit', name: 'junit', version: versions.junit
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
     compile aiCoreJar
     compile project(':test:smoke:framework:utils')
     compile project(':test:fakeIngestion:standalone')
