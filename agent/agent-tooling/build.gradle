@@ -31,7 +31,8 @@ repositories {
 }
 
 dependencies {
-    if (project.hasProperty("includeProfiler")) {
+    def includeProfiler = project.hasProperty("includeProfiler") ? project.includeProfiler.toBoolean() : false
+    if (includeProfiler) {
         implementation project(":agent:agent-profiler:agent-service-profiler")
     }
 

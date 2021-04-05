@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ windows-latest, ubuntu-latest ]
+        includeProfiler: [ false, true ]
       fail-fast: false
     steps:
       - name: Support longpaths
@@ -39,7 +40,7 @@ jobs:
           ./gradlew publishToMavenLocal -x signMavenPublication
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
-        run: ./gradlew check --stacktrace
+        run: ./gradlew check -PincludeProfiler=${{ matrix.includeProfiler }} --stacktrace
 
   setup-smoke-test-matrix:
     runs-on: ubuntu-latest
