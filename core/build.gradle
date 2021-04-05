@@ -62,6 +62,8 @@ dependencies {
     testImplementation group: 'io.github.hakky54', name: 'logcaptor', version: versions.logcaptor
 
     testImplementation project(":agent:agent-profiler:agent-service-profiler")
+    testImplementation group: 'com.microsoft.jfr', name: 'jfr-streaming', version: versions.microsoftJfrStreaming
+    testImplementation group: 'com.azure', name: 'azure-storage-blob', version: versions.azureStorageBlob
 
     forTheDLL 'com.microsoft.azure:applicationinsights-core:2.6.2'
 }
