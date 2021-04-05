@@ -6,6 +6,14 @@ version:
 build:
   commands:
     - !!buildcommand
+      name: 'SetSrcAsArtifact'
+      command: '.scripts/gci.cmd' # this file is empty
+      artifacts:
+        - from: 'src\'
+          to: 'out'
+          include:
+            - '**/*'
+    - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
       arguments: 'assemble copyLibsToGlobalArtifactsFolder -DisRelease=true -Pai.etw.native.build=release'
@@ -18,11 +26,3 @@ build:
             - '**/build/libs/*.pom'
           exclude:
             - 'buildSrc/**/*'
-    - !!buildcommand
-      name: 'SetSrcAsArtifact'
-      command: '.scripts/gci.cmd' # this file is empty
-      artifacts:
-        - from: 'source/'
-          to: 'out'
-          include:
-            - '**/*'
