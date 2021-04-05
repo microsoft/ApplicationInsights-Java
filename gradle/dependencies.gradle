@@ -32,6 +32,7 @@ ext {
             commonsLang                      : "3.7",
             commonsIo                        : "2.6",
             commonsText                      : "1.9",
+            commonsCodec                     : "1.11",
 
             // TODO update to JUnit 5
             junit                            : "4.12",

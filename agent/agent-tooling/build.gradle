@@ -32,16 +32,16 @@ repositories {
 
 dependencies {
     if (project.hasProperty("includeProfiler")) {
-        compile project(":agent:agent-profiler:agent-service-profiler")
+        implementation project(":agent:agent-profiler:agent-service-profiler")
     }
 
     // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader
     // only complaint so far about moshi is that it doesn't give line numbers when there are json formatting errors
-    compile group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
+    implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
 
-    compile group: 'com.google.guava', name: 'guava', version: versions.guava
+    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
 
-    compile(group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-tooling', version: versions.opentelemetryInstrumentationAlpha) {
+    implementation(group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-tooling', version: versions.opentelemetryInstrumentationAlpha) {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-jaeger'
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-logging'
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-otlp'
@@ -50,21 +50,27 @@ dependencies {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-zipkin'
         exclude group: 'io.grpc', module: 'grpc-netty'
     }
-    compile group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-spi', version: versions.opentelemetryInstrumentationAlpha
-    compile group: 'net.bytebuddy', name: 'byte-buddy', version: versions.bytebuddy
+    implementation group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-spi', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'net.bytebuddy', name: 'byte-buddy', version: versions.bytebuddy
 
-    compile group: 'org.checkerframework', name: 'checker-qual', version: versions.checker
+    implementation group: 'commons-codec', name: 'commons-codec', version: versions.commonsCodec
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
 
-    compile(project(':core')) {
+    implementation group: 'org.checkerframework', name: 'checker-qual', version: versions.checker
+
+    implementation(project(':core')) {
         // excluding commons-logging and replacing it with jcl-over-slf4j (below)
         // in order to pick up logging from apache http client
         exclude group: 'commons-logging', module: 'commons-logging'
     }
-    compile group: 'org.slf4j', name: 'jcl-over-slf4j', version: versions.slf4j
+    implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: versions.slf4j
 
-    compile project(':agent:exporter')
-    compile group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-tracing-incubator', version: versions.opentelemetryAlpha
-    compile group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-autoconfigure', version: versions.opentelemetryAlpha
+    implementation project(":agent:agent-profiler:agent-profiler-api")
+
+    implementation project(':agent:exporter')
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-tracing-incubator', version: versions.opentelemetryAlpha
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-autoconfigure', version: versions.opentelemetryAlpha
 
     compileOnly project(':agent:agent-bootstrap')
     testImplementation project(':agent:agent-bootstrap')
