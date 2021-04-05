@@ -6,13 +6,12 @@ version:
 build:
   commands:
     - !!buildcommand
-      name: 'CopyAndUploadSources'
+      name: 'Upload Build Scripts'
       command: '.scripts/copy-source.cmd' # this file is empty
       artifacts:
-        - from: "source-temp/" # source is checked out to C:/M/_work/3/b/46/_work/1/s/.git/
-          to: 'Sources'
+        - to: 'Scripts'
           include:
-            - '**/*'
+            - '**/.scripts/*'
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
