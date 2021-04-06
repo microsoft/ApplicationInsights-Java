@@ -168,6 +168,6 @@ public abstract class Config {
   }
 
   public void updateProperty(String key, String value) {
-      getAllProperties().put(key, value);
+    getAllProperties().put(key, value);
   }
 }
