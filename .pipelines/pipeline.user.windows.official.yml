@@ -10,7 +10,7 @@ build:
       command: '.scripts/copy-source.cmd' # this file is empty
       artifacts:
         - from: '.scripts/'
-        - to: 'Scripts'
+          to: 'Scripts'
           include:
             - '**/*'
     - !!buildcommand
