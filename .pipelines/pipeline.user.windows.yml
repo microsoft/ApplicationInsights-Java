@@ -18,6 +18,7 @@ static_analysis_options:
     fail_on_error: true
 signing_options:
   profile: 'none'
+  codesign_validation_glob_pattern: '-:regex|\.(ps1|cmd|psm1)$;-|.gdn\\**'
 restore:
   commands:
     - !!defaultcommand
