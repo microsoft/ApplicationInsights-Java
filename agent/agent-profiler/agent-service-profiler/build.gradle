@@ -14,6 +14,6 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
     compile 'com.squareup.moshi:moshi:1.9.3'
     compile 'com.squareup.moshi:moshi-adapters:1.9.3'
-    compile group: 'com.azure', name: 'azure-storage-blob', version: '12.10.0'
+    compile group: 'com.azure', name: 'azure-storage-blob', version: '12.11.0-beta.2'
     compile group: 'com.microsoft.rest.v2', name: 'client-runtime', version: '2.1.1'
 }
