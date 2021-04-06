@@ -19,3 +19,4 @@ build:
             - '**/build/libs/*.pom'
           exclude:
             - 'buildSrc/**/*'
+# just a comment
