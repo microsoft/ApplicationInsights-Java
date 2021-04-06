@@ -17,6 +17,9 @@ signing_options:
   profile: 'none'
 static_analysis_options:
   policheck_options:
+    files_to_scan:
+      - exclude:
+          - '.scripts/'
     disable_tool_scan: false
     fail_on_error: true
 restore:
