@@ -172,13 +172,10 @@ public abstract class Config {
     return getBooleanProperty("otel.javaagent.debug", false);
   }
 
-  public void updateLogCaptureThreshold(String property, String value) {
-    if (LOG_CAPTURE_THRESHOLD.equals(property)) {
-      String level = getProperty(property);
-      if (value != null && !value.isEmpty() && !value.equalsIgnoreCase(level)) {
-        getAllProperties().replace(LOG_CAPTURE_THRESHOLD, level, value.toUpperCase());
-        logger.info("Update {} from {} to {}", LOG_CAPTURE_THRESHOLD, level, value);
-      }
+  public void updateLogCaptureThreshold(String value) {
+    if (value != null && !value.isEmpty()) {
+      getAllProperties().put(LOG_CAPTURE_THRESHOLD, value.toUpperCase());
+      logger.info("Update {} to {}", LOG_CAPTURE_THRESHOLD, value.toUpperCase());
     }
   }
 }
