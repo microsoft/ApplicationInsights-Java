@@ -311,10 +311,10 @@ public class AiComponentInstaller implements ComponentInstaller {
 
     //assuming that every other element is not needed - such as "type", "worker", "name"
     //assuming same set of delimiters in every object name
-    private static String getJmxDisplayName(String attribute) {
-        String nameParts[] = attribute.split("=|:|,");
+    static String getJmxDisplayName(String attribute) {
+        String[] nameParts = attribute.split("=|:|,");
         StringBuilder name = new StringBuilder();
-        if(nameParts!=null&&nameParts.length>0) {
+        if(nameParts.length>0) {
             for(int i=0; i<nameParts.length;i=i+2) {
                 name.append(nameParts[i]).append(" / ");
             }
