@@ -9,7 +9,7 @@ build:
       name: 'Upload Build Scripts'
       command: '.scripts/copy-source.cmd' # this file is empty
       artifacts:
-        - from: '.scripts'
+        - from: '.scripts/'
           to: 'Scripts'
           include:
             - '**/*'
