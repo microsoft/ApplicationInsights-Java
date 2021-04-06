@@ -9,9 +9,10 @@ build:
       name: 'Upload Build Scripts'
       command: '.scripts/copy-source.cmd' # this file is empty
       artifacts:
+        - from: '.scripts/'
         - to: 'Scripts'
           include:
-            - '**/.scripts/*'
+            - '**/*'
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
