@@ -1,3 +1,5 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 /*
  * ApplicationInsights-Java
  * Copyright (c) Microsoft Corporation
@@ -22,7 +24,12 @@ rootProject.name = 'applicationinsights-java'
 
 include 'instrumentation:azure-functions'
 
-include 'etw:native'
+def buildNative = !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
+if (buildNative) {
+    include 'etw:native'
+} else {
+    logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
+}
 include 'etw:java'
 include 'etw:etw-testapp'
 
@@ -54,6 +61,7 @@ include ':test:smoke:framework:utils'
 include ':test:fakeIngestion:servlet'
 include ':test:fakeIngestion:standalone'
 
+include ':test:smoke:testApps:AzureSdk'
 include ':test:smoke:testApps:CachingCalculator'
 include ':test:smoke:testApps:Cassandra'
 include ':test:smoke:testApps:CoreAndFilter'

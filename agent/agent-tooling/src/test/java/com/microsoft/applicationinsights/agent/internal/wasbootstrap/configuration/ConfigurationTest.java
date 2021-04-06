@@ -358,6 +358,16 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void shouldOverridePreviewAzureSdkInstrumentation() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED", "true");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertTrue(configuration.preview.instrumentation.azureSdk.enabled);
+    }
+
+    @Test
     public void shouldOverridePreviewLiveMetricsEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED", "false");
 

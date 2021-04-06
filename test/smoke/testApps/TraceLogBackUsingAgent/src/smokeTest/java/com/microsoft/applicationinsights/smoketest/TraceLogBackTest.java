@@ -55,8 +55,8 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals("test", md2.getProperties().get("LoggerName"));
         assertEquals(3, md2.getProperties().size());
 
-        assertParentChild(rd, rdEnvelope, mdEnvelope1, "/TraceLogBackUsingAgent/traceLogBack");
-        assertParentChild(rd, rdEnvelope, mdEnvelope2, "/TraceLogBackUsingAgent/traceLogBack");
+        assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBackUsingAgent/traceLogBack");
+        assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLogBackUsingAgent/traceLogBack");
     }
 
     @Test
@@ -67,6 +67,7 @@ public class TraceLogBackTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> edList = mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope edEnvelope = edList.get(0);
 
@@ -87,7 +88,7 @@ public class TraceLogBackTest extends AiSmokeTest {
             assertEquals(5, ed.getProperties().size());
         }
 
-        assertParentChild(rd, rdEnvelope, edEnvelope, "/TraceLogBackUsingAgent/traceLogBackWithException");
+        assertParentChild(rd, rdEnvelope, edEnvelope, "GET /TraceLogBackUsingAgent/traceLogBackWithException");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

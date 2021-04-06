@@ -42,21 +42,8 @@ public class OshiPerformanceCounter implements PerformanceCounter {
     private long prevProcessBytes;
     private long prevTotalProcessorMillis;
 
-    private final OSProcess processInfo;
-    private final CentralProcessor processor;
-
-    public OshiPerformanceCounter() {
-        SystemInfo systemInfo = new SystemInfo();
-        OperatingSystem osInfo = systemInfo.getOperatingSystem();
-        processInfo = osInfo.getProcess(osInfo.getProcessId());
-        processor = systemInfo.getHardware().getProcessor();
-
-        // grab values early, so that we will have something to report the first time report() is called
-        updateAttributes(processInfo);
-        prevCollectionTimeMillis = System.currentTimeMillis();
-        prevProcessBytes = getProcessBytes(processInfo);
-        prevTotalProcessorMillis = getTotalProcessorMillis(processor);
-    }
+    private volatile OSProcess processInfo;
+    private volatile CentralProcessor processor;
 
     @Override
     public String getId() {
@@ -65,21 +52,32 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
     @Override
     public void report(TelemetryClient telemetryClient) {
+        if (processInfo == null || processor == null) {
+            // lazy initializing these because they add to slowness during startup
+            SystemInfo systemInfo = new SystemInfo();
+            OperatingSystem osInfo = systemInfo.getOperatingSystem();
+            processInfo = osInfo.getProcess(osInfo.getProcessId());
+            processor = systemInfo.getHardware().getProcessor();
+        }
+
+
         long currCollectionTimeMillis = System.currentTimeMillis();
         updateAttributes(processInfo);
         long currProcessBytes = getProcessBytes(processInfo);
         long currTotalProcessorMillis = getTotalProcessorMillis(processor);
 
-        double elapsedMillis = currCollectionTimeMillis - prevCollectionTimeMillis;
-        double elapsedSeconds = elapsedMillis / MILLIS_IN_SECOND;
-        double processBytes = (currProcessBytes - prevProcessBytes) / elapsedSeconds;
-        send(telemetryClient, processBytes, Constants.PROCESS_IO_PC_METRIC_NAME);
-        logger.trace("Sent performance counter for '{}': '{}'", Constants.PROCESS_IO_PC_METRIC_NAME, processBytes);
+        if (prevCollectionTimeMillis != 0) {
+            double elapsedMillis = currCollectionTimeMillis - prevCollectionTimeMillis;
+            double elapsedSeconds = elapsedMillis / MILLIS_IN_SECOND;
+            double processBytes = (currProcessBytes - prevProcessBytes) / elapsedSeconds;
+            send(telemetryClient, processBytes, Constants.PROCESS_IO_PC_METRIC_NAME);
+            logger.trace("Sent performance counter for '{}': '{}'", Constants.PROCESS_IO_PC_METRIC_NAME, processBytes);
 
-        double processorLoad = (currTotalProcessorMillis - prevTotalProcessorMillis) / (elapsedMillis * processor.getLogicalProcessorCount());
-        double processorPercentage = 100 * processorLoad;
-        send(telemetryClient, processorPercentage, Constants.TOTAL_CPU_PC_METRIC_NAME);
-        logger.trace("Sent performance counter for '{}': '{}'", Constants.TOTAL_CPU_PC_METRIC_NAME, processorPercentage);
+            double processorLoad = (currTotalProcessorMillis - prevTotalProcessorMillis) / (elapsedMillis * processor.getLogicalProcessorCount());
+            double processorPercentage = 100 * processorLoad;
+            send(telemetryClient, processorPercentage, Constants.TOTAL_CPU_PC_METRIC_NAME);
+            logger.trace("Sent performance counter for '{}': '{}'", Constants.TOTAL_CPU_PC_METRIC_NAME, processorPercentage);
+        }
 
         prevCollectionTimeMillis = currCollectionTimeMillis;
         prevProcessBytes = currProcessBytes;

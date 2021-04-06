@@ -25,7 +25,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
         assertTrue(rdEnvelope.getTags().get("ai.user.userAgent").startsWith("Apache-HttpClient/"));
         assertNotNull(rdEnvelope.getTags().get("ai.location.ip"));
 
-        assertEquals("/SpringBootAuto/test", rd.getName());
+        assertEquals("GET /SpringBootAuto/test", rd.getName());
         assertEquals("200", rd.getResponseCode());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());

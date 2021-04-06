@@ -35,7 +35,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -55,7 +55,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -82,8 +82,8 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(exceptions.size(), 1);
         assertEquals(exceptions.get(0).getMessage(), "Three");
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CustomInstrumentation/*");
-        assertParentChild(rd, rdEnvelope, edEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, edEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -103,7 +103,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -148,25 +148,25 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(fiveRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.five");
         assertEquals(fiveRdd.getType(), "OTHER");
         assertEquals(fiveRdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, fiveEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, fiveEnvelope, "GET /CustomInstrumentation/*");
 
         assertNotNull(sixRdd);
         assertEquals(sixRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.six");
         assertEquals(sixRdd.getType(), "OTHER");
         assertEquals(sixRdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, sixEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, sixEnvelope, "GET /CustomInstrumentation/*");
 
         assertNotNull(oneRdd);
         assertEquals(oneRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.one");
         assertEquals(oneRdd.getType(), "OTHER");
         assertEquals(oneRdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, oneEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, oneEnvelope, "GET /CustomInstrumentation/*");
 
         assertNotNull(twoRdd);
         assertEquals(twoRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.two");
         assertEquals(twoRdd.getType(), "OTHER");
         assertEquals(twoRdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, twoEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, twoEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -185,7 +185,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.seven");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -207,12 +207,12 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(rdd1.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.eight");
         assertEquals(rdd1.getType(), "OTHER");
         assertEquals(rdd1.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, rddEnvelope1, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope1, "GET /CustomInstrumentation/*");
 
         assertEquals(rdd2.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.eight");
         assertEquals(rdd2.getType(), "OTHER");
         assertEquals(rdd2.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, rddEnvelope2, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope2, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -247,10 +247,10 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(nineRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.nine");
         assertEquals(nineRdd.getType(), "OTHER");
         assertEquals(nineRdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, nineEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, nineEnvelope, "GET /CustomInstrumentation/*");
 
         assertNotNull(httpRdd);
-        assertParentChild(rd, rdEnvelope, httpEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, httpEnvelope, "GET /CustomInstrumentation/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

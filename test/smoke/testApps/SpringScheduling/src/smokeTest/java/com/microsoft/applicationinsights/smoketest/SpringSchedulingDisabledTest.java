@@ -19,7 +19,7 @@ public class SpringSchedulingDisabledTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        assertEquals("/SpringScheduling/scheduler", rd.getName());
+        assertEquals("GET /SpringScheduling/scheduler", rd.getName());
         assertEquals("200", rd.getResponseCode());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());

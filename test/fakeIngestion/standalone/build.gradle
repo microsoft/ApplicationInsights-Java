@@ -8,7 +8,7 @@ repositories {
 dependencies {
     compile 'com.google.guava:guava:23.0'
     compile 'junit:junit:4.12'
-    compile 'org.eclipse.jetty.aggregate:jetty-all:9.4.7.v20170914'
+    compile 'org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325'
     compile 'com.google.code.gson:gson:2.8.2'
     compile project(':core')
     compile project(':test:fakeIngestion:servlet')

@@ -11,7 +11,6 @@ ext.testAppArtifactFilename = project.name + '.war'
 
 dependencies {
     compile aiWebJar
-
     compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }

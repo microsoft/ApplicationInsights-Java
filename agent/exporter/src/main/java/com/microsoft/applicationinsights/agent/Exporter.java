@@ -128,8 +128,11 @@ public class Exporter implements SpanExporter {
 
     private final TelemetryClient telemetryClient;
 
-    public Exporter(TelemetryClient telemetryClient) {
+    private final boolean httpMethodInOperationName;
+
+    public Exporter(TelemetryClient telemetryClient, boolean httpMethodInOperationName) {
         this.telemetryClient = telemetryClient;
+        this.httpMethodInOperationName = httpMethodInOperationName;
     }
 
     /**
@@ -204,7 +207,7 @@ public class Exporter implements SpanExporter {
         RemoteDependencyTelemetry remoteDependencyData = new RemoteDependencyTelemetry();
 
         addLinks(remoteDependencyData.getProperties(), span.getLinks());
-        remoteDependencyData.setName(span.getName());
+        remoteDependencyData.setName(getTelemetryName(span));
 
         Attributes attributes = span.getAttributes();
 
@@ -562,7 +565,7 @@ public class Exporter implements SpanExporter {
             requestData.setUrl(httpUrl);
         }
 
-        String name = span.getName();
+        String name = getTelemetryName(span);
         requestData.setName(name);
         requestData.getContext().getOperation().setName(name);
         requestData.setId(span.getSpanId());
@@ -604,6 +607,18 @@ public class Exporter implements SpanExporter {
         exportEvents(span, samplingPercentage);
     }
 
+    private String getTelemetryName(SpanData span) {
+        String name = span.getName();
+        if (!httpMethodInOperationName || !name.startsWith("/")) {
+            return name;
+        }
+        String httpMethod = span.getAttributes().get(SemanticAttributes.HTTP_METHOD);
+        if (Strings.isNullOrEmpty(httpMethod)) {
+            return name;
+        }
+        return httpMethod + " " + name;
+    }
+
     private static String nullAwareConcat(String str1, String str2, String separator) {
         if (str1 == null) {
             return str2;
@@ -616,6 +631,12 @@ public class Exporter implements SpanExporter {
 
     private void exportEvents(SpanData span, Double samplingPercentage) {
         for (EventData event : span.getEvents()) {
+            boolean lettuce51 =
+                    span.getInstrumentationLibraryInfo().getName().equals("io.opentelemetry.javaagent.lettuce-5.1");
+            if (lettuce51 && event.getName().startsWith("redis.encode.")) {
+                // special case as these are noisy and come from the underlying library itself
+                continue;
+            }
             EventTelemetry telemetry = new EventTelemetry(event.getName());
             String operationId = span.getTraceId();
             telemetry.getContext().getOperation().setId(operationId);
