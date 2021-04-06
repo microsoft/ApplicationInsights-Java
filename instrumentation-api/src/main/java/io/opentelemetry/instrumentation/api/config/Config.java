@@ -14,8 +14,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @AutoValue
 public abstract class Config {
@@ -27,9 +25,6 @@ public abstract class Config {
   // lazy initialized, so that javaagent can set it, and library instrumentation can fall back and
   // read system properties
   private static volatile Config INSTANCE = null;
-
-  private static final Logger logger = LoggerFactory.getLogger(Config.class);
-  private static final String LOG_CAPTURE_THRESHOLD = "otel.experimental.log.capture.threshold";
 
   /**
    * Sets the agent configuration singleton. This method is only supposed to be called once, from
@@ -172,10 +167,7 @@ public abstract class Config {
     return getBooleanProperty("otel.javaagent.debug", false);
   }
 
-  public void updateLogCaptureThreshold(String value) {
-    if (value != null && !value.isEmpty()) {
-      getAllProperties().put(LOG_CAPTURE_THRESHOLD, value.toUpperCase());
-      logger.info("Update {} to {}", LOG_CAPTURE_THRESHOLD, value.toUpperCase());
-    }
+  public void updateProperty(String key, String value) {
+      getAllProperties().put(key, value);
   }
 }
