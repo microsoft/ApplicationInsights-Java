@@ -16,4 +16,4 @@ io.opentelemetry:opentelemetry-sdk-trace:1.0.0
 io.opentelemetry:opentelemetry-sdk:1.0.0
 io.opentelemetry:opentelemetry-semconv:1.0.1-alpha
 org.checkerframework:checker-qual:3.8.0
-org.slf4j:slf4j-api:1.7.26
+org.slf4j:slf4j-api:1.7.30
