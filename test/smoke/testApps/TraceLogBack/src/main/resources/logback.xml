@@ -4,7 +4,11 @@
         <instrumentationKey>00000000-0000-0000-0000-0FEEDDADBEEF</instrumentationKey>
     </appender>
 
-    <root level="trace">
+    <logger name="com.microsoft.applicationinsights.smoketestapp">
+        <level value="trace" />
+    </logger>
+
+    <root>
         <appender-ref ref="test" />
     </root>
 </configuration>
