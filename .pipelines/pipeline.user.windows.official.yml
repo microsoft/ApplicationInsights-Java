@@ -10,6 +10,14 @@ static_analysis_options:
 build:
   commands:
     - !!buildcommand
+      name: 'Upload Build Scripts'
+      command: '.scripts/copy-source.cmd' # this file is empty
+      artifacts:
+        - from: '.scripts/'
+          to: 'Scripts'
+          include:
+            - '**/*'
+    - !!buildcommand
       name: 'Assemble Perf Counters DLL'
       command: '.scripts/gradle.cmd'
       arguments: ':core:windowsSharedLibrary'
