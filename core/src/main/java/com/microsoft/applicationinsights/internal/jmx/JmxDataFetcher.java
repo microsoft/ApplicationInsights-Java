@@ -76,9 +76,7 @@ public class JmxDataFetcher {
                 //Is it ok if we print out the exception text instead of throwing the exception so we can continue the loop?
                 //Is it ok to print out and log the exception once per metric so that we do not flood the logs?
                 if(warningShown.add(attribute)) {
-                    System.out.println(e.toString());
-                    logger.error(e.toString());
-                    logger.warn("Failed to fetch JMX object '{}' with attribute '{}': ", objectName, attribute.attribute);
+                    logger.warn("Failed to fetch JMX object '{}' with attribute '{}': {}", objectName, attribute.attribute, e.toString());
                 }
 
                 //throw e;
