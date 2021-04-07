@@ -39,6 +39,8 @@ ext {
             mockito                          : "1.10.19",
             hamcrest                         : "1.3",
             systemRules                      : "1.19.0",
-            logcaptor                        : "2.5.0"
+            logcaptor                        : "2.5.0",
+
+            legacySdk                        : "2.6.0"
     ]
 }

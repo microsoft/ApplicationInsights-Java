@@ -24,7 +24,6 @@ plugins {
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
-apply from: "$buildScriptsDir/dependencies.gradle"
 
 repositories {
     // this is needed as long as we are using OpenTelemetry SNAPSHOT
