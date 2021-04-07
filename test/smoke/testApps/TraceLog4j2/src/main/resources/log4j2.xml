@@ -6,7 +6,8 @@
         </ApplicationInsightsAppender>
     </Appenders>
     <Loggers>
-        <Root level="trace">
+        <Logger name="com.microsoft.applicationinsights.smoketestapp" level="trace" />
+        <Root>
             <AppenderRef ref="test"/>
         </Root>
     </Loggers>
