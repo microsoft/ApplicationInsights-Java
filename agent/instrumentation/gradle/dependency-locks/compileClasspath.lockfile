@@ -1,20 +1,6 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.github.oshi:oshi-core:5.6.0
-com.google.code.findbugs:jsr305:3.0.2
-com.google.code.gson:gson:2.8.2
-com.google.errorprone:error_prone_annotations:2.2.0
-com.google.guava:failureaccess:1.0.1
-com.google.guava:guava:27.1-android
-com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
-com.google.j2objc:j2objc-annotations:1.1
-com.squareup.moshi:moshi:1.9.3
-com.squareup.okio:okio:1.16.0
-commons-codec:commons-codec:1.11
-commons-io:commons-io:2.6
-commons-logging:commons-logging:1.2
-eu.infomas:annotation-detector:3.0.5
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:1.0.0+ai.patch.1-alpha
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:1.0.0+ai.patch.1-alpha
 io.opentelemetry.instrumentation:opentelemetry-netty-4.1:1.0.0+ai.patch.1-alpha
@@ -74,33 +60,6 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-schedu
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-webflux-5.0:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spring-webmvc-3.1:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-tomcat-7.0:1.0.0+ai.patch.1-alpha
-io.opentelemetry.javaagent:opentelemetry-javaagent-spi:1.0.0+ai.patch.1-alpha
-io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:1.0.0+ai.patch.1-alpha
-io.opentelemetry:opentelemetry-api-metrics:1.0.0-alpha
 io.opentelemetry:opentelemetry-api:1.0.1
 io.opentelemetry:opentelemetry-context:1.0.1
-io.opentelemetry:opentelemetry-sdk-common:1.0.0
-io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.0.0-alpha
-io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator:1.0.0-alpha
-io.opentelemetry:opentelemetry-sdk-metrics:1.0.0-alpha
-io.opentelemetry:opentelemetry-sdk-trace:1.0.0
-io.opentelemetry:opentelemetry-sdk:1.0.0
 io.opentelemetry:opentelemetry-semconv:1.0.1-alpha
-net.bytebuddy:byte-buddy:1.10.10
-net.java.dev.jna:jna-platform:5.7.0
-net.java.dev.jna:jna:5.7.0
-org.apache.commons:commons-lang3:3.11
-org.apache.commons:commons-text:1.9
-org.apache.httpcomponents:httpclient:4.5.13
-org.apache.httpcomponents:httpcore:4.4.13
-org.apache.logging.log4j:log4j-api:2.11.0
-org.apache.logging.log4j:log4j-core:2.11.0
-org.checkerframework:checker-compat-qual:2.5.2
-org.checkerframework:checker-qual-android:3.1.0
-org.codehaus.mojo:animal-sniffer-annotations:1.17
-org.ow2.asm:asm-analysis:8.0.1
-org.ow2.asm:asm-tree:8.0.1
-org.ow2.asm:asm-util:8.0.1
-org.ow2.asm:asm:8.0.1
-org.slf4j:jcl-over-slf4j:1.7.30
-org.slf4j:slf4j-api:1.7.30

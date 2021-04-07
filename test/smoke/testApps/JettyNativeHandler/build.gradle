@@ -7,10 +7,10 @@ ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
 
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.7.RELEASE'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.7.RELEASE'
 
     // needs to be same version used in fakeIngestion server
-    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.7.v20170914'
+    implementation group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.7.v20170914'
 }
 
 tasks.withType(JavaCompile) {

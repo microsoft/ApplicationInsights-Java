@@ -10,12 +10,12 @@ ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + '.war'
 
 dependencies {
-    compile aiWebAutoJar
-    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE') {
+    implementation aiWebAutoJar
+    implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
     // this dependency is needed to make wildfly happy
-    compile group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.3'
+    implementation group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.3'
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 }
