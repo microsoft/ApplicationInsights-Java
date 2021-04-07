@@ -56,7 +56,6 @@ public class ConfigurationTest {
         assertEquals(4, configuration.jmxMetrics.size());
         assertEquals("Thread Count", configuration.jmxMetrics.get(0).name);
         assertEquals("java.lang:type=Threading", configuration.jmxMetrics.get(0).objectName);
-        // java.lang/Threading/ThreadCount
         assertEquals("ThreadCount", configuration.jmxMetrics.get(0).attribute);
         assertEquals("error", configuration.instrumentation.logging.level);
         assertEquals(60, configuration.heartbeat.intervalSeconds);
