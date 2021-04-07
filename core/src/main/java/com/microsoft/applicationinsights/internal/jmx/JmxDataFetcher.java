@@ -22,11 +22,8 @@
 package com.microsoft.applicationinsights.internal.jmx;
 
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -73,13 +70,9 @@ public class JmxDataFetcher {
                 Collection<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
                 result.put(attribute.metricName, resultForAttribute);
             } catch (Exception e) {
-                //Is it ok if we print out the exception text instead of throwing the exception so we can continue the loop?
-                //Is it ok to print out and log the exception once per metric so that we do not flood the logs?
                 if(warningShown.add(attribute)) {
                     logger.warn("Failed to fetch JMX object '{}' with attribute '{}': {}", objectName, attribute.attribute, e.toString());
                 }
-
-                //throw e;
             }
         }
 

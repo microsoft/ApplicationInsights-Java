@@ -288,9 +288,10 @@ public class AiComponentInstaller implements ComponentInstaller {
                 jmxXmls.add(jmxXml);
             }
             else if (!jmxMetric.attributes.isEmpty()) {
+                String displayName = getJmxDisplayName(jmxMetric.objectName);
                 for (String attribute : jmxMetric.attributes) {
                     JmxXmlElement jmxXml = new JmxXmlElement();
-                    jmxXml.setName(getJmxDisplayName(jmxMetric.objectName) + attribute);
+                    jmxXml.setName(displayName + attribute);
                     jmxXml.setObjectName(jmxMetric.objectName);
                     jmxXml.setAttribute(attribute);
                     jmxXmls.add(jmxXml);
@@ -314,10 +315,9 @@ public class AiComponentInstaller implements ComponentInstaller {
     static String getJmxDisplayName(String attribute) {
         String[] nameParts = attribute.split("=|:|,");
         StringBuilder name = new StringBuilder();
-        if(nameParts.length>0) {
-            for(int i=0; i<nameParts.length;i=i+2) {
-                name.append(nameParts[i]).append(" / ");
-            }
+
+        for(int i=0; i<nameParts.length;i=i+2) {
+            name.append(nameParts[i]).append(" / ");
         }
         return name.toString();
     }

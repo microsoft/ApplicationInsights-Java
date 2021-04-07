@@ -96,6 +96,12 @@ public class Configuration {
 
         public String name;
         public String objectName;
+        /* two versions are supported in json config file:
+        1. attribute - earlier version when one objectName/attribute pair were configured,
+        where displayed name is also specified
+        2. attributes - allowing several attributes per objectName, where any number of attributes can be specified,
+        the displayed name will be generated
+         */
         public String attribute = "";
         public List<String> attributes = new ArrayList<>();
     }
