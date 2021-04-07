@@ -3,6 +3,7 @@ plugins {
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
+apply from: "$buildScriptsDir/dependencies.gradle"
 
 repositories {
     mavenLocal()
@@ -14,7 +15,7 @@ dependencies {
     // this is needed in order to access AiAppId for appId exchange data
     compileOnly group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
 
-    implementation 'org.slf4j:slf4j-api:1.7.26'
+    implementation 'org.slf4j:slf4j-api:${versions.slf4j}'
 
     implementation project(path: ':core')
 
