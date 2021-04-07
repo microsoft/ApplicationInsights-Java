@@ -24,6 +24,7 @@ plugins {
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
+apply from: "$buildScriptsDir/dependencies.gradle"
 
 repositories {
     // this is needed as long as we are using OpenTelemetry SNAPSHOT
@@ -66,6 +67,7 @@ dependencies {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
     implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: versions.slf4j
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: versions.logback
 
     implementation project(":agent:agent-profiler:agent-profiler-api")
 
