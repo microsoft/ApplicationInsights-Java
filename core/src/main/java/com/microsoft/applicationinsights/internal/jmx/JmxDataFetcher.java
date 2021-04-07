@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 public class JmxDataFetcher {
 
     private static final Logger logger = LoggerFactory.getLogger(JmxDataFetcher.class);
-    private static ArrayList<JmxAttributeData> warningShown= new ArrayList<>();
+    private static Set<JmxAttributeData> warningShown= Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     /**
      * Gets an object name and its attributes to fetch and will return the data.
