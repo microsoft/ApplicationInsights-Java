@@ -40,27 +40,30 @@ configurations {
 }
 
 dependencies {
-    compile(project(":agent:agent-profiler:agent-profiler-api"))
-    compile(project(":agent:agent-profiler:agent-alerting"))
-    compile ([group: 'eu.infomas', name: 'annotation-detector', version: '3.0.5'])
-    compile ([group: 'commons-io', name: 'commons-io', version: '2.6' ])
-    compile ([group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'])
-    compile ([group: 'org.apache.commons', name: 'commons-text', version: '1.9'])
-    compile ([group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'])
-    compile ([group: 'com.squareup.moshi', name: 'moshi', version: '1.8.0'])
-    compile ([group: 'com.google.code.gson', name: 'gson', version: '2.8.2'])
-    // update transitive dependency version
-    compile ([group: 'com.google.guava', name: 'guava', version: '27.1-android'])
-    compile ([group: 'com.github.oshi', name:'oshi-core',version:'5.6.0'])
-    compile 'org.slf4j:slf4j-api:1.7.30'
-    testCompile(project(":agent:agent-profiler:agent-service-profiler"))
-    testCompile group: 'org.hamcrest', name:'hamcrest-core', version:'1.3'
-    testCompile group: 'org.hamcrest', name:'hamcrest-library', version:'1.3'
-    testCompile group: 'org.mockito', name: 'mockito-core', version: '1.10.19'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
-    testCompile group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0'
-    testCompile group: 'io.github.hakky54', name: 'logcaptor', version: '2.3.1'
+    implementation project(":agent:agent-profiler:agent-profiler-api")
+    implementation project(":agent:agent-profiler:agent-alerting-api")
+    implementation project(":agent:agent-profiler:agent-alerting")
+    implementation group: 'commons-io', name: 'commons-io', version: versions.commonsIo
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
+    implementation group: 'org.apache.commons', name: 'commons-text', version: versions.commonsText
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
+    implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
+    implementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
+    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
+    implementation group: 'com.github.oshi', name:'oshi-core', version: versions.oshi
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
+    testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: versions.systemRules
+    testImplementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
+    testImplementation group: 'io.github.hakky54', name: 'logcaptor', version: versions.logcaptor
+
+    testImplementation project(":agent:agent-profiler:agent-service-profiler")
+    testImplementation group: 'com.microsoft.jfr', name: 'jfr-streaming', version: versions.microsoftJfrStreaming
+    testImplementation group: 'com.azure', name: 'azure-storage-blob', version: versions.azureStorageBlob
 
     forTheDLL 'com.microsoft.azure:applicationinsights-core:2.6.2'
 }

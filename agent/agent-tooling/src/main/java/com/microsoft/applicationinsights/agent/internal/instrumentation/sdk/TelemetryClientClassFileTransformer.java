@@ -50,7 +50,6 @@ import net.bytebuddy.jar.asm.Label;
 import net.bytebuddy.jar.asm.MethodVisitor;
 import net.bytebuddy.jar.asm.Opcodes;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.objectweb.asm.util.ASMifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -686,11 +685,15 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
 
     // DO NOT REMOVE
     // this is used during development for generating above bytecode
-    public static void main(String[] args) throws Exception {
+    //
+    // to run this, uncomment the ASMifier line below, and add this dependency to agent-tooling.gradle:
+    //   compile group: 'org.ow2.asm', name: 'asm-util', version: '9.1'
+    //
+    public static void main(String[] args) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream stdout = System.out;
         System.setOut(new PrintStream(baos, true));
-        ASMifier.main(new String[]{TC.class.getName()});
+        // ASMifier.main(new String[]{TC.class.getName()});
         System.setOut(stdout);
         String content = new String(baos.toByteArray(), Charsets.UTF_8);
         content = content.replace("\"com/microsoft/applicationinsights/telemetry", "unshadedPrefix + \"/telemetry");

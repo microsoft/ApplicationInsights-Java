@@ -28,12 +28,12 @@ protobuf {
 }
 
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
 
-    compile group: 'io.grpc', name: 'grpc-core', version: grpcVersion
-    compile group: 'io.grpc', name: 'grpc-netty', version: grpcVersion
-    compile group: 'io.grpc', name: 'grpc-protobuf', version: grpcVersion
-    compile group: 'io.grpc', name: 'grpc-stub', version: grpcVersion
+    implementation group: 'io.grpc', name: 'grpc-core', version: grpcVersion
+    implementation group: 'io.grpc', name: 'grpc-netty', version: grpcVersion
+    implementation group: 'io.grpc', name: 'grpc-protobuf', version: grpcVersion
+    implementation group: 'io.grpc', name: 'grpc-stub', version: grpcVersion
 }
 
 tasks.withType(JavaCompile) {

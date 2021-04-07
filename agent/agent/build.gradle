@@ -95,7 +95,10 @@ archivesBaseName = 'applicationinsights-agent'
 
 dependencies {
     implementation project(':agent:agent-bootstrap')
-    devtest 'org.slf4j:slf4j-api:1.7.30'
+    implementation (group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-bootstrap', version: versions.opentelemetryInstrumentationAlpha) {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    }
+    devtest group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 }
 
 // region Publishing properties

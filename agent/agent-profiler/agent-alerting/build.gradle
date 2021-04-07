@@ -4,9 +4,9 @@ apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile 'org.mockito:mockito-core:1.10.19'
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
 
-    compile(project(":agent:agent-profiler:agent-alerting-api"))
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    implementation project(":agent:agent-profiler:agent-alerting-api")
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 }
