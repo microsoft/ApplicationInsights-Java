@@ -47,17 +47,22 @@ public class JmxDataFetcherTest {
         }
     }
 
-    @Test(expected = Exception.class)
-    public void testBadAttributeName() throws Exception {
-        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-        ObjectName mxbeanName = new ObjectName("JSDKTests:type=TestStub3");
-        TestStub testStub = new TestStub(1, 2.0, 3L);
-        server.registerMBean(testStub, mxbeanName);
-        List<JmxAttributeData> attributes = new ArrayList<>();
-        attributes.add(new JmxAttributeData("Int", "WrongNameIntSample"));
-        attributes.add(new JmxAttributeData("Double", "WrongNameDoubleSample"));
-        attributes.add(new JmxAttributeData("Long", "WrongNameLongSample"));
-        JmxDataFetcher.fetch("JSDKTests:type=TestStub3", attributes);
+    @Test
+    public void testBadAttributeName() {
+        try {
+            MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+            ObjectName mxbeanName = new ObjectName("JSDKTests:type=TestStub3");
+            TestStub testStub = new TestStub(1, 2.0, 3L);
+            server.registerMBean(testStub, mxbeanName);
+            List<JmxAttributeData> attributes = new ArrayList<>();
+            attributes.add(new JmxAttributeData("Int", "WrongNameIntSample"));
+            attributes.add(new JmxAttributeData("Double", "WrongNameDoubleSample"));
+            attributes.add(new JmxAttributeData("Long", "WrongNameLongSample"));
+            JmxDataFetcher.fetch("JSDKTests:type=TestStub3", attributes);
+        }
+        catch (Exception e) {
+            Assert.fail("Exception thrown: "+e);
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -96,15 +101,20 @@ public class JmxDataFetcherTest {
             List<JmxAttributeData> attributes,
             double expectedInt,
             double expectedDouble,
-            double expectedLong) throws Exception {
-        Map<String, Collection<Object>> result = JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes);
+            double expectedLong) {
+        try {
+            Map<String, Collection<Object>> result = JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes);
 
-        assertNotNull(result);
-        assertEquals(3, result.size());
+            assertNotNull(result);
+            assertEquals(3, result.size());
 
-        verify(result, "Int", expectedInt);
-        verify(result, "Double", expectedDouble);
-        verify(result, "Long", expectedLong);
+            verify(result, "Int", expectedInt);
+            verify(result, "Double", expectedDouble);
+            verify(result, "Long", expectedLong);
+        }
+        catch(Exception e) {
+            Assert.fail("Exception thrown: "+e);
+        }
     }
 
     private static void verify(Map<String, Collection<Object>> result, String key, double expectedValue) {
