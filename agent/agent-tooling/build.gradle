@@ -31,17 +31,18 @@ repositories {
 }
 
 dependencies {
-    if (project.hasProperty("includeProfiler")) {
-        compile project(":agent:agent-profiler:agent-service-profiler")
+    def includeProfiler = project.hasProperty("includeProfiler") ? project.includeProfiler.toBoolean() : false
+    if (includeProfiler) {
+        implementation project(":agent:agent-profiler:agent-service-profiler")
     }
 
     // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader
     // only complaint so far about moshi is that it doesn't give line numbers when there are json formatting errors
-    compile 'com.squareup.moshi:moshi:1.8.0'
+    implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
 
-    compile 'com.google.guava:guava:27.1-android'
+    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
 
-    compile ('io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:1.0.0+ai.patch.1-alpha') {
+    implementation(group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-tooling', version: versions.opentelemetryInstrumentationAlpha) {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-jaeger'
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-logging'
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-otlp'
@@ -50,33 +51,37 @@ dependencies {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-zipkin'
         exclude group: 'io.grpc', module: 'grpc-netty'
     }
-    compile 'io.opentelemetry.javaagent:opentelemetry-javaagent-spi:1.0.0+ai.patch.1-alpha'
-    // TODO sync bytebuddy version with version from auto-tooling (above)
-    compile group: 'net.bytebuddy', name: 'byte-buddy', version: '1.10.10'
+    implementation group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-spi', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'net.bytebuddy', name: 'byte-buddy', version: versions.bytebuddy
 
-    compile group: 'org.ow2.asm', name: 'asm-util', version: '8.0.1'
+    implementation group: 'commons-codec', name: 'commons-codec', version: versions.commonsCodec
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
 
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
+    implementation group: 'org.checkerframework', name: 'checker-qual', version: versions.checker
 
-    compile 'org.checkerframework:checker-qual-android:3.1.0'
-
-    compile(project(':core')) {
+    implementation(project(':core')) {
         // excluding commons-logging and replacing it with jcl-over-slf4j (below)
         // in order to pick up logging from apache http client
         exclude group: 'commons-logging', module: 'commons-logging'
     }
-    compile 'org.slf4j:jcl-over-slf4j:1.7.30'
+    implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: versions.slf4j
 
-    compile(project(':agent:exporter'))
-    compile 'io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator:1.0.0-alpha'
-    compile 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.0.0-alpha'
+    implementation project(":agent:agent-profiler:agent-profiler-api")
 
-    compileOnly(project(':agent:agent-bootstrap'))
-    testCompile(project(':agent:agent-bootstrap'))
+    implementation project(':agent:exporter')
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-tracing-incubator', version: versions.opentelemetryAlpha
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-autoconfigure', version: versions.opentelemetryAlpha
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.hamcrest:hamcrest-core:1.3'
-    testCompile 'org.hamcrest:hamcrest-library:1.3'
-    testCompile 'com.github.stefanbirkner:system-rules:1.19.0'
-    testCompile 'org.mockito:mockito-core:1.10.19'
+    compileOnly project(':agent:agent-bootstrap')
+    compileOnly group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
+
+    testImplementation project(':agent:agent-bootstrap')
+    testImplementation group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
+
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
+    testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: versions.systemRules
 }

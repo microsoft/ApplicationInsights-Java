@@ -1,17 +1,17 @@
 apply plugin: 'war'
 
 dependencies {
-    compile aiWebJar
-    compile aiLogbackJar
-    compile 'com.google.guava:guava:20.0'
+    implementation aiWebJar
+    implementation aiLogbackJar
+    implementation 'com.google.guava:guava:20.0'
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 
-    smokeTestCompile 'com.google.guava:guava:23.0'
+    smokeTestImplementation 'com.google.guava:guava:23.0'
 
-    testCompile 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
+    testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
 
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 }
 
 war {

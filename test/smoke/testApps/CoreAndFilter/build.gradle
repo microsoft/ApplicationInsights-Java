@@ -1,18 +1,16 @@
 apply plugin: 'war'
 
 dependencies {
-    compile 'com.microsoft.azure:applicationinsights-web:0.9.3' // testing against oldest version with trackDependency()
-    testCompile aiCoreJar // the test code (not the app under test) needs a modern core jar (well, at least 1.0.8)
-    compile 'com.google.guava:guava:20.0'
+    implementation 'com.microsoft.azure:applicationinsights-web:0.9.3' // testing against oldest version with trackDependency()
+    testImplementation aiCoreJar // the test code (not the app under test) needs a modern core jar (well, at least 1.0.8)
+    implementation 'com.google.guava:guava:20.0'
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 
     providedRuntime 'mysql:mysql-connector-java:5.1.44'
 
-    smokeTestCompile 'com.google.guava:guava:23.0'
-    testCompile 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
-
-    testCompile group:'org.hamcrest', name:'hamcrest-library', version:'1.3'
+    smokeTestImplementation 'com.google.guava:guava:23.0'
+    testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
 }
 
 war {

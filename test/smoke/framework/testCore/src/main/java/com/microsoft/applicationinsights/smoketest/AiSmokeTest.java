@@ -35,7 +35,6 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import javax.annotation.Nullable;
-import javax.transaction.NotSupportedException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -424,7 +423,7 @@ public abstract class AiSmokeTest {
                     content = HttpHelper.get(url);
                     break;
                 default:
-                    throw new NotSupportedException(
+                    throw new UnsupportedOperationException(
                             String.format("http method '%s' is not currently supported", httpMethod));
             }
             String expectationMessage = "The base context in testApps should return a nonempty response.";
