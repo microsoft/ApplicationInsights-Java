@@ -107,6 +107,8 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     }
 
     static void setInstrumentationLoggingLevel(String loggingLevel) {
-        Config.get().updateLogCaptureThreshold("otel.experimental.log.capture.threshold", loggingLevel);
+        if (loggingLevel != null && !loggingLevel.isEmpty()) {
+            Config.get().updateProperty("otel.experimental.log.capture.threshold", loggingLevel.toUpperCase());
+        }
     }
 }
