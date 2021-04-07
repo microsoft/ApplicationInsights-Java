@@ -1,7 +1,7 @@
 apply plugin: 'war'
 
 dependencies {
-    compile group: 'org.hsqldb', name: 'hsqldb', version: '2.5.1'
+    implementation group: 'org.hsqldb', name: 'hsqldb', version: '2.5.1'
 
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 }
