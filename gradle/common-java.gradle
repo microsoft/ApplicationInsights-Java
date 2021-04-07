@@ -31,7 +31,8 @@ apply plugin: 'org.owasp.dependencycheck'
 apply plugin: 'com.github.spotbugs'
 
 configurations {
-    if (!project.hasProperty("includeProfiler")) {
+    def includeProfiler = project.hasProperty("includeProfiler") ? project.includeProfiler.toBoolean() : false
+    if (!includeProfiler) {
         compileClasspath.resolutionStrategy.activateDependencyLocking()
         runtimeClasspath.resolutionStrategy.activateDependencyLocking()
     }

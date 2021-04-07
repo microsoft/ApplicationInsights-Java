@@ -54,7 +54,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 def buildNative = !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
 
 dependencies {
-    implementation 'org.slf4j:slf4j-api:1.7.26'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
     if (buildNative) {
         jni32 project(path: ':etw:native', configuration: "${project.properties['ai.etw.native.build']}X86RuntimeElements")
@@ -63,11 +63,11 @@ dependencies {
         logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
     }
 
-    testImplementation 'org.hamcrest:hamcrest-core:1.3'
-    testImplementation 'org.hamcrest:hamcrest-library:1.3'
-    testImplementation 'org.mockito:mockito-core:1.10.19'
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.apache.commons:commons-lang3:3.7'
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
+    testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
 }
 
 // To rebuild naitive code with new headers, first run `gradlew :etw:java:classes -Pai.etw.native.generateHeaders` to generate new header, then update the method implementations.

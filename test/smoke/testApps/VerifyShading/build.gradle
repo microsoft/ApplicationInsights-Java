@@ -7,8 +7,8 @@ ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
 
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
-    compile 'com.google.guava:guava:20.0'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
+    implementation 'com.google.guava:guava:20.0'
 }
 
 tasks.withType(JavaCompile) {

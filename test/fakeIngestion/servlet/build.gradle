@@ -6,11 +6,11 @@ repositories {
 }
 
 dependencies {
-    compile 'com.google.guava:guava:23.0'
+    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
-    compile 'com.google.code.gson:gson:2.8.2'
-    compile project(':core')
-    compile project(':test:smoke:framework:utils')
+    implementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
+    implementation project(':core')
+    implementation project(':test:smoke:framework:utils')
 
 }
 
