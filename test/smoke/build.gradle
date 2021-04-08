@@ -17,10 +17,10 @@ subprojects {
                 aiCoreJar = files('c:\\core_jar_from_previous_build\\applicationinsights-core-vSomething.jar')
         */
         aiAgentJar = project(':agent:agent')
-        aiCoreJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: versions.legacySdk)
-        aiWebJar =  dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web', version: versions.legacySdk)
-        aiWebAutoJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web-auto', version: versions.legacySdk)
-        springBootStarterJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: versions.legacySdk)
+        aiCoreJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: versions.aiLegacySdk)
+        aiWebJar =  dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web', version: versions.aiLegacySdk)
+        aiWebAutoJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web-auto', version: versions.aiLegacySdk)
+        springBootStarterJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: versions.aiLegacySdk)
     }
 }
 

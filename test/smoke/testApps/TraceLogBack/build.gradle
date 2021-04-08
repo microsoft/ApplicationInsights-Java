@@ -2,7 +2,7 @@ apply plugin: 'war'
 
 dependencies {
     implementation aiWebJar
-    implementation(group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: versions.legacySdk) {
+    implementation(group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: versions.aiLegacySdk) {
         // applicationinsights-core is embedded in applicationinsights-web
         // and duplicate class files produces lots of warning messages on jetty
         exclude group: 'com.microsoft.azure', module: 'applicationinsights-core'
