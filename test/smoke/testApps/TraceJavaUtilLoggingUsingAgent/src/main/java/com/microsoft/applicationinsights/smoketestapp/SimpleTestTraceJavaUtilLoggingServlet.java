@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(description = "calls jul", urlPatterns = "/traceJavaUtilLogging")
 public class SimpleTestTraceJavaUtilLoggingServlet extends HttpServlet {
 
-    private static final Logger logger = Logger.getLogger("root");
+    private static final Logger logger = Logger.getLogger("smoketestapp");
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ServletFuncs.geRrenderHtml(request, response);

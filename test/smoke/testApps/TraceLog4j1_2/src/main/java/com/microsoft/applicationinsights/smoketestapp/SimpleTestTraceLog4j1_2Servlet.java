@@ -14,7 +14,7 @@ import org.apache.log4j.MDC;
 @WebServlet(description = "calls log4j1.2", urlPatterns = "/traceLog4j1_2")
 public class SimpleTestTraceLog4j1_2Servlet extends HttpServlet {
 
-    private static final Logger logger = LogManager.getLogger("test");
+    private static final Logger logger = LogManager.getLogger("smoketestapp");
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ServletFuncs.geRrenderHtml(request, response);

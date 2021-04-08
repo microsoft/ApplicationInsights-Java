@@ -13,7 +13,7 @@ import org.slf4j.MDC;
 @WebServlet(urlPatterns = "/traceLogBack")
 public class SimpleTestTraceLogBackServlet extends HttpServlet {
 
-    private static final Logger logger = LoggerFactory.getLogger("test");
+    private static final Logger logger = LoggerFactory.getLogger("smoketestapp");
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ServletFuncs.geRrenderHtml(request, response);

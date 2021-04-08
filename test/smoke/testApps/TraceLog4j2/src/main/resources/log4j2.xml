@@ -2,13 +2,13 @@
 
 <Configuration packages="com.microsoft.applicationinsights.log4j.v2">
     <Appenders>
-        <ApplicationInsightsAppender name="test" instrumentationKey="00000000-0000-0000-0000-0FEEDDADBEEF">
+        <ApplicationInsightsAppender name="aiAppender" instrumentationKey="00000000-0000-0000-0000-0FEEDDADBEEF">
         </ApplicationInsightsAppender>
     </Appenders>
     <Loggers>
-        <Logger name="com.microsoft.applicationinsights.smoketestapp" level="trace" />
+        <Logger name="smoketestapp" level="trace" />
         <Root>
-            <AppenderRef ref="test"/>
+            <AppenderRef ref="aiAppender"/>
         </Root>
     </Loggers>
 </Configuration>
