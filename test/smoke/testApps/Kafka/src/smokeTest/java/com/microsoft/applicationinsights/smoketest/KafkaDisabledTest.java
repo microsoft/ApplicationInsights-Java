@@ -40,12 +40,15 @@ public class KafkaDisabledTest extends AiSmokeTest {
 
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
+
         Envelope rddEnvelope = rddList.get(0);
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-        assertTrue(rd.getSuccess());
-        assertEquals("/sendMessage", rd.getName());
+        assertEquals("GET /sendMessage", rd.getName());
         assertEquals("200", rd.getResponseCode());
+        assertTrue(rd.getProperties().isEmpty());
+        assertTrue(rd.getSuccess());
 
         assertEquals("HelloController.sendMessage", rdd.getName());
 
@@ -61,6 +64,8 @@ public class KafkaDisabledTest extends AiSmokeTest {
 
         assertEquals("HTTP GET", rdd.getName());
         assertEquals("https://www.bing.com", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
+        assertTrue(rdd.getSuccess());
 
         // sleep a bit and make sure no kafka "requests" or dependencies are reported
         Thread.sleep(5000);

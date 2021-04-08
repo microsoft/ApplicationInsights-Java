@@ -27,15 +27,15 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.one");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -47,15 +47,15 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.two");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -69,9 +69,9 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rddEnvelope = rddList.get(0);
         Envelope edEnvelope = edList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
-        ExceptionData ed = (ExceptionData) ((Data) edEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
+        ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.three");
@@ -82,8 +82,8 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(exceptions.size(), 1);
         assertEquals(exceptions.get(0).getMessage(), "Three");
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CustomInstrumentation/*");
-        assertParentChild(rd, rdEnvelope, edEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, edEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -95,15 +95,15 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject$NestedObject.four");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -113,7 +113,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 4);
 
         Envelope rdEnvelope = rdList.get(0);
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         Envelope fiveEnvelope = null;
         Envelope sixEnvelope = null;
@@ -124,7 +124,7 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         RemoteDependencyData oneRdd = null;
         RemoteDependencyData twoRdd = null;
         for (Envelope loopEnvelope : rddList) {
-            RemoteDependencyData loopData = (RemoteDependencyData) ((Data) loopEnvelope.getData()).getBaseData();
+            RemoteDependencyData loopData = (RemoteDependencyData) ((Data<?>) loopEnvelope.getData()).getBaseData();
             if (loopData.getName().endsWith(".five")) {
                 fiveEnvelope = loopEnvelope;
                 fiveRdd = loopData;
@@ -148,25 +148,25 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(fiveRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.five");
         assertEquals(fiveRdd.getType(), "OTHER");
         assertEquals(fiveRdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, fiveEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, fiveEnvelope, "GET /CustomInstrumentation/*");
 
         assertNotNull(sixRdd);
         assertEquals(sixRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.six");
         assertEquals(sixRdd.getType(), "OTHER");
         assertEquals(sixRdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, sixEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, sixEnvelope, "GET /CustomInstrumentation/*");
 
         assertNotNull(oneRdd);
         assertEquals(oneRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.one");
         assertEquals(oneRdd.getType(), "OTHER");
         assertEquals(oneRdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, oneEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, oneEnvelope, "GET /CustomInstrumentation/*");
 
         assertNotNull(twoRdd);
         assertEquals(twoRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.two");
         assertEquals(twoRdd.getType(), "OTHER");
         assertEquals(twoRdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, twoEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, twoEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -178,14 +178,14 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals(rdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.seven");
         assertEquals(rdd.getType(), "OTHER");
         assertEquals(rdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -198,21 +198,21 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         Envelope rddEnvelope1 = rddList.get(0);
         Envelope rddEnvelope2 = rddList.get(1);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
-        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
 
         assertEquals(rdd1.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.eight");
         assertEquals(rdd1.getType(), "OTHER");
         assertEquals(rdd1.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, rddEnvelope1, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope1, "GET /CustomInstrumentation/*");
 
         assertEquals(rdd2.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.eight");
         assertEquals(rdd2.getType(), "OTHER");
         assertEquals(rdd2.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, rddEnvelope2, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope2, "GET /CustomInstrumentation/*");
     }
 
     @Test
@@ -222,14 +222,14 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         List<Envelope> rddList = mockedIngestion.waitForItemsInRequest("RemoteDependencyData", 2);
 
         Envelope rdEnvelope = rdList.get(0);
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         Envelope nineEnvelope = null;
         Envelope httpEnvelope = null;
         RemoteDependencyData nineRdd = null;
         RemoteDependencyData httpRdd = null;
         for (Envelope loopEnvelope : rddList) {
-            RemoteDependencyData loopData = (RemoteDependencyData) ((Data) loopEnvelope.getData()).getBaseData();
+            RemoteDependencyData loopData = (RemoteDependencyData) ((Data<?>) loopEnvelope.getData()).getBaseData();
             if (loopData.getType().equals("OTHER")) {
                 nineEnvelope = loopEnvelope;
                 nineRdd = loopData;
@@ -247,10 +247,10 @@ public class CustomInstrumentationTest extends AiSmokeTest {
         assertEquals(nineRdd.getName(), "com/microsoft/applicationinsights/smoketestapp/TargetObject.nine");
         assertEquals(nineRdd.getType(), "OTHER");
         assertEquals(nineRdd.getSuccess(), true);
-        assertParentChild(rd, rdEnvelope, nineEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, nineEnvelope, "GET /CustomInstrumentation/*");
 
         assertNotNull(httpRdd);
-        assertParentChild(rd, rdEnvelope, httpEnvelope, "/CustomInstrumentation/*");
+        assertParentChild(rd, rdEnvelope, httpEnvelope, "GET /CustomInstrumentation/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

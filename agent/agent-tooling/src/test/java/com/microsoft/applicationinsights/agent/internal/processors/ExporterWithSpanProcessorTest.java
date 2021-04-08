@@ -8,7 +8,7 @@ import java.util.Objects;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.NameConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorMatchType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ToAttributeConfig;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
@@ -32,7 +32,7 @@ public class ExporterWithSpanProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
-        config.processorName = "noNameObjectTest";
+        config.id = "noNameObjectTest";
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
         Span span = tracer.spanBuilder("my span")
@@ -52,7 +52,7 @@ public class ExporterWithSpanProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
-        config.processorName = "inValidConfigTestWithToAttributesNoRules";
+        config.id = "inValidConfigTestWithToAttributesNoRules";
         config.name = new NameConfig();
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
@@ -73,7 +73,7 @@ public class ExporterWithSpanProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
-        config.processorName = "inValidConfigTestWithToAttributesNoRules";
+        config.id = "inValidConfigTestWithToAttributesNoRules";
         config.name = new NameConfig();
         config.name.toAttributes = new ToAttributeConfig();
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
@@ -95,7 +95,7 @@ public class ExporterWithSpanProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
-        config.processorName = "SimpleRenameSpan";
+        config.id = "SimpleRenameSpan";
         config.name = new NameConfig();
         config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
@@ -126,7 +126,7 @@ public class ExporterWithSpanProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
-        config.processorName = "SimpleRenameSpanWithSeparator";
+        config.id = "SimpleRenameSpanWithSeparator";
         config.name = new NameConfig();
         config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
         config.name.separator = "::";
@@ -158,7 +158,7 @@ public class ExporterWithSpanProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
-        config.processorName = "SimpleRenameSpanWithMissingKeys";
+        config.id = "SimpleRenameSpanWithMissingKeys";
         config.name = new NameConfig();
         config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
         config.name.separator = "::";
@@ -189,11 +189,11 @@ public class ExporterWithSpanProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
-        config.processorName = "RenameSpanWithInclude";
+        config.id = "RenameSpanWithInclude";
         config.name = new NameConfig();
         config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.strict;
+        config.include.matchType = MatchType.strict;
         config.include.spanNames = Arrays.asList("svcA", "svcB");
         SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
@@ -256,7 +256,7 @@ public class ExporterWithSpanProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
-        config.processorName = "InvalidRegexInRules";
+        config.id = "InvalidRegexInRules";
         config.name = new NameConfig();
         ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
         toAttributeConfig.rules = new ArrayList<>();
@@ -291,7 +291,7 @@ public class ExporterWithSpanProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
-        config.processorName = "SimpleToAttributes";
+        config.id = "SimpleToAttributes";
         config.name = new NameConfig();
         ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
         toAttributeConfig.rules = new ArrayList<>();
@@ -326,7 +326,7 @@ public class ExporterWithSpanProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
-        config.processorName = "MultiRuleToAttributes";
+        config.id = "MultiRuleToAttributes";
         config.name = new NameConfig();
         ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
         toAttributeConfig.rules = new ArrayList<>();
@@ -378,13 +378,13 @@ public class ExporterWithSpanProcessorTest {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.span;
-        config.processorName = "ExtractAttributesWithIncludeExclude";
+        config.id = "ExtractAttributesWithIncludeExclude";
         config.name = new NameConfig();
         config.include = new ProcessorIncludeExclude();
-        config.include.matchType = ProcessorMatchType.regexp;
+        config.include.matchType = MatchType.regexp;
         config.include.spanNames = Arrays.asList("^(.*?)/(.*?)$");
         config.exclude = new ProcessorIncludeExclude();
-        config.exclude.matchType = ProcessorMatchType.strict;
+        config.exclude.matchType = MatchType.strict;
         config.exclude.spanNames = Arrays.asList("donot/change");
         config.name.toAttributes = new ToAttributeConfig();
         config.name.toAttributes.rules = Arrays.asList("(?<operationwebsite>.*?)$");

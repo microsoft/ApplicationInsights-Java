@@ -21,20 +21,25 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertEquals("GET /OpenTelemetryApiSupport/test-api", rd.getName());
+        assertTrue(rd.getProperties().isEmpty());
+        assertTrue(rd.getSuccess());
+
+        assertEquals("myspanname", rdd.getName());
         // ideally want these on rd, but can't get SERVER span yet
         // see https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1726#issuecomment-731890267
+        assertEquals("myuser", rddEnvelope.getTags().get("ai.user.id"));
         assertEquals("myvalue1", rdd.getProperties().get("myattr1"));
         assertEquals("myvalue2", rdd.getProperties().get("myattr2"));
-        assertEquals("myuser", rddEnvelope.getTags().get("ai.user.id"));
-        assertEquals("myspanname", rdd.getName());
-
-        assertTrue(rd.getSuccess());
+        assertEquals(2, rdd.getProperties().size());
+        assertTrue(rdd.getSuccess());
 
         assertParentChild(rd.getId(), rdEnvelope, rddEnvelope);
     }
@@ -47,6 +52,7 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope1 = rddList.get(0);
         Envelope rddEnvelope2 = rddList.get(1);
@@ -65,10 +71,17 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
             rddEnvelope2 = rddEnvelopeTemp;
         }
 
-        assertEquals("TestController.testAnnotations", rdd1.getName());
-        assertEquals("TestController.underAnnotation", rdd2.getName());
-
+        assertEquals("GET /OpenTelemetryApiSupport/test-annotations", rd.getName());
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertEquals("TestController.testAnnotations", rdd1.getName());
+        assertTrue(rdd1.getProperties().isEmpty());
+        assertTrue(rdd1.getSuccess());
+
+        assertEquals("TestController.underAnnotation", rdd2.getName());
+        assertTrue(rdd2.getProperties().isEmpty());
+        assertTrue(rdd2.getSuccess());
 
         assertParentChild(rd.getId(), rdEnvelope, rddEnvelope1);
         assertParentChild(rdd1.getId(), rddEnvelope1, rddEnvelope2);

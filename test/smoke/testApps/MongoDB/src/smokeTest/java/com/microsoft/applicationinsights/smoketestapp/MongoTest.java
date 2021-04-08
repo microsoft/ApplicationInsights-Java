@@ -32,20 +32,26 @@ public class MongoTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
+        assertEquals("GET /MongoDB/*", rd.getName());
+        assertEquals("200", rd.getResponseCode());
+        assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
+
+        assertEquals("find testdb.test", rdd.getName());
         assertEquals("mongodb", rdd.getType());
         assertTrue(rdd.getTarget().matches("dependency[0-9]+/testdb"));
-        assertEquals("find testdb.test", rdd.getName());
         assertEquals("{\"find\": \"test\", \"$db\": \"?\"}", rdd.getData());
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/MongoDB/*");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /MongoDB/*");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

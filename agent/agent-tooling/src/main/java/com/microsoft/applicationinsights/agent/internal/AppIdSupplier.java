@@ -43,7 +43,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
     private static final Logger logger = LoggerFactory.getLogger(AppIdSupplier.class);
 
-    private static final AppIdSupplier INSTANCE = new AppIdSupplier();
+    public static final AppIdSupplier INSTANCE = new AppIdSupplier();
 
     // note: app id is used by distributed trace headers and (soon) jfr profiling
     public static void registerAndStartAppIdRetrieval() {
@@ -91,7 +91,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
         //it's possible the appId returned is null (e.g. async task is still pending or has failed). In this case, just
         //return and let the next request resolve the ikey.
         if (appId == null) {
-            logger.debug("appId has not been retrived yet (e.g. task may be pending or failed)");
+            logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
             return "";
         }
         return appId;

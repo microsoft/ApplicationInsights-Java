@@ -21,15 +21,10 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
         Envelope mdEnvelope1 = mdList.get(0);
         Envelope mdEnvelope2 = mdList.get(1);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
-        logs.sort(new Comparator<MessageData>() {
-            @Override
-            public int compare(MessageData o1, MessageData o2) {
-                return o1.getSeverityLevel().compareTo(o2.getSeverityLevel());
-            }
-        });
+        logs.sort(Comparator.comparing(MessageData::getSeverityLevel));
 
         MessageData md1 = logs.get(0);
         MessageData md2 = logs.get(1);
@@ -38,13 +33,18 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
         assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
         assertEquals("WARNING", md1.getProperties().get("LoggingLevel"));
-        assertParentChild(rd, rdEnvelope, mdEnvelope1, "/TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
+        assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
+        assertEquals(3, md1.getProperties().size());
 
         assertEquals("This is jul severe.", md2.getMessage());
         assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
         assertEquals("SEVERE", md2.getProperties().get("LoggingLevel"));
-        assertParentChild(rd, rdEnvelope, mdEnvelope2, "/TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
+        assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
+        assertEquals(3, md2.getProperties().size());
+
+        assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
+        assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
     }
 
     @Test
@@ -55,21 +55,23 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> edList = mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope edEnvelope = edList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        ExceptionData ed = (ExceptionData) ((Data) edEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        List<ExceptionDetails> details = ed.getExceptions();
-        ExceptionDetails ex = details.get(0);
+        ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
-        assertEquals("Fake Exception", ex.getMessage());
+        assertEquals("Fake Exception", ed.getExceptions().get(0).getMessage());
         assertEquals(SeverityLevel.Error, ed.getSeverityLevel());
         assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
         assertEquals("Logger", ed.getProperties().get("SourceType"));
         assertEquals("SEVERE", ed.getProperties().get("LoggingLevel"));
-        assertParentChild(rd, rdEnvelope, edEnvelope, "/TraceJavaUtilLoggingUsingAgent/traceJavaUtilLoggingWithException");
+        assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
+        assertEquals(4, ed.getProperties().size());
+
+        assertParentChild(rd, rdEnvelope, edEnvelope, "GET /TraceJavaUtilLoggingUsingAgent/traceJavaUtilLoggingWithException");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

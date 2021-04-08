@@ -17,13 +17,10 @@ subprojects {
                 aiCoreJar = files('c:\\core_jar_from_previous_build\\applicationinsights-core-vSomething.jar')
         */
         aiAgentJar = project(':agent:agent')
-        aiCoreJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '2.5.1')
-        aiWebJar =  dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web', version: '2.5.1')
-        aiWebAutoJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web-auto', version: '2.5.1')
-        aiLog4j1_2Jar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-logging-log4j1_2', version: '2.5.1')
-        aiLog4j2Jar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-logging-log4j2', version: '2.5.1')
-        aiLogbackJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.5.1')
-        springBootStarterJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: '2.5.1')
+        aiCoreJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: versions.aiLegacySdk)
+        aiWebJar =  dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web', version: versions.aiLegacySdk)
+        aiWebAutoJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web-auto', version: versions.aiLegacySdk)
+        springBootStarterJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: versions.aiLegacySdk)
     }
 }
 

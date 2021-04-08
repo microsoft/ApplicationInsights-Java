@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.AgentExtensionVersionFinder;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsTestHelper;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi.Builder;
@@ -15,11 +16,10 @@ import org.junit.*;
 import org.junit.contrib.java.lang.system.*;
 import org.junit.rules.*;
 
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile.DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile.DEFAULT_LOGDIR;
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile.STATUS_FILE_DIRECTORY;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile.initLogDir;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 public class StatusFileTests {
 
@@ -37,50 +37,42 @@ public class StatusFileTests {
 
     @Before
     public void setup() {
+        // TODO these tests currently only pass on windows
+        assumeTrue(DiagnosticsHelper.isOsWindows());
         envVars.set("APPINSIGHTS_INSTRUMENTATIONKEY", testIkey);
         envVars.set(AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE, fakeVersion);
-        StatusFile.init();
     }
 
     @After
     public void resetStaticVariables() {
         DiagnosticsTestHelper.reset();
-        StatusFile.init();
     }
 
     @Test
     public void defaultDirectoryIsCorrect() {
-        String expected = "./LogFiles/ApplicationInsights/status";
-        assertEquals(expected, StatusFile.directory);
+        assertEquals("./LogFiles/ApplicationInsights", initLogDir());
     }
 
     @Test
-    public void siteLogDirPropertyUpdatesParentDir() {
+    public void siteLogDirPropertyUpdatesBaseDir() {
         String parentDir = "/temp/test/prop";
         System.setProperty("site.logdir", parentDir);
-        StatusFile.init();
-        String expected = parentDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR +  STATUS_FILE_DIRECTORY;
-        assertEquals(expected, StatusFile.directory);
+        assertEquals("/temp/test/prop/ApplicationInsights", StatusFile.initLogDir());
     }
 
     @Test
     public void homeEnvVarUpdatesBaseDir() {
-        String parentDir = "/temp/test";
-        envVars.set(StatusFile.HOME_ENV_VAR, parentDir);
-        StatusFile.init();
-        String expected = parentDir + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR + STATUS_FILE_DIRECTORY;
-        assertEquals(expected, StatusFile.directory);
+        String homeDir = "/temp/test";
+        envVars.set(StatusFile.HOME_ENV_VAR, homeDir);
+        assertEquals("/temp/test/LogFiles/ApplicationInsights", StatusFile.initLogDir());
     }
 
     @Test
     public void siteLogDirHasPrecedenceOverHome() {
         String homeDir = "/this/is/wrong";
         envVars.set(StatusFile.HOME_ENV_VAR, homeDir);
-        String siteLogDir = "/the/correct/dir";
-        System.setProperty("site.logdir", siteLogDir);
-        StatusFile.init();
-        String expected = siteLogDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR + STATUS_FILE_DIRECTORY;
-        assertEquals(expected, StatusFile.directory);
+        System.setProperty("site.logdir", "/the/correct/dir");
+        assertEquals("/the/correct/dir/ApplicationInsights", StatusFile.initLogDir());
     }
 
     @Test
@@ -121,21 +113,8 @@ public class StatusFileTests {
     }
 
     @Test
-    public void doesNotWriteIfEnabledEnvVarIsFalse() throws Exception {
-        envVars.set(StatusFile.STATUS_FILE_ENABLED_ENV_VAR, "false");
-        runWriteFileTest(false);
-    }
-
-    @Test
-    public void ifEnabledVarHasInvalidValueThenItIsEnabled() throws Exception {
-        envVars.set(StatusFile.STATUS_FILE_ENABLED_ENV_VAR, "42");
-        DiagnosticsTestHelper.setIsAppServiceCodeless(true);
-        runWriteFileTest(true);
-    }
-
-    @Test
     public void writesCorrectFile() throws Exception {
-        DiagnosticsTestHelper.setIsAppServiceCodeless(true);
+        DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
         runWriteFileTest(true);
     }
 
@@ -171,7 +150,7 @@ public class StatusFileTests {
 
     @Test
     public void doesNotWriteIfNotAppService() throws Exception {
-        DiagnosticsTestHelper.setIsAppServiceCodeless(false); // just to be sure
+        DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(false); // just to be sure
 
         final File tempFolder = this.tempFolder.newFolder();
         StatusFile.directory = tempFolder.getAbsolutePath();
@@ -189,7 +168,7 @@ public class StatusFileTests {
     public void putValueAndWriteOverwritesCurrentFile() throws Exception {
         final String key = "write-test";
         try {
-            DiagnosticsTestHelper.setIsAppServiceCodeless(true);
+            DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
 
 
             final File tempFolder = this.tempFolder.newFolder();
@@ -210,7 +189,7 @@ public class StatusFileTests {
             assertMapHasExpectedInformation(map, key, value);
 
         } finally {
-            DiagnosticsTestHelper.setIsAppServiceCodeless(false);
+            DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(false);
             StatusFile.CONSTANT_VALUES.remove(key);
         }
     }

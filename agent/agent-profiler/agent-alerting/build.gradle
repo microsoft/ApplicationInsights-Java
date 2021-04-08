@@ -1,0 +1,12 @@
+group = 'io.opentelemetry.javaagent'
+
+apply from: "$buildScriptsDir/common-java.gradle"
+
+dependencies {
+
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
+
+    implementation project(":agent:agent-profiler:agent-alerting-api")
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+}

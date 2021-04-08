@@ -1,19 +1,14 @@
 apply plugin: 'war'
 
 dependencies {
-    compile aiCoreJar
-    compile aiWebJar
+    implementation aiCoreJar
+    implementation aiWebJar
 
-    compile group: 'org.mongodb', name: 'mongodb-driver', version: '3.11.0'
-    compile group: 'com.google.guava', name: 'guava', version: '27.1-android'
+    implementation group: 'org.mongodb', name: 'mongodb-driver', version: '3.11.0'
+    implementation group: 'com.google.guava', name: 'guava', version: '27.1-android'
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 }
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
 
 war {
     // this is done to remove the version from the archive file name
@@ -25,3 +20,7 @@ ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + '.war'
 
 ext.dependencyContainers = ['mongo:4']
+
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}

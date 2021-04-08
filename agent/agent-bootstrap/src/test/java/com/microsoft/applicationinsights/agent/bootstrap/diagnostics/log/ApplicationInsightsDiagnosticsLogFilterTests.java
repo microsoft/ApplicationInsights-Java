@@ -17,7 +17,7 @@ public class ApplicationInsightsDiagnosticsLogFilterTests {
 
     @Before
     public void setup() {
-        DiagnosticsTestHelper.setIsAppServiceCodeless(true);
+        DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
         filter = new ApplicationInsightsDiagnosticsLogFilter();
         mockEvent = mock(ILoggingEvent.class);
         when(mockEvent.getLevel()).thenReturn(Level.ERROR);

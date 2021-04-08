@@ -1,23 +1,22 @@
 apply plugin: 'war'
 
 dependencies {
-    compile aiWebJar
-    compile aiLog4j1_2Jar
-    compile 'com.google.guava:guava:20.0'
+    implementation aiWebJar
+    implementation(group: 'com.microsoft.azure', name: 'applicationinsights-logging-log4j1_2', version: versions.aiLegacySdk) {
+        // applicationinsights-core is embedded in applicationinsights-web
+        // and duplicate class files produces lots of warning messages on jetty
+        exclude group: 'com.microsoft.azure', module: 'applicationinsights-core'
+    }
+    implementation 'com.google.guava:guava:20.0'
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 
-    smokeTestCompile 'com.google.guava:guava:23.0'
+    smokeTestImplementation 'com.google.guava:guava:23.0'
 
-    testCompile 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
+    testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
 
-    compile group: 'log4j', name: 'log4j', version: '1.2.17'
+    implementation group: 'log4j', name: 'log4j', version: '1.2.17'
 }
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
 
 war {
     // this is done to remove the version from the archive file name
@@ -27,3 +26,7 @@ war {
 
 ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + '.war'
+
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}

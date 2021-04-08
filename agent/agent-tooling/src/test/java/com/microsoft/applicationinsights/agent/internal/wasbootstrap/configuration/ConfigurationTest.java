@@ -12,7 +12,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.PreviewConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorActionType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorMatchType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.squareup.moshi.JsonAdapter;
@@ -86,7 +86,7 @@ public class ConfigurationTest {
         envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=11111111-1111-1111-1111-111111111111");
 
-        Configuration configuration = ConfigurationBuilder.create(Paths.get("."));
+        Configuration configuration = ConfigurationBuilder.create(Paths.get("."), null);
 
         assertEquals("InstrumentationKey=11111111-1111-1111-1111-111111111111", configuration.connectionString);
         assertEquals("testrole", configuration.role.name);
@@ -105,7 +105,7 @@ public class ConfigurationTest {
                 "\"role\":{\"name\":\"testrole\"}}";
         envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
 
-        ConfigurationBuilder.create(Paths.get("."));
+        ConfigurationBuilder.create(Paths.get("."), null);
     }
 
     @Test
@@ -117,7 +117,7 @@ public class ConfigurationTest {
         assertEquals(8, preview.processors.size());
         // insert config test
         ProcessorConfig insertConfig = preview.processors.get(0);
-        assertEquals("attributes/insert", insertConfig.processorName);
+        assertEquals("attributes/insert", insertConfig.id);
         assertEquals(ProcessorType.attribute, insertConfig.type);
         assertEquals(ProcessorActionType.insert, insertConfig.actions.get(0).action);
         assertEquals("123", insertConfig.actions.get(0).value);
@@ -125,7 +125,7 @@ public class ConfigurationTest {
         assertEquals("anotherKey", insertConfig.actions.get(1).fromAttribute);
         //update config test
         ProcessorConfig updateConfig = preview.processors.get(1);
-        assertEquals("attributes/update", updateConfig.processorName);
+        assertEquals("attributes/update", updateConfig.id);
         assertEquals(ProcessorType.attribute, updateConfig.type);
         assertEquals(ProcessorActionType.update, updateConfig.actions.get(0).action);
         assertEquals("boo", updateConfig.actions.get(0).key);
@@ -134,11 +134,11 @@ public class ConfigurationTest {
         // selective processing test
         ProcessorConfig selectiveConfig = preview.processors.get(2);
         assertEquals(ProcessorType.attribute, selectiveConfig.type);
-        assertEquals("attributes/selectiveProcessing", selectiveConfig.processorName);
-        assertEquals(ProcessorMatchType.strict, selectiveConfig.include.matchType);
+        assertEquals("attributes/selectiveProcessing", selectiveConfig.id);
+        assertEquals(MatchType.strict, selectiveConfig.include.matchType);
         assertEquals(2, selectiveConfig.include.spanNames.size());
         assertEquals("svcA", selectiveConfig.include.spanNames.get(0));
-        assertEquals(ProcessorMatchType.strict, selectiveConfig.exclude.matchType);
+        assertEquals(MatchType.strict, selectiveConfig.exclude.matchType);
         assertEquals(1, selectiveConfig.exclude.attributes.size());
         assertEquals("redact_trace", selectiveConfig.exclude.attributes.get(0).key);
         assertEquals("false", selectiveConfig.exclude.attributes.get(0).value);
@@ -148,8 +148,8 @@ public class ConfigurationTest {
         // log/update name test
         ProcessorConfig logUpdateNameConfig = preview.processors.get(3);
         assertEquals(ProcessorType.log, logUpdateNameConfig.type);
-        assertEquals("log/updateName", logUpdateNameConfig.processorName);
-        assertEquals(ProcessorMatchType.regexp, logUpdateNameConfig.include.matchType);
+        assertEquals("log/updateName", logUpdateNameConfig.id);
+        assertEquals(MatchType.regexp, logUpdateNameConfig.include.matchType);
         assertEquals(1, logUpdateNameConfig.include.logNames.size());
         assertEquals(".*password.*", logUpdateNameConfig.include.logNames.get(0));
         assertEquals(1, logUpdateNameConfig.name.fromAttributes.size());
@@ -158,14 +158,14 @@ public class ConfigurationTest {
         // log/extractAttributes
         ProcessorConfig logExtractAttributesConfig = preview.processors.get(4);
         assertEquals(ProcessorType.log, logExtractAttributesConfig.type);
-        assertEquals("log/extractAttributes", logExtractAttributesConfig.processorName);
+        assertEquals("log/extractAttributes", logExtractAttributesConfig.id);
         assertEquals(1, logExtractAttributesConfig.name.toAttributes.rules.size());
         assertEquals("^/api/v1/document/(?<documentId>.*)/update$", logExtractAttributesConfig.name.toAttributes.rules.get(0));
         // span/update name test
         ProcessorConfig spanUpdateNameConfig = preview.processors.get(5);
         assertEquals(ProcessorType.span, spanUpdateNameConfig.type);
-        assertEquals("span/updateName", spanUpdateNameConfig.processorName);
-        assertEquals(ProcessorMatchType.regexp, spanUpdateNameConfig.include.matchType);
+        assertEquals("span/updateName", spanUpdateNameConfig.id);
+        assertEquals(MatchType.regexp, spanUpdateNameConfig.include.matchType);
         assertEquals(1, spanUpdateNameConfig.include.spanNames.size());
         assertEquals(".*password.*", spanUpdateNameConfig.include.spanNames.get(0));
         assertEquals(1, spanUpdateNameConfig.name.fromAttributes.size());
@@ -174,21 +174,21 @@ public class ConfigurationTest {
         // span/extractAttributes
         ProcessorConfig spanExtractAttributesConfig = preview.processors.get(6);
         assertEquals(ProcessorType.span, spanExtractAttributesConfig.type);
-        assertEquals("span/extractAttributes", spanExtractAttributesConfig.processorName);
+        assertEquals("span/extractAttributes", spanExtractAttributesConfig.id);
         assertEquals(1, spanExtractAttributesConfig.name.toAttributes.rules.size());
         assertEquals("^/api/v1/document/(?<documentId>.*)/update$", spanExtractAttributesConfig.name.toAttributes.rules.get(0));
         // attribute/extract
         ProcessorConfig attributesExtractConfig = preview.processors.get(7);
         assertEquals(ProcessorType.attribute, attributesExtractConfig.type);
-        assertEquals("attributes/extract", attributesExtractConfig.processorName);
+        assertEquals("attributes/extract", attributesExtractConfig.id);
         assertEquals(1, attributesExtractConfig.actions.size());
         assertEquals(ProcessorActionType.extract,attributesExtractConfig.actions.get(0).action);
         assertEquals("http.url",attributesExtractConfig.actions.get(0).key);
         assertEquals(1,attributesExtractConfig.actions.size());
         assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute);
-        assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute.extractAttributePattern);
-        assertEquals(4,attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.size());
-        assertEquals("httpProtocol",attributesExtractConfig.actions.get(0).extractAttribute.extractAttributeGroupNames.get(0));
+        assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute.pattern);
+        assertEquals(4,attributesExtractConfig.actions.get(0).extractAttribute.groupNames.size());
+        assertEquals("httpProtocol",attributesExtractConfig.actions.get(0).extractAttribute.groupNames.get(0));
     }
 
     @Test
@@ -325,6 +325,56 @@ public class ConfigurationTest {
         assertEquals(jmxMetrics.get(0).name, configuration.jmxMetrics.get(0).name); // class count is overridden by the env var
         assertEquals(jmxMetrics.get(1).name, configuration.jmxMetrics.get(1).name); // code cache is overridden by the env var
         assertEquals(configuration.jmxMetrics.get(2).name, "Current Thread Count");
+    }
+
+    @Test
+    public void shouldOverrideSelfDiagnosticsLevel() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", "DEBUG");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("DEBUG", configuration.selfDiagnostics.level);
+    }
+
+    @Test
+    public void shouldOverrideSelfDiagnosticsFilePath() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH", "/tmp/ai.log");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertEquals("/tmp/ai.log", configuration.selfDiagnostics.file.path);
+    }
+
+    @Test
+    public void shouldOverridePreviewOtelApiSupport() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT", "true");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertTrue(configuration.preview.openTelemetryApiSupport);
+    }
+
+    @Test
+    public void shouldOverridePreviewAzureSdkInstrumentation() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED", "true");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertTrue(configuration.preview.instrumentation.azureSdk.enabled);
+    }
+
+    @Test
+    public void shouldOverridePreviewLiveMetricsEnabled() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED", "false");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertFalse(configuration.preview.liveMetrics.enabled);
     }
 
     @Test

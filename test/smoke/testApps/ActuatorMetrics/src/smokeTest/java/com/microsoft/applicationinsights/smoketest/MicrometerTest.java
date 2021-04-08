@@ -27,7 +27,7 @@ public class MicrometerTest extends AiSmokeTest {
                 if (!input.getData().getBaseType().equals("MetricData")) {
                     return false;
                 }
-                MetricData data = (MetricData) ((Data) input.getData()).getBaseData();
+                MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
                 if (!"/test".equals(data.getProperties().get("uri"))) {
                     return false;
                 }
@@ -40,7 +40,7 @@ public class MicrometerTest extends AiSmokeTest {
             }
         }, 1, 10, TimeUnit.SECONDS);
 
-        MetricData data = (MetricData) ((Data) metricItems.get(0).getData()).getBaseData();
+        MetricData data = (MetricData) ((Data<?>) metricItems.get(0).getData()).getBaseData();
         List<DataPoint> points = data.getMetrics();
         assertEquals(1, points.size());
 

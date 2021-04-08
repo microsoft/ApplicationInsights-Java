@@ -1,10 +1,5 @@
 apply plugin: 'war'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
-
 war {
     // this is done to remove the version from the archive file name
     // to make span name verification simpler
@@ -15,13 +10,16 @@ ext.testAppArtifactDir = war.destinationDirectory
 ext.testAppArtifactFilename = project.name + '.war'
 
 dependencies {
-    compile aiWebJar
-
-    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE') {
+    implementation aiWebJar
+    implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
     // this dependency is needed to make wildfly happy
-    compile group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.3'
+    implementation group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.3'
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
+}
+
+tasks.withType(JavaCompile) {
+    options.release.set(8)
 }

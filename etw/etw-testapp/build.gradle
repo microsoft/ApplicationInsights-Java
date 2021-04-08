@@ -15,17 +15,18 @@ repositories {
 apply plugin: 'war'
 apply plugin: 'org.springframework.boot'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
 dependencies {
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
-    providedCompile project(path:':agent:agent', configuration:'devtest')
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly project(path:':agent:agent', configuration:'devtest')
 
     implementation ('org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
-    implementation 'org.apache.commons:commons-lang3:3.7'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
+}
+
+tasks.withType(JavaCompile) {
+    options.release.set(8)
 }

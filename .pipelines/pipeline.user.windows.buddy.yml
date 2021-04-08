@@ -1,0 +1,21 @@
+version:
+  major: 0
+  minor: 0
+  tag: 'SNAPSHOT'
+  name: 'ApplicationInsights-Java'
+  system: 'custom'
+build:
+  commands:
+    - !!buildcommand
+      name: 'Assemble ApplicationInsights-Java JARs'
+      command: '.scripts/gradle.cmd'
+      arguments: 'assemble copyLibsToGlobalArtifactsFolder'
+      artifacts:
+        - to: 'Artifacts'
+          include:
+            - '**/build/libs/*.jar'
+            - '**/build/libs/*-sources.jar'
+            - '**/build/libs/*-javadoc.jar'
+            - '**/build/libs/*.pom'
+          exclude:
+            - 'buildSrc/**/*'

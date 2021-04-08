@@ -4,12 +4,12 @@ public class DiagnosticsTestHelper {
     private DiagnosticsTestHelper() {
     }
 
-    public static void setIsAppServiceCodeless(boolean appServiceCodeless) {
-        DiagnosticsHelper.appServiceCodeless = appServiceCodeless;
+    public static void setIsAppSvcAttachForLoggingPurposes(boolean appSvcAttachForLoggingPurposes) {
+        DiagnosticsHelper.useAppSvcRpIntegrationLogging = appSvcAttachForLoggingPurposes;
     }
 
     public static void reset() {
-        setIsAppServiceCodeless(false);
+        setIsAppSvcAttachForLoggingPurposes(false);
     }
 
 }

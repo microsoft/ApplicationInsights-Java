@@ -21,19 +21,22 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+// an assumption is made throughout this file that user will not explicitly use `null` value in json file
+// TODO how to pre-process or generally be robust in the face of explicit `null` value usage?
 public class Configuration {
 
     public String connectionString;
@@ -50,19 +53,27 @@ public class Configuration {
     // this is just here to detect if using old format in order to give a helpful error message
     public Map<String, Object> instrumentationSettings;
 
-    public enum ProcessorMatchType {
-        //Moshi JSON builder donot allow case insensitive mapping
+    public enum MatchType {
+        // Moshi JSON builder do not allow case insensitive mapping
         strict, regexp
     }
 
     public enum ProcessorActionType {
-        //Moshi JSON builder donot allow case insensitive mapping
+        // Moshi JSON builder do not allow case insensitive mapping
         insert, update, delete, hash, extract
     }
 
     public enum ProcessorType {
-        //Moshi JSON builder donot allow case insensitive mapping
-        attribute, log, span
+        // Moshi JSON builder do not allow case insensitive mapping
+        attribute("an attribute"),
+        log("a log"),
+        span("a span");
+
+        private final String anX;
+
+        ProcessorType(String anX) {
+            this.anX = anX;
+        }
     }
 
     public static class Role {
@@ -74,6 +85,11 @@ public class Configuration {
     public static class Sampling {
 
         public double percentage = 100;
+    }
+
+    public static class SamplingPreview {
+
+        public List<SamplingOverride> overrides = new ArrayList<>();
     }
 
     public static class JmxMetric {
@@ -148,15 +164,30 @@ public class Configuration {
     public static class PreviewConfiguration {
 
         public boolean developerMode;
+        public SamplingPreview sampling = new SamplingPreview();
         public List<ProcessorConfig> processors = new ArrayList<>();
         public boolean openTelemetryApiSupport;
+        public PreviewInstrumentation instrumentation = new PreviewInstrumentation();
         // applies to perf counters, default custom metrics, jmx metrics, and micrometer metrics
         // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics world,
         // so safer to only allow single interval for now
         public int metricIntervalSeconds = 60;
+        // ignoreRemoteParentNotSampled is currently needed
+        // because .NET SDK always propagates trace flags "00" (not sampled)
+        public boolean ignoreRemoteParentNotSampled = true;
+        // TODO consider turning this on by default in 3.1.0
+        public boolean httpMethodInOperationName;
         public LiveMetrics liveMetrics = new LiveMetrics();
-        // config reload only supports connection string and sampling percentage
-        public boolean configReloadEnabled;
+
+        public ProfilerConfiguration profiler = new ProfilerConfiguration();
+    }
+
+    public static class PreviewInstrumentation {
+        public AzureSdkInstrumentation azureSdk = new AzureSdkInstrumentation();
+    }
+
+    public static class AzureSdkInstrumentation {
+        public boolean enabled;
     }
 
     public static class LiveMetrics {
@@ -172,40 +203,123 @@ public class Configuration {
 
     public static class DestinationFile {
 
-        public String path = "applicationinsights.log"; // relative to the directory where agent jar is located
+        private static final String DEFAULT_NAME = "applicationinsights.log";
+
+        public String path = getDefaultPath();
         public int maxSizeMb = 5;
         public int maxHistory = 1;
+
+        private static String getDefaultPath() {
+            if (!DiagnosticsHelper.isRpIntegration()) {
+                // this will be relative to the directory where agent jar is located
+                return DEFAULT_NAME;
+            }
+            if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+                return StatusFile.getLogDir() + "/" + DEFAULT_NAME;
+            }
+            if (DiagnosticsHelper.useFunctionsRpIntegrationLogging() && !DiagnosticsHelper.isOsWindows()) {
+                return "/var/log/applicationinsights/" + DEFAULT_NAME;
+            }
+            // azure spring cloud
+            return DEFAULT_NAME;
+        }
+    }
+
+    public static class SamplingOverride {
+        // not using include/exclude, because you can still get exclude with this by adding a second (exclude) override above it
+        // (since only the first matching override is used)
+        public List<SamplingOverrideAttribute> attributes = new ArrayList<>();
+        public Double percentage;
+        public String id; // optional, used for debugging purposes only
+
+        public void validate() throws FriendlyException {
+            if (attributes.isEmpty()) {
+                // TODO add doc and go link, similar to telemetry processors
+                throw new FriendlyException("A sampling override configuration has no attributes.",
+                        "Please provide one or more attributes for the sampling override configuration.");
+            }
+            if (percentage == null) {
+                // TODO add doc and go link, similar to telemetry processors
+                throw new FriendlyException("A sampling override configuration is missing a \"percentage\".",
+                        "Please provide a \"percentage\" for the sampling override configuration.");
+            }
+            if (percentage < 0 || percentage > 100) {
+                // TODO add doc and go link, similar to telemetry processors
+                throw new FriendlyException("A sampling override configuration has a \"percentage\" that is not between 0 and 100.",
+                        "Please provide a \"percentage\" that is between 0 and 100 for the sampling override configuration.");
+            }
+            for (SamplingOverrideAttribute attribute : attributes) {
+                attribute.validate();
+            }
+        }
+    }
+
+    public static class SamplingOverrideAttribute {
+        public String key;
+        public String value;
+        public MatchType matchType;
+
+        private void validate() {
+            if (isEmpty(key)) {
+                // TODO add doc and go link, similar to telemetry processors
+                throw new FriendlyException("A telemetry filter configuration has an attribute section that is missing a \"key\".",
+                        "Please provide a \"key\" under the attribute section of the telemetry filter configuration.");
+            }
+            if (matchType == null) {
+                throw new FriendlyException("A telemetry filter configuration has an attribute section that is missing a \"matchType\".",
+                        "Please provide a \"matchType\" under the attribute section of the telemetry filter configuration.");
+            }
+            if (matchType == MatchType.regexp) {
+                if (isEmpty(value)) {
+                    // TODO add doc and go link, similar to telemetry processors
+                    throw new FriendlyException("A telemetry filter configuration has an attribute with matchType regexp that is missing a \"value\".",
+                            "Please provide a key under the attribute section of the filter configuration.");
+                }
+                validateRegex(value);
+            }
+        }
+
+        private static void validateRegex(String value) throws FriendlyException {
+            try {
+                Pattern.compile(value);
+            } catch (PatternSyntaxException exception) {
+                // TODO add doc and go link, similar to telemetry processors
+                throw new FriendlyException("A telemetry filter configuration has an invalid regex:" + value,
+                        "Please provide a valid regex in the telemetry filter configuration.");
+            }
+        }
     }
 
     public static class ProcessorConfig {
         public ProcessorType type;
-        public String processorName;
         public ProcessorIncludeExclude include;
         public ProcessorIncludeExclude exclude;
-        public List<ProcessorAction> actions; // specific for processor type "attributes"
+        public List<ProcessorAction> actions = new ArrayList<>(); // specific for processor type "attributes"
         public NameConfig name; // specific for processor types "log" and "span"
+        public String id; // optional, used for debugging purposes only
 
-        private static void isValidRegex(String value) throws FriendlyException {
+        private static void isValidRegex(String value, ProcessorType processorType) throws FriendlyException {
             try {
                 Pattern.compile(value);
             } catch (PatternSyntaxException exception) {
-                throw new FriendlyException("Telemetry processor configuration does not have valid regex:" + value,
-                                "Please provide a valid regex in the telemetry processors configuration. " +
-                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                // TODO different links for different processor types throughout?
+                throw new FriendlyException(processorType.anX + " processor configuration has an invalid regex:" + value,
+                                "Please provide a valid regex in the " + processorType + " processor configuration. " +
+                                "Learn more about " + processorType + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
         }
 
         public void validate() throws FriendlyException {
             if (type == null) {
-                throw new FriendlyException("Telemetry processor configuration has a processor with no type!!!",
-                                "Please provide a type in the telemetry processors configuration. " +
+                throw new FriendlyException("A telemetry processor configuration is missing a \"type\".",
+                        "Please provide a \"type\" in the telemetry processor configuration. " +
                                 "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
-            if (include != null ) {
-                include.validate(type);
+            if (include != null) {
+                include.validate(type, IncludeExclude.INCLUDE);
             }
-            if (exclude != null ) {
-               exclude.validate(type);
+            if (exclude != null) {
+                exclude.validate(type, IncludeExclude.EXCLUDE);
             }
             validateAttributeProcessorConfig();
             validateLogOrSpanProcessorConfig();
@@ -213,11 +327,12 @@ public class Configuration {
 
         public void validateAttributeProcessorConfig() throws FriendlyException {
             if (type == ProcessorType.attribute) {
-                if (actions == null || actions.isEmpty()) {
-                    throw new FriendlyException("Telemetry processor configuration has invalid attribute processor configuration with empty actions!!!",
-                                    "Please provide at least one action in the attribute processors configuration. " +
-                                    "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                if (actions.isEmpty()) {
+                    throw new FriendlyException("An attribute processor configuration has no actions.",
+                                    "Please provide at least one action in the attribute processor configuration. " +
+                                    "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
+                // TODO validate name == null?
                 for (ProcessorAction action : actions) {
                     action.validate();
                 }
@@ -227,120 +342,134 @@ public class Configuration {
         public void validateLogOrSpanProcessorConfig() throws FriendlyException {
             if (type == ProcessorType.log || type == ProcessorType.span) {
                 if (name == null) {
-                    throw new FriendlyException("Telemetry processor configuration has invalid span/log processor configuration with empty name object!!!",
-                                    "Please provide name in the span/log processor configuration. " +
-                                    "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                    throw new FriendlyException(type.anX +  " processor configuration is missing a \"name\" section.",
+                                    "Please provide a \"name\" section in the " + type + " processor configuration. " +
+                                    "Learn more about " + type + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
-                name.validate();
+                // TODO validate actions.isEmpty()?
+                name.validate(type);
             }
         }
     }
 
     public static class NameConfig {
-        public List<String> fromAttributes;
+        public List<String> fromAttributes = new ArrayList<>();
         public ToAttributeConfig toAttributes;
         public String separator;
 
-        public void validate() throws FriendlyException {
-            if (fromAttributes == null && toAttributes == null) {
-                throw new FriendlyException("Telemetry processor configuration has invalid name object with no fromAttributes or no toAttributes!!!",
-                                "Please provide at least one of fromAttributes or toAttributes in the processor configuration. " +
-                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        public void validate(ProcessorType processorType) throws FriendlyException {
+            if (fromAttributes.isEmpty() && toAttributes == null) {
+                // TODO different links for different processor types?
+                throw new FriendlyException(processorType.anX + " processor configuration has \"name\" action with no \"fromAttributes\" and no \"toAttributes\".",
+                                "Please provide at least one of \"fromAttributes\" or \"toAttributes\" under the name section of the " + processorType + " processor configuration. " +
+                                "Learn more about " + processorType + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
-            if (toAttributes != null)  toAttributes.validate();
+            if (toAttributes != null) {
+                toAttributes.validate(processorType);
+            }
         }
     }
 
     public static class ToAttributeConfig {
-        public List<String> rules;
+        public List<String> rules = new ArrayList<>();
 
-        public void validate() throws FriendlyException {
-            if(rules==null || rules.isEmpty()) {
-                throw new FriendlyException("Telemetry processor configuration has invalid toAttribute value with no rules!!!",
-                                "Please provide at least one rule under the toAttribute section of processor configuration. " +
-                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        public void validate(ProcessorType processorType) throws FriendlyException {
+            if (rules.isEmpty()) {
+                throw new FriendlyException(processorType.anX + " processor configuration has \"toAttributes\" section with no \"rules\".",
+                                "Please provide at least one rule under the \"toAttributes\" section of the " + processorType + " processor configuration. " +
+                                "Learn more about " + processorType + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             for (String rule : rules) {
-                ProcessorConfig.isValidRegex(rule);
+                ProcessorConfig.isValidRegex(rule, processorType);
             }
         }
     }
 
+    private enum IncludeExclude {
+        INCLUDE,
+        EXCLUDE;
+
+        public String toString() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+    }
 
     public static class ProcessorIncludeExclude {
-        public ProcessorMatchType matchType;
-        public List<String> spanNames;
-        public List<String> logNames;
-        public List<ProcessorAttribute> attributes;
+        public MatchType matchType;
+        public List<String> spanNames = new ArrayList<>();
+        public List<String> logNames = new ArrayList<>();
+        public List<ProcessorAttribute> attributes = new ArrayList<>();
 
-        public void validate (ProcessorType processorType) throws FriendlyException {
-            if (this.matchType == null) {
-                throw new FriendlyException("Telemetry processor configuration has invalid include/exclude value with no matchType!!!",
-                                "Please provide matchType under the include/exclude section of processor configuration. " +
-                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        public void validate(ProcessorType processorType, IncludeExclude includeExclude) throws FriendlyException {
+            if (matchType == null) {
+                throw new FriendlyException(processorType.anX + " processor configuration has an " + includeExclude + " section that is missing a \"matchType\".",
+                        "Please provide a \"matchType\" under the " + includeExclude + " section of the " + processorType + " processor configuration. " +
+                                "Learn more about " + processorType + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
-            if (this.attributes != null) {
-                for (ProcessorAttribute attribute : this.attributes) {
-                    if (attribute.key == null || attribute.key.isEmpty()) {
-                        throw new FriendlyException("Telemetry processor configuration has invalid include/exclude value with attribute which has empty key!!!",
-                                        "Please provide valid key with value under the include/exclude's attribute section of processor configuration. " +
-                                        "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
-                    }
-                    if (this.matchType == ProcessorMatchType.regexp && attribute.value != null) {
-                        ProcessorConfig.isValidRegex(attribute.value);
-                    }
+            for (ProcessorAttribute attribute : attributes) {
+                if (isEmpty(attribute.key)) {
+                    throw new FriendlyException(processorType.anX + " processor configuration has an " + includeExclude + " section that is missing a \"key\".",
+                            "Please provide a \"key\" under the " + includeExclude + " section of the " + processorType + " processor configuration. " +
+                                    "Learn more about " + processorType + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                }
+                if (matchType == MatchType.regexp && attribute.value != null) {
+                    ProcessorConfig.isValidRegex(attribute.value, processorType);
                 }
             }
 
-            switch(processorType) {
-                case attribute: validAttributeProcessorIncludeExclude(); break;
-                case log : validateLogProcessorIncludeExclude(); break;
-                case span: validateSpanProcessorIncludeExclude();
-                default: break;
+            switch (processorType) {
+                case attribute:
+                    validAttributeProcessorIncludeExclude(includeExclude);
+                    break;
+                case log:
+                    validateLogProcessorIncludeExclude(includeExclude);
+                    break;
+                case span:
+                    validateSpanProcessorIncludeExclude(includeExclude);
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected processor type: " + processorType);
             }
-
         }
 
-        private void validAttributeProcessorIncludeExclude() throws FriendlyException {
-            if (spanNames == null && attributes == null) {
-                throw new FriendlyException("Telemetry processor configuration has invalid include/exclude value with no spanNames or no attributes!!!",
-                                "Please provide at least one of spanNames or attributes under the include/exclude section of processor configuration. " +
-                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        private void validAttributeProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
+            if (spanNames.isEmpty() && attributes.isEmpty()) {
+                throw new FriendlyException("An attribute processor configuration has an " + includeExclude + " section with no \"spanNames\" and no \"attributes\".",
+                                "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the attribute processor configuration. " +
+                                "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
-            if (spanNames != null && matchType == ProcessorMatchType.regexp) {
+            if (matchType == MatchType.regexp) {
                 for (String spanName : spanNames) {
-                    ProcessorConfig.isValidRegex(spanName);
+                    ProcessorConfig.isValidRegex(spanName, ProcessorType.attribute);
                 }
             }
         }
 
-        private void validateLogProcessorIncludeExclude() throws FriendlyException {
-            if (logNames == null && attributes == null) {
-                throw new FriendlyException("Telemetry processor configuration has invalid include/exclude value with no logNames or no attributes!!!",
-                                "Please provide at least one of logNames or attributes under the include/exclude section of processor configuration. " +
-                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        private void validateLogProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
+            if (logNames.isEmpty() && attributes.isEmpty()) {
+                throw new FriendlyException("A log processor configuration has an " + includeExclude + " section with no \"logNames\" and no \"attributes\".",
+                                "Please provide at least one of \"logNames\" or \"attributes\" under the " + includeExclude + " section of the log processor configuration. " +
+                                "Learn more about log processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
-            if (logNames != null && matchType == ProcessorMatchType.regexp) {
+            if (matchType == MatchType.regexp) {
                 for (String logName : logNames) {
-                    ProcessorConfig.isValidRegex(logName);
+                    ProcessorConfig.isValidRegex(logName, ProcessorType.log);
                 }
             }
         }
 
-        private void validateSpanProcessorIncludeExclude() throws FriendlyException {
-                if (spanNames == null && attributes == null) {
-                    throw new FriendlyException("Telemetry processor configuration has invalid include/exclude value with no spanNames or no attributes!!!",
-                                    "Please provide at least one of spanNames or attributes under the include/exclude section of processor configuration. " +
-                                    "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+        private void validateSpanProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
+            if (spanNames.isEmpty() && attributes.isEmpty()) {
+                throw new FriendlyException("A span processor configuration has " + includeExclude + " section with no \"spanNames\" and no \"attributes\".",
+                                "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the span processor configuration. " +
+                                "Learn more about span processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+            }
+            if (matchType == MatchType.regexp) {
+                for (String spanName : spanNames) {
+                    ProcessorConfig.isValidRegex(spanName, ProcessorType.span);
                 }
-                if (spanNames != null && matchType == ProcessorMatchType.regexp) {
-                    for (String spanName : spanNames) {
-                        ProcessorConfig.isValidRegex(spanName);
-                    }
-                }
+            }
         }
-
-
     }
 
     public static class ProcessorAttribute {
@@ -349,19 +478,20 @@ public class Configuration {
     }
 
     public static class ExtractAttribute {
-        public Pattern extractAttributePattern;
-        public List<String> extractAttributeGroupNames;
+        public final Pattern pattern;
+        public final List<String> groupNames;
 
-        public ExtractAttribute(Pattern extractAttributePattern, List<String> extractAttributeGroupNames) {
-            this.extractAttributePattern = extractAttributePattern;
-            this.extractAttributeGroupNames = extractAttributeGroupNames;
+        public ExtractAttribute(Pattern pattern, List<String> groupNames) {
+            this.pattern = pattern;
+            this.groupNames = groupNames;
         }
-        //ToDo: Handle empty patterns or groupNames are not populated gracefully
+
+        // TODO: Handle empty patterns or groupNames are not populated gracefully
         public void validate() {
-            if(extractAttributeGroupNames==null || extractAttributeGroupNames.size() == 0) {
-                throw new FriendlyException("Telemetry processor configuration does not have valid regex to extract attributes:"+extractAttributePattern.toString(),
+            if (groupNames.isEmpty()) {
+                throw new FriendlyException("An attribute processor configuration does not have valid regex to extract attributes: " + pattern,
                         "Please provide a valid regex of the form (?<name>X) where X is the usual regular expression. " +
-                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                                "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
         }
     }
@@ -375,31 +505,51 @@ public class Configuration {
 
         public void validate() throws FriendlyException {
 
-            if (this.key == null || this.key.isEmpty()) {
-                throw new FriendlyException("Telemetry processor configuration has invalid action with empty key!!!",
-                        "Please provide a valid key with value under each action section of processor configuration. " +
-                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+            if (isEmpty(key)) {
+                throw new FriendlyException("An attribute processor configuration has an action section that is missing a \"key\".",
+                        "Please provide a \"key\" under the action section of the attribute processor configuration. " +
+                                "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
-            if (this.action == null) {
-                throw new FriendlyException("Telemetry processor configuration has invalid config with empty action!!!",
-                        "Please provide a valid action. Telemetry processors cannot have empty or no actions. " +
-                                "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+            if (action == null) {
+                throw new FriendlyException("An attribute processor configuration has an action section that is missing an \"action\".",
+                        "Please provide an \"action\" under the action section of the attribute processor configuration. " +
+                                "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
-            if (this.action == ProcessorActionType.insert || this.action == ProcessorActionType.update) {
-                if(this.value == null && this.fromAttribute == null) {
-                    throw new FriendlyException("Telemetry processor configuration has invalid action with empty value or empty fromAttribute!!!",
-                            "Please provide a valid action with value under each action section of processor configuration. " +
-                                    "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+            if (action == ProcessorActionType.insert || action == ProcessorActionType.update) {
+                if (isEmpty(value) && isEmpty(fromAttribute)) {
+                    throw new FriendlyException("An attribute processor configuration has an " + action + " action that is missing a \"value\" or a \"fromAttribute\".",
+                            "Please provide exactly one of \"value\" or \"fromAttributes\" under the " + action + " action. " +
+                                    "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                }
+                if (!isEmpty(value) && !isEmpty(fromAttribute)) {
+                    throw new FriendlyException("An attribute processor configuration has an " + action + " action that has both a \"value\" and a \"fromAttribute\".",
+                            "Please provide exactly one of \"value\" or \"fromAttributes\" under the " + action + " action. " +
+                                    "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                }
+                if (extractAttribute != null) {
+                    throw new FriendlyException("An attribute processor configuration has an " + action + " action with an \"extractAttribute\" section.",
+                            "Please do not provide an \"extractAttribute\" under the " + action + " action. " +
+                                    "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
             }
 
-            if(this.action == ProcessorActionType.extract) {
-                if(this.extractAttribute == null) {
-                    throw new FriendlyException("Telemetry processor configuration has invalid action with empty pattern!!!",
-                            "Please provide a valid action with pattern under each action section of type extract. " +
-                                    "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+            if (action == ProcessorActionType.extract) {
+                if (extractAttribute == null) {
+                    throw new FriendlyException("An attribute processor configuration has an extract action that is missing an \"extractAttributes\" section.",
+                            "Please provide an \"extractAttributes\" section under the extract action. " +
+                                    "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
-                this.extractAttribute.validate();
+                if (!isEmpty(value)) {
+                    throw new FriendlyException("An attribute processor configuration has an " + action + " action with a \"value\".",
+                            "Please do not provide a \"value\" under the " + action + " action. " +
+                                    "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                }
+                if (!isEmpty(fromAttribute)) {
+                    throw new FriendlyException("An attribute processor configuration has an " + action + " action with a \"fromAttribute\".",
+                            "Please do not provide a \"fromAttribute\" under the " + action + " action. " +
+                                    "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                }
+                extractAttribute.validate();
             }
         }
     }
@@ -412,10 +562,15 @@ public class Configuration {
         public String pattern;
     }
 
-    // transient so that Moshi will ignore when binding from json
-    public transient Path configPath;
+    public static class ProfilerConfiguration {
+        public int configPollPeriodSeconds = 60;
+        public int periodicRecordingDurationSeconds = 120;
+        public int periodicRecordingIntervalSeconds = 60 * 60;
+        public String serviceProfilerFrontEndPoint = null;
+        public boolean enabled = false;
+    }
 
-    // transient so that Moshi will ignore when binding from json
-    public transient long lastModifiedTime;
-
+    private static boolean isEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }
 }

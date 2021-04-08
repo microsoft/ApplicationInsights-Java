@@ -22,9 +22,10 @@ public class JdbcDisabledTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        assertTrue(rd.getSuccess());
-        assertEquals("/Jdbc/*", rd.getName());
+        assertEquals("GET /Jdbc/*", rd.getName());
         assertEquals("200", rd.getResponseCode());
+        assertTrue(rd.getProperties().isEmpty());
+        assertTrue(rd.getSuccess());
 
         // sleep a bit and make sure no jdbc dependencies are reported
         Thread.sleep(5000);

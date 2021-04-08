@@ -1,24 +1,23 @@
 apply plugin: 'war'
 
 dependencies {
-    compile aiWebJar
-    compile 'com.google.guava:guava:20.0'
+    implementation aiWebJar
+    implementation 'com.google.guava:guava:20.0'
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 
     providedRuntime 'mysql:mysql-connector-java:5.1.44'
 
-    smokeTestCompile 'com.google.guava:guava:23.0'
+    smokeTestImplementation 'com.google.guava:guava:23.0'
 
-    testCompile 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
+    testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
 
-    testCompile group:'org.hamcrest', name:'hamcrest-library', version:'1.3'
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+    options.release.set(8)
+}
 
 war {
     // this is done to remove the version from the archive file name

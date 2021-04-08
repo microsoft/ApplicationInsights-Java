@@ -36,34 +36,46 @@ public class KafkaTest extends AiSmokeTest {
     public void doMostBasicTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
 
-        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "/sendMessage");
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
         String operationId = rdEnvelope1.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic process");
         Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
         Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "mytopic send");
         Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "HTTP GET");
 
-        RequestData rd1 = (RequestData) ((Data) rdEnvelope1.getData()).getBaseData();
-        RequestData rd2 = (RequestData) ((Data) rdEnvelope2.getData()).getBaseData();
+        RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
+        RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
 
-        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
-        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
-        RemoteDependencyData rdd3 = (RemoteDependencyData) ((Data) rddEnvelope3.getData()).getBaseData();
+        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
+        RemoteDependencyData rdd3 = (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
-        assertEquals("/sendMessage", rd1.getName());
+        assertEquals("GET /sendMessage", rd1.getName());
+        assertTrue(rd1.getProperties().isEmpty());
+        assertTrue(rd1.getSuccess());
+
         assertEquals("HelloController.sendMessage", rdd1.getName());
+        assertTrue(rdd1.getProperties().isEmpty());
+        assertTrue(rdd1.getSuccess());
 
+        assertEquals("mytopic send", rdd2.getName());
         assertEquals("Queue Message | kafka", rdd2.getType());
         assertEquals("mytopic", rdd2.getTarget());
-        assertEquals("mytopic send", rdd2.getName());
+        assertTrue(rdd2.getProperties().isEmpty());
+        assertTrue(rdd2.getSuccess());
 
-        assertEquals("mytopic", rd2.getSource());
         assertEquals("mytopic process", rd2.getName());
+        assertEquals("mytopic", rd2.getSource());
+        assertTrue(rd2.getProperties().isEmpty());
+        assertTrue(rd2.getSuccess());
 
         assertEquals("HTTP GET", rdd3.getName());
         assertEquals("https://www.bing.com", rdd3.getData());
+        assertTrue(rdd3.getProperties().isEmpty());
+        assertTrue(rdd3.getSuccess());
 
         assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
         assertParentChild(rdd1.getId(), rddEnvelope1, rddEnvelope2);
@@ -73,7 +85,7 @@ public class KafkaTest extends AiSmokeTest {
 
     private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {
         for (Envelope envelope : envelopes) {
-            RequestData rd = (RequestData) ((Data) envelope.getData()).getBaseData();
+            RequestData rd = (RequestData) ((Data<?>) envelope.getData()).getBaseData();
             if (rd.getName().equals(name)) {
                 return envelope;
             }
@@ -83,7 +95,7 @@ public class KafkaTest extends AiSmokeTest {
 
     private static Envelope getDependencyEnvelope(List<Envelope> envelopes, String name) {
         for (Envelope envelope : envelopes) {
-            RemoteDependencyData rdd = (RemoteDependencyData) ((Data) envelope.getData()).getBaseData();
+            RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) envelope.getData()).getBaseData();
             if (rdd.getName().equals(name)) {
                 return envelope;
             }

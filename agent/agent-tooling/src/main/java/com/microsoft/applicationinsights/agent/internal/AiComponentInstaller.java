@@ -23,19 +23,15 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
@@ -45,7 +41,12 @@ import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.Quic
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.RequestTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProfilerConfiguration;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.extensibility.initializer.ResourceAttributesContextInitializer;
@@ -57,8 +58,10 @@ import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
 import com.microsoft.applicationinsights.internal.config.ParamXmlElement;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
+import com.microsoft.applicationinsights.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import org.apache.http.HttpHost;
@@ -146,15 +149,26 @@ public class AiComponentInstaller implements ComponentInstaller {
         if (config.proxy.host != null) {
             LazyHttpClient.proxy = new HttpHost(config.proxy.host, config.proxy.port);
         }
+        AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
 
         TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
-        Global.setSamplingPercentage(SamplingPercentage.roundToNearest(config.sampling.percentage));
+        Global.setSamplingPercentage(config.sampling.percentage);
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
+
+        ProfilerServiceInitializer.initialize(
+                appIdSupplier::get,
+                SystemInformation.INSTANCE.getProcessId(),
+                formServiceProfilerConfig(config.preview.profiler),
+                configuration.getRoleInstance(),
+                configuration.getInstrumentationKey(),
+                telemetryClient,
+                formApplicationInsightsUserAgent()
+        );
 
         // this is for Azure Function Linux consumption plan support.
         if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
@@ -179,12 +193,29 @@ public class AiComponentInstaller implements ComponentInstaller {
             }
         });
 
-        if (config.preview.configReloadEnabled) {
-            Path configPath = MainEntryPoint.getConfigPath();
-            if (configPath != null) {
-                JsonConfigPolling.pollJsonConfigEveryMinute(configPath, MainEntryPoint.getLastModifiedTime(), config.sampling.percentage);
-            }
+        RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
+        if (rpConfiguration != null) {
+            RpConfigurationPolling.startPolling(rpConfiguration, config);
         }
+    }
+
+    private static String formApplicationInsightsUserAgent() {
+        String aiVersion = SdkVersionFinder.readVersion();
+        String javaVersion = System.getProperty("java.version");
+        String osName = System.getProperty("os.name");
+        String arch = System.getProperty("os.arch");
+        String userName = "Microsoft-ApplicationInsights-Java-Profiler/" + aiVersion + "  (Java/" + javaVersion + "; " + osName + "; " + arch + ")";
+        return userName;
+    }
+
+    private static ServiceProfilerServiceConfig formServiceProfilerConfig(ProfilerConfiguration configuration) {
+        return new ServiceProfilerServiceConfig(
+                configuration.configPollPeriodSeconds,
+                configuration.periodicRecordingDurationSeconds,
+                configuration.periodicRecordingIntervalSeconds,
+                configuration.serviceProfilerFrontEndPoint,
+                configuration.enabled
+        );
     }
 
     private static void validateProcessorConfiguration(Configuration config) throws FriendlyException {
@@ -196,16 +227,11 @@ public class AiComponentInstaller implements ComponentInstaller {
 
     @Nullable
     private static String getCodelessSdkNamePrefix() {
-        StringBuilder sdkNamePrefix = new StringBuilder(4);
-        if (DiagnosticsHelper.isAppServiceCodeless()) {
-            sdkNamePrefix.append("a");
-        } else if (DiagnosticsHelper.isAksCodeless()) {
-            sdkNamePrefix.append("k");
-        } else if (DiagnosticsHelper.isFunctionsCodeless()) {
-            sdkNamePrefix.append("f");
-        } else {
+        if (!DiagnosticsHelper.isRpIntegration()) {
             return null;
         }
+        StringBuilder sdkNamePrefix = new StringBuilder(4);
+        sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
         if (SystemInformation.INSTANCE.isWindows()) {
             sdkNamePrefix.append("w");
         } else if (SystemInformation.INSTANCE.isUnix()) {

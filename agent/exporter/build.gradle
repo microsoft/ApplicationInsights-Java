@@ -9,14 +9,16 @@ repositories {
 }
 
 dependencies {
-    compile 'io.opentelemetry:opentelemetry-sdk:1.0.0'
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk', version: versions.opentelemetry
 
     // this is needed in order to access AiAppId for appId exchange data
-    compileOnly group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: '1.0.0+ai.patch.1-alpha'
+    compileOnly group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
 
-    compile 'org.slf4j:slf4j-api:1.7.26'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
-    compile(project(path: ':core'))
+    implementation project(path: ':core')
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
+
+    testImplementation group: 'junit', name: 'junit', version: versions.junit
 }

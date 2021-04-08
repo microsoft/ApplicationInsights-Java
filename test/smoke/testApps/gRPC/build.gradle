@@ -1,20 +1,8 @@
-buildscript {
-    dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
-    }
-}
-
 plugins {
     id 'java'
     id 'org.springframework.boot' version '2.1.7.RELEASE'
-    id 'com.google.protobuf'
-    id 'idea' // this adds generated gRPC classes to intellij
+    id 'com.google.protobuf' version '0.8.14'
 }
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileSmokeTestJava.sourceCompatibility = 1.8
-compileSmokeTestJava.targetCompatibility = 1.8
 
 ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
@@ -40,10 +28,14 @@ protobuf {
 }
 
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
 
-    compile group: 'io.grpc', name: 'grpc-core', version: grpcVersion
-    compile group: 'io.grpc', name: 'grpc-netty', version: grpcVersion
-    compile group: 'io.grpc', name: 'grpc-protobuf', version: grpcVersion
-    compile group: 'io.grpc', name: 'grpc-stub', version: grpcVersion
+    implementation group: 'io.grpc', name: 'grpc-core', version: grpcVersion
+    implementation group: 'io.grpc', name: 'grpc-netty', version: grpcVersion
+    implementation group: 'io.grpc', name: 'grpc-protobuf', version: grpcVersion
+    implementation group: 'io.grpc', name: 'grpc-stub', version: grpcVersion
+}
+
+tasks.withType(JavaCompile) {
+    options.release.set(8)
 }

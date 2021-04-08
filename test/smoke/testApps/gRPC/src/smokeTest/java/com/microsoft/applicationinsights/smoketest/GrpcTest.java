@@ -18,7 +18,7 @@ public class GrpcTest extends AiSmokeTest {
     public void doSimpleTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
 
-        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "/simple");
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /simple");
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
         String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
@@ -29,13 +29,22 @@ public class GrpcTest extends AiSmokeTest {
         Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.simple");
         Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
 
-        RequestData rd1 = (RequestData) ((Data) rdEnvelope1.getData()).getBaseData();
-        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
-        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
+        RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
 
         // TODO this is not correct (or at least not ideal)
         //  see https://msazure.visualstudio.com/One/_workitems/edit/8687985
         assertEquals("grpc", rdd2.getTarget());
+
+        assertTrue(rd1.getProperties().isEmpty());
+        assertTrue(rd1.getSuccess());
+
+        assertTrue(rdd1.getProperties().isEmpty());
+        assertTrue(rdd1.getSuccess());
+
+        assertTrue(rdd2.getProperties().isEmpty());
+        assertTrue(rdd2.getSuccess());
 
         assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
         assertParentChild(rdd1.getId(), rddEnvelope1, rddEnvelope2);
@@ -47,7 +56,7 @@ public class GrpcTest extends AiSmokeTest {
     public void doConversationTest() throws Exception {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 2);
 
-        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "/conversation");
+        Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /conversation");
         Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/Conversation");
         String operationId = rdEnvelope1.getTags().get("ai.operation.id");
 
@@ -58,11 +67,20 @@ public class GrpcTest extends AiSmokeTest {
         Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.conversation");
         Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "example.Greeter/Conversation");
 
-        RequestData rd1 = (RequestData) ((Data) rdEnvelope1.getData()).getBaseData();
-        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data) rddEnvelope1.getData()).getBaseData();
-        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data) rddEnvelope2.getData()).getBaseData();
+        RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd1 = (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
+        RemoteDependencyData rdd2 = (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
 
         assertEquals("grpc", rdd2.getTarget());
+
+        assertTrue(rd1.getProperties().isEmpty());
+        assertTrue(rd1.getSuccess());
+
+        assertTrue(rdd1.getProperties().isEmpty());
+        assertTrue(rdd1.getSuccess());
+
+        assertTrue(rdd2.getProperties().isEmpty());
+        assertTrue(rdd2.getSuccess());
 
         assertParentChild(rd1.getId(), rdEnvelope1, rddEnvelope1);
         assertParentChild(rdd1.getId(), rddEnvelope1, rddEnvelope2);
@@ -71,7 +89,7 @@ public class GrpcTest extends AiSmokeTest {
 
     private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {
         for (Envelope envelope : envelopes) {
-            RequestData rd = (RequestData) ((Data) envelope.getData()).getBaseData();
+            RequestData rd = (RequestData) ((Data<?>) envelope.getData()).getBaseData();
             if (rd.getName().equals(name)) {
                 return envelope;
             }
@@ -81,7 +99,7 @@ public class GrpcTest extends AiSmokeTest {
 
     private static Envelope getDependencyEnvelope(List<Envelope> envelopes, String name) {
         for (Envelope envelope : envelopes) {
-            RemoteDependencyData rdd = (RemoteDependencyData) ((Data) envelope.getData()).getBaseData();
+            RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) envelope.getData()).getBaseData();
             if (rdd.getName().equals(name)) {
                 return envelope;
             }

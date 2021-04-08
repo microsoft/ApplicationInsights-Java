@@ -1,0 +1,35 @@
+{
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.docker.internal:6060/",
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "httpMethodInOperationName": true,
+    "sampling": {
+      "overrides": [
+        {
+          "attributes": [
+            {
+              "key": "http.url",
+              "value": ".*/health-check",
+              "matchType": "regexp"
+            }
+          ],
+          "percentage": 50,
+          "id": "filter out health check"
+        },
+        {
+          "attributes": [
+            {
+              "key": "db.statement",
+              "value": "select count(*) from abc",
+              "matchType": "strict"
+            }
+          ],
+          "percentage": 0,
+          "id": "filter out noisy jdbc"
+        }
+      ]
+    }
+  }
+}
