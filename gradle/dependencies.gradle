@@ -21,7 +21,7 @@ ext {
 
             oshi                             : "5.6.0",
 
-            azureStorageBlob                 : "12.10.0",
+            azureStorageBlob                 : "12.11.0-beta.2",
             azureClientRuntime               : "2.1.1",
             microsoftJfrStreaming            : "1.0.0",
 
