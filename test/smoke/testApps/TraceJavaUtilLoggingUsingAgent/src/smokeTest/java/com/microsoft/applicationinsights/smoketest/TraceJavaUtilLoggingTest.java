@@ -43,8 +43,8 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
         assertEquals("root", md1.getProperties().get("LoggerName"));
         assertEquals(3, md2.getProperties().size());
 
-        assertParentChild(rd, rdEnvelope, mdEnvelope1, "/TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
-        assertParentChild(rd, rdEnvelope, mdEnvelope2, "/TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
+        assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
+        assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceJavaUtilLoggingUsingAgent/traceJavaUtilLogging");
     }
 
     @Test
@@ -55,6 +55,7 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> edList = mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope edEnvelope = edList.get(0);
 
@@ -70,7 +71,7 @@ public class TraceJavaUtilLoggingTest extends AiSmokeTest {
         assertEquals("root", ed.getProperties().get("LoggerName"));
         assertEquals(4, ed.getProperties().size());
 
-        assertParentChild(rd, rdEnvelope, edEnvelope, "/TraceJavaUtilLoggingUsingAgent/traceJavaUtilLoggingWithException");
+        assertParentChild(rd, rdEnvelope, edEnvelope, "GET /TraceJavaUtilLoggingUsingAgent/traceJavaUtilLoggingWithException");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

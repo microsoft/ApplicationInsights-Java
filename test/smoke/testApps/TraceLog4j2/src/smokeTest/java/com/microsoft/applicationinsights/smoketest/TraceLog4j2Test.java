@@ -54,9 +54,9 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertEquals("test", md3.getProperties().get("LoggerName"));
         assertEquals(3, md3.getProperties().size());
 
-        assertParentChild(rd, rdEnvelope, mdEnvelope1, "/TraceLog4j2/traceLog4j2");
-        assertParentChild(rd, rdEnvelope, mdEnvelope2, "/TraceLog4j2/traceLog4j2");
-        assertParentChild(rd, rdEnvelope, mdEnvelope3, "/TraceLog4j2/traceLog4j2");
+        assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j2/traceLog4j2");
+        assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j2/traceLog4j2");
+        assertParentChild(rd, rdEnvelope, mdEnvelope3, "GET /TraceLog4j2/traceLog4j2");
     }
 
     @Test
@@ -67,6 +67,7 @@ public class TraceLog4j2Test extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> edList = mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope edEnvelope = edList.get(0);
 
@@ -83,7 +84,7 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
         assertEquals("test", ed.getProperties().get("LoggerName"));
         assertEquals("MDC value", ed.getProperties().get("MDC key"));
-        assertParentChild(rd, rdEnvelope, edEnvelope, "/TraceLog4j2/traceLog4j2WithException");
+        assertParentChild(rd, rdEnvelope, edEnvelope, "GET /TraceLog4j2/traceLog4j2WithException");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {

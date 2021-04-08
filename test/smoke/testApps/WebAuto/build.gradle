@@ -1,7 +1,7 @@
 apply plugin: 'war'
 
 dependencies {
-    compile aiWebAutoJar
+    implementation aiWebAutoJar
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 }

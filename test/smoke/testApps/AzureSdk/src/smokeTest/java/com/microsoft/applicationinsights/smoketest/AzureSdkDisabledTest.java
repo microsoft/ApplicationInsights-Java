@@ -21,6 +21,7 @@ public class AzureSdkDisabledTest extends AiSmokeTest {
         Envelope rdEnvelope = rdList.get(0);
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
@@ -30,7 +31,7 @@ public class AzureSdkDisabledTest extends AiSmokeTest {
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
 
-        assertEquals("/AzureSdk/test", rd.getName());
+        assertEquals("GET /AzureSdk/test", rd.getName());
         assertTrue(rd.getProperties().isEmpty());
         assertTrue(rd.getSuccess());
 

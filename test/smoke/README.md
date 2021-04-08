@@ -90,10 +90,10 @@ In the current system, test cases are coupled with the test application. So, you
 3. Create a smoke test class. This is a JUnit test which inherits from `AiSmokeTest` found in `/utils`.
 // TODO metion that junit and utils is already a dependency
 
-4. Specify any additional dependencies using the configuration `smokeTestCompile`, e.g.:
+4. Specify any additional dependencies using the configuration `smokeTestImplementation`, e.g.:
     ```gradle
     dependencies {
-        smokeTestCompile 'some.org:some.artifact:1.0'
+        smokeTestImplementation 'some.org:some.artifact:1.0'
     }
     ```
 

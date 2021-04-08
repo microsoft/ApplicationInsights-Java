@@ -1,19 +1,19 @@
 apply plugin: 'war'
 
 dependencies {
-    compile aiWebJar
+    implementation aiWebJar
 
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
-    compile group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.4'
-    compile group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
-    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.12.1'
-    compile group: 'com.squareup.okhttp', name: 'okhttp', version: '2.7.5'
-    compile group: 'org.springframework', name: 'spring-webflux', version: '5.2.3.RELEASE' // for testing netty client
-    compile group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.9.4.RELEASE' // needed for above
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+    implementation group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.4'
+    implementation group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.12.1'
+    implementation group: 'com.squareup.okhttp', name: 'okhttp', version: '2.7.5'
+    implementation group: 'org.springframework', name: 'spring-webflux', version: '5.2.3.RELEASE' // for testing netty client
+    implementation group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.9.4.RELEASE' // needed for above
     // this dependency is needed to make wildfly happy
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.4'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.4'
 
-    compile group: 'com.google.guava', name: 'guava', version: '27.1-android'
+    implementation group: 'com.google.guava', name: 'guava', version: '27.1-android'
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 }

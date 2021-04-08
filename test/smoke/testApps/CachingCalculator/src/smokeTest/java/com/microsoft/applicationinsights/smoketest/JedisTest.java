@@ -23,6 +23,7 @@ public class JedisTest extends AiSmokeTest {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         Envelope rddEnvelope = rddList.get(0);
 
@@ -35,7 +36,7 @@ public class JedisTest extends AiSmokeTest {
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
-        assertParentChild(rd, rdEnvelope, rddEnvelope, "/CachingCalculator/index.jsp");
+        assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /CachingCalculator/index.jsp");
     }
 
     private static void assertParentChild(RequestData rd, Envelope rdEnvelope, Envelope childEnvelope, String operationName) {
