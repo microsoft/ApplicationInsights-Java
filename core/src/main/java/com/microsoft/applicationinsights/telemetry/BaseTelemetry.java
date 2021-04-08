@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.base.Charsets;
-import com.microsoft.applicationinsights.internal.perfcounter.WindowsPerformanceCounterAsPC;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
