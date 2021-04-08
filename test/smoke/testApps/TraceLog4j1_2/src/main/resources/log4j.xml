@@ -10,19 +10,11 @@
         </layout>
     </appender>
 
-<<<<<<< HEAD
-    <logger name="com.microsoft.applicationinsights.smoketestapp">
-=======
     <logger name="smoketestapp">
->>>>>>> origin/master
         <level value="trace" />
     </logger>
 
     <root>
-<<<<<<< HEAD
-        <appender-ref ref="test" />
-=======
         <appender-ref ref="aiAppender" />
->>>>>>> origin/master
     </root>
 </log4j:configuration>
