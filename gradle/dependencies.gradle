@@ -41,6 +41,6 @@ ext {
             systemRules                      : "1.19.0",
             logcaptor                        : "2.5.0",
 
-            legacySdk                        : "2.6.0"
+            aiLegacySdk                      : "2.6.0"
     ]
 }

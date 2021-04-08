@@ -11,10 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(description = "calls jul", urlPatterns = "/traceJavaUtilLogging")
 public class SimpleTestTraceJavaUtilLoggingServlet extends HttpServlet {
 
+    private static final Logger logger = Logger.getLogger("smoketestapp");
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ServletFuncs.geRrenderHtml(request, response);
 
-        Logger logger = Logger.getLogger("root");
         logger.finest("This is jul finest.");
         logger.finer("This is jul finer.");
         logger.fine("This is jul fine.");

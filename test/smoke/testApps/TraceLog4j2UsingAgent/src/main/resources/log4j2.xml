@@ -7,7 +7,11 @@
         </Console>
     </Appenders>
     <Loggers>
+<<<<<<< HEAD
         <Logger name="com.microsoft.applicationinsights.smoketestapp" level="trace" />
+=======
+        <Logger name="smoketestapp" level="trace" />
+>>>>>>> origin/master
         <Root>
             <AppenderRef ref="Console"/>
         </Root>

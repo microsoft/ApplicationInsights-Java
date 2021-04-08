@@ -9,7 +9,11 @@
         </layout>
     </appender>
 
+<<<<<<< HEAD
     <logger name="com.microsoft.applicationinsights.smoketestapp">
+=======
+    <logger name="smoketestapp">
+>>>>>>> origin/master
         <level value="trace" />
     </logger>
 

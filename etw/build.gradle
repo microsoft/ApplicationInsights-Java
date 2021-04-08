@@ -1,3 +1,5 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 /*
  * ApplicationInsights-Java
  * Copyright (c) Microsoft Corporation
@@ -24,7 +26,10 @@ plugins {
 
 clean {
     dependsOn ':etw:java:clean'
-    dependsOn ':etw:native:clean'
+    def buildNative = !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
+    if (buildNative) {
+        dependsOn ':etw:native:clean'
+    }
 }
 
 /**

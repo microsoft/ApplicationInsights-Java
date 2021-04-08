@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="true">
-    <appender name="test" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender">
+    <appender name="aiAppender" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender">
         <instrumentationKey>00000000-0000-0000-0000-0FEEDDADBEEF</instrumentationKey>
     </appender>
 
+<<<<<<< HEAD
     <logger name="com.microsoft.applicationinsights.smoketestapp">
+=======
+    <logger name="smoketestapp">
+>>>>>>> origin/master
         <level value="trace" />
     </logger>
 
     <root>
+<<<<<<< HEAD
         <appender-ref ref="test" />
+=======
+        <appender-ref ref="aiAppender" />
+>>>>>>> origin/master
     </root>
 </configuration>

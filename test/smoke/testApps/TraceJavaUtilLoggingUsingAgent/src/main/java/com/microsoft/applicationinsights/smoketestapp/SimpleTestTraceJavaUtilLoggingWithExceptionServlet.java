@@ -12,10 +12,11 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(description = "calls jul with exception", urlPatterns = "/traceJavaUtilLoggingWithException")
 public class SimpleTestTraceJavaUtilLoggingWithExceptionServlet extends HttpServlet {
 
+    private static final Logger logger = Logger.getLogger("smoketestapp");
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ServletFuncs.geRrenderHtml(request, response);
 
-        java.util.logging.Logger logger = Logger.getLogger("root");
         logger.log(Level.SEVERE, "This is an exception!", new Exception("Fake Exception"));
     }
 }
