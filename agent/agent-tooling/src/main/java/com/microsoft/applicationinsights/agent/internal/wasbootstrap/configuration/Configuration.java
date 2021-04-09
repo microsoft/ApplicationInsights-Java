@@ -180,6 +180,7 @@ public class Configuration {
         public LiveMetrics liveMetrics = new LiveMetrics();
 
         public ProfilerConfiguration profiler = new ProfilerConfiguration();
+        public GcEventConfiguration gcEvents = new GcEventConfiguration();
     }
 
     public static class PreviewInstrumentation {
@@ -568,6 +569,11 @@ public class Configuration {
         public int periodicRecordingIntervalSeconds = 60 * 60;
         public String serviceProfilerFrontEndPoint = null;
         public boolean enabled = false;
+    }
+
+    public static class GcEventConfiguration {
+        public boolean reportAllGcEvents = false;
+        public boolean reportTenuredGcEvents = false;
     }
 
     private static boolean isEmpty(String str) {
