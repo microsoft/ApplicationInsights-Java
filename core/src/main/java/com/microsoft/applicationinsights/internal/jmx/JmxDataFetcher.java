@@ -60,6 +60,7 @@ public class JmxDataFetcher {
 
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
+
         if (objects.isEmpty()) {
             String errorMsg = String.format("Cannot find object name '%s'", objectName);
             throw new IllegalArgumentException(errorMsg);
@@ -78,9 +79,6 @@ public class JmxDataFetcher {
 
         return result;
     }
-
-    // objectName = "gc=*"
-    // attribute = "collectionTime"
 
     private static Collection<Object> fetch(MBeanServer server, Set<ObjectName> objects, String attributeName)
             throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException {

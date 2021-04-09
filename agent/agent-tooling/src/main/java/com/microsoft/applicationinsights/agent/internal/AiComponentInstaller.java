@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.concurrent.CountDownLatch;
 
 import com.google.common.base.Strings;
@@ -68,6 +69,8 @@ import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.management.ObjectName;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -313,11 +316,23 @@ public class AiComponentInstaller implements ComponentInstaller {
     //assuming that every other element is not needed - such as "type", "worker", "name"
     //assuming same set of delimiters in every object name
     static String getJmxDisplayName(String attribute) {
-        String[] nameParts = attribute.split("=|:|,");
-        StringBuilder name = new StringBuilder();
 
-        for(int i=0; i<nameParts.length;i=i+2) {
-            name.append(nameParts[i]).append(" / ");
+        StringBuilder name = new StringBuilder("");
+        try
+        {
+            ObjectName nameObject = new ObjectName(attribute);
+            name.append(nameObject.getDomain()).append(" / ");
+            Hashtable properties = nameObject.getKeyPropertyList();
+
+            if(properties.containsKey("type")) {
+                name.append(properties.get("type")).append(" / ");
+            }
+            if(properties.containsKey("name")) {
+                name.append(properties.get("name")).append(" / ");
+            }
+        }
+        catch(Exception e) {
+            startupLogger.debug("Could not generate default metric name for attribute " + attribute);
         }
         return name.toString();
     }
