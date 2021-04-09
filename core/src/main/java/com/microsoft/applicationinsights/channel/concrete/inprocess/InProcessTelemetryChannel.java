@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.channel.concrete.inprocess;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
-import com.microsoft.applicationinsights.telemetry.StatsbeatMetricTelemetry;
+import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,9 +69,10 @@ public final class InProcessTelemetryChannel extends TelemetryChannelBase<Teleme
         if (telemetry.previouslyUsed()) {
             throw new IllegalStateException("Telemetry was previously used: " + telemetry);
         }
-        if (telemetry instanceof StatsbeatMetricTelemetry) {
-            statsTelemetryBuffer.add((StatsbeatMetricTelemetry) telemetry);
-            logger.debug("############################ add StatsbeatMetricTelemetry to statsTelemetryBuffer");
+        // TODO Prepare for AAD support for Statsbeat's iKey
+        if (telemetry instanceof StatsbeatTelemetry) {
+            statsTelemetryBuffer.add((StatsbeatTelemetry) telemetry);
+            logger.debug("############################ add StatsbeatTelemetry to statsTelemetryBuffer");
         } else {
             telemetryBuffer.add(telemetry);
             logger.debug("############################ add regular MetricTelemetry to telemetryBuffer");

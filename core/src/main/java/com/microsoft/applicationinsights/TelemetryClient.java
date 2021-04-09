@@ -32,7 +32,7 @@ import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
-import com.microsoft.applicationinsights.telemetry.StatsbeatMetricTelemetry;
+import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import org.apache.commons.lang3.StringUtils;
@@ -130,13 +130,13 @@ public class TelemetryClient {
 
         TelemetryContext context = telemetry.getContext();
 
-        if (!(telemetry instanceof StatsbeatMetricTelemetry)) {
+        if (!(telemetry instanceof StatsbeatTelemetry)) {
             // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
             // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
             context.setInstrumentationKey(getContext().getInstrumentationKey(), getContext().getNormalizedInstrumentationKey());
             logger.debug("##################################### global context instrumentation key: {}", context.getInstrumentationKey());
         } else {
-            logger.debug("##################################### StatsbeatMetricTelemetry instrumentation key: {}", context.getInstrumentationKey());
+            logger.debug("##################################### StatsbeatTelemetry instrumentation key: {}", context.getInstrumentationKey());
         }
 
         // the TelemetryClient's base context contains tags:
