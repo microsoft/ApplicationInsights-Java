@@ -23,8 +23,7 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 import com.google.common.base.Strings;
@@ -313,23 +312,26 @@ public class AiComponentInstaller implements ComponentInstaller {
         return xmlConfiguration;
     }
 
-    //assuming that every other element is not needed - such as "type", "worker", "name"
-    //assuming same set of delimiters in every object name
     static String getJmxDisplayName(String attribute) {
 
         StringBuilder name = new StringBuilder("");
         try
         {
             ObjectName nameObject = new ObjectName(attribute);
-            name.append(nameObject.getDomain()).append(" / ");
+            name.append(nameObject.getDomain()).append(" /");
             Hashtable properties = nameObject.getKeyPropertyList();
 
-            if(properties.containsKey("type")) {
-                name.append(properties.get("type")).append(" / ");
+            Set<String> types = properties.keySet();
+            SortedMap<Integer, String> orderedTypes = new TreeMap<>();
+
+            for(String type: types) {
+                int typeIndex = attribute.indexOf(type);
+                orderedTypes.put(typeIndex, (String)properties.get(type));
             }
-            if(properties.containsKey("name")) {
-                name.append(properties.get("name")).append(" / ");
-            }
+            StringBuilder valuesString = new StringBuilder(orderedTypes.values().toString().replaceAll(", ", " /"));
+            valuesString.deleteCharAt(0);
+            valuesString.deleteCharAt(valuesString.length()-1);
+            name.append(valuesString).append(" /");
         }
         catch(Exception e) {
             startupLogger.debug("Could not generate default metric name for attribute " + attribute);
