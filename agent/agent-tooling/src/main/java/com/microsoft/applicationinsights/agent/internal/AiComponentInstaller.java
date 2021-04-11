@@ -321,11 +321,11 @@ public class AiComponentInstaller implements ComponentInstaller {
             name.append(nameObject.getDomain()).append(" /");
             Hashtable properties = nameObject.getKeyPropertyList();
 
-            Set<String> types = properties.keySet();
+            Set types = properties.keySet();
             SortedMap<Integer, String> orderedTypes = new TreeMap<>();
 
-            for(String type: types) {
-                int typeIndex = attribute.indexOf(type);
+            for(Object type: types) {
+                int typeIndex = attribute.indexOf((String)type);
                 orderedTypes.put(typeIndex, (String)properties.get(type));
             }
             StringBuilder valuesString = new StringBuilder(orderedTypes.values().toString().replaceAll(", ", " /"));
