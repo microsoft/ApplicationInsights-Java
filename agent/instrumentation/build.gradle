@@ -82,6 +82,12 @@ dependencies {
 // reference unshaded java.util.logging.Logger
 // (java.util.logging.Logger shading is not needed in any of the instrumentation modules,
 // but it is needed for the dependencies, e.g. guava, which use java.util.logging.Logger)
+// -- AND ALSO --
+// need to perform shading in two steps in order to avoid shading ch.qos.logback.*
+// in opentelemetry-javaagent-logback-spans-1.0 since that instrumentation needs to
+// reference unshaded ch.qos.logback.*
+// (ch.qos.logback.* shading is not needed in any of the instrumentation modules,
+// but it is needed for agent-tooling, which use logback to update levels dynamically in LazyConfigurationAccessor)
 task shadowJarStep1(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
 
     archiveClassifier.set('step1')
@@ -91,6 +97,7 @@ task shadowJarStep1(type: com.github.jengelman.gradle.plugins.shadow.tasks.Shado
 
     dependencies {
         exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans'))
+        exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0'))
 
         // exclude bootstrap dependencies from shadowJar
         exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-bootstrap'))
@@ -98,10 +105,14 @@ task shadowJarStep1(type: com.github.jengelman.gradle.plugins.shadow.tasks.Shado
         exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
         exclude(dependency('io.grpc:grpc-context'))
         exclude(dependency('org.slf4j:slf4j-api'))
+        exclude(dependency('ch.qos.logback:logback-classic'))
+        exclude(dependency('ch.qos.logback:logback-core'))
     }
 
     // rewrite dependencies calling Logger.getLogger
     relocate 'java.util.logging.Logger', 'io.opentelemetry.javaagent.bootstrap.PatchLogger'
+
+    relocate 'ch.qos.logback', "com.microsoft.applicationinsights.agent.shadow.ch.qos.logback"
 }
 
 
@@ -122,6 +133,8 @@ shadowJar {
         exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
         exclude(dependency('io.grpc:grpc-context'))
         exclude(dependency('org.slf4j:slf4j-api'))
+        exclude(dependency('ch.qos.logback:logback-classic'))
+        exclude(dependency('ch.qos.logback:logback-core'))
     }
 
     mergeServiceFiles()

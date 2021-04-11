@@ -21,13 +21,18 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
+import io.opentelemetry.instrumentation.api.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
@@ -55,6 +60,8 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
         setConnectionString(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"), System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
         setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
+        setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
+        setInstrumentationLoggingLevel(System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL"));
     }
 
     static void setConnectionString(String connectionString, String instrumentationKey) {
@@ -89,6 +96,18 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
         }
     }
 
+    static void setSelfDiagnosticsLevel(String loggingLevel) {
+        if (loggingLevel != null && !loggingLevel.isEmpty()) {
+            LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+            List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
+            logger.info("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
+            loggerList.stream().forEach(tmpLogger -> tmpLogger.setLevel(Level.toLevel(loggingLevel)));
+            if (Level.toLevel(loggingLevel) == Level.DEBUG) {
+                logger.debug("This should get logged after the logging level update.");
+            }
+        }
+    }
+
     static boolean shouldSetConnectionString(boolean lazySetOptIn, String enableAgent) {
         if (lazySetOptIn) {
             // when LazySetOptIn is on, enable agent if APPLICATIONINSIGHTS_ENABLE_AGENT is null or true
@@ -102,5 +121,11 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
             }
         }
         return false;
+    }
+
+    static void setInstrumentationLoggingLevel(String loggingLevel) {
+        if (loggingLevel != null && !loggingLevel.isEmpty()) {
+            Config.get().updateProperty("otel.experimental.log.capture.threshold", loggingLevel.toUpperCase());
+        }
     }
 }

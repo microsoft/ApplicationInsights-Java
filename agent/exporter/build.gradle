@@ -14,7 +14,7 @@ dependencies {
     // this is needed in order to access AiAppId for appId exchange data
     compileOnly group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
 
-    implementation 'org.slf4j:slf4j-api:1.7.26'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
     implementation project(path: ':core')
 

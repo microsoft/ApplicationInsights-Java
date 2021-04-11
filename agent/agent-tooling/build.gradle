@@ -66,6 +66,7 @@ dependencies {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
     implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: versions.slf4j
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: versions.logback
 
     implementation project(":agent:agent-profiler:agent-profiler-api")
 
