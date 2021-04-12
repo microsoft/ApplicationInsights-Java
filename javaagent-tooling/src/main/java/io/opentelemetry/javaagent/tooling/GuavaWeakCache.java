@@ -87,4 +87,9 @@ public final class GuavaWeakCache<K, V> implements WeakCache<K, V> {
   public void put(K key, V value) {
     cache.put(key, value);
   }
+
+  @Override
+  public void remove(K key) {
+    cache.invalidate(key);
+  }
 }

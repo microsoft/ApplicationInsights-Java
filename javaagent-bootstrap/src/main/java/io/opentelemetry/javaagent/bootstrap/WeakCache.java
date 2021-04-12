@@ -21,4 +21,6 @@ public interface WeakCache<K, V> {
   V get(K key, Callable<? extends V> loader);
 
   void put(K key, V value);
+
+  void remove(K key);
 }
