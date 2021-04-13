@@ -87,7 +87,7 @@ public class GcProcessRunner {
                         }
                         throw e;
                     }
-                } catch (IllegalStateException e2) {
+                } catch (IllegalThreadStateException e2) {
                     throw e;
                 }
             }
