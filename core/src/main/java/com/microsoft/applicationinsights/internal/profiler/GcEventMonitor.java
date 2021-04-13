@@ -45,11 +45,20 @@ public class GcEventMonitor {
         GcMonitorFactory gcMonitorFactory = ProfilerServiceInitializer.findServiceLoader(GcMonitorFactory.class);
 
         if (gcMonitorFactory != null) {
-            try {
-                gcMonitorFactory.monitorSelf(executorService, process(alertingSubsystem, telemetryClient, gcEventMonitorConfiguration));
-            } catch (UnableToMonitorMemoryException e) {
-                LOGGER.error("Failed to monitor gc mxbeans");
-            }
+            init(alertingSubsystem, telemetryClient, executorService, gcEventMonitorConfiguration, gcMonitorFactory);
+        }
+    }
+
+    public static void init(
+            AlertingSubsystem alertingSubsystem,
+            TelemetryClient telemetryClient,
+            ExecutorService executorService,
+            GcEventMonitorConfiguration gcEventMonitorConfiguration,
+            GcMonitorFactory gcMonitorFactory) {
+        try {
+            gcMonitorFactory.monitorSelf(executorService, process(alertingSubsystem, telemetryClient, gcEventMonitorConfiguration));
+        } catch (UnableToMonitorMemoryException e) {
+            LOGGER.error("Failed to monitor gc mxbeans");
         }
     }
 

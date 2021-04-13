@@ -84,18 +84,6 @@ public class ProfilerServiceTest {
     }
 
     @Test
-    public void endToEndAlertTriggerMemory() throws InterruptedException, ExecutionException {
-        endToEndAlertTriggerCycle(
-                false,
-                new MetricTelemetry(HEAP_MEM_USED_PERCENTAGE, 100.0),
-                telemetry -> {
-                    Assert.assertEquals("JFR-MEMORY", telemetry.getProperties().get("Source"));
-                    Assert.assertEquals(0.0, telemetry.getMetrics().get("AverageCPUUsage"), 0.01);
-                    Assert.assertEquals(100.0, telemetry.getMetrics().get("AverageMemoryUsage"), 0.01);
-                });
-    }
-
-    @Test
     public void endToEndAlertTriggerManual() throws InterruptedException, ExecutionException {
         endToEndAlertTriggerCycle(
                 true,
