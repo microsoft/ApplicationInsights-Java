@@ -76,14 +76,18 @@ public class GcProcessRunner {
                 cdl.await(15, TimeUnit.SECONDS);
                 return events;
             } catch (Exception e) {
-                if (process.exitValue() != 0) {
-                    if (errorStream.available() > 0) {
-                        String error = new String(errorStream.readAllBytes());
-                        if (error.contains("Unrecognized VM option")) {
-                            throw new GCNotPresentException();
+                try {
+                    if (process.exitValue() != 0) {
+                        if (errorStream.available() > 0) {
+                            String error = new String(errorStream.readAllBytes());
+                            if (error.contains("Unrecognized VM option")) {
+                                throw new GCNotPresentException();
+                            }
+                            System.err.println(error);
                         }
-                        System.err.println(error);
+                        throw e;
                     }
+                } catch (IllegalStateException e2) {
                     throw e;
                 }
             }
