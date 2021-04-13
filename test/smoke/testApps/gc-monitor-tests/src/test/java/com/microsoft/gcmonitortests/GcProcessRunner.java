@@ -156,7 +156,7 @@ public class GcProcessRunner {
         String classPath = detectClasspath();
 
         process = new ProcessBuilder()
-                .command(javaCommand, "-Xlog:gc*=debug:file=/tmp/gc.log", "-XX:+UnlockExperimentalVMOptions", gcArg, "-Xmx" + heapSizeInMb + "m", "-cp", classPath, "com.microsoft.gcmonitortests.GcEventGenerator")
+                .command(javaCommand, "-XX:+UnlockExperimentalVMOptions", gcArg, "-Xmx" + heapSizeInMb + "m", "-cp", classPath, "com.microsoft.gcmonitortests.GcEventGenerator")
                 .start();
 
         //Fail save kill forked proces
