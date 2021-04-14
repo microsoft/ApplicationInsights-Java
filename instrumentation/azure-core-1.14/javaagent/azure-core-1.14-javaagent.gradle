@@ -1,5 +1,14 @@
 apply from: "$rootDir/gradle/instrumentation.gradle"
 
+muzzle {
+  pass {
+    group = "com.azure"
+    module = "azure-core"
+    versions = "[1.14.0,)"
+    assertInverse = true
+  }
+}
+
 configurations {
   testRuntime.exclude group: "com.azure", module: "azure-core-tracing-opentelemetry"
 }
