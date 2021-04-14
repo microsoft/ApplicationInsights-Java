@@ -5,8 +5,8 @@
 
 package io.opentelemetry.javaagent.tooling.bytebuddy.matcher;
 
-import io.opentelemetry.javaagent.bootstrap.WeakCache;
 import io.opentelemetry.javaagent.bootstrap.ClassLoaderMatcherCacheHolder;
+import io.opentelemetry.javaagent.bootstrap.WeakCache;
 import io.opentelemetry.javaagent.instrumentation.api.internal.InClassLoaderMatcher;
 import io.opentelemetry.javaagent.tooling.AgentTooling;
 import net.bytebuddy.matcher.ElementMatcher;

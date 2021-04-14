@@ -5,7 +5,6 @@
 
 package io.opentelemetry.javaagent.bootstrap;
 
-import io.opentelemetry.instrumentation.api.caching.Cache;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
