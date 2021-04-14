@@ -23,7 +23,7 @@ import net.bytebuddy.matcher.ElementMatcher;
 @AutoService(InstrumentationModule.class)
 public class AzureSdkInstrumentationModule extends InstrumentationModule {
   public AzureSdkInstrumentationModule() {
-    super("azure-sdk");
+    super("azure-core", "azure-core-1.14");
   }
 
   @Override
