@@ -21,13 +21,13 @@ public class SlowRequestCpuBoundServlet extends HttpServlet {
 
         ServletFuncs.geRrenderHtml(request, response);
         int responseTime = 25;
-        final String customRepsonseTime = request.getParameter("responseTime");
-        if (customRepsonseTime != null) {
+        final String customResponseTime = request.getParameter("responseTime");
+        if (customResponseTime != null) {
             try {
-                responseTime = Integer.parseInt(customRepsonseTime);
+                responseTime = Integer.parseInt(customResponseTime);
                 System.out.println("Custom responseTime = "+responseTime);
             } catch (NumberFormatException e) {
-                System.err.printf("Invalid value for 'responseTime': '%s'%n", customRepsonseTime);
+                System.err.printf("Invalid value for 'responseTime': '%s'%n", customResponseTime);
             }
         }
 
