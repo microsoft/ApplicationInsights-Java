@@ -16,7 +16,7 @@ build:
     - !!buildcommand
       name: 'Assemble ApplicationInsights-Java JARs'
       command: '.scripts/gradle.cmd'
-      arguments: 'assemble copyLibsToGlobalArtifactsFolder -DisRelease=true -Pai.etw.native.build=release'
+      arguments: 'assemble copyLibsToGlobalArtifactsFolder -Pai.etw.native.build=release'
       artifacts:
         - to: 'Artifacts'
           include:
