@@ -10,8 +10,8 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpcl
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-5.0:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-applicationinsights-web-2.3:1.0.0+ai.patch.1-alpha
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-core-1.14:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-functions:1.0.0+ai.patch.1-alpha
-io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-azure-sdk:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-cassandra-3.0:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-cassandra-4.0:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-classloaders:1.0.0+ai.patch.1-alpha
