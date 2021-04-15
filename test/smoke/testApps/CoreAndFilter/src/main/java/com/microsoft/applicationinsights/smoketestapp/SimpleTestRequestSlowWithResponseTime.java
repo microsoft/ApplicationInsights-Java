@@ -1,7 +1,5 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -20,7 +18,7 @@ public class SimpleTestRequestSlowWithResponseTime extends HttpServlet {
 
         int sleepTime = 25;
         final String customSleepTime = request.getParameter("sleeptime");
-        if (StringUtils.isNotBlank(customSleepTime)) {
+        if (customSleepTime != null) {
             try {
                 sleepTime = Integer.parseInt(customSleepTime);
             } catch (NumberFormatException e) {
