@@ -57,7 +57,7 @@ public class GcEventMonitorTest {
                 alertingSubsystem,
                 client,
                 Executors.newSingleThreadExecutor(),
-                new GcEventMonitor.GcEventMonitorConfiguration(false, false),
+                new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.NONE),
                 factory);
 
         AlertBreach alert = alertFuture.get(10, TimeUnit.SECONDS);

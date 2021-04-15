@@ -5,6 +5,7 @@ import com.microsoft.gcmonitor.garbagecollectors.GarbageCollectors;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
 import com.microsoft.gcmonitor.memorypools.MemoryPools;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,11 +65,6 @@ public enum MemoryManagers {
         Set<Class<? extends GarbageCollector>> collectorClasses = collectors.stream()
                 .map(GarbageCollector::getClass)
                 .collect(Collectors.toSet());
-        for (Class<? extends GarbageCollector> manager : managers) {
-            if (!collectorClasses.contains(manager)) {
-                return false;
-            }
-        }
-        return true;
+        return collectorClasses.containsAll(Arrays.asList(managers));
     }
 }

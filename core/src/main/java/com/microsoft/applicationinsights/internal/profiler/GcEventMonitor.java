@@ -25,12 +25,10 @@ public class GcEventMonitor {
     private static final Logger LOGGER = LoggerFactory.getLogger(GcEventMonitor.class);
 
     public static class GcEventMonitorConfiguration {
-        public final boolean reportAllGcEvents;
-        public final boolean reportTenuredGcEvents;
+        public final GcReportingLevel reportingLevel;
 
-        public GcEventMonitorConfiguration(boolean reportAllGcEvents, boolean reportTenuredGcEvents) {
-            this.reportAllGcEvents = reportAllGcEvents;
-            this.reportTenuredGcEvents = reportTenuredGcEvents;
+        public GcEventMonitorConfiguration(GcReportingLevel reportingLevel) {
+            this.reportingLevel = reportingLevel;
         }
     }
 
@@ -70,7 +68,7 @@ public class GcEventMonitor {
                                            GcEventMonitorConfiguration gcEventMonitorConfiguration) {
         return event -> {
             sendTenuredFillPercentageToAlerting(alertingSubsystem, event);
-            emmitGcEvent(telemetryClient, gcEventMonitorConfiguration, event);
+            emitGcEvent(telemetryClient, gcEventMonitorConfiguration, event);
         };
     }
 
@@ -95,9 +93,9 @@ public class GcEventMonitor {
     /**
      * If gc reporting is enabled, send gc event to Application Insights
      */
-    private static void emmitGcEvent(TelemetryClient telemetryClient, GcEventMonitorConfiguration gcEventMonitorConfiguration, GCCollectionEvent event) {
-        boolean reportEvent = gcEventMonitorConfiguration.reportAllGcEvents;
-        reportEvent |= gcEventMonitorConfiguration.reportTenuredGcEvents && event.getCollector().isTenuredCollector();
+    private static void emitGcEvent(TelemetryClient telemetryClient, GcEventMonitorConfiguration gcEventMonitorConfiguration, GCCollectionEvent event) {
+        boolean reportEvent = gcEventMonitorConfiguration.reportingLevel == GcReportingLevel.ALL;
+        reportEvent |= gcEventMonitorConfiguration.reportingLevel == GcReportingLevel.TENURED_ONLY && event.getCollector().isTenuredCollector();
 
         if (!reportEvent) {
             return;

@@ -13,16 +13,16 @@ public abstract class MemoryPool {
 
     private final String name;
     private final Set<GarbageCollector> garbageCollectors;
-    private final boolean isTenuredPool;
-    private final boolean isYoungPool;
-    private final boolean isHeap;
+    private final boolean tenuredPool;
+    private final boolean youngPool;
+    private final boolean heap;
 
-    MemoryPool(String name, Set<GarbageCollector> garbageCollectors, boolean isHeap, boolean isTenuredPool, boolean isYoungPool) {
+    MemoryPool(String name, Set<GarbageCollector> garbageCollectors, boolean heap, boolean tenuredPool, boolean youngPool) {
         this.name = name;
         this.garbageCollectors = Collections.unmodifiableSet(garbageCollectors);
-        this.isHeap = isHeap;
-        this.isTenuredPool = isTenuredPool;
-        this.isYoungPool = isYoungPool;
+        this.heap = heap;
+        this.tenuredPool = tenuredPool;
+        this.youngPool = youngPool;
     }
 
     /**
@@ -43,20 +43,20 @@ public abstract class MemoryPool {
      * If this collector manages the JVMs heap
      */
     public boolean isHeap() {
-        return isHeap;
+        return heap;
     }
 
     /**
      * If this is the JVMs tenured pool
      */
     public boolean isTenuredPool() {
-        return isTenuredPool;
+        return tenuredPool;
     }
 
     /**
      * If this pool is part of the young generation
      */
     public boolean isYoungPool() {
-        return isYoungPool;
+        return youngPool;
     }
 }

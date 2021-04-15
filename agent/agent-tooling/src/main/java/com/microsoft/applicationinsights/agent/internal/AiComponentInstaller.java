@@ -202,7 +202,7 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {
-        return new GcEventMonitor.GcEventMonitorConfiguration(gcEvents.reportAllGcEvents, gcEvents.reportTenuredGcEvents);
+        return new GcEventMonitor.GcEventMonitorConfiguration(gcEvents.reportingLevel);
     }
 
     private static String formApplicationInsightsUserAgent() {

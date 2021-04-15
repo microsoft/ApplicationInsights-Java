@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Implementation of a GarbageCollectorStats that provides access to the stats via a MxBean
  */
-public class JMXGarbageCollector implements GarbageCollectorStats {
+public class JmxGarbageCollectorStats implements GarbageCollectorStats {
 
     private final List<MemoryPool> managedPools;
     private final IncrementalCounter countCounter;
@@ -33,7 +33,7 @@ public class JMXGarbageCollector implements GarbageCollectorStats {
     private final MemoryManagement memoryManagement;
     private final GarbageCollector garbageCollector;
 
-    public JMXGarbageCollector(MemoryManagement memoryManagement, MBeanServerConnection connection, ObjectName name, GCEventConsumer observer) throws UnableToMonitorMemoryException {
+    public JmxGarbageCollectorStats(MemoryManagement memoryManagement, MBeanServerConnection connection, ObjectName name, GCEventConsumer observer) throws UnableToMonitorMemoryException {
         try {
             mxbean = JMX.newMXBeanProxy(connection, name, GarbageCollectorMXBean.class);
             this.name = name;

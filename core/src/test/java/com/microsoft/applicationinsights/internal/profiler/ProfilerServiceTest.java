@@ -139,7 +139,7 @@ public class ProfilerServiceTest {
                 TelemetryObservers.INSTANCE,
                 client,
                 alertServiceExecutorService,
-                new GcEventMonitor.GcEventMonitorConfiguration(true, true));
+                new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.ALL));
 
         service.set(new JfrProfilerService(
                 () -> appId,

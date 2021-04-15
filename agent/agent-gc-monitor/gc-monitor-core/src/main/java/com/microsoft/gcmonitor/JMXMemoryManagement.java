@@ -1,6 +1,6 @@
 package com.microsoft.gcmonitor;
 
-import com.microsoft.gcmonitor.collectors.JMXGarbageCollector;
+import com.microsoft.gcmonitor.collectors.JmxGarbageCollectorStats;
 import com.microsoft.gcmonitor.garbagecollectors.GarbageCollector;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
 import com.microsoft.gcmonitor.memorypools.MemoryPools;
@@ -35,7 +35,7 @@ public class JMXMemoryManagement implements MemoryManagement {
     private static final String COLLECTOR_MXBEANS = "java.lang:type=GarbageCollector,name=*";
 
     private Set<MemoryPool> pools;
-    private Set<JMXGarbageCollector> collectors;
+    private Set<JmxGarbageCollectorStats> collectors;
     private RuntimeMXBean runtimeBean;
     private MemoryManagers collectorGroup;
 
@@ -51,12 +51,12 @@ public class JMXMemoryManagement implements MemoryManagement {
 
         Set<GarbageCollector> col = collectors
                 .stream()
-                .map(JMXGarbageCollector::getGarbageCollector)
+                .map(JmxGarbageCollectorStats::getGarbageCollector)
                 .collect(Collectors.toSet());
 
         pools = initPools(connection, col);
 
-        for (JMXGarbageCollector collector : collectors) {
+        for (JmxGarbageCollectorStats collector : collectors) {
             collector.visitPools(pools);
         }
         this.collectorGroup = MemoryManagers.of(this);
@@ -97,14 +97,14 @@ public class JMXMemoryManagement implements MemoryManagement {
         return this;
     }
 
-    private Set<JMXGarbageCollector> initCollectors(final MBeanServerConnection connection, GCEventConsumer consumer) throws UnableToMonitorMemoryException {
+    private Set<JmxGarbageCollectorStats> initCollectors(final MBeanServerConnection connection, GCEventConsumer consumer) throws UnableToMonitorMemoryException {
         return getEntityFromMbeanServer(COLLECTOR_MXBEANS, connection,
                 name -> getJmxGarbageCollector(connection, consumer, name)
         );
     }
 
-    public JMXGarbageCollector getJmxGarbageCollector(MBeanServerConnection connection, GCEventConsumer consumer, ObjectName name) throws UnableToMonitorMemoryException {
-        return new JMXGarbageCollector(
+    public JmxGarbageCollectorStats getJmxGarbageCollector(MBeanServerConnection connection, GCEventConsumer consumer, ObjectName name) throws UnableToMonitorMemoryException {
+        return new JmxGarbageCollectorStats(
                 this,
                 connection,
                 name,
@@ -144,14 +144,14 @@ public class JMXMemoryManagement implements MemoryManagement {
 
     @Override
     public Optional<MemoryPool> getPool(String name) {
-        return pools.stream().filter(pool -> pool.getName().equals(MemoryPools.getIdentifier(name))).findFirst();
+        return pools.stream().filter(pool -> pool.getName().equals(name)).findFirst();
     }
 
     @Override
     public Set<GarbageCollector> getCollectors() {
         return collectors
                 .stream()
-                .map(JMXGarbageCollector::getGarbageCollector)
+                .map(JmxGarbageCollectorStats::getGarbageCollector)
                 .collect(Collectors.toSet());
     }
 

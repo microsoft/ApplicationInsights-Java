@@ -65,7 +65,7 @@ public enum MemoryPools {
 
     public static MemoryPool getMemoryPool(MBeanServerConnection connection, ObjectName name, Set<GarbageCollector> collectors) {
         MemoryPoolMXBean dataSource = JMX.newMXBeanProxy(connection, name, MemoryPoolMXBean.class);
-        String id = getIdentifier(dataSource.getName());
+        String id = dataSource.getName();
 
         Set<GarbageCollector> managers = Arrays
                 .stream(dataSource.getMemoryManagerNames())
@@ -83,17 +83,8 @@ public enum MemoryPools {
         }
     }
 
-    public static String getIdentifier(String name) {
-        return name.replace(' ', '_')
-                .replace('-', '_')
-                .replace("[", "")
-                .replace("]", "")
-                .replace("'", "");
-    }
-
-
     public static class CodeCache extends MemoryPool {
-        public final static String POOL_NAME = "Code_Cache";
+        public final static String POOL_NAME = "Code Cache";
 
         public CodeCache(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, false, false, false);
@@ -102,7 +93,7 @@ public enum MemoryPools {
 
 
     public static class CodeHeapNonNmethods extends MemoryPool {
-        public final static String POOL_NAME = "CodeHeap_non_nmethods";
+        public final static String POOL_NAME = "CodeHeap 'non-nmethods'";
 
         public CodeHeapNonNmethods(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, false, false, false);
@@ -111,7 +102,7 @@ public enum MemoryPools {
 
 
     public static class CodeHeapProfiledNmethods extends MemoryPool {
-        public final static String POOL_NAME = "CodeHeap_profiled_nmethods";
+        public final static String POOL_NAME = "CodeHeap 'profiled nmethods'";
 
         public CodeHeapProfiledNmethods(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, false, false, false);
@@ -120,7 +111,7 @@ public enum MemoryPools {
 
 
     public static class CodeHeapNonProfiledNmethods extends MemoryPool {
-        public final static String POOL_NAME = "CodeHeap_non_profiled_nmethods";
+        public final static String POOL_NAME = "CodeHeap 'non-profiled nmethods'";
 
         public CodeHeapNonProfiledNmethods(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, false, false, false);
@@ -129,7 +120,7 @@ public enum MemoryPools {
 
 
     public static class PSEdenSpace extends MemoryPool {
-        public final static String POOL_NAME = "PS_Eden_Space";
+        public final static String POOL_NAME = "PS Eden Space";
 
         public PSEdenSpace(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, true);
@@ -138,7 +129,7 @@ public enum MemoryPools {
 
 
     public static class PSOldGen extends MemoryPool {
-        public final static String POOL_NAME = "PS_Old_Gen";
+        public final static String POOL_NAME = "PS Old Gen";
 
         public PSOldGen(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, true, false);
@@ -147,7 +138,7 @@ public enum MemoryPools {
 
 
     public static class PSPermGen extends MemoryPool {
-        public final static String POOL_NAME = "PS_Perm_Gen";
+        public final static String POOL_NAME = "PS Perm Gen";
 
         public PSPermGen(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, false);
@@ -156,7 +147,7 @@ public enum MemoryPools {
 
 
     public static class PSSurvivorSpace extends MemoryPool {
-        public final static String POOL_NAME = "PS_Survivor_Space";
+        public final static String POOL_NAME = "PS Survivor Space";
 
         public PSSurvivorSpace(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, true);
@@ -165,7 +156,7 @@ public enum MemoryPools {
 
 
     public static class CMSOldGen extends MemoryPool {
-        public final static String POOL_NAME = "CMS_Old_Gen";
+        public final static String POOL_NAME = "CMS Old Gen";
 
         public CMSOldGen(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, true, false);
@@ -174,7 +165,7 @@ public enum MemoryPools {
 
 
     public static class CMSPermGen extends MemoryPool {
-        public final static String POOL_NAME = "CMS_Perm_Gen";
+        public final static String POOL_NAME = "CMS Perm Gen";
 
         public CMSPermGen(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, false);
@@ -183,7 +174,7 @@ public enum MemoryPools {
 
 
     public static class ParEdenSpace extends MemoryPool {
-        public final static String POOL_NAME = "Par_Eden_Space";
+        public final static String POOL_NAME = "Par Eden Space";
 
         public ParEdenSpace(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, true);
@@ -192,7 +183,7 @@ public enum MemoryPools {
 
 
     public static class ParSurvivorSpace extends MemoryPool {
-        public final static String POOL_NAME = "Par_Survivor_Space";
+        public final static String POOL_NAME = "Par Survivor Space";
 
         public ParSurvivorSpace(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, false);
@@ -201,7 +192,7 @@ public enum MemoryPools {
 
 
     public static class G1Eden extends MemoryPool {
-        public final static String POOL_NAME = "G1_Eden";
+        public final static String POOL_NAME = "G1 Eden";
 
         public G1Eden(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, true);
@@ -210,7 +201,7 @@ public enum MemoryPools {
 
 
     public static class G1EdenSpace extends MemoryPool {
-        public final static String POOL_NAME = "G1_Eden_Space";
+        public final static String POOL_NAME = "G1 Eden Space";
 
         public G1EdenSpace(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, true);
@@ -219,7 +210,7 @@ public enum MemoryPools {
 
 
     public static class G1Survivor extends MemoryPool {
-        public final static String POOL_NAME = "G1_Survivor";
+        public final static String POOL_NAME = "G1 Survivor";
 
         public G1Survivor(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, true);
@@ -228,7 +219,7 @@ public enum MemoryPools {
 
 
     public static class G1SurvivorSpace extends MemoryPool {
-        public final static String POOL_NAME = "G1_Survivor_Space";
+        public final static String POOL_NAME = "G1 Survivor Space";
 
         public G1SurvivorSpace(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, true);
@@ -237,7 +228,7 @@ public enum MemoryPools {
 
 
     public static class G1OldGen extends MemoryPool {
-        public final static String POOL_NAME = "G1_Old_Gen";
+        public final static String POOL_NAME = "G1 Old Gen";
 
         public G1OldGen(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, true, false);
@@ -246,7 +237,7 @@ public enum MemoryPools {
 
 
     public static class G1PermGen extends MemoryPool {
-        public final static String POOL_NAME = "G1_Perm_Gen";
+        public final static String POOL_NAME = "G1 Perm Gen";
 
         public G1PermGen(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, false, false, false);
@@ -255,7 +246,7 @@ public enum MemoryPools {
 
 
     public static class EdenSpace extends MemoryPool {
-        public final static String POOL_NAME = "Eden_Space";
+        public final static String POOL_NAME = "Eden Space";
 
         public EdenSpace(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, true);
@@ -264,7 +255,7 @@ public enum MemoryPools {
 
 
     public static class SurvivorSpace extends MemoryPool {
-        public final static String POOL_NAME = "Survivor_Space";
+        public final static String POOL_NAME = "Survivor Space";
 
         public SurvivorSpace(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, true);
@@ -273,7 +264,7 @@ public enum MemoryPools {
 
 
     public static class TenuredGen extends MemoryPool {
-        public final static String POOL_NAME = "Tenured_Gen";
+        public final static String POOL_NAME = "Tenured Gen";
 
         public TenuredGen(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, true, false);
@@ -282,7 +273,7 @@ public enum MemoryPools {
 
 
     public static class PermGenSharedRw extends MemoryPool {
-        public final static String POOL_NAME = "Perm_Gen_shared_rw";
+        public final static String POOL_NAME = "Perm Gen [shared-rw]";
 
         public PermGenSharedRw(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, false);
@@ -291,7 +282,7 @@ public enum MemoryPools {
 
 
     public static class PermGenSharedRo extends MemoryPool {
-        public final static String POOL_NAME = "Perm_Gen_shared_ro";
+        public final static String POOL_NAME = "Perm Gen [shared-ro]";
 
         public PermGenSharedRo(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, false);
@@ -300,7 +291,7 @@ public enum MemoryPools {
 
 
     public static class PermGen extends MemoryPool {
-        public final static String POOL_NAME = "Perm_Gen";
+        public final static String POOL_NAME = "Perm Gen";
 
         public PermGen(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, false);
@@ -318,7 +309,7 @@ public enum MemoryPools {
 
 
     public static class CompressedClassSpace extends MemoryPool {
-        public final static String POOL_NAME = "Compressed_Class_Space";
+        public final static String POOL_NAME = "Compressed Class Space";
 
         public CompressedClassSpace(Set<GarbageCollector> managers) {
             super(POOL_NAME, managers, true, false, false);

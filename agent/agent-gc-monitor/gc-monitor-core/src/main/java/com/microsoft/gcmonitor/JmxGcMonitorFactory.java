@@ -4,7 +4,7 @@ import javax.management.MBeanServerConnection;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.ExecutorService;
 
-public class JMXGCMonitorFactory implements GcMonitorFactory {
+public class JmxGcMonitorFactory implements GcMonitorFactory {
 
     @Override
     public MemoryManagement monitorSelf(ExecutorService executorService, GCEventConsumer consumer) throws UnableToMonitorMemoryException {

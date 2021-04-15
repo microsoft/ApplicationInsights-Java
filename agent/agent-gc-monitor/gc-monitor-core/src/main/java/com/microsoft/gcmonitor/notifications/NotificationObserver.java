@@ -1,6 +1,6 @@
 package com.microsoft.gcmonitor.notifications;
 
-import com.microsoft.gcmonitor.collectors.JMXGarbageCollector;
+import com.microsoft.gcmonitor.collectors.JmxGarbageCollectorStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,10 +24,10 @@ public class NotificationObserver implements NotificationListener {
     }
 
     public static class NotificationJob {
-        final JMXGarbageCollector collector;
+        final JmxGarbageCollectorStats collector;
         final Notification notification;
 
-        public NotificationJob(JMXGarbageCollector collector, Notification notification) {
+        public NotificationJob(JmxGarbageCollectorStats collector, Notification notification) {
             this.collector = collector;
             this.notification = notification;
         }
@@ -40,7 +40,7 @@ public class NotificationObserver implements NotificationListener {
     public void handleNotification(Notification notification, Object handback) {
         try {
             if (notification != null) {
-                workQueue.put(new NotificationJob((JMXGarbageCollector) handback, notification));
+                workQueue.put(new NotificationJob((JmxGarbageCollectorStats) handback, notification));
             }
         } catch (Exception e) {
             LOGGER.error("Failed to process gc notification", e);
