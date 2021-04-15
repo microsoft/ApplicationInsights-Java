@@ -3,8 +3,6 @@ package com.microsoft.gcmonitortests;
 import com.microsoft.gcmonitor.GCCollectionEvent;
 import com.microsoft.gcmonitor.JMXMemoryManagement;
 import com.microsoft.gcmonitor.UnableToMonitorMemoryException;
-import com.sun.tools.attach.AttachNotSupportedException;
-import com.sun.tools.attach.VirtualMachine;
 
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
@@ -14,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +37,9 @@ public class GcProcessRunner {
     /**
      * Run the GcEventGenerator process and collect gc events
      */
-    public List<GCCollectionEvent> getGcCollectionEvents() throws IOException, AttachNotSupportedException, UnableToMonitorMemoryException, InterruptedException, GCNotPresentException {
-        Process process = startGcProcess(gcArg, heapSizeInMb);
+    public List<GCCollectionEvent> getGcCollectionEvents() throws IOException, UnableToMonitorMemoryException, InterruptedException, GCNotPresentException {
+        int port = getRandomPort();
+        Process process = startGcProcess(port, gcArg, heapSizeInMb);
 
         try {
             try {
@@ -63,7 +63,7 @@ public class GcProcessRunner {
                 }, 2000);
 
                 JMXMemoryManagement.create(
-                        getConnector(process),
+                        getConnector(port),
                         Executors.newSingleThreadExecutor(),
                         event -> {
                             watchDog.reset();
@@ -103,9 +103,22 @@ public class GcProcessRunner {
         throw new RuntimeException("Failed to start process");
     }
 
-    private MBeanServerConnection getConnector(Process process) throws AttachNotSupportedException, IOException {
-        VirtualMachine vm = VirtualMachine.attach(Long.toString(process.pid()));
-        JMXServiceURL target = new JMXServiceURL(vm.startLocalManagementAgent());
+    private int getRandomPort() throws IOException {
+        for (int i = 0; i < 100; i++) {
+            int port = (int) (10000 * Math.random() + 40000);
+            try {
+                ServerSocket serverSocket = new ServerSocket(port);
+                serverSocket.close();
+                return port;
+            } catch (IOException e) {
+            }
+        }
+        throw new IllegalStateException("Unable to find free port");
+    }
+
+    private MBeanServerConnection getConnector(int port) throws IOException {
+        String url = "service:jmx:rmi://127.0.0.1:" + port + "/jndi/rmi://127.0.0.1:" + port + "/jmxrmi";
+        JMXServiceURL target = new JMXServiceURL(url);
         JMXConnector connector = JMXConnectorFactory.connect(target);
         return connector.getMBeanServerConnection();
     }
@@ -154,13 +167,25 @@ public class GcProcessRunner {
     /**
      * Forks a process running the GC event generator
      */
-    private Process startGcProcess(String gcArg, int heapSizeInMb) throws IOException {
+    private Process startGcProcess(int port, String gcArg, int heapSizeInMb) throws IOException {
         String javaCommand = detectJava();
 
         String classPath = detectClasspath();
 
         process = new ProcessBuilder()
-                .command(javaCommand, "-XX:+UnlockExperimentalVMOptions", gcArg, "-Xmx" + heapSizeInMb + "m", "-cp", classPath, "com.microsoft.gcmonitortests.GcEventGenerator")
+                .command(javaCommand,
+                        "-Dcom.sun.management.jmxremote=true",
+                        "-Dcom.sun.management.jmxremote.port=" + port,
+                        "-Dcom.sun.management.jmxremote.rmi.port=" + port,
+                        "-Dcom.sun.management.jmxremote.local.only=true",
+                        "-Dcom.sun.management.jmxremote.authenticate=false",
+                        "-Dcom.sun.management.jmxremote.ssl=false",
+                        "-Djava.rmi.server.hostname=127.0.0.1",
+                        "-XX:+UnlockExperimentalVMOptions",
+                        gcArg,
+                        "-Xmx" + heapSizeInMb + "m",
+                        "-cp", classPath,
+                        "com.microsoft.gcmonitortests.GcEventGenerator")
                 .start();
 
         //Fail save kill forked proces
