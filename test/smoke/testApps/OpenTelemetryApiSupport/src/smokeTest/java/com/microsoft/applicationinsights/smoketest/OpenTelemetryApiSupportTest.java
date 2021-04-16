@@ -33,12 +33,53 @@ public class OpenTelemetryApiSupportTest extends AiSmokeTest {
         assertTrue(rd.getSuccess());
 
         assertEquals("myspanname", rdd.getName());
-        // ideally want these on rd, but can't get SERVER span yet
+
+        // ideally want the properties below on rd, but can't get SERVER span yet
         // see https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1726#issuecomment-731890267
+
+        // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are from the agent
+        assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", rddEnvelope.getIKey());
+        assertEquals("testrolename", rddEnvelope.getTags().get("ai.cloud.role"));
+        assertEquals("testroleinstance", rddEnvelope.getTags().get("ai.cloud.roleInstance"));
+        assertTrue(rddEnvelope.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
         assertEquals("myuser", rddEnvelope.getTags().get("ai.user.id"));
         assertEquals("myvalue1", rdd.getProperties().get("myattr1"));
         assertEquals("myvalue2", rdd.getProperties().get("myattr2"));
         assertEquals(2, rdd.getProperties().size());
+        assertTrue(rdd.getSuccess());
+
+        assertParentChild(rd.getId(), rdEnvelope, rddEnvelope);
+    }
+
+    @Test
+    @TargetUri("/test-overriding-ikey-etc")
+    public void testOverridingIkeyEtc() throws Exception {
+        List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
+
+        Envelope rdEnvelope = rdList.get(0);
+        String operationId = rdEnvelope.getTags().get("ai.operation.id");
+        List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
+        assertEquals(0, mockedIngestion.getCountForType("EventData"));
+
+        Envelope rddEnvelope = rddList.get(0);
+
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
+
+        assertEquals("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc", rd.getName());
+        assertTrue(rd.getProperties().isEmpty());
+        assertTrue(rd.getSuccess());
+
+        // ideally want the properties below on rd, but can't get SERVER span yet
+        // see https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1726#issuecomment-731890267
+
+        // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are from the agent
+        assertEquals("12341234-1234-1234-1234-123412341234", rddEnvelope.getIKey());
+        assertEquals("role-name-here", rddEnvelope.getTags().get("ai.cloud.role"));
+        assertEquals("role-instance-here", rddEnvelope.getTags().get("ai.cloud.roleInstance"));
+        assertEquals("application-version-here", rddEnvelope.getTags().get("ai.application.ver"));
+        assertTrue(rddEnvelope.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
+        assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
 
         assertParentChild(rd.getId(), rdEnvelope, rddEnvelope);
