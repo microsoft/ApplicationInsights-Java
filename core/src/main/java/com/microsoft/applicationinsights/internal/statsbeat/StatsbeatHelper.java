@@ -27,11 +27,6 @@ import java.util.Set;
 
 public final class StatsbeatHelper {
 
-    public static final String STATSBEAT_IKEY = "28ac6b6a-3fe0-43a9-bccd-10cb41d791c1";
-    public static final String STATSBEAT_ENDPOINT = "https://westus2-0.in.applicationinsights.azure.com/";
-    public static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
-    public final static long DEFAULT_STATSBEAT_FREQUENCY_IN_SEC = 900; // default to 15 minutes.
-
     private static final Map<String, Integer> INSTRUMENTATION_MAP = new HashMap<String, Integer>() {{
         put("opentelemetry-javaagent-apache-httpasyncclient-4.1", 0);
         put("opentelemetry-javaagent-apache-httpclient-2.0", 1);
@@ -89,9 +84,9 @@ public final class StatsbeatHelper {
     }};
 
     private static final Map<String, Integer> FEATURE_MAP = new HashMap<String, Integer>() {{
-            put("jdkVersion", 0);
-            put("azureSdk", 1);
-            put("profiler", 2);
+        put("oracle", 0);
+        put("zulu", 1);
+        put("other", 2);
     }};
 
     public static long encodeInstrumentations(Set<String> instrumentations) {
