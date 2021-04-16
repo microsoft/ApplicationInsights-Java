@@ -42,7 +42,7 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
         assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
-        assertEquals("test", md1.getProperties().get("LoggerName"));
+        assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
         assertEquals("MDC value", md1.getProperties().get("MDC key"));
         assertEquals(4, md1.getProperties().size());
 
@@ -50,14 +50,14 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
         assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
-        assertEquals("test", md1.getProperties().get("LoggerName"));
+        assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
         assertEquals(3, md2.getProperties().size());
 
         assertEquals("This is log4j2 fatal.", md3.getMessage());
         assertEquals(SeverityLevel.Critical, md3.getSeverityLevel());
         assertEquals("Logger", md3.getProperties().get("SourceType"));
         assertEquals("FATAL", md3.getProperties().get("LoggingLevel"));
-        assertEquals("test", md3.getProperties().get("LoggerName"));
+        assertEquals("smoketestapp", md3.getProperties().get("LoggerName"));
         assertEquals(3, md3.getProperties().size());
 
         assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j2UsingAgent/traceLog4j2");
@@ -88,7 +88,7 @@ public class TraceLog4j2Test extends AiSmokeTest {
         assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
         assertEquals("Logger", ed.getProperties().get("SourceType"));
         assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
-        assertEquals("test", ed.getProperties().get("LoggerName"));
+        assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
         assertEquals("MDC value", ed.getProperties().get("MDC key"));
         assertEquals(5, ed.getProperties().size());
 

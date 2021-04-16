@@ -4,7 +4,11 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-api:2.11.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.11.0'
     implementation aiWebJar
-    implementation aiLog4j2Jar
+    implementation(group: 'com.microsoft.azure', name: 'applicationinsights-logging-log4j2', version: versions.aiLegacySdk) {
+        // applicationinsights-core is embedded in applicationinsights-web
+        // and duplicate class files produces lots of warning messages on jetty
+        exclude group: 'com.microsoft.azure', module: 'applicationinsights-core'
+    }
     implementation 'com.google.guava:guava:20.0'
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'

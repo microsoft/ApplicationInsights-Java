@@ -39,7 +39,7 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals(SeverityLevel.Warning, md1.getSeverityLevel());
         assertEquals("Logger", md1.getProperties().get("SourceType"));
         assertEquals("WARN", md1.getProperties().get("LoggingLevel"));
-        assertEquals("test", md1.getProperties().get("LoggerName"));
+        assertEquals("smoketestapp", md1.getProperties().get("LoggerName"));
         // TODO add MDC instrumentation for jboss logging
         if (currentImageName.contains("wildfly")) {
             assertEquals(3, md1.getProperties().size());
@@ -52,7 +52,7 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals(SeverityLevel.Error, md2.getSeverityLevel());
         assertEquals("Logger", md2.getProperties().get("SourceType"));
         assertEquals("ERROR", md2.getProperties().get("LoggingLevel"));
-        assertEquals("test", md2.getProperties().get("LoggerName"));
+        assertEquals("smoketestapp", md2.getProperties().get("LoggerName"));
         assertEquals(3, md2.getProperties().size());
 
         assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBackUsingAgent/traceLogBack");
@@ -79,7 +79,7 @@ public class TraceLogBackTest extends AiSmokeTest {
         assertEquals("This is an exception!", ed.getProperties().get("Logger Message"));
         assertEquals("Logger", ed.getProperties().get("SourceType"));
         assertEquals("ERROR", ed.getProperties().get("LoggingLevel"));
-        assertEquals("test", ed.getProperties().get("LoggerName"));
+        assertEquals("smoketestapp", ed.getProperties().get("LoggerName"));
         // TODO add MDC instrumentation for jboss logging
         if (currentImageName.contains("wildfly")) {
             assertEquals(4, ed.getProperties().size());
