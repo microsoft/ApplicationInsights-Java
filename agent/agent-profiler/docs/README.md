@@ -21,6 +21,25 @@ The agent-profiler subsystem provides a system for:
 
 # USAGE
 
+## Warning
+
+The JFR profiler by default executes the "profile" profile from JFRs inbuilt configurations. This configuration includes
+some potentially sensitive information such as environment variables, arguments provided to the JVM and processes
+running on the system. If you wish to remove these from profiles that are uploaded you can do this by editing
+the `lib/jfr/profile.jfc` file inside your Java installation. Profiles can also be generated/edited in the JDK Mission 
+Control (JMC) user interface under the `Window->Flight Recording Template Manager` menu and control over individual 
+flags is found inside `Edit->Advanced` of this user interface.
+
+Some flags you may wish to disable are:
+
+- jdk.JVMInformation
+- jdk.InitialSystemProperty
+- jdk.OSInformation
+- jdk.InitialEnvironmentVariable
+- jdk.SystemProcess
+
+However, you should review all required flags.
+
 ## Requirements
 
 - A JVM with JFR available.

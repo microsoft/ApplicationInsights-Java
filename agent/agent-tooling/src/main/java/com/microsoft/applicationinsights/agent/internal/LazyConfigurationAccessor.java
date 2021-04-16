@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
@@ -29,6 +31,8 @@ import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.instrumentation.api.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
@@ -56,6 +60,7 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
         setConnectionString(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"), System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
         setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
+        setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
         setInstrumentationLoggingLevel(System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL"));
     }
 
@@ -88,6 +93,18 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
         if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
             TelemetryConfiguration.getActive().setRoleName(websiteSiteName);
             logger.info("Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.", websiteSiteName);
+        }
+    }
+
+    static void setSelfDiagnosticsLevel(String loggingLevel) {
+        if (loggingLevel != null && !loggingLevel.isEmpty()) {
+            LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+            List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
+            logger.info("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
+            loggerList.stream().forEach(tmpLogger -> tmpLogger.setLevel(Level.toLevel(loggingLevel)));
+            if (Level.toLevel(loggingLevel) == Level.DEBUG) {
+                logger.debug("This should get logged after the logging level update.");
+            }
         }
     }
 

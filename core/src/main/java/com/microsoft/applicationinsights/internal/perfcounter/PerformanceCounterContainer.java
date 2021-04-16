@@ -163,7 +163,7 @@ public enum PerformanceCounterContainer {
      * @param collectionFrequencyInSec The timeout to wait between collection of Performance Counters.
      */
     public void setCollectionFrequencyInSec(long collectionFrequencyInSec) {
-        if (collectionFrequencyInSec <= MIN_COLLECTION_FREQUENCY_IN_SEC) {
+        if (collectionFrequencyInSec < MIN_COLLECTION_FREQUENCY_IN_SEC) {
             String errorMessage = String.format("Collecting Interval: illegal value '%d'. The minimum value, '%d', " +
                     "is used instead.", collectionFrequencyInSec, MIN_COLLECTION_FREQUENCY_IN_SEC);
             logger.error(errorMessage);

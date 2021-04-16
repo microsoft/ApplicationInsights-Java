@@ -47,7 +47,7 @@ class ConfigOverride {
             properties.put("otel.instrumentation.opentelemetry-annotations.enabled", "false");
         }
         if (!config.preview.instrumentation.azureSdk.enabled) {
-            properties.put("otel.instrumentation.azure-sdk.enabled", "false");
+            properties.put("otel.instrumentation.azure-core.enabled", "false");
         }
         properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
         // AI exporter is configured manually
