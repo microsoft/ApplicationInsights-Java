@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,21 +32,21 @@ import java.util.Set;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_INSTRUMENTATION;
 
-public class AdvancedStatsbeat extends BaseStatsbeat {
+public class NetworkStatsbeat extends BaseStatsbeat {
 
-    private static final Logger logger = LoggerFactory.getLogger(AdvancedStatsbeat.class);
+    private static final Logger logger = LoggerFactory.getLogger(NetworkStatsbeat.class);
     private static volatile Set<String> instrumentationList;
 
-    public AdvancedStatsbeat() {
+    public NetworkStatsbeat() {
         super();
         instrumentationList = new HashSet<>(64);
     }
 
     @Override
     public void send(TelemetryClient telemetryClient) {
-        MetricTelemetry metricTelemetry = createMetricTelemetry();
-        metricTelemetry.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, String.valueOf(getInstrumentation()));
-        telemetryClient.track(metricTelemetry);
+        StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(NetworkStatsbeat.class.getName());
+        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, String.valueOf(getInstrumentation()));
+        telemetryClient.track(statsbeatTelemetry);
         logger.debug("#### sending AdvancedStatsbeat");
         reset();
     }
