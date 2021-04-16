@@ -23,8 +23,8 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelper.STATSBEAT_IKEY;
-import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelper.STATSBEAT_TELEMETRY_NAME;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.STATSBEAT_IKEY;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.STATSBEAT_TELEMETRY_NAME;
 
 public class StatsbeatTelemetry extends MetricTelemetry {
 
