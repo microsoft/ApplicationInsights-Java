@@ -25,6 +25,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_ADOPT_OPENJDK;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_MICROSOFT;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_ORACLE;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_OTHER;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_REDHAT;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_ZULU;
+
 public final class StatsbeatHelper {
 
     private static final Map<String, Integer> INSTRUMENTATION_MAP = new HashMap<String, Integer>() {{
@@ -83,10 +90,13 @@ public final class StatsbeatHelper {
         put("opentelemetry-javaagent-tomcat-7.0", 52);
     }};
 
-    private static final Map<String, Integer> FEATURE_MAP = new HashMap<String, Integer>() {{
-        put("oracle", 0);
-        put("zulu", 1);
-        put("other", 2);
+    public static final Map<String, Integer> FEATURE_MAP = new HashMap<String, Integer>() {{
+        put(JAVA_VENDOR_ORACLE, 0);
+        put(JAVA_VENDOR_ZULU, 1);
+        put(JAVA_VENDOR_MICROSOFT, 2);
+        put(JAVA_VENDOR_ADOPT_OPENJDK, 3);
+        put(JAVA_VENDOR_REDHAT, 4);
+        put(JAVA_VENDOR_OTHER, 5);
     }};
 
     public static long encodeInstrumentations(Set<String> instrumentations) {
