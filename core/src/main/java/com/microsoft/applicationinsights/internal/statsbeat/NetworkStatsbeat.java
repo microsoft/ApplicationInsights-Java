@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,10 +29,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executors;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_INSTRUMENTATION;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.EXCEPTION_COUNT;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.REQUEST_DURATION;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.REQUEST_FAILURE_COUNT;
@@ -111,34 +108,34 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         return StatsbeatHelper.encodeInstrumentations(instrumentationList);
     }
 
-    private volatile long requestSuccessCount;
-    private volatile long requestFailureCount;
-    private volatile List<Double> requestDurations = new ArrayList<>();
-    private volatile long retryCount;
-    private volatile long throttleCount;
-    private volatile long exceptionCount;
+    private static volatile long requestSuccessCount;
+    private static volatile long requestFailureCount;
+    private static volatile List<Double> requestDurations = new ArrayList<>();
+    private static volatile long retryCount;
+    private static long throttleCount;
+    private static long exceptionCount;
 
-    public void incrementRequestSuccessCount() {
+    public static void incrementRequestSuccessCount() {
         requestSuccessCount++;
     }
 
-    public void incrementRequestFailureCount() {
+    public static void incrementRequestFailureCount() {
         requestFailureCount++;
     }
 
-    public void addRequestDuration(double duration) {
+    public static void addRequestDuration(double duration) {
         requestDurations.add(duration);
     }
 
-    public void incrementRetryCount() {
+    public static void incrementRetryCount() {
         retryCount++;
     }
 
-    public void incrementThrottleCount() {
+    public static void incrementThrottleCount() {
         throttleCount++;
     }
 
-    public void incrementExceptionCount() {
+    public static void incrementExceptionCount() {
         exceptionCount++;
     }
 

@@ -22,10 +22,6 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-
-import java.util.concurrent.Executors;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 

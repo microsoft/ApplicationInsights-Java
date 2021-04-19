@@ -22,17 +22,14 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_FEATURE;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_OTHER;
 import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelper.FEATURE_MAP;
