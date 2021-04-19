@@ -2,7 +2,7 @@
 # Version 3.0.4-BETA
 * Enable Azure Functions to update the instrumentation logging level at runtime.
 * Enable Azure Functions to update the self-diagnostics logging level at runtime.
-* Fix grails failure for Windows App Services [#1653](https://github.com/microsoft/ApplicationInsights-Java/issues/1653).
+* Fix grails failure [#1653](https://github.com/microsoft/ApplicationInsights-Java/issues/1653).
 * Remove class loader optimization opt out system property for Azure Functions [#1627](https://github.com/microsoft/ApplicationInsights-Java/issues/1627).
 
 # Version 3.0.3 GA
