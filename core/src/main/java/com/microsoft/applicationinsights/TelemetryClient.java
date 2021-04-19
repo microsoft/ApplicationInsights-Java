@@ -32,7 +32,6 @@ import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
-import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import org.apache.commons.lang3.StringUtils;
@@ -130,7 +129,7 @@ public class TelemetryClient {
 
         TelemetryContext context = telemetry.getContext();
 
-        if (!(telemetry instanceof StatsbeatTelemetry)) {
+        if (Strings.isNullOrEmpty(context.getInstrumentationKey())) {
             // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
             // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
             context.setInstrumentationKey(getContext().getInstrumentationKey(), getContext().getNormalizedInstrumentationKey());

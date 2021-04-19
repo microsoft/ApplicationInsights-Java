@@ -38,7 +38,7 @@ public final class Constants {
     public static final String RP_UNKNOWN = "unknown";
 
     public static final String LANGUAGE = "java";
-    public static final String ATTACH_CODELESS = "codeless";
+    public static final String ATTACH_TYPE_CODELESS = "codeless";
 
     public static final String OS_WINDOWS = "windows";
     public static final String OS_LINUX = "linux";
@@ -52,7 +52,7 @@ public final class Constants {
     // custom dimensions
     public static final String CUSTOM_DIMENSIONS_RP = "rp";
     public static final String CUSTOM_DIMENSIONS_RP_ID = "rpId";
-    public static final String CUSTOM_DIMENSIONS_ATTACH = "attach";
+    public static final String CUSTOM_DIMENSIONS_ATTACH_TYPE = "attach";
     public static final String CUSTOM_DIMENSIONS_CIKEY = "cikey";
     public static final String CUSTOM_DIMENSIONS_RUNTIME_VERSION = "runtimeVersion";
     public static final String CUSTOM_DIMENSIONS_OS = "os";
@@ -68,6 +68,16 @@ public final class Constants {
     public static final String JAVA_VENDOR_ADOPT_OPENJDK = "AdoptOpenJDK"; // https://adoptopenjdk.net/
     public static final String JAVA_VENDOR_REDHAT = "Red Hat, Inc."; // https://developers.redhat.com/products/openjdk/download/
     public static final String JAVA_VENDOR_OTHER = "other";
+
+    // statsbeat metrics' names
+    public static final String ATTACH = "Attach";
+    public static final String REQUEST_SUCCESS_COUNT = "Request Success Count";
+    public static final String REQUEST_FAILURE_COUNT = "Requests Failure Count ";
+    public static final String REQUEST_DURATION = "Request Duration";
+    public static final String RETRY_COUNT = "Retry Count";
+    public static final String THROTTLE_COUNT = "Throttle Count";
+    public static final String EXCEPTION_COUNT = "Exception Count";
+    public static final String FEATURE = "Feature";
 
     private Constants() {}
 }
