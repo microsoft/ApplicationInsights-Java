@@ -50,6 +50,7 @@ public abstract class BaseStatsbeat {
     public BaseStatsbeat() {
         initializeCommonProperties();
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
+        scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), DEFAULT_STATSBEAT_INTERVAL, DEFAULT_STATSBEAT_INTERVAL, TimeUnit.SECONDS);
     }
 
     /**
@@ -165,7 +166,7 @@ public abstract class BaseStatsbeat {
         };
     }
 
-    protected void setFrequencyInterval(long interval) {
+    protected void updateFrequencyInterval(long interval) {
         scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), interval, interval, TimeUnit.SECONDS);
     }
 }

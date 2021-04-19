@@ -37,8 +37,6 @@ public class AttachStatsbeat extends BaseStatsbeat {
     public AttachStatsbeat() {
         super();
         initResourceProviderId();
-        scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(AttachStatsbeat.class));
-        setFrequencyInterval(DEFAULT_STATSBEAT_INTERVAL);
     }
 
     @Override

@@ -45,8 +45,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     public FeatureStatsbeat() {
         super();
         initFeatureList();
-        scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(FeatureStatsbeat.class));
-        setFrequencyInterval(TimeUnit.DAYS.toSeconds(1)); // daily interval
+        updateFrequencyInterval(TimeUnit.DAYS.toSeconds(1)); // daily interval
     }
 
     /**

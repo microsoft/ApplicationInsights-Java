@@ -49,8 +49,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     public NetworkStatsbeat() {
         super();
         instrumentationList = new HashSet<>(64);
-        scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(NetworkStatsbeat.class));
-        setFrequencyInterval(DEFAULT_STATSBEAT_INTERVAL);
     }
 
     @Override
