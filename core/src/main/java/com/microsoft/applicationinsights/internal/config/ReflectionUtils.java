@@ -44,8 +44,6 @@ public final class ReflectionUtils {
     private static final Map<String, Class<?>> builtInMap = new HashMap<>();
 
     static {
-        addClass(com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel.class);
-
         addClass(com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule.class);
         addClass(com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule.class);
         addClass(com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer.class);

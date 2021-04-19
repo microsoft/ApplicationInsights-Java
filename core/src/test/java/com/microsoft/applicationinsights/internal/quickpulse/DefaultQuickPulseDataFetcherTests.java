@@ -62,6 +62,8 @@ public class DefaultQuickPulseDataFetcherTests {
         }
     }
 
+    // FIXME (trask)
+    @Ignore
     @Test
     public void endpointChangesWithRedirectHeaderAndGetNewPingInterval() throws IOException {
         final CloseableHttpClient httpClient = mock(CloseableHttpClient.class);

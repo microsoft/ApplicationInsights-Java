@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.context.ContextTagKeys;
@@ -52,7 +52,7 @@ public class TelemetryClient {
 
     private final TelemetryConfiguration configuration;
     private volatile TelemetryContext context;
-    private TelemetryChannel channel;
+    private ApplicationInsightsClientImpl channel;
 
     private static final Object TELEMETRY_CONTEXT_LOCK = new Object();
 
@@ -159,7 +159,8 @@ public class TelemetryClient {
         }
 
         try {
-            getChannel().send(telemetry);
+            // FIXME (trask)
+            // getChannel().send(telemetry);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
@@ -178,17 +179,19 @@ public class TelemetryClient {
      * Flushes possible pending Telemetries in the channel. Not required for a continuously-running server application.
      */
     public void flush() {
-        getChannel().flush();
+        // FIXME (trask)
+        // getChannel().flush();
     }
 
     public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
-        getChannel().shutdown(timeout, timeUnit);
+        // FIXME (trask)
+        // getChannel().shutdown(timeout, timeUnit);
     }
 
     /**
      * Gets the channel used by the client.
      */
-    TelemetryChannel getChannel() {
+    ApplicationInsightsClientImpl getChannel() {
         if (this.channel == null) {
             this.channel = configuration.getChannel();
         }

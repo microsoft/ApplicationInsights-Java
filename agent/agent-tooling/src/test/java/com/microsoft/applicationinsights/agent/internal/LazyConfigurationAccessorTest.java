@@ -26,6 +26,8 @@ import org.junit.*;
 
 import static org.junit.Assert.*;
 
+// FIXME (trask)
+@Ignore
 public class LazyConfigurationAccessorTest {
 
     /*

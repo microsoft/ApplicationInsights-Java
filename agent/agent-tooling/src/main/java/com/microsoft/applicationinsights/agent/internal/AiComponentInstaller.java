@@ -300,7 +300,8 @@ public class AiComponentInstaller implements ComponentInstaller {
         xmlConfiguration.getQuickPulse().setEnabled(config.preview.liveMetrics.enabled);
 
         if (config.preview.developerMode) {
-            xmlConfiguration.getChannel().setDeveloperMode(true);
+            // FIXME (trask)
+            // xmlConfiguration.getChannel().setDeveloperMode(true);
         }
         return xmlConfiguration;
     }

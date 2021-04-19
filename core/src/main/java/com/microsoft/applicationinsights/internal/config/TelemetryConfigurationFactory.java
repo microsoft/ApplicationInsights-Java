@@ -21,6 +21,10 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import com.azure.core.util.serializer.JacksonAdapter;
+import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.NdJsonSerializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,8 +36,6 @@ import java.util.Set;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.extensibility.*;
-import com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
@@ -73,7 +75,7 @@ public enum TelemetryConfigurationFactory {
      *
      * Set Instrumentation Key
      * Set Developer Mode (default false)
-     * Set Channel (default {@link InProcessTelemetryChannel})
+     * Set Channel
      * Set Tracking Disabled Mode (default false)
      * Set Context Initializers where they should be written with full package name
      * Set Telemetry Initializers where they should be written with full package name
@@ -86,10 +88,7 @@ public enum TelemetryConfigurationFactory {
         setRoleName(applicationInsightsConfig, configuration);
         setRoleInstance(applicationInsightsConfig, configuration);
 
-        boolean channelIsConfigured = setChannel(applicationInsightsConfig.getChannel(), configuration);
-        if (!channelIsConfigured) {
-            logger.warn("No channel was initialized. A channel must be set before telemetry tracking will operate correctly.");
-        }
+        setChannel(configuration);
 
         setTelemetryModules(applicationInsightsConfig, configuration);
 
@@ -300,47 +299,22 @@ public enum TelemetryConfigurationFactory {
 
     /**
      * Setting the channel.
-     * @param channelXmlElement The configuration element holding the channel data.
      * @param configuration The configuration class.
-     * @return True on success.
      */
-    private boolean setChannel(ChannelXmlElement channelXmlElement, TelemetryConfiguration configuration) {
-        String channelName = channelXmlElement.getType();
-        if (channelName != null) {
-            TelemetryChannel channel = createChannel(channelXmlElement, configuration);
-            if (channel != null) {
-                configuration.setChannel(channel);
-                return true;
-            } else {
-                logger.error("Failed to create '{}'", channelName);
-                if (!InProcessTelemetryChannel.class.getCanonicalName().equals(channelName)) {
-                    return false;
-                }
-            }
-        }
+    private void setChannel(TelemetryConfiguration configuration) {
 
-        try {
-            // We will create the default channel and we assume that the data is relevant.
-            TelemetryChannel channel = new InProcessTelemetryChannel(configuration, channelXmlElement.getData());
-            configuration.setChannel(channel);
-            return true;
-        } catch (Exception e) {
-            logger.error("Failed to create InProcessTelemetryChannel, exception: {}, will create the default one with default arguments", e.toString());
-            TelemetryChannel channel = new InProcessTelemetryChannel(configuration);
-            configuration.setChannel(channel);
-            return true;
-        }
-    }
+        ApplicationInsightsClientImplBuilder restServiceClientBuilder = new ApplicationInsightsClientImplBuilder();
 
-    private TelemetryChannel createChannel(ChannelXmlElement channelXmlElement, TelemetryConfiguration configuration) {
-        String channelName = channelXmlElement.getType();
-        TelemetryChannel channel = ReflectionUtils.createConfiguredInstance(channelName, TelemetryChannel.class, configuration, channelXmlElement.getData());
+        // below copied from AzureMonitorExporterBuilder.java
 
-        if (channel == null) {
-            channel = ReflectionUtils.createInstance(channelName, TelemetryChannel.class, Map.class, channelXmlElement.getData());
-        }
+        // Customize serializer to use NDJSON
+        final SimpleModule ndjsonModule = new SimpleModule("Ndjson List Serializer");
+        JacksonAdapter jacksonAdapter = new JacksonAdapter();
+        jacksonAdapter.serializer().registerModule(ndjsonModule);
+        ndjsonModule.addSerializer(new NdJsonSerializer());
+        restServiceClientBuilder.serializerAdapter(jacksonAdapter);
 
-        return channel;
+        configuration.setChannel(restServiceClientBuilder.buildClient());
     }
 
     private void initializeComponents(TelemetryConfiguration configuration) {

@@ -32,8 +32,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     private String roleInstance;
 
-    private final ChannelXmlElement channel = new ChannelXmlElement();
-
     private TelemetryModulesXmlElement modules;
 
     private final PerformanceCountersXmlElement performance = new PerformanceCountersXmlElement();
@@ -62,10 +60,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     public void setRoleInstance(String roleInstance) {
         this.roleInstance = roleInstance;
-    }
-
-    public ChannelXmlElement getChannel() {
-        return channel;
     }
 
     public QuickPulseXmlElement getQuickPulse() {

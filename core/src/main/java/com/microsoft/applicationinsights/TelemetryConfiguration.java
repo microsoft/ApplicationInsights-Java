@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
@@ -55,7 +55,7 @@ public final class TelemetryConfiguration {
     private final List<ContextInitializer> contextInitializers = new CopyOnWriteArrayList<>();
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
-    private TelemetryChannel channel;
+    private ApplicationInsightsClientImpl channel;
 
     /**
      * Gets the active {@link com.microsoft.applicationinsights.TelemetryConfiguration} instance loaded from the
@@ -91,17 +91,15 @@ public final class TelemetryConfiguration {
 
     /**
      * Gets the telemetry channel.
-     * @return An instance of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
      */
-    public synchronized TelemetryChannel getChannel() {
+    public synchronized ApplicationInsightsClientImpl getChannel() {
         return channel;
     }
 
     /**
      * Sets the telemetry channel.
-     * @param channel An instance of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
      */
-    public synchronized void setChannel(TelemetryChannel channel) {
+    public synchronized void setChannel(ApplicationInsightsClientImpl channel) {
         this.channel = channel;
     }
 
