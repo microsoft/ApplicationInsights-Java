@@ -1,4 +1,10 @@
 # CHANGELOG
+# Version 3.0.4-BETA
+* Enable Azure Functions to update the instrumentation logging level at runtime.
+* Enable Azure Functions to update the self-diagnostics logging level at runtime.
+* Fix grails failure [#1653](https://github.com/microsoft/ApplicationInsights-Java/issues/1653).
+* Remove class loader optimization opt out system property for Azure Functions [#1627](https://github.com/microsoft/ApplicationInsights-Java/issues/1627).
+
 # Version 3.0.3 GA
 * Suppress redis.encode.start/end custom events
   [#1586](https://github.com/microsoft/ApplicationInsights-Java/issues/1586)
@@ -25,7 +31,7 @@
   [#1551](https://github.com/microsoft/ApplicationInsights-Java/issues/1551),
   [#1558](https://github.com/microsoft/ApplicationInsights-Java/issues/1558),
   [#1559](https://github.com/microsoft/ApplicationInsights-Java/issues/1559)
-* Added env var `APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED` to disable live metrics
+* Add env var `APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED` to disable live metrics
   [#1552](https://github.com/microsoft/ApplicationInsights-Java/issues/1552)
 * Remove unwanted custom dimension that showed up in 3.0.3-BETA
   [#1565](https://github.com/microsoft/ApplicationInsights-Java/issues/1565)
