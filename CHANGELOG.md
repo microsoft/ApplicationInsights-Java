@@ -4,7 +4,6 @@
 * Enable Azure Functions to update the self-diagnostics logging level at runtime.
 * Fix grails failure for Windows App Services [#1653](https://github.com/microsoft/ApplicationInsights-Java/issues/1653).
 * Remove class loader optimization opt out system property for Azure Functions [#1627](https://github.com/microsoft/ApplicationInsights-Java/issues/1627).
-* Clean up gradle.
 
 # Version 3.0.3 GA
 * Suppress redis.encode.start/end custom events
