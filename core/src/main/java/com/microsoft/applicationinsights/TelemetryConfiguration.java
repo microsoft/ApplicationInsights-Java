@@ -26,7 +26,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
@@ -66,11 +65,7 @@ public final class TelemetryConfiguration {
      */
     public static TelemetryConfiguration getActive() {
         if (active == null) {
-            synchronized (s_lock) {
-                if (active == null) {
-                    active = createDefault();
-                }
-            }
+            throw new IllegalStateException("agent was not initialized");
         }
 
         return active;
@@ -92,18 +87,6 @@ public final class TelemetryConfiguration {
             }
         }
         return active;
-    }
-
-    /**
-     * Creates a new instance loaded from the ApplicationInsights.xml file.
-     * If the configuration file does not exist, the new configuration instance is initialized with minimum defaults
-     * needed to send telemetry to Application Insights.
-     * @return Telemetry Configuration instance.
-     */
-    public static TelemetryConfiguration createDefault() {
-        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration();
-        TelemetryConfigurationFactory.INSTANCE.initialize(telemetryConfiguration);
-        return telemetryConfiguration;
     }
 
     /**

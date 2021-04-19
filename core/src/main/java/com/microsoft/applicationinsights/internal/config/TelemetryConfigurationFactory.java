@@ -79,10 +79,6 @@ public enum TelemetryConfigurationFactory {
      * Set Telemetry Initializers where they should be written with full package name
      * @param configuration The configuration that will be populated
      */
-    public final void initialize(TelemetryConfiguration configuration) {
-        setMinimumConfiguration(null, configuration);
-    }
-
     public void initialize(TelemetryConfiguration configuration,
                            ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
 
@@ -99,14 +95,6 @@ public enum TelemetryConfigurationFactory {
 
         setQuickPulse(applicationInsightsConfig, configuration);
 
-        initializeComponents(configuration);
-    }
-
-    private void setMinimumConfiguration(ApplicationInsightsXmlConfiguration userConfiguration, TelemetryConfiguration configuration) {
-        setRoleName(userConfiguration, configuration);
-        setRoleInstance(userConfiguration, configuration);
-        configuration.setChannel(new InProcessTelemetryChannel(configuration));
-        addHeartBeatModule(configuration);
         initializeComponents(configuration);
     }
 
