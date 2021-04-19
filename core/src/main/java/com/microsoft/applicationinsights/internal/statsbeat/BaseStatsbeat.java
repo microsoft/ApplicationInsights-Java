@@ -25,10 +25,13 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
+import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
@@ -38,6 +41,7 @@ public abstract class BaseStatsbeat {
     protected static volatile String resourceProvider;
     protected static String operatingSystem;
     protected TelemetryClient telemetryClient;
+    protected static ScheduledExecutorService scheduledExecutor;
 
     private String customerIkey;
     private String version;
@@ -121,15 +125,41 @@ public abstract class BaseStatsbeat {
 
     public abstract void send(TelemetryClient telemetryClient);
 
-    protected StatsbeatTelemetry createStatsbeatTelemetry(String name) {
-        StatsbeatTelemetry statsbeatTelemetry = new StatsbeatTelemetry(name, 0);
+    protected StatsbeatTelemetry createStatsbeatTelemetry(String name, double value) {
+        StatsbeatTelemetry statsbeatTelemetry = new StatsbeatTelemetry(name, value);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_RP, resourceProvider);
-        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_ATTACH, ATTACH_CODELESS);
+        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_ATTACH_TYPE, ATTACH_TYPE_CODELESS);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_CIKEY, customerIkey);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_RUNTIME_VERSION, runtimeVersion);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_OS, operatingSystem);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_LANGUAGE, LANGUAGE);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_VERSION, version);
         return statsbeatTelemetry;
+    }
+
+
+    /**
+     * Runnable which is responsible for calling the send method to transmit Statsbeat telemetry
+     * @return Runnable which has logic to send statsbeat.
+     */
+    private Runnable sendStatsbeat() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                if (telemetryClient == null) {
+                    telemetryClient = new TelemetryClient();
+                }
+                try {
+                    send(telemetryClient);
+                }
+                catch (Exception e) {
+                    logger.error("Error occurred while sending statsbeat");
+                }
+            }
+        };
+    }
+
+    protected void setFrequencyInterval(long interval) {
+        scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), interval, interval, TimeUnit.SECONDS);
     }
 }

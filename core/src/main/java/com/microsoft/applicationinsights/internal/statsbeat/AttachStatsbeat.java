@@ -22,7 +22,10 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+
+import java.util.concurrent.Executors;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
@@ -34,11 +37,13 @@ public class AttachStatsbeat extends BaseStatsbeat {
     public AttachStatsbeat() {
         super();
         initResourceProviderId();
+        scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(AttachStatsbeat.class));
+        setFrequencyInterval(DEFAULT_STATSBEAT_INTERVAL);
     }
 
     @Override
     public void send(TelemetryClient telemetryClient) {
-        StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(AttachStatsbeat.class.getName());
+        StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH, 0);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_RP_ID, resourceProviderId);
         telemetryClient.track(statsbeatTelemetry);
     }

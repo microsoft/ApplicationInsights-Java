@@ -22,24 +22,29 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_FEATURE;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_OTHER;
 import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelper.FEATURE_MAP;
 
 public class FeatureStatsbeat extends BaseStatsbeat {
 
-    private long feature;
     private static Set<String> featureList = new HashSet<>(64);
 
     public FeatureStatsbeat() {
         super();
         initFeatureList();
+        scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(FeatureStatsbeat.class));
+        setFrequencyInterval(TimeUnit.DAYS.toSeconds(1));
     }
-
 
     /**
      * @return a 64-bit long that represents a list of features enabled. Each bitfield maps to a feature.
@@ -50,7 +55,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
 
     @Override
     public void send(TelemetryClient telemetryClient) {
-        StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FeatureStatsbeat.class.getName());
+        StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE, 0);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_FEATURE, String.valueOf(getFeature()));
         telemetryClient.track(statsbeatTelemetry);
     }
