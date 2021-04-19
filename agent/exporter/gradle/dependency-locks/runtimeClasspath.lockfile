@@ -1,6 +1,17 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+com.azure:azure-core-http-netty:1.9.1
+com.azure:azure-core:1.15.0
+com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.5+AI-SNAPSHOT
+com.fasterxml.jackson.core:jackson-annotations:2.12.2
+com.fasterxml.jackson.core:jackson-core:2.12.2
+com.fasterxml.jackson.core:jackson-databind:2.12.2
+com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.2
+com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.2
+com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.12.2
+com.fasterxml.jackson:jackson-bom:2.12.2
+com.fasterxml.woodstox:woodstox-core:6.2.4
 com.github.oshi:oshi-core:5.6.0
 com.google.code.findbugs:jsr305:3.0.2
 com.google.code.gson:gson:2.8.2
@@ -14,6 +25,23 @@ com.squareup.okio:okio:1.16.0
 commons-codec:commons-codec:1.11
 commons-io:commons-io:2.7
 commons-logging:commons-logging:1.2
+io.netty:netty-buffer:4.1.60.Final
+io.netty:netty-codec-dns:4.1.59.Final
+io.netty:netty-codec-http2:4.1.60.Final
+io.netty:netty-codec-http:4.1.60.Final
+io.netty:netty-codec-socks:4.1.60.Final
+io.netty:netty-codec:4.1.60.Final
+io.netty:netty-common:4.1.60.Final
+io.netty:netty-handler-proxy:4.1.60.Final
+io.netty:netty-handler:4.1.60.Final
+io.netty:netty-resolver-dns-native-macos:4.1.59.Final
+io.netty:netty-resolver-dns:4.1.59.Final
+io.netty:netty-resolver:4.1.60.Final
+io.netty:netty-tcnative-boringssl-static:2.0.36.Final
+io.netty:netty-transport-native-epoll:4.1.60.Final
+io.netty:netty-transport-native-kqueue:4.1.60.Final
+io.netty:netty-transport-native-unix-common:4.1.60.Final
+io.netty:netty-transport:4.1.60.Final
 io.opentelemetry:opentelemetry-api-metrics:1.0.0-alpha
 io.opentelemetry:opentelemetry-api:1.0.0
 io.opentelemetry:opentelemetry-context:1.0.0
@@ -21,6 +49,18 @@ io.opentelemetry:opentelemetry-sdk-common:1.0.0
 io.opentelemetry:opentelemetry-sdk-trace:1.0.0
 io.opentelemetry:opentelemetry-sdk:1.0.0
 io.opentelemetry:opentelemetry-semconv:1.0.0-alpha
+io.projectreactor.netty:reactor-netty-core:1.0.4
+io.projectreactor.netty:reactor-netty-http-brave:1.0.4
+io.projectreactor.netty:reactor-netty-http:1.0.4
+io.projectreactor.netty:reactor-netty:1.0.4
+io.projectreactor:reactor-core:3.4.3
+io.zipkin.brave:brave-instrumentation-http:5.13.3
+io.zipkin.brave:brave:5.13.3
+io.zipkin.reporter2:zipkin-reporter-brave:2.16.3
+io.zipkin.reporter2:zipkin-reporter:2.16.3
+io.zipkin.zipkin2:zipkin:2.23.2
+jakarta.activation:jakarta.activation-api:1.2.1
+jakarta.xml.bind:jakarta.xml.bind-api:2.3.2
 net.java.dev.jna:jna-platform:5.7.0
 net.java.dev.jna:jna:5.7.0
 org.apache.commons:commons-lang3:3.11
@@ -28,4 +68,6 @@ org.apache.commons:commons-text:1.9
 org.apache.httpcomponents:httpclient:4.5.13
 org.apache.httpcomponents:httpcore:4.4.13
 org.checkerframework:checker-qual:3.8.0
+org.codehaus.woodstox:stax2-api:4.2.1
+org.reactivestreams:reactive-streams:1.0.3
 org.slf4j:slf4j-api:1.7.30
