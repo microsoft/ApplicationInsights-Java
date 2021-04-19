@@ -1,9 +1,6 @@
 apply plugin: 'war'
 
 dependencies {
-    implementation aiCoreJar
-    implementation aiWebJar
-
     implementation group: 'org.mongodb', name: 'mongodb-driver', version: '3.11.0'
     implementation group: 'com.google.guava', name: 'guava', version: '27.1-android'
 

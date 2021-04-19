@@ -8,13 +8,12 @@ repositories {
 dependencies {
     // this is an api dependency because of MockedAppInsightsIngestionServer.waitForItems(Predicate)
     api group: 'com.google.guava', name: 'guava', version: versions.guava
-    // this is an api dependency in order to expose com.microsoft.applicationinsights.internal.schemav2.*
-    api project(':core')
 
     implementation group: 'junit', name: 'junit', version: versions.junit
     implementation 'org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325'
     implementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
     implementation project(':test:fakeIngestion:servlet')
+    implementation project(':test:smoke:framework:utils')
 }
 
 mainClassName = 'com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer'

@@ -24,6 +24,13 @@ subprojects {
     }
 }
 
+configurations {
+    smokeTest.exclude group: 'com.microsoft.azure', name: 'applicationinsights-core'
+    smokeTest.exclude group: 'com.microsoft.azure', name: 'applicationinsights-web'
+    smokeTest.exclude group: 'com.microsoft.azure', name: 'applicationinsights-web-auto'
+    smokeTest.exclude group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter'
+}
+
 clean {
     delete file(sharedOutputRoot)
 }
