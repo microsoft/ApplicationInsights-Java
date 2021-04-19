@@ -23,6 +23,8 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -37,13 +39,14 @@ import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelp
 
 public class FeatureStatsbeat extends BaseStatsbeat {
 
+    private static final Logger logger = LoggerFactory.getLogger(FeatureStatsbeat.class);
     private static Set<String> featureList = new HashSet<>(64);
 
     public FeatureStatsbeat() {
         super();
         initFeatureList();
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(FeatureStatsbeat.class));
-        setFrequencyInterval(TimeUnit.DAYS.toSeconds(1));
+        setFrequencyInterval(TimeUnit.DAYS.toSeconds(1)); // daily interval
     }
 
     /**
@@ -54,10 +57,16 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     }
 
     @Override
-    public void send(TelemetryClient telemetryClient) {
+    protected void send(TelemetryClient telemetryClient) {
         StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE, 0);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_FEATURE, String.valueOf(getFeature()));
         telemetryClient.track(statsbeatTelemetry);
+        logger.debug("#### send a featureStatsbeat");
+    }
+
+    @Override
+    protected void reset() {
+        featureList = new HashSet<>(64);
     }
 
     private void initFeatureList() {

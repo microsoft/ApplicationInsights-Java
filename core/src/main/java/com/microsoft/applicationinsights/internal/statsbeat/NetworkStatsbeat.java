@@ -54,7 +54,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     @Override
-    public void send(TelemetryClient telemetryClient) {
+    protected void send(TelemetryClient telemetryClient) {
         String instrumentation = String.valueOf(getInstrumentation());
         
         StatsbeatTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT, requestSuccessCount);
@@ -87,6 +87,17 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         exceptionCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
         telemetryClient.track(exceptionCountSt);
         logger.debug("#### sending {}: {}", EXCEPTION_COUNT, exceptionCount);
+    }
+
+    @Override
+    protected void reset() {
+        instrumentationList = new HashSet<>(64);
+        requestSuccessCount = 0;
+        requestFailureCount = 0;
+        requestDurations = new ArrayList<>();
+        retryCount = 0;
+        throttleCount = 0;
+        exceptionCount = 0;
     }
 
     public static void addInstrumentation(String instrumentation) {
@@ -131,16 +142,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
     public void incrementExceptionCount() {
         exceptionCount++;
-    }
-
-    private void reset() {
-        instrumentationList = new HashSet<>(64);
-        requestSuccessCount = 0;
-        requestFailureCount = 0;
-        requestDurations = new ArrayList<>();
-        retryCount = 0;
-        throttleCount = 0;
-        exceptionCount = 0;
     }
 
     private double getRequestDurationAvg() {

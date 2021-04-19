@@ -49,6 +49,7 @@ public abstract class BaseStatsbeat {
 
     public BaseStatsbeat() {
         initializeCommonProperties();
+        scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
     }
 
     /**
@@ -123,7 +124,9 @@ public abstract class BaseStatsbeat {
         runtimeVersion = System.getProperty("java.version");
     }
 
-    public abstract void send(TelemetryClient telemetryClient);
+    protected abstract void send(TelemetryClient telemetryClient);
+
+    protected abstract void reset();
 
     protected StatsbeatTelemetry createStatsbeatTelemetry(String name, double value) {
         StatsbeatTelemetry statsbeatTelemetry = new StatsbeatTelemetry(name, value);
@@ -151,6 +154,9 @@ public abstract class BaseStatsbeat {
                 }
                 try {
                     send(telemetryClient);
+                    logger.debug("#### sending a statsbeat");
+                    reset();
+                    logger.debug("#### reset counter after each interval");
                 }
                 catch (Exception e) {
                     logger.error("Error occurred while sending statsbeat");

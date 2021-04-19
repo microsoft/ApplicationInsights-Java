@@ -42,10 +42,16 @@ public class AttachStatsbeat extends BaseStatsbeat {
     }
 
     @Override
-    public void send(TelemetryClient telemetryClient) {
+    protected void send(TelemetryClient telemetryClient) {
         StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH, 0);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_RP_ID, resourceProviderId);
         telemetryClient.track(statsbeatTelemetry);
+    }
+
+    @Override
+    protected void reset() {
+        resourceProviderId = null;
+        metadataInstanceResponse = null;
     }
 
     private void initResourceProviderId() {
