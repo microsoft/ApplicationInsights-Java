@@ -117,18 +117,22 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
     public static void incrementRequestSuccessCount() {
         requestSuccessCount++;
+        logger.debug("#### increment request success count");
     }
 
     public static void incrementRequestFailureCount() {
         requestFailureCount++;
+        logger.debug("#### increment request failure count");
     }
 
     public static void addRequestDuration(double duration) {
         requestDurations.add(duration);
+        logger.debug("#### add a new request duration {}", duration);
     }
 
     public static void incrementRetryCount() {
         retryCount++;
+        logger.debug("#### increment retry count");
     }
 
     public static void incrementThrottleCount() {

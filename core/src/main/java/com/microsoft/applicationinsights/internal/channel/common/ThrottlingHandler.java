@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import com.microsoft.applicationinsights.internal.statsbeat.NetworkStatsbeat;
 import org.apache.http.Header;
 
 import com.google.common.base.Strings;
@@ -62,6 +63,7 @@ public class ThrottlingHandler implements TransmissionHandler {
             case TransmissionSendResult.THROTTLED_OVER_EXTENDED_TIME:
                 suspendTransmissions(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, args.getRetryHeader());
                 args.getTransmissionDispatcher().dispatch(args.getTransmission());
+                NetworkStatsbeat.incrementThrottleCount();
                 return true;
             default:
                 logger.trace("Http response code {} not handled by {}", args.getResponseCode(),
