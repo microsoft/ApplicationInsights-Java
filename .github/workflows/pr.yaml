@@ -16,9 +16,17 @@ jobs:
           java-version: 11
 
       - name: Restore cache
-        uses: burrunan/gradle-cache-action@v1.10
+        uses: actions/cache@v2
+        # configuration from https://github.com/actions/cache/blob/main/examples.md#java---gradle
         with:
-          job-id: jdk11
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: otel-fork-build-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          # the cache with the most recent creation date matching this will be used
+          restore-keys: |
+            otel-fork-build-
+            otel-fork-
 
       - name: Start deadlock detector
         run: .github/scripts/deadlock-detector.sh
@@ -47,9 +55,17 @@ jobs:
           java-version: 11
 
       - name: Restore cache
-        uses: burrunan/gradle-cache-action@v1.10
+        uses: actions/cache@v2
+        # configuration from https://github.com/actions/cache/blob/main/examples.md#java---gradle
         with:
-          job-id: jdk11
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: otel-fork-example-distro-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          # the cache with the most recent creation date matching this will be used
+          restore-keys: |
+            otel-fork-example-distro-
+            otel-fork-
 
       - name: Build
         run: ./gradlew build --stacktrace
@@ -77,9 +93,18 @@ jobs:
           java-version: 11
 
       - name: Restore cache
-        uses: burrunan/gradle-cache-action@v1.10
+        uses: actions/cache@v2
+        # configuration from https://github.com/actions/cache/blob/main/examples.md#java---gradle
         with:
-          job-id: jdk${{ matrix.java }}
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: otel-fork-test-jdk${{ matrix.java }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          # the cache with the most recent creation date matching this will be used
+          restore-keys: |
+            otel-fork-test-jdk${{ matrix.java }}-
+            otel-fork-test-
+            otel-fork-
 
       - name: Start deadlock detector
         run: .github/scripts/deadlock-detector.sh
@@ -108,9 +133,17 @@ jobs:
           java-version: 11
 
       - name: Restore cache
-        uses: burrunan/gradle-cache-action@v1.10
+        uses: actions/cache@v2
+        # configuration from https://github.com/actions/cache/blob/main/examples.md#java---gradle
         with:
-          job-id: smokeTests
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: otel-fork-smoke-test-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          # the cache with the most recent creation date matching this will be used
+          restore-keys: |
+            otel-fork-smoke-test-
+            otel-fork-
 
       - name: Test
         run: ./gradlew :smoke-tests:test
