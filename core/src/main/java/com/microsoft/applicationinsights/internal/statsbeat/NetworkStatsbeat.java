@@ -41,11 +41,10 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.THR
 public class NetworkStatsbeat extends BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(NetworkStatsbeat.class);
-    private static volatile Set<String> instrumentationList;
+    private static volatile Set<String> instrumentationList = new HashSet<>(64);;
 
     public NetworkStatsbeat() {
         super();
-        instrumentationList = new HashSet<>(64);
     }
 
     @Override

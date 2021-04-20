@@ -9,8 +9,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.File;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,7 +17,7 @@ public class AzureMetadataServiceTest {
 
     @Test
     public void testParseJsonResponseLinux() throws IOException, JsonDataException {
-        Path path = new File(String.valueOf(Resources.getResource("metadata_instance_linux.json").getPath())).toPath();
+        Path path = new File(Resources.getResource("metadata_instance_linux.json").getPath()).toPath();
         InputStream in = Files.newInputStream(path);
         BufferedSource source = Okio.buffer(Okio.source(in));
         String result = source.readUtf8();
