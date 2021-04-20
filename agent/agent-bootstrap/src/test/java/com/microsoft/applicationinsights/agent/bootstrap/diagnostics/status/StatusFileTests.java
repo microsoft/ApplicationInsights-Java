@@ -50,6 +50,8 @@ public class StatusFileTests {
 
     @Test
     public void defaultDirectoryIsCorrect() {
+        // TODO this test doesn't pass inside of windows + bash because bash sets HOME env
+        assumeTrue(System.getenv(StatusFile.HOME_ENV_VAR) == null);
         assertEquals("./LogFiles/ApplicationInsights", initLogDir());
     }
 
