@@ -139,6 +139,10 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
                 "org.springframework.core.ReactiveAdapterRegistry$EmptyCompletableFuture")) {
           return false;
         }
+        // Spring boot actuator / micrometer instrumentation
+        if (name.equals("org.springframework.core.io.ClassPathResource")) {
+          return false;
+        }
         return true;
       }
 
@@ -340,6 +344,8 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
         "org.springframework.boot.web.embedded.tomcat.TomcatEmbeddedWebappClassLoader");
     instrumented.add("org.springframework.boot.web.servlet.DelegatingFilterProxyRegistrationBean$");
     instrumented.add("org.springframework.boot.StartupInfoLogger$");
+    // Spring boot actuator / micrometer instrumentation
+    instrumented.add("org.springframework.boot.autoconfigure.AutoConfigurationImportSelector");
     INSTRUMENTED_SPRING_BOOT_CLASSES = Collections.unmodifiableSet(instrumented);
   }
 
