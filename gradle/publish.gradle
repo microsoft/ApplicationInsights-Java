@@ -88,8 +88,6 @@ private String artifactPrefix(Project p, String archivesBaseName) {
   return 'opentelemetry-'
 }
 
-rootProject.tasks.release.finalizedBy tasks.publishToSonatype
-
 tasks.withType(Sign).configureEach {
   onlyIf { System.getenv("CI") != null }
 }
