@@ -25,9 +25,11 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsData;
 
 /**
  * The class will create a metric telemetry for capturing the Jvm's heap memory usage
@@ -68,11 +70,11 @@ public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
         MemoryUsage mhu = memory.getHeapMemoryUsage();
         if (mhu != null) {
             long currentHeapUsed = mhu.getUsed() / Megabyte;
-            MetricTelemetry memoryHeapUsage = new MetricTelemetry(HEAP_MEM_USED, currentHeapUsed);
+            MetricsData memoryHeapUsage = createMetricsData(HEAP_MEM_USED, currentHeapUsed);
             telemetryClient.track(memoryHeapUsage);
 
             float percentage = 100.0f * (((float) mhu.getUsed()) / ((float) mhu.getMax()));
-            MetricTelemetry memoryHeapUsagePercentage = new MetricTelemetry(HEAP_MEM_USED_PERCENTAGE, percentage);
+            MetricsData memoryHeapUsagePercentage = createMetricsData(HEAP_MEM_USED_PERCENTAGE, percentage);
             telemetryClient.track(memoryHeapUsagePercentage);
         }
     }

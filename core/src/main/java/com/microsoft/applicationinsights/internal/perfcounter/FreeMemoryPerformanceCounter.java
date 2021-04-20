@@ -24,12 +24,13 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 import java.lang.management.ManagementFactory;
 import javax.management.ObjectName;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_MEMORY_PC_METRIC_NAME;
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsData;
 
 /**
  * The class supplies the memory usage in Mega Bytes of the Java process the SDK is in.
@@ -62,8 +63,8 @@ final class FreeMemoryPerformanceCounter extends AbstractPerformanceCounter {
         }
 
         logger.trace("Performance Counter: {}: {}", TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
-        MetricTelemetry telemetry = new MetricTelemetry(TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
-        telemetryClient.track(telemetry);
+        MetricsData metricsData = createMetricsData(TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
+        telemetryClient.track(metricsData);
     }
 
     private long getFreePhysicalMemorySize() throws Exception {

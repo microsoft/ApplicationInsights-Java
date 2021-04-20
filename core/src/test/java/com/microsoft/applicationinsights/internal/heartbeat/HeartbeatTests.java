@@ -1,10 +1,9 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.TelemetryConfigurationTestHelper;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -210,7 +209,7 @@ public class HeartbeatTests {
     Thread.sleep(100);
     Method m = provider.getClass().getDeclaredMethod("gatherData");
     m.setAccessible(true);
-    Telemetry t = (Telemetry)m.invoke(provider);
+    MetricsData t = (MetricsData)m.invoke(provider);
     Assert.assertNotNull(t);
     // for callable to complete adding
     Thread.sleep(100);
@@ -225,7 +224,7 @@ public class HeartbeatTests {
 
     Method m = provider.getClass().getDeclaredMethod("gatherData");
     m.setAccessible(true);
-    Telemetry t = (Telemetry)m.invoke(provider);
+    MetricsData t = (MetricsData)m.invoke(provider);
     Assert.assertEquals("testVal", t.getProperties().get("test"));
 
   }
@@ -237,8 +236,8 @@ public class HeartbeatTests {
 
     Method m = provider.getClass().getDeclaredMethod("gatherData");
     m.setAccessible(true);
-    Telemetry t = (Telemetry)m.invoke(provider);
-    Assert.assertEquals(1, ((MetricTelemetry)t).getValue(), 0.0);
+    MetricsData t = (MetricsData)m.invoke(provider);
+    Assert.assertEquals(1, t.getMetrics().get(0).getValue(), 0.0);
 
   }
 
@@ -250,8 +249,8 @@ public class HeartbeatTests {
 
     Method m = provider.getClass().getDeclaredMethod("gatherData");
     m.setAccessible(true);
-    Telemetry t = (Telemetry)m.invoke(provider);
-    Assert.assertEquals(2, ((MetricTelemetry)t).getValue(), 0.0);
+    MetricsData t = (MetricsData)m.invoke(provider);
+    Assert.assertEquals(2, t.getMetrics().get(0).getValue(), 0.0);
   }
 
   @Test
@@ -300,7 +299,7 @@ public class HeartbeatTests {
     base.setDefaultPayload(new ArrayList<>(), provider).call();
     Method m = provider.getClass().getDeclaredMethod("gatherData");
     m.setAccessible(true);
-    Telemetry t = (Telemetry)m.invoke(provider);
+    MetricsData t = (MetricsData)m.invoke(provider);
     Assert.assertFalse(t.getProperties().containsKey("testKey"));
   }
 

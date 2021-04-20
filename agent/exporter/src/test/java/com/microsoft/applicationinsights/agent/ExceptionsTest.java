@@ -4,7 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 
-import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
 import org.junit.*;
 
 import static org.junit.Assert.*;
@@ -17,12 +17,12 @@ public class ExceptionsTest {
         String str = toString(new IllegalStateException("test"));
 
         // when
-        List<ExceptionDetails> list = Exceptions.fullParse(str);
+        List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
         assertEquals(1, list.size());
 
-        ExceptionDetails details = list.get(0);
+        TelemetryExceptionDetails details = list.get(0);
         assertEquals(IllegalStateException.class.getName(), details.getTypeName());
         assertEquals("test", details.getMessage());
     }
@@ -33,12 +33,12 @@ public class ExceptionsTest {
         String str = toString(new IllegalStateException());
 
         // when
-        List<ExceptionDetails> list = Exceptions.fullParse(str);
+        List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
         assertEquals(1, list.size());
 
-        ExceptionDetails details = list.get(0);
+        TelemetryExceptionDetails details = list.get(0);
         assertEquals(IllegalStateException.class.getName(), details.getTypeName());
         assertNull(details.getMessage());
     }
@@ -50,16 +50,16 @@ public class ExceptionsTest {
         String str = toString(new IllegalStateException("test", causedBy));
 
         // when
-        List<ExceptionDetails> list = Exceptions.fullParse(str);
+        List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
         assertEquals(2, list.size());
 
-        ExceptionDetails details = list.get(0);
+        TelemetryExceptionDetails details = list.get(0);
         assertEquals(IllegalStateException.class.getName(), details.getTypeName());
         assertEquals("test", details.getMessage());
 
-        ExceptionDetails causedByDetails = list.get(1);
+        TelemetryExceptionDetails causedByDetails = list.get(1);
         assertEquals(RuntimeException.class.getName(), causedByDetails.getTypeName());
         assertEquals("the cause", causedByDetails.getMessage());
 
@@ -74,12 +74,12 @@ public class ExceptionsTest {
         String str = toString(exception);
 
         // when
-        List<ExceptionDetails> list = Exceptions.fullParse(str);
+        List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
         assertEquals(1, list.size());
 
-        ExceptionDetails details = list.get(0);
+        TelemetryExceptionDetails details = list.get(0);
         assertEquals(IllegalStateException.class.getName(), details.getTypeName());
         assertEquals("test", details.getMessage());
     }

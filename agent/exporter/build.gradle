@@ -20,5 +20,7 @@ dependencies {
 
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
 
+    implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.5+AI-SNAPSHOT'
+
     testImplementation group: 'junit', name: 'junit', version: versions.junit
 }

@@ -1,16 +1,16 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.FinalCounters;
-import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import org.junit.*;
 
 import java.util.Date;
 
+import static com.microsoft.applicationinsights.TelemetryUtil.*;
 import static org.junit.Assert.*;
 
 public class QuickPulseDataCollectorTests {
@@ -52,9 +52,8 @@ public class QuickPulseDataCollectorTests {
 
         // add a success and peek
         final long duration = 112233L;
-        RequestTelemetry rt = new RequestTelemetry("request-test", new Date(), duration, "200", true);
-        rt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.add(rt);
+        RequestData data = createRequestData("request-test", new Date(), duration, "200", true);
+        QuickPulseDataCollector.INSTANCE.add(createTelemetry(data, FAKE_INSTRUMENTATION_KEY));
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
         assertEquals(1, counters.requests);
         assertEquals(0, counters.unsuccessfulRequests);
@@ -62,9 +61,10 @@ public class QuickPulseDataCollectorTests {
 
         // add another success and peek
         final long duration2 = 65421L;
-        rt = new RequestTelemetry("request-test-2", new Date(), duration2, "200", true);
-        rt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.add(rt);
+        data = createRequestData("request-test-2", new Date(), duration2, "200", true);
+        // FIXME (trask) how to set ikey
+        // rt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.add(data);
         counters = QuickPulseDataCollector.INSTANCE.peek();
         double total = duration + duration2;
         assertEquals(2, counters.requests);
@@ -73,9 +73,10 @@ public class QuickPulseDataCollectorTests {
 
         // add a failure and get/reset
         final long duration3 = 9988L;
-        rt = new RequestTelemetry("request-test-3", new Date(), duration3, "400", false);
-        rt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.add(rt);
+        data = createRequestData("request-test-3", new Date(), duration3, "400", false);
+        // FIXME (trask) how to set ikey
+        // rt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.add(data);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
         total += duration3;
         assertEquals(3, counters.requests);
@@ -91,8 +92,9 @@ public class QuickPulseDataCollectorTests {
 
         // add a success and peek.
         final long duration = 112233L;
-        RemoteDependencyTelemetry rdt = new RemoteDependencyTelemetry("dep-test", "dep-test-cmd", new Duration(duration), true);
-        rdt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        RemoteDependencyData rdt = createRemoteDependencyData("dep-test", "dep-test-cmd", duration, true);
+        // FIXME (trask) how to set ikey
+        // rdt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(rdt);
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
         assertEquals(1, counters.rdds);
@@ -101,8 +103,9 @@ public class QuickPulseDataCollectorTests {
 
         // add another success and peek.
         final long duration2 = 334455L;
-        rdt = new RemoteDependencyTelemetry("dep-test-2", "dep-test-cmd-2", new Duration(duration2), true);
-        rdt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        rdt = createRemoteDependencyData("dep-test-2", "dep-test-cmd-2", duration2, true);
+        // FIXME (trask) how to set ikey
+        // rdt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(rdt);
         counters = QuickPulseDataCollector.INSTANCE.peek();
         assertEquals(2, counters.rdds);
@@ -112,8 +115,9 @@ public class QuickPulseDataCollectorTests {
 
         // add a failure and get/reset.
         final long duration3 = 123456L;
-        rdt = new RemoteDependencyTelemetry("dep-test-3", "dep-test-cmd-3", new Duration(duration3), false);
-        rdt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        rdt = createRemoteDependencyData("dep-test-3", "dep-test-cmd-3", duration3, false);
+        // FIXME (trask) how to set ikey
+        // rdt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(rdt);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
         assertEquals(3, counters.rdds);
@@ -128,14 +132,16 @@ public class QuickPulseDataCollectorTests {
     public void exceptionTelemetryIsCounted() {
         QuickPulseDataCollector.INSTANCE.enable(FAKE_INSTRUMENTATION_KEY);
 
-        ExceptionTelemetry et = new ExceptionTelemetry(new Exception());
-        et.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        TelemetryExceptionData et = new ExceptionTelemetry(new Exception());
+        // FIXME (trask) how to set ikey
+        // et.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(et);
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
         assertEquals(1, counters.exceptions, Math.ulp(1.0));
 
         et = new ExceptionTelemetry(new Exception());
-        et.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        // FIXME (trask) how to set ikey
+        // et.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(et);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
         assertEquals(2, counters.exceptions, Math.ulp(2.0));

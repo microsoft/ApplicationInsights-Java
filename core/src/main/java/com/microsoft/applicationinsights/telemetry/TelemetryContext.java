@@ -29,6 +29,7 @@ import com.microsoft.applicationinsights.extensibility.context.LocationContext;
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -147,18 +148,6 @@ public final class TelemetryContext {
         return cloud;
     }
 
-    /**
-     * Gets the default instrumentation key for all {@link com.microsoft.applicationinsights.telemetry.Telemetry}
-     * objects logged in this {@link com.microsoft.applicationinsights.telemetry.TelemetryContext}.
-     *
-     * By default, this property is initialized with the InstrumentationKey value which is in
-     * {@link com.microsoft.applicationinsights.TelemetryConfiguration} of the 'Active' instance.
-     *
-     * You can specify it for all telemetry tracked via a particular {@link com.microsoft.applicationinsights.TelemetryClient}
-     * or for a specific {@link com.microsoft.applicationinsights.telemetry.Telemetry}
-     *
-     * @return The instrumentation key
-     */
     public String getInstrumentationKey() {
         return instrumentationKey;
     }
@@ -167,21 +156,18 @@ public final class TelemetryContext {
         return normalizedInstrumentationKey;
     }
 
-    /**
-     * Sets the default instrumentation key for all {@link com.microsoft.applicationinsights.telemetry.Telemetry}
-     * objects logged in this {@link com.microsoft.applicationinsights.telemetry.TelemetryContext}.
-     *
-     * By default, this property is initialized with the InstrumentationKey value which is in
-     * {@link com.microsoft.applicationinsights.TelemetryConfiguration} of the 'Active' instance.
-     *
-     * You can specify it for all telemetry tracked via a particular {@link com.microsoft.applicationinsights.TelemetryClient}
-     * or for a specific {@link com.microsoft.applicationinsights.telemetry.Telemetry}
-     *
-     * @param instrumentationKey The instrumentation key
-     */
     public void setInstrumentationKey(String instrumentationKey) {
         this.instrumentationKey = instrumentationKey;
-        this.normalizedInstrumentationKey = BaseTelemetry.normalizeInstrumentationKey(instrumentationKey);
+        this.normalizedInstrumentationKey = normalizeInstrumentationKey(instrumentationKey);
+    }
+
+    public static String normalizeInstrumentationKey(String instrumentationKey){
+        if (StringUtils.isEmpty(instrumentationKey) || StringUtils.containsOnly(instrumentationKey, ".- ")){
+            return "";
+        }
+        else{
+            return instrumentationKey.replace("-", "").toLowerCase() + ".";
+        }
     }
 
     public void setInstrumentationKey(String instrumentationKey, String normalizedInstrumentationKey) {

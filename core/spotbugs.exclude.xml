@@ -43,19 +43,6 @@
         </Or>
     </Match>
     <Match>
-        <Bug pattern="EI_EXPOSE_REP2" /> <!-- external references in -->
-        <!-- The external references is disposed after passed to object. -->
-        <!-- this use is acceptable -->
-        <Class name="com.microsoft.applicationinsights.telemetry.BaseTelemetry" />
-        <Field name="timestamp" />
-    </Match>
-    <Match>
-        <Bug pattern="EI_EXPOSE_REP" /><!-- internal references out -->
-        <!-- this use is acceptable -->
-        <Class name="com.microsoft.applicationinsights.telemetry.BaseTelemetry" />
-        <Field name="timestamp" />
-    </Match>
-    <Match>
         <Bug pattern="ME_ENUM_FIELD_SETTER" />
         <!-- Singleton enum pattern. By design. -->
         <Or>

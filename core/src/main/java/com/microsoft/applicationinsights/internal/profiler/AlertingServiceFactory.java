@@ -26,12 +26,7 @@ import java.util.function.Consumer;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.TelemetryObserver;
-
-import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 
 /**
  * Creates AlertMonitor and wires it up to observe telemetry.
@@ -60,6 +55,8 @@ public class AlertingServiceFactory {
     }
 
     private static void addObserver(AlertingSubsystem alertingSubsystem, TelemetryObservers telemetryObservers) {
+        // FIXME (trask)
+        /*
         telemetryObservers.addObserver(new TelemetryObserver<MetricTelemetry>(MetricTelemetry.class) {
             @Override
             protected void process(MetricTelemetry telemetry) {
@@ -73,5 +70,6 @@ public class AlertingServiceFactory {
                 }
             }
         });
+         */
     }
 }

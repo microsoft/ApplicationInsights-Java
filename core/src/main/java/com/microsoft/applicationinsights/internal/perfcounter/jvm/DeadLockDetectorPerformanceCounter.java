@@ -27,13 +27,16 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 
+import static com.microsoft.applicationinsights.TelemetryUtil.createMessageData;
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsData;
 import static java.lang.Math.min;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +77,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
     @Override
     public void report(TelemetryClient telemetryClient) {
-        MetricTelemetry mt = new MetricTelemetry(METRIC_NAME, 0.0);
+        MetricsData mt = createMetricsData(METRIC_NAME, 0.0);
 
         long[] threadIds = threadBean.findDeadlockedThreads();
         if (threadIds != null && threadIds.length > 0) {
@@ -94,12 +97,12 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
             if (!blockedThreads.isEmpty()) {
                 String uuid = LocalStringsUtils.generateRandomIntegerId();
 
-                mt.setValue(blockedThreads.size());
-                mt.getContext().getOperation().setId(uuid);
+                mt.getMetrics().get(0).setValue(blockedThreads.size());
+                mt.getProperties().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
 
-                TraceTelemetry trace = new TraceTelemetry(String.format("%s%s", "Suspected deadlocked threads: ", sb.toString()));
-                trace.getContext().getOperation().setId(uuid);
-                telemetryClient.track(trace);
+                MessageData messageData = createMessageData(String.format("%s%s", "Suspected deadlocked threads: ", sb.toString()));
+                messageData.getProperties().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
+                telemetryClient.track(messageData);
             }
         }
         telemetryClient.track(mt);

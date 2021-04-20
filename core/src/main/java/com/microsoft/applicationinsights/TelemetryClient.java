@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
@@ -106,7 +107,7 @@ public class TelemetryClient {
      * This method is part of the Application Insights infrastructure. Do not call it directly.
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
-    public void track(Telemetry telemetry) {
+    public void track(MonitorDomain telemetry) {
 
         if (generateCounter.incrementAndGet() % 10000 == 0) {
             logger.debug("Total events generated till now {}", generateCounter.get());

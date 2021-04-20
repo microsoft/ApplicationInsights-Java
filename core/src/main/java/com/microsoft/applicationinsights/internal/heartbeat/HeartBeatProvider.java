@@ -1,9 +1,11 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsData;
 
 /**
  * <p>
@@ -182,8 +186,8 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
    */
   private void send() {
 
-    MetricTelemetry telemetry = gatherData();
-    telemetry.getContext().getOperation().setSyntheticSource(HEARTBEAT_SYNTHETIC_METRIC_NAME);
+    MetricsData telemetry = gatherData();
+    telemetry.getProperties().put(ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
     telemetryClient.track(telemetry);
     logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
 
@@ -193,15 +197,15 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
    * Creates and returns the heartbeat telemetry.
    * @return Metric Telemetry which represent heartbeat.
    */
-  private MetricTelemetry gatherData() {
+  private MetricsData gatherData() {
 
-    MetricTelemetry heartbeat = new MetricTelemetry(HEARTBEAT_SYNTHETIC_METRIC_NAME, 0.0);
+    MetricsData heartbeat = createMetricsData(HEARTBEAT_SYNTHETIC_METRIC_NAME, 0.0);
     Map<String, String> property = heartbeat.getProperties();
     for (Map.Entry<String, HeartBeatPropertyPayload> entry : heartbeatProperties.entrySet()) {
       property.put(entry.getKey(), entry.getValue().getPayloadValue());
-      double currentValue = heartbeat.getValue();
+      double currentValue = heartbeat.getMetrics().get(0).getValue();
       currentValue += entry.getValue().isHealthy() ? 0 : 1;
-      heartbeat.setValue(currentValue);
+      heartbeat.getMetrics().get(0).setValue(currentValue);
     }
     return heartbeat;
   }
