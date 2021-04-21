@@ -156,6 +156,15 @@ public final class StatsbeatHelper {
         put(JAVA_VENDOR_OTHER, 5);
     }};
 
+    public static final Map<Integer, String> FEATURE_MAP_DECODING = new HashMap<Integer, String>() {{
+        put(0, JAVA_VENDOR_ORACLE);
+        put(1, JAVA_VENDOR_ZULU);
+        put(2, JAVA_VENDOR_MICROSOFT);
+        put(3, JAVA_VENDOR_ADOPT_OPENJDK);
+        put(4, JAVA_VENDOR_REDHAT);
+        put(5, JAVA_VENDOR_OTHER);
+    }};
+
     public static long encodeInstrumentations(Set<String> instrumentations) {
         return encode(instrumentations, INSTRUMENTATION_MAP);
     }
@@ -165,16 +174,11 @@ public final class StatsbeatHelper {
     }
 
     public static Set<String> decodeInstrumentations(long num) {
-        Set<String> instrumentations = new HashSet<>();
-            Set<Integer> keySet = INSTRUMENTATION_MAP_DECODING.keySet();
-            for(int key : keySet) {
-                Long powerVal = getPowerOf2(key);
-                if ((powerVal & num) == powerVal) {
-                    instrumentations.add(INSTRUMENTATION_MAP_DECODING.get(key));
-                }
-            }
+        return decode(num, INSTRUMENTATION_MAP_DECODING);
+    }
 
-            return instrumentations;
+    public static Set<String> decodeFeature(long num) {
+        return decode(num, FEATURE_MAP_DECODING);
     }
 
     private static long encode(Set<String> list, Map<String, Integer> map) {
@@ -185,6 +189,19 @@ public final class StatsbeatHelper {
         }
 
         return number;
+    }
+
+    private static Set<String> decode(long num, Map<Integer, String> decodedMap) {
+        Set<String> result = new HashSet<>();
+        Set<Integer> keySet = decodedMap.keySet();
+        for(int key : keySet) {
+            Long powerVal = getPowerOf2(key);
+            if ((powerVal & num) == powerVal) {
+                result.add(decodedMap.get(key));
+            }
+        }
+
+        return result;
     }
 
     private static Long getPowerOf2(int exponent) {
