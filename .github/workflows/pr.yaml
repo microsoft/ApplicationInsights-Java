@@ -89,8 +89,12 @@ jobs:
           #   "Cannot perform signing task ':instrumentation-api:signMavenPublication' because it has no configured signatory"
           ./gradlew publishToMavenLocal -x signMavenPublication
       - name: Test
-        # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
-        run: ./gradlew ${{ matrix.module }}:smokeTest
+        uses: nick-invision/retry@v2.4.0
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
+          command: ./gradlew ${{ matrix.module }}:smokeTest
 
   accept-pr:
     needs: [ build, smoke-test ]
