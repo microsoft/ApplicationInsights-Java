@@ -165,6 +165,7 @@ public class AiComponentInstaller implements ComponentInstaller {
                 SystemInformation.INSTANCE.getProcessId(),
                 formServiceProfilerConfig(config.preview.profiler),
                 configuration.getRoleInstance(),
+                // TODO this will not work with Azure Spring Cloud updating connection string at runtime
                 configuration.getInstrumentationKey(),
                 telemetryClient,
                 formApplicationInsightsUserAgent()

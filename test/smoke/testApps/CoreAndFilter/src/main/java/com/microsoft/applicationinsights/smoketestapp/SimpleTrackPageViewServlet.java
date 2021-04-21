@@ -22,7 +22,11 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
         client.flush();
 
         PageViewTelemetry pvt2 = new PageViewTelemetry("test-page-2");
+        // instrumentation key set on the Telemetry is used by interop
         pvt2.getContext().setInstrumentationKey("12341234-1234-1234-1234-123412341234");
+        // role name and instance set on the Telemetry is used by interop
+        pvt2.getContext().getCloud().setRole("role-goes-here");
+        pvt2.getContext().getCloud().setRoleInstance("role-instance-goes-here");
         pvt2.getContext().getOperation().setName("operation-name-goes-here");
         pvt2.getContext().getUser().setId("user-id-goes-here");
         pvt2.getContext().getUser().setAccountId("account-id-goes-here");
@@ -39,8 +43,11 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
         client.trackPageView(pvt2);
 
         TelemetryClient otherClient = new TelemetryClient();
-        // instrumentation key set directly on the TelemetryClient is intentionally ignored by interop
+        // instrumentation key set on the TelemetryClient is intentionally ignored by interop
         otherClient.getContext().setInstrumentationKey("12341234-1234-1234-1234-123412341234");
+        // role name and instance set on the TelemetryClient are intentionally ignored by interop
+        otherClient.getContext().getCloud().setRole("role-goes-here");
+        otherClient.getContext().getCloud().setRoleInstance("role-instance-goes-here");
         otherClient.getContext().getOperation().setName("operation-name-goes-here");
         otherClient.getContext().getUser().setId("user-id-goes-here");
         otherClient.getContext().getUser().setAccountId("account-id-goes-here");

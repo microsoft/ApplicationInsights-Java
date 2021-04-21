@@ -1,7 +1,5 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
-import org.apache.commons.lang3.StringUtils;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -23,13 +21,13 @@ public class SlowRequestCpuBoundServlet extends HttpServlet {
 
         ServletFuncs.geRrenderHtml(request, response);
         int responseTime = 25;
-        final String customRepsonseTime = request.getParameter("responseTime");
-        if (StringUtils.isNotBlank(customRepsonseTime)) {
+        final String customResponseTime = request.getParameter("responseTime");
+        if (customResponseTime != null) {
             try {
-                responseTime = Integer.parseInt(customRepsonseTime);
+                responseTime = Integer.parseInt(customResponseTime);
                 System.out.println("Custom responseTime = "+responseTime);
             } catch (NumberFormatException e) {
-                System.err.printf("Invalid value for 'responseTime': '%s'%n", customRepsonseTime);
+                System.err.printf("Invalid value for 'responseTime': '%s'%n", customResponseTime);
             }
         }
 
