@@ -30,7 +30,7 @@ ext {
 
             // TODO remove dependencies on apache commons
             commonsLang                      : "3.7",
-            commonsIo                        : "2.6",
+            commonsIo                        : "2.7",
             commonsText                      : "1.9",
             commonsCodec                     : "1.13",
 
