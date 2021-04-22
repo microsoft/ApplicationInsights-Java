@@ -10,7 +10,6 @@ dependencies {
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
     implementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
-    implementation aiCoreJar
 
     testImplementation group: 'junit', name: 'junit', version: versions.junit
 }

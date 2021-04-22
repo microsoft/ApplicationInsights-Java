@@ -58,7 +58,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
 
     @Override
-    public void trackEvent(String name, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
+    public void trackEvent(String name, Map<String, String> properties, Map<String, String> tags,
+                           Map<String, Double> metrics, String instrumentationKey) {
 
         if (Strings.isNullOrEmpty(name)) {
             return;
@@ -67,14 +68,15 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
         telemetry.getMetrics().putAll(metrics);
+        telemetry.getContext().setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
     }
 
     // TODO do not track if perf counter (?)
     @Override
-    public void trackMetric(String name, double value, Integer count, Double min, Double max,
-                            Double stdDev, Map<String, String> properties, Map<String, String> tags) {
+    public void trackMetric(String name, double value, Integer count, Double min, Double max, Double stdDev,
+                            Map<String, String> properties, Map<String, String> tags, String instrumentationKey) {
 
         if (Strings.isNullOrEmpty(name)) {
             return;
@@ -88,6 +90,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.setStandardDeviation(stdDev);
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
+        telemetry.getContext().setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
     }
@@ -95,7 +98,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     @Override
     public void trackDependency(String name, String id, String resultCode, @Nullable Long totalMillis,
                                 boolean success, String commandName, String type, String target,
-                                Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
+                                Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
+                                String instrumentationKey) {
 
         if (Strings.isNullOrEmpty(name)) {
             return;
@@ -114,13 +118,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
         telemetry.getMetrics().putAll(metrics);
+        telemetry.getContext().setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
     }
 
     @Override
     public void trackPageView(String name, URI uri, long totalMillis, Map<String, String> properties,
-                              Map<String, String> tags, Map<String, Double> metrics) {
+                              Map<String, String> tags, Map<String, Double> metrics, String instrumentationKey) {
 
         if (Strings.isNullOrEmpty(name)) {
             return;
@@ -132,12 +137,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
         telemetry.getMetrics().putAll(metrics);
+        telemetry.getContext().setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
     }
 
     @Override
-    public void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags) {
+    public void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags,
+                           String instrumentationKey) {
         if (Strings.isNullOrEmpty(message)) {
             return;
         }
@@ -149,13 +156,15 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
+        telemetry.getContext().setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
     }
 
     @Override
     public void trackRequest(String id, String name, URL url, Date timestamp, @Nullable Long duration, String responseCode, boolean success,
-                             String source, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics) {
+                             String source, Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
+                             String instrumentationKey) {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
@@ -176,13 +185,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
         telemetry.getMetrics().putAll(metrics);
+        telemetry.getContext().setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
     }
 
     @Override
     public void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags,
-                               Map<String, Double> metrics) {
+                               Map<String, Double> metrics, String instrumentationKey) {
         if (exception == null) {
             return;
         }
@@ -193,6 +203,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
         telemetry.getMetrics().putAll(metrics);
+        telemetry.getContext().setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
     }

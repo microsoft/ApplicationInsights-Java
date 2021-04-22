@@ -21,6 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
+import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.profiler.GcReportingLevel;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +33,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -180,6 +181,7 @@ public class Configuration {
         public LiveMetrics liveMetrics = new LiveMetrics();
 
         public ProfilerConfiguration profiler = new ProfilerConfiguration();
+        public GcEventConfiguration gcEvents = new GcEventConfiguration();
     }
 
     public static class PreviewInstrumentation {
@@ -568,6 +570,10 @@ public class Configuration {
         public int periodicRecordingIntervalSeconds = 60 * 60;
         public String serviceProfilerFrontEndPoint = null;
         public boolean enabled = false;
+    }
+
+    public static class GcEventConfiguration {
+        public GcReportingLevel reportingLevel = GcReportingLevel.TENURED_ONLY;
     }
 
     private static boolean isEmpty(String str) {

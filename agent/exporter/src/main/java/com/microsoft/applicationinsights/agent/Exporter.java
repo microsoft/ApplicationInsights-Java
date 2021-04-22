@@ -722,6 +722,22 @@ public class Exporter implements SpanExporter {
                 telemetry.getContext().getUser().setUserAgent((String) value);
                 return;
             }
+            if (stringKey.equals("ai.preview.instrumentation_key") && value instanceof String) {
+                telemetry.getContext().setInstrumentationKey((String) value);
+                return;
+            }
+            if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
+                telemetry.getContext().getCloud().setRole((String) value);
+                return;
+            }
+            if (stringKey.equals("ai.preview.service_instance_id") && value instanceof String) {
+                telemetry.getContext().getCloud().setRoleInstance((String) value);
+                return;
+            }
+            if (stringKey.equals("ai.preview.service_version") && value instanceof String) {
+                telemetry.getContext().getComponent().setVersion((String) value);
+                return;
+            }
             int index = stringKey.indexOf(".");
             String prefix = index == -1 ? stringKey : stringKey.substring(0, index);
             if (STANDARD_ATTRIBUTE_PREFIXES.contains(prefix)) {

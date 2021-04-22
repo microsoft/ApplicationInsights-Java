@@ -23,30 +23,40 @@ package com.microsoft.applicationinsights.internal.profiler;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
-import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryObserver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 
 /**
  * Creates AlertMonitor and wires it up to observe telemetry.
  */
-public class AlertingServiceFactory  {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlertingServiceFactory.class);
-
-    public static AlertingSubsystem create(Consumer<AlertBreach> alertAction, TelemetryObservers telemetryObservers, ExecutorService executorService) {
+public class AlertingServiceFactory {
+    public static AlertingSubsystem create(
+            Consumer<AlertBreach> alertAction,
+            TelemetryObservers telemetryObservers,
+            TelemetryClient telemetryClient,
+            ExecutorService executorService,
+            GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
         AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertAction, executorService);
 
         addObserver(alertingSubsystem, telemetryObservers);
 
+        monitorGcActivity(alertingSubsystem, telemetryClient, executorService, gcEventMonitorConfiguration);
         return alertingSubsystem;
+    }
+
+    private static void monitorGcActivity(
+            AlertingSubsystem alertingSubsystem,
+            TelemetryClient telemetryClient,
+            ExecutorService executorService,
+            GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
+        GcEventMonitor.init(alertingSubsystem, telemetryClient, executorService, gcEventMonitorConfiguration);
     }
 
     private static void addObserver(AlertingSubsystem alertingSubsystem, TelemetryObservers telemetryObservers) {
@@ -56,8 +66,6 @@ public class AlertingServiceFactory  {
                 AlertMetricType alertMetricType = null;
                 if (telemetry.getName().equals(TOTAL_CPU_PC_METRIC_NAME)) {
                     alertMetricType = AlertMetricType.CPU;
-                } else if (telemetry.getName().equals(JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE)) {
-                    alertMetricType = AlertMetricType.MEMORY;
                 }
 
                 if (alertMetricType != null) {

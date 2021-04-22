@@ -58,6 +58,7 @@ import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
 import com.microsoft.applicationinsights.internal.config.ParamXmlElement;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
+import com.microsoft.applicationinsights.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
@@ -165,9 +166,11 @@ public class AiComponentInstaller implements ComponentInstaller {
                 SystemInformation.INSTANCE.getProcessId(),
                 formServiceProfilerConfig(config.preview.profiler),
                 configuration.getRoleInstance(),
+                // TODO this will not work with Azure Spring Cloud updating connection string at runtime
                 configuration.getInstrumentationKey(),
                 telemetryClient,
-                formApplicationInsightsUserAgent()
+                formApplicationInsightsUserAgent(),
+                formGcEventMonitorConfiguration(config.preview.gcEvents)
         );
 
         // this is for Azure Function Linux consumption plan support.
@@ -197,6 +200,10 @@ public class AiComponentInstaller implements ComponentInstaller {
         if (rpConfiguration != null) {
             RpConfigurationPolling.startPolling(rpConfiguration, config);
         }
+    }
+
+    private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {
+        return new GcEventMonitor.GcEventMonitorConfiguration(gcEvents.reportingLevel);
     }
 
     private static String formApplicationInsightsUserAgent() {
