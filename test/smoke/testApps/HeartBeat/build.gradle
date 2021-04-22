@@ -2,11 +2,11 @@ apply plugin: 'war'
 
 dependencies {
     implementation aiWebJar
-    implementation 'com.google.guava:guava:20.0'
+    implementation "com.google.guava:guava:${versions.guava}"
 
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 
-    smokeTestImplementation 'com.google.guava:guava:23.0'
+    smokeTestImplementation "com.google.guava:guava:${versions.guava}"
 
     testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
 }
