@@ -302,10 +302,11 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals("os-goes-here", pvdEnvelope2.getTags().get("ai.device.os"));
         assertEquals("session-id-goes-here", pvdEnvelope2.getTags().get("ai.session.id"));
         assertEquals("1.2.3.4", pvdEnvelope2.getTags().get("ai.location.ip"));
-        // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are from the agent
-        assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", pvdEnvelope2.getIKey());
-        assertEquals("testrolename", pvdEnvelope2.getTags().get("ai.cloud.role"));
-        assertEquals("testroleinstance", pvdEnvelope2.getTags().get("ai.cloud.roleInstance"));
+        // checking that instrumentation key, cloud role name and cloud role instance are overridden
+        assertEquals("12341234-1234-1234-1234-123412341234", pvdEnvelope2.getIKey());
+        assertEquals("role-goes-here", pvdEnvelope2.getTags().get("ai.cloud.role"));
+        assertEquals("role-instance-goes-here", pvdEnvelope2.getTags().get("ai.cloud.roleInstance"));
+        // checking that sdk version is from the agent
         assertTrue(pvdEnvelope2.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
 
@@ -321,10 +322,11 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertEquals("os-goes-here", pvdEnvelope3.getTags().get("ai.device.os"));
         assertEquals("session-id-goes-here", pvdEnvelope3.getTags().get("ai.session.id"));
         assertEquals("1.2.3.4", pvdEnvelope3.getTags().get("ai.location.ip"));
-        // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are from the agent
+        // checking that instrumentation key, cloud role name and cloud role instance are from the agent
         assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", pvdEnvelope3.getIKey());
         assertEquals("testrolename", pvdEnvelope3.getTags().get("ai.cloud.role"));
         assertEquals("testroleinstance", pvdEnvelope3.getTags().get("ai.cloud.roleInstance"));
+        // checking that sdk version is from the agent
         assertTrue(pvdEnvelope3.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
         assertParentChild(rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter/trackPageView");

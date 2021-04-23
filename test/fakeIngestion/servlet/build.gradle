@@ -9,7 +9,6 @@ dependencies {
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
     compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
     implementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
-    implementation project(':core')
     implementation project(':test:smoke:framework:utils')
 
 }

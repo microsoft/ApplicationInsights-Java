@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -29,6 +30,7 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
+import com.microsoft.applicationinsights.extensibility.context.ContextTagKeys;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
@@ -122,16 +124,11 @@ public class TelemetryClient {
             telemetry.setTimestamp(new Date());
         }
 
-        // TODO does this work with auto-updating Azure Spring Cloud connection string, since existing is not null?
-        if (Strings.isNullOrEmpty(getContext().getInstrumentationKey())) {
-            getContext().setInstrumentationKey(configuration.getInstrumentationKey());
-        }
-
         TelemetryContext context = telemetry.getContext();
 
+        // do not overwrite if the user has explicitly set the instrumentation key
+        // (either via 2.x SDK or ai.preview.instrumentation_key span attribute)
         if (Strings.isNullOrEmpty(context.getInstrumentationKey())) {
-            // always use agent instrumentationKey, since that is (at least currently) always global in OpenTelemetry world
-            // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
             context.setInstrumentationKey(getContext().getInstrumentationKey(), getContext().getNormalizedInstrumentationKey());
             logger.debug("##################################### global context instrumentation key: {}", context.getInstrumentationKey());
         } else {
@@ -143,9 +140,16 @@ public class TelemetryClient {
         // * cloud role instance
         // * sdk version
         // * component version
-        // always use agent "resource attributes", since those are (at least currently) always global in OpenTelemetry world
-        // (otherwise confusing message to have different rules for 2.x SDK interop telemetry)
-        context.getTags().putAll(getContext().getTags());
+        // do not overwrite if the user has explicitly set the cloud role name, cloud role instance,
+        // or application version (either via 2.x SDK, ai.preview.service_name, ai.preview.service_instance_id,
+        // or ai.preview.service_version span attributes)
+        for (Map.Entry<String, String> entry : getContext().getTags().entrySet()) {
+            String key = entry.getKey();
+            // only overwrite ai.internal.* tags, e.g. sdk version
+            if (key.startsWith("ai.internal.") || !context.getTags().containsKey(key)) {
+                context.getTags().put(key, entry.getValue());
+            }
+        }
 
         // the TelemetryClient's base context contains properties:
         // * "customDimensions" provided by json configuration

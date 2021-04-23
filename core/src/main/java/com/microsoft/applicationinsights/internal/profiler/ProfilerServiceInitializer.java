@@ -65,7 +65,8 @@ public class ProfilerServiceInitializer {
                                                String machineName,
                                                String instrumentationKey,
                                                TelemetryClient client,
-                                               String userAgent) {
+                                               String userAgent,
+                                               GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
         initialize(
                 appIdSupplier,
                 processId,
@@ -74,7 +75,8 @@ public class ProfilerServiceInitializer {
                 instrumentationKey,
                 client,
                 LazyHttpClient.getInstance(),
-                userAgent
+                userAgent,
+                gcEventMonitorConfiguration
         );
     }
 
@@ -85,7 +87,8 @@ public class ProfilerServiceInitializer {
                                                String instrumentationKey,
                                                TelemetryClient client,
                                                CloseableHttpClient httpClient,
-                                               String userAgent) {
+                                               String userAgent,
+                                               GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
         if (!initialized && config.enabled()) {
             initialized = true;
             ProfilerServiceFactory factory = null;
@@ -105,11 +108,11 @@ public class ProfilerServiceInitializer {
                     ThreadPoolUtils.createDaemonThreadFactory(ProfilerServiceFactory.class, "ServiceProfilerService")
             );
 
-            ScheduledExecutorService alertServiceExecutorService = Executors.newSingleThreadScheduledExecutor(
+            ScheduledExecutorService alertServiceExecutorService = Executors.newScheduledThreadPool(2,
                     ThreadPoolUtils.createDaemonThreadFactory(ProfilerServiceFactory.class, "ServiceProfilerAlertingService")
             );
 
-            AlertingSubsystem alerting = createAlertMonitor(alertServiceExecutorService);
+            AlertingSubsystem alerting = createAlertMonitor(alertServiceExecutorService, client, gcEventMonitorConfiguration);
 
             Future<ProfilerService> future = factory.initialize(
                     appIdSupplier,
@@ -137,8 +140,12 @@ public class ProfilerServiceInitializer {
     }
 
     private static ProfilerServiceFactory loadProfilerServiceFactory() {
-        ServiceLoader<ProfilerServiceFactory> profilerServiceFactory = ServiceLoader.load(ProfilerServiceFactory.class);
-        Iterator<ProfilerServiceFactory> iterator = profilerServiceFactory.iterator();
+        return findServiceLoader(ProfilerServiceFactory.class);
+    }
+
+    protected static <T> T findServiceLoader(Class<T> clazz) {
+        ServiceLoader<T> factory = ServiceLoader.load(clazz);
+        Iterator<T> iterator = factory.iterator();
         if (iterator.hasNext()) {
             return iterator.next();
         }
@@ -158,8 +165,11 @@ public class ProfilerServiceInitializer {
         };
     }
 
-    static AlertingSubsystem createAlertMonitor(ScheduledExecutorService alertServiceExecutorService) {
-        return AlertingServiceFactory.create(alertAction(), TelemetryObservers.INSTANCE, alertServiceExecutorService);
+    static AlertingSubsystem createAlertMonitor(
+            ScheduledExecutorService alertServiceExecutorService,
+            TelemetryClient telemetryClient,
+            GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
+        return AlertingServiceFactory.create(alertAction(), TelemetryObservers.INSTANCE, telemetryClient, alertServiceExecutorService, gcEventMonitorConfiguration);
     }
 
     private static Consumer<AlertBreach> alertAction() {

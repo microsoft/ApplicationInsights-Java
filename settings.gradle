@@ -54,6 +54,10 @@ include 'core'
 
 
 include ':java-flight-recorder'
+
+include ':agent:agent-gc-monitor:gc-monitor-api'
+include ':agent:agent-gc-monitor:gc-monitor-core'
+
 include ':agent:agent-profiler:agent-profiler-api'
 include ':agent:agent-profiler:agent-alerting-api'
 include ':agent:agent-profiler:agent-alerting'
@@ -117,4 +121,4 @@ include ':test:smoke:testApps:JettyNativeHandler'
 include ':test:smoke:testApps:TelemetryFiltering'
 include ':test:smoke:testApps:TelemetryProcessors'
 include ':test:smoke:testApps:OpenTelemetryApiSupport'
-
+include ':test:smoke:testApps:gc-monitor-tests'
