@@ -13,7 +13,7 @@ apply plugin: 'org.springframework.boot'
 
 dependencies {
     implementation springBootStarterJar
-    implementation 'com.google.guava:guava:27.1-android'
+    implementation "com.google.guava:guava:${versions.guava}"
     implementation (group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
