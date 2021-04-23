@@ -220,7 +220,8 @@ public class JdbcTest extends AiSmokeTest {
 
         assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("SQL", rdd.getType());
-        assertEquals("mysql", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
+        // not the best test, because this is both the db.name and db.system
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+/mysql"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
@@ -255,7 +256,8 @@ public class JdbcTest extends AiSmokeTest {
 
         assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("SQL", rdd.getType());
-        assertEquals("mysql", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
+        // not the best test, because this is both the db.name and db.system
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+/mysql"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
@@ -284,7 +286,8 @@ public class JdbcTest extends AiSmokeTest {
 
         assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("SQL", rdd.getType());
-        assertEquals("postgres", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
+        // not the best test, because this is both the db.name and db.system
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+/postgres"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
@@ -313,7 +316,8 @@ public class JdbcTest extends AiSmokeTest {
 
         assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("SQL", rdd.getType());
-        assertEquals("postgres", rdd.getTarget()); // not the best test, because this is both the db.name and db.system
+        // not the best test, because this is both the db.name and db.system
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+/postgres"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
@@ -341,7 +345,7 @@ public class JdbcTest extends AiSmokeTest {
 
         assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("SQL", rdd.getType());
-        assertEquals("mssql", rdd.getTarget()); // this is the db.system
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
@@ -370,7 +374,7 @@ public class JdbcTest extends AiSmokeTest {
 
         assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("SQL", rdd.getType());
-        assertEquals("mssql", rdd.getTarget()); // this is the db.system
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
@@ -400,7 +404,7 @@ public class JdbcTest extends AiSmokeTest {
 
         assertTrue(rdd.getName().startsWith("select * from abc where xyz = ?"));
         assertEquals("SQL", rdd.getType());
-        assertEquals("oracle", rdd.getTarget()); // this is the db.system
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
         assertEquals("select * from abc where xyz = ?", rdd.getData());
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
@@ -430,7 +434,7 @@ public class JdbcTest extends AiSmokeTest {
 
         assertTrue(rdd.getName().startsWith("select * from abc"));
         assertEquals("SQL", rdd.getType());
-        assertEquals("oracle", rdd.getTarget()); // this is the db.system
+        assertTrue(rdd.getTarget().matches("dependency[0-9]+"));
         assertEquals("select * from abc", rdd.getData());
         assertTrue(rdd.getProperties().isEmpty());
         assertTrue(rdd.getSuccess());
