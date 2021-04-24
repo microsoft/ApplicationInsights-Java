@@ -43,7 +43,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.*;
 
 /**
  * This class is an implementation of OpenTelemetry {@link SpanExporter} that allows different tracing services to
@@ -233,7 +233,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
 
         telemetryItem.setTime(getFormattedTime(span.getStartEpochNanos()));
         remoteDependencyData
-            .setDuration(getFormattedDuration(Duration.ofNanos(span.getEndEpochNanos() - span.getStartEpochNanos())));
+            .setDuration(getFormattedDuration(span.getEndEpochNanos() - span.getStartEpochNanos()));
 
         remoteDependencyData.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
@@ -499,8 +499,7 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
         long startEpochNanos = span.getStartEpochNanos();
         telemetryItem.setTime(getFormattedTime(startEpochNanos));
 
-        Duration duration = Duration.ofNanos(span.getEndEpochNanos() - startEpochNanos);
-        requestData.setDuration(getFormattedDuration(duration));
+        requestData.setDuration(getFormattedDuration(span.getEndEpochNanos() - startEpochNanos));
 
         requestData.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
@@ -588,9 +587,50 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
         telemetryItems.add(telemetryItem);
     }
 
-    private static String getFormattedDuration(Duration duration) {
-        return duration.toDays() + "." + duration.toHours() + ":" + duration.toMinutes() + ":" + duration.getSeconds()
-            + "." + duration.toMillis();
+    private static final long NANOSECONDS_PER_DAY = DAYS.toNanos(1);
+    private static final long NANOSECONDS_PER_HOUR = HOURS.toNanos(1);
+    private static final long NANOSECONDS_PER_MINUTE = MINUTES.toNanos(1);
+    private static final long NANOSECONDS_PER_SECOND = SECONDS.toNanos(1);
+
+    public static String getFormattedDuration(long durationNanos) {
+        long remainingNanos = durationNanos;
+
+        long days = remainingNanos / NANOSECONDS_PER_DAY;
+        remainingNanos = remainingNanos % NANOSECONDS_PER_DAY;
+
+        long hours = remainingNanos / NANOSECONDS_PER_HOUR;
+        remainingNanos = remainingNanos % NANOSECONDS_PER_HOUR;
+
+        long minutes = remainingNanos / NANOSECONDS_PER_MINUTE;
+        remainingNanos = remainingNanos % NANOSECONDS_PER_MINUTE;
+
+        long seconds = remainingNanos / NANOSECONDS_PER_SECOND;
+        remainingNanos = remainingNanos % NANOSECONDS_PER_SECOND;
+
+        StringBuilder sb = new StringBuilder();
+        appendMinTwoDigits(sb, days);
+        sb.append('.');
+        appendMinTwoDigits(sb, hours);
+        sb.append(':');
+        appendMinTwoDigits(sb, minutes);
+        sb.append(':');
+        appendMinTwoDigits(sb, seconds);
+        sb.append('.');
+        appendMinSixDigits(sb, NANOSECONDS.toMicros(remainingNanos));
+        sb.append("000");
+
+        return sb.toString();
+    }
+
+    private static void appendMinTwoDigits(StringBuilder sb, long value) {
+        if (value < 10) {
+            sb.append("0");
+        }
+        sb.append(value);
+    }
+
+    private static void appendMinSixDigits(StringBuilder sb, long value) {
+        sb.append(String.format("%06d", value));
     }
 
     private static String getFormattedTime(long epochNanos) {
