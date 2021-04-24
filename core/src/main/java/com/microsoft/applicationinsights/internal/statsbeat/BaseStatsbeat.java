@@ -42,6 +42,7 @@ public abstract class BaseStatsbeat {
     protected String operatingSystem;
     protected TelemetryClient telemetryClient;
     protected ScheduledExecutorService scheduledExecutor;
+    protected long interval;
 
     private String customerIkey;
     private String version;
@@ -49,8 +50,9 @@ public abstract class BaseStatsbeat {
 
     public BaseStatsbeat() {
         initializeCommonProperties();
+        interval = DEFAULT_STATSBEAT_INTERVAL;
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
-        scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), DEFAULT_STATSBEAT_INTERVAL, DEFAULT_STATSBEAT_INTERVAL, TimeUnit.SECONDS);
+        scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), interval, interval, TimeUnit.SECONDS);
     }
 
     /**
@@ -59,8 +61,6 @@ public abstract class BaseStatsbeat {
     public String getResourceProvider() {
         return resourceProvider;
     }
-
-
 
     /**
      * @return the customer's iKey
@@ -163,7 +163,12 @@ public abstract class BaseStatsbeat {
         };
     }
 
-    protected void updateFrequencyInterval(long interval) {
+    protected void updateFrequencyInterval(long newInterval) {
+        interval = newInterval;
         scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), interval, interval, TimeUnit.SECONDS);
+    }
+
+    protected long getInterval() {
+        return interval;
     }
 }

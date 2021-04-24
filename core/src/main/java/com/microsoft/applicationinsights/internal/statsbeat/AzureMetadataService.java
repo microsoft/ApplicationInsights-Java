@@ -15,7 +15,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_VM;
 
 public final class AzureMetadataService {
 
@@ -62,7 +61,6 @@ public final class AzureMetadataService {
             try {
                 response = LazyHttpClient.getInstance().execute(request);
                 if (response != null) {
-                    StatsbeatModule.getInstance().getAttachStatsbeat().updateResourceProvider(RP_VM);
                     parseJsonResponse(response.toString());
                 }
             } catch (Exception ex) {

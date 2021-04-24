@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_FEATURE;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_OTHER;
 import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelper.FEATURE_MAP;
 
@@ -42,13 +43,13 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     public FeatureStatsbeat() {
         super();
         initFeatureList();
-        updateFrequencyInterval(TimeUnit.DAYS.toSeconds(1)); // daily interval
+        updateFrequencyInterval(FEATURE_STATSBEAT_INTERVAL);
     }
 
     /**
      * @return a 64-bit long that represents a list of features enabled. Each bitfield maps to a feature.
      */
-    private long getFeature() {
+    protected long getFeature() {
         return StatsbeatHelper.encodeFeature(featureList);
     }
 

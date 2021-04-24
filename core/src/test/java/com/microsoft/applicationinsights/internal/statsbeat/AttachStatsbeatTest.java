@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 import com.google.common.io.Resources;
 import okio.BufferedSource;
 import okio.Okio;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -13,6 +14,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_AKS;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_APPSVC;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_FUNCTIONS;
@@ -25,11 +27,17 @@ import static org.junit.Assert.assertNull;
 
 public class AttachStatsbeatTest {
 
+    private AttachStatsbeat attachStatsbeat;
+
+    @Before
+    public void setup() {
+        StatsbeatModule.getInstance().initialize();
+        attachStatsbeat = StatsbeatModule.getInstance().getAttachStatsbeat();
+    }
+
     @Test
     public void testVirtualMachineResouceProviderId() throws IOException {
-        StatsbeatModule.getInstance().initialize();
-        AttachStatsbeat attachStatsbeat = StatsbeatModule.getInstance().getAttachStatsbeat();
-        assertNull(attachStatsbeat.getResourceProviderId());
+        assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
         Path path = new File(Resources.getResource("metadata_instance_linux.json").getPath()).toPath();
         InputStream in = Files.newInputStream(path);
         BufferedSource source = Okio.buffer(Okio.source(in));
@@ -48,8 +56,6 @@ public class AttachStatsbeatTest {
         environmentVariables.set(WEBSITE_SITE_NAME, "test_site_name");
         environmentVariables.set(WEBSITE_HOME_STAMPNAME, "test_stamp_name");
         environmentVariables.set(WEBSITE_HOSTNAME, "test_hostname");
-        StatsbeatModule.getInstance().initialize();
-        AttachStatsbeat attachStatsbeat = StatsbeatModule.getInstance().getAttachStatsbeat();
         attachStatsbeat.updateResourceProvider(RP_APPSVC);
         assertEquals(attachStatsbeat.getResourceProvider(), RP_APPSVC);
         assertEquals(attachStatsbeat.getResourceProviderId(), "test_site_name/test_stamp_name/test_hostname");
@@ -62,8 +68,6 @@ public class AttachStatsbeatTest {
     @Test
     public void testFunctionsResourceProviderId() {
         environmentVariables.set(WEBSITE_HOSTNAME, "test_function_name");
-        StatsbeatModule.getInstance().initialize();
-        AttachStatsbeat attachStatsbeat = StatsbeatModule.getInstance().getAttachStatsbeat();
         attachStatsbeat.updateResourceProvider(RP_FUNCTIONS);
         assertEquals(attachStatsbeat.getResourceProvider(), RP_FUNCTIONS);
         assertEquals(attachStatsbeat.getResourceProviderId(), "test_function_name");
@@ -73,18 +77,19 @@ public class AttachStatsbeatTest {
 
     @Test
     public void testUnknownResourceProviderId() {
-        StatsbeatModule.getInstance().initialize();
-        AttachStatsbeat attachStatsbeat = StatsbeatModule.getInstance().getAttachStatsbeat();
         assertEquals(attachStatsbeat.getResourceProvider(), UNKNOWN);
         assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
     }
 
     @Test
     public void testAksResourceProviderId() {
-        StatsbeatModule.getInstance().initialize();
-        AttachStatsbeat attachStatsbeat = StatsbeatModule.getInstance().getAttachStatsbeat();
         attachStatsbeat.updateResourceProvider(RP_AKS);
         assertEquals(attachStatsbeat.getResourceProvider(), RP_AKS);
         assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
+    }
+
+    @Test
+    public void testInterval() {
+        assertEquals(attachStatsbeat.getInterval(), DEFAULT_STATSBEAT_INTERVAL);
     }
 }
