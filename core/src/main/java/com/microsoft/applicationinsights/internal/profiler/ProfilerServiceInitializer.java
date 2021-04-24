@@ -160,8 +160,8 @@ public class ProfilerServiceInitializer {
     static UploadCompleteHandler sendServiceProfilerIndex(TelemetryClient telemetryClient) {
         return done -> {
             TelemetryEventData data = TelemetryUtil.createEventData("ServiceProfilerIndex");
-            data.getProperties().putAll(done.getServiceProfilerIndex().getProperties());
-            data.getMeasurements().putAll(done.getServiceProfilerIndex().getMetrics());
+            data.setProperties(done.getServiceProfilerIndex().getProperties());
+            data.setMeasurements(done.getServiceProfilerIndex().getMetrics());
             telemetryClient.track(TelemetryUtil.createTelemetry(data));
         };
     }

@@ -180,12 +180,4 @@ public final class TelemetryConfiguration {
     public EndpointProvider getEndpointProvider() {
         return endpointProvider;
     }
-
-    /**
-     * Method for tear down in tests
-     */
-    @VisibleForTesting
-    static void setActiveAsNull() {
-        active = null;
-    }
 }

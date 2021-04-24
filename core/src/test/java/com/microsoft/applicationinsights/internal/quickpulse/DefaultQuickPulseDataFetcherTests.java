@@ -62,12 +62,10 @@ public class DefaultQuickPulseDataFetcherTests {
         }
     }
 
-    // FIXME (trask)
-    @Ignore
     @Test
     public void endpointChangesWithRedirectHeaderAndGetNewPingInterval() throws IOException {
         final CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
-        final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, null, "machine1",
+        final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, new TelemetryConfiguration(), "machine1",
                 "instance1", "role1", "qpid123");
 
         CloseableHttpResponse response = new BasicCloseableHttpResponse(new BasicStatusLine(new ProtocolVersion("a",1,2), 200, "OK"));

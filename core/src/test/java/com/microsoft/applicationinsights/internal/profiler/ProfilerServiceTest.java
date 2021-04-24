@@ -39,6 +39,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDom
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.TelemetryObservers;
@@ -56,7 +57,6 @@ import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.jfr.Recording;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
@@ -65,8 +65,6 @@ import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelem
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
 
-// FIXME (trask)
-@Ignore
 public class ProfilerServiceTest {
 
     final String timeStamp = "a-timestamp";
@@ -115,7 +113,7 @@ public class ProfilerServiceTest {
 
         Object monitor = new Object();
 
-        TelemetryClient client = new TelemetryClient() {
+        TelemetryClient client = new TelemetryClient(new TelemetryConfiguration()) {
             @Override
             public void track(TelemetryItem telemetry) {
                 MonitorDomain data = telemetry.getData().getBaseData();

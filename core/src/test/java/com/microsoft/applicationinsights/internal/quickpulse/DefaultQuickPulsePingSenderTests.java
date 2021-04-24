@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.TelemetryConfigurationTestHelper;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -20,15 +19,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class DefaultQuickPulsePingSenderTests {
-    @Before
-    public void cleanUpActive() {
-        TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
-    }
-
-    @After
-    public void cleanUpActiveAgain() {
-        TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
-    }
 
     @Test
     public void endpointIsFormattedCorrectlyWhenUsingConnectionString() {
@@ -66,12 +56,10 @@ public class DefaultQuickPulsePingSenderTests {
         }
     }
 
-    // FIXME (trask)
-    @Ignore
     @Test
     public void endpointChangesWithRedirectHeaderAndGetNewPingInterval() throws IOException {
         final CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
-        final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, null, "machine1",
+        final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, new TelemetryConfiguration(), "machine1",
                 "instance1", "role1", "qpid123");
 
         CloseableHttpResponse response = new BasicCloseableHttpResponse(new BasicStatusLine(new ProtocolVersion("a",1,2), 200, "OK"));

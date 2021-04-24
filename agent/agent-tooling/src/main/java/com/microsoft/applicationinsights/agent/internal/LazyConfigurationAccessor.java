@@ -40,12 +40,12 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
 
     @Override
     public void lazyLoad() {
-        lazySetEnvVars();
+        lazySetEnvVars(TelemetryConfiguration.getActive());
     }
 
-    private void lazySetEnvVars() {
-        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        String roleName = TelemetryConfiguration.getActive().getRoleName();
+    private void lazySetEnvVars(TelemetryConfiguration configuration) {
+        String instrumentationKey = configuration.getInstrumentationKey();
+        String roleName = configuration.getRoleName();
         if (instrumentationKey != null && !instrumentationKey.isEmpty() && roleName != null && !roleName.isEmpty()) {
             return;
         }
@@ -58,29 +58,29 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
             return;
         }
 
-        setConnectionString(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"), System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"));
-        setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"));
+        setConnectionString(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"), System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY"), configuration);
+        setWebsiteSiteName(System.getenv("WEBSITE_SITE_NAME"), configuration);
         setSelfDiagnosticsLevel(System.getenv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL"));
         setInstrumentationLoggingLevel(System.getenv("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL"));
     }
 
-    static void setConnectionString(String connectionString, String instrumentationKey) {
+    static void setConnectionString(String connectionString, String instrumentationKey, TelemetryConfiguration configuration) {
         if (connectionString != null && !connectionString.isEmpty()) {
-            setValue(connectionString);
+            setValue(connectionString, configuration);
         } else {
             // if the instrumentation key is neither null nor empty , we will create a default
             // connection string based on the instrumentation key.
             // this is to support Azure Functions that were created prior to the introduction of
             // connection strings
             if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
-                setValue("InstrumentationKey=" + instrumentationKey);
+                setValue("InstrumentationKey=" + instrumentationKey, configuration);
             }
         }
     }
 
-    private static void setValue(String value) {
+    private static void setValue(String value, TelemetryConfiguration configuration) {
         if (!Strings.isNullOrEmpty(value)) {
-            TelemetryConfiguration.getActive().setConnectionString(value);
+            configuration.setConnectionString(value);
             // now that we know the user has opted in to tracing, we need to init the propagator and sampler
             DelegatingPropagator.getInstance().setUpStandardDelegate();
             // TODO handle APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
@@ -89,9 +89,9 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
         }
     }
 
-    static void setWebsiteSiteName(String websiteSiteName) {
+    static void setWebsiteSiteName(String websiteSiteName, TelemetryConfiguration configuration) {
         if (websiteSiteName != null && !websiteSiteName.isEmpty()) {
-            TelemetryConfiguration.getActive().setRoleName(websiteSiteName);
+            configuration.setRoleName(websiteSiteName);
             logger.info("Set WEBSITE_SITE_NAME: {} lazily for the Azure Function Consumption Plan.", websiteSiteName);
         }
     }

@@ -45,8 +45,6 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulsePingSender.class);
 
-    private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
-
     private final TelemetryConfiguration configuration;
     private final HttpClient httpClient;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
@@ -131,16 +129,12 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     }
 
     private String getInstrumentationKey() {
-        TelemetryConfiguration config = this.configuration == null ? TelemetryConfiguration.getActive() : configuration;
-        return config.getInstrumentationKey();
+        return configuration.getInstrumentationKey();
     }
+
     @VisibleForTesting
     String getQuickPulseEndpoint() {
-        if (configuration != null) {
-            return configuration.getEndpointProvider().getLiveEndpointURL().toString();
-        } else {
-            return QP_BASE_URI;
-        }
+        return configuration.getEndpointProvider().getLiveEndpointURL().toString();
     }
 
     private ByteArrayEntity buildPingEntity(long timeInMillis) {

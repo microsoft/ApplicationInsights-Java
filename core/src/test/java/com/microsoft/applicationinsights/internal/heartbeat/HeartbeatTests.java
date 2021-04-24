@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.TelemetryConfigurationTestHelper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -27,16 +26,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 public class HeartbeatTests {
-
-  @Before
-  public void setTelemetryConfigurationNull() {
-    TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
-  }
-
-  @After
-  public void tearDown() {
-    TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
-  }
 
   @Test
   public void initializeHeartBeatModuleDoesNotThrow() {

@@ -187,12 +187,7 @@ public enum QuickPulseDataCollector {
     }
 
     private synchronized String getInstrumentationKey() {
-        // FIXME (trask) can we assert config not null here?
-        if (config != null) {
-            return config.getInstrumentationKey();
-        } else {
-            return null;
-        }
+        return config.getInstrumentationKey();
     }
 
     private void addDependency(RemoteDependencyData telemetry) {
