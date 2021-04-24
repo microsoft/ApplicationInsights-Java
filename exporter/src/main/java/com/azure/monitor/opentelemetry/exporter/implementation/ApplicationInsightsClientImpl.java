@@ -120,7 +120,7 @@ public final class ApplicationInsightsClientImpl {
     @Host("{Host}/v2")
     @ServiceInterface(name = "ApplicationInsightsC")
     private interface ApplicationInsightsClientService {
-        @Post("/track")
+        @Post("track")
         @ExpectedResponses({200, 206})
         @UnexpectedResponseExceptionType(ExportResultException.class)
         Mono<Response<ExportResult>> track(
