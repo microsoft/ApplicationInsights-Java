@@ -72,10 +72,10 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         telemetryClient.track(retryCountSt);
         logger.debug("#### sending {}: {}", RETRY_COUNT, retryCount);
 
-        StatsbeatTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT, throttleCount);
+        StatsbeatTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT, throttlingCount);
         throttleCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
         telemetryClient.track(throttleCountSt);
-        logger.debug("#### sending {}: {}", THROTTLE_COUNT, throttleCount);
+        logger.debug("#### sending {}: {}", THROTTLE_COUNT, throttlingCount);
 
         StatsbeatTelemetry exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT, exceptionCount);
         exceptionCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
@@ -90,7 +90,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         requestFailureCount = 0;
         requestDurations = new ArrayList<>();
         retryCount = 0;
-        throttleCount = 0;
+        throttlingCount = 0;
         exceptionCount = 0;
     }
 
@@ -111,7 +111,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     private static volatile long requestFailureCount;
     private static volatile List<Double> requestDurations = new ArrayList<>();
     private static volatile long retryCount;
-    private static long throttleCount;
+    private static long throttlingCount;
     private static long exceptionCount;
 
     public void incrementRequestSuccessCount() {
@@ -134,8 +134,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         logger.debug("#### increment retry count");
     }
 
-    public void incrementThrottleCount() {
-        throttleCount++;
+    public void incrementThrottlingCount() {
+        throttlingCount++;
     }
 
     public void incrementExceptionCount() {
@@ -158,20 +158,24 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         return retryCount;
     }
 
-    public long getThrottleCount() {
-        return throttleCount;
+    public long getThrottlingCount() {
+        return throttlingCount;
     }
 
     public long getExceptionCount() {
         return exceptionCount;
     }
 
-    private double getRequestDurationAvg() {
-        double sum = 0L;
+    protected double getRequestDurationAvg() {
+        double sum = 0.0;
         for (double elem : requestDurations) {
             sum += elem;
         }
 
-        return sum/requestDurations.size();
+        if (requestDurations.size() != 0) {
+            return sum / requestDurations.size();
+        }
+
+        return  sum;
     }
 }
