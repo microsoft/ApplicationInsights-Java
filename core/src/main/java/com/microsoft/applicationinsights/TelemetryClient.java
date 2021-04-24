@@ -30,7 +30,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsigh
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.commons.text.StringSubstitutor;
@@ -53,17 +52,16 @@ public class TelemetryClient {
 
     private volatile @Nullable ApplicationInsightsClientImpl channel;
 
-    private final Map<String, String> globalTags;
-    private final Map<String, String> globalProperties;
-
-    private volatile String instrumentationKey;
-
-    // FIXME (trask)
     // globalTags contain:
     // * cloud role name
     // * cloud role instance
     // * sdk version
-    // * component version
+    // * application version (if provided in customDimensions)
+    private final Map<String, String> globalTags;
+    // contains customDimensions from json configuration
+    private final Map<String, String> globalProperties;
+
+    private final TelemetryConfiguration configuration;
 
     public TelemetryClient() {
         this(TelemetryConfiguration.getActive());
@@ -83,25 +81,15 @@ public class TelemetryClient {
             }
         }
 
+        globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), configuration.getRoleName());
+        globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), configuration.getRoleInstance());
         globalTags.put(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), PropertyHelper.getQualifiedSdkVersionString());
 
         this.globalProperties = globalProperties;
         this.globalTags = globalTags;
-    }
 
-    // FIXME (trask) need to ensure auto-update of ikey
-//    public TelemetryContext getContext() {
-//        if (context == null || (context.getInstrumentationKey() != null &&  !context.getInstrumentationKey().equals(configuration.getInstrumentationKey()))) {
-//            // lock and recheck there is still no initialized context. If so, create one.
-//            synchronized (TELEMETRY_CONTEXT_LOCK) {
-//                if (context==null || (context.getInstrumentationKey() != null && !context.getInstrumentationKey().equals(configuration.getInstrumentationKey()))) {
-//                    context = createInitializedContext();
-//                }
-//            }
-//        }
-//
-//        return context;
-//    }
+        this.configuration = configuration;
+    }
 
     public void track(TelemetryItem telemetry) {
 
@@ -128,7 +116,7 @@ public class TelemetryClient {
         if (Strings.isNullOrEmpty(telemetry.getInstrumentationKey())) {
             // TODO (trask) make sure instrumentation key is always set before calling track()
             // FIXME (trask) this used to be optimized by passing in normalized instrumentation key as well
-            telemetry.setInstrumentationKey(instrumentationKey);
+            telemetry.setInstrumentationKey(configuration.getInstrumentationKey());
         }
 
         // globalTags contain:
@@ -166,7 +154,7 @@ public class TelemetryClient {
             }
         }
 
-        TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.consume(telemetry));
+        TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetry));
     }
 
     /**

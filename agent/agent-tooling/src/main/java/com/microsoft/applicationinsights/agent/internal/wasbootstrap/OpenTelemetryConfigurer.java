@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
@@ -48,8 +49,9 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
         Collections.reverse(processors);
 
         // FIXME (trask) pass in config.preview.httpMethodInOperationName
-        //  and other things too
-        SpanExporter exporter = new AzureMonitorExporterBuilder().buildTraceExporter();
+        SpanExporter exporter = new AzureMonitorExporterBuilder()
+                .connectionString(TelemetryConfiguration.getActive().getConnectionString())
+                .buildTraceExporter();
 
         // NOTE if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         if (!processors.isEmpty()) {

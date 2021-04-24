@@ -41,7 +41,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.telemetry.TelemetryObservers;
+import com.microsoft.applicationinsights.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
@@ -170,7 +170,7 @@ public class ProfilerServiceTest {
             TelemetryObservers
                     .INSTANCE
                     .getObservers()
-                    .forEach(telemetryObserver -> telemetryObserver.consume(metricTelemetry));
+                    .forEach(telemetryObserver -> telemetryObserver.accept(metricTelemetry));
 
             synchronized (monitor) {
                 if (serviceProfilerIndex.get() != null) {
