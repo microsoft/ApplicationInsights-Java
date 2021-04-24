@@ -21,7 +21,7 @@ ext {
 
             oshi                             : "5.6.0",
 
-            azureStorageBlob                 : "12.11.0-beta.2",
+            azureStorageBlob                 : "12.11.0-beta.3",
             azureClientRuntime               : "2.1.1",
             microsoftJfrStreaming            : "1.0.0",
 
@@ -30,9 +30,9 @@ ext {
 
             // TODO remove dependencies on apache commons
             commonsLang                      : "3.7",
-            commonsIo                        : "2.6",
+            commonsIo                        : "2.7",
             commonsText                      : "1.9",
-            commonsCodec                     : "1.11",
+            commonsCodec                     : "1.13",
 
             // TODO update to JUnit 5
             junit                            : "4.12",

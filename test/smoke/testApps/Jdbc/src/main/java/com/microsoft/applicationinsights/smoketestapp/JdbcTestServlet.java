@@ -21,6 +21,7 @@ import org.hsqldb.jdbc.JDBCDriver;
 @WebServlet("/*")
 public class JdbcTestServlet extends HttpServlet {
 
+    @Override
     public void init() throws ServletException {
         try {
             setupHsqldb();
@@ -282,7 +283,7 @@ public class JdbcTestServlet extends HttpServlet {
 
     private static Connection getMysqlConnection() throws Exception {
         String hostname = System.getenv("MYSQL");
-        return DriverManager.getConnection("jdbc:mysql://" + hostname + "/mysql?autoReconnect=true&useSSL=true&verifyServerCertificate=false", "root", "password");
+        return DriverManager.getConnection("jdbc:mysql://" + hostname + "/mysql?autoReconnect=true&useSSL=true&enabledTLSProtocols=TLSv1,TLSv1.1,TLSv1.2,TLSv1.3&verifyServerCertificate=false", "root", "password");
     }
 
     private static Connection getPostgresConnection() throws Exception {
