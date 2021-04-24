@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
 import static org.junit.Assert.assertEquals;
 
 public class NetworkStatsbeatTest {
@@ -83,5 +84,10 @@ public class NetworkStatsbeatTest {
         assertEquals(networkStatsbeat.getExceptionCount(), 2);
         networkStatsbeat.reset();
         assertEquals(networkStatsbeat.getExceptionCount(), 0);
+    }
+
+    @Test
+    public void testInterval() {
+        assertEquals(networkStatsbeat.getInterval(), DEFAULT_STATSBEAT_INTERVAL);
     }
 }
