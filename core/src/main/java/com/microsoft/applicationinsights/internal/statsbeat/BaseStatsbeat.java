@@ -38,7 +38,7 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 public abstract class BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
-    protected static volatile String resourceProvider;
+    protected String resourceProvider;
     protected String operatingSystem;
     protected TelemetryClient telemetryClient;
     protected ScheduledExecutorService scheduledExecutor;
@@ -60,10 +60,7 @@ public abstract class BaseStatsbeat {
         return resourceProvider;
     }
 
-    public static void updateResourceProvider(String rp) {
-        resourceProvider = rp;
-        logger.debug("#### ResourceProvider has been updated from {} to {}", resourceProvider, rp);
-    }
+
 
     /**
      * @return the customer's iKey
@@ -107,7 +104,7 @@ public abstract class BaseStatsbeat {
             resourceProvider = RP_FUNCTIONS;
             operatingSystem = OS_LINUX;
         } else if (sdkVersion.startsWith(LANGUAGE)) {
-            resourceProvider = RP_UNKNOWN;
+            resourceProvider = UNKNOWN;
         }
 
         if (operatingSystem == null) {

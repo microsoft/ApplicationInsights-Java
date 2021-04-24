@@ -27,8 +27,8 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
 public class AttachStatsbeat extends BaseStatsbeat {
 
-    private volatile String resourceProviderId;
-    private volatile MetadataInstanceResponse metadataInstanceResponse;
+    private String resourceProviderId;
+    private MetadataInstanceResponse metadataInstanceResponse;
 
     public AttachStatsbeat() {
         super();
@@ -48,25 +48,6 @@ public class AttachStatsbeat extends BaseStatsbeat {
         metadataInstanceResponse = null;
     }
 
-    private void initResourceProviderId() {
-        switch (resourceProvider) {
-            case RP_APPSVC:
-                resourceProviderId = String.format("%s/%s/%s", System.getenv().get(WEBSITE_SITE_NAME), System.getenv().get(WEBSITE_HOME_STAMPNAME), System.getenv().get(WEBSITE_HOSTNAME));
-                break;
-            case RP_FUNCTIONS:
-                resourceProviderId = System.getenv().get(WEBSITE_HOSTNAME);
-                break;
-            case RP_VM:
-                resourceProviderId = String.format("%s/%s", metadataInstanceResponse.getVmId(), metadataInstanceResponse.getSubscriptionId());
-                break;
-            case RP_AKS:
-            case RP_UNKNOWN:
-            default:
-                resourceProviderId = RP_UNKNOWN;
-                break;
-        }
-    }
-
     /**
      * @return the unique identifier of the resource provider.
      */
@@ -82,8 +63,12 @@ public class AttachStatsbeat extends BaseStatsbeat {
         if (response != null) {
             metadataInstanceResponse = response;
             updateOperatingSystem();
-            resourceProviderId = String.format("%s/%s", metadataInstanceResponse.getVmId(), metadataInstanceResponse.getSubscriptionId());
         }
+    }
+
+    public void updateResourceProvider(String rp) {
+        resourceProvider = rp;
+        initResourceProviderId();
     }
 
     // osType from the Azure Metadata Service has a higher precedence over the running app’s operating system.
@@ -91,6 +76,25 @@ public class AttachStatsbeat extends BaseStatsbeat {
         String osType = metadataInstanceResponse.getOsType();
         if (osType != null && !"unknown".equalsIgnoreCase(osType)) {
             operatingSystem = osType;
+        }
+    }
+
+    private void initResourceProviderId() {
+        switch (resourceProvider) {
+            case RP_APPSVC:
+                resourceProviderId = String.format("%s/%s/%s", System.getenv().get(WEBSITE_SITE_NAME), System.getenv().get(WEBSITE_HOME_STAMPNAME), System.getenv().get(WEBSITE_HOSTNAME));
+                break;
+            case RP_FUNCTIONS:
+                resourceProviderId = System.getenv().get(WEBSITE_HOSTNAME);
+                break;
+            case RP_VM:
+                resourceProviderId = String.format("%s/%s", metadataInstanceResponse.getVmId(), metadataInstanceResponse.getSubscriptionId());
+                break;
+            case RP_AKS: // TODO will update resourceProviderId when cluster_id becomes available from the AKS AzureMetadataService extension.
+            case UNKNOWN:
+            default:
+                resourceProviderId = UNKNOWN;
+                break;
         }
     }
 }

@@ -62,7 +62,7 @@ public final class AzureMetadataService {
             try {
                 response = LazyHttpClient.getInstance().execute(request);
                 if (response != null) {
-                    BaseStatsbeat.updateResourceProvider(RP_VM);
+                    StatsbeatModule.getInstance().getAttachStatsbeat().updateResourceProvider(RP_VM);
                     parseJsonResponse(response.toString());
                 }
             } catch (Exception ex) {
