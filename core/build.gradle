@@ -59,7 +59,7 @@ dependencies {
     implementation group: 'com.github.oshi', name:'oshi-core', version: versions.oshi
     implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
-    implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.5+AI-SNAPSHOT'
+    implementation project(':exporter')
 
     testImplementation group: 'junit', name: 'junit', version: versions.junit
     testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest

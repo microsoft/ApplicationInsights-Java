@@ -75,8 +75,6 @@ dependencies {
     implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-tracing-incubator', version: versions.opentelemetryAlpha
     implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-autoconfigure', version: versions.opentelemetryAlpha
 
-    implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.5+AI-SNAPSHOT'
-
     implementation group: 'org.apache.commons', name: 'commons-text', version: versions.commonsText
 
     compileOnly project(':agent:agent-bootstrap')
