@@ -26,7 +26,7 @@ import java.util.Collections;
 
 import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.agent.Exporter;
+import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
@@ -130,6 +130,6 @@ public class RpConfigurationPollingTest {
                 DelegatingSampler.getInstance().shouldSample(parentContext, "12341234123412341234123412341234", "my span name",
                         SpanKind.SERVER, Attributes.empty(), Collections.emptyList());
         TraceState traceState = samplingResult.getUpdatedTraceState(TraceState.getDefault());
-        return Double.parseDouble(traceState.get(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE));
+        return Double.parseDouble(traceState.get(TelemetryUtil.SAMPLING_PERCENTAGE_TRACE_STATE));
     }
 }

@@ -23,21 +23,16 @@ package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.google.common.base.Strings;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.microsoft.applicationinsights.TelemetryUtil;
-import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.TraceState;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -264,7 +259,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), context.getTraceId());
             telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), context.getSpanId());
             samplingPercentage =
-                    Exporter.getSamplingPercentage(context.getTraceState(), Global.getSamplingPercentage(), false);
+                    TelemetryUtil.getSamplingPercentage(context.getTraceState(), Global.getSamplingPercentage(), false);
         } else {
             // sampling is done using the configured sampling percentage
             samplingPercentage = Global.getSamplingPercentage();

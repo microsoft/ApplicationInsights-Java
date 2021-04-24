@@ -71,7 +71,7 @@ dependencies {
 
     implementation project(":agent:agent-profiler:agent-profiler-api")
 
-    implementation project(':agent:exporter')
+    implementation project(':exporter')
     implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-tracing-incubator', version: versions.opentelemetryAlpha
     implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-autoconfigure', version: versions.opentelemetryAlpha
 

@@ -38,19 +38,20 @@ gradleEnterprise {
 
 rootProject.name = 'applicationinsights-java'
 
-include 'instrumentation:azure-functions'
+include ':instrumentation:azure-functions'
 
 import org.apache.tools.ant.taskdefs.condition.Os
 def buildNative = !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
 if (buildNative) {
-    include 'etw:native'
+    include ':etw:native'
 } else {
     logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
 }
-include 'etw:java'
-include 'etw:etw-testapp'
+include ':etw:java'
+include ':etw:etw-testapp'
 
-include 'core'
+include ':core'
+include ':exporter'
 
 
 include ':java-flight-recorder'
@@ -63,7 +64,6 @@ include ':agent:agent-profiler:agent-alerting-api'
 include ':agent:agent-profiler:agent-alerting'
 include ':agent:agent-profiler:agent-service-profiler'
 include ':agent:agent-bootstrap'
-include ':agent:exporter'
 include ':agent:agent-tooling'
 include ':agent:instrumentation'
 include ':agent:agent'

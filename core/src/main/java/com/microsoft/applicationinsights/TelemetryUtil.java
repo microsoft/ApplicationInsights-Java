@@ -2,8 +2,12 @@ package com.microsoft.applicationinsights;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.google.common.base.Strings;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import io.opentelemetry.api.trace.TraceState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -11,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.TimeUnit.*;
 
@@ -223,5 +229,84 @@ public class TelemetryUtil {
         return Instant.ofEpochMilli(NANOSECONDS.toMillis(epochNanos))
                 .atOffset(ZoneOffset.UTC)
                 .format(DateTimeFormatter.ISO_DATE_TIME);
+    }
+
+    // FIXME (trask) share this remaining code with the exporter
+
+    public static final String SAMPLING_PERCENTAGE_TRACE_STATE = "ai-internal-sp";
+
+    private static final Cache<String, OptionalFloat> parsedSamplingPercentageCache =
+            CacheBuilder.newBuilder()
+                    .maximumSize(100)
+                    .build();
+
+    private static final AtomicBoolean alreadyLoggedSamplingPercentageMissing = new AtomicBoolean();
+    private static final AtomicBoolean alreadyLoggedSamplingPercentageParseError = new AtomicBoolean();
+
+    private static final Logger logger = LoggerFactory.getLogger(TelemetryUtil.class);
+
+    public static float getSamplingPercentage(TraceState traceState, float defaultValue, boolean warnOnMissing) {
+        String samplingPercentageStr = traceState.get(SAMPLING_PERCENTAGE_TRACE_STATE);
+        if (samplingPercentageStr == null) {
+            if (warnOnMissing && !alreadyLoggedSamplingPercentageMissing.getAndSet(true)) {
+                // sampler should have set the trace state
+                logger.warn("did not find sampling percentage in trace state: {}", traceState);
+            }
+            return defaultValue;
+        }
+        try {
+            return parseSamplingPercentage(samplingPercentageStr).orElse(defaultValue);
+        } catch (ExecutionException e) {
+            // this shouldn't happen
+            logger.debug(e.getMessage(), e);
+            return defaultValue;
+        }
+    }
+
+    private static OptionalFloat parseSamplingPercentage(String samplingPercentageStr) throws ExecutionException {
+        return parsedSamplingPercentageCache.get(samplingPercentageStr, () -> {
+            try {
+                return OptionalFloat.of(Float.parseFloat(samplingPercentageStr));
+            } catch (NumberFormatException e) {
+                if (!alreadyLoggedSamplingPercentageParseError.getAndSet(true)) {
+                    logger.warn("error parsing sampling percentage trace state: {}", samplingPercentageStr, e);
+                }
+                return OptionalFloat.empty();
+            }
+        });
+    }
+
+    private static class OptionalFloat {
+
+        private static final OptionalFloat EMPTY = new OptionalFloat();
+
+        private final boolean present;
+        private final float value;
+
+        private OptionalFloat() {
+            this.present = false;
+            this.value = Float.NaN;
+        }
+
+        private OptionalFloat(float value) {
+            this.present = true;
+            this.value = value;
+        }
+
+        public static OptionalFloat empty() {
+            return EMPTY;
+        }
+
+        public static OptionalFloat of(float value) {
+            return new OptionalFloat(value);
+        }
+
+        public float orElse(float other) {
+            return present ? value : other;
+        }
+
+        public boolean isEmpty() {
+            return !present;
+        }
     }
 }

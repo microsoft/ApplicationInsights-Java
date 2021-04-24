@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
@@ -47,6 +47,10 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
         // Reversing the order of processors before passing it to SpanProcessor
         Collections.reverse(processors);
 
+        // FIXME (trask) pass in config.preview.httpMethodInOperationName
+        //  and other things too
+        SpanExporter exporter = new AzureMonitorExporterBuilder().buildTraceExporter();
+
         // NOTE if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         if (!processors.isEmpty()) {
             SpanExporter currExporter = null;
@@ -54,8 +58,8 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
                 if (currExporter == null) {
                     currExporter = processorConfig.type == ProcessorType.attribute ?
-                            new ExporterWithAttributeProcessor(processorConfig, new Exporter(telemetryClient, config.preview.httpMethodInOperationName)) :
-                            new ExporterWithSpanProcessor(processorConfig, new Exporter(telemetryClient, config.preview.httpMethodInOperationName));
+                            new ExporterWithAttributeProcessor(processorConfig, exporter) :
+                            new ExporterWithSpanProcessor(processorConfig, exporter);
 
                 } else {
                     currExporter = processorConfig.type == ProcessorType.attribute ?
@@ -67,7 +71,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
             tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(currExporter));
 
         } else {
-            tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(new Exporter(telemetryClient, config.preview.httpMethodInOperationName)));
+            tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(exporter));
         }
     }
 }

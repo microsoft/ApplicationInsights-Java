@@ -1,0 +1,10 @@
+group = 'io.opentelemetry.javaagent'
+
+apply from: "$buildScriptsDir/common-java.gradle"
+
+dependencies {
+    compile group: 'com.azure', name: 'azure-core', version: '1.15.0'
+    compile group: 'com.azure', name: 'azure-core-http-netty', version: '1.9.1'
+    compile group: 'io.opentelemetry', name: 'opentelemetry-api', version: '1.0.0'
+    compile group: 'io.opentelemetry', name: 'opentelemetry-sdk', version: '1.0.0'
+}
