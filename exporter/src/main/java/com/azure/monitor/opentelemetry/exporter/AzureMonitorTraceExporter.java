@@ -504,11 +504,6 @@ public final class AzureMonitorTraceExporter implements SpanExporter {
 
         requestData.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
-        String description = span.getStatus().getDescription();
-        if (description != null) {
-            requestData.getProperties().put("statusDescription", description);
-        }
-
         Double samplingPercentage = 100.0;
 
         setExtraAttributes(telemetryItem, requestData.getProperties(), attributes);
