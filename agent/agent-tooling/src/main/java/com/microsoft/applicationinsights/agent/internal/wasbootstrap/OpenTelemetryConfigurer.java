@@ -18,6 +18,7 @@ import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampl
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
@@ -70,10 +71,12 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
                 }
             }
 
-            tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(currExporter));
+            // FIXME (trask) need to keep track of BatchSpanProcessor for flushing?
+            tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(currExporter).build());
 
         } else {
-            tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(exporter));
+            // FIXME (trask) need to keep track of BatchSpanProcessor for flushing?
+            tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(exporter).build());
         }
     }
 }
