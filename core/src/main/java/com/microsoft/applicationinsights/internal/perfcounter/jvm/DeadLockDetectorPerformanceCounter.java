@@ -27,13 +27,12 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 
-import static com.microsoft.applicationinsights.TelemetryUtil.createMessageData;
-import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsData;
+import static com.microsoft.applicationinsights.TelemetryUtil.*;
 import static java.lang.Math.min;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -77,7 +76,8 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
     @Override
     public void report(TelemetryClient telemetryClient) {
-        MetricsData mt = createMetricsData(METRIC_NAME, 0.0);
+        MetricsData data = createMetricsData(METRIC_NAME, 0.0);
+        TelemetryItem telemetry = createTelemetry(data);
 
         long[] threadIds = threadBean.findDeadlockedThreads();
         if (threadIds != null && threadIds.length > 0) {
@@ -97,15 +97,15 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
             if (!blockedThreads.isEmpty()) {
                 String uuid = LocalStringsUtils.generateRandomIntegerId();
 
-                mt.getMetrics().get(0).setValue(blockedThreads.size());
-                mt.getProperties().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
+                data.getMetrics().get(0).setValue(blockedThreads.size());
+                telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
 
-                MessageData messageData = createMessageData(String.format("%s%s", "Suspected deadlocked threads: ", sb.toString()));
-                messageData.getProperties().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
-                telemetryClient.track(messageData);
+                TelemetryItem messageTelemetry = createMessageTelemetry(String.format("%s%s", "Suspected deadlocked threads: ", sb));
+                messageTelemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
+                telemetryClient.track(messageTelemetry);
             }
         }
-        telemetryClient.track(mt);
+        telemetryClient.track(telemetry);
     }
     private void setThreadInfoAndStack(StringBuilder sb, ThreadInfo ti) {
         try {
@@ -117,10 +117,10 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
             int maxTraceToReport = min(MAX_STACK_TRACE, stacktrace.length);
             for (int i = 0; i < maxTraceToReport; i++) {
                 StackTraceElement ste = stacktrace[i];
-                sb.append(INDENT + "at " + ste.toString());
+                sb.append(INDENT + "at ").append(ste);
                 for (MonitorInfo mi : monitors) {
                     if (mi.getLockedStackDepth() == i) {
-                        sb.append(INDENT + "  - is locked " + mi);
+                        sb.append(INDENT + "  - is locked ").append(mi);
                     }
                 }
             }
@@ -146,7 +146,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
         sb.append(" is in ");
         sb.append(ti.getThreadState());
         if (ti.getLockName() != null) {
-            sb.append(" on lock=" + ti.getLockName());
+            sb.append(" on lock=").append(ti.getLockName());
         }
         if (ti.isSuspended()) {
             sb.append(" (suspended)");
@@ -155,7 +155,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
             sb.append(" (running in native)");
         }
         if (ti.getLockOwnerName() != null) {
-            sb.append(INDENT + " is owned by " + ti.getLockOwnerName() + " Id=" + ti.getLockOwnerId());
+            sb.append(INDENT + " is owned by ").append(ti.getLockOwnerName()).append(" Id=").append(ti.getLockOwnerId());
         }
     }
 }

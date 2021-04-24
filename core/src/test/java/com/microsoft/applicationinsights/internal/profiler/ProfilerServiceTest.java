@@ -38,6 +38,7 @@ import java.util.function.Supplier;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
@@ -61,7 +62,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
-import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsData;
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
 
@@ -79,7 +80,7 @@ public class ProfilerServiceTest {
     public void endToEndAlertTriggerCpu() throws InterruptedException, ExecutionException {
         endToEndAlertTriggerCycle(
                 false,
-                createMetricsData(TOTAL_CPU_PC_METRIC_NAME, 100.0),
+                createMetricsTelemetry(TOTAL_CPU_PC_METRIC_NAME, 100.0),
                 telemetry -> {
                     Assert.assertEquals("JFR-CPU", telemetry.getProperties().get("Source"));
                     Assert.assertEquals(100.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
@@ -91,7 +92,7 @@ public class ProfilerServiceTest {
     public void endToEndAlertTriggerManual() throws InterruptedException, ExecutionException {
         endToEndAlertTriggerCycle(
                 true,
-                createMetricsData(HEAP_MEM_USED_PERCENTAGE, 0.0),
+                createMetricsTelemetry(HEAP_MEM_USED_PERCENTAGE, 0.0),
                 telemetry -> {
                     Assert.assertEquals("JFR-MANUAL", telemetry.getProperties().get("Source"));
                     Assert.assertEquals(0.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
@@ -117,10 +118,11 @@ public class ProfilerServiceTest {
 
         TelemetryClient client = new TelemetryClient() {
             @Override
-            public void track(MonitorDomain telemetry) {
-                if (telemetry instanceof TelemetryEventData) {
-                    if ("ServiceProfilerIndex".equals(((TelemetryEventData) telemetry).getName())) {
-                        serviceProfilerIndex.set((TelemetryEventData) telemetry);
+            public void track(TelemetryItem telemetry) {
+                MonitorDomain data = telemetry.getData().getBaseData();
+                if (data instanceof TelemetryEventData) {
+                    if ("ServiceProfilerIndex".equals(((TelemetryEventData) data).getName())) {
+                        serviceProfilerIndex.set((TelemetryEventData) data);
                     }
                     synchronized (monitor) {
                         monitor.notifyAll();

@@ -313,10 +313,10 @@ public class ConfigurationBuilder {
         return value != null ? value : defaultValue;
     }
 
-    static double overlayWithEnvVar(String name, double defaultValue) {
+    static float overlayWithEnvVar(String name, float defaultValue) {
         String value = getEnvVar(name);
         // intentionally allowing NumberFormatException to bubble up as invalid configuration and prevent agent from starting
-        return value != null ? Double.parseDouble(value) : defaultValue;
+        return value != null ? Float.parseFloat(value) : defaultValue;
     }
 
     static boolean overlayWithEnvVar(String name, boolean defaultValue) {
@@ -484,17 +484,17 @@ public class ConfigurationBuilder {
     }
 
     // this is for external callers, where logging is ok
-    public static double roundToNearest(double samplingPercentage) {
+    public static float roundToNearest(float samplingPercentage) {
         return roundToNearest(samplingPercentage, false);
     }
 
     // visible for testing
-    private static double roundToNearest(double samplingPercentage, boolean doNotLogWarnMessages) {
+    private static float roundToNearest(float samplingPercentage, boolean doNotLogWarnMessages) {
         if (samplingPercentage == 0) {
             return 0;
         }
         double itemCount = 100 / samplingPercentage;
-        double rounded = 100.0 / Math.round(itemCount);
+        float rounded = 100.0f / Math.round(itemCount);
 
         if (Math.abs(samplingPercentage - rounded) >= 1) {
             // TODO include link to docs in this warning message

@@ -1,8 +1,8 @@
 package com.microsoft.applicationinsights.telemetry;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 
-public abstract class TelemetryObserver<T extends MonitorDomain> {
+public abstract class TelemetryObserver<T extends TelemetryItem> {
 
     private final Class<T> clazz;
 
@@ -12,7 +12,7 @@ public abstract class TelemetryObserver<T extends MonitorDomain> {
 
     protected abstract void process(T telemetry);
 
-    public void consume(MonitorDomain telemetry) {
+    public void consume(TelemetryItem telemetry) {
         if (telemetry.getClass().isAssignableFrom(clazz)) {
             process(clazz.cast(telemetry));
         }

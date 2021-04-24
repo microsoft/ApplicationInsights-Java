@@ -28,7 +28,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
@@ -40,7 +42,6 @@ import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,10 +159,10 @@ public class ProfilerServiceInitializer {
 
     static UploadCompleteHandler sendServiceProfilerIndex(TelemetryClient telemetryClient) {
         return done -> {
-            EventTelemetry event = new EventTelemetry("ServiceProfilerIndex");
-            event.getProperties().putAll(done.getServiceProfilerIndex().getProperties());
-            event.getMetrics().putAll(done.getServiceProfilerIndex().getMetrics());
-            telemetryClient.track(event);
+            TelemetryEventData data = TelemetryUtil.createEventData("ServiceProfilerIndex");
+            data.getProperties().putAll(done.getServiceProfilerIndex().getProperties());
+            data.getMeasurements().putAll(done.getServiceProfilerIndex().getMetrics());
+            telemetryClient.track(TelemetryUtil.createTelemetry(data));
         };
     }
 

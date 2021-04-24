@@ -23,13 +23,13 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 
 import java.util.Collection;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsData;
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
 
 /**
  * Created by gupele on 3/15/2015.
@@ -46,7 +46,7 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
     protected void send(TelemetryClient telemetryClient, String displayName, double value) {
         logger.trace("Metric JMX: {}, {}", displayName, value);
 
-        MetricsData metricsData = createMetricsData(displayName, value);
-        telemetryClient.track(metricsData);
+        TelemetryItem telemetry = createMetricsTelemetry(displayName, value);
+        telemetryClient.track(telemetry);
     }
 }

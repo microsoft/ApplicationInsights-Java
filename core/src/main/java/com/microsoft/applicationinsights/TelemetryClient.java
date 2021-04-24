@@ -21,21 +21,19 @@
 
 package com.microsoft.applicationinsights;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.extensibility.context.ContextTagKeys;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -105,15 +103,16 @@ public class TelemetryClient {
 
     /**
      * This method is part of the Application Insights infrastructure. Do not call it directly.
-     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
+     * @param telemetry The {@link MonitorDomain} instance.
      */
-    public void track(MonitorDomain telemetry) {
+    public void track(TelemetryItem telemetry) {
 
         if (generateCounter.incrementAndGet() % 10000 == 0) {
             logger.debug("Total events generated till now {}", generateCounter.get());
         }
 
         if (telemetry == null) {
+            // TODO (trask) remove this after confident no code paths hit this
             throw new IllegalArgumentException("telemetry item cannot be null");
         }
 
@@ -121,15 +120,17 @@ public class TelemetryClient {
             return;
         }
 
-        if (telemetry.getTimestamp() == null) {
-            telemetry.setTimestamp(new Date());
+        if (telemetry.getTime() == null) {
+            // TODO (trask) remove this after confident no code paths hit this
+            throw new IllegalArgumentException("telemetry item is missing time");
         }
 
-        TelemetryContext context = telemetry.getContext();
         // do not overwrite if the user has explicitly set the instrumentation key
         // (either via 2.x SDK or ai.preview.instrumentation_key span attribute)
-        if (Strings.isNullOrEmpty(context.getInstrumentationKey())) {
-            context.setInstrumentationKey(getContext().getInstrumentationKey(), getContext().getNormalizedInstrumentationKey());
+        if (Strings.isNullOrEmpty(telemetry.getInstrumentationKey())) {
+            // TODO (trask) make sure instrumentation key is always set before calling track()
+            // FIXME (trask) this used to be optimized by passing in normalized instrumentation key as well
+            telemetry.setInstrumentationKey(getContext().getInstrumentationKey());
         }
 
         // the TelemetryClient's base context contains tags:

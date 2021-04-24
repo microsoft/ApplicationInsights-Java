@@ -242,7 +242,7 @@ public class Exporter implements SpanExporter {
     }
 
     // for use by 2.x SDK telemetry, see BytecodeUtilImpl
-    public static double getSamplingPercentage(TraceState traceState, double defaultValue, boolean warnOnMissing) {
+    public static float getSamplingPercentage(TraceState traceState, float defaultValue, boolean warnOnMissing) {
         String samplingPercentageStr = traceState.get(SAMPLING_PERCENTAGE_TRACE_STATE);
         if (samplingPercentageStr == null) {
             if (warnOnMissing && !alreadyLoggedSamplingPercentageMissing.getAndSet(true)) {

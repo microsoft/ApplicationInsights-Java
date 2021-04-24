@@ -25,13 +25,13 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.PROCESS_MEM_PC_METRICS_NAME;
-import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsData;
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
 
 /**
  * The class supplies the memory usage in Mega Bytes of the Java process the SDK is in.
@@ -61,7 +61,7 @@ final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
         memoryBytes += (double)nonHeapMemoryUsage.getUsed();
 
         logger.trace("Performance Counter: {}: {}", PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
-        MetricsData metricsData = createMetricsData(PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
-        telemetryClient.track(metricsData);
+        TelemetryItem telemetry = createMetricsTelemetry(PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
+        telemetryClient.track(telemetry);
     }
 }

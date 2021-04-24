@@ -85,7 +85,7 @@ public class RpConfigurationPolling implements Runnable {
 
                 if (newRpConfiguration.sampling.percentage != rpConfiguration.sampling.percentage) {
                     logger.debug("Updating sampling percentage from {} to {}", rpConfiguration.sampling.percentage, newRpConfiguration.sampling.percentage);
-                    double roundedSamplingPercentage = ConfigurationBuilder.roundToNearest(newRpConfiguration.sampling.percentage);
+                    float roundedSamplingPercentage = ConfigurationBuilder.roundToNearest(newRpConfiguration.sampling.percentage);
                     DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(roundedSamplingPercentage, configuration));
                     Global.setSamplingPercentage(roundedSamplingPercentage);
                     rpConfiguration.sampling.percentage = newRpConfiguration.sampling.percentage;
