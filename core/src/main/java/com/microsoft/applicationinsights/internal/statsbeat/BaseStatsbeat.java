@@ -39,9 +39,9 @@ public abstract class BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
     protected static volatile String resourceProvider;
-    protected static String operatingSystem;
+    protected String operatingSystem;
     protected TelemetryClient telemetryClient;
-    protected static ScheduledExecutorService scheduledExecutor;
+    protected ScheduledExecutorService scheduledExecutor;
 
     private String customerIkey;
     private String version;

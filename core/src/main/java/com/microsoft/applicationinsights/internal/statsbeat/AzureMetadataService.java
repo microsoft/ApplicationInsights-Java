@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_VM;
 
-public class AzureMetadataService {
+public final class AzureMetadataService {
 
     private static final Logger logger = LoggerFactory.getLogger(AzureMetadataService.class);
     private static AzureMetadataService instance;
@@ -44,7 +44,7 @@ public class AzureMetadataService {
         if (response != null) {
             Moshi moshi = new Moshi.Builder().build();
             JsonAdapter<MetadataInstanceResponse> jsonAdapter = moshi.adapter(MetadataInstanceResponse.class);
-            AttachStatsbeat.updateMetadataInstance(jsonAdapter.fromJson(response));
+            StatsbeatModule.getInstance().getAttachStatsbeat().updateMetadataInstance(jsonAdapter.fromJson(response));
         }
     }
 

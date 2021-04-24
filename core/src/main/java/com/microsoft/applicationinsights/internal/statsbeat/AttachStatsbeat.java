@@ -27,8 +27,8 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
 public class AttachStatsbeat extends BaseStatsbeat {
 
-    private static volatile String resourceProviderId;
-    private static volatile MetadataInstanceResponse metadataInstanceResponse;
+    private volatile String resourceProviderId;
+    private volatile MetadataInstanceResponse metadataInstanceResponse;
 
     public AttachStatsbeat() {
         super();
@@ -74,11 +74,11 @@ public class AttachStatsbeat extends BaseStatsbeat {
         return resourceProviderId;
     }
 
-    public static MetadataInstanceResponse getMetadataInstanceResponse() {
+    public MetadataInstanceResponse getMetadataInstanceResponse() {
         return metadataInstanceResponse;
     }
 
-    public static void updateMetadataInstance(MetadataInstanceResponse response) {
+    public void updateMetadataInstance(MetadataInstanceResponse response) {
         if (response != null) {
             metadataInstanceResponse = response;
             updateOperatingSystem();
@@ -87,7 +87,7 @@ public class AttachStatsbeat extends BaseStatsbeat {
     }
 
     // osType from the Azure Metadata Service has a higher precedence over the running app’s operating system.
-    private static void updateOperatingSystem() {
+    private void updateOperatingSystem() {
         String osType = metadataInstanceResponse.getOsType();
         if (osType != null && !"unknown".equalsIgnoreCase(osType)) {
             operatingSystem = osType;

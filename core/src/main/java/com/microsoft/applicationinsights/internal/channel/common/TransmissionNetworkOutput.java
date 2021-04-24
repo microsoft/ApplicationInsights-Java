@@ -34,7 +34,7 @@ import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
-import com.microsoft.applicationinsights.internal.statsbeat.NetworkStatsbeat;
+import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -157,41 +157,41 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 transmissionPolicyManager.clearBackoff();
                 // Increment Success Counter
                 networkExceptionStats.recordSuccess();
-                NetworkStatsbeat.incrementRequestSuccessCount();
+                StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestSuccessCount();
             }
             return true;
         } catch (ConnectionPoolTimeoutException e) {
             networkExceptionStats.recordFailure("connection pool timeout exception: " + e, e);
-            NetworkStatsbeat.incrementRequestFailureCount();
+            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (SocketException e) {
             networkExceptionStats.recordFailure("socket exception: " + e, e);
-            NetworkStatsbeat.incrementRequestFailureCount();
+            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (SocketTimeoutException e) {
             networkExceptionStats.recordFailure("socket timeout exception: " + e, e);
-            NetworkStatsbeat.incrementRequestFailureCount();
+            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (UnknownHostException e) {
             networkExceptionStats.recordFailure("wrong host address or cannot reach address due to network issues: " + e, e);
-            NetworkStatsbeat.incrementRequestFailureCount();
+            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (IOException e) {
             networkExceptionStats.recordFailure("I/O exception: " + e, e);
-            NetworkStatsbeat.incrementRequestFailureCount();
+            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (FriendlyException e) {
             ex = e;
             // TODO should this be merged into networkExceptionStats?
             if(!friendlyExceptionThrown.getAndSet(true)) {
                 logger.error(e.getMessage());
             }
-            NetworkStatsbeat.incrementRequestFailureCount();
+            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (Exception e) {
             networkExceptionStats.recordFailure("unexpected exception: " + e, e);
-            NetworkStatsbeat.incrementRequestFailureCount();
+            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             ex = t;
             try {
                 networkExceptionStats.recordFailure("unexpected exception: " + t, t);
-                NetworkStatsbeat.incrementRequestFailureCount();
+                StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -205,7 +205,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
             if (code == HttpStatus.SC_BAD_REQUEST) {
                 networkExceptionStats.recordFailure("ingestion service returned 400 (" + reason + ")");
-                NetworkStatsbeat.incrementRequestFailureCount();
+                StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
             } else if (code != HttpStatus.SC_OK) {
                 // Invoke the listeners for handling things like errors
                 // The listeners will handle the back off logic as well as the dispatch
