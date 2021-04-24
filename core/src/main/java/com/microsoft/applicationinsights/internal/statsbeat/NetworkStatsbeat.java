@@ -94,7 +94,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         exceptionCount = 0;
     }
 
-    public static void addInstrumentation(String instrumentation) {
+    public void addInstrumentation(String instrumentation) {
         instrumentationList.add(instrumentation);
         logger.debug("#### add {} to the list", instrumentation);
         logger.debug("#### instrumentation list size: {}", instrumentationList.size());
@@ -114,32 +114,56 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     private static long throttleCount;
     private static long exceptionCount;
 
-    public static void incrementRequestSuccessCount() {
+    public void incrementRequestSuccessCount() {
         requestSuccessCount++;
         logger.debug("#### increment request success count");
     }
 
-    public static void incrementRequestFailureCount() {
+    public void incrementRequestFailureCount() {
         requestFailureCount++;
         logger.debug("#### increment request failure count");
     }
 
-    public static void addRequestDuration(double duration) {
+    public void addRequestDuration(double duration) {
         requestDurations.add(duration);
         logger.debug("#### add a new request duration {}", duration);
     }
 
-    public static void incrementRetryCount() {
+    public void incrementRetryCount() {
         retryCount++;
         logger.debug("#### increment retry count");
     }
 
-    public static void incrementThrottleCount() {
+    public void incrementThrottleCount() {
         throttleCount++;
     }
 
-    public static void incrementExceptionCount() {
+    public void incrementExceptionCount() {
         exceptionCount++;
+    }
+
+    public long getRequestSuccessCount() {
+        return requestSuccessCount;
+    }
+
+    public long getRequestFailureCount() {
+        return requestFailureCount;
+    }
+
+    public List<Double> getRequestDurations() {
+        return requestDurations;
+    }
+
+    public long getRetryCount() {
+        return retryCount;
+    }
+
+    public long getThrottleCount() {
+        return throttleCount;
+    }
+
+    public long getExceptionCount() {
+        return exceptionCount;
     }
 
     private double getRequestDurationAvg() {
