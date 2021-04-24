@@ -89,6 +89,8 @@ public final class StatsbeatHelper {
         put("opentelemetry-javaagent-reactor-netty-0.9", 50);
         put("opentelemetry-javaagent-reactor-netty-1.0", 51);
         put("opentelemetry-javaagent-tomcat-7.0", 52);
+        put("opentelemetry-javaagent-azure-core-1.14", 53);
+        put("opentelemetry-javaagent-eclipse-osgi-3.6", 54);
     }};
 
     public static Map<Integer, String> INSTRUMENTATION_MAP_DECODING = new HashMap<Integer, String>() {{
@@ -145,6 +147,8 @@ public final class StatsbeatHelper {
         put(50, "opentelemetry-javaagent-reactor-netty-0.9");
         put(51, "opentelemetry-javaagent-reactor-netty-1.0");
         put(52, "opentelemetry-javaagent-tomcat-7.0");
+        put(53, "opentelemetry-javaagent-azure-core-1.14");
+        put(54, "opentelemetry-javaagent-eclipse-osgi-3.6");
     }};
 
     public static final Map<String, Integer> FEATURE_MAP = new HashMap<String, Integer>() {{
