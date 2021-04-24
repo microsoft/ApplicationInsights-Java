@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.management.MemoryUsage;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
@@ -106,36 +108,41 @@ public class GcEventMonitor {
         TelemetryEventData data = new TelemetryEventData();
         data.setName("GcEvent");
 
-        data.getProperties().put("collector", event.getCollector().getName());
-        data.getProperties().put("type", event.getGcCause());
-        data.getProperties().put("action", event.getGcAction());
-        data.getMeasurements().put("id", (double) event.getId());
-        data.getMeasurements().put("duration_ms", (double) event.getDuration());
-        data.getMeasurements().put("end_time_ms", (double) event.getEndTime());
-        data.getMeasurements().put("thread_count", (double) event.getGcThreadCount());
-        data.getMeasurements().put("collection_count", (double) event.getCollector().getCollectionCount());
-        data.getMeasurements().put("cumulative_collector_time_sec", (double) event.getCollector().getCollectionTime());
+        Map<String, String> properties = new HashMap<>();
+        properties.put("collector", event.getCollector().getName());
+        properties.put("type", event.getGcCause());
+        properties.put("action", event.getGcAction());
+        data.setProperties(properties);
 
-        addMemoryUsage("young", "before", data, event.getMemoryUsageBeforeGc(event.getYoungPools()));
-        addMemoryUsage("young", "after", data, event.getMemoryUsageAfterGc(event.getYoungPools()));
+        Map<String, Double> measurements = new HashMap<>();
+        measurements.put("id", (double) event.getId());
+        measurements.put("duration_ms", (double) event.getDuration());
+        measurements.put("end_time_ms", (double) event.getEndTime());
+        measurements.put("thread_count", (double) event.getGcThreadCount());
+        measurements.put("collection_count", (double) event.getCollector().getCollectionCount());
+        measurements.put("cumulative_collector_time_sec", (double) event.getCollector().getCollectionTime());
+
+        addMemoryUsage("young", "before", measurements, event.getMemoryUsageBeforeGc(event.getYoungPools()));
+        addMemoryUsage("young", "after", measurements, event.getMemoryUsageAfterGc(event.getYoungPools()));
 
         Optional<MemoryPool> tenuredPool = event.getTenuredPool();
         if (tenuredPool.isPresent()) {
             MemoryUsage beforeOg = event.getMemoryUsageBeforeGc(tenuredPool.get());
-            addMemoryUsage("tenured", "before", data, beforeOg);
+            addMemoryUsage("tenured", "before", measurements, beforeOg);
 
             MemoryUsage afterOg = event.getMemoryUsageAfterGc(tenuredPool.get());
-            addMemoryUsage("tenured", "after", data, afterOg);
+            addMemoryUsage("tenured", "after", measurements, afterOg);
         }
+        data.setMeasurements(measurements);
 
         TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
         telemetry.setTime(TelemetryUtil.currentTime());
         telemetryClient.track(telemetry);
     }
 
-    private static void addMemoryUsage(String poolName, String when, TelemetryEventData data, MemoryUsage memory) {
-        data.getMeasurements().put(poolName + "_" + when + "_used", (double) memory.getUsed());
-        data.getMeasurements().put(poolName + "_" + when + "_size", (double) memory.getCommitted());
-        data.getMeasurements().put(poolName + "_max", (double) memory.getMax());
+    private static void addMemoryUsage(String poolName, String when, Map<String, Double> measurements, MemoryUsage memory) {
+        measurements.put(poolName + "_" + when + "_used", (double) memory.getUsed());
+        measurements.put(poolName + "_" + when + "_size", (double) memory.getCommitted());
+        measurements.put(poolName + "_max", (double) memory.getMax());
     }
 }

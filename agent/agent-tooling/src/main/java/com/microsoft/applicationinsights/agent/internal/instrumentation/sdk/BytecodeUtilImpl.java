@@ -55,11 +55,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         TelemetryEventData data = new TelemetryEventData();
         data.setName(name);
-        data.getProperties().putAll(properties);
-        data.getMeasurements().putAll(metrics);
+        data.setProperties(properties);
+        data.setMeasurements(metrics);
 
         TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.getTags().putAll(tags);
+        telemetry.setTags(tags);
         telemetry.setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
@@ -84,9 +84,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         MetricsData data = new MetricsData();
         data.setMetrics(Collections.singletonList(point));
 
-        data.getProperties().putAll(properties);
+        data.setProperties(properties);
         TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.getTags().putAll(tags);
+        telemetry.setTags(tags);
         telemetry.setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
@@ -112,11 +112,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         data.setData(commandName);
         data.setType(type);
         data.setTarget(target);
-        data.getProperties().putAll(properties);
-        data.getMeasurements().putAll(metrics);
+        data.setProperties(properties);
+        data.setMeasurements(metrics);
 
         TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.getTags().putAll(tags);
+        telemetry.setTags(tags);
         telemetry.setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
@@ -133,11 +133,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         data.setName(name);
         data.setUrl(uri.toString());
         data.setDuration(TelemetryUtil.getFormattedDuration(totalMillis));
-        data.getProperties().putAll(properties);
-        data.getMeasurements().putAll(metrics);
+        data.setProperties(properties);
+        data.setMeasurements(metrics);
 
         TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.getTags().putAll(tags);
+        telemetry.setTags(tags);
         telemetry.setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
@@ -155,10 +155,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (severityLevel != -1) {
             data.setSeverityLevel(getSeverityLevel(severityLevel));
         }
-        data.getProperties().putAll(properties);
+        data.setProperties(properties);
 
         TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.getTags().putAll(tags);
+        telemetry.setTags(tags);
         telemetry.setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
@@ -184,14 +184,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         data.setResponseCode(responseCode);
         data.setSuccess(success);
         data.setSource(source);
-        data.getProperties().putAll(properties);
-        data.getMeasurements().putAll(metrics);
+        data.setProperties(properties);
+        data.setMeasurements(metrics);
 
         TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
         if (timestamp != null) {
             telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
         }
-        telemetry.getTags().putAll(tags);
+        telemetry.setTags(tags);
         telemetry.setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
@@ -207,11 +207,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         TelemetryExceptionData data = new TelemetryExceptionData();
         data.setExceptions(TelemetryUtil.getExceptions(exception));
         data.setSeverityLevel(SeverityLevel.ERROR);
-        data.getProperties().putAll(properties);
-        data.getMeasurements().putAll(metrics);
+        data.setProperties(properties);
+        data.setMeasurements(metrics);
 
         TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.getTags().putAll(tags);
+        telemetry.setTags(tags);
         telemetry.setInstrumentationKey(instrumentationKey);
 
         track(telemetry);
