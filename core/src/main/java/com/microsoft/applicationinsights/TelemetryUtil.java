@@ -11,10 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -172,6 +169,85 @@ public class TelemetryUtil {
         return exceptionDetails;
     }
 
+    // TODO (trask) can we move getProperties up to MonitorDomain, or if not, a common interface?
+    public static Map<String, String> getProperties(MonitorDomain data) {
+        if (data instanceof AvailabilityData) {
+            AvailabilityData availabilityData = (AvailabilityData) data;
+            Map<String, String> properties = availabilityData.getProperties();
+            if (properties == null) {
+                properties = new HashMap<>();
+                availabilityData.setProperties(properties);
+            }
+            return properties;
+        } else if (data instanceof MessageData) {
+            MessageData messageData = (MessageData) data;
+            Map<String, String> properties = messageData.getProperties();
+            if (properties == null) {
+                properties = new HashMap<>();
+                messageData.setProperties(properties);
+            }
+            return properties;
+        } else if (data instanceof MetricsData) {
+            MetricsData metricsData = (MetricsData) data;
+            Map<String, String> properties = metricsData.getProperties();
+            if (properties == null) {
+                properties = new HashMap<>();
+                metricsData.setProperties(properties);
+            }
+            return properties;
+        } else if (data instanceof PageViewData) {
+            PageViewData pageViewData = (PageViewData) data;
+            Map<String, String> properties = pageViewData.getProperties();
+            if (properties == null) {
+                properties = new HashMap<>();
+                pageViewData.setProperties(properties);
+            }
+            return properties;
+        } else if (data instanceof PageViewPerfData) {
+            PageViewPerfData pageViewPerfData = (PageViewPerfData) data;
+            Map<String, String> properties = pageViewPerfData.getProperties();
+            if (properties == null) {
+                properties = new HashMap<>();
+                pageViewPerfData.setProperties(properties);
+            }
+            return properties;
+        } else if (data instanceof RemoteDependencyData) {
+            RemoteDependencyData remoteDependencyData = (RemoteDependencyData) data;
+            Map<String, String> properties = remoteDependencyData.getProperties();
+            if (properties == null) {
+                properties = new HashMap<>();
+                remoteDependencyData.setProperties(properties);
+            }
+            return properties;
+        } else if (data instanceof RequestData) {
+            RequestData requestData = (RequestData) data;
+            Map<String, String> properties = requestData.getProperties();
+            if (properties == null) {
+                properties = new HashMap<>();
+                requestData.setProperties(properties);
+            }
+            return properties;
+        } else if (data instanceof TelemetryEventData) {
+            TelemetryEventData eventData = (TelemetryEventData) data;
+            Map<String, String> properties = eventData.getProperties();
+            if (properties == null) {
+                properties = new HashMap<>();
+                eventData.setProperties(properties);
+            }
+            return properties;
+        } else if (data instanceof TelemetryExceptionData) {
+            TelemetryExceptionData exceptionData = (TelemetryExceptionData) data;
+            Map<String, String> properties = exceptionData.getProperties();
+            if (properties == null) {
+                properties = new HashMap<>();
+                exceptionData.setProperties(properties);
+            }
+            return properties;
+        } else {
+            throw new IllegalArgumentException("Unexpected type: " + data.getClass().getName());
+        }
+    }
+
     private static String getBaseType(MonitorDomain data) {
         if (data instanceof AvailabilityData) {
             return "AvailabilityData"; // TODO (trask) is this right?
@@ -187,9 +263,9 @@ public class TelemetryUtil {
             return "RemoteDependencyData";
         } else if (data instanceof RequestData) {
             return "RequestData";
-        } else if (data instanceof TelemetryEventData) {
+        } else if (data instanceof TelemetryEventData) { // TODO (trask) can we rename to EventData to match above?
             return "EventData";
-        } else if (data instanceof TelemetryExceptionData) {
+        } else if (data instanceof TelemetryExceptionData) { // TODO (trask) can we rename to ExceptionData to match above?
             return "ExceptionData";
         } else {
             throw new IllegalArgumentException("Unexpected type: " + data.getClass().getName());

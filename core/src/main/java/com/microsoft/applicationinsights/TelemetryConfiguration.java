@@ -24,21 +24,19 @@ package com.microsoft.applicationinsights;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.extensibility.ContextInitializer;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
+import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-/**
- * Encapsulates the global telemetry configuration typically loaded from the ApplicationInsights.xml file.
- *
- * All {@link com.microsoft.applicationinsights.telemetry.TelemetryContext} objects are initialized using the
- * 'Active' (returned by the 'getActive' static method) telemetry configuration provided by this class.
- */
 public final class TelemetryConfiguration {
 
     // Synchronization for instance initialization
@@ -52,10 +50,19 @@ public final class TelemetryConfiguration {
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
-    private final List<ContextInitializer> contextInitializers = new CopyOnWriteArrayList<>();
+    private final Map<String, String> customDimensions;
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
-    private ApplicationInsightsClientImpl channel;
+    private @Nullable ApplicationInsightsClientImpl channel;
+
+    // only used by tests
+    public TelemetryConfiguration() {
+        this(new HashMap<>());
+    }
+
+    public TelemetryConfiguration(Map<String, String> customDimensions) {
+        this.customDimensions = customDimensions;
+    }
 
     /**
      * Gets the active {@link com.microsoft.applicationinsights.TelemetryConfiguration} instance loaded from the
@@ -78,11 +85,15 @@ public final class TelemetryConfiguration {
      * scenario in SpringBoot.
      * @return {@link com.microsoft.applicationinsights.TelemetryConfiguration}
      */
-    public static TelemetryConfiguration getActiveWithoutInitializingConfig() {
+    public static TelemetryConfiguration initActive(Map<String, String> customDimensions, ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
+        if (active != null) {
+            throw new IllegalStateException("Already initialized");
+        }
         if (active == null) {
             synchronized (s_lock) {
                 if (active == null) {
-                    active = new TelemetryConfiguration();
+                    active = new TelemetryConfiguration(customDimensions);
+                    TelemetryConfigurationFactory.INSTANCE.initialize(active, applicationInsightsConfig);
                 }
             }
         }
@@ -104,21 +115,12 @@ public final class TelemetryConfiguration {
     }
 
     public boolean isTrackingDisabled() {
+        // FIXME (trask) how was this used? should it return channel == null
         return true;
     }
 
-    /**
-     * Gets the list of {@link ContextInitializer} objects that supply additional information about application.
-     *
-     * Context initializers extend Application Insights telemetry collection by supplying additional information
-     * about application environment, such as 'User' information (in TelemetryContext.getUser or Device (in TelemetryContext.getDevice
-     * invokes telemetry initializers each time the TelemetryClient's 'track' method is called
-     *
-     * The default list of telemetry initializers is provided by the SDK and can also be set from the ApplicationInsights.xml.
-     * @return Collection of Context Initializers
-     */
-    public List<ContextInitializer> getContextInitializers() {
-        return contextInitializers;
+    public Map<String, String> getCustomDimensions() {
+        return customDimensions;
     }
 
     public List<TelemetryModule> getTelemetryModules() {
@@ -127,11 +129,6 @@ public final class TelemetryConfiguration {
 
     /**
      * Gets or sets the default instrumentation key for the application.
-     *
-     * This instrumentation key value is used by default by all {@link com.microsoft.applicationinsights.TelemetryClient}
-     * instances created in the application. This value can be overwritten by setting the Instrumentation Key in
-     * {@link com.microsoft.applicationinsights.telemetry.TelemetryContext} class
-     * @return The instrumentation key
      */
     public String getInstrumentationKey() {
         return instrumentationKey;
@@ -139,12 +136,6 @@ public final class TelemetryConfiguration {
 
     /**
      * Gets or sets the default instrumentation key for the application.
-     *
-     * This instrumentation key value is used by default by all {@link com.microsoft.applicationinsights.TelemetryClient}
-     * instances created in the application. This value can be overwritten by setting the Instrumentation Key in
-     * {@link com.microsoft.applicationinsights.telemetry.TelemetryContext} class
-     * @param key The instrumentation key
-     * @throws IllegalArgumentException when the new value is null or empty
      */
     public void setInstrumentationKey(String key) {
 

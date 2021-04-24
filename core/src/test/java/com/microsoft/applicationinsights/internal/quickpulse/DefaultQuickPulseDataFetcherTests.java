@@ -24,7 +24,7 @@ public class DefaultQuickPulseDataFetcherTests {
 
     @Test
     public void testGetCurrentSdkVersion() {
-        DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration) null, null,
+        DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, null, null,
                 null, null,null);
         String sdkVersion = dataFetcher.getCurrentSdkVersion();
         assertNotNull(sdkVersion);
@@ -49,7 +49,7 @@ public class DefaultQuickPulseDataFetcherTests {
 
     @Test
     public void endpointIsFormattedCorrectlyWhenConfigIsNull() {
-        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration)null,
+        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, null,
                 null,null, null,null);
         final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
         final String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);

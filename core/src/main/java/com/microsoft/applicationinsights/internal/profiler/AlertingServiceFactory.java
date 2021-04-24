@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
+import com.microsoft.applicationinsights.telemetry.TelemetryObservers;
 
 /**
  * Creates AlertMonitor and wires it up to observe telemetry.

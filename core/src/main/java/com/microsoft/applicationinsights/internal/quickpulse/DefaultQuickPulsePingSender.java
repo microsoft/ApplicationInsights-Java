@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -34,7 +35,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,14 +84,6 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         if (logger.isTraceEnabled()) {
             logger.trace("{} using endpoint {}", DefaultQuickPulsePingSender.class.getSimpleName(), getQuickPulseEndpoint());
         }
-    }
-
-    /**
-     * @deprecated Use {@link #DefaultQuickPulsePingSender(HttpClient, TelemetryConfiguration, String, String, String, String)}
-     */
-    @Deprecated
-    public DefaultQuickPulsePingSender(final HttpClient httpClient, final String machineName, final String instanceName, final String roleName, final String quickPulseId) {
-        this(httpClient, null, machineName, instanceName, roleName, quickPulseId);
     }
 
     @Override

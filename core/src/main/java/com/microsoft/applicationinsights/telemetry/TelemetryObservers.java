@@ -1,4 +1,4 @@
-package com.microsoft.applicationinsights.extensibility.initializer;
+package com.microsoft.applicationinsights.telemetry;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

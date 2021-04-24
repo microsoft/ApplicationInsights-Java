@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 public enum QuickPulseDataCollector {
     INSTANCE;
 
-    private String ikey;
     private TelemetryConfiguration config;
 
     static class FinalCounters {
@@ -148,16 +147,8 @@ public enum QuickPulseDataCollector {
         counters.set(null);
     }
 
-    @Deprecated
-    public synchronized void enable(final String ikey) {
-        this.ikey = ikey;
-        this.config = null;
-        counters.set(new Counters());
-    }
-
     public synchronized void enable(TelemetryConfiguration config) {
         this.config = config;
-        this.ikey = null;
         counters.set(new Counters());
     }
 
@@ -196,10 +187,11 @@ public enum QuickPulseDataCollector {
     }
 
     private synchronized String getInstrumentationKey() {
+        // FIXME (trask) can we assert config not null here?
         if (config != null) {
             return config.getInstrumentationKey();
         } else {
-            return ikey;
+            return null;
         }
     }
 

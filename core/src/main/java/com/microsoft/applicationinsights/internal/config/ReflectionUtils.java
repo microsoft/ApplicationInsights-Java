@@ -46,7 +46,6 @@ public final class ReflectionUtils {
     static {
         addClass(com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule.class);
         addClass(com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule.class);
-        addClass(com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer.class);
     }
 
     static void addClass(Class<?> clazz) {

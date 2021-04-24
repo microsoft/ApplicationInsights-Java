@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.FinalCounters;
@@ -32,21 +33,27 @@ public class QuickPulseDataCollectorTests {
 
     @Test
     public void emptyCountsAndDurationsAfterEnable() {
-        QuickPulseDataCollector.INSTANCE.enable(FAKE_INSTRUMENTATION_KEY);
+        TelemetryConfiguration configuration = new TelemetryConfiguration();
+        configuration.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(configuration);
         final FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
         assertCountersReset(counters);
     }
 
     @Test
     public void nullCountersAfterDisable() {
-        QuickPulseDataCollector.INSTANCE.enable(FAKE_INSTRUMENTATION_KEY);
+        TelemetryConfiguration configuration = new TelemetryConfiguration();
+        configuration.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(configuration);
         QuickPulseDataCollector.INSTANCE.disable();
         assertNull(QuickPulseDataCollector.INSTANCE.peek());
     }
 
     @Test
     public void requestTelemetryIsCounted_DurationIsSum() {
-        QuickPulseDataCollector.INSTANCE.enable(FAKE_INSTRUMENTATION_KEY);
+        TelemetryConfiguration configuration = new TelemetryConfiguration();
+        configuration.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(configuration);
 
         // add a success and peek
         final long duration = 112233L;
@@ -85,7 +92,9 @@ public class QuickPulseDataCollectorTests {
 
     @Test
     public void dependencyTelemetryIsCounted_DurationIsSum() {
-        QuickPulseDataCollector.INSTANCE.enable(FAKE_INSTRUMENTATION_KEY);
+        TelemetryConfiguration configuration = new TelemetryConfiguration();
+        configuration.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(configuration);
 
         // add a success and peek.
         final long duration = 112233L;
@@ -124,7 +133,9 @@ public class QuickPulseDataCollectorTests {
 
     @Test
     public void exceptionTelemetryIsCounted() {
-        QuickPulseDataCollector.INSTANCE.enable(FAKE_INSTRUMENTATION_KEY);
+        TelemetryConfiguration configuration = new TelemetryConfiguration();
+        configuration.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(configuration);
 
         TelemetryItem telemetry = createExceptionTelemetry(new Exception());
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
