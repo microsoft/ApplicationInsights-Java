@@ -111,7 +111,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         data.setId(id);
         data.setResultCode(resultCode);
         if (totalMillis != null) {
-            data.setDuration(new Duration(totalMillis));
+            data.setDuration(TelemetryUtil.getFormattedDuration(totalMillis));
         }
         data.setSuccess(success);
         data.setData(commandName);
@@ -136,8 +136,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         PageViewData data = new PageViewData();
         data.setName(name);
-        data.setUrl(uri);
-        data.setDuration(totalMillis);
+        data.setUrl(uri.toString());
+        data.setDuration(TelemetryUtil.getFormattedDuration(totalMillis));
         data.getProperties().putAll(properties);
         data.getMeasurements().putAll(metrics);
 
@@ -181,10 +181,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         data.setId(id);
         data.setName(name);
         if (url != null) {
-            data.setUrl(url);
+            data.setUrl(url.toString());
         }
         if (duration != null) {
-            data.setDuration(new Duration(duration));
+            data.setDuration(TelemetryUtil.getFormattedDuration(duration));
         }
         data.setResponseCode(responseCode);
         data.setSuccess(success);
@@ -193,7 +193,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         data.getMeasurements().putAll(metrics);
 
         TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.setTime(timestamp);
+        if (timestamp != null) {
+            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+        }
         telemetry.getTags().putAll(tags);
         telemetry.setInstrumentationKey(instrumentationKey);
 
@@ -208,8 +210,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         TelemetryExceptionData data = new TelemetryExceptionData();
-        data.setException(exception);
-        data.setSeverityLevel(SeverityLevel.Error);
+        data.setExceptions(TelemetryUtil.getExceptions(exception));
+        data.setSeverityLevel(SeverityLevel.ERROR);
         data.getProperties().putAll(properties);
         data.getMeasurements().putAll(metrics);
 
@@ -221,12 +223,21 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     private SeverityLevel getSeverityLevel(int value) {
-        for (SeverityLevel sl : SeverityLevel.values()) {
-            if (value == sl.getValue()) {
-                return sl;
-            }
+        // these mappings from the 2.x SDK
+        switch (value) {
+            case 0:
+                return SeverityLevel.VERBOSE;
+            case 1:
+                return SeverityLevel.INFORMATION;
+            case 2:
+                return SeverityLevel.WARNING;
+            case 3:
+                return SeverityLevel.ERROR;
+            case 4:
+                return SeverityLevel.CRITICAL;
+            default:
+                return null;
         }
-        return null;
     }
 
     @Override
@@ -284,82 +295,5 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     private static String getOperationId(TelemetryItem telemetry) {
         return telemetry.getTags().get(ContextTagKeys.AI_OPERATION_ID.toString());
-    }
-
-    // FIXME (trask) share this remaining code with the exporter
-
-    private static final String SAMPLING_PERCENTAGE_TRACE_STATE = "ai-internal-sp";
-
-    private static final Cache<String, OptionalFloat> parsedSamplingPercentageCache =
-            CacheBuilder.newBuilder()
-                    .maximumSize(100)
-                    .build();
-
-    private static final AtomicBoolean alreadyLoggedSamplingPercentageMissing = new AtomicBoolean();
-    private static final AtomicBoolean alreadyLoggedSamplingPercentageParseError = new AtomicBoolean();
-
-    private static float getSamplingPercentage(TraceState traceState, float defaultValue, boolean warnOnMissing) {
-        String samplingPercentageStr = traceState.get(SAMPLING_PERCENTAGE_TRACE_STATE);
-        if (samplingPercentageStr == null) {
-            if (warnOnMissing && !alreadyLoggedSamplingPercentageMissing.getAndSet(true)) {
-                // sampler should have set the trace state
-                logger.warn("did not find sampling percentage in trace state: {}", traceState);
-            }
-            return defaultValue;
-        }
-        try {
-            return parseSamplingPercentage(samplingPercentageStr).orElse(defaultValue);
-        } catch (ExecutionException e) {
-            // this shouldn't happen
-            logger.debug(e.getMessage(), e);
-            return defaultValue;
-        }
-    }
-
-    private static OptionalFloat parseSamplingPercentage(String samplingPercentageStr) throws ExecutionException {
-        return parsedSamplingPercentageCache.get(samplingPercentageStr, () -> {
-            try {
-                return OptionalFloat.of(Float.parseFloat(samplingPercentageStr));
-            } catch (NumberFormatException e) {
-                if (!alreadyLoggedSamplingPercentageParseError.getAndSet(true)) {
-                    logger.warn("error parsing sampling percentage trace state: {}", samplingPercentageStr, e);
-                }
-                return OptionalFloat.empty();
-            }
-        });
-    }
-
-    private static class OptionalFloat {
-
-        private static final OptionalFloat EMPTY = new OptionalFloat();
-
-        private final boolean present;
-        private final float value;
-
-        private OptionalFloat() {
-            this.present = false;
-            this.value = Float.NaN;
-        }
-
-        private OptionalFloat(float value) {
-            this.present = true;
-            this.value = value;
-        }
-
-        public static OptionalFloat empty() {
-            return EMPTY;
-        }
-
-        public static OptionalFloat of(float value) {
-            return new OptionalFloat(value);
-        }
-
-        public float orElse(float other) {
-            return present ? value : other;
-        }
-
-        public boolean isEmpty() {
-            return !present;
-        }
     }
 }

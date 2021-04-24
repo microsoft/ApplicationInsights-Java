@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
@@ -100,7 +99,7 @@ public class ProfilerServiceTest {
                 });
     }
 
-    public void endToEndAlertTriggerCycle(boolean triggerNow, MetricsData metricTelemetry, Consumer<TelemetryEventData> assertTelemetry) throws InterruptedException, ExecutionException {
+    public void endToEndAlertTriggerCycle(boolean triggerNow, TelemetryItem metricTelemetry, Consumer<TelemetryEventData> assertTelemetry) throws InterruptedException, ExecutionException {
         AtomicBoolean profileInvoked = new AtomicBoolean(false);
         AtomicReference<TelemetryEventData> serviceProfilerIndex = new AtomicReference<>();
 

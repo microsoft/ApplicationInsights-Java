@@ -24,6 +24,8 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 
+import java.time.Duration;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -237,7 +239,21 @@ public enum QuickPulseDataCollector {
 
     // FIXME (trask) move live metrics request capture to OpenTelemetry layer so don't have to parse String duration?
     private static long toMilliseconds(String duration) {
-        // FIXME need to parse here (or see above)
-        return 0;
+        // format is DD.HH:MM:SS.MMMMMM
+        StringTokenizer tokenizer = new StringTokenizer(duration, ".:");
+        int days = Integer.parseInt(tokenizer.nextToken());
+        int hours = Integer.parseInt(tokenizer.nextToken());
+        int minutes = Integer.parseInt(tokenizer.nextToken());
+        int seconds = Integer.parseInt(tokenizer.nextToken());
+        int microseconds = Integer.parseInt(tokenizer.nextToken());
+
+        long x = Duration.ofDays(days)
+                .plusHours(hours)
+                .plusMinutes(minutes)
+                .plusSeconds(seconds)
+                .plusNanos(microseconds * 1000L)
+                .toMillis();
+        System.out.println(duration + " --> " + x);
+        return x;
     }
 }
