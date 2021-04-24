@@ -44,8 +44,6 @@ import org.junit.contrib.java.lang.system.*;
 
 import static org.junit.Assert.*;
 
-// FIXME (trask)
-@Ignore
 public class RpConfigurationPollingTest {
 
     @Rule
@@ -73,19 +71,20 @@ public class RpConfigurationPollingTest {
         rpConfiguration.configPath = new File(Resources.getResource("applicationinsights-rp.json").getPath()).toPath();
         rpConfiguration.lastModifiedTime = 0;
 
-        TelemetryConfiguration.getActive().setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration();
+        telemetryConfiguration.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
         Global.setSamplingPercentage(100);
 
         // pre-check
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryConfiguration.getConnectionString());
         assertEquals(100, Global.getSamplingPercentage(), 0);
         assertEquals(100, getCurrentSamplingPercentage(), 0);
 
         // when
-        new RpConfigurationPolling(rpConfiguration, new Configuration()).run();
+        new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryConfiguration).run();
 
         // then
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryConfiguration.getConnectionString());
         assertEquals(10, Global.getSamplingPercentage(), 0);
         assertEquals(10, getCurrentSamplingPercentage(), 0);
     }
@@ -99,22 +98,23 @@ public class RpConfigurationPollingTest {
         rpConfiguration.configPath = new File(Resources.getResource("applicationinsights-rp.json").getPath()).toPath();
         rpConfiguration.lastModifiedTime = 0;
 
-        TelemetryConfiguration.getActive().setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        TelemetryConfiguration telemetryConfiguration = new TelemetryConfiguration();
+        telemetryConfiguration.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
         Global.setSamplingPercentage(100);
 
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=00000000-0000-0000-0000-000000000000");
         envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "90");
 
         // pre-check
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryConfiguration.getConnectionString());
         assertEquals(100, Global.getSamplingPercentage(), 0);
         assertEquals(100, getCurrentSamplingPercentage(), 0);
 
         // when
-        new RpConfigurationPolling(rpConfiguration, new Configuration()).run();
+        new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryConfiguration).run();
 
         // then
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", TelemetryConfiguration.getActive().getConnectionString());
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryConfiguration.getConnectionString());
         assertEquals(10, Global.getSamplingPercentage(), 0);
         assertEquals(10, getCurrentSamplingPercentage(), 0);
     }

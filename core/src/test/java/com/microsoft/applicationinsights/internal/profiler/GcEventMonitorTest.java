@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.internal.profiler;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
@@ -18,6 +19,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import javax.management.MBeanServerConnection;
+import javax.security.auth.login.Configuration;
 import java.lang.management.MemoryUsage;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -27,8 +29,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-// FIXME (trask)
-@Ignore
 public class GcEventMonitorTest {
 
     @Test
@@ -37,7 +37,7 @@ public class GcEventMonitorTest {
         CompletableFuture<AlertBreach> alertFuture = new CompletableFuture<>();
         AlertingSubsystem alertingSubsystem = getAlertingSubsystem(alertFuture);
 
-        TelemetryClient client = new TelemetryClient() {
+        TelemetryClient client = new TelemetryClient(new TelemetryConfiguration()) {
             @Override
             public void track(TelemetryItem telemetry) {
             }

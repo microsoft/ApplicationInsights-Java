@@ -46,16 +46,23 @@ public class RpConfigurationPolling implements Runnable {
 
     private volatile RpConfiguration rpConfiguration;
     private final Configuration configuration;
+    private final TelemetryConfiguration telemetryConfiguration;
 
-    public static void startPolling(RpConfiguration rpConfiguration, Configuration configuration) {
-        Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
-                .scheduleWithFixedDelay(new RpConfigurationPolling(rpConfiguration, configuration), 60, 60, SECONDS);
+    public static void startPolling(RpConfiguration rpConfiguration, Configuration configuration,
+                                    TelemetryConfiguration telemetryConfiguration) {
+        Executors.newSingleThreadScheduledExecutor(
+                ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
+                .scheduleWithFixedDelay(
+                        new RpConfigurationPolling(rpConfiguration, configuration, telemetryConfiguration),
+                        60, 60, SECONDS);
     }
 
     // visible for testing
-    RpConfigurationPolling(RpConfiguration rpConfiguration, Configuration configuration) {
+    RpConfigurationPolling(RpConfiguration rpConfiguration, Configuration configuration,
+                           TelemetryConfiguration telemetryConfiguration) {
         this.rpConfiguration = rpConfiguration;
         this.configuration = configuration;
+        this.telemetryConfiguration = telemetryConfiguration;
     }
 
     @Override
@@ -75,9 +82,9 @@ public class RpConfigurationPolling implements Runnable {
                 rpConfiguration.lastModifiedTime = fileTime.toMillis();
                 RpConfiguration newRpConfiguration = RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
-                if (!newRpConfiguration.connectionString.equals(TelemetryConfiguration.getActive().getConnectionString())) {
+                if (!newRpConfiguration.connectionString.equals(telemetryConfiguration.getConnectionString())) {
                     logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
-                    TelemetryConfiguration.getActive().setConnectionString(newRpConfiguration.connectionString);
+                    telemetryConfiguration.setConnectionString(newRpConfiguration.connectionString);
                     AppIdSupplier.startAppIdRetrieval();
                 }
 

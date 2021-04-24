@@ -114,8 +114,9 @@ public final class TelemetryConfiguration {
         this.channel = channel;
     }
 
+    // this method only exists for generating bytecode via ASMifier in TelemetryClientClassFileTransformer
+    @Deprecated
     public boolean isTrackingDisabled() {
-        // FIXME (trask) how was this used? should it return channel == null
         return true;
     }
 

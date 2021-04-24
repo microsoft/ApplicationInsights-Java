@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -46,7 +45,6 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
-import org.apache.commons.text.StringSubstitutor;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -184,7 +182,7 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
         if (rpConfiguration != null) {
-            RpConfigurationPolling.startPolling(rpConfiguration, config);
+            RpConfigurationPolling.startPolling(rpConfiguration, config, configuration);
         }
     }
 
