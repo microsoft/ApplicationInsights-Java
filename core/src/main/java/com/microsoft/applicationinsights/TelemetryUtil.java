@@ -298,7 +298,36 @@ public class TelemetryUtil {
         long seconds = remainingMillis / MILLISECONDS_PER_SECOND;
         remainingMillis = remainingMillis % MILLISECONDS_PER_SECOND;
 
-        return days + "." + hours + ":" + minutes + ":" + seconds + "." + remainingMillis + "000";
+        StringBuilder sb = new StringBuilder();
+        appendMinTwoDigits(sb, days);
+        sb.append('.');
+        appendMinTwoDigits(sb, hours);
+        sb.append(':');
+        appendMinTwoDigits(sb, minutes);
+        sb.append(':');
+        appendMinTwoDigits(sb, seconds);
+        sb.append('.');
+        appendMinThreeDigits(sb, remainingMillis);
+        sb.append("000");
+
+        return sb.toString();
+    }
+
+    private static void appendMinTwoDigits(StringBuilder sb, long value) {
+        if (value < 10) {
+            sb.append("0");
+        }
+        sb.append(value);
+    }
+
+    private static void appendMinThreeDigits(StringBuilder sb, long value) {
+        if (value < 100) {
+            sb.append("0");
+        }
+        if (value < 10) {
+            sb.append("0");
+        }
+        sb.append(value);
     }
 
     public static String getFormattedTime(long epochNanos) {
