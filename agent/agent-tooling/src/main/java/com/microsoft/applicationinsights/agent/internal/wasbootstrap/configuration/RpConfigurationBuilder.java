@@ -21,32 +21,30 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.JsonDataException;
-import com.squareup.moshi.JsonEncodingException;
-import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Types;
 import okio.Buffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RpConfigurationBuilder {
 
+    private static final String APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE";
+
     public static RpConfiguration create(Path agentJarPath) throws IOException {
-        Path configPath = agentJarPath.resolveSibling("applicationinsights-rp.json");
+        Path configPath;
+        String configPathString = ConfigurationBuilder.getEnvVar(APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE);
+
+        if (configPathString != null) {
+            configPath = new File(configPathString).toPath();
+        } else {
+            configPath = agentJarPath.resolveSibling("applicationinsights-rp.json");
+        }
+
         if (Files.exists(configPath)) {
             return loadJsonConfigFile(configPath);
         }
@@ -58,12 +56,7 @@ public class RpConfigurationBuilder {
             throw new IllegalStateException("rp config file does not exist: " + configPath);
         }
 
-        // For container environment, attribute may get the last modified time of symbol link instead of the real file.
-        // Of course the last modified time of symbol link will be unchanged in most cases and then it will fail to
-        // polling the configurations.
-        // See https://github.com/kubernetes/kubernetes/issues/24215.
-        BasicFileAttributes attributes = Files.readAttributes(configPath.toRealPath(), BasicFileAttributes.class);
-
+        BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
         // important to read last modified before reading the file, to prevent possible race condition
         // where file is updated after reading it but before reading last modified, and then since
         // last modified doesn't change after that, the new updated file will not be read afterwards
