@@ -7,6 +7,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.io.CharStreams;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.JsonHelper;
 
@@ -179,24 +180,24 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
                         if (config.isLogPayloadsEnabled()) {
                             logit("raw payload:\n\n"+body+"\n");
                         }
-                        String[] lines = body.split("\n");
-                        for (String line : lines) {
-                            Envelope envelope;
-                            try {
-                                envelope = JsonHelper.GSON.fromJson(line.trim(), Envelope.class);
-                            } catch (JsonSyntaxException jse) {
-                                logerr("Could not deserialize to Envelope", jse);
-                                throw jse;
-                            }
+                        // FIXME (trask) NDJSON isn't working
+                        List<Envelope> envelopes;
+                        try {
+                            envelopes = JsonHelper.GSON.fromJson(body, new TypeToken<List<Envelope>>() {}.getType());
+                        } catch (JsonSyntaxException jse) {
+                            logerr("Could not deserialize to List of envelopes", jse);
+                            throw jse;
+                        }
+                        for (Envelope envelope : envelopes) {
                             if (config.isRetainPayloadsEnabled()) {
                                 String baseType = envelope.getData().getBaseType();
                                 if (filtersAllowItem(envelope)) {
-                                    logit("Adding telemetry item: "+baseType);
+                                    logit("Adding telemetry item: " + baseType);
                                     synchronized (multimapLock) {
                                         type2envelope.put(baseType, envelope);
                                     }
                                 } else {
-                                    logit("Rejected telemetry item by filter: "+baseType);
+                                    logit("Rejected telemetry item by filter: " + baseType);
                                 }
                             }
                         }
