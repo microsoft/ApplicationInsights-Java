@@ -21,10 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-import com.azure.core.util.serializer.JacksonAdapter;
-import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.NdJsonSerializer;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import java.util.HashSet;
 import java.util.Map;
@@ -87,8 +83,6 @@ public enum TelemetryConfigurationFactory {
         setConnectionString(applicationInsightsConfig, configuration);
         setRoleName(applicationInsightsConfig, configuration);
         setRoleInstance(applicationInsightsConfig, configuration);
-
-        setChannel(configuration);
 
         setTelemetryModules(applicationInsightsConfig, configuration);
 
@@ -295,26 +289,6 @@ public enum TelemetryConfigurationFactory {
         } catch (Exception e) {
             logger.error("Failed to register JMX performance counters: '{}'", e.toString());
         }
-    }
-
-    /**
-     * Setting the channel.
-     * @param configuration The configuration class.
-     */
-    private void setChannel(TelemetryConfiguration configuration) {
-
-        ApplicationInsightsClientImplBuilder restServiceClientBuilder = new ApplicationInsightsClientImplBuilder();
-
-        // below copied from AzureMonitorExporterBuilder.java
-
-        // Customize serializer to use NDJSON
-        final SimpleModule ndjsonModule = new SimpleModule("Ndjson List Serializer");
-        JacksonAdapter jacksonAdapter = new JacksonAdapter();
-        jacksonAdapter.serializer().registerModule(ndjsonModule);
-        ndjsonModule.addSerializer(new NdJsonSerializer());
-        restServiceClientBuilder.serializerAdapter(jacksonAdapter);
-
-        configuration.setChannel(restServiceClientBuilder.buildClient());
     }
 
     private void initializeComponents(TelemetryConfiguration configuration) {

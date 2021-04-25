@@ -33,7 +33,6 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.commons.text.StringSubstitutor;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +48,6 @@ public class TelemetryClient {
     private static final Logger logger = LoggerFactory.getLogger(TelemetryClient.class);
 
     private static final AtomicLong generateCounter = new AtomicLong(0);
-
-    private volatile @Nullable ApplicationInsightsClientImpl channel;
 
     // globalTags contain:
     // * cloud role name
@@ -102,10 +99,6 @@ public class TelemetryClient {
             throw new IllegalArgumentException("telemetry item cannot be null");
         }
 
-        if (channel == null) {
-            return;
-        }
-
         if (telemetry.getTime() == null) {
             // TODO (trask) remove this after confident no code paths hit this
             throw new IllegalArgumentException("telemetry item is missing time");
@@ -140,6 +133,8 @@ public class TelemetryClient {
 
         QuickPulseDataCollector.INSTANCE.add(telemetry);
 
+        ApplicationInsightsClientImpl channel = configuration.getChannel();
+
         try {
             // FIXME (trask) do something with return value, for flushing / shutdown purpose
             channel.trackAsync(singletonList(telemetry));
@@ -168,10 +163,5 @@ public class TelemetryClient {
     public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
         // FIXME (trask)
         // getChannel().shutdown(timeout, timeUnit);
-    }
-
-    @Nullable
-    ApplicationInsightsClientImpl getChannel() {
-        return channel;
     }
 }

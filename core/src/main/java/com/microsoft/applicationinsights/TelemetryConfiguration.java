@@ -21,8 +21,11 @@
 
 package com.microsoft.applicationinsights;
 
+import com.azure.core.util.serializer.JacksonAdapter;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
-import com.google.common.annotations.VisibleForTesting;
+import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.NdJsonSerializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
@@ -104,14 +107,25 @@ public final class TelemetryConfiguration {
      * Gets the telemetry channel.
      */
     public synchronized ApplicationInsightsClientImpl getChannel() {
+        if (channel == null) {
+            channel = lazy();
+        }
         return channel;
     }
 
-    /**
-     * Sets the telemetry channel.
-     */
-    public synchronized void setChannel(ApplicationInsightsClientImpl channel) {
-        this.channel = channel;
+    private ApplicationInsightsClientImpl lazy() {
+        ApplicationInsightsClientImplBuilder restServiceClientBuilder = new ApplicationInsightsClientImplBuilder();
+
+        // below copied from AzureMonitorExporterBuilder.java
+
+        // Customize serializer to use NDJSON
+        final SimpleModule ndjsonModule = new SimpleModule("Ndjson List Serializer");
+        JacksonAdapter jacksonAdapter = new JacksonAdapter();
+        jacksonAdapter.serializer().registerModule(ndjsonModule);
+        ndjsonModule.addSerializer(new NdJsonSerializer());
+        restServiceClientBuilder.serializerAdapter(jacksonAdapter);
+
+        return restServiceClientBuilder.buildClient();
     }
 
     // this method only exists for generating bytecode via ASMifier in TelemetryClientClassFileTransformer
