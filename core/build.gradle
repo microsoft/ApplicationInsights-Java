@@ -60,6 +60,8 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
     implementation project(':exporter')
+    implementation group: 'com.azure', name: 'azure-core', version: '1.15.0'
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: versions.opentelemetry
 
     testImplementation group: 'junit', name: 'junit', version: versions.junit
     testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
