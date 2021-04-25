@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
@@ -19,7 +19,6 @@ import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
@@ -49,10 +48,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
         // Reversing the order of processors before passing it to SpanProcessor
         Collections.reverse(processors);
 
-        // FIXME (trask) pass in config.preview.httpMethodInOperationName
-        SpanExporter exporter = new AzureMonitorExporterBuilder()
-                .connectionString(TelemetryConfiguration.getActive().getConnectionString())
-                .buildTraceExporter();
+        SpanExporter exporter = new Exporter(TelemetryConfiguration.getActive(), config.preview.httpMethodInOperationName);
 
         // NOTE if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         if (!processors.isEmpty()) {

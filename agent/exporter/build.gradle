@@ -16,7 +16,9 @@ dependencies {
 
     implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
+    implementation project(path: ':swagger')
     implementation project(path: ':core')
+    implementation group: 'com.azure', name: 'azure-core', version: '1.15.0'
 
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
 

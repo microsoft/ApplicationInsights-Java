@@ -46,10 +46,13 @@ public final class TelemetryConfiguration {
     private static final Object s_lock = new Object();
     private static volatile TelemetryConfiguration active;
 
-    private String instrumentationKey;
-    private String connectionString;
-    private String roleName;
-    private String roleInstance;
+    private volatile String instrumentationKey;
+    private volatile String connectionString;
+    private volatile String roleName;
+    private volatile String roleInstance;
+
+    // cached based on instrumentationKey
+    private volatile String telemetryItemNamePrefix;
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
@@ -160,6 +163,13 @@ public final class TelemetryConfiguration {
         }
 
         instrumentationKey = key;
+
+        String formattedInstrumentationKey = instrumentationKey.replaceAll("-", "");
+        telemetryItemNamePrefix = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".";
+    }
+
+    public String getTelemetryItemNamePrefix() {
+        return telemetryItemNamePrefix;
     }
 
     public String getRoleName() {
