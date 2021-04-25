@@ -25,6 +25,7 @@ import com.azure.core.util.serializer.JacksonAdapter;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.NdJsonSerializer;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
@@ -33,14 +34,22 @@ import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationF
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class TelemetryConfiguration {
+
+    private static final Logger logger = LoggerFactory.getLogger(TelemetryConfiguration.class);
 
     // Synchronization for instance initialization
     private static final Object s_lock = new Object();
@@ -52,11 +61,25 @@ public final class TelemetryConfiguration {
     private volatile String roleInstance;
 
     // cached based on instrumentationKey
-    private volatile String telemetryItemNamePrefix;
+    private volatile String eventTelemetryName;
+    private volatile String exceptionTelemetryName;
+    private volatile String messageTelemetryName;
+    private volatile String metricTelemetryName;
+    private volatile String pageViewTelemetryName;
+    private volatile String remoteDependencyTelemetryName;
+    private volatile String requestTelemetryName;
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
-    private final Map<String, String> customDimensions;
+    // globalTags contain:
+    // * cloud role name
+    // * cloud role instance
+    // * sdk version
+    // * application version (if provided in customDimensions)
+    private final Map<String, String> globalTags;
+    // contains customDimensions from json configuration
+    private final Map<String, String> globalProperties;
+
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
     private @Nullable ApplicationInsightsClientImpl channel;
@@ -67,7 +90,22 @@ public final class TelemetryConfiguration {
     }
 
     public TelemetryConfiguration(Map<String, String> customDimensions) {
-        this.customDimensions = customDimensions;
+        StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
+        Map<String, String> globalProperties = new HashMap<>();
+        Map<String, String> globalTags = new HashMap<>();
+        for (Map.Entry<String, String> entry : customDimensions.entrySet()) {
+            String key = entry.getKey();
+            if (key.equals("service.version")) {
+                globalTags.put(ContextTagKeys.AI_APPLICATION_VER.toString(), substitutor.replace(entry.getValue()));
+            } else {
+                globalProperties.put(key, substitutor.replace(entry.getValue()));
+            }
+        }
+
+        globalTags.put(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), PropertyHelper.getQualifiedSdkVersionString());
+
+        this.globalProperties = globalProperties;
+        this.globalTags = globalTags;
     }
 
     /**
@@ -121,12 +159,22 @@ public final class TelemetryConfiguration {
 
         // below copied from AzureMonitorExporterBuilder.java
 
+        // FIXME (trask) NDJSON isn't working
         // Customize serializer to use NDJSON
         final SimpleModule ndjsonModule = new SimpleModule("Ndjson List Serializer");
         JacksonAdapter jacksonAdapter = new JacksonAdapter();
         jacksonAdapter.serializer().registerModule(ndjsonModule);
         ndjsonModule.addSerializer(new NdJsonSerializer());
         restServiceClientBuilder.serializerAdapter(jacksonAdapter);
+
+        URI endpoint = endpointProvider.getIngestionEndpoint();
+        try {
+            URI hostOnly = new URI(endpoint.getScheme(), endpoint.getUserInfo(), endpoint.getHost(), endpoint.getPort(), null, null, null);
+            restServiceClientBuilder.host(hostOnly.toString());
+        } catch (URISyntaxException e) {
+            // TODO (trask) revisit what's an appropriate action here?
+            logger.error(e.getMessage(), e);
+        }
 
         return restServiceClientBuilder.buildClient();
     }
@@ -135,10 +183,6 @@ public final class TelemetryConfiguration {
     @Deprecated
     public boolean isTrackingDisabled() {
         return true;
-    }
-
-    public Map<String, String> getCustomDimensions() {
-        return customDimensions;
     }
 
     public List<TelemetryModule> getTelemetryModules() {
@@ -165,19 +209,22 @@ public final class TelemetryConfiguration {
         instrumentationKey = key;
 
         String formattedInstrumentationKey = instrumentationKey.replaceAll("-", "");
-        telemetryItemNamePrefix = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".";
+        eventTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Event";
+        exceptionTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Exception";
+        messageTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Message";
+        metricTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Metric";
+        pageViewTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".PageView";
+        remoteDependencyTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".RemoteDependency";
+        requestTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Request";
     }
 
-    public String getTelemetryItemNamePrefix() {
-        return telemetryItemNamePrefix;
-    }
-
-    public String getRoleName() {
+    public @Nullable String getRoleName() {
         return roleName;
     }
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+        globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
     }
 
     public String getRoleInstance() {
@@ -186,6 +233,7 @@ public final class TelemetryConfiguration {
 
     public void setRoleInstance(String roleInstance) {
         this.roleInstance = roleInstance;
+        globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
     }
 
     public String getConnectionString() {
@@ -203,5 +251,69 @@ public final class TelemetryConfiguration {
 
     public EndpointProvider getEndpointProvider() {
         return endpointProvider;
+    }
+
+    public void initEventTelemetry(TelemetryItem telemetry, TelemetryEventData data) {
+        initTelemetry(telemetry, data, eventTelemetryName, "EventData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    public void initExceptionTelemetry(TelemetryItem telemetry, TelemetryExceptionData data) {
+        initTelemetry(telemetry, data, exceptionTelemetryName, "ExceptionData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    public void initMessageTelemetry(TelemetryItem telemetry, MessageData data) {
+        initTelemetry(telemetry, data, messageTelemetryName, "MessageData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    // FIXME (trask) rename MetricsData to MetricData to match the telemetryName and baseType?
+    public void initMetricTelemetry(TelemetryItem telemetry, MetricsData data) {
+        initTelemetry(telemetry, data, metricTelemetryName, "MetricData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    public void initPageViewTelemetry(TelemetryItem telemetry, PageViewData data) {
+        initTelemetry(telemetry, data, pageViewTelemetryName, "PageViewData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    public void initRemoteDependencyTelemetry(TelemetryItem telemetry, RemoteDependencyData data) {
+        initTelemetry(telemetry, data, remoteDependencyTelemetryName, "RemoteDependencyData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    public void initRequestTelemetry(TelemetryItem telemetry, RequestData data) {
+        initTelemetry(telemetry, data, requestTelemetryName, "RequestData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    private void initTelemetry(TelemetryItem telemetry, MonitorDomain data, String telemetryName, String baseType) {
+        telemetry.setVersion(1);
+        telemetry.setName(telemetryName);
+        telemetry.setInstrumentationKey(instrumentationKey);
+        telemetry.setTags(new HashMap<>(globalTags));
+
+        data.setVersion(2);
+
+        MonitorBase monitorBase = new MonitorBase();
+        telemetry.setData(monitorBase);
+        monitorBase.setBaseType(baseType);
+        monitorBase.setBaseData(data);
     }
 }

@@ -21,18 +21,13 @@
 
 package com.microsoft.applicationinsights;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
-import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,15 +44,6 @@ public class TelemetryClient {
 
     private static final AtomicLong generateCounter = new AtomicLong(0);
 
-    // globalTags contain:
-    // * cloud role name
-    // * cloud role instance
-    // * sdk version
-    // * application version (if provided in customDimensions)
-    private final Map<String, String> globalTags;
-    // contains customDimensions from json configuration
-    private final Map<String, String> globalProperties;
-
     private final TelemetryConfiguration configuration;
 
     public TelemetryClient() {
@@ -66,24 +52,6 @@ public class TelemetryClient {
 
     public TelemetryClient(TelemetryConfiguration configuration) {
 
-        StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
-        Map<String, String> globalProperties = new HashMap<>();
-        Map<String, String> globalTags = new HashMap<>();
-        for (Map.Entry<String, String> entry : configuration.getCustomDimensions().entrySet()) {
-            String key = entry.getKey();
-            if (key.equals("service.version")) {
-                globalTags.put(ContextTagKeys.AI_APPLICATION_VER.toString(), substitutor.replace(entry.getValue()));
-            } else {
-                globalProperties.put(key, substitutor.replace(entry.getValue()));
-            }
-        }
-
-        globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), configuration.getRoleName());
-        globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), configuration.getRoleInstance());
-        globalTags.put(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), PropertyHelper.getQualifiedSdkVersionString());
-
-        this.globalProperties = globalProperties;
-        this.globalTags = globalTags;
 
         this.configuration = configuration;
     }
@@ -111,25 +79,6 @@ public class TelemetryClient {
             // FIXME (trask) this used to be optimized by passing in normalized instrumentation key as well
             telemetry.setInstrumentationKey(configuration.getInstrumentationKey());
         }
-
-        // globalTags contain:
-        // * cloud role name
-        // * cloud role instance
-        // * sdk version
-        // * component version
-        // do not overwrite if the user has explicitly set the cloud role name, cloud role instance,
-        // or application version (either via 2.x SDK, ai.preview.service_name, ai.preview.service_instance_id,
-        // or ai.preview.service_version span attributes)
-        for (Map.Entry<String, String> entry : globalTags.entrySet()) {
-            String key = entry.getKey();
-            // only overwrite ai.internal.* tags, e.g. sdk version
-            if (key.startsWith("ai.internal.") || !telemetry.getTags().containsKey(key)) {
-                telemetry.getTags().put(key, entry.getValue());
-            }
-        }
-
-        // populated from json configuration customDimensions
-        TelemetryUtil.getProperties(telemetry.getData().getBaseData()).putAll(globalProperties);
 
         QuickPulseDataCollector.INSTANCE.add(telemetry);
 

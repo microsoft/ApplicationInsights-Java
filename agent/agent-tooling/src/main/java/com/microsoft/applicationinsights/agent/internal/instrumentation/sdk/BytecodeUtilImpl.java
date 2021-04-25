@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.Global;
@@ -53,14 +54,27 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
+        TelemetryItem telemetry = new TelemetryItem();
         TelemetryEventData data = new TelemetryEventData();
+        TelemetryConfiguration.getActive().initEventTelemetry(telemetry, data);
+
         data.setName(name);
-        data.setProperties(properties);
         data.setMeasurements(metrics);
 
-        TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.setTags(tags);
-        telemetry.setInstrumentationKey(instrumentationKey);
+        // FIXME (trask) add properties to MonitorDomain, then this code can be shared
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        telemetry.getTags().putAll(tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -73,6 +87,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
+        TelemetryItem telemetry = new TelemetryItem();
+        MetricsData data = new MetricsData();
+        TelemetryConfiguration.getActive().initMetricTelemetry(telemetry, data);
+
         MetricDataPoint point = new MetricDataPoint();
         point.setName(name);
         point.setValue(value);
@@ -81,13 +99,21 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         point.setMax(max);
         point.setStdDev(stdDev);
 
-        MetricsData data = new MetricsData();
         data.setMetrics(Collections.singletonList(point));
 
-        data.setProperties(properties);
-        TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.setTags(tags);
-        telemetry.setInstrumentationKey(instrumentationKey);
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        telemetry.getTags().putAll(tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -101,7 +127,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
+        TelemetryItem telemetry = new TelemetryItem();
         RemoteDependencyData data = new RemoteDependencyData();
+        TelemetryConfiguration.getActive().initRemoteDependencyTelemetry(telemetry, data);
+
         data.setName(name);
         data.setId(id);
         data.setResultCode(resultCode);
@@ -112,12 +141,21 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         data.setData(commandName);
         data.setType(type);
         data.setTarget(target);
-        data.setProperties(properties);
         data.setMeasurements(metrics);
 
-        TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.setTags(tags);
-        telemetry.setInstrumentationKey(instrumentationKey);
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        telemetry.getTags().putAll(tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -129,16 +167,28 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
+        TelemetryItem telemetry = new TelemetryItem();
         PageViewData data = new PageViewData();
+        TelemetryConfiguration.getActive().initPageViewTelemetry(telemetry, data);
+
         data.setName(name);
         data.setUrl(uri.toString());
         data.setDuration(TelemetryUtil.getFormattedDuration(totalMillis));
-        data.setProperties(properties);
         data.setMeasurements(metrics);
 
-        TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.setTags(tags);
-        telemetry.setInstrumentationKey(instrumentationKey);
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        telemetry.getTags().putAll(tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -149,17 +199,28 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(message)) {
             return;
         }
-
+        TelemetryItem telemetry = new TelemetryItem();
         MessageData data = new MessageData();
+        TelemetryConfiguration.getActive().initMessageTelemetry(telemetry, data);
+
         data.setMessage(message);
         if (severityLevel != -1) {
             data.setSeverityLevel(getSeverityLevel(severityLevel));
         }
-        data.setProperties(properties);
 
-        TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.setTags(tags);
-        telemetry.setInstrumentationKey(instrumentationKey);
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        telemetry.getTags().putAll(tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -171,8 +232,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
-
+        TelemetryItem telemetry = new TelemetryItem();
         RequestData data = new RequestData();
+        TelemetryConfiguration.getActive().initRequestTelemetry(telemetry, data);
+
         data.setId(id);
         data.setName(name);
         if (url != null) {
@@ -184,15 +247,25 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         data.setResponseCode(responseCode);
         data.setSuccess(success);
         data.setSource(source);
-        data.setProperties(properties);
         data.setMeasurements(metrics);
 
-        TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
         if (timestamp != null) {
             telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
         }
-        telemetry.setTags(tags);
-        telemetry.setInstrumentationKey(instrumentationKey);
+
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        telemetry.getTags().putAll(tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -203,16 +276,27 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (exception == null) {
             return;
         }
-
+        TelemetryItem telemetry = new TelemetryItem();
         TelemetryExceptionData data = new TelemetryExceptionData();
+        TelemetryConfiguration.getActive().initExceptionTelemetry(telemetry, data);
+
         data.setExceptions(TelemetryUtil.getExceptions(exception));
         data.setSeverityLevel(SeverityLevel.ERROR);
-        data.setProperties(properties);
         data.setMeasurements(metrics);
 
-        TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
-        telemetry.setTags(tags);
-        telemetry.setInstrumentationKey(instrumentationKey);
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        telemetry.getTags().putAll(tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
