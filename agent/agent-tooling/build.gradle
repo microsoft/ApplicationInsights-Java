@@ -71,7 +71,8 @@ dependencies {
 
     implementation project(":agent:agent-profiler:agent-profiler-api")
 
-    implementation project(':exporter')
+    implementation project(':agent:exporter')
+    implementation project(':swagger')
     implementation group: 'com.azure', name: 'azure-core', version: '1.15.0'
 
     implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-tracing-incubator', version: versions.opentelemetryAlpha

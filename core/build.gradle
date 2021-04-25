@@ -59,7 +59,7 @@ dependencies {
     implementation group: 'com.github.oshi', name:'oshi-core', version: versions.oshi
     implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
-    implementation project(':exporter')
+    implementation project(':swagger')
     implementation group: 'com.azure', name: 'azure-core', version: '1.15.0'
     implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: versions.opentelemetry
 
