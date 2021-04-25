@@ -58,7 +58,12 @@ public class RpConfigurationBuilder {
             throw new IllegalStateException("rp config file does not exist: " + configPath);
         }
 
-        BasicFileAttributes attributes = Files.readAttributes(configPath, BasicFileAttributes.class);
+        // For container environment, attribute may get the last modified time of symbol link instead of the real file.
+        // Of course the last modified time of symbol link will be unchanged in most cases and then it will fail to
+        // polling the configurations.
+        // See https://github.com/kubernetes/kubernetes/issues/24215.
+        BasicFileAttributes attributes = Files.readAttributes(configPath.toRealPath(), BasicFileAttributes.class);
+
         // important to read last modified before reading the file, to prevent possible race condition
         // where file is updated after reading it but before reading last modified, and then since
         // last modified doesn't change after that, the new updated file will not be read afterwards
