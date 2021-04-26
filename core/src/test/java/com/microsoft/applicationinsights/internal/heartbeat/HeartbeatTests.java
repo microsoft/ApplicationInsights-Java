@@ -27,6 +27,13 @@ import org.mockito.stubbing.Answer;
 
 public class HeartbeatTests {
 
+  @BeforeClass
+  public static void setUp() {
+    // FIXME (trask) inject TelemetryConfiguration in tests instead of using global
+    TelemetryConfiguration.resetForTesting();
+    TelemetryConfiguration.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
+  }
+
   @Test
   public void initializeHeartBeatModuleDoesNotThrow() {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());

@@ -72,14 +72,7 @@ public class TelemetryClient {
             throw new IllegalArgumentException("telemetry item is missing time");
         }
 
-        // do not overwrite if the user has explicitly set the instrumentation key
-        // (either via 2.x SDK or ai.preview.instrumentation_key span attribute)
-        if (Strings.isNullOrEmpty(telemetry.getInstrumentationKey())) {
-            // TODO (trask) make sure instrumentation key is always set before calling track()
-            // FIXME (trask) this used to be optimized by passing in normalized instrumentation key as well
-            telemetry.setInstrumentationKey(configuration.getInstrumentationKey());
-        }
-
+        // FIXME (trask) need to handle this for OpenTelemetry exporter too
         QuickPulseDataCollector.INSTANCE.add(telemetry);
 
         ApplicationInsightsClientImpl channel = configuration.getChannel();
@@ -98,6 +91,7 @@ public class TelemetryClient {
             }
         }
 
+        // FIXME (trask) need to handle this for OpenTelemetry exporter too
         TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetry));
     }
 

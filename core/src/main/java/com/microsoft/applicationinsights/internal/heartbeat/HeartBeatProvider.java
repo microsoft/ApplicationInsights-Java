@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -200,9 +201,16 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
       properties.put(entry.getKey(), payload.getPayloadValue());
       numHealthy += payload.isHealthy() ? 0 : 1;
     }
-    MetricsData heartbeat = TelemetryUtil.createMetricsData(HEARTBEAT_SYNTHETIC_METRIC_NAME, numHealthy);
-    heartbeat.setProperties(properties);
-    return TelemetryUtil.createTelemetry(heartbeat);
+    TelemetryItem telemetry = new TelemetryItem();
+    MetricsData data = new MetricsData();
+    MetricDataPoint point = new MetricDataPoint();
+    TelemetryConfiguration.getActive().initMetricTelemetry(telemetry, data, point);
+
+    point.setName(HEARTBEAT_SYNTHETIC_METRIC_NAME);
+    point.setValue(numHealthy);
+
+    data.setProperties(properties);
+    return telemetry;
   }
 
   /**

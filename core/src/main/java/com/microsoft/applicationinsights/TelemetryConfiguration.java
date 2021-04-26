@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -147,6 +148,12 @@ public final class TelemetryConfiguration {
         return active;
     }
 
+    // FIXME (trask) inject TelemetryConfiguration in tests instead of using global
+    @Deprecated
+    public static void resetForTesting() {
+        active = null;
+    }
+
     /**
      * Gets the telemetry channel.
      */
@@ -247,50 +254,121 @@ public final class TelemetryConfiguration {
         return endpointProvider;
     }
 
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
     public void initEventTelemetry(TelemetryItem telemetry, TelemetryEventData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
         initTelemetry(telemetry, data, eventTelemetryName, "EventData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
     }
 
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
     public void initExceptionTelemetry(TelemetryItem telemetry, TelemetryExceptionData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
         initTelemetry(telemetry, data, exceptionTelemetryName, "ExceptionData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
     }
 
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
     public void initMessageTelemetry(TelemetryItem telemetry, MessageData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
         initTelemetry(telemetry, data, messageTelemetryName, "MessageData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
     }
 
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
     // FIXME (trask) rename MetricsData to MetricData to match the telemetryName and baseType?
-    public void initMetricTelemetry(TelemetryItem telemetry, MetricsData data) {
+    public void initMetricTelemetry(TelemetryItem telemetry, MetricsData data, MetricDataPoint point) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
         initTelemetry(telemetry, data, metricTelemetryName, "MetricData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
+        data.setMetrics(Collections.singletonList(point));
     }
 
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
     public void initPageViewTelemetry(TelemetryItem telemetry, PageViewData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
         initTelemetry(telemetry, data, pageViewTelemetryName, "PageViewData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
     }
 
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
     public void initRemoteDependencyTelemetry(TelemetryItem telemetry, RemoteDependencyData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
         initTelemetry(telemetry, data, remoteDependencyTelemetryName, "RemoteDependencyData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
     }
 
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
     public void initRequestTelemetry(TelemetryItem telemetry, RequestData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
         initTelemetry(telemetry, data, requestTelemetryName, "RequestData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));

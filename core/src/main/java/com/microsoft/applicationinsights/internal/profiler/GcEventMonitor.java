@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.internal.profiler;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
@@ -105,7 +106,10 @@ public class GcEventMonitor {
             return;
         }
 
+        TelemetryItem telemetry = new TelemetryItem();
         TelemetryEventData data = new TelemetryEventData();
+        TelemetryConfiguration.getActive().initEventTelemetry(telemetry, data);
+
         data.setName("GcEvent");
 
         Map<String, String> properties = new HashMap<>();
@@ -135,8 +139,8 @@ public class GcEventMonitor {
         }
         data.setMeasurements(measurements);
 
-        TelemetryItem telemetry = TelemetryUtil.createTelemetry(data);
         telemetry.setTime(TelemetryUtil.currentTime());
+
         telemetryClient.track(telemetry);
     }
 

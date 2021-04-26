@@ -29,7 +29,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
@@ -159,10 +161,16 @@ public class ProfilerServiceInitializer {
 
     static UploadCompleteHandler sendServiceProfilerIndex(TelemetryClient telemetryClient) {
         return done -> {
-            TelemetryEventData data = TelemetryUtil.createEventData("ServiceProfilerIndex");
+            TelemetryItem telemetry = new TelemetryItem();
+            TelemetryEventData data = new TelemetryEventData();
+            TelemetryConfiguration.getActive().initEventTelemetry(telemetry, data);
+
+            data.setName("ServiceProfilerIndex");
+            telemetry.setTime(TelemetryUtil.getFormattedNow());
             data.setProperties(done.getServiceProfilerIndex().getProperties());
             data.setMeasurements(done.getServiceProfilerIndex().getMetrics());
-            telemetryClient.track(TelemetryUtil.createTelemetry(data));
+
+            telemetryClient.track(telemetry);
         };
     }
 

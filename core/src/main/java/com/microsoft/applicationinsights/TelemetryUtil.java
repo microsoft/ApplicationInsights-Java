@@ -23,68 +23,16 @@ import static java.util.concurrent.TimeUnit.*;
 public class TelemetryUtil {
 
     public static TelemetryItem createMetricsTelemetry(String name, double value) {
-        return createTelemetry(createMetricsData(name, value));
-    }
-
-    public static MetricsData createMetricsData(String name, double value) {
+        TelemetryItem telemetry = new TelemetryItem();
+        MetricsData data = new MetricsData();
         MetricDataPoint point = new MetricDataPoint();
+        TelemetryConfiguration.getActive().initMetricTelemetry(telemetry, data, point);
+
         point.setName(name);
         point.setValue(value);
 
-        MetricsData data = new MetricsData();
-        data.setMetrics(Collections.singletonList(point));
-        return data;
-    }
+        telemetry.setTime(getFormattedNow());
 
-    public static TelemetryItem createExceptionTelemetry(Exception exception) {
-        TelemetryExceptionData data = new TelemetryExceptionData();
-        data.setExceptions(getExceptions(exception));
-        return createTelemetry(data);
-    }
-
-    public static TelemetryEventData createEventData(String name) {
-        TelemetryEventData data = new TelemetryEventData();
-        data.setName(name);
-        return data;
-    }
-
-    public static MessageData createMessageData(String message) {
-        MessageData data = new MessageData();
-        data.setMessage(message);
-        return data;
-    }
-
-    public static TelemetryItem createMessageTelemetry(String message) {
-        return createTelemetry(createMessageData(message));
-    }
-
-    public static TelemetryItem createRequestTelemetry(String name, Date timestamp, long duration, String responseCode, boolean success) {
-        RequestData data = new RequestData();
-        data.setName(name);
-        data.setDuration(getFormattedDuration(duration));
-        data.setResponseCode(responseCode);
-        data.setSuccess(success);
-        TelemetryItem telemetry = createTelemetry(data);
-        telemetry.setTime(getFormattedTime(timestamp.getTime()));
-        return telemetry;
-    }
-
-    public static TelemetryItem createRemoteDependencyTelemetry(String name, String command, long durationMillis, boolean success) {
-        RemoteDependencyData data = new RemoteDependencyData();
-        data.setName(name);
-        data.setData(command);
-        data.setDuration(getFormattedDuration(durationMillis));
-        data.setSuccess(success);
-        return createTelemetry(data);
-    }
-
-    public static TelemetryItem createTelemetry(MonitorDomain data) {
-        MonitorBase base = new MonitorBase();
-        base.setBaseData(data);
-        base.setBaseType(getBaseType(data));
-
-        TelemetryItem telemetry = new TelemetryItem();
-        telemetry.setData(base);
         return telemetry;
     }
 
@@ -328,6 +276,12 @@ public class TelemetryUtil {
             sb.append("0");
         }
         sb.append(value);
+    }
+
+    public static String getFormattedNow() {
+        return Instant.ofEpochMilli(System.currentTimeMillis())
+                .atOffset(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_DATE_TIME);
     }
 
     public static String getFormattedTime(long epochNanos) {

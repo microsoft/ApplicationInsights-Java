@@ -89,17 +89,15 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         TelemetryItem telemetry = new TelemetryItem();
         MetricsData data = new MetricsData();
-        TelemetryConfiguration.getActive().initMetricTelemetry(telemetry, data);
-
         MetricDataPoint point = new MetricDataPoint();
+        TelemetryConfiguration.getActive().initMetricTelemetry(telemetry, data, point);
+
         point.setName(name);
         point.setValue(value);
         point.setCount(count);
         point.setMin(min);
         point.setMax(max);
         point.setStdDev(stdDev);
-
-        data.setMetrics(Collections.singletonList(point));
 
         if (!properties.isEmpty()) {
             Map<String, String> existingProperties = data.getProperties();

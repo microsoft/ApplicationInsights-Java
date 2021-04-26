@@ -26,6 +26,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -43,6 +44,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.TelemetryObservers;
+import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
@@ -57,6 +59,7 @@ import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.jfr.Recording;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
@@ -72,6 +75,13 @@ public class ProfilerServiceTest {
     final String processId = "a-process-id";
     final String stampId = "a-stamp-id";
     final String jfrExtension = "jfr";
+
+    @BeforeClass
+    public static void setUp() {
+        // FIXME (trask) inject TelemetryConfiguration in tests instead of using global
+        TelemetryConfiguration.resetForTesting();
+        TelemetryConfiguration.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
+    }
 
     @Test
     public void endToEndAlertTriggerCpu() throws InterruptedException, ExecutionException {
