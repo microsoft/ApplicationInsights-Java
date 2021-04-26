@@ -21,11 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import java.io.File;
-import java.lang.instrument.Instrumentation;
-import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
-
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
@@ -69,6 +64,11 @@ import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.lang.instrument.Instrumentation;
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -221,7 +221,10 @@ public class AiComponentInstaller implements ComponentInstaller {
                 configuration.periodicRecordingDurationSeconds,
                 configuration.periodicRecordingIntervalSeconds,
                 configuration.serviceProfilerFrontEndPoint,
-                configuration.enabled
+                configuration.enabled,
+                configuration.removeEnvironmentData,
+                configuration.customMemoryProfile,
+                configuration.customCpuProfile
         );
     }
 

@@ -21,10 +21,15 @@
 package com.microsoft.applicationinsights.profiler.config;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Configuration of the service profiler subsystem
  */
 public class ServiceProfilerServiceConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProfilerServiceConfig.class);
+
     public static final int DEFAULT_CONFIG_POLL_PERIOD_IN_MS = 60000;
     public static final int DEFAULT_PERIODIC_RECORDING_DURATION_IN_S = 120;
     public static final int DEFAULT_PERIODIC_RECORDING_INTERVAL_IN_S = 60 * 60;
@@ -43,12 +48,39 @@ public class ServiceProfilerServiceConfig {
     // Enable entire service profiler subsystem
     private final boolean enabled;
 
-    public ServiceProfilerServiceConfig(int configPollPeriod, int periodicRecordingDuration, int periodicRecordingInterval, String serviceProfilerFrontEndPoint, boolean enabled) {
+    // If set use the reduced-cpu-profile.jfc and reduced-memory-profile.jfc profiles
+    private boolean removeEnvironmentData;
+
+    // A path to a custom JFC file to use for memory profiling
+    private String customMemoryProfile;
+
+    // A path to a custom JFC file to use for cpu profiling
+    private String customCpuProfile;
+
+    public ServiceProfilerServiceConfig(
+            int configPollPeriod,
+            int periodicRecordingDuration,
+            int periodicRecordingInterval,
+            String serviceProfilerFrontEndPoint,
+            boolean enabled,
+            boolean removeEnvironmentData,
+            String customMemoryProfile,
+            String customCpuProfile
+    ) {
         this.configPollPeriod = configPollPeriod;
         this.periodicRecordingDuration = periodicRecordingDuration;
         this.periodicRecordingInterval = periodicRecordingInterval;
         this.serviceProfilerFrontEndPoint = serviceProfilerFrontEndPoint;
         this.enabled = enabled;
+        this.removeEnvironmentData = removeEnvironmentData;
+        this.customMemoryProfile = customMemoryProfile;
+        this.customCpuProfile = customCpuProfile;
+
+        if (removeEnvironmentData == true && (customMemoryProfile != null || customCpuProfile != null)) {
+            LOGGER.warn("Both removeEnvironmentData has been set and custom profiles have been provided for JFR configuration." +
+                    " The custom profiles will override the removeEnvironmentData configuration, if the provided " +
+                    "jfc files request environmental data it WILL be included in the generated profiles.");
+        }
     }
 
     public int getConfigPollPeriod() {
@@ -69,5 +101,17 @@ public class ServiceProfilerServiceConfig {
 
     public boolean enabled() {
         return enabled;
+    }
+
+    public boolean removeEnvironmentData() {
+        return removeEnvironmentData;
+    }
+
+    public String customMemoryProfile() {
+        return customMemoryProfile;
+    }
+
+    public String customCpuProfile() {
+        return customCpuProfile;
     }
 }
