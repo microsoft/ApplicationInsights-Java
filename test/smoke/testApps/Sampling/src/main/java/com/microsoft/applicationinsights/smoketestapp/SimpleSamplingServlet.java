@@ -25,9 +25,6 @@ public class SimpleSamplingServlet extends HttpServlet {
             throws IOException {
         ServletFuncs.getRenderedHtml(request, response);
 
-        CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build();
-        httpClient.execute(new HttpGet("https://www.bing.com")).close();
-
         client.trackEvent(new EventTelemetry("Event Test " + count.getAndIncrement()));
     }
 }

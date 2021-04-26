@@ -327,7 +327,7 @@ public class ConfigurationBuilder {
     }
 
     // never returns empty string (empty string is normalized to null)
-    private static String getEnvVar(String name) {
+    protected static String getEnvVar(String name) {
         return trimAndEmptyToNull(System.getenv(name));
     }
 

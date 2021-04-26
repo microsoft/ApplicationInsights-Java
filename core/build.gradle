@@ -43,6 +43,7 @@ dependencies {
     implementation project(":agent:agent-profiler:agent-profiler-api")
     implementation project(":agent:agent-profiler:agent-alerting-api")
     implementation project(":agent:agent-profiler:agent-alerting")
+    implementation project(":agent:agent-gc-monitor:gc-monitor-api")
     implementation group: 'commons-io', name: 'commons-io', version: versions.commonsIo
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
     implementation group: 'org.apache.commons', name: 'commons-text', version: versions.commonsText

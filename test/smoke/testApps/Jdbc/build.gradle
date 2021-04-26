@@ -1,10 +1,8 @@
 apply plugin: 'war'
 
 dependencies {
-    implementation aiWebJar
-
     implementation group: 'org.hsqldb', name: 'hsqldb', version: '2.3.6' // 2.4.0+ requires Java 8+
-    implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.43' // the old agent did not support 8.x
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.49'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.16.jre7'
     implementation group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '8.4.1.jre8'
     implementation group: 'com.google.guava', name: 'guava', version: '27.1-android'

@@ -1,0 +1,28 @@
+version:
+  major: 0
+  minor: 0
+  name: 'ApplicationInsights-Java'
+  system: 'custom'
+build:
+  commands:
+    - !!buildcommand
+      name: 'Upload Build Scripts'
+      command: '.scripts/copy-source.cmd' # this file is empty
+      artifacts:
+        - from: '.scripts/'
+          to: 'Scripts'
+          include:
+            - '**/*'
+    - !!buildcommand
+      name: 'Assemble ApplicationInsights-Java JARs'
+      command: '.scripts/gradle.cmd'
+      arguments: 'assemble copyLibsToGlobalArtifactsFolder -Pai.etw.native.build=release'
+      artifacts:
+        - to: 'Artifacts'
+          include:
+            - '**/build/libs/*.jar'
+            - '**/build/libs/*-sources.jar'
+            - '**/build/libs/*-javadoc.jar'
+            - '**/build/libs/*.pom'
+          exclude:
+            - 'buildSrc/**/*'

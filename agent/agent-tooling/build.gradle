@@ -34,6 +34,7 @@ dependencies {
     def includeProfiler = project.hasProperty("includeProfiler") ? project.includeProfiler.toBoolean() : false
     if (includeProfiler) {
         implementation project(":agent:agent-profiler:agent-service-profiler")
+        implementation project(":agent:agent-gc-monitor:gc-monitor-core")
     }
 
     // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader

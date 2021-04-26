@@ -8,7 +8,6 @@ dependencies {
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
     implementation group: 'junit', name: 'junit', version: versions.junit
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
-    implementation aiCoreJar
     implementation project(':test:smoke:framework:utils')
     implementation project(':test:fakeIngestion:standalone')
     implementation project(':test:fakeIngestion:servlet')

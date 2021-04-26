@@ -509,15 +509,29 @@ public class Exporter implements SpanExporter {
 
     private static int getDefaultPortForDbSystem(String dbSystem) {
         switch (dbSystem) {
-            // TODO replace these with constants from OpenTelemetry API after upgrading to 0.10.0
-            // TODO add these default ports to the OpenTelemetry database semantic conventions spec
-            // TODO need to add more default ports once jdbc instrumentation reports net.peer.*
-            case "mongodb":
+            // jdbc default ports are from io.opentelemetry.javaagent.instrumentation.jdbc.JdbcConnectionUrlParser
+            // TODO make these ports constants (at least in JdbcConnectionUrlParser) so they can be used here
+            case SemanticAttributes.DbSystemValues.MONGODB:
                 return 27017;
-            case "cassandra":
+            case SemanticAttributes.DbSystemValues.CASSANDRA:
                 return 9042;
-            case "redis":
+            case SemanticAttributes.DbSystemValues.REDIS:
                 return 6379;
+            case SemanticAttributes.DbSystemValues.MARIADB:
+            case SemanticAttributes.DbSystemValues.MYSQL:
+                return 3306;
+            case SemanticAttributes.DbSystemValues.MSSQL:
+                return 1433;
+            case SemanticAttributes.DbSystemValues.DB2:
+                return 50000;
+            case SemanticAttributes.DbSystemValues.ORACLE:
+                return 1521;
+            case SemanticAttributes.DbSystemValues.H2:
+                return 8082;
+            case SemanticAttributes.DbSystemValues.DERBY:
+                return 1527;
+            case SemanticAttributes.DbSystemValues.POSTGRESQL:
+                return 5432;
             default:
                 return 0;
         }
@@ -720,6 +734,22 @@ public class Exporter implements SpanExporter {
             }
             if (key.equals(SemanticAttributes.HTTP_USER_AGENT) && value instanceof String) {
                 telemetry.getContext().getUser().setUserAgent((String) value);
+                return;
+            }
+            if (stringKey.equals("ai.preview.instrumentation_key") && value instanceof String) {
+                telemetry.getContext().setInstrumentationKey((String) value);
+                return;
+            }
+            if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
+                telemetry.getContext().getCloud().setRole((String) value);
+                return;
+            }
+            if (stringKey.equals("ai.preview.service_instance_id") && value instanceof String) {
+                telemetry.getContext().getCloud().setRoleInstance((String) value);
+                return;
+            }
+            if (stringKey.equals("ai.preview.service_version") && value instanceof String) {
+                telemetry.getContext().getComponent().setVersion((String) value);
                 return;
             }
             int index = stringKey.indexOf(".");

@@ -55,7 +55,8 @@ import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.jfr.Recording;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
@@ -79,18 +80,6 @@ public class ProfilerServiceTest {
                     Assert.assertEquals("JFR-CPU", telemetry.getProperties().get("Source"));
                     Assert.assertEquals(100.0, telemetry.getMetrics().get("AverageCPUUsage"), 0.01);
                     Assert.assertEquals(0.0, telemetry.getMetrics().get("AverageMemoryUsage"), 0.01);
-                });
-    }
-
-    @Test
-    public void endToEndAlertTriggerMemory() throws InterruptedException, ExecutionException {
-        endToEndAlertTriggerCycle(
-                false,
-                new MetricTelemetry(HEAP_MEM_USED_PERCENTAGE, 100.0),
-                telemetry -> {
-                    Assert.assertEquals("JFR-MEMORY", telemetry.getProperties().get("Source"));
-                    Assert.assertEquals(0.0, telemetry.getMetrics().get("AverageCPUUsage"), 0.01);
-                    Assert.assertEquals(100.0, telemetry.getMetrics().get("AverageMemoryUsage"), 0.01);
                 });
     }
 
@@ -123,7 +112,8 @@ public class ProfilerServiceTest {
         Object monitor = new Object();
 
         TelemetryClient client = new TelemetryClient() {
-            @Override public void track(Telemetry telemetry) {
+            @Override
+            public void track(Telemetry telemetry) {
                 if (telemetry instanceof EventTelemetry) {
                     if ("ServiceProfilerIndex".equals(((EventTelemetry) telemetry).getName())) {
                         serviceProfilerIndex.set((EventTelemetry) telemetry);
@@ -147,11 +137,19 @@ public class ProfilerServiceTest {
         AlertingSubsystem alertService = AlertingServiceFactory.create(
                 alert -> awaitReferenceSet(service).getProfiler().accept(alert),
                 TelemetryObservers.INSTANCE,
-                alertServiceExecutorService);
+                client,
+                alertServiceExecutorService,
+                new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.ALL));
 
         service.set(new JfrProfilerService(
                 () -> appId,
-                new ServiceProfilerServiceConfig(1, 2, 3, "localhost", true),
+                new ServiceProfilerServiceConfig(
+                        1,
+                        2,
+                        3,
+                        "localhost",
+                        true
+                ),
                 jfrProfiler,
                 ProfilerServiceInitializer.updateAlertingConfig(alertService),
                 ProfilerServiceInitializer.sendServiceProfilerIndex(client),
@@ -203,14 +201,21 @@ public class ProfilerServiceTest {
     }
 
     private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) {
-        return new JfrProfiler(new ServiceProfilerServiceConfig(1, 2, 3, "localhost", true)) {
-            @Override protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
+        return new JfrProfiler(new ServiceProfilerServiceConfig(
+                1,
+                2,
+                3,
+                "localhost",
+                true)) {
+            @Override
+            protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
                 profileInvoked.set(true);
                 Recording recording = Mockito.mock(Recording.class);
                 uploadNewRecording(alertBreach, Instant.now()).accept(recording);
             }
 
-            @Override protected File createJfrFile(Recording recording, Instant recordingStart, Instant recordingEnd) throws IOException {
+            @Override
+            protected File createJfrFile(Recording recording, Instant recordingStart, Instant recordingEnd) throws IOException {
                 return File.createTempFile("jfrFile", jfrExtension);
             }
         };
@@ -232,15 +237,18 @@ public class ProfilerServiceTest {
 
     private ServiceProfilerClientV2 stubClient(boolean triggerNow) {
         return new ServiceProfilerClientV2() {
-            @Override public BlobAccessPass getUploadAccess(UUID profileId) {
+            @Override
+            public BlobAccessPass getUploadAccess(UUID profileId) {
                 return new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token");
             }
 
-            @Override public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws UnsupportedCharsetException {
+            @Override
+            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws UnsupportedCharsetException {
                 return null;
             }
 
-            @Override public String getSettings(Date oldTimeStamp) {
+            @Override
+            public String getSettings(Date oldTimeStamp) {
                 String expiration = triggerNow ? "999999999999999999" : "5249157885138288517";
 
                 return "{\"id\":\"8929ed2e-24da-4ad4-8a8b-5a5ebc03abb4\",\"lastModified\":\"2021-01-25T15:46:11" +
