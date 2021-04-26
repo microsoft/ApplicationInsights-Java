@@ -157,7 +157,9 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
         logit("caught: POST "+req.getPathInfo());
 
         switch (req.getPathInfo()) {
+            // FIXME (trask) this only accept be "/v2/track"
             case "/v2/track":
+            case "/v2//track":
                 StringWriter w = new StringWriter();
                 try {
                     String contentEncoding = req.getHeader("content-encoding");

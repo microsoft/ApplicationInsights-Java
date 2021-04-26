@@ -51,7 +51,6 @@ include ':etw:java'
 include ':etw:etw-testapp'
 
 include ':core'
-include ':swagger'
 
 
 include ':java-flight-recorder'
