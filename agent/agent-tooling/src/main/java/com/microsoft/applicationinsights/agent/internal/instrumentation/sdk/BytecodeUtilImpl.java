@@ -99,6 +99,8 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         point.setMin(min);
         point.setMax(max);
         point.setStdDev(stdDev);
+        // FIXME (trask) pass across data point type from 2.x SDK
+        point.setDataPointType(DataPointType.MEASUREMENT);
 
         if (!properties.isEmpty()) {
             Map<String, String> existingProperties = data.getProperties();

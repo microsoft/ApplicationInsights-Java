@@ -72,8 +72,6 @@ public enum PerformanceCounterContainer {
     private long startCollectingDelayInMillis = START_COLLECTING_DELAY_IN_MILLIS;
     private long collectionFrequencyInMS = DEFAULT_COLLECTION_FREQUENCY_IN_SEC * 1000;
 
-    private TelemetryClient telemetryClient;
-
     private ScheduledThreadPoolExecutor threads;
 
     /**
@@ -222,9 +220,7 @@ public enum PerformanceCounterContainer {
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (telemetryClient == null) {
-                            telemetryClient = new TelemetryClient();
-                        }
+                        TelemetryClient telemetryClient = TelemetryClient.getActive();
 
                         for (PerformanceCounter performanceCounter : performanceCounters.values()) {
                             try {

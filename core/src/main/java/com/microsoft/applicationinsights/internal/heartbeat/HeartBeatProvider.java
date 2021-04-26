@@ -1,9 +1,6 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -207,6 +204,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
 
     point.setName(HEARTBEAT_SYNTHETIC_METRIC_NAME);
     point.setValue(numHealthy);
+    point.setDataPointType(DataPointType.MEASUREMENT);
 
     data.setProperties(properties);
 

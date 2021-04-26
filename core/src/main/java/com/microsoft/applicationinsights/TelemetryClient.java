@@ -22,11 +22,16 @@
 package com.microsoft.applicationinsights;
 
 import com.azure.core.http.HttpHeaders;
+import com.azure.core.util.CoreUtils;
 import com.azure.core.util.serializer.*;
+import com.azure.core.util.tracing.Tracer;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
@@ -42,8 +47,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -160,8 +167,10 @@ public class TelemetryClient {
     }
 
     // FIXME (trask) don't send these one at a time, should be some kind of batching here
-    public Mono<ExportResult> trackAsync(TelemetryItem telemetryItem) {
-        return trackAsync(singletonList(telemetryItem));
+    public void trackAsync(TelemetryItem telemetryItem) {
+        trackAsync(singletonList(telemetryItem))
+                .subscriberContext(Context.of(Tracer.DISABLE_TRACING_KEY, true))
+                .subscribe();
     }
 
     public Mono<ExportResult> trackAsync(List<TelemetryItem> telemetryItems) {
@@ -169,6 +178,11 @@ public class TelemetryClient {
             channel = lazy();
         }
         for (TelemetryItem telemetry : telemetryItems) {
+
+            if (telemetry.getSampleRate() == null) {
+                // FIXME (trask) is this required?
+                telemetry.setSampleRate(100f);
+            }
 
             if (telemetry.getTime() == null) {
                 // TODO (trask) remove this after confident no code paths hit this
@@ -426,6 +440,7 @@ public class TelemetryClient {
 
         private JacksonJsonAdapter() {
             mapper = JsonMapper.builder().build();
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         }
 
         @Override
@@ -443,18 +458,20 @@ public class TelemetryClient {
 
         @Override
         public String serializeList(List<?> list, CollectionFormat format) {
-            // FIXME implement NDJSON here?
+            // FIXME (trask) implement NDJSON here?
             return serializeIterable(list, format);
         }
 
         @Override
         public <T> T deserialize(String value, Type type, SerializerEncoding encoding) {
-            throw new UnsupportedOperationException();
+            // FIXME (trask)
+            return null;
         }
 
         @Override
         public <T> T deserialize(HttpHeaders headers, Type type) {
-            throw new UnsupportedOperationException();
+            // FIXME (trask)
+            return null;
         }
     }
 }

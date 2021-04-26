@@ -126,7 +126,7 @@ public class ProfilerServiceTest {
         // FIXME (trask) revisit this, why is subclassing TelemetryClient needed?
         TelemetryClient client = new TelemetryClient() {
             @Override
-            public Mono<ExportResult> trackAsync(TelemetryItem telemetry) {
+            public void trackAsync(TelemetryItem telemetry) {
                 MonitorDomain data = telemetry.getData().getBaseData();
                 if (data instanceof TelemetryEventData) {
                     if ("ServiceProfilerIndex".equals(((TelemetryEventData) data).getName())) {
@@ -136,7 +136,6 @@ public class ProfilerServiceTest {
                         monitor.notifyAll();
                     }
                 }
-                return Mono.empty();
             }
         };
 

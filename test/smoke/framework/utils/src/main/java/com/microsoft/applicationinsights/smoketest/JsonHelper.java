@@ -107,10 +107,11 @@ public class JsonHelper {
     private static class DataPointTypeEnumConverter implements JsonDeserializer<DataPointType>, JsonSerializer<DataPointType> {
         @Override
         public DataPointType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            final int id = json.getAsInt();
+            final String id = json.getAsString();
             switch (id) {
-                case 0: return DataPointType.Measurement;
-                case 1: return DataPointType.Aggregation;
+                // FIXME (trask) this used to be mapped from int (0/1), is it really correct to map to string now?
+                case "Measurement": return DataPointType.Measurement;
+                case "Aggregation": return DataPointType.Aggregation;
                 default: throw new IllegalArgumentException("No DataPointType with id="+id);
             }
         }

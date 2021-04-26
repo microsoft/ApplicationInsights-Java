@@ -30,6 +30,7 @@ public class TelemetryUtil {
 
         point.setName(name);
         point.setValue(value);
+        point.setDataPointType(DataPointType.MEASUREMENT);
 
         telemetry.setTime(getFormattedNow());
 

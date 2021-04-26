@@ -178,6 +178,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
                         resp.getWriter().append(PONG);
                     }
                     else {
+                        resp.setContentType("application/json");
                         logit("Deserializing payload...");
                         if (config.isLogPayloadsEnabled()) {
                             logit("raw payload:\n\n"+body+"\n");

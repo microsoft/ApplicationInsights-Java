@@ -81,6 +81,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
         point.setName(METRIC_NAME);
         point.setValue(0);
+        point.setDataPointType(DataPointType.MEASUREMENT);
 
         long[] threadIds = threadBean.findDeadlockedThreads();
         if (threadIds != null && threadIds.length > 0) {
