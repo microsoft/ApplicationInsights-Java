@@ -21,12 +21,13 @@
 
 package com.microsoft.applicationinsights;
 
-import com.azure.core.util.serializer.JacksonAdapter;
+import com.azure.core.http.HttpHeaders;
+import com.azure.core.util.serializer.*;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.NdJsonSerializer;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
@@ -40,6 +41,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -156,16 +159,7 @@ public final class TelemetryConfiguration {
 
     private ApplicationInsightsClientImpl lazy() {
         ApplicationInsightsClientImplBuilder restServiceClientBuilder = new ApplicationInsightsClientImplBuilder();
-
-        // below copied from AzureMonitorExporterBuilder.java
-
-        // FIXME (trask) NDJSON isn't working
-        // Customize serializer to use NDJSON
-        final SimpleModule ndjsonModule = new SimpleModule("Ndjson List Serializer");
-        JacksonAdapter jacksonAdapter = new JacksonAdapter();
-        jacksonAdapter.serializer().registerModule(ndjsonModule);
-        ndjsonModule.addSerializer(new NdJsonSerializer());
-        restServiceClientBuilder.serializerAdapter(jacksonAdapter);
+        restServiceClientBuilder.serializerAdapter(new JacksonJsonAdapter());
 
         URI endpoint = endpointProvider.getIngestionEndpoint();
         try {
@@ -315,5 +309,48 @@ public final class TelemetryConfiguration {
         telemetry.setData(monitorBase);
         monitorBase.setBaseType(baseType);
         monitorBase.setBaseData(data);
+    }
+
+    // need to implement our own SerializerAdapter for the agent in order to avoid instantiating any xml classes
+    // because wildfly sets system property:
+    //   javax.xml.stream.XMLInputFactory=__redirected.__XMLInputFactory
+    // and that class is available in the system class loader, but not in the agent class loader
+    // because the agent class loader parents the bootstrap class loader directly
+    private static class JacksonJsonAdapter implements SerializerAdapter {
+
+        private final ObjectMapper mapper;
+
+        private JacksonJsonAdapter() {
+            mapper = JsonMapper.builder().build();
+        }
+
+        @Override
+        public String serialize(Object object, SerializerEncoding encoding) throws IOException {
+            if (object == null) {
+                return null;
+            }
+            return mapper.writeValueAsString(object);
+        }
+
+        @Override
+        public String serializeRaw(Object object) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String serializeList(List<?> list, CollectionFormat format) {
+            // FIXME implement NDJSON here?
+            return serializeIterable(list, format);
+        }
+
+        @Override
+        public <T> T deserialize(String value, Type type, SerializerEncoding encoding) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> T deserialize(HttpHeaders headers, Type type) {
+            throw new UnsupportedOperationException();
+        }
     }
 }
