@@ -101,9 +101,6 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
         }
     }
 
-    public static TransmissionNetworkOutput create(@Nullable String endpoint, TransmissionPolicyManager transmissionPolicyManager) {
-        return new TransmissionNetworkOutput(endpoint, null, transmissionPolicyManager);
-    }
     /**
      * Used to inject the dispatcher used for this output so it can be injected to the retry logic.
      *

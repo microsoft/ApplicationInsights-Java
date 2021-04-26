@@ -28,7 +28,7 @@ import java.util.ArrayList;
  */
 public class PerformanceCountersXmlElement {
 
-    private long collectionFrequencyInSec = 60; // 15 mins
+    private long collectionFrequencyInSec = 60;
 
     private PerformanceCounterJvmSectionXmlElement jvmSection;
 

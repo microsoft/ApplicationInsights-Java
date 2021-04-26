@@ -125,14 +125,10 @@ public class TelemetryClient {
         }
 
         TelemetryContext context = telemetry.getContext();
-
         // do not overwrite if the user has explicitly set the instrumentation key
         // (either via 2.x SDK or ai.preview.instrumentation_key span attribute)
         if (Strings.isNullOrEmpty(context.getInstrumentationKey())) {
             context.setInstrumentationKey(getContext().getInstrumentationKey(), getContext().getNormalizedInstrumentationKey());
-            logger.debug("##################################### global context instrumentation key: {}", context.getInstrumentationKey());
-        } else {
-            logger.debug("##################################### StatsbeatTelemetry instrumentation key: {}", context.getInstrumentationKey());
         }
 
         // the TelemetryClient's base context contains tags:
