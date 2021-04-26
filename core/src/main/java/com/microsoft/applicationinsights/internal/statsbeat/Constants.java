@@ -25,17 +25,18 @@ import java.util.concurrent.TimeUnit;
 
 public final class Constants {
 
-    public static final String STATSBEAT_IKEY = "28ac6b6a-3fe0-43a9-bccd-10cb41d791c1";
-    public static final String STATSBEAT_ENDPOINT = "https://westus2-0.in.applicationinsights.azure.com/";
+    public static final String STATSBEAT_IKEY =  "1fa755e4-8f2d-4342-8ef4-f8fd1ce563b6"; // "28ac6b6a-3fe0-43a9-bccd-10cb41d791c1"; // ai-statsbeat
+    public static final String STATSBEAT_ENDPOINT = "https://westus2-1.in.applicationinsights.azure.com";//"https://westus2-0.in.applicationinsights.azure.com/";
     public static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
-    public final static long DEFAULT_STATSBEAT_INTERVAL = TimeUnit.MINUTES.toSeconds(15); // default to 15 minutes
+    public final static long DEFAULT_STATSBEAT_INTERVAL = TimeUnit.MINUTES.toSeconds(1); // default to 15 minutes
+    public final static long FEATURE_STATSBEAT_INTERVAL = TimeUnit.DAYS.toSeconds(1); // FeatureStatsbeat default to daily interval
 
     // rp
     public static final String RP_FUNCTIONS = "functions";
     public static final String RP_APPSVC = "appsvc";
     public static final String RP_VM = "vm";
     public static final String RP_AKS = "aks";
-    public static final String RP_UNKNOWN = "unknown";
+    public static final String UNKNOWN = "unknown";
 
     public static final String LANGUAGE = "java";
     public static final String ATTACH_TYPE_CODELESS = "codeless";
