@@ -21,7 +21,7 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.addInstrumentation("opentelemetry-javaagent-jdbc");
         networkStatsbeat.addInstrumentation("opentelemetry-javaagent-tomcat-7.0");
         networkStatsbeat.addInstrumentation("opentelemetry-javaagent-http-url-connection");
-        assertEquals(networkStatsbeat.getInstrumentation(), 4503599627898880L);
+        assertEquals(networkStatsbeat.getInstrumentation(), 18014398510538752L);
     }
 
     @Test
