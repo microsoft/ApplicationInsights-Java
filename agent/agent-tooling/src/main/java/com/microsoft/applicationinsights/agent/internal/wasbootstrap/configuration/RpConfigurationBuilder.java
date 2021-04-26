@@ -21,32 +21,30 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.JsonDataException;
-import com.squareup.moshi.JsonEncodingException;
-import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Types;
 import okio.Buffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RpConfigurationBuilder {
 
+    private static final String APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE";
+
     public static RpConfiguration create(Path agentJarPath) throws IOException {
-        Path configPath = agentJarPath.resolveSibling("applicationinsights-rp.json");
+        Path configPath;
+        String configPathString = ConfigurationBuilder.getEnvVar(APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE);
+
+        if (configPathString != null) {
+            configPath = new File(configPathString).toPath();
+        } else {
+            configPath = agentJarPath.resolveSibling("applicationinsights-rp.json");
+        }
+
         if (Files.exists(configPath)) {
             return loadJsonConfigFile(configPath);
         }
