@@ -140,8 +140,9 @@ public final class TelemetryConfiguration {
         if (active == null) {
             synchronized (s_lock) {
                 if (active == null) {
-                    active = new TelemetryConfiguration(customDimensions);
+                    TelemetryConfiguration active = new TelemetryConfiguration(customDimensions);
                     TelemetryConfigurationFactory.INSTANCE.initialize(active, applicationInsightsConfig);
+                    TelemetryConfiguration.active = active;
                 }
             }
         }
