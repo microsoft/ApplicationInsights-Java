@@ -31,7 +31,6 @@ import static java.lang.Math.min;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.slf4j.Logger;
@@ -77,7 +76,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
         TelemetryItem telemetry = new TelemetryItem();
         MetricsData data = new MetricsData();
         MetricDataPoint point = new MetricDataPoint();
-        TelemetryConfiguration.getActive().initMetricTelemetry(telemetry, data, point);
+        TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
 
         point.setName(METRIC_NAME);
         point.setValue(0);
@@ -105,14 +104,14 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
                 TelemetryItem messageTelemetry = new TelemetryItem();
                 MessageData messageData = new MessageData();
-                TelemetryConfiguration.getActive().initMessageTelemetry(messageTelemetry, messageData);
+                TelemetryClient.getActive().initMessageTelemetry(messageTelemetry, messageData);
 
                 messageData.setMessage(String.format("%s%s", "Suspected deadlocked threads: ", sb));
                 messageTelemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
-                telemetryClient.track(messageTelemetry);
+                telemetryClient.trackAsync(messageTelemetry);
             }
         }
-        telemetryClient.track(telemetry);
+        telemetryClient.trackAsync(telemetry);
     }
     private void setThreadInfoAndStack(StringBuilder sb, ThreadInfo ti) {
         try {

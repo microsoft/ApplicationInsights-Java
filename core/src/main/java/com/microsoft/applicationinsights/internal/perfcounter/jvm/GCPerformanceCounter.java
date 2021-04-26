@@ -80,8 +80,8 @@ public final class GCPerformanceCounter implements PerformanceCounter {
 
             TelemetryItem mtTotalCount = createMetricsTelemetry(GC_TOTAL_COUNT, countToReport);
             TelemetryItem mtTotalTime = createMetricsTelemetry(GC_TOTAL_TIME, timeToReport);
-            telemetryClient.track(mtTotalCount);
-            telemetryClient.track(mtTotalTime);
+            telemetryClient.trackAsync(mtTotalCount);
+            telemetryClient.trackAsync(mtTotalTime);
         }
     }
 }

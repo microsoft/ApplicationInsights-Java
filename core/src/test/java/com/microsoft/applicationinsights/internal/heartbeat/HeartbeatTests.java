@@ -2,7 +2,7 @@ package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
-import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
+import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
 import org.junit.*;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -29,9 +29,9 @@ public class HeartbeatTests {
 
   @BeforeClass
   public static void setUp() {
-    // FIXME (trask) inject TelemetryConfiguration in tests instead of using global
-    TelemetryConfiguration.resetForTesting();
-    TelemetryConfiguration.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
+    // FIXME (trask) inject TelemetryClient in tests instead of using global
+    TelemetryClient.resetForTesting();
+    TelemetryClient.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
   }
 
   @Test
@@ -82,7 +82,7 @@ public class HeartbeatTests {
   @Test
   public void canExtendHeartBeatPayload() throws Exception {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());
-    module.initialize(new TelemetryConfiguration());
+    module.initialize(new TelemetryClient());
 
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
@@ -93,9 +93,9 @@ public class HeartbeatTests {
 
   @Test
   public void heartBeatIsEnabledByDefault() {
-    TelemetryConfiguration configuration = new TelemetryConfiguration();
-    TelemetryConfigurationFactory.INSTANCE.initialize(configuration, new ApplicationInsightsXmlConfiguration());
-    List<TelemetryModule> modules = configuration.getTelemetryModules();
+    TelemetryClient telemetryClient = new TelemetryClient();
+    TelemetryClientInitializer.INSTANCE.initialize(telemetryClient, new ApplicationInsightsXmlConfiguration());
+    List<TelemetryModule> modules = telemetryClient.getTelemetryModules();
     System.out.println(modules.size());
     boolean hasHeartBeatModule = false;
     HeartBeatModule hbm = null;
@@ -118,9 +118,9 @@ public class HeartbeatTests {
     Map<String, String> dummyPropertyMap = new HashMap<>();
     dummyPropertyMap.put("isHeartBeatEnabled", "false");
     HeartBeatModule module = new HeartBeatModule(dummyPropertyMap);
-    TelemetryConfiguration configuration = new TelemetryConfiguration();
-    configuration.getTelemetryModules().add(module);
-    module.initialize(configuration);
+    TelemetryClient telemetryClient = new TelemetryClient();
+    telemetryClient.getTelemetryModules().add(module);
+    module.initialize(telemetryClient);
     Assert.assertFalse(module.isHeartBeatEnabled());
 
 
@@ -141,7 +141,7 @@ public class HeartbeatTests {
     HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
     Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("Base"));
     Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps"));
-    module.initialize(new TelemetryConfiguration());
+    module.initialize(new TelemetryClient());
 
     Thread.sleep(100);
     Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("Base"));
@@ -174,7 +174,7 @@ public class HeartbeatTests {
   @Test
   public void heartBeatPayloadContainsDataByDefault() throws Exception {
     HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(new TelemetryConfiguration());
+    provider.initialize(new TelemetryClient());
 
     Thread.sleep(100);
     MetricsData t = getMetricsData(provider);
@@ -242,7 +242,7 @@ public class HeartbeatTests {
   @Test
   public void heartBeatProviderDoesNotAllowDuplicateProperties() {
     HeartBeatProvider provider = new HeartBeatProvider();
-    provider.initialize(new TelemetryConfiguration());
+    provider.initialize(new TelemetryClient());
     provider.addHeartBeatProperty("test01", "test val", true);
     Assert.assertFalse(provider.addHeartBeatProperty("test01", "test val 2", true));
   }

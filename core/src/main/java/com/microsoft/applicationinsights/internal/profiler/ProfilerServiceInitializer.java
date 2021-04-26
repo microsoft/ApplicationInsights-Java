@@ -31,7 +31,6 @@ import java.util.function.Supplier;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
@@ -66,8 +65,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
-                                               String instrumentationKey,
-                                               TelemetryClient client,
+                                               TelemetryClient telemetryClient,
                                                String userAgent,
                                                GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
         initialize(
@@ -75,8 +73,7 @@ public class ProfilerServiceInitializer {
                 processId,
                 config,
                 machineName,
-                instrumentationKey,
-                client,
+                telemetryClient,
                 LazyHttpClient.getInstance(),
                 userAgent,
                 gcEventMonitorConfiguration
@@ -87,8 +84,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
-                                               String instrumentationKey,
-                                               TelemetryClient client,
+                                               TelemetryClient telemetryClient,
                                                CloseableHttpClient httpClient,
                                                String userAgent,
                                                GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
@@ -115,16 +111,16 @@ public class ProfilerServiceInitializer {
                     ThreadPoolUtils.createDaemonThreadFactory(ProfilerServiceFactory.class, "ServiceProfilerAlertingService")
             );
 
-            AlertingSubsystem alerting = createAlertMonitor(alertServiceExecutorService, client, gcEventMonitorConfiguration);
+            AlertingSubsystem alerting = createAlertMonitor(alertServiceExecutorService, telemetryClient, gcEventMonitorConfiguration);
 
             Future<ProfilerService> future = factory.initialize(
                     appIdSupplier,
-                    sendServiceProfilerIndex(client),
+                    sendServiceProfilerIndex(telemetryClient),
                     updateAlertingConfig(alerting),
                     processId,
                     config,
                     machineName,
-                    instrumentationKey,
+                    telemetryClient.getInstrumentationKey(),
                     httpClient,
                     serviceProfilerExecutorService,
                     userAgent
@@ -163,14 +159,14 @@ public class ProfilerServiceInitializer {
         return done -> {
             TelemetryItem telemetry = new TelemetryItem();
             TelemetryEventData data = new TelemetryEventData();
-            TelemetryConfiguration.getActive().initEventTelemetry(telemetry, data);
+            TelemetryClient.getActive().initEventTelemetry(telemetry, data);
 
             data.setName("ServiceProfilerIndex");
             telemetry.setTime(TelemetryUtil.getFormattedNow());
             data.setProperties(done.getServiceProfilerIndex().getProperties());
             data.setMeasurements(done.getServiceProfilerIndex().getMetrics());
 
-            telemetryClient.track(telemetry);
+            telemetryClient.trackAsync(telemetry);
         };
     }
 

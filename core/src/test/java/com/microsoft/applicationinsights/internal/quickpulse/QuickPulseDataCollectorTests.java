@@ -4,7 +4,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDepe
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.Counters;
@@ -23,9 +23,9 @@ public class QuickPulseDataCollectorTests {
 
     @BeforeClass
     public static void setUp() {
-        // FIXME (trask) inject TelemetryConfiguration in tests instead of using global
-        TelemetryConfiguration.resetForTesting();
-        TelemetryConfiguration.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
+        // FIXME (trask) inject TelemetryClient in tests instead of using global
+        TelemetryClient.resetForTesting();
+        TelemetryClient.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
     }
 
     @Before
@@ -45,27 +45,27 @@ public class QuickPulseDataCollectorTests {
 
     @Test
     public void emptyCountsAndDurationsAfterEnable() {
-        TelemetryConfiguration configuration = new TelemetryConfiguration();
-        configuration.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.enable(configuration);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
         final FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
         assertCountersReset(counters);
     }
 
     @Test
     public void nullCountersAfterDisable() {
-        TelemetryConfiguration configuration = new TelemetryConfiguration();
-        configuration.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.enable(configuration);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
         QuickPulseDataCollector.INSTANCE.disable();
         assertNull(QuickPulseDataCollector.INSTANCE.peek());
     }
 
     @Test
     public void requestTelemetryIsCounted_DurationIsSum() {
-        TelemetryConfiguration configuration = new TelemetryConfiguration();
-        configuration.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.enable(configuration);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
         // add a success and peek
         final long duration = 112233L;
@@ -104,9 +104,9 @@ public class QuickPulseDataCollectorTests {
 
     @Test
     public void dependencyTelemetryIsCounted_DurationIsSum() {
-        TelemetryConfiguration configuration = new TelemetryConfiguration();
-        configuration.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.enable(configuration);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
         // add a success and peek.
         final long duration = 112233L;
@@ -145,9 +145,9 @@ public class QuickPulseDataCollectorTests {
 
     @Test
     public void exceptionTelemetryIsCounted() {
-        TelemetryConfiguration configuration = new TelemetryConfiguration();
-        configuration.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.enable(configuration);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
         TelemetryItem telemetry = createExceptionTelemetry(new Exception());
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
@@ -177,7 +177,7 @@ public class QuickPulseDataCollectorTests {
     private static TelemetryItem createRequestTelemetry(String name, Date timestamp, long duration, String responseCode, boolean success) {
         TelemetryItem telemetry = new TelemetryItem();
         RequestData data = new RequestData();
-        TelemetryConfiguration.getActive().initRequestTelemetry(telemetry, data);
+        TelemetryClient.getActive().initRequestTelemetry(telemetry, data);
 
         data.setName(name);
         data.setDuration(getFormattedDuration(duration));
@@ -191,7 +191,7 @@ public class QuickPulseDataCollectorTests {
     private static TelemetryItem createRemoteDependencyTelemetry(String name, String command, long durationMillis, boolean success) {
         TelemetryItem telemetry = new TelemetryItem();
         RemoteDependencyData data = new RemoteDependencyData();
-        TelemetryConfiguration.getActive().initRemoteDependencyTelemetry(telemetry, data);
+        TelemetryClient.getActive().initRemoteDependencyTelemetry(telemetry, data);
 
         data.setName(name);
         data.setData(command);
@@ -204,7 +204,7 @@ public class QuickPulseDataCollectorTests {
     private static TelemetryItem createExceptionTelemetry(Exception exception) {
         TelemetryItem telemetry = new TelemetryItem();
         TelemetryExceptionData data = new TelemetryExceptionData();
-        TelemetryConfiguration.getActive().initExceptionTelemetry(telemetry, data);
+        TelemetryClient.getActive().initExceptionTelemetry(telemetry, data);
 
         data.setExceptions(getExceptions(exception));
 

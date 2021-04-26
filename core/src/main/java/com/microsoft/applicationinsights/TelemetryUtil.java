@@ -26,7 +26,7 @@ public class TelemetryUtil {
         TelemetryItem telemetry = new TelemetryItem();
         MetricsData data = new MetricsData();
         MetricDataPoint point = new MetricDataPoint();
-        TelemetryConfiguration.getActive().initMetricTelemetry(telemetry, data, point);
+        TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
 
         point.setName(name);
         point.setValue(value);

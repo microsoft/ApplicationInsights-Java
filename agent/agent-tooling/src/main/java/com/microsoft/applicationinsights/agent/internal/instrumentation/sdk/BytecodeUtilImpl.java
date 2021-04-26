@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.Global;
@@ -56,7 +56,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         TelemetryItem telemetry = new TelemetryItem();
         TelemetryEventData data = new TelemetryEventData();
-        TelemetryConfiguration.getActive().initEventTelemetry(telemetry, data);
+        TelemetryClient.getActive().initEventTelemetry(telemetry, data);
 
         data.setName(name);
         data.setMeasurements(metrics);
@@ -90,7 +90,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         TelemetryItem telemetry = new TelemetryItem();
         MetricsData data = new MetricsData();
         MetricDataPoint point = new MetricDataPoint();
-        TelemetryConfiguration.getActive().initMetricTelemetry(telemetry, data, point);
+        TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
 
         point.setName(name);
         point.setValue(value);
@@ -127,7 +127,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         TelemetryItem telemetry = new TelemetryItem();
         RemoteDependencyData data = new RemoteDependencyData();
-        TelemetryConfiguration.getActive().initRemoteDependencyTelemetry(telemetry, data);
+        TelemetryClient.getActive().initRemoteDependencyTelemetry(telemetry, data);
 
         data.setName(name);
         data.setId(id);
@@ -167,7 +167,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         TelemetryItem telemetry = new TelemetryItem();
         PageViewData data = new PageViewData();
-        TelemetryConfiguration.getActive().initPageViewTelemetry(telemetry, data);
+        TelemetryClient.getActive().initPageViewTelemetry(telemetry, data);
 
         data.setName(name);
         data.setUrl(uri.toString());
@@ -199,7 +199,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         TelemetryItem telemetry = new TelemetryItem();
         MessageData data = new MessageData();
-        TelemetryConfiguration.getActive().initMessageTelemetry(telemetry, data);
+        TelemetryClient.getActive().initMessageTelemetry(telemetry, data);
 
         data.setMessage(message);
         if (severityLevel != -1) {
@@ -232,7 +232,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         TelemetryItem telemetry = new TelemetryItem();
         RequestData data = new RequestData();
-        TelemetryConfiguration.getActive().initRequestTelemetry(telemetry, data);
+        TelemetryClient.getActive().initRequestTelemetry(telemetry, data);
 
         data.setId(id);
         data.setName(name);
@@ -276,7 +276,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         TelemetryItem telemetry = new TelemetryItem();
         TelemetryExceptionData data = new TelemetryExceptionData();
-        TelemetryConfiguration.getActive().initExceptionTelemetry(telemetry, data);
+        TelemetryClient.getActive().initExceptionTelemetry(telemetry, data);
 
         data.setExceptions(TelemetryUtil.getExceptions(exception));
         data.setSeverityLevel(SeverityLevel.ERROR);
@@ -356,7 +356,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             telemetry.setSampleRate(samplingPercentage);
         }
         // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
-        checkNotNull(Global.getTelemetryClient()).track(telemetry);
+        checkNotNull(Global.getTelemetryClient()).trackAsync(telemetry);
     }
 
     private static boolean sample(TelemetryItem telemetry, double samplingPercentage) {

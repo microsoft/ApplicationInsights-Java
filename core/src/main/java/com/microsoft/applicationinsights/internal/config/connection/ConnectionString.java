@@ -3,7 +3,7 @@ package com.microsoft.applicationinsights.internal.config.connection;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ public class ConnectionString {
 
     private ConnectionString(){}
 
-    public static void parseInto(String connectionString, TelemetryConfiguration targetConfig) throws InvalidConnectionStringException {
+    public static void parseInto(String connectionString, TelemetryClient targetConfig) throws InvalidConnectionStringException {
         if (connectionString.length() > CONNECTION_STRING_MAX_LENGTH) { // guard against malicious input
             throw new InvalidConnectionStringException("ConnectionString values with more than " + CONNECTION_STRING_MAX_LENGTH + " characters are not allowed.");
         }
@@ -38,26 +38,26 @@ public class ConnectionString {
         mapToConnectionConfiguration(kvps, targetConfig);
     }
 
-    private static void mapToConnectionConfiguration(Map<String, String> kvps, TelemetryConfiguration config) throws InvalidConnectionStringException {
+    private static void mapToConnectionConfiguration(Map<String, String> kvps, TelemetryClient telemetryClient) throws InvalidConnectionStringException {
 
         // get ikey
         String instrumentationKey = kvps.get(Keywords.INSTRUMENTATION_KEY);
         if (Strings.isNullOrEmpty(instrumentationKey)) {
             throw new InvalidConnectionStringException("Missing '"+Keywords.INSTRUMENTATION_KEY+"'");
         }
-        if (!Strings.isNullOrEmpty(config.getInstrumentationKey())) {
+        if (!Strings.isNullOrEmpty(telemetryClient.getInstrumentationKey())) {
             logger.warn("Connection string is overriding previously configured instrumentation key.");
         }
-        config.setInstrumentationKey(instrumentationKey);
+        telemetryClient.setInstrumentationKey(instrumentationKey);
 
         // resolve suffix
         String suffix = kvps.get(Keywords.ENDPOINT_SUFFIX);
         if (!Strings.isNullOrEmpty(suffix)) {
             try {
-                config.getEndpointProvider().setIngestionEndpoint(constructSecureEndpoint(EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, suffix));
-                config.getEndpointProvider().setLiveEndpoint(constructSecureEndpoint(EndpointPrefixes.LIVE_ENDPOINT_PREFIX, suffix));
-                config.getEndpointProvider().setProfilerEndpoint(constructSecureEndpoint(EndpointPrefixes.PROFILER_ENDPOINT_PREFIX, suffix));
-                config.getEndpointProvider().setSnapshotEndpoint(constructSecureEndpoint(EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX, suffix));
+                telemetryClient.getEndpointProvider().setIngestionEndpoint(constructSecureEndpoint(EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, suffix));
+                telemetryClient.getEndpointProvider().setLiveEndpoint(constructSecureEndpoint(EndpointPrefixes.LIVE_ENDPOINT_PREFIX, suffix));
+                telemetryClient.getEndpointProvider().setProfilerEndpoint(constructSecureEndpoint(EndpointPrefixes.PROFILER_ENDPOINT_PREFIX, suffix));
+                telemetryClient.getEndpointProvider().setSnapshotEndpoint(constructSecureEndpoint(EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX, suffix));
             } catch (URISyntaxException e) {
                 throw new InvalidConnectionStringException(Keywords.ENDPOINT_SUFFIX + " is invalid: " + suffix, e);
             }
@@ -66,22 +66,22 @@ public class ConnectionString {
         // set explicit endpoints
         String liveEndpoint = kvps.get(Keywords.LIVE_ENDPOINT);
         if (!Strings.isNullOrEmpty(liveEndpoint)) {
-            config.getEndpointProvider().setLiveEndpoint(toUriOrThrow(liveEndpoint, Keywords.LIVE_ENDPOINT));
+            telemetryClient.getEndpointProvider().setLiveEndpoint(toUriOrThrow(liveEndpoint, Keywords.LIVE_ENDPOINT));
         }
 
         String ingestionEndpoint = kvps.get(Keywords.INGESTION_ENDPOINT);
         if (!Strings.isNullOrEmpty(ingestionEndpoint)) {
-            config.getEndpointProvider().setIngestionEndpoint(toUriOrThrow(ingestionEndpoint, Keywords.INGESTION_ENDPOINT));
+            telemetryClient.getEndpointProvider().setIngestionEndpoint(toUriOrThrow(ingestionEndpoint, Keywords.INGESTION_ENDPOINT));
         }
 
         String profilerEndpoint = kvps.get(Keywords.PROFILER_ENDPOINT);
         if (!Strings.isNullOrEmpty(profilerEndpoint)) {
-            config.getEndpointProvider().setProfilerEndpoint(toUriOrThrow(profilerEndpoint, Keywords.PROFILER_ENDPOINT));
+            telemetryClient.getEndpointProvider().setProfilerEndpoint(toUriOrThrow(profilerEndpoint, Keywords.PROFILER_ENDPOINT));
         }
 
         String snapshotEndpoint = kvps.get(Keywords.SNAPSHOT_ENDPOINT);
         if (!Strings.isNullOrEmpty(snapshotEndpoint)) {
-            config.getEndpointProvider().setSnapshotEndpoint(toUriOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
+            telemetryClient.getEndpointProvider().setSnapshotEndpoint(toUriOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
         }
     }
 

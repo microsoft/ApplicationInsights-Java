@@ -36,11 +36,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ExportResult;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.TelemetryObservers;
@@ -78,9 +78,9 @@ public class ProfilerServiceTest {
 
     @BeforeClass
     public static void setUp() {
-        // FIXME (trask) inject TelemetryConfiguration in tests instead of using global
-        TelemetryConfiguration.resetForTesting();
-        TelemetryConfiguration.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
+        // FIXME (trask) inject TelemetryClient in tests instead of using global
+        TelemetryClient.resetForTesting();
+        TelemetryClient.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
     }
 
     @Test
@@ -123,9 +123,10 @@ public class ProfilerServiceTest {
 
         Object monitor = new Object();
 
-        TelemetryClient client = new TelemetryClient(new TelemetryConfiguration()) {
+        // FIXME (trask) revisit this, why is subclassing TelemetryClient needed?
+        TelemetryClient client = new TelemetryClient() {
             @Override
-            public void track(TelemetryItem telemetry) {
+            public Mono<ExportResult> trackAsync(TelemetryItem telemetry) {
                 MonitorDomain data = telemetry.getData().getBaseData();
                 if (data instanceof TelemetryEventData) {
                     if ("ServiceProfilerIndex".equals(((TelemetryEventData) data).getName())) {
@@ -135,6 +136,7 @@ public class ProfilerServiceTest {
                         monitor.notifyAll();
                     }
                 }
+                return Mono.empty();
             }
         };
 

@@ -27,7 +27,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.concurrent.Executors;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
@@ -46,23 +46,23 @@ public class RpConfigurationPolling implements Runnable {
 
     private volatile RpConfiguration rpConfiguration;
     private final Configuration configuration;
-    private final TelemetryConfiguration telemetryConfiguration;
+    private final TelemetryClient telemetryClient;
 
     public static void startPolling(RpConfiguration rpConfiguration, Configuration configuration,
-                                    TelemetryConfiguration telemetryConfiguration) {
+                                    TelemetryClient telemetryClient) {
         Executors.newSingleThreadScheduledExecutor(
                 ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
                 .scheduleWithFixedDelay(
-                        new RpConfigurationPolling(rpConfiguration, configuration, telemetryConfiguration),
+                        new RpConfigurationPolling(rpConfiguration, configuration, telemetryClient),
                         60, 60, SECONDS);
     }
 
     // visible for testing
     RpConfigurationPolling(RpConfiguration rpConfiguration, Configuration configuration,
-                           TelemetryConfiguration telemetryConfiguration) {
+                           TelemetryClient telemetryClient) {
         this.rpConfiguration = rpConfiguration;
         this.configuration = configuration;
-        this.telemetryConfiguration = telemetryConfiguration;
+        this.telemetryClient = telemetryClient;
     }
 
     @Override
@@ -82,9 +82,9 @@ public class RpConfigurationPolling implements Runnable {
                 rpConfiguration.lastModifiedTime = fileTime.toMillis();
                 RpConfiguration newRpConfiguration = RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
-                if (!newRpConfiguration.connectionString.equals(telemetryConfiguration.getConnectionString())) {
+                if (!newRpConfiguration.connectionString.equals(telemetryClient.getConnectionString())) {
                     logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
-                    telemetryConfiguration.setConnectionString(newRpConfiguration.connectionString);
+                    telemetryClient.setConnectionString(newRpConfiguration.connectionString);
                     AppIdSupplier.startAppIdRetrieval();
                 }
 

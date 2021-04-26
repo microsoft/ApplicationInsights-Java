@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
@@ -48,7 +47,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
         // Reversing the order of processors before passing it to SpanProcessor
         Collections.reverse(processors);
 
-        SpanExporter exporter = new Exporter(TelemetryConfiguration.getActive(), config.preview.httpMethodInOperationName);
+        SpanExporter exporter = new Exporter(TelemetryClient.getActive(), config.preview.httpMethodInOperationName);
 
         // NOTE if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         if (!processors.isEmpty()) {

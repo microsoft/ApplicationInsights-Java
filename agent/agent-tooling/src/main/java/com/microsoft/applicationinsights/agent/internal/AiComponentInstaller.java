@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal;
 
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
@@ -53,8 +52,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -139,10 +136,9 @@ public class AiComponentInstaller implements ComponentInstaller {
         }
         AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
 
-        TelemetryConfiguration configuration = TelemetryConfiguration.initActive(config.customDimensions, buildXmlConfiguration(config));
+        TelemetryClient telemetryClient = TelemetryClient.initActive(config.customDimensions, buildXmlConfiguration(config));
 
         Global.setSamplingPercentage(config.sampling.percentage);
-        final TelemetryClient telemetryClient = new TelemetryClient(configuration);
         Global.setTelemetryClient(telemetryClient);
 
         ProfilerServiceInitializer.initialize(
@@ -150,8 +146,6 @@ public class AiComponentInstaller implements ComponentInstaller {
                 SystemInformation.INSTANCE.getProcessId(),
                 formServiceProfilerConfig(config.preview.profiler),
                 config.role.instance,
-                // TODO this will not work with Azure Spring Cloud updating connection string at runtime
-                configuration.getInstrumentationKey(),
                 telemetryClient,
                 formApplicationInsightsUserAgent(),
                 formGcEventMonitorConfiguration(config.preview.gcEvents)
@@ -182,7 +176,7 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
         if (rpConfiguration != null) {
-            RpConfigurationPolling.startPolling(rpConfiguration, config, configuration);
+            RpConfigurationPolling.startPolling(rpConfiguration, config, telemetryClient);
         }
     }
 

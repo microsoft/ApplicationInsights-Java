@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -45,7 +45,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulsePingSender.class);
 
-    private final TelemetryConfiguration configuration;
+    private final TelemetryClient telemetryClient;
     private final HttpClient httpClient;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private final String pingPrefix;
@@ -56,8 +56,8 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private long lastValidTransmission = 0;
     private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
-    public DefaultQuickPulsePingSender(HttpClient httpClient, TelemetryConfiguration configuration, String machineName, String instanceName, String roleName, String quickPulseId) {
-        this.configuration = configuration;
+    public DefaultQuickPulsePingSender(HttpClient httpClient, TelemetryClient telemetryClient, String machineName, String instanceName, String roleName, String quickPulseId) {
+        this.telemetryClient = telemetryClient;
         this.httpClient = httpClient;
         this.roleName = roleName;
         this.instanceName = instanceName;
@@ -129,12 +129,12 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     }
 
     private String getInstrumentationKey() {
-        return configuration.getInstrumentationKey();
+        return telemetryClient.getInstrumentationKey();
     }
 
     @VisibleForTesting
     String getQuickPulseEndpoint() {
-        return configuration.getEndpointProvider().getLiveEndpointURL().toString();
+        return telemetryClient.getEndpointProvider().getLiveEndpointURL().toString();
     }
 
     private ByteArrayEntity buildPingEntity(long timeInMillis) {

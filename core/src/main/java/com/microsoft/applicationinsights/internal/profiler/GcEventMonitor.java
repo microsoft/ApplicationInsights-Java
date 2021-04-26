@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.internal.profiler;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
@@ -20,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+
+import static java.util.Collections.singletonList;
 
 /**
  * Monitors GC events.  Forwards relevant metrics to the alerting subsystem.
@@ -108,7 +109,7 @@ public class GcEventMonitor {
 
         TelemetryItem telemetry = new TelemetryItem();
         TelemetryEventData data = new TelemetryEventData();
-        TelemetryConfiguration.getActive().initEventTelemetry(telemetry, data);
+        TelemetryClient.getActive().initEventTelemetry(telemetry, data);
 
         data.setName("GcEvent");
 
@@ -141,7 +142,7 @@ public class GcEventMonitor {
 
         telemetry.setTime(TelemetryUtil.currentTime());
 
-        telemetryClient.track(telemetry);
+        telemetryClient.trackAsync(telemetry);
     }
 
     private static void addMemoryUsage(String poolName, String when, Map<String, Double> measurements, MemoryUsage memory) {

@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.CpuPerformanceCounterCalculator;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 public enum QuickPulseDataCollector {
     INSTANCE;
 
-    private TelemetryConfiguration config;
+    private TelemetryClient telemetryClient;
 
     static class FinalCounters {
         public final double exceptions;
@@ -147,8 +147,8 @@ public enum QuickPulseDataCollector {
         counters.set(null);
     }
 
-    public synchronized void enable(TelemetryConfiguration config) {
-        this.config = config;
+    public synchronized void enable(TelemetryClient telemetryClient) {
+        this.telemetryClient = telemetryClient;
         counters.set(new Counters());
     }
 
@@ -187,7 +187,7 @@ public enum QuickPulseDataCollector {
     }
 
     private synchronized String getInstrumentationKey() {
-        return config.getInstrumentationKey();
+        return telemetryClient.getInstrumentationKey();
     }
 
     private void addDependency(RemoteDependencyData telemetry) {

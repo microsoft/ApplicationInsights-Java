@@ -5,8 +5,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricData
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -95,10 +93,10 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
   }
 
   @Override
-  public void initialize(TelemetryConfiguration configuration) {
+  public void initialize(TelemetryClient telemetryClient) {
     if (isEnabled) {
       if (this.telemetryClient == null) {
-        this.telemetryClient = new TelemetryClient(configuration);
+        this.telemetryClient = telemetryClient;
       }
 
       //Submit task to set properties to dictionary using separate thread. we do not wait for the
@@ -184,7 +182,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
 
     TelemetryItem telemetry = gatherData();
     telemetry.getTags().put(ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
-    telemetryClient.track(telemetry);
+    telemetryClient.trackAsync(telemetry);
     logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
 
   }
@@ -204,7 +202,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
     TelemetryItem telemetry = new TelemetryItem();
     MetricsData data = new MetricsData();
     MetricDataPoint point = new MetricDataPoint();
-    TelemetryConfiguration.getActive().initMetricTelemetry(telemetry, data, point);
+    TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
 
     point.setName(HEARTBEAT_SYNTHETIC_METRIC_NAME);
     point.setValue(numHealthy);

@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.http.client.methods.HttpPost;
@@ -43,15 +43,15 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
 
     private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
     private final ArrayBlockingQueue<HttpPost> sendQueue;
-    private final TelemetryConfiguration config;
+    private final TelemetryClient telemetryClient;
     private final String ikey;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private final String postPrefix;
     private final String sdkVersion;
 
-    public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryConfiguration config, String machineName,
+    public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryClient telemetryClient, String machineName,
                                         String instanceName, String roleName, String quickPulseId) {
-        this(sendQueue, config, null, machineName, instanceName, roleName, quickPulseId);
+        this(sendQueue, telemetryClient, null, machineName, instanceName, roleName, quickPulseId);
     }
 
     @Deprecated
@@ -59,10 +59,10 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         this(sendQueue, null, ikey, machineName, instanceName, quickPulseId);
     }
 
-    private DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryConfiguration config, String ikey, String machineName,
+    private DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryClient telemetryClient, String ikey, String machineName,
                                          String instanceName, String roleName, String quickPulseId) {
         this.sendQueue = sendQueue;
-        this.config = config;
+        this.telemetryClient = telemetryClient;
         this.ikey = ikey;
         sdkVersion = getCurrentSdkVersion();
         final StringBuilder sb = new StringBuilder();
@@ -129,12 +129,12 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
 
     @VisibleForTesting
     String getQuickPulseEndpoint() {
-         return config == null ? QP_BASE_URI : config.getEndpointProvider().getLiveEndpointURL().toString();
+         return telemetryClient == null ? QP_BASE_URI : telemetryClient.getEndpointProvider().getLiveEndpointURL().toString();
     }
 
     private String getInstrumentationKey() {
-        if (config != null) {
-            return config.getInstrumentationKey();
+        if (telemetryClient != null) {
+            return telemetryClient.getInstrumentationKey();
         } else {
             return ikey;
         }

@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,11 +170,11 @@ public class HeartBeatModule implements TelemetryModule {
   }
 
   @Override
-  public void initialize(TelemetryConfiguration configuration) {
+  public void initialize(TelemetryClient telemetryClient) {
     if (!isInitialized && isHeartBeatEnabled()) {
       synchronized (lock) {
         if (!isInitialized && isHeartBeatEnabled()) {
-          this.heartBeatProviderInterface.initialize(configuration);
+          this.heartBeatProviderInterface.initialize(telemetryClient);
           logger.debug("heartbeat is enabled");
           isInitialized = true;
         }

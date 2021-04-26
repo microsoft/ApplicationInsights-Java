@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.extensibility.*;
 import com.microsoft.applicationinsights.internal.jmx.JmxAttributeData;
 import com.microsoft.applicationinsights.internal.perfcounter.JmxMetricPerformanceCounter;
@@ -45,12 +45,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Initializer class for configuration instances.
+ * Initializer class for telemetry client instances.
  */
-public enum TelemetryConfigurationFactory {
+public enum TelemetryClientInitializer {
     INSTANCE;
 
-    private static final Logger logger = LoggerFactory.getLogger(TelemetryConfigurationFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(TelemetryClientInitializer.class);
 
     private static final Set<String> defaultPerformaceModuleClassNames = new HashSet<>();
 
@@ -63,7 +63,7 @@ public enum TelemetryConfigurationFactory {
         defaultPerformaceModuleClassNames.add(name);
     }
 
-    TelemetryConfigurationFactory() {
+    TelemetryClientInitializer() {
     }
 
     /**
@@ -75,26 +75,26 @@ public enum TelemetryConfigurationFactory {
      * Set Tracking Disabled Mode (default false)
      * Set Context Initializers where they should be written with full package name
      * Set Telemetry Initializers where they should be written with full package name
-     * @param configuration The configuration that will be populated
+     * @param telemetryClient The configuration that will be populated
      */
-    public void initialize(TelemetryConfiguration configuration,
+    public void initialize(TelemetryClient telemetryClient,
                            ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
 
-        setConnectionString(applicationInsightsConfig, configuration);
-        setRoleName(applicationInsightsConfig, configuration);
-        setRoleInstance(applicationInsightsConfig, configuration);
+        setConnectionString(applicationInsightsConfig, telemetryClient);
+        setRoleName(applicationInsightsConfig, telemetryClient);
+        setRoleInstance(applicationInsightsConfig, telemetryClient);
 
-        setTelemetryModules(applicationInsightsConfig, configuration);
+        setTelemetryModules(applicationInsightsConfig, telemetryClient);
 
-        setQuickPulse(applicationInsightsConfig, configuration);
+        setQuickPulse(applicationInsightsConfig, telemetryClient);
 
-        initializeComponents(configuration);
+        initializeComponents(telemetryClient);
     }
 
-    private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryConfiguration configuration) {
+    private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
         if (isQuickPulseEnabledInConfiguration(appConfiguration)) {
             logger.trace("Initializing QuickPulse...");
-            QuickPulse.INSTANCE.initialize(configuration);
+            QuickPulse.INSTANCE.initialize(telemetryClient);
         }
     }
 
@@ -106,11 +106,11 @@ public enum TelemetryConfigurationFactory {
     /**
      * Sets the configuration data of Modules Initializers in configuration class.
      * @param appConfiguration The configuration data.
-     * @param configuration The configuration class.
+     * @param telemetryClient The configuration class.
      */
-    private void setTelemetryModules(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryConfiguration configuration) {
+    private void setTelemetryModules(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
         TelemetryModulesXmlElement configurationModules = appConfiguration.getModules();
-        List<TelemetryModule> modules = configuration.getTelemetryModules();
+        List<TelemetryModule> modules = telemetryClient.getTelemetryModules();
 
         if (configurationModules != null) {
             ReflectionUtils.loadComponents(TelemetryModule.class, modules, configurationModules.getAdds());
@@ -118,7 +118,7 @@ public enum TelemetryConfigurationFactory {
 
         //if heartbeat module is not loaded, load heartbeat module
         if (!isHeartBeatModuleAdded(modules)) {
-            addHeartBeatModule(configuration);
+            addHeartBeatModule(telemetryClient);
         }
 
         List<TelemetryModule> pcModules = getPerformanceModules(appConfiguration.getPerformance());
@@ -126,17 +126,17 @@ public enum TelemetryConfigurationFactory {
         modules.addAll(pcModules);
     }
 
-    private void setConnectionString(ApplicationInsightsXmlConfiguration configXml, TelemetryConfiguration configuration) {
+    private void setConnectionString(ApplicationInsightsXmlConfiguration configXml, TelemetryClient telemetryClient) {
 
         String connectionString = configXml.getConnectionString();
 
         if (connectionString != null) {
-            configuration.setConnectionString(connectionString);
+            telemetryClient.setConnectionString(connectionString);
         }
     }
 
     private void setRoleName(ApplicationInsightsXmlConfiguration userConfiguration,
-                             TelemetryConfiguration configuration) {
+                             TelemetryClient telemetryClient) {
         try {
             String roleName;
 
@@ -152,7 +152,7 @@ public enum TelemetryConfigurationFactory {
                     return;
                 }
 
-                configuration.setRoleName(roleName);
+                telemetryClient.setRoleName(roleName);
             }
         } catch (Exception e) {
             logger.error("Failed to set role name: '{}'", e.toString());
@@ -160,7 +160,7 @@ public enum TelemetryConfigurationFactory {
     }
 
     private void setRoleInstance(ApplicationInsightsXmlConfiguration userConfiguration,
-                             TelemetryConfiguration configuration) {
+                             TelemetryClient telemetryClient) {
         try {
             String roleInstance;
 
@@ -176,7 +176,7 @@ public enum TelemetryConfigurationFactory {
                     return;
                 }
 
-                configuration.setRoleInstance(roleInstance);
+                telemetryClient.setRoleInstance(roleInstance);
             }
         } catch (Exception e) {
             logger.error("Failed to set role instance: '{}'", e.toString());
@@ -291,12 +291,12 @@ public enum TelemetryConfigurationFactory {
         }
     }
 
-    private void initializeComponents(TelemetryConfiguration configuration) {
-        List<TelemetryModule> telemetryModules = configuration.getTelemetryModules();
+    private void initializeComponents(TelemetryClient telemetryClient) {
+        List<TelemetryModule> telemetryModules = telemetryClient.getTelemetryModules();
 
         for (TelemetryModule module : telemetryModules) {
             try {
-                module.initialize(configuration);
+                module.initialize(telemetryClient);
             } catch (Exception e) {
                 logger.error(
                         "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Exception");
@@ -306,16 +306,16 @@ public enum TelemetryConfigurationFactory {
 
     /**
      * Adds heartbeat module with default configuration
-     * @param configuration TelemetryConfiguration Instance
+     * @param telemetryClient telemetry client instance
      */
-    private void addHeartBeatModule(TelemetryConfiguration configuration) {
+    private void addHeartBeatModule(TelemetryClient telemetryClient) {
         HeartBeatModule module = new HeartBeatModule(new HashMap<>());
-        configuration.getTelemetryModules().add(module);
+        telemetryClient.getTelemetryModules().add(module);
     }
 
     /**
      * Checks if heartbeat module is present
-     * @param module List of modules in current TelemetryConfiguration Instance
+     * @param module List of modules in current TelemetryClient instance
      * @return true if heartbeat module is present
      */
     private boolean isHeartBeatModuleAdded(List<TelemetryModule> module) {

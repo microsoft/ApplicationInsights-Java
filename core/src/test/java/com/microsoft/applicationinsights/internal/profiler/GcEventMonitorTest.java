@@ -1,8 +1,8 @@
 package com.microsoft.applicationinsights.internal.profiler;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ExportResult;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
@@ -14,12 +14,11 @@ import com.microsoft.gcmonitor.MemoryManagement;
 import com.microsoft.gcmonitor.garbagecollectors.GarbageCollector;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
+import reactor.core.publisher.Mono;
 
 import javax.management.MBeanServerConnection;
-import javax.security.auth.login.Configuration;
 import java.lang.management.MemoryUsage;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -37,9 +36,11 @@ public class GcEventMonitorTest {
         CompletableFuture<AlertBreach> alertFuture = new CompletableFuture<>();
         AlertingSubsystem alertingSubsystem = getAlertingSubsystem(alertFuture);
 
-        TelemetryClient client = new TelemetryClient(new TelemetryConfiguration()) {
+        // FIXME (trask) revisit this, why is subclassing TelemetryClient needed?
+        TelemetryClient client = new TelemetryClient() {
             @Override
-            public void track(TelemetryItem telemetry) {
+            public Mono<ExportResult> trackAsync(TelemetryItem telemetry) {
+                return Mono.empty();
             }
         };
 

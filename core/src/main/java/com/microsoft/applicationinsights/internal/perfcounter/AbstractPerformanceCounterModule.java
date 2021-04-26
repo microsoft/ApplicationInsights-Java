@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 
 import java.util.Collection;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,10 +45,10 @@ public abstract class AbstractPerformanceCounterModule implements TelemetryModul
 
     /**
      * The main method will use the factory to fetch the performance counters and register them for work.
-     * @param configuration The configuration to used to initialize the module.
+     * @param telemetryClient The configuration to used to initialize the module.
      */
     @Override
-    public void initialize(TelemetryConfiguration configuration) {
+    public void initialize(TelemetryClient telemetryClient) {
         Collection<PerformanceCounter> performanceCounters = factory.getPerformanceCounters();
         for (PerformanceCounter performanceCounter : performanceCounters) {
             try {

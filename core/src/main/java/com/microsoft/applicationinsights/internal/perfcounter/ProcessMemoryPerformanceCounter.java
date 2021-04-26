@@ -62,6 +62,6 @@ final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
 
         logger.trace("Performance Counter: {}: {}", PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
         TelemetryItem telemetry = createMetricsTelemetry(PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
-        telemetryClient.track(telemetry);
+        telemetryClient.trackAsync(telemetry);
     }
 }

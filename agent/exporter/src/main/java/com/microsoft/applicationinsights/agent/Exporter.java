@@ -35,7 +35,7 @@ import reactor.util.context.Context;
 import com.azure.core.util.tracing.Tracer;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -114,18 +114,18 @@ public class Exporter implements SpanExporter {
     private static final AttributeKey<String> AI_LOGGER_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.logger_name");
     private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY = AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
 
-    private final TelemetryConfiguration configuration;
+    private final TelemetryClient telemetryClient;
 
     private final boolean httpMethodInOperationName;
 
-    public Exporter(TelemetryConfiguration configuration, boolean httpMethodInOperationName) {
-        this.configuration = configuration;
+    public Exporter(TelemetryClient telemetryClient, boolean httpMethodInOperationName) {
+        this.telemetryClient = telemetryClient;
         this.httpMethodInOperationName = httpMethodInOperationName;
     }
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
-        if (Strings.isNullOrEmpty(TelemetryConfiguration.getActive().getInstrumentationKey())) {
+        if (Strings.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
             logger.debug("Instrumentation key is null or empty.");
             return CompletableResultCode.ofSuccess();
         }
@@ -137,7 +137,7 @@ public class Exporter implements SpanExporter {
                 logger.debug("exporting span: {}", span);
                 export(span, telemetryItems);
             }
-            configuration.getChannel().trackAsync(telemetryItems)
+            telemetryClient.trackAsync(telemetryItems)
                     .subscriberContext(Context.of(Tracer.DISABLE_TRACING_KEY, true))
                     .subscribe(ignored -> { }, error -> completableResultCode.fail(), completableResultCode::succeed);
             return completableResultCode;
@@ -206,7 +206,7 @@ public class Exporter implements SpanExporter {
                                         List<TelemetryItem> telemetryItems) {
         TelemetryItem telemetry = new TelemetryItem();
         RemoteDependencyData data = new RemoteDependencyData();
-        configuration.initRemoteDependencyTelemetry(telemetry, data);
+        telemetryClient.initRemoteDependencyTelemetry(telemetry, data);
 
         addLinks(data, span.getLinks());
         data.setName(getTelemetryName(span));
@@ -282,7 +282,7 @@ public class Exporter implements SpanExporter {
 
         TelemetryItem telemetry = new TelemetryItem();
         MessageData data = new MessageData();
-        configuration.initMessageTelemetry(telemetry, data);
+        telemetryClient.initMessageTelemetry(telemetry, data);
 
         data.setVersion(2);
         data.setSeverityLevel(toSeverityLevel(level));
@@ -309,7 +309,7 @@ public class Exporter implements SpanExporter {
 
         TelemetryItem telemetry = new TelemetryItem();
         TelemetryExceptionData data = new TelemetryExceptionData();
-        configuration.initExceptionTelemetry(telemetry, data);
+        telemetryClient.initExceptionTelemetry(telemetry, data);
 
         if (span.getParentSpanContext().isValid()) {
             telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
@@ -508,7 +508,7 @@ public class Exporter implements SpanExporter {
     private void exportRequest(SpanData span, List<TelemetryItem> telemetryItems) {
         TelemetryItem telemetry = new TelemetryItem();
         RequestData data = new RequestData();
-        configuration.initRequestTelemetry(telemetry, data);
+        telemetryClient.initRequestTelemetry(telemetry, data);
 
         String source = null;
         Attributes attributes = span.getAttributes();
@@ -620,7 +620,7 @@ public class Exporter implements SpanExporter {
 
             TelemetryItem telemetry = new TelemetryItem();
             TelemetryEventData data = new TelemetryEventData();
-            configuration.initEventTelemetry(telemetry, data);
+            telemetryClient.initEventTelemetry(telemetry, data);
 
             String operationId = span.getTraceId();
             telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), operationId);
@@ -646,7 +646,7 @@ public class Exporter implements SpanExporter {
                                 String id, float samplingPercentage, List<TelemetryItem> telemetryItems) {
         TelemetryItem telemetry = new TelemetryItem();
         TelemetryExceptionData data = new TelemetryExceptionData();
-        configuration.initExceptionTelemetry(telemetry, data);
+        telemetryClient.initExceptionTelemetry(telemetry, data);
 
         telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), operationId);
         telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), id);
