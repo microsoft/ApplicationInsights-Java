@@ -126,7 +126,7 @@ public class DefaultQuickPulseCoordinatorTest {
         thread.setDaemon(true);
         thread.start();
 
-        Thread.sleep(1000);
+        Thread.sleep(1100);
         coordinator.stop();
 
         thread.join();
