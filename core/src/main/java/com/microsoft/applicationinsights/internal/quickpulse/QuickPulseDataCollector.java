@@ -234,13 +234,11 @@ public enum QuickPulseDataCollector {
         int seconds = Integer.parseInt(tokenizer.nextToken());
         int microseconds = Integer.parseInt(tokenizer.nextToken());
 
-        long x = Duration.ofDays(days)
+        return Duration.ofDays(days)
                 .plusHours(hours)
                 .plusMinutes(minutes)
                 .plusSeconds(seconds)
                 .plusNanos(microseconds * 1000L)
                 .toMillis();
-        System.out.println(duration + " --> " + x);
-        return x;
     }
 }
