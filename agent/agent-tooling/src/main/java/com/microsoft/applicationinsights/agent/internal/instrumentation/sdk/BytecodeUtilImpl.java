@@ -71,6 +71,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
+        telemetry.setTime(TelemetryUtil.getFormattedNow());
         telemetry.getTags().putAll(tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -108,6 +109,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
+        telemetry.setTime(TelemetryUtil.getFormattedNow());
         telemetry.getTags().putAll(tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -150,6 +152,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
+        telemetry.setTime(TelemetryUtil.getFormattedNow());
         telemetry.getTags().putAll(tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -183,6 +186,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
+        telemetry.setTime(TelemetryUtil.getFormattedNow());
         telemetry.getTags().putAll(tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -215,6 +219,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
+        telemetry.setTime(TelemetryUtil.getFormattedNow());
         telemetry.getTags().putAll(tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -247,10 +252,6 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         data.setSource(source);
         data.setMeasurements(metrics);
 
-        if (timestamp != null) {
-            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
-        }
-
         if (!properties.isEmpty()) {
             Map<String, String> existingProperties = data.getProperties();
             if (existingProperties == null) {
@@ -260,6 +261,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
+        if (timestamp != null) {
+            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+        } else {
+            telemetry.setTime(TelemetryUtil.getFormattedNow());
+        }
         telemetry.getTags().putAll(tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -291,6 +297,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
+        telemetry.setTime(TelemetryUtil.getFormattedNow());
         telemetry.getTags().putAll(tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);

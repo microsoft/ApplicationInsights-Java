@@ -5,6 +5,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricData
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -208,6 +209,9 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
     point.setValue(numHealthy);
 
     data.setProperties(properties);
+
+    telemetry.setTime(TelemetryUtil.getFormattedNow());
+
     return telemetry;
   }
 

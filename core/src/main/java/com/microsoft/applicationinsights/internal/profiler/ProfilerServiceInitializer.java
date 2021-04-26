@@ -162,9 +162,10 @@ public class ProfilerServiceInitializer {
             TelemetryClient.getActive().initEventTelemetry(telemetry, data);
 
             data.setName("ServiceProfilerIndex");
-            telemetry.setTime(TelemetryUtil.getFormattedNow());
             data.setProperties(done.getServiceProfilerIndex().getProperties());
             data.setMeasurements(done.getServiceProfilerIndex().getMetrics());
+
+            telemetry.setTime(TelemetryUtil.getFormattedNow());
 
             telemetryClient.trackAsync(telemetry);
         };

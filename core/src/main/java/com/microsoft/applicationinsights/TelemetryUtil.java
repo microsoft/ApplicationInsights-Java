@@ -220,10 +220,6 @@ public class TelemetryUtil {
         }
     }
 
-    public static String currentTime() {
-        return getFormattedTime(System.currentTimeMillis());
-    }
-
     // FIXME (trask) share below functions with exporter
 
     private static final long MILLISECONDS_PER_DAY = DAYS.toMillis(1);

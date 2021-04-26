@@ -140,7 +140,7 @@ public class GcEventMonitor {
         }
         data.setMeasurements(measurements);
 
-        telemetry.setTime(TelemetryUtil.currentTime());
+        telemetry.setTime(TelemetryUtil.getFormattedNow());
 
         telemetryClient.trackAsync(telemetry);
     }
