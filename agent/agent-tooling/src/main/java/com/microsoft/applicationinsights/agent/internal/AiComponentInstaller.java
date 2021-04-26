@@ -328,7 +328,7 @@ public class AiComponentInstaller implements ComponentInstaller {
             name.append(nameObject.getDomain()).append(" /");
             Hashtable properties = nameObject.getKeyPropertyList();
 
-            Set types = properties.keySet();
+            Set types = properties.entrySet();
             SortedMap<Integer, String> orderedTypes = new TreeMap<>();
 
             for(Object type: types) {
