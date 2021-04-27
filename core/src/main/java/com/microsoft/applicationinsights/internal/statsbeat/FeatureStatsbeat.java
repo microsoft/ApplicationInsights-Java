@@ -43,7 +43,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     public FeatureStatsbeat(TelemetryClient telemetryClient) {
         super(telemetryClient);
         initFeatureList();
-        //updateFrequencyInterval(FEATURE_STATSBEAT_INTERVAL);
+        updateFrequencyInterval(FEATURE_STATSBEAT_INTERVAL);
     }
 
     /**
