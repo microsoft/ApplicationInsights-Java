@@ -64,6 +64,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     @Override
     protected void reset() {
         featureList = new HashSet<>(64);
+        initFeatureList();
         logger.debug("#### reset FeatureStatsbeat");
     }
 

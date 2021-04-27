@@ -42,7 +42,14 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.THR
 public class NetworkStatsbeat extends BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(NetworkStatsbeat.class);
-    private static volatile Set<String> instrumentationList = new HashSet<>(64);;
+    private static volatile Set<String> instrumentationList = new HashSet<>(64);
+    private static final AtomicLong requestSuccessCount = new AtomicLong(0);
+    private static final AtomicLong requestFailureCount = new AtomicLong(0);
+    private static volatile List<Double> requestDurations = new ArrayList<>();
+    private static final AtomicLong retryCount = new AtomicLong(0);
+    private static final AtomicLong throttlingCount = new AtomicLong(0);
+    private static final AtomicLong exceptionCount = new AtomicLong(0);
+    private final Object lock = new Object();
 
     public NetworkStatsbeat(TelemetryClient telemetryClient) {
         super(telemetryClient);
@@ -123,13 +130,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         return StatsbeatHelper.encodeInstrumentations(instrumentationList);
     }
 
-    private final AtomicLong requestSuccessCount = new AtomicLong(0);
-    private final AtomicLong requestFailureCount = new AtomicLong(0);
-    private volatile List<Double> requestDurations = new ArrayList<>();
-    private final AtomicLong retryCount = new AtomicLong(0);
-    private final AtomicLong throttlingCount = new AtomicLong(0);
-    private final AtomicLong exceptionCount = new AtomicLong(0);
-
     public void incrementRequestSuccessCount() {
         logger.debug("#### requestSuccessCount={}", requestSuccessCount.incrementAndGet());
         logger.debug("#### increment request success count");
@@ -140,7 +140,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         logger.debug("#### increment request failure count");
     }
 
-    private final Object lock = new Object();
 
     public void addRequestDuration(double duration) {
         synchronized (lock) {
