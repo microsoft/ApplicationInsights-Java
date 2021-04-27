@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,16 +13,16 @@ public class NetworkStatsbeatTest {
 
     @Before
     public void init() {
-        StatsbeatModule.getInstance().initialize();
+        StatsbeatModule.getInstance().initialize(new TelemetryClient());
         networkStatsbeat = StatsbeatModule.getInstance().getNetworkStatsbeat();
     }
 
     @Test
     public void testAddInstrumentation() {
-        networkStatsbeat.addInstrumentation("opentelemetry-javaagent-jdbc");
-        networkStatsbeat.addInstrumentation("opentelemetry-javaagent-tomcat-7.0");
-        networkStatsbeat.addInstrumentation("opentelemetry-javaagent-http-url-connection");
-        assertEquals(networkStatsbeat.getInstrumentation(), 18014398510538752L);
+        networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.jdbc");
+        networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.tomcat-7.0");
+        networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.http-url-connection");
+        assertEquals(networkStatsbeat.getInstrumentation(), 144115188077961216L);
     }
 
     @Test

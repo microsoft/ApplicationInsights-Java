@@ -11,12 +11,12 @@ import static org.junit.Assert.assertEquals;
 public class StatsbeatHelperTest {
 
     private static final Set<String> instrumentations = new HashSet<String>() {{
-        add("opentelemetry-javaagent-jdbc");
-        add("opentelemetry-javaagent-tomcat-7.0");
-        add("opentelemetry-javaagent-http-url-connection");
+        add("io.opentelemetry.javaagent.jdbc");
+        add("io.opentelemetry.javaagent.tomcat-7.0");
+        add("io.opentelemetry.javaagent.http-url-connection");
     }};
 
-    private long instrumentation = 18014398510538752L;
+    private long instrumentation = 144115188077961216L;
 
     private static final Set<String> features = new HashSet<String>() {{
         add(JAVA_VENDOR_ZULU);
