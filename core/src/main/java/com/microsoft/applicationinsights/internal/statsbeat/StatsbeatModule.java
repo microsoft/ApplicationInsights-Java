@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.microsoft.applicationinsights.TelemetryClient;
+
 public final class StatsbeatModule {
 
     private static StatsbeatModule instance;
@@ -35,10 +37,10 @@ public final class StatsbeatModule {
         return instance;
     }
 
-    public void initialize() {
-        networkStatsbeat = new NetworkStatsbeat();
-        attachStatsbeat = new AttachStatsbeat();
-        featureStatsbeat = new FeatureStatsbeat();
+    public void initialize(TelemetryClient telemetryClient) {
+        networkStatsbeat = new NetworkStatsbeat(telemetryClient);
+        attachStatsbeat = new AttachStatsbeat(telemetryClient);
+        featureStatsbeat = new FeatureStatsbeat(telemetryClient);
     }
 
     public NetworkStatsbeat getNetworkStatsbeat() {

@@ -203,7 +203,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         }
 
         // initialize StatsbeatModule
-        StatsbeatModule.getInstance().initialize();
+        StatsbeatModule.getInstance().initialize(telemetryClient);
     }
 
     private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {

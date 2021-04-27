@@ -43,44 +43,44 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     private static final Logger logger = LoggerFactory.getLogger(NetworkStatsbeat.class);
     private static volatile Set<String> instrumentationList = new HashSet<>(64);;
 
-    public NetworkStatsbeat() {
-        super();
+    public NetworkStatsbeat(TelemetryClient telemetryClient) {
+        super(telemetryClient);
     }
 
     @Override
-    protected void send(TelemetryClient telemetryClient) {
+    protected void send() {
         String instrumentation = String.valueOf(getInstrumentation());
         
         StatsbeatTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT, requestSuccessCount);
         requestSuccessCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
         telemetryClient.track(requestSuccessCountSt);
-        logger.debug("#### sending {}: {}", REQUEST_SUCCESS_COUNT, requestSuccessCountSt);
+        logger.debug("#### send a NetworkStatsbeat {}: {}", REQUEST_SUCCESS_COUNT, requestSuccessCountSt);
 
         StatsbeatTelemetry requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT, requestFailureCount);
         requestFailureCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
         telemetryClient.track(requestFailureCountSt);
-        logger.debug("#### sending {}: {}", REQUEST_FAILURE_COUNT, requestFailureCountSt);
+        logger.debug("#### send a NetworkStatsbeat {}: {}", REQUEST_FAILURE_COUNT, requestFailureCountSt);
 
         double durationAvg = getRequestDurationAvg();
         StatsbeatTelemetry requestFailureDurationSt = createStatsbeatTelemetry(REQUEST_DURATION, durationAvg);
         requestFailureDurationSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
         telemetryClient.track(requestFailureDurationSt);
-        logger.debug("#### sending {}: {}", REQUEST_DURATION, durationAvg);
+        logger.debug("#### send a NetworkStatsbeat {}: {}", REQUEST_DURATION, durationAvg);
 
         StatsbeatTelemetry retryCountSt = createStatsbeatTelemetry(RETRY_COUNT, retryCount);
         retryCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
         telemetryClient.track(retryCountSt);
-        logger.debug("#### sending {}: {}", RETRY_COUNT, retryCount);
+        logger.debug("#### send a NetworkStatsbeat {}: {}", RETRY_COUNT, retryCount);
 
         StatsbeatTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT, throttlingCount);
         throttleCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
         telemetryClient.track(throttleCountSt);
-        logger.debug("#### sending {}: {}", THROTTLE_COUNT, throttlingCount);
+        logger.debug("#### send a NetworkStatsbeat {}: {}", THROTTLE_COUNT, throttlingCount);
 
         StatsbeatTelemetry exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT, exceptionCount);
         exceptionCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
         telemetryClient.track(exceptionCountSt);
-        logger.debug("#### sending {}: {}", EXCEPTION_COUNT, exceptionCount);
+        logger.debug("#### send a NetworkStatsbeat{}: {}", EXCEPTION_COUNT, exceptionCount);
     }
 
     @Override
@@ -92,6 +92,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         retryCount = 0;
         throttlingCount = 0;
         exceptionCount = 0;
+        logger.debug("#### reset NetworkStatsbeat");
     }
 
     public void addInstrumentation(String instrumentation) {

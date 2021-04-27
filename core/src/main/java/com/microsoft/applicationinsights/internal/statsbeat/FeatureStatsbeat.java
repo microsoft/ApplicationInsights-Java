@@ -40,8 +40,8 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     private static final Logger logger = LoggerFactory.getLogger(FeatureStatsbeat.class);
     private static Set<String> featureList = new HashSet<>(64);
 
-    public FeatureStatsbeat() {
-        super();
+    public FeatureStatsbeat(TelemetryClient telemetryClient) {
+        super(telemetryClient);
         initFeatureList();
         updateFrequencyInterval(FEATURE_STATSBEAT_INTERVAL);
     }
@@ -54,16 +54,17 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     }
 
     @Override
-    protected void send(TelemetryClient telemetryClient) {
+    protected void send() {
         StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE, 0);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_FEATURE, String.valueOf(getFeature()));
         telemetryClient.track(statsbeatTelemetry);
-        logger.debug("#### send a featureStatsbeat");
+        logger.debug("#### sending FeatureStatsbeat");
     }
 
     @Override
     protected void reset() {
         featureList = new HashSet<>(64);
+        logger.debug("#### reset FeatureStatsbeat");
     }
 
     private void initFeatureList() {

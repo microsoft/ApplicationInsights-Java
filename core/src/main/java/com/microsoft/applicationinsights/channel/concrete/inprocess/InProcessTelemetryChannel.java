@@ -69,13 +69,11 @@ public final class InProcessTelemetryChannel extends TelemetryChannelBase<Teleme
         if (telemetry.previouslyUsed()) {
             throw new IllegalStateException("Telemetry was previously used: " + telemetry);
         }
-        // TODO Prepare for AAD support for Statsbeat's iKey
+        // TODO Prepare for AAD support for Statsbeat iKey
         if (telemetry instanceof StatsbeatTelemetry) {
             statsTelemetryBuffer.add((StatsbeatTelemetry) telemetry);
-            logger.debug("############################ add StatsbeatTelemetry to statsTelemetryBuffer");
         } else {
             telemetryBuffer.add(telemetry);
-            logger.debug("############################ add regular MetricTelemetry to telemetryBuffer");
         }
         return true;
     }

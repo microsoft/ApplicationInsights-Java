@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.fasterxml.jackson.core.JsonParser;
+import com.microsoft.applicationinsights.TelemetryClient;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ public class FeatureStatsbeatTest {
 
     @Before
     public void init() {
-        StatsbeatModule.getInstance().initialize();
+        StatsbeatModule.getInstance().initialize(new TelemetryClient());
         featureStatsbeat = StatsbeatModule.getInstance().getFeatureStatsbeat();
     }
 

@@ -38,9 +38,9 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 public abstract class BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
+    protected final TelemetryClient telemetryClient;
     protected String resourceProvider;
     protected String operatingSystem;
-    protected TelemetryClient telemetryClient;
     protected ScheduledExecutorService scheduledExecutor;
     protected long interval;
 
@@ -48,7 +48,8 @@ public abstract class BaseStatsbeat {
     private String version;
     private String runtimeVersion;
 
-    public BaseStatsbeat() {
+    public BaseStatsbeat(TelemetryClient telemetryClient) {
+        this.telemetryClient = telemetryClient;
         initializeCommonProperties();
         interval = DEFAULT_STATSBEAT_INTERVAL;
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
@@ -122,7 +123,7 @@ public abstract class BaseStatsbeat {
         runtimeVersion = System.getProperty("java.version");
     }
 
-    protected abstract void send(TelemetryClient telemetryClient);
+    protected abstract void send();
 
     protected abstract void reset();
 
@@ -147,17 +148,12 @@ public abstract class BaseStatsbeat {
         return new Runnable() {
             @Override
             public void run() {
-                if (telemetryClient == null) {
-                    telemetryClient = new TelemetryClient();
-                }
                 try {
-                    send(telemetryClient);
-                    logger.debug("#### sending a statsbeat");
+                    send();
                     reset();
-                    logger.debug("#### reset counter after each interval");
                 }
                 catch (Exception e) {
-                    logger.error("Error occurred while sending statsbeat");
+                    logger.error("Error occurred while sending statsbeat", e);
                 }
             }
         };

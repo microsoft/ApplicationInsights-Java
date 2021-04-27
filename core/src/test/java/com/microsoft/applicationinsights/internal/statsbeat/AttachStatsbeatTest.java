@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.google.common.io.Resources;
+import com.microsoft.applicationinsights.TelemetryClient;
 import okio.BufferedSource;
 import okio.Okio;
 import org.junit.Before;
@@ -31,7 +32,7 @@ public class AttachStatsbeatTest {
 
     @Before
     public void setup() {
-        StatsbeatModule.getInstance().initialize();
+        StatsbeatModule.getInstance().initialize(new TelemetryClient());
         attachStatsbeat = StatsbeatModule.getInstance().getAttachStatsbeat();
     }
 

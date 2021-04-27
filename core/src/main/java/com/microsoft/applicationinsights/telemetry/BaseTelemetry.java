@@ -31,6 +31,7 @@ import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatTelemetry;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.squareup.moshi.JsonWriter;
 import okio.Buffer;
@@ -131,6 +132,10 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
 
         if (this.telemetryName == null || this.telemetryName.isEmpty()) {
             this.telemetryName = getTelemetryName(context.getNormalizedInstrumentationKey(), this.getEnvelopName());
+
+            if (this instanceof StatsbeatTelemetry) {
+                logger.debug("#### this.telemetryName {}", this.telemetryName);
+            }
         } else {
             logger.debug("asse");
         }

@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 public final class Constants {
 
     public static final String STATSBEAT_IKEY =  "1fa755e4-8f2d-4342-8ef4-f8fd1ce563b6"; // "28ac6b6a-3fe0-43a9-bccd-10cb41d791c1"; // ai-statsbeat
-    public static final String STATSBEAT_ENDPOINT = "https://westus2-1.in.applicationinsights.azure.com";//"https://westus2-0.in.applicationinsights.azure.com/";
+    public static final String STATSBEAT_ENDPOINT = "https://westus2-1.in.applicationinsights.azure.com/"; //"https://westus2-0.in.applicationinsights.azure.com/";
     public static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
     public final static long DEFAULT_STATSBEAT_INTERVAL = TimeUnit.MINUTES.toSeconds(1); // default to 15 minutes
     public final static long FEATURE_STATSBEAT_INTERVAL = TimeUnit.DAYS.toSeconds(1); // FeatureStatsbeat default to daily interval

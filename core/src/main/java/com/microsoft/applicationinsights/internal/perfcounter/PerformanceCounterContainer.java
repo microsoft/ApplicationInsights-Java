@@ -169,11 +169,9 @@ public enum PerformanceCounterContainer {
             logger.error(errorMessage);
 
             collectionFrequencyInSec = MIN_COLLECTION_FREQUENCY_IN_SEC;
-            logger.debug("########################## this.collectionFrequencyInMins error: {}", collectionFrequencyInSec / 60.0);
         }
 
         this.collectionFrequencyInMS = collectionFrequencyInSec * 1000;
-        logger.debug("########################## this.collectionFrequencyInMins: {}", collectionFrequencyInSec / 60.0);
     }
 
     /**
