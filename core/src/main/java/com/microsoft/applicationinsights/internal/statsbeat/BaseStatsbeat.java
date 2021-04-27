@@ -139,6 +139,7 @@ public abstract class BaseStatsbeat {
         return statsbeatTelemetry;
     }
 
+    private final Object lock = new Object();
 
     /**
      * Runnable which is responsible for calling the send method to transmit Statsbeat telemetry
@@ -149,8 +150,10 @@ public abstract class BaseStatsbeat {
             @Override
             public void run() {
                 try {
-                    send();
-                    reset();
+                    synchronized (lock) {
+                        send();
+                        reset();
+                    }
                 }
                 catch (Exception e) {
                     logger.error("Error occurred while sending statsbeat", e);
