@@ -54,6 +54,7 @@ public class AttachStatsbeat extends BaseStatsbeat {
     protected void reset() {
         resourceProviderId = null;
         metadataInstanceResponse = null;
+        initResourceProviderId();
         logger.debug("#### reset AttachStatsbeat");
     }
 
