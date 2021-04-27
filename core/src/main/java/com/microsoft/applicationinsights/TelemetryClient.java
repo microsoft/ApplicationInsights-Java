@@ -125,7 +125,6 @@ public class TelemetryClient {
         }
 
         TelemetryContext context = telemetry.getContext();
-
         // do not overwrite if the user has explicitly set the instrumentation key
         // (either via 2.x SDK or ai.preview.instrumentation_key span attribute)
         if (Strings.isNullOrEmpty(context.getInstrumentationKey())) {
