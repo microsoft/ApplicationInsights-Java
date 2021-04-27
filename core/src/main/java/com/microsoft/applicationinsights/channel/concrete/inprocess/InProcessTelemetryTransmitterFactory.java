@@ -62,6 +62,7 @@ final class InProcessTelemetryTransmitterFactory implements ConfiguredTransmitte
     private TelemetriesTransmitter finishTransmitterConstruction(String maxTransmissionStorageCapacity, TransmissionPolicyManager transmissionPolicyManager, TransmissionNetworkOutput actualNetworkSender) {
         TransmissionPolicyStateFetcher stateFetcher = transmissionPolicyManager.getTransmissionPolicyState();
 
+
         TransmissionOutputAsync networkSender = new ActiveTransmissionNetworkOutput(actualNetworkSender, stateFetcher);
         // An active object with the file system sender
         TransmissionFileSystemOutput fileSystemSender = new TransmissionFileSystemOutput(null, maxTransmissionStorageCapacity);

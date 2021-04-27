@@ -31,13 +31,10 @@ import com.google.common.base.Charsets;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
-import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatTelemetry;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.squareup.moshi.JsonWriter;
 import okio.Buffer;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Superclass for all telemetry data classes.
@@ -45,10 +42,7 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private TelemetryContext context;
     private Date timestamp;
-    private String sequence;
-    protected String telemetryName;
-
-    private static final Logger logger = LoggerFactory.getLogger(BaseTelemetry.class);
+    private String telemetryName;
 
     // this is temporary until we are convinced that telemetry are never re-used by codeless agent
     private volatile boolean used;
@@ -71,10 +65,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      */
     protected void initialize(ConcurrentMap<String, String> properties) {
         this.context = new TelemetryContext(properties, new ContextTagsMap());
-    }
-
-    public String getTelemetryName() {
-        return telemetryName;
     }
 
     public void setTelemetryName(String telemetryName) {
@@ -130,12 +120,12 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
 
-        if (this.telemetryName == null || this.telemetryName.isEmpty()) {
-            this.telemetryName = getTelemetryName(context.getNormalizedInstrumentationKey(), this.getEnvelopName());
+        if (telemetryName == null || telemetryName.isEmpty()) {
+            telemetryName = getTelemetryName(context.getNormalizedInstrumentationKey(), this.getEnvelopName());
         }
 
         Envelope envelope = new Envelope();
-        envelope.setName(this.telemetryName);
+        envelope.setName(telemetryName);
 
         setSampleRate(envelope);
         envelope.setIKey(context.getInstrumentationKey());

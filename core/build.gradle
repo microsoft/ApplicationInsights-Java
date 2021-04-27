@@ -67,7 +67,6 @@ dependencies {
     testImplementation group: 'com.azure', name: 'azure-storage-blob', version: versions.azureStorageBlob
 
     forTheDLL 'com.microsoft.azure:applicationinsights-core:2.6.2'
-
 }
 
 task copyTheDLL(type: Copy) {

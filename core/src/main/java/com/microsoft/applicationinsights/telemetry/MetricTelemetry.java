@@ -36,8 +36,8 @@ import com.microsoft.applicationinsights.internal.schemav2.MetricData;
  * </p>
  */
 public class MetricTelemetry extends BaseTelemetry<MetricData> {
-    protected final MetricData data;
-    protected final DataPoint metric;
+    private final MetricData data;
+    private final DataPoint metric;
 
     /**
      * Envelope Name for this telemetry.

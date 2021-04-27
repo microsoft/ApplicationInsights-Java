@@ -50,7 +50,6 @@ public final class TelemetryConfiguration {
     private String connectionString;
     private String roleName;
     private String roleInstance;
-    private String sdkVersion;
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
@@ -206,14 +205,6 @@ public final class TelemetryConfiguration {
 
     public EndpointProvider getEndpointProvider() {
         return endpointProvider;
-    }
-
-    public String getSdkVersion() {
-        return sdkVersion;
-    }
-
-    public void setSdkVersion(String sdkVersion) {
-        this.sdkVersion = sdkVersion;
     }
 
     /**
