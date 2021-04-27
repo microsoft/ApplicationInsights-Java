@@ -1,12 +1,9 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,11 +45,10 @@ public class HeartbeatTests {
   }
 
   @Test
-  public void initializeHeartBeatDefaultsAreSetCorrectly() throws Exception {
+  public void initializeHeartBeatDefaultsAreSetCorrectly() {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.initialize(null);
 
-    Thread.sleep(100);
     Assert.assertTrue(module.getExcludedHeartBeatProperties() == null ||
     module.getExcludedHeartBeatProperties().size() == 0);
     Assert.assertEquals(HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL, module.getHeartBeatInterval());
@@ -96,7 +92,6 @@ public class HeartbeatTests {
     TelemetryClient telemetryClient = new TelemetryClient();
     TelemetryClientInitializer.INSTANCE.initialize(telemetryClient, new ApplicationInsightsXmlConfiguration());
     List<TelemetryModule> modules = telemetryClient.getTelemetryModules();
-    System.out.println(modules.size());
     boolean hasHeartBeatModule = false;
     HeartBeatModule hbm = null;
     for (TelemetryModule m : modules) {
@@ -106,11 +101,9 @@ public class HeartbeatTests {
         break;
       }
     }
-    System.out.println(hasHeartBeatModule);
     Assert.assertTrue(hasHeartBeatModule);
     Assert.assertNotNull(hbm);
     Assert.assertTrue(hbm.isHeartBeatEnabled());
-
   }
 
   @Test
@@ -143,7 +136,6 @@ public class HeartbeatTests {
     Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps"));
     module.initialize(new TelemetryClient());
 
-    Thread.sleep(100);
     Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("Base"));
     Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps"));
   }
@@ -172,45 +164,40 @@ public class HeartbeatTests {
   }
 
   @Test
-  public void heartBeatPayloadContainsDataByDefault() throws Exception {
+  public void heartBeatPayloadContainsDataByDefault() {
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(new TelemetryClient());
 
-    Thread.sleep(100);
-    MetricsData t = getMetricsData(provider);
+    MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
     Assert.assertNotNull(t);
-    // for callable to complete adding
-    Thread.sleep(100);
     Assert.assertTrue(t.getProperties().size() > 0);
   }
 
   @Test
-  public void heartBeatPayloadContainsSpecificProperties() throws Exception {
+  public void heartBeatPayloadContainsSpecificProperties() {
     HeartBeatProvider provider = new HeartBeatProvider();
     Assert.assertTrue(provider.addHeartBeatProperty("test", "testVal", true));
 
-    MetricsData t = getMetricsData(provider);
+    MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
     Assert.assertEquals("testVal", t.getProperties().get("test"));
-
   }
 
   @Test
-  public void heartbeatMetricIsNonZeroWhenFailureConditionPresent() throws Exception {
+  public void heartbeatMetricIsNonZeroWhenFailureConditionPresent() {
     HeartBeatProvider provider = new HeartBeatProvider();
     Assert.assertTrue(provider.addHeartBeatProperty("test", "testVal", false));
 
-    MetricsData t = getMetricsData(provider);
+    MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
     Assert.assertEquals(1, t.getMetrics().get(0).getValue(), 0.0);
-
   }
 
   @Test
-  public void heartbeatMetricCountsForAllFailures() throws Exception {
+  public void heartbeatMetricCountsForAllFailures() {
     HeartBeatProvider provider = new HeartBeatProvider();
     Assert.assertTrue(provider.addHeartBeatProperty("test", "testVal", false));
     Assert.assertTrue(provider.addHeartBeatProperty("test1", "testVal1", false));
 
-    MetricsData t = getMetricsData(provider);
+    MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
     Assert.assertEquals(2, t.getMetrics().get(0).getValue(), 0.0);
   }
 
@@ -258,7 +245,7 @@ public class HeartbeatTests {
     defaultFields.add(testKey);
     HeartBeatProvider provider = new HeartBeatProvider();
     base.setDefaultPayload(new ArrayList<>(), provider).call();
-    MetricsData t = getMetricsData(provider);
+    MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
     Assert.assertFalse(t.getProperties().containsKey("testKey"));
   }
 
@@ -272,12 +259,5 @@ public class HeartbeatTests {
     Thread.sleep(100);
     Assert.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("Base"));
     Assert.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("webapps"));
-  }
-
-  private MetricsData getMetricsData(HeartBeatProvider provider) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-    Method m = provider.getClass().getDeclaredMethod("gatherData");
-    m.setAccessible(true);
-    TelemetryItem telemetry = (TelemetryItem) m.invoke(provider);
-    return (MetricsData) telemetry.getData().getBaseData();
   }
 }

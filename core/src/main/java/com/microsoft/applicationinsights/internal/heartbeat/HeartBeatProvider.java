@@ -189,7 +189,8 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
    * Creates and returns the heartbeat telemetry.
    * @return Metric Telemetry which represent heartbeat.
    */
-  private TelemetryItem gatherData() {
+  // visible for testing
+  TelemetryItem gatherData() {
     Map<String, String> properties = new HashMap<>();
     double numHealthy = 0;
     for (Map.Entry<String, HeartBeatPropertyPayload> entry : heartbeatProperties.entrySet()) {
