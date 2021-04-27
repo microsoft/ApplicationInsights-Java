@@ -66,12 +66,18 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
                 }
             }
 
-            // FIXME (trask) need to keep track of BatchSpanProcessor for flushing?
-            tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(currExporter).build());
+            // using batch size 1 here because batching is done at a lower level
+            // but still using BatchSpanProcessor in order to get off of the application thread as soon as possible
+            tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(currExporter)
+                    .setMaxExportBatchSize(1)
+                    .build());
 
         } else {
-            // FIXME (trask) need to keep track of BatchSpanProcessor for flushing?
-            tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(exporter).build());
+            // using batch size 1 here because batching is done at a lower level
+            // but still using BatchSpanProcessor in order to get off of the application thread as soon as possible
+            tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(exporter)
+                    .setMaxExportBatchSize(1)
+                    .build());
         }
     }
 }

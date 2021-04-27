@@ -99,8 +99,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         point.setMin(min);
         point.setMax(max);
         point.setStdDev(stdDev);
-        // FIXME (trask) pass across data point type from 2.x SDK
-        point.setDataPointType(DataPointType.MEASUREMENT);
+        if (count != null || min != null || max != null || stdDev != null) {
+            point.setDataPointType(DataPointType.AGGREGATION);
+        } else {
+            point.setDataPointType(DataPointType.MEASUREMENT);
+        }
 
         if (!properties.isEmpty()) {
             Map<String, String> existingProperties = data.getProperties();
@@ -175,7 +178,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         TelemetryClient.getActive().initPageViewTelemetry(telemetry, data);
 
         data.setName(name);
-        data.setUrl(uri.toString());
+        if (uri != null) {
+            data.setUrl(uri.toString());
+        }
         data.setDuration(TelemetryUtil.getFormattedDuration(totalMillis));
         data.setMeasurements(metrics);
 

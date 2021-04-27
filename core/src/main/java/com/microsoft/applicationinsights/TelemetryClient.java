@@ -22,16 +22,13 @@
 package com.microsoft.applicationinsights;
 
 import com.azure.core.http.HttpHeaders;
-import com.azure.core.util.CoreUtils;
 import com.azure.core.util.serializer.*;
 import com.azure.core.util.tracing.Tracer;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
@@ -50,7 +47,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
 import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -97,7 +93,8 @@ public class TelemetryClient {
 
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
-    private @Nullable ApplicationInsightsClientImpl channel;
+    private final Object channelInitLock = new Object();
+    private volatile @Nullable ApplicationInsightsClientImpl channel;
 
     // only used by tests
     public TelemetryClient() {
@@ -166,7 +163,6 @@ public class TelemetryClient {
         active = null;
     }
 
-    // FIXME (trask) don't send these one at a time, should be some kind of batching here
     public void trackAsync(TelemetryItem telemetryItem) {
         trackAsync(singletonList(telemetryItem))
                 .subscriberContext(Context.of(Tracer.DISABLE_TRACING_KEY, true))
@@ -174,9 +170,6 @@ public class TelemetryClient {
     }
 
     public Mono<ExportResult> trackAsync(List<TelemetryItem> telemetryItems) {
-        if (channel == null) {
-            channel = lazy();
-        }
         for (TelemetryItem telemetry : telemetryItems) {
 
             if (telemetry.getSampleRate() == null) {
@@ -193,10 +186,23 @@ public class TelemetryClient {
 
             TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetry));
         }
-        return channel.trackAsync(telemetryItems);
+
+        // FIXME (trask) implement batching here!!!
+        return getChannel().trackAsync(telemetryItems);
     }
 
-    private ApplicationInsightsClientImpl lazy() {
+    public ApplicationInsightsClientImpl getChannel() {
+        if (channel == null) {
+            synchronized (channelInitLock) {
+                if (channel == null) {
+                    channel = createChannel();
+                }
+            }
+        }
+        return channel;
+    }
+
+    private ApplicationInsightsClientImpl createChannel() {
         ApplicationInsightsClientImplBuilder restServiceClientBuilder = new ApplicationInsightsClientImplBuilder();
         restServiceClientBuilder.serializerAdapter(new JacksonJsonAdapter());
 
@@ -210,12 +216,6 @@ public class TelemetryClient {
         }
 
         return restServiceClientBuilder.buildClient();
-    }
-
-    // this method only exists for generating bytecode via ASMifier in TelemetryClientClassFileTransformer
-    @Deprecated
-    public boolean isTrackingDisabled() {
-        return true;
     }
 
     public List<TelemetryModule> getTelemetryModules() {
