@@ -87,6 +87,10 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
         return new TransmissionNetworkOutput(null, configuration, transmissionPolicyManager);
     }
 
+    public static TransmissionNetworkOutput create(@Nullable String endpoint, TransmissionPolicyManager transmissionPolicyManager) {
+        return new TransmissionNetworkOutput(endpoint, null, transmissionPolicyManager);
+    }
+
     private TransmissionNetworkOutput(@Nullable String serverUri, @Nullable TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
         Preconditions.checkNotNull(transmissionPolicyManager, "transmissionPolicyManager should be a valid non-null value");
         this.serverUri = serverUri;

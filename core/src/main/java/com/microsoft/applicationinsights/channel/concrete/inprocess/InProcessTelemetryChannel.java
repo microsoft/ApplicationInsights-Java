@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.channel.concrete.inprocess;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
+import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 import java.util.Map;
@@ -67,7 +68,7 @@ public final class InProcessTelemetryChannel extends TelemetryChannelBase<Teleme
 
         // TODO Prepare for AAD support for Statsbeat iKey
         if (telemetry instanceof StatsbeatTelemetry) {
-            statsTelemetryBuffer.add((StatsbeatTelemetry) telemetry);
+            statsbeatBuffer.add((StatsbeatTelemetry) telemetry);
         } else {
             telemetryBuffer.add(telemetry);
         }

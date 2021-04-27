@@ -14,4 +14,6 @@ public interface ConfiguredTransmitterFactory<T> {
      * @return
      */
     TelemetriesTransmitter<T> create(@Nullable TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries);
+
+    TelemetriesTransmitter<T> create(@Nullable String endpoint, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries);
 }
