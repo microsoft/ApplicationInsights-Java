@@ -140,7 +140,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         logger.debug("#### increment request failure count");
     }
 
-
     public void addRequestDuration(double duration) {
         synchronized (lock) {
             requestDurations.add(duration);

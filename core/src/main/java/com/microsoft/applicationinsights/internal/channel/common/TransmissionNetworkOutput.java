@@ -141,7 +141,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
         try {
             // POST the transmission data to the endpoint
             request = createTransmissionPostRequest(transmission);
+            long startTime = System.currentTimeMillis();
             response = httpClient.execute(request);
+            long duration = System.currentTimeMillis() - startTime;
             HttpEntity respEntity = response.getEntity();
             code = response.getStatusLine().getStatusCode();
             reason = response.getStatusLine().getReasonPhrase();
@@ -158,6 +160,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 // Increment Success Counter
                 networkExceptionStats.recordSuccess();
                 StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestSuccessCount();
+                StatsbeatModule.getInstance().getNetworkStatsbeat().addRequestDuration(duration);
             }
             return true;
         } catch (ConnectionPoolTimeoutException e) {
