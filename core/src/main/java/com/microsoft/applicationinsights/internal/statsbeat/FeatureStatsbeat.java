@@ -43,7 +43,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     public FeatureStatsbeat(TelemetryClient telemetryClient) {
         super(telemetryClient);
         initFeatureList();
-        updateFrequencyInterval(FEATURE_STATSBEAT_INTERVAL);
+        //updateFrequencyInterval(FEATURE_STATSBEAT_INTERVAL);
     }
 
     /**
@@ -58,7 +58,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
         StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE, 0);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_FEATURE, String.valueOf(getFeature()));
         telemetryClient.track(statsbeatTelemetry);
-        logger.debug("#### sending FeatureStatsbeat");
+        logger.debug("#### send a FeatureStatsbeat {}", statsbeatTelemetry);
     }
 
     @Override

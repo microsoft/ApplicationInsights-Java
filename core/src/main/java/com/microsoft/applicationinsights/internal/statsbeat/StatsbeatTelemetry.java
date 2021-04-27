@@ -30,7 +30,7 @@ public class StatsbeatTelemetry extends MetricTelemetry {
 
     public StatsbeatTelemetry(String name, double value) {
         super(name, value);
-//        setTelemetryName(STATSBEAT_TELEMETRY_NAME);
+        setTelemetryName(STATSBEAT_TELEMETRY_NAME);
         getContext().setInstrumentationKey(STATSBEAT_IKEY);
     }
 }

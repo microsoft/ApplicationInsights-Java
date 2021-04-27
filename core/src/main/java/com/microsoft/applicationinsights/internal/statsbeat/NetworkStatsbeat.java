@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_INSTRUMENTATION;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.EXCEPTION_COUNT;
@@ -51,15 +52,15 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     protected void send() {
         String instrumentation = String.valueOf(getInstrumentation());
 
-        if (requestSuccessCount != 0) {
-            StatsbeatTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT, requestSuccessCount);
+        if (requestSuccessCount.get() != 0) {
+            StatsbeatTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT, requestSuccessCount.get());
             requestSuccessCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestSuccessCountSt);
             logger.debug("#### send a NetworkStatsbeat {}: {}", REQUEST_SUCCESS_COUNT, requestSuccessCountSt);
         }
 
-        if (requestFailureCount != 0) {
-            StatsbeatTelemetry requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT, requestFailureCount);
+        if (requestFailureCount.get() != 0) {
+            StatsbeatTelemetry requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT, requestFailureCount.get());
             requestFailureCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestFailureCountSt);
             logger.debug("#### send a NetworkStatsbeat {}: {}", REQUEST_FAILURE_COUNT, requestFailureCountSt);
@@ -73,22 +74,22 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             logger.debug("#### send a NetworkStatsbeat {}: {}", REQUEST_DURATION, requestDurationSt);
         }
 
-        if (retryCount != 0) {
-            StatsbeatTelemetry retryCountSt = createStatsbeatTelemetry(RETRY_COUNT, retryCount);
+        if (retryCount.get() != 0) {
+            StatsbeatTelemetry retryCountSt = createStatsbeatTelemetry(RETRY_COUNT, retryCount.get());
             retryCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(retryCountSt);
             logger.debug("#### send a NetworkStatsbeat {}: {}", RETRY_COUNT, retryCountSt);
         }
 
-        if (throttlingCount != 0) {
-            StatsbeatTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT, throttlingCount);
+        if (throttlingCount.get() != 0) {
+            StatsbeatTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT, throttlingCount.get());
             throttleCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(throttleCountSt);
             logger.debug("#### send a NetworkStatsbeat {}: {}", THROTTLE_COUNT, throttleCountSt);
         }
 
-        if (exceptionCount != 0) {
-            StatsbeatTelemetry exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT, exceptionCount);
+        if (exceptionCount.get() != 0) {
+            StatsbeatTelemetry exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT, exceptionCount.get());
             exceptionCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(exceptionCountSt);
             logger.debug("#### send a NetworkStatsbeat{}: {}", EXCEPTION_COUNT, exceptionCountSt);
@@ -98,19 +99,21 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     @Override
     protected void reset() {
         instrumentationList = new HashSet<>(64);
-        requestSuccessCount = 0;
-        requestFailureCount = 0;
+        requestSuccessCount.set(0L);
+        requestFailureCount.set(0L);
         requestDurations = new ArrayList<>();
-        retryCount = 0;
-        throttlingCount = 0;
-        exceptionCount = 0;
+        retryCount.set(0L);
+        throttlingCount.set(0L);
+        exceptionCount.set(0L);
         logger.debug("#### reset NetworkStatsbeat");
     }
 
     public void addInstrumentation(String instrumentation) {
-        instrumentationList.add(instrumentation);
-        logger.debug("#### add {} to the list", instrumentation);
-        logger.debug("#### instrumentation list size: {}", instrumentationList.size());
+        synchronized (lock) {
+            instrumentationList.add(instrumentation);
+            logger.debug("#### add {} to the list", instrumentation);
+            logger.debug("#### instrumentation list size: {}", instrumentationList.size());
+        }
     }
 
     /**
@@ -120,47 +123,53 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         return StatsbeatHelper.encodeInstrumentations(instrumentationList);
     }
 
-    private static volatile long requestSuccessCount;
-    private static volatile long requestFailureCount;
-    private static volatile List<Double> requestDurations = new ArrayList<>();
-    private static volatile long retryCount;
-    private static long throttlingCount;
-    private static long exceptionCount;
+    private final AtomicLong requestSuccessCount = new AtomicLong(0);
+    private final AtomicLong requestFailureCount = new AtomicLong(0);
+    private volatile List<Double> requestDurations = new ArrayList<>();
+    private final AtomicLong retryCount = new AtomicLong(0);
+    private final AtomicLong throttlingCount = new AtomicLong(0);
+    private final AtomicLong exceptionCount = new AtomicLong(0);
 
     public void incrementRequestSuccessCount() {
-        requestSuccessCount++;
+        logger.debug("#### requestSuccessCount={}", requestSuccessCount.incrementAndGet());
         logger.debug("#### increment request success count");
     }
 
     public void incrementRequestFailureCount() {
-        requestFailureCount++;
+        logger.debug("#### requestFailureCount={}", requestFailureCount.incrementAndGet());
         logger.debug("#### increment request failure count");
     }
 
+    private final Object lock = new Object();
+
     public void addRequestDuration(double duration) {
-        requestDurations.add(duration);
-        logger.debug("#### add a new request duration {}", duration);
+        synchronized (lock) {
+            requestDurations.add(duration);
+            logger.debug("#### add a new request duration {}", requestDurations.size());
+        }
     }
 
     public void incrementRetryCount() {
-        retryCount++;
+        logger.debug("#### retryCount={}", retryCount.incrementAndGet());
         logger.debug("#### increment retry count");
     }
 
     public void incrementThrottlingCount() {
-        throttlingCount++;
+        logger.debug("#### throttlingCount={}", throttlingCount.incrementAndGet());
+        logger.debug("#### increment throttling count");
     }
 
     public void incrementExceptionCount() {
-        exceptionCount++;
+        logger.debug("#### exceptionCount={}", exceptionCount.incrementAndGet());
+        logger.debug("#### increment exception count");
     }
 
     public long getRequestSuccessCount() {
-        return requestSuccessCount;
+        return requestSuccessCount.get();
     }
 
     public long getRequestFailureCount() {
-        return requestFailureCount;
+        return requestFailureCount.get();
     }
 
     public List<Double> getRequestDurations() {
@@ -168,15 +177,15 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     public long getRetryCount() {
-        return retryCount;
+        return retryCount.get();
     }
 
     public long getThrottlingCount() {
-        return throttlingCount;
+        return throttlingCount.get();
     }
 
     public long getExceptionCount() {
-        return exceptionCount;
+        return exceptionCount.get();
     }
 
     protected double getRequestDurationAvg() {

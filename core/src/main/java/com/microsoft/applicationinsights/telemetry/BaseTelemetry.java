@@ -132,12 +132,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
 
         if (this.telemetryName == null || this.telemetryName.isEmpty()) {
             this.telemetryName = getTelemetryName(context.getNormalizedInstrumentationKey(), this.getEnvelopName());
-
-            if (this instanceof StatsbeatTelemetry) {
-                logger.debug("#### this.telemetryName {}", this.telemetryName);
-            }
-        } else {
-            logger.debug("asse");
         }
 
         Envelope envelope = new Envelope();
