@@ -72,7 +72,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         telemetry.setTime(TelemetryUtil.getFormattedNow());
-        telemetry.getTags().putAll(tags);
+        selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
         }
@@ -115,7 +115,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         telemetry.setTime(TelemetryUtil.getFormattedNow());
-        telemetry.getTags().putAll(tags);
+        selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
         }
@@ -158,7 +158,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         telemetry.setTime(TelemetryUtil.getFormattedNow());
-        telemetry.getTags().putAll(tags);
+        selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
         }
@@ -194,7 +194,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         telemetry.setTime(TelemetryUtil.getFormattedNow());
-        telemetry.getTags().putAll(tags);
+        selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
         }
@@ -227,7 +227,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         telemetry.setTime(TelemetryUtil.getFormattedNow());
-        telemetry.getTags().putAll(tags);
+        selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
         }
@@ -273,7 +273,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         } else {
             telemetry.setTime(TelemetryUtil.getFormattedNow());
         }
-        telemetry.getTags().putAll(tags);
+        selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
         }
@@ -305,7 +305,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         telemetry.setTime(TelemetryUtil.getFormattedNow());
-        telemetry.getTags().putAll(tags);
+        selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
         }
@@ -386,5 +386,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     private static String getOperationId(TelemetryItem telemetry) {
         return telemetry.getTags().get(ContextTagKeys.AI_OPERATION_ID.toString());
+    }
+
+    private static void selectivelySetTags(TelemetryItem telemetry, Map<String, String> sourceTags) {
+        Map<String, String> destTags = telemetry.getTags();
+        for (Map.Entry<String, String> entry : sourceTags.entrySet()) {
+            if (!entry.getKey().equals(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString())) {
+                destTags.put(entry.getKey(), entry.getValue());
+            }
+        }
     }
 }
