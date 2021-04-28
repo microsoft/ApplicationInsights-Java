@@ -68,6 +68,9 @@ public class ConfigurationBuilder {
 
     private static final String APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT = "APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT";
     private static final String APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED = "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED";
+    private static final String APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAVA_HTTP_CLIENT_ENABLED = "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAVA_HTTP_CLIENT_ENABLED";
+    private static final String APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAXWS_ENABLED = "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAXWS_ENABLED";
+    private static final String APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED = "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED";
 
     private static final String APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED = "APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED";
 
@@ -255,6 +258,9 @@ public class ConfigurationBuilder {
 
         config.preview.openTelemetryApiSupport = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT, config.preview.openTelemetryApiSupport);
         config.preview.instrumentation.azureSdk.enabled = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED, config.preview.instrumentation.azureSdk.enabled);
+        config.preview.instrumentation.javaHttpClient.enabled = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAVA_HTTP_CLIENT_ENABLED, config.preview.instrumentation.javaHttpClient.enabled);
+        config.preview.instrumentation.jaxws.enabled = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAXWS_ENABLED, config.preview.instrumentation.jaxws.enabled);
+        config.preview.instrumentation.rabbitmq.enabled = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED, config.preview.instrumentation.rabbitmq.enabled);
 
         config.preview.liveMetrics.enabled = overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED, config.preview.liveMetrics.enabled);
 
@@ -326,7 +332,7 @@ public class ConfigurationBuilder {
     }
 
     // never returns empty string (empty string is normalized to null)
-    private static String getEnvVar(String name) {
+    protected static String getEnvVar(String name) {
         return trimAndEmptyToNull(System.getenv(name));
     }
 

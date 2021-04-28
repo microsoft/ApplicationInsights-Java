@@ -185,10 +185,13 @@ public class Configuration {
     }
 
     public static class PreviewInstrumentation {
-        public AzureSdkInstrumentation azureSdk = new AzureSdkInstrumentation();
+        public DisabledByDefaultInstrumentation azureSdk = new DisabledByDefaultInstrumentation();
+        public DisabledByDefaultInstrumentation javaHttpClient = new DisabledByDefaultInstrumentation();
+        public DisabledByDefaultInstrumentation jaxws = new DisabledByDefaultInstrumentation();
+        public DisabledByDefaultInstrumentation rabbitmq = new DisabledByDefaultInstrumentation();
     }
 
-    public static class AzureSdkInstrumentation {
+    public static class DisabledByDefaultInstrumentation {
         public boolean enabled;
     }
 
