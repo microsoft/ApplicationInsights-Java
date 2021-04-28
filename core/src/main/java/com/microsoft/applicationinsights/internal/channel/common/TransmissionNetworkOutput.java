@@ -77,31 +77,29 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
     private final String serverUri;
 
     private final TelemetryConfiguration configuration;
+    private final boolean isStatsbeat;
 
     // Use one instance for optimization
     private final HttpClient httpClient;
 
     private final TransmissionPolicyManager transmissionPolicyManager;
 
-    public static TransmissionNetworkOutput create(TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
-        return new TransmissionNetworkOutput(null, configuration, transmissionPolicyManager);
+    public static TransmissionNetworkOutput create(TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager, boolean isStatsbeat) {
+        return new TransmissionNetworkOutput(null, configuration, transmissionPolicyManager, isStatsbeat);
     }
 
-    public static TransmissionNetworkOutput create(@Nullable String endpoint, TransmissionPolicyManager transmissionPolicyManager) {
-        return new TransmissionNetworkOutput(endpoint, null, transmissionPolicyManager);
-    }
-
-    private TransmissionNetworkOutput(@Nullable String serverUri, @Nullable TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
+    private TransmissionNetworkOutput(@Nullable String serverUri, @Nullable TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager, boolean isStatsbeat) {
         Preconditions.checkNotNull(transmissionPolicyManager, "transmissionPolicyManager should be a valid non-null value");
         this.serverUri = serverUri;
         this.configuration = configuration;
+        this.isStatsbeat = isStatsbeat;
         if (StringUtils.isNotEmpty(serverUri)) {
             logger.warn("Setting the endpoint via the <Channel> element is deprecated and will be removed in a future version. Use the top-level element <ConnectionString>.");
         }
         httpClient = LazyHttpClient.getInstance();
         this.transmissionPolicyManager = transmissionPolicyManager;
         if (logger.isTraceEnabled()) {
-            logger.trace("{} using endpoint {}", TransmissionNetworkOutput.class.getSimpleName(), getIngestionEndpoint());
+            logger.trace("{} using endpoint {}", TransmissionNetworkOutput.class.getSimpleName(), (isStatsbeat ? getStatsbeatEndpoint() : getIngestionEndpoint()));
         }
     }
 
@@ -238,7 +236,8 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
      * @return The completed {@link HttpPost} object
      */
     private HttpPost createTransmissionPostRequest(Transmission transmission) {
-        HttpPost request = new HttpPost(getIngestionEndpoint());
+        String endpoint = isStatsbeat ? getStatsbeatEndpoint() : getIngestionEndpoint();
+        HttpPost request = new HttpPost(endpoint);
         request.addHeader(CONTENT_TYPE_HEADER, transmission.getWebContentType());
         request.addHeader(CONTENT_ENCODING_HEADER, transmission.getWebContentEncodingType());
 
@@ -253,6 +252,16 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
             return serverUri;
         } else if (configuration != null) {
             return configuration.getEndpointProvider().getIngestionEndpointURL().toString();
+        } else {
+            return DEFAULT_SERVER_URI;
+        }
+    }
+
+    private String getStatsbeatEndpoint() {
+        if (serverUri != null) {
+            return serverUri;
+        } else if (configuration != null) {
+            return configuration.getEndpointProvider().getStatsbeatEndpointUrl().toString();
         } else {
             return DEFAULT_SERVER_URI;
         }
