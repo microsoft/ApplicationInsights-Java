@@ -63,14 +63,14 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             StatsbeatTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT, requestSuccessCount.get());
             requestSuccessCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestSuccessCountSt);
-            logger.debug("#### send a NetworkStatsbeat {}: {}", REQUEST_SUCCESS_COUNT, requestSuccessCountSt);
+            logger.debug("send a NetworkStatsbeat {}: {}", REQUEST_SUCCESS_COUNT, requestSuccessCountSt);
         }
 
         if (requestFailureCount.get() != 0) {
             StatsbeatTelemetry requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT, requestFailureCount.get());
             requestFailureCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestFailureCountSt);
-            logger.debug("#### send a NetworkStatsbeat {}: {}", REQUEST_FAILURE_COUNT, requestFailureCountSt);
+            logger.debug("send a NetworkStatsbeat {}: {}", REQUEST_FAILURE_COUNT, requestFailureCountSt);
         }
 
         double durationAvg = getRequestDurationAvg();
@@ -78,28 +78,28 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             StatsbeatTelemetry requestDurationSt = createStatsbeatTelemetry(REQUEST_DURATION, durationAvg);
             requestDurationSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestDurationSt);
-            logger.debug("#### send a NetworkStatsbeat {}: {}", REQUEST_DURATION, requestDurationSt);
+            logger.debug("send a NetworkStatsbeat {}: {}", REQUEST_DURATION, requestDurationSt);
         }
 
         if (retryCount.get() != 0) {
             StatsbeatTelemetry retryCountSt = createStatsbeatTelemetry(RETRY_COUNT, retryCount.get());
             retryCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(retryCountSt);
-            logger.debug("#### send a NetworkStatsbeat {}: {}", RETRY_COUNT, retryCountSt);
+            logger.debug("send a NetworkStatsbeat {}: {}", RETRY_COUNT, retryCountSt);
         }
 
         if (throttlingCount.get() != 0) {
             StatsbeatTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT, throttlingCount.get());
             throttleCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(throttleCountSt);
-            logger.debug("#### send a NetworkStatsbeat {}: {}", THROTTLE_COUNT, throttleCountSt);
+            logger.debug("send a NetworkStatsbeat {}: {}", THROTTLE_COUNT, throttleCountSt);
         }
 
         if (exceptionCount.get() != 0) {
             StatsbeatTelemetry exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT, exceptionCount.get());
             exceptionCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(exceptionCountSt);
-            logger.debug("#### send a NetworkStatsbeat{}: {}", EXCEPTION_COUNT, exceptionCountSt);
+            logger.debug("send a NetworkStatsbeat{}: {}", EXCEPTION_COUNT, exceptionCountSt);
         }
     }
 
@@ -112,14 +112,13 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         retryCount.set(0L);
         throttlingCount.set(0L);
         exceptionCount.set(0L);
-        logger.debug("#### reset NetworkStatsbeat");
+        logger.debug("reset NetworkStatsbeat");
     }
 
     public void addInstrumentation(String instrumentation) {
         synchronized (lock) {
             instrumentationList.add(instrumentation);
-            logger.debug("#### add {} to the list", instrumentation);
-            logger.debug("#### instrumentation list size: {}", instrumentationList.size());
+            logger.debug("add {} to the list", instrumentation);
         }
     }
 
@@ -131,35 +130,30 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     public void incrementRequestSuccessCount() {
-        logger.debug("#### requestSuccessCount={}", requestSuccessCount.incrementAndGet());
-        logger.debug("#### increment request success count");
+        logger.debug("requestSuccessCount={}", requestSuccessCount.incrementAndGet());
     }
 
     public void incrementRequestFailureCount() {
-        logger.debug("#### requestFailureCount={}", requestFailureCount.incrementAndGet());
-        logger.debug("#### increment request failure count");
+        logger.debug("requestFailureCount={}", requestFailureCount.incrementAndGet());
     }
 
     public void addRequestDuration(double duration) {
         synchronized (lock) {
             requestDurations.add(duration);
-            logger.debug("#### add a new request duration {}", requestDurations.size());
+            logger.debug("add a new request duration {}", duration);
         }
     }
 
     public void incrementRetryCount() {
-        logger.debug("#### retryCount={}", retryCount.incrementAndGet());
-        logger.debug("#### increment retry count");
+        logger.debug("retryCount={}", retryCount.incrementAndGet());
     }
 
     public void incrementThrottlingCount() {
-        logger.debug("#### throttlingCount={}", throttlingCount.incrementAndGet());
-        logger.debug("#### increment throttling count");
+        logger.debug("throttlingCount={}", throttlingCount.incrementAndGet());
     }
 
     public void incrementExceptionCount() {
-        logger.debug("#### exceptionCount={}", exceptionCount.incrementAndGet());
-        logger.debug("#### increment exception count");
+        logger.debug("exceptionCount={}", exceptionCount.incrementAndGet());
     }
 
     public long getRequestSuccessCount() {

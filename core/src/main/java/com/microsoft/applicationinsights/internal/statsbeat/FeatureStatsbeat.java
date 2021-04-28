@@ -58,14 +58,14 @@ public class FeatureStatsbeat extends BaseStatsbeat {
         StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE, 0);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_FEATURE, String.valueOf(getFeature()));
         telemetryClient.track(statsbeatTelemetry);
-        logger.debug("#### send a FeatureStatsbeat {}", statsbeatTelemetry);
+        logger.debug("send a FeatureStatsbeat {}", statsbeatTelemetry);
     }
 
     @Override
     protected void reset() {
         featureList = new HashSet<>(64);
         initFeatureList();
-        logger.debug("#### reset FeatureStatsbeat");
+        logger.debug("reset FeatureStatsbeat");
     }
 
     private void initFeatureList() {

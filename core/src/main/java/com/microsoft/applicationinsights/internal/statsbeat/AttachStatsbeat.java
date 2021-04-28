@@ -42,11 +42,9 @@ public class AttachStatsbeat extends BaseStatsbeat {
     protected void send() {
         if (resourceProviderId != null) {
             StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH, 0);
-            logger.debug("#### AttachStatsbeat customDimensions.size: {}", statsbeatTelemetry.getProperties().size());
-            logger.debug("#### AttachStatsbeat.resourceProviderId: {}", resourceProviderId);
             statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_RP_ID, resourceProviderId);
             telemetryClient.track(statsbeatTelemetry);
-            logger.debug("#### send a AttachStatsbeat {}", statsbeatTelemetry);
+            logger.debug("send a AttachStatsbeat {}", statsbeatTelemetry);
         }
     }
 
@@ -55,7 +53,7 @@ public class AttachStatsbeat extends BaseStatsbeat {
         resourceProviderId = null;
         metadataInstanceResponse = null;
         initResourceProviderId();
-        logger.debug("#### reset AttachStatsbeat");
+        logger.debug("reset AttachStatsbeat");
     }
 
     /**
