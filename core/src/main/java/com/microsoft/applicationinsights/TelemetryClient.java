@@ -26,10 +26,12 @@ import com.azure.core.util.serializer.*;
 import com.azure.core.util.tracing.Tracer;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.NdJsonSerializer;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
@@ -205,7 +207,6 @@ public class TelemetryClient {
     private ApplicationInsightsClientImpl createChannel() {
         ApplicationInsightsClientImplBuilder restServiceClientBuilder = new ApplicationInsightsClientImplBuilder();
         restServiceClientBuilder.serializerAdapter(new JacksonJsonAdapter());
-
         URI endpoint = endpointProvider.getIngestionEndpoint();
         try {
             URI hostOnly = new URI(endpoint.getScheme(), endpoint.getUserInfo(), endpoint.getHost(), endpoint.getPort(), null, null, null);
@@ -441,6 +442,11 @@ public class TelemetryClient {
         private JacksonJsonAdapter() {
             mapper = JsonMapper.builder().build();
             mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+            // Customize serializer to use NDJSON
+            SimpleModule ndjsonModule = new SimpleModule("Ndjson List Serializer");
+            ndjsonModule.addSerializer(new NdJsonSerializer());
+            mapper.registerModule(ndjsonModule);
         }
 
         @Override
@@ -458,7 +464,6 @@ public class TelemetryClient {
 
         @Override
         public String serializeList(List<?> list, CollectionFormat format) {
-            // FIXME (trask) implement NDJSON here?
             return serializeIterable(list, format);
         }
 
