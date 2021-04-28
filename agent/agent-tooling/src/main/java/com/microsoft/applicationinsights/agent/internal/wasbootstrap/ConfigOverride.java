@@ -49,6 +49,20 @@ class ConfigOverride {
         if (!config.preview.instrumentation.azureSdk.enabled) {
             properties.put("otel.instrumentation.azure-core.enabled", "false");
         }
+        if (!config.preview.instrumentation.javaHttpClient.enabled) {
+            properties.put("otel.instrumentation.httpclient.enabled", "false");
+            // this is going to be the future name shortly
+            properties.put("otel.instrumentation.java-http-client.enabled", "false");
+        }
+        if (!config.preview.instrumentation.rabbitmq.enabled) {
+            properties.put("otel.instrumentation.rabbitmq.enabled", "false");
+        }
+        if (!config.preview.instrumentation.jaxws.enabled) {
+            properties.put("otel.instrumentation.jaxws.enabled", "false");
+            properties.put("otel.instrumentation.axis2.enabled", "false");
+            properties.put("otel.instrumentation.cxf.enabled", "false");
+            properties.put("otel.instrumentation.metro.enabled", "false");
+        }
         properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
         // AI exporter is configured manually
         properties.put("otel.traces.exporter", "none");

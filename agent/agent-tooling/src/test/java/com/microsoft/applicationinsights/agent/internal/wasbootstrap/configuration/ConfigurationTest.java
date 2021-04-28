@@ -368,6 +368,36 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void shouldOverridePreviewJavaHttpClientInstrumentation() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAVA_HTTP_CLIENT_ENABLED", "true");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertTrue(configuration.preview.instrumentation.javaHttpClient.enabled);
+    }
+
+    @Test
+    public void shouldOverridePreviewJaxwsInstrumentation() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAXWS_ENABLED", "true");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertTrue(configuration.preview.instrumentation.jaxws.enabled);
+    }
+
+    @Test
+    public void shouldOverridePreviewRabbitmqInstrumentation() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED", "true");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertTrue(configuration.preview.instrumentation.rabbitmq.enabled);
+    }
+
+    @Test
     public void shouldOverridePreviewLiveMetricsEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED", "false");
 
