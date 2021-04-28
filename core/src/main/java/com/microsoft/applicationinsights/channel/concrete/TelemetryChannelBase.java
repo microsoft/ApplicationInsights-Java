@@ -141,10 +141,10 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         makeSureEndpointAddressIsValid(endpointAddress);
 
         final ConfiguredTransmitterFactory<T> transmitterFactory = getTransmitterFactory();
-        telemetriesTransmitter = transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
+        telemetriesTransmitter = transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry, false);
         telemetryBuffer = new TelemetryBuffer<>(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
-        statsbeatTransmitter = (TelemetriesTransmitter<StatsbeatTelemetry>)transmitterFactory.create(STATSBEAT_ENDPOINT, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
-        statsbeatBuffer = new TelemetryBuffer<StatsbeatTelemetry>(statsbeatTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
+        statsbeatTransmitter = (TelemetriesTransmitter<StatsbeatTelemetry>)transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry, true);
+        statsbeatBuffer = new TelemetryBuffer<>(statsbeatTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
 
         setDeveloperMode(developerMode);
         isInitailized = true;
