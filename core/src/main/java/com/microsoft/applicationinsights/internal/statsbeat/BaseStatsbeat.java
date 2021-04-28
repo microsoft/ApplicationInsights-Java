@@ -48,6 +48,8 @@ public abstract class BaseStatsbeat {
     private String version;
     private String runtimeVersion;
 
+    private final Object lock = new Object();
+
     public BaseStatsbeat(TelemetryClient telemetryClient) {
         this.telemetryClient = telemetryClient;
         initializeCommonProperties();
@@ -139,8 +141,6 @@ public abstract class BaseStatsbeat {
         return statsbeatTelemetry;
     }
 
-    private final Object lock = new Object();
-
     /**
      * Runnable which is responsible for calling the send method to transmit Statsbeat telemetry
      * @return Runnable which has logic to send statsbeat.
@@ -152,8 +152,8 @@ public abstract class BaseStatsbeat {
                 try {
                     synchronized (lock) {
                         send();
-                        reset();
                     }
+                    reset();
                 }
                 catch (Exception e) {
                     logger.error("Error occurred while sending statsbeat", e);
