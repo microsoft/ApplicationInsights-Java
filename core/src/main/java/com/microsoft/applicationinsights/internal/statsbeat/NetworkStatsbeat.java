@@ -59,19 +59,19 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     protected void send() {
         String instrumentation = String.valueOf(getInstrumentation());
 
-        if (requestSuccessCount.get() != 0) {
+//        if (requestSuccessCount.get() != 0) {
             StatsbeatTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT, requestSuccessCount.get());
             requestSuccessCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestSuccessCountSt);
             logger.debug("send a NetworkStatsbeat {}: {}", REQUEST_SUCCESS_COUNT, requestSuccessCountSt);
-        }
+//        }
 
-        if (requestFailureCount.get() != 0) {
+//        if (requestFailureCount.get() != 0) {
             StatsbeatTelemetry requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT, requestFailureCount.get());
             requestFailureCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestFailureCountSt);
             logger.debug("send a NetworkStatsbeat {}: {}", REQUEST_FAILURE_COUNT, requestFailureCountSt);
-        }
+//        }
 
         double durationAvg = getRequestDurationAvg();
         if (durationAvg != 0) {

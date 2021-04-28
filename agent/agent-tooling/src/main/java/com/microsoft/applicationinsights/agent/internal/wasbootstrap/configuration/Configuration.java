@@ -47,6 +47,7 @@ public class Configuration {
     public List<JmxMetric> jmxMetrics = new ArrayList<>();
     public Instrumentation instrumentation = new Instrumentation();
     public Heartbeat heartbeat = new Heartbeat();
+    public Statsbeat statsbeat = new Statsbeat();
     public Proxy proxy = new Proxy();
     public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
     public PreviewConfiguration preview = new PreviewConfiguration();
@@ -152,7 +153,10 @@ public class Configuration {
     }
 
     public static class Heartbeat {
+        public long intervalSeconds = MINUTES.toSeconds(15);
+    }
 
+    public static class Statsbeat {
         public long intervalSeconds = MINUTES.toSeconds(15);
     }
 

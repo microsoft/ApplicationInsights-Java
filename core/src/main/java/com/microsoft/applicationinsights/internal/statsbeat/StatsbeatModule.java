@@ -43,6 +43,14 @@ public final class StatsbeatModule {
         featureStatsbeat = new FeatureStatsbeat(telemetryClient);
     }
 
+    // this is for smoke test
+    public void setInterval(long interval) {
+        networkStatsbeat.updateFrequencyInterval(interval);
+        attachStatsbeat.updateFrequencyInterval(interval);
+        featureStatsbeat.updateFrequencyInterval(interval);
+    }
+
+
     public NetworkStatsbeat getNetworkStatsbeat() {
         return networkStatsbeat;
     }

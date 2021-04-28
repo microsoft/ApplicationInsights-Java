@@ -204,6 +204,8 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         // initialize StatsbeatModule
         StatsbeatModule.getInstance().initialize(telemetryClient);
+        startupLogger.debug("#### statsbeat.intervalSeconds: {}", config.statsbeat.intervalSeconds);
+        StatsbeatModule.getInstance().setInterval(config.statsbeat.intervalSeconds);
     }
 
     private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {
