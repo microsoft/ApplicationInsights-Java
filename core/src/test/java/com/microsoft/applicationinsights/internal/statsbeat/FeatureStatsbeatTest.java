@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static org.junit.Assert.assertEquals;
 
@@ -16,7 +17,7 @@ public class FeatureStatsbeatTest {
 
     @Before
     public void init() {
-        StatsbeatModule.getInstance().initialize(new TelemetryClient());
+        StatsbeatModule.getInstance().initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL);
         featureStatsbeat = StatsbeatModule.getInstance().getFeatureStatsbeat();
     }
 

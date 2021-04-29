@@ -32,7 +32,7 @@ public class AttachStatsbeatTest {
 
     @Before
     public void setup() {
-        StatsbeatModule.getInstance().initialize(new TelemetryClient());
+        StatsbeatModule.getInstance().initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL);
         attachStatsbeat = StatsbeatModule.getInstance().getAttachStatsbeat();
     }
 
