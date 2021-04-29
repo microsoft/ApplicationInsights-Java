@@ -45,7 +45,7 @@ public class AttachStatsbeatTest {
         BufferedSource source = Okio.buffer(Okio.source(in));
         String result = source.readUtf8();
         source.close();
-        AzureMetadataService.parseJsonResponse(result);
+        AzureMetadataService.getInstance().parseJsonResponse(result);
         assertEquals(attachStatsbeat.getResourceProviderId(), "2a1216c3-a2a0-4fc5-a941-b1f5acde7051/65b2f83e-7bf1-4be3-bafc-3a4163265a52");
         assertEquals(attachStatsbeat.getOperatingSystem(), "Linux");
     }

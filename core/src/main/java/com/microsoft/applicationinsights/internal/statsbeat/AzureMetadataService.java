@@ -24,8 +24,9 @@ public final class AzureMetadataService {
     private static final String JSON_FORMAT = "format=json";
     private static final String BASE_URL = "http://169.254.169.254/metadata/instance/compute";
 
-    private String endpoint;
+    private static final String endpoint = BASE_URL + "?" + API_VERSION + "&" + JSON_FORMAT;
     private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(AzureMetadataService.class));
+    private static JsonAdapter<MetadataInstanceResponse> jsonAdapter;
 
     public static AzureMetadataService getInstance() {
         if (instance == null) {
@@ -35,14 +36,14 @@ public final class AzureMetadataService {
     }
 
     private AzureMetadataService() {
-        endpoint = String.format("%s?%s&%s", BASE_URL, API_VERSION, JSON_FORMAT);
+        jsonAdapter = new Moshi.Builder().build().adapter(MetadataInstanceResponse.class);
+        assert(jsonAdapter != null);
         scheduledExecutor.scheduleAtFixedRate(new InvokeMetadataServiceTask(), DEFAULT_STATSBEAT_INTERVAL, DEFAULT_STATSBEAT_INTERVAL, TimeUnit.SECONDS);
     }
 
-    public static void parseJsonResponse(String response) throws IOException {
+    public void parseJsonResponse(String response) throws IOException {
         if (response != null) {
-            Moshi moshi = new Moshi.Builder().build();
-            JsonAdapter<MetadataInstanceResponse> jsonAdapter = moshi.adapter(MetadataInstanceResponse.class);
+            assert(jsonAdapter != null);
             StatsbeatModule.getInstance().getAttachStatsbeat().updateMetadataInstance(jsonAdapter.fromJson(response));
         }
     }
@@ -51,25 +52,19 @@ public final class AzureMetadataService {
 
         @Override
         public void run() {
-            sendAsync();
-        }
-
-        private void sendAsync() {
             HttpGet request = new HttpGet(endpoint);
             request.addHeader("Metadata", "true");
-            HttpResponse response;
             try {
-                response = LazyHttpClient.getInstance().execute(request);
+                HttpResponse response = LazyHttpClient.getInstance().execute(request);
                 if (response != null) {
-                    parseJsonResponse(response.toString());
+                    AzureMetadataService.this.parseJsonResponse(response.toString());
                 }
             } catch (Exception ex) {
+                // TODO add backoff and retry if it's a sporadic failure
                 logger.debug("This is not running from an Azure VM or VMSS. Shut down AzureMetadataService scheduler.");
                 scheduledExecutor.shutdown();
                 return;
             }
         }
-
-
     }
 }

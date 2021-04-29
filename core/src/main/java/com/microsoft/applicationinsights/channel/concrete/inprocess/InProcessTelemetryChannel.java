@@ -73,6 +73,8 @@ public final class InProcessTelemetryChannel extends TelemetryChannelBase<Teleme
             MetricTelemetry mt = (MetricTelemetry) telemetry;
             if (STATSBEAT_TELEMETRY_NAME.equalsIgnoreCase(mt.getTelemetryName())) {
                 statsbeatBuffer.add(telemetry);
+            } else {
+                telemetryBuffer.add(telemetry);
             }
         } else {
             telemetryBuffer.add(telemetry);

@@ -40,21 +40,16 @@ public abstract class BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
     protected final TelemetryClient telemetryClient;
-    protected String resourceProvider;
-    protected String operatingSystem;
     protected ScheduledExecutorService scheduledExecutor;
     protected final long interval;
-
-    private String customerIkey;
-    private String version;
-    private String runtimeVersion;
+    protected final CommonProperties commonProperties;
 
     private final Object lock = new Object();
 
     public BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
         this.telemetryClient = telemetryClient;
         this.interval = interval;
-        initializeCommonProperties();
+        commonProperties = initializeCommonProperties();
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
         scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), interval, interval, TimeUnit.SECONDS);
     }
@@ -63,67 +58,62 @@ public abstract class BaseStatsbeat {
      * @return the name of the resource provider
      */
     public String getResourceProvider() {
-        return resourceProvider;
-    }
-
-    /**
-     * @return the customer's iKey
-     */
-    public String getCustomerIkey() {
-        return customerIkey;
+        return commonProperties.resourceProvider;
     }
 
     /**
      * @return the operating system of the service or application that is being instrumented.
      */
     public String getOperatingSystem() {
-        return operatingSystem;
+        return commonProperties.operatingSystem;
     }
 
     /**
      * @return the version of the Java Codeless Agent
      */
     public String getVersion() {
-        return version;
+        return commonProperties.version;
     }
 
-    private void initializeCommonProperties() {
+    private CommonProperties initializeCommonProperties() {
+        CommonProperties commonProperties = new CommonProperties();
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
         if (sdkVersion.startsWith("awr")) {
-            resourceProvider = RP_APPSVC;
-            operatingSystem = OS_WINDOWS;
+            commonProperties.resourceProvider = RP_APPSVC;
+            commonProperties.operatingSystem = OS_WINDOWS;
         } else if (sdkVersion.startsWith("alr")) {
-            resourceProvider = RP_APPSVC;
-            operatingSystem = OS_LINUX;
+            commonProperties.resourceProvider = RP_APPSVC;
+            commonProperties.operatingSystem = OS_LINUX;
         } else if (sdkVersion.startsWith("kwr")) {
-            resourceProvider = RP_AKS;
-            operatingSystem = OS_WINDOWS;
+            commonProperties.resourceProvider = RP_AKS;
+            commonProperties.operatingSystem = OS_WINDOWS;
         } else if (sdkVersion.startsWith("klr")) {
-            resourceProvider = RP_AKS;
-            operatingSystem = OS_LINUX;
+            commonProperties.resourceProvider = RP_AKS;
+            commonProperties.operatingSystem = OS_LINUX;
         } else if (sdkVersion.startsWith("fwr")) {
-            resourceProvider = RP_FUNCTIONS;
-            operatingSystem = OS_WINDOWS;
+            commonProperties.resourceProvider = RP_FUNCTIONS;
+            commonProperties.operatingSystem = OS_WINDOWS;
         } else if (sdkVersion.startsWith("flr")) {
-            resourceProvider = RP_FUNCTIONS;
-            operatingSystem = OS_LINUX;
+            commonProperties.resourceProvider = RP_FUNCTIONS;
+            commonProperties.operatingSystem = OS_LINUX;
         } else if (sdkVersion.startsWith(LANGUAGE)) {
-            resourceProvider = UNKNOWN;
+            commonProperties.resourceProvider = UNKNOWN;
         }
 
-        if (operatingSystem == null) {
+        if (commonProperties.operatingSystem == null) {
             if (SystemInformation.INSTANCE.isWindows()) {
-                operatingSystem = OS_WINDOWS;
+                commonProperties.operatingSystem = OS_WINDOWS;
             } else if (SystemInformation.INSTANCE.isUnix()) {
-                operatingSystem = OS_LINUX;
+                commonProperties.operatingSystem = OS_LINUX;
             } else {
-                operatingSystem = OS_UNKNOW;
+                commonProperties.operatingSystem = OS_UNKNOW;
             }
         }
 
-        customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
-        runtimeVersion = System.getProperty("java.version");
+        commonProperties.customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
+        commonProperties.version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
+        commonProperties.runtimeVersion = System.getProperty("java.version");
+        return commonProperties;
     }
 
     protected abstract void send();
@@ -134,13 +124,13 @@ public abstract class BaseStatsbeat {
         MetricTelemetry telemetry = new MetricTelemetry(name, value);
         telemetry.setTelemetryName(STATSBEAT_TELEMETRY_NAME);
         telemetry.getContext().setInstrumentationKey(TelemetryConfiguration.getActive().getStatsbeatInstrumentationKey());
-        telemetry.getProperties().put(CUSTOM_DIMENSIONS_RP, resourceProvider);
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_RP, commonProperties.resourceProvider);
         telemetry.getProperties().put(CUSTOM_DIMENSIONS_ATTACH_TYPE, ATTACH_TYPE_CODELESS);
-        telemetry.getProperties().put(CUSTOM_DIMENSIONS_CIKEY, customerIkey);
-        telemetry.getProperties().put(CUSTOM_DIMENSIONS_RUNTIME_VERSION, runtimeVersion);
-        telemetry.getProperties().put(CUSTOM_DIMENSIONS_OS, operatingSystem);
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_CIKEY, commonProperties.customerIkey);
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_RUNTIME_VERSION, commonProperties.runtimeVersion);
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_OS, commonProperties.operatingSystem);
         telemetry.getProperties().put(CUSTOM_DIMENSIONS_LANGUAGE, LANGUAGE);
-        telemetry.getProperties().put(CUSTOM_DIMENSIONS_VERSION, version);
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_VERSION, commonProperties.version);
         return telemetry;
     }
 
@@ -167,5 +157,13 @@ public abstract class BaseStatsbeat {
 
     protected long getInterval() {
         return interval;
+    }
+
+    class CommonProperties {
+        public String resourceProvider;
+        public String operatingSystem;
+        public String customerIkey;
+        public String version;
+        public String runtimeVersion;
     }
 }

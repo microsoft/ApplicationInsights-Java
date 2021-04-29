@@ -180,9 +180,7 @@ public final class TelemetryConfiguration {
     }
 
     public void setStatsbeatInstrumentationKey(String key) {
-        if (!Strings.isNullOrEmpty(key)) {
-            statsbeatInstrumentationKey = key;
-        }
+        statsbeatInstrumentationKey = key;
     }
 
     public String getRoleName() {

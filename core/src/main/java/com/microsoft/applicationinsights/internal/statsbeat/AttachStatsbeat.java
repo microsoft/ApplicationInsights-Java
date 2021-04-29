@@ -76,7 +76,7 @@ public class AttachStatsbeat extends BaseStatsbeat {
     }
 
     protected void updateResourceProvider(String rp) {
-        resourceProvider = rp;
+        commonProperties.resourceProvider = rp;
         initResourceProviderId();
     }
 
@@ -84,20 +84,20 @@ public class AttachStatsbeat extends BaseStatsbeat {
     private void updateOperatingSystem() {
         String osType = metadataInstanceResponse.getOsType();
         if (osType != null && !"unknown".equalsIgnoreCase(osType)) {
-            operatingSystem = osType;
+            commonProperties.operatingSystem = osType;
         }
     }
 
     private void initResourceProviderId() {
-        switch (resourceProvider) {
+        switch (commonProperties.resourceProvider) {
             case RP_APPSVC:
-                resourceProviderId = String.format("%s/%s/%s", System.getenv().get(WEBSITE_SITE_NAME), System.getenv().get(WEBSITE_HOME_STAMPNAME), System.getenv().get(WEBSITE_HOSTNAME));
+                resourceProviderId = System.getenv().get(WEBSITE_SITE_NAME) + "/" + System.getenv().get(WEBSITE_HOME_STAMPNAME) + "/" + System.getenv().get(WEBSITE_HOSTNAME);
                 break;
             case RP_FUNCTIONS:
                 resourceProviderId = System.getenv().get(WEBSITE_HOSTNAME);
                 break;
             case RP_VM:
-                resourceProviderId = String.format("%s/%s", metadataInstanceResponse.getVmId(), metadataInstanceResponse.getSubscriptionId());
+                resourceProviderId = metadataInstanceResponse.getVmId() + "/" + metadataInstanceResponse.getSubscriptionId();
                 break;
             case RP_AKS: // TODO will update resourceProviderId when cluster_id becomes available from the AKS AzureMetadataService extension.
             case UNKNOWN:

@@ -1,9 +1,12 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.google.common.io.Resources;
+import com.google.common.math.Stats;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.squareup.moshi.JsonDataException;
 import okio.BufferedSource;
 import okio.Okio;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -12,9 +15,17 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static org.junit.Assert.assertEquals;
 
 public class AzureMetadataServiceTest {
+
+    @Before
+    public void setup() {
+        StatsbeatModule.getInstance().initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
+    }
 
     @Test
     public void testParseJsonResponseLinux() throws IOException, JsonDataException {
@@ -23,7 +34,7 @@ public class AzureMetadataServiceTest {
         BufferedSource source = Okio.buffer(Okio.source(in));
         String result = source.readUtf8();
         source.close();
-        AzureMetadataService.parseJsonResponse(result);
+        AzureMetadataService.getInstance().parseJsonResponse(result);
         MetadataInstanceResponse response = StatsbeatModule.getInstance().getAttachStatsbeat().getMetadataInstanceResponse();
         assertEquals(response.getVmId(), "2a1216c3-a2a0-4fc5-a941-b1f5acde7051");
         assertEquals(response.getOsType(), "Linux");
@@ -38,7 +49,7 @@ public class AzureMetadataServiceTest {
         BufferedSource source = Okio.buffer(Okio.source(in));
         String result = source.readUtf8();
         source.close();
-        AzureMetadataService.parseJsonResponse(result);
+        AzureMetadataService.getInstance().parseJsonResponse(result);
         MetadataInstanceResponse response = StatsbeatModule.getInstance().getAttachStatsbeat().getMetadataInstanceResponse();
         assertEquals(response.getVmId(), "2955a129-2323-4c1f-8918-994a7a83eefd");
         assertEquals(response.getOsType(), "Windows");
