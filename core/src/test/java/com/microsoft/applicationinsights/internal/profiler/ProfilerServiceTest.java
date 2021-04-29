@@ -148,7 +148,7 @@ public class ProfilerServiceTest {
                         2,
                         3,
                         "localhost",
-                        false,
+                        true,
                         null,
                         null
                 ),
