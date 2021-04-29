@@ -163,7 +163,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         try {
             ConnectionString.parseStatsbeatConnectionString(config.statsbeat.connectionString, configuration);
         } catch (InvalidConnectionStringException ex) {
-            startupLogger.warn("Statsbeat connection string is invalid.", ex.getMessage());
+            startupLogger.warn("Statsbeat connection string is invalid. {}", ex.getMessage());
         }
 
         Global.setSamplingPercentage(config.sampling.percentage);

@@ -192,7 +192,7 @@ public final class StatsbeatHelper {
     }
 
     private static long encode(Set<String> list, Map<String, Integer> map) {
-        Long number = 0L;
+        long number = 0L;
         for (String item : list) {
             int index = map.get(item);
             number |= getPowerOf2(index);
