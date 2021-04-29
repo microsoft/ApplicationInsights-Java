@@ -22,8 +22,8 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     @Test
     @TargetUri(value = "/index.jsp")
     public void testStatsbeat() throws Exception {
-        List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate("Feature"), 4, 120, TimeUnit.SECONDS);
-        assertEquals(4, metrics.size());
+        List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate("Feature"), 2, 70, TimeUnit.SECONDS);
+        assertEquals(2, metrics.size());
 
         MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();
         assertNotNull(data.getProperties().get("rp"));
