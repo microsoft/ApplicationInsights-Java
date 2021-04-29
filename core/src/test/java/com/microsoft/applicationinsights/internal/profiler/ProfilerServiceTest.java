@@ -148,7 +148,6 @@ public class ProfilerServiceTest {
                         2,
                         3,
                         "localhost",
-                        true,
                         false,
                         null,
                         null
@@ -209,7 +208,6 @@ public class ProfilerServiceTest {
                 2,
                 3,
                 "localhost",
-                true,
                 false,
                 null,
                 null)) {

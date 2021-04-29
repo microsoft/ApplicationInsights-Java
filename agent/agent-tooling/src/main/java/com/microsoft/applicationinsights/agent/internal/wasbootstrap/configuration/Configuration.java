@@ -570,9 +570,8 @@ public class Configuration {
         public int periodicRecordingIntervalSeconds = 60 * 60;
         public String serviceProfilerFrontEndPoint = null;
         public boolean enabled = false;
-        public boolean removeEnvironmentData = false;
-        public String customMemoryProfile;
-        public String customCpuProfile;
+        public String memoryTriggeredSettings = "profile";
+        public String cpuTriggeredSettings = "profile";
     }
 
     public static class GcEventConfiguration {

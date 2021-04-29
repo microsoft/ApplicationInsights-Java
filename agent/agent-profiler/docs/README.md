@@ -73,22 +73,27 @@ Profiler may also be enabled via adding a config section to applicationinsights.
 ### Json Configuration Parameters
 `configPollPeriodSeconds` - The profiler periodically polls for configuration changes made within the UI.
 
-`removeEnvironmentData` - If set to true (and no custom profile are provided), memory and CPU profiling will 
-use a profile similar to the default `profile` configuration with the following settings disabled:
-- jdk.JVMInformation
-- jdk.InitialSystemProperty
-- jdk.OSInformation
-- jdk.InitialEnvironmentVariable
-- jdk.SystemProcess
 
-`customMemoryProfile` - Path to a custom jfc configuration file. This configuration will be used in the event of a
-memory profile is requested. Setting this will mean the `removeEnvironmentData` setting will have no effect for
-memory profiles.
+`memoryTriggeredSettings` - This configuration will be used in the event of a memory profile is requested. This can be one of:
+  - "profile" (default value). Uses the `profile` jfc configuration that ships with JFR.
+    
+  - "profile_without_env_data". Uses a profile similar to the `profile` jfc configuration that ships with JFR, however
+    with the following settings disabled:
+    - jdk.JVMInformation
+    - jdk.InitialSystemProperty
+    - jdk.OSInformation
+    - jdk.InitialEnvironmentVariable
+    - jdk.SystemProcess
+  - A path to a custom jfc configuration file on the file system.
 
-`customCpuProfile` - Path to a custom jfc configuration file. This configuration will be used in the event of a
-CPU profile is requested. Setting this will mean the `removeEnvironmentData` setting will have no effect for CPU profiles.
+`customCpuProfile` - This configuration will be used in the event of a cpu profile is requested. This can be one of:
+- "profile" (default value). Uses the `profile` jfc configuration that ships with JFR.
 
-
-
-
-
+- "profile_without_env_data". Uses a profile similar to the `profile` jfc configuration that ships with JFR, however
+  with the following settings disabled:
+    - jdk.JVMInformation
+    - jdk.InitialSystemProperty
+    - jdk.OSInformation
+    - jdk.InitialEnvironmentVariable
+    - jdk.SystemProcess
+- A path to a custom jfc configuration file on the file system.

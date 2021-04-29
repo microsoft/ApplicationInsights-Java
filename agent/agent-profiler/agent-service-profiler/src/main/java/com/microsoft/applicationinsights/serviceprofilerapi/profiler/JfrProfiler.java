@@ -91,37 +91,36 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     }
 
     private RecordingConfiguration getMemoryProfileConfig(ServiceProfilerServiceConfig configuration) {
-        if (configuration.customMemoryProfile() != null) {
-            try {
-                FileInputStream fis = new FileInputStream(configuration.customMemoryProfile());
-                return new RecordingConfiguration.JfcFileConfiguration(fis);
-            } catch (FileNotFoundException e) {
-                LOGGER.error("Failed to find custom JFC file " + configuration.customMemoryProfile() + " using default profile");
-            }
-        }
-
-        if (configuration.removeEnvironmentData()) {
-            return new RecordingConfiguration.JfcFileConfiguration(JfrProfiler.class.getResourceAsStream(REDUCED_MEMORY_PROFILE));
-        } else {
-            return RecordingConfiguration.PROFILE_CONFIGURATION;
-        }
+        return getRecordingConfiguration(configuration.memoryTriggeredSettings(), REDUCED_MEMORY_PROFILE);
     }
 
     private RecordingConfiguration getCpuProfileConfig(ServiceProfilerServiceConfig configuration) {
-        if (configuration.customCpuProfile() != null) {
+        return getRecordingConfiguration(configuration.cpuTriggeredSettings(), REDUCED_CPU_PROFILE);
+    }
+
+    private RecordingConfiguration getRecordingConfiguration(String triggeredSettings, String reducedProfile) {
+        if (triggeredSettings != null) {
             try {
-                FileInputStream fis = new FileInputStream(configuration.customCpuProfile());
+                ProfileTypes profile = ProfileTypes.valueOf(triggeredSettings);
+
+                if (profile == ProfileTypes.profile) {
+                    return RecordingConfiguration.PROFILE_CONFIGURATION;
+                } else if (profile == ProfileTypes.profile_without_env_data) {
+                    return new RecordingConfiguration.JfcFileConfiguration(JfrProfiler.class.getResourceAsStream(reducedProfile));
+                }
+            } catch (IllegalArgumentException e) {
+                //NOP, to be expected if a file is provided
+            }
+
+            try {
+                FileInputStream fis = new FileInputStream(triggeredSettings);
                 return new RecordingConfiguration.JfcFileConfiguration(fis);
             } catch (FileNotFoundException e) {
-                LOGGER.error("Failed to find custom JFC file " + configuration.customCpuProfile() + " using default profile");
+                LOGGER.error("Failed to find custom JFC file " + triggeredSettings + " using default profile");
             }
         }
 
-        if (configuration.removeEnvironmentData()) {
-            return new RecordingConfiguration.JfcFileConfiguration(JfrProfiler.class.getResourceAsStream(REDUCED_CPU_PROFILE));
-        } else {
-            return RecordingConfiguration.PROFILE_CONFIGURATION;
-        }
+        return RecordingConfiguration.PROFILE_CONFIGURATION;
     }
 
     /**

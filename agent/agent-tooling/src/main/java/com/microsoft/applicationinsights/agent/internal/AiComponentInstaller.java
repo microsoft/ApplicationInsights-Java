@@ -222,9 +222,8 @@ public class AiComponentInstaller implements ComponentInstaller {
                 configuration.periodicRecordingIntervalSeconds,
                 configuration.serviceProfilerFrontEndPoint,
                 configuration.enabled,
-                configuration.removeEnvironmentData,
-                configuration.customMemoryProfile,
-                configuration.customCpuProfile
+                configuration.memoryTriggeredSettings,
+                configuration.cpuTriggeredSettings
         );
     }
 

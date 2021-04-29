@@ -48,14 +48,11 @@ public class ServiceProfilerServiceConfig {
     // Enable entire service profiler subsystem
     private final boolean enabled;
 
-    // If set use the reduced-cpu-profile.jfc and reduced-memory-profile.jfc profiles
-    private boolean removeEnvironmentData;
+    // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for memory profiling
+    private String memoryTriggeredSettings;
 
-    // A path to a custom JFC file to use for memory profiling
-    private String customMemoryProfile;
-
-    // A path to a custom JFC file to use for cpu profiling
-    private String customCpuProfile;
+    // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for cpu profiling
+    private String cpuTriggeredSettings;
 
     public ServiceProfilerServiceConfig(
             int configPollPeriod,
@@ -63,24 +60,16 @@ public class ServiceProfilerServiceConfig {
             int periodicRecordingInterval,
             String serviceProfilerFrontEndPoint,
             boolean enabled,
-            boolean removeEnvironmentData,
-            String customMemoryProfile,
-            String customCpuProfile
+            String memoryTriggeredSettings,
+            String cpuTriggeredSettings
     ) {
         this.configPollPeriod = configPollPeriod;
         this.periodicRecordingDuration = periodicRecordingDuration;
         this.periodicRecordingInterval = periodicRecordingInterval;
         this.serviceProfilerFrontEndPoint = serviceProfilerFrontEndPoint;
         this.enabled = enabled;
-        this.removeEnvironmentData = removeEnvironmentData;
-        this.customMemoryProfile = customMemoryProfile;
-        this.customCpuProfile = customCpuProfile;
-
-        if (removeEnvironmentData == true && (customMemoryProfile != null || customCpuProfile != null)) {
-            LOGGER.warn("Both removeEnvironmentData has been set and custom profiles have been provided for JFR configuration." +
-                    " The custom profiles will override the removeEnvironmentData configuration, if the provided " +
-                    "jfc files request environmental data it WILL be included in the generated profiles.");
-        }
+        this.memoryTriggeredSettings = memoryTriggeredSettings;
+        this.cpuTriggeredSettings = cpuTriggeredSettings;
     }
 
     public int getConfigPollPeriod() {
@@ -103,15 +92,11 @@ public class ServiceProfilerServiceConfig {
         return enabled;
     }
 
-    public boolean removeEnvironmentData() {
-        return removeEnvironmentData;
+    public String memoryTriggeredSettings() {
+        return memoryTriggeredSettings;
     }
 
-    public String customMemoryProfile() {
-        return customMemoryProfile;
-    }
-
-    public String customCpuProfile() {
-        return customCpuProfile;
+    public String cpuTriggeredSettings() {
+        return cpuTriggeredSettings;
     }
 }
