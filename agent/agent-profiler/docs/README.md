@@ -86,7 +86,7 @@ Profiler may also be enabled via adding a config section to applicationinsights.
     - jdk.SystemProcess
   - A path to a custom jfc configuration file on the file system.
 
-`customCpuProfile` - This configuration will be used in the event of a cpu profile is requested. This can be one of:
+`cpuTriggeredSettings` - This configuration will be used in the event of a cpu profile is requested. This can be one of:
 - "profile" (default value). Uses the `profile` jfc configuration that ships with JFR.
 
 - "profile_without_env_data". Uses a profile similar to the `profile` jfc configuration that ships with JFR, however
