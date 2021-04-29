@@ -58,6 +58,8 @@ import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
 import com.microsoft.applicationinsights.internal.config.ParamXmlElement;
 import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
 import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
+import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
+import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
@@ -158,6 +160,12 @@ public class AiComponentInstaller implements ComponentInstaller {
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
+        try {
+            ConnectionString.parseStatsbeatConnectionString(config.statsbeat.connectionString, configuration);
+        } catch (InvalidConnectionStringException ex) {
+            startupLogger.warn("Statsbeat connection string is invalid.", ex.getMessage());
+        }
+
         Global.setSamplingPercentage(config.sampling.percentage);
         final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
@@ -203,9 +211,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         }
 
         // initialize StatsbeatModule
-        StatsbeatModule.getInstance().initialize(telemetryClient);
-        startupLogger.debug("#### statsbeat.intervalSeconds: {}", config.statsbeat.intervalSeconds);
-        StatsbeatModule.getInstance().setInterval(config.statsbeat.intervalSeconds);
+        StatsbeatModule.getInstance().initialize(telemetryClient, config.statsbeat.intervalSeconds);
     }
 
     private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {

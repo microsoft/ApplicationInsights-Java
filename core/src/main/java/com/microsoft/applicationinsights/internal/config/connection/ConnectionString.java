@@ -23,19 +23,53 @@ public class ConnectionString {
     private ConnectionString(){}
 
     public static void parseInto(String connectionString, TelemetryConfiguration targetConfig) throws InvalidConnectionStringException {
+        mapToConnectionConfiguration(getKeyValuePairs(connectionString), targetConfig);
+    }
+
+    public static void parseStatsbeatConnectionString(String connectionString, TelemetryConfiguration targetConfig) throws InvalidConnectionStringException {
+        mapStatsbeatConnectionStringToConfig(getKeyValuePairs(connectionString), targetConfig);
+    }
+
+    private static Map<String, String> getKeyValuePairs(String connectionString) throws InvalidConnectionStringException {
         if (connectionString.length() > CONNECTION_STRING_MAX_LENGTH) { // guard against malicious input
             throw new InvalidConnectionStringException("ConnectionString values with more than " + CONNECTION_STRING_MAX_LENGTH + " characters are not allowed.");
         }
         // parse key value pairs
         final Map<String, String> kvps;
         try {
-            kvps = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            kvps = new TreeMap<>(java.lang.String.CASE_INSENSITIVE_ORDER);
             kvps.putAll(Splitter.on(';').trimResults().omitEmptyStrings().withKeyValueSeparator('=').split(connectionString));
         } catch (IllegalArgumentException e) {
             throw new InvalidConnectionStringException("Could not parse connection string.");
         }
 
-        mapToConnectionConfiguration(kvps, targetConfig);
+        return kvps;
+    }
+
+    private static void mapStatsbeatConnectionStringToConfig(Map<String, String> kvps, TelemetryConfiguration config) throws InvalidConnectionStringException {
+        // get ikey
+        String instrumentationKey = kvps.get(Keywords.INSTRUMENTATION_KEY);
+        if (Strings.isNullOrEmpty(instrumentationKey)) {
+            throw new InvalidConnectionStringException("Missing '"+Keywords.INSTRUMENTATION_KEY+"'");
+        }
+        if (!Strings.isNullOrEmpty(config.getInstrumentationKey())) {
+            logger.warn("Connection string is overriding previously configured instrumentation key.");
+        }
+
+        String suffix = kvps.get(Keywords.ENDPOINT_SUFFIX);
+        if (!Strings.isNullOrEmpty(suffix)) {
+            try {
+                config.getEndpointProvider().setStatsbeatEndpoint(constructSecureEndpoint(EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, suffix));
+            } catch (URISyntaxException e) {
+                throw new InvalidConnectionStringException(Keywords.ENDPOINT_SUFFIX + " is invalid: " + suffix, e);
+            }
+        }
+
+        // set explicit endpoints for Statsbeat
+        String statsbeatEndpoint = kvps.get(Keywords.INGESTION_ENDPOINT);
+        if (!Strings.isNullOrEmpty(statsbeatEndpoint)) {
+            config.getEndpointProvider().setStatsbeatEndpoint(toUriOrThrow(statsbeatEndpoint, Keywords.INGESTION_ENDPOINT));
+        }
     }
 
     private static void mapToConnectionConfiguration(Map<String, String> kvps, TelemetryConfiguration config) throws InvalidConnectionStringException {
@@ -84,7 +118,6 @@ public class ConnectionString {
             config.getEndpointProvider().setSnapshotEndpoint(toUriOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
         }
     }
-
 
     private static URI toUriOrThrow(String uri, String field) throws InvalidConnectionStringException {
         try {

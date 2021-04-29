@@ -157,6 +157,7 @@ public class Configuration {
     }
 
     public static class Statsbeat {
+        public String connectionString = "InstrumentationKey=28ac6b6a-3fe0-43a9-bccd-10cb41d791c1;IngestionEndpoint=https://westus2-0.in.applicationinsights.azure.com/";
         public long intervalSeconds = MINUTES.toSeconds(15);
     }
 

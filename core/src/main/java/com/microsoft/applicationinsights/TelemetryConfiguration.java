@@ -50,6 +50,7 @@ public final class TelemetryConfiguration {
     private String connectionString;
     private String roleName;
     private String roleInstance;
+    private String statsbeatInstrumentationKey;
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
@@ -172,6 +173,16 @@ public final class TelemetryConfiguration {
         }
 
         instrumentationKey = key;
+    }
+
+    public String getStatsbeatInstrumentationKey() {
+        return statsbeatInstrumentationKey;
+    }
+
+    public void setStatsbeatInstrumentationKey(String key) {
+        if (!Strings.isNullOrEmpty(key)) {
+            statsbeatInstrumentationKey = key;
+        }
     }
 
     public String getRoleName() {
