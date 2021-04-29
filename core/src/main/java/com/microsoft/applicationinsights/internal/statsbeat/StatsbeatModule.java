@@ -25,31 +25,26 @@ import com.microsoft.applicationinsights.TelemetryClient;
 
 public final class StatsbeatModule {
 
-    private static StatsbeatModule instance;
+    private static volatile StatsbeatModule instance;
     private NetworkStatsbeat networkStatsbeat;
     private AttachStatsbeat attachStatsbeat;
     private FeatureStatsbeat featureStatsbeat;
+    private static final Object lock = new Object();
 
     public static StatsbeatModule getInstance() {
-        if (instance == null) {
-            instance = new StatsbeatModule();
+        synchronized (lock) {
+            if (instance == null) {
+                instance = new StatsbeatModule();
+            }
         }
         return instance;
     }
 
-    public void initialize(TelemetryClient telemetryClient) {
-        networkStatsbeat = new NetworkStatsbeat(telemetryClient);
-        attachStatsbeat = new AttachStatsbeat(telemetryClient);
-        featureStatsbeat = new FeatureStatsbeat(telemetryClient);
+    public void initialize(TelemetryClient telemetryClient, long interval) {
+        networkStatsbeat = new NetworkStatsbeat(telemetryClient, interval);
+        attachStatsbeat = new AttachStatsbeat(telemetryClient, interval);
+        featureStatsbeat = new FeatureStatsbeat(telemetryClient, interval);
     }
-
-    // this is for smoke test
-    public void setInterval(long interval) {
-        networkStatsbeat.updateFrequencyInterval(interval);
-        attachStatsbeat.updateFrequencyInterval(interval);
-        featureStatsbeat.updateFrequencyInterval(interval);
-    }
-
 
     public NetworkStatsbeat getNetworkStatsbeat() {
         return networkStatsbeat;

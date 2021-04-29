@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,15 +34,15 @@ public class AttachStatsbeat extends BaseStatsbeat {
     private String resourceProviderId;
     private MetadataInstanceResponse metadataInstanceResponse;
 
-    public AttachStatsbeat(TelemetryClient telemetryClient) {
-        super(telemetryClient);
+    public AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
+        super(telemetryClient, interval);
         initResourceProviderId();
     }
 
     @Override
     protected void send() {
         if (resourceProviderId != null) {
-            StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH, 0);
+            MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH, 0);
             statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_RP_ID, resourceProviderId);
             telemetryClient.track(statsbeatTelemetry);
             logger.debug("send a AttachStatsbeat {}", statsbeatTelemetry);
@@ -49,11 +50,10 @@ public class AttachStatsbeat extends BaseStatsbeat {
     }
 
     @Override
-    protected void reset() {
+    protected synchronized void reset() {
         resourceProviderId = null;
         metadataInstanceResponse = null;
         initResourceProviderId();
-        logger.debug("reset AttachStatsbeat");
     }
 
     /**

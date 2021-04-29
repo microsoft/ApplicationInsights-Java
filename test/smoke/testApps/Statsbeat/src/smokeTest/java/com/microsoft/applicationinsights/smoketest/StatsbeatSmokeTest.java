@@ -22,7 +22,7 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
     @Test
     @TargetUri(value = "/index.jsp")
     public void testStatsbeat() throws Exception {
-        List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate("Request Success Count"), 4, 120, TimeUnit.SECONDS);
+        List<Envelope> metrics = mockedIngestion.waitForItems(getMetricPredicate("Feature"), 4, 120, TimeUnit.SECONDS);
         assertEquals(4, metrics.size());
 
         MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();
@@ -33,7 +33,7 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
         assertNotNull(data.getProperties().get("os"));
         assertNotNull(data.getProperties().get("language"));
         assertNotNull(data.getProperties().get("version"));
-        assertNotNull(data.getProperties().get("instrumentation"));
+        assertNotNull(data.getProperties().get("feature"));
         assertEquals(8, data.getProperties().size());
     }
 

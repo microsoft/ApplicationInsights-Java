@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_FEATURE;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_OTHER;
 import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelper.FEATURE_MAP;
 
@@ -40,10 +40,10 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     private static final Logger logger = LoggerFactory.getLogger(FeatureStatsbeat.class);
     private static Set<String> featureList = new HashSet<>(64);
 
-    public FeatureStatsbeat(TelemetryClient telemetryClient) {
-        super(telemetryClient);
+    public FeatureStatsbeat(TelemetryClient telemetryClient, long interval) {
+        super(telemetryClient, interval);
         initFeatureList();
-        updateFrequencyInterval(FEATURE_STATSBEAT_INTERVAL);
+        scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), interval, interval, TimeUnit.SECONDS);
     }
 
     /**
@@ -55,17 +55,16 @@ public class FeatureStatsbeat extends BaseStatsbeat {
 
     @Override
     protected void send() {
-        StatsbeatTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE, 0);
+        MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE, 0);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_FEATURE, String.valueOf(getFeature()));
         telemetryClient.track(statsbeatTelemetry);
         logger.debug("send a FeatureStatsbeat {}", statsbeatTelemetry);
     }
 
     @Override
-    protected void reset() {
+    protected synchronized void reset() {
         featureList = new HashSet<>(64);
         initFeatureList();
-        logger.debug("reset FeatureStatsbeat");
     }
 
     private void initFeatureList() {

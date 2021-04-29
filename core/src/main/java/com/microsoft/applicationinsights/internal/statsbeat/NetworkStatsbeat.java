@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,52 +52,52 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     private static final AtomicLong exceptionCount = new AtomicLong(0);
     private final Object lock = new Object();
 
-    public NetworkStatsbeat(TelemetryClient telemetryClient) {
-        super(telemetryClient);
+    public NetworkStatsbeat(TelemetryClient telemetryClient, long interval) {
+        super(telemetryClient, interval);
     }
 
     @Override
     protected void send() {
         String instrumentation = String.valueOf(getInstrumentation());
 
-//        if (requestSuccessCount.get() != 0) {
-            StatsbeatTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT, requestSuccessCount.get());
+        if (requestSuccessCount.get() != 0) {
+            MetricTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT, requestSuccessCount.get());
             requestSuccessCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestSuccessCountSt);
             logger.debug("send a NetworkStatsbeat {}: {}", REQUEST_SUCCESS_COUNT, requestSuccessCountSt);
-//        }
+        }
 
-//        if (requestFailureCount.get() != 0) {
-            StatsbeatTelemetry requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT, requestFailureCount.get());
+        if (requestFailureCount.get() != 0) {
+            MetricTelemetry requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT, requestFailureCount.get());
             requestFailureCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestFailureCountSt);
             logger.debug("send a NetworkStatsbeat {}: {}", REQUEST_FAILURE_COUNT, requestFailureCountSt);
-//        }
+        }
 
         double durationAvg = getRequestDurationAvg();
         if (durationAvg != 0) {
-            StatsbeatTelemetry requestDurationSt = createStatsbeatTelemetry(REQUEST_DURATION, durationAvg);
+            MetricTelemetry requestDurationSt = createStatsbeatTelemetry(REQUEST_DURATION, durationAvg);
             requestDurationSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestDurationSt);
             logger.debug("send a NetworkStatsbeat {}: {}", REQUEST_DURATION, requestDurationSt);
         }
 
         if (retryCount.get() != 0) {
-            StatsbeatTelemetry retryCountSt = createStatsbeatTelemetry(RETRY_COUNT, retryCount.get());
+            MetricTelemetry retryCountSt = createStatsbeatTelemetry(RETRY_COUNT, retryCount.get());
             retryCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(retryCountSt);
             logger.debug("send a NetworkStatsbeat {}: {}", RETRY_COUNT, retryCountSt);
         }
 
         if (throttlingCount.get() != 0) {
-            StatsbeatTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT, throttlingCount.get());
+            MetricTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT, throttlingCount.get());
             throttleCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(throttleCountSt);
             logger.debug("send a NetworkStatsbeat {}: {}", THROTTLE_COUNT, throttleCountSt);
         }
 
         if (exceptionCount.get() != 0) {
-            StatsbeatTelemetry exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT, exceptionCount.get());
+            MetricTelemetry exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT, exceptionCount.get());
             exceptionCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(exceptionCountSt);
             logger.debug("send a NetworkStatsbeat{}: {}", EXCEPTION_COUNT, exceptionCountSt);
@@ -104,7 +105,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     @Override
-    protected void reset() {
+    protected synchronized void reset() {
         instrumentationList = new HashSet<>(64);
         requestSuccessCount.set(0L);
         requestFailureCount.set(0L);
@@ -112,13 +113,11 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         retryCount.set(0L);
         throttlingCount.set(0L);
         exceptionCount.set(0L);
-        logger.debug("reset NetworkStatsbeat");
     }
 
     public void addInstrumentation(String instrumentation) {
         synchronized (lock) {
             instrumentationList.add(instrumentation);
-            logger.debug("add {} to the list", instrumentation);
         }
     }
 
@@ -130,11 +129,11 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     public void incrementRequestSuccessCount() {
-        logger.debug("requestSuccessCount={}", requestSuccessCount.incrementAndGet());
+        requestSuccessCount.incrementAndGet();
     }
 
     public void incrementRequestFailureCount() {
-        logger.debug("requestFailureCount={}", requestFailureCount.incrementAndGet());
+        requestFailureCount.incrementAndGet();
     }
 
     public void addRequestDuration(double duration) {
@@ -145,15 +144,15 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     public void incrementRetryCount() {
-        logger.debug("retryCount={}", retryCount.incrementAndGet());
+        retryCount.incrementAndGet();
     }
 
     public void incrementThrottlingCount() {
-        logger.debug("throttlingCount={}", throttlingCount.incrementAndGet());
+        throttlingCount.incrementAndGet();
     }
 
     public void incrementExceptionCount() {
-        logger.debug("exceptionCount={}", exceptionCount.incrementAndGet());
+        exceptionCount.incrementAndGet();
     }
 
     public long getRequestSuccessCount() {

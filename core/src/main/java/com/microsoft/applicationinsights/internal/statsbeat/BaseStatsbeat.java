@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public abstract class BaseStatsbeat {
     protected String resourceProvider;
     protected String operatingSystem;
     protected ScheduledExecutorService scheduledExecutor;
-    protected long interval;
+    protected final long interval;
 
     private String customerIkey;
     private String version;
@@ -50,8 +51,9 @@ public abstract class BaseStatsbeat {
 
     private final Object lock = new Object();
 
-    public BaseStatsbeat(TelemetryClient telemetryClient) {
+    public BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
         this.telemetryClient = telemetryClient;
+        this.interval = interval;
         initializeCommonProperties();
         interval = DEFAULT_STATSBEAT_INTERVAL;
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
@@ -129,23 +131,25 @@ public abstract class BaseStatsbeat {
 
     protected abstract void reset();
 
-    protected StatsbeatTelemetry createStatsbeatTelemetry(String name, double value) {
-        StatsbeatTelemetry statsbeatTelemetry = new StatsbeatTelemetry(name, value);
-        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_RP, resourceProvider);
-        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_ATTACH_TYPE, ATTACH_TYPE_CODELESS);
-        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_CIKEY, customerIkey);
-        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_RUNTIME_VERSION, runtimeVersion);
-        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_OS, operatingSystem);
-        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_LANGUAGE, LANGUAGE);
-        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_VERSION, version);
-        return statsbeatTelemetry;
+    protected MetricTelemetry createStatsbeatTelemetry(String name, double value) {
+        MetricTelemetry telemetry = new MetricTelemetry(name, value);
+        telemetry.setTelemetryName(STATSBEAT_TELEMETRY_NAME);
+        telemetry.getContext().setInstrumentationKey(TelemetryConfiguration.getActive().getStatsbeatInstrumentationKey());
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_RP, resourceProvider);
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_ATTACH_TYPE, ATTACH_TYPE_CODELESS);
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_CIKEY, customerIkey);
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_RUNTIME_VERSION, runtimeVersion);
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_OS, operatingSystem);
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_LANGUAGE, LANGUAGE);
+        telemetry.getProperties().put(CUSTOM_DIMENSIONS_VERSION, version);
+        return telemetry;
     }
 
     /**
      * Runnable which is responsible for calling the send method to transmit Statsbeat telemetry
      * @return Runnable which has logic to send statsbeat.
      */
-    private Runnable sendStatsbeat() {
+    protected Runnable sendStatsbeat() {
         return new Runnable() {
             @Override
             public void run() {
@@ -160,11 +164,6 @@ public abstract class BaseStatsbeat {
                 }
             }
         };
-    }
-
-    protected void updateFrequencyInterval(long newInterval) {
-        interval = newInterval;
-        scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), interval, interval, TimeUnit.SECONDS);
     }
 
     protected long getInterval() {
