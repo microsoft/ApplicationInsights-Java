@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 // an assumption is made throughout this file that user will not explicitly use `null` value in json file
@@ -158,7 +160,8 @@ public class Configuration {
 
     public static class Statsbeat {
         public String connectionString = "InstrumentationKey=28ac6b6a-3fe0-43a9-bccd-10cb41d791c1;IngestionEndpoint=https://westus2-0.in.applicationinsights.azure.com/";
-        public long intervalSeconds = MINUTES.toSeconds(15);
+        public long intervalSeconds = DEFAULT_STATSBEAT_INTERVAL;
+        public long featureIntervalSeconds = FEATURE_STATSBEAT_INTERVAL;
     }
 
     public static class Proxy {

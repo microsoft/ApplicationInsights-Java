@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_AKS;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_APPSVC;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_FUNCTIONS;
@@ -32,7 +33,7 @@ public class AttachStatsbeatTest {
 
     @Before
     public void setup() {
-        StatsbeatModule.getInstance().initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL);
+        StatsbeatModule.getInstance().initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
         attachStatsbeat = StatsbeatModule.getInstance().getAttachStatsbeat();
     }
 

@@ -40,10 +40,10 @@ public final class StatsbeatModule {
         return instance;
     }
 
-    public void initialize(TelemetryClient telemetryClient, long interval) {
+    public void initialize(TelemetryClient telemetryClient, long interval, long featureInterval) {
         networkStatsbeat = new NetworkStatsbeat(telemetryClient, interval);
         attachStatsbeat = new AttachStatsbeat(telemetryClient, interval);
-        featureStatsbeat = new FeatureStatsbeat(telemetryClient, interval);
+        featureStatsbeat = new FeatureStatsbeat(telemetryClient, featureInterval);
     }
 
     public NetworkStatsbeat getNetworkStatsbeat() {
