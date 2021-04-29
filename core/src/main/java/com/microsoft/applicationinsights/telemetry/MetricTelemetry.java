@@ -35,7 +35,7 @@ import com.microsoft.applicationinsights.internal.schemav2.MetricData;
  * In an Aggregation metric, the value, i.e. {@link #getValue()}, represents the sum of sampled data points.
  * </p>
  */
-public class MetricTelemetry extends BaseTelemetry<MetricData> {
+public final class MetricTelemetry extends BaseTelemetry<MetricData> {
     private final MetricData data;
     private final DataPoint metric;
 
