@@ -94,11 +94,6 @@ public class MetricTelemetry extends BaseTelemetry<MetricData> {
         metric.setName(name);
     }
 
-    @Override
-    public void setTelemetryName(String telemetryName) {
-        super.setTelemetryName(telemetryName);
-    }
-
     /**
      * Gets The value of the metric. Represents the sum of data points if this metric is an Aggregation
      * @return The value of the metric.

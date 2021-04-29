@@ -43,13 +43,13 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.THR
 public class NetworkStatsbeat extends BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(NetworkStatsbeat.class);
-    private static volatile Set<String> instrumentationList = new HashSet<>(64);
-    private static final AtomicLong requestSuccessCount = new AtomicLong(0);
-    private static final AtomicLong requestFailureCount = new AtomicLong(0);
-    private static volatile List<Double> requestDurations = new ArrayList<>();
-    private static final AtomicLong retryCount = new AtomicLong(0);
-    private static final AtomicLong throttlingCount = new AtomicLong(0);
-    private static final AtomicLong exceptionCount = new AtomicLong(0);
+    private volatile Set<String> instrumentationList = new HashSet<>(64);
+    private final AtomicLong requestSuccessCount = new AtomicLong(0);
+    private final AtomicLong requestFailureCount = new AtomicLong(0);
+    private volatile List<Double> requestDurations = new ArrayList<>();
+    private final AtomicLong retryCount = new AtomicLong(0);
+    private final AtomicLong throttlingCount = new AtomicLong(0);
+    private final AtomicLong exceptionCount = new AtomicLong(0);
     private final Object lock = new Object();
 
     public NetworkStatsbeat(TelemetryClient telemetryClient, long interval) {
