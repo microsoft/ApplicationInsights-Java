@@ -98,6 +98,14 @@ public class EndpointProvider {
         }
     }
 
+    void setStatsbeatEndpoint(URI statsbeatEndpoint) {
+        try {
+            this.statsbeatEndpointUrl = buildIngestionUri(statsbeatEndpoint);
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("could not construct live endpoint uri", e);
+        }
+    }
+
     public URI getProfilerEndpoint() {
         return profilerEndpoint;
     }

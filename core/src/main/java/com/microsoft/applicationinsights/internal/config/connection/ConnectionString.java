@@ -56,6 +56,8 @@ public class ConnectionString {
             logger.warn("Connection string is overriding previously configured instrumentation key.");
         }
 
+        config.setStatsbeatInstrumentationKey(instrumentationKey);
+
         String suffix = kvps.get(Keywords.ENDPOINT_SUFFIX);
         if (!Strings.isNullOrEmpty(suffix)) {
             try {

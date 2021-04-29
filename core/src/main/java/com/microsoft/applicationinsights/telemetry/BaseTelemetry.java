@@ -71,6 +71,10 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
         this.telemetryName = telemetryName;
     }
 
+    public String getTelemetryName() {
+        return telemetryName;
+    }
+
     /**
      * Gets date and time when event was recorded.
      *

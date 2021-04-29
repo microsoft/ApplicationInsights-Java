@@ -28,7 +28,6 @@ import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
 import com.microsoft.applicationinsights.internal.channel.TelemetriesTransmitter;
 import com.microsoft.applicationinsights.internal.channel.common.TelemetryBuffer;
-import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatTelemetry;
 import com.microsoft.applicationinsights.internal.util.LimitsEnforcer;
 import com.microsoft.applicationinsights.internal.util.Sanitizer;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
@@ -39,8 +38,6 @@ import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.STATSBEAT_ENDPOINT;
 
 /**
  *
@@ -75,8 +72,8 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
 
     protected TelemetriesTransmitter<T> telemetriesTransmitter;
     protected TelemetryBuffer<T> telemetryBuffer;
-    protected TelemetriesTransmitter<StatsbeatTelemetry> statsbeatTransmitter;
-    protected TelemetryBuffer<StatsbeatTelemetry> statsbeatBuffer;
+    protected TelemetriesTransmitter<T> statsbeatTransmitter;
+    protected TelemetryBuffer<T> statsbeatBuffer;
 
 
     private boolean developerMode = false;
@@ -143,7 +140,7 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         final ConfiguredTransmitterFactory<T> transmitterFactory = getTransmitterFactory();
         telemetriesTransmitter = transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry, false);
         telemetryBuffer = new TelemetryBuffer<>(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
-        statsbeatTransmitter = (TelemetriesTransmitter<StatsbeatTelemetry>)transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry, true);
+        statsbeatTransmitter = transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry, true);
         statsbeatBuffer = new TelemetryBuffer<>(statsbeatTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
 
         setDeveloperMode(developerMode);
