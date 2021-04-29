@@ -24,12 +24,17 @@ dependencies {
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-executors', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-grpc-1.5', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-http-url-connection', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-java-httpclient', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-java-util-logging-spans', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-1.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-jersey-2.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-resteasy-3.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-resteasy-3.1', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-common', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxws-2.0', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxws-2.0-axis2-1.6', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxws-2.0-cxf-3.0', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxws-2.0-metro-2.2', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jdbc', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jedis-1.4', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jedis-3.0', version: versions.opentelemetryInstrumentationAlpha
@@ -60,6 +65,7 @@ dependencies {
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-okhttp-3.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-opentelemetry-annotations-1.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-opentelemetry-api-1.0', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-rabbitmq-2.7', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-reactor-3.1', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-reactor-netty-0.9', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-reactor-netty-1.0', version: versions.opentelemetryInstrumentationAlpha
