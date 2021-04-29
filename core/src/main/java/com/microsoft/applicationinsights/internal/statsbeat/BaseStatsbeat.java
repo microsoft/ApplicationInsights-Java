@@ -55,7 +55,6 @@ public abstract class BaseStatsbeat {
         this.telemetryClient = telemetryClient;
         this.interval = interval;
         initializeCommonProperties();
-        interval = DEFAULT_STATSBEAT_INTERVAL;
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
         scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), interval, interval, TimeUnit.SECONDS);
     }
