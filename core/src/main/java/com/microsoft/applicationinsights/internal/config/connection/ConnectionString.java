@@ -37,7 +37,7 @@ public class ConnectionString {
         // parse key value pairs
         final Map<String, String> kvps;
         try {
-            kvps = new TreeMap<>(java.lang.String.CASE_INSENSITIVE_ORDER);
+            kvps = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             kvps.putAll(Splitter.on(';').trimResults().omitEmptyStrings().withKeyValueSeparator('=').split(connectionString));
         } catch (IllegalArgumentException e) {
             throw new InvalidConnectionStringException("Could not parse connection string.");
