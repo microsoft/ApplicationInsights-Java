@@ -159,7 +159,7 @@ public class Configuration {
     }
 
     public static class Statsbeat {
-        public String connectionString = "InstrumentationKey=28ac6b6a-3fe0-43a9-bccd-10cb41d791c1;IngestionEndpoint=https://westus2-0.in.applicationinsights.azure.com/";
+        public String connectionString = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"; //workspace-aistatsbeat
         public long intervalSeconds = DEFAULT_STATSBEAT_INTERVAL;
         public long featureIntervalSeconds = FEATURE_STATSBEAT_INTERVAL;
     }
