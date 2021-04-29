@@ -17,11 +17,7 @@
         <Or>
             <And>
                 <Class name="com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler" />
-                <Method name="getMemoryProfileConfig" />
-            </And>
-            <And>
-                <Class name="com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler" />
-                <Method name="getCpuProfileConfig" />
+                <Method name="getRecordingConfiguration" />
             </And>
         </Or>
     </Match>
