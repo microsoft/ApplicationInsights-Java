@@ -94,7 +94,7 @@ public class EndpointProvider {
         try {
             this.liveEndpointURL = buildLiveUri(liveEndpoint);
         } catch (URISyntaxException e) {
-            throw new IllegalStateException("could not construct statsbeat ingestion endpoint uri", e);
+            throw new IllegalStateException("could not construct live endpoint uri", e);
         }
     }
 
@@ -102,7 +102,7 @@ public class EndpointProvider {
         try {
             this.statsbeatEndpointUrl = buildIngestionUri(statsbeatEndpoint);
         } catch (URISyntaxException e) {
-            throw new IllegalStateException("could not construct live endpoint uri", e);
+            throw new IllegalStateException("could not construct statsbeat ingestion endpoint uri", e);
         }
     }
 
