@@ -96,7 +96,7 @@ public final class StatsbeatHelper {
         put("io.opentelemetry.javaagent.tomcat-7.0", 57);
     }};
 
-    public static Map<Integer, String> INSTRUMENTATION_MAP_DECODING = new HashMap<Integer, String>() {{
+    static final Map<Integer, String> INSTRUMENTATION_MAP_DECODING = new HashMap<Integer, String>() {{
         put(0, "io.opentelemetry.javaagent.apache-httpasyncclient-4.1");
         put(1, "io.opentelemetry.javaagent.apache-httpclient-2.0");
         put(2, "io.opentelemetry.javaagent.apache-httpclient-4.0");
@@ -157,7 +157,7 @@ public final class StatsbeatHelper {
         put(57, "io.opentelemetry.javaagent.tomcat-7.0");
     }};
 
-    public static final Map<String, Integer> FEATURE_MAP = new HashMap<String, Integer>() {{
+    static final Map<String, Integer> FEATURE_MAP = new HashMap<String, Integer>() {{
         put(JAVA_VENDOR_ORACLE, 0);
         put(JAVA_VENDOR_ZULU, 1);
         put(JAVA_VENDOR_MICROSOFT, 2);
@@ -166,7 +166,7 @@ public final class StatsbeatHelper {
         put(JAVA_VENDOR_OTHER, 5);
     }};
 
-    public static final Map<Integer, String> FEATURE_MAP_DECODING = new HashMap<Integer, String>() {{
+    static final Map<Integer, String> FEATURE_MAP_DECODING = new HashMap<Integer, String>() {{
         put(0, JAVA_VENDOR_ORACLE);
         put(1, JAVA_VENDOR_ZULU);
         put(2, JAVA_VENDOR_MICROSOFT);
