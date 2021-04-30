@@ -26,7 +26,7 @@ public final class AzureMetadataService {
 
     private static final String endpoint = BASE_URL + "?" + API_VERSION + "&" + JSON_FORMAT;
     private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(AzureMetadataService.class));
-    private static JsonAdapter<MetadataInstanceResponse> jsonAdapter;
+    private JsonAdapter<MetadataInstanceResponse> jsonAdapter;
 
     public static AzureMetadataService getInstance() {
         return INSTANCE;
@@ -39,7 +39,6 @@ public final class AzureMetadataService {
 
     public void parseJsonResponse(String response) throws IOException {
         if (response != null) {
-            assert(jsonAdapter != null);
             StatsbeatModule.getInstance().getAttachStatsbeat().updateMetadataInstance(jsonAdapter.fromJson(response));
         }
     }
