@@ -25,26 +25,20 @@ import com.microsoft.applicationinsights.TelemetryClient;
 
 public final class StatsbeatModule {
 
-    private static volatile StatsbeatModule instance;
+    private static final StatsbeatModule INSTANCE = new StatsbeatModule();
     private NetworkStatsbeat networkStatsbeat;
     private AttachStatsbeat attachStatsbeat;
     private FeatureStatsbeat featureStatsbeat;
     private static final Object lock = new Object();
 
     public static StatsbeatModule getInstance() {
-        synchronized (lock) {
-            if (instance == null) {
-                instance = new StatsbeatModule();
-            }
-        }
-        return instance;
+        return INSTANCE;
     }
 
     public void initialize(TelemetryClient telemetryClient, long interval, long featureInterval) {
         networkStatsbeat = new NetworkStatsbeat(telemetryClient, interval);
         attachStatsbeat = new AttachStatsbeat(telemetryClient, interval);
         featureStatsbeat = new FeatureStatsbeat(telemetryClient, featureInterval);
-        AzureMetadataService.getInstance().initialize();
     }
 
     public NetworkStatsbeat getNetworkStatsbeat() {
