@@ -41,13 +41,10 @@ import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import okio.Buffer;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConfigurationBuilder {
-
-    public static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH = "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH";
 
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_FILE = "APPLICATIONINSIGHTS_CONFIGURATION_FILE";
     private static final String APPLICATIONINSIGHTS_CONFIGURATION_CONTENT = "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT";
@@ -67,6 +64,7 @@ public class ConfigurationBuilder {
     private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL = "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL";
 
     private static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL = "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL";
+    public static final String APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH = "APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH";
 
     private static final String APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT = "APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT";
     private static final String APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED = "APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED";
@@ -278,27 +276,22 @@ public class ConfigurationBuilder {
 
     private static void overlayRpConfiguration(Configuration config, RpConfiguration rpConfiguration)  {
         String connectionString = rpConfiguration.connectionString;
-
         if (!isTrimEmpty(connectionString)) {
             config.connectionString = connectionString;
         }
-
         if (rpConfiguration.sampling != null) {
             config.sampling.percentage = rpConfiguration.sampling.percentage;
         }
-
         if (rpConfiguration.ignoreRemoteParentNotSampled != null) {
             config.preview.ignoreRemoteParentNotSampled = rpConfiguration.ignoreRemoteParentNotSampled;
         }
-
-        // Azure Spring Cloud will set the role to application name by default. But it should allow customer to
-        // override it by environment variable.
-        if (StringUtils.isNotBlank(rpConfiguration.role.name)) {
-            config.role.name = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_NAME, rpConfiguration.role.name);
+        if (isTrimEmpty(config.role.name)) {
+            // only use rp configuration role name as a fallback, similar to WEBSITE_SITE_NAME
+            config.role.name = rpConfiguration.role.name;
         }
-
-        if (StringUtils.isNotBlank(rpConfiguration.role.instance)) {
-            config.role.instance = overlayWithEnvVar(APPLICATIONINSIGHTS_ROLE_INSTANCE, rpConfiguration.role.instance);
+        if (isTrimEmpty(config.role.instance)) {
+            // only use rp configuration role name as a fallback, similar to WEBSITE_INSTANCE_ID
+            config.role.instance = rpConfiguration.role.instance;
         }
     }
 
@@ -341,7 +334,7 @@ public class ConfigurationBuilder {
     }
 
     // never returns empty string (empty string is normalized to null)
-    protected static String getEnvVar(String name) {
+    private static String getEnvVar(String name) {
         return trimAndEmptyToNull(System.getenv(name));
     }
 
