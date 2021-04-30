@@ -203,11 +203,10 @@ public final class StatsbeatHelper {
 
     private static Set<String> decode(long num, Map<Integer, String> decodedMap) {
         Set<String> result = new HashSet<>();
-        Set<Integer> keySet = decodedMap.keySet();
-        for(int key : keySet) {
-            Long powerVal = getPowerOf2(key);
+        for(Map.Entry entry: decodedMap.entrySet()) {
+            Long powerVal = getPowerOf2((int) entry.getKey());
             if ((powerVal & num) == powerVal) {
-                result.add(decodedMap.get(key));
+                result.add((String) entry.getValue());
             }
         }
 

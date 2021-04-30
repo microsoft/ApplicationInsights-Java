@@ -159,7 +159,7 @@ public abstract class BaseStatsbeat {
         return interval;
     }
 
-    class CommonProperties {
+    static class CommonProperties {
         public String resourceProvider;
         public String operatingSystem;
         public String customerIkey;
