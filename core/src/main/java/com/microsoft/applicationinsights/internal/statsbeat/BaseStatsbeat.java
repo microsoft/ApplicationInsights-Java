@@ -40,7 +40,7 @@ public abstract class BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
     protected final TelemetryClient telemetryClient;
-    protected static ScheduledExecutorService scheduledExecutor;
+    static ScheduledExecutorService scheduledExecutor;
     protected final long interval;
     protected final CommonProperties commonProperties;
 

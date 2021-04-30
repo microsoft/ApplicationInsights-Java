@@ -44,6 +44,7 @@ public final class StatsbeatModule {
         networkStatsbeat = new NetworkStatsbeat(telemetryClient, interval);
         attachStatsbeat = new AttachStatsbeat(telemetryClient, interval);
         featureStatsbeat = new FeatureStatsbeat(telemetryClient, featureInterval);
+        AzureMetadataService.getInstance().initialize();
     }
 
     public NetworkStatsbeat getNetworkStatsbeat() {

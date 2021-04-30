@@ -19,7 +19,7 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEF
 public final class AzureMetadataService {
 
     private static final Logger logger = LoggerFactory.getLogger(AzureMetadataService.class);
-    private static AzureMetadataService instance;
+    private static final AzureMetadataService INSTANCE = new AzureMetadataService();
     private static final String API_VERSION = "api-version=2017-08-01"; // this version has the smallest payload.
     private static final String JSON_FORMAT = "format=json";
     private static final String BASE_URL = "http://169.254.169.254/metadata/instance/compute";
@@ -29,15 +29,11 @@ public final class AzureMetadataService {
     private static JsonAdapter<MetadataInstanceResponse> jsonAdapter;
 
     public static AzureMetadataService getInstance() {
-        if (instance == null) {
-            instance = new AzureMetadataService();
-        }
-        return instance;
+        return INSTANCE;
     }
 
-    private AzureMetadataService() {
+    public void initialize() {
         jsonAdapter = new Moshi.Builder().build().adapter(MetadataInstanceResponse.class);
-        assert(jsonAdapter != null);
         scheduledExecutor.scheduleAtFixedRate(new InvokeMetadataServiceTask(), DEFAULT_STATSBEAT_INTERVAL, DEFAULT_STATSBEAT_INTERVAL, TimeUnit.SECONDS);
     }
 
