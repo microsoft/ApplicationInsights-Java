@@ -37,6 +37,7 @@ public class AttachStatsbeat extends BaseStatsbeat {
     public AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
         initResourceProviderId();
+        AzureMetadataService.getInstance().initialize();
     }
 
     @Override
