@@ -49,7 +49,9 @@ public class ErrorHandler implements TransmissionHandler {
             case TransmissionSendResult.SERVICE_UNAVAILABLE:
             case TransmissionSendResult.CLIENT_SIDE_EXCEPTION:
                 backoffAndSendTransmission(args);
-                StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRetryCount();
+                if (StatsbeatModule.getInstance().getNetworkStatsbeat() != null) {
+                    StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRetryCount();
+                }
                 return true;
             default:
                 logger.trace("Http response code {} not handled by {}", args.getResponseCode(),
