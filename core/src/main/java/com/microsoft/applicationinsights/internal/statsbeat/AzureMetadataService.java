@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonEncodingException;
 import com.squareup.moshi.Moshi;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -13,8 +14,6 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
 
 public final class AzureMetadataService {
 
@@ -54,11 +53,15 @@ public final class AzureMetadataService {
                 if (response != null) {
                     AzureMetadataService.this.parseJsonResponse(response.toString());
                 }
-            } catch (Exception ex) {
-                // TODO add backoff and retry if it's a sporadic failure
+            } catch (JsonEncodingException jsonEncodingException) {
+                // When it's not VM/VMSS, server does not return json back, and instead it returns text like the following:
+                // "<br />Error: NetworkUnreachable (0x2743). <br />System.Net.Sockets.SocketException A socket operation was attempted to an unreachable network 169.254.169.254:80".
                 logger.debug("This is not running from an Azure VM or VMSS. Shut down AzureMetadataService scheduler.");
                 scheduledExecutor.shutdown();
                 return;
+            } catch (Exception ex) {
+                // TODO add backoff and retry if it's a sporadic failure
+                logger.debug("Fail to query Azure Metadata Service. {}", ex);
             }
         }
     }
