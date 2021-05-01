@@ -280,7 +280,8 @@ public class ConfigurationBuilder {
         }
     }
 
-    private static void overlayRpConfiguration(Configuration config, RpConfiguration rpConfiguration)  {
+    // visible for testing
+    static void overlayRpConfiguration(Configuration config, RpConfiguration rpConfiguration)  {
         String connectionString = rpConfiguration.connectionString;
         if (!isTrimEmpty(connectionString)) {
             config.connectionString = connectionString;
