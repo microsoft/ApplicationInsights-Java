@@ -98,7 +98,11 @@ public class AttachStatsbeat extends BaseStatsbeat {
                 resourceProviderId = System.getenv().get(WEBSITE_HOSTNAME);
                 break;
             case RP_VM:
-                resourceProviderId = metadataInstanceResponse.getVmId() + "/" + metadataInstanceResponse.getSubscriptionId();
+                if (metadataInstanceResponse != null) {
+                    resourceProviderId = metadataInstanceResponse.getVmId() + "/" + metadataInstanceResponse.getSubscriptionId();
+                } else {
+                    resourceProviderId = UNKNOWN;
+                }
                 break;
             case RP_AKS: // TODO will update resourceProviderId when cluster_id becomes available from the AKS AzureMetadataService extension.
             case UNKNOWN:
