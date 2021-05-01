@@ -40,17 +40,16 @@ public abstract class BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
     protected final TelemetryClient telemetryClient;
-    protected ScheduledExecutorService scheduledExecutor;
+    protected static final ScheduledExecutorService scheduledExecutor =
+            Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
     protected final long interval;
-    protected final CommonProperties commonProperties;
+    protected static final CommonProperties commonProperties = initializeCommonProperties();
 
     private final Object lock = new Object();
 
     public BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
         this.telemetryClient = telemetryClient;
         this.interval = interval;
-        commonProperties = initializeCommonProperties();
-        scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
         scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), interval, interval, TimeUnit.SECONDS);
     }
 
@@ -75,7 +74,7 @@ public abstract class BaseStatsbeat {
         return commonProperties.version;
     }
 
-    private CommonProperties initializeCommonProperties() {
+    private static CommonProperties initializeCommonProperties() {
         CommonProperties commonProperties = new CommonProperties();
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
         if (sdkVersion.startsWith("awr")) {
@@ -118,8 +117,6 @@ public abstract class BaseStatsbeat {
 
     protected abstract void send();
 
-    protected abstract void reset();
-
     protected MetricTelemetry createStatsbeatTelemetry(String name, double value) {
         MetricTelemetry telemetry = new MetricTelemetry(name, value);
         telemetry.setTelemetryName(STATSBEAT_TELEMETRY_NAME);
@@ -143,10 +140,7 @@ public abstract class BaseStatsbeat {
             @Override
             public void run() {
                 try {
-                    synchronized (lock) {
-                        send();
-                    }
-                    reset();
+                    send();
                 }
                 catch (Exception e) {
                     logger.error("Error occurred while sending statsbeat", e);

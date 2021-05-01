@@ -32,8 +32,6 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.incrementRequestSuccessCount();
         networkStatsbeat.incrementRequestSuccessCount();
         assertEquals(networkStatsbeat.getRequestSuccessCount(), 2);
-        networkStatsbeat.reset();
-        assertEquals(networkStatsbeat.getRequestSuccessCount(), 0);
     }
 
     @Test
@@ -42,8 +40,6 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.incrementRequestFailureCount();
         networkStatsbeat.incrementRequestFailureCount();
         assertEquals(networkStatsbeat.getRequestFailureCount(), 2);
-        networkStatsbeat.reset();
-        assertEquals(networkStatsbeat.getRequestFailureCount(), 0);
     }
 
     @Test
@@ -53,9 +49,6 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.addRequestDuration(3000);
         assertEquals(networkStatsbeat.getRequestDurations().size(), 2);
         assertEquals(networkStatsbeat.getRequestDurationAvg(), 2000.0, 0);
-        networkStatsbeat.reset();
-        assertEquals(networkStatsbeat.getRequestDurations().size(), 0);
-        assertEquals(networkStatsbeat.getRequestDurationAvg(), 0.0, 0);
     }
 
     @Test
@@ -64,8 +57,6 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.incrementRetryCount();
         networkStatsbeat.incrementRetryCount();
         assertEquals(networkStatsbeat.getRetryCount(), 2);
-        networkStatsbeat.reset();
-        assertEquals(networkStatsbeat.getRetryCount(), 0);
     }
 
     @Test
@@ -74,8 +65,6 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.incrementThrottlingCount();
         networkStatsbeat.incrementThrottlingCount();
         assertEquals(networkStatsbeat.getThrottlingCount(), 2);
-        networkStatsbeat.reset();
-        assertEquals(networkStatsbeat.getThrottlingCount(), 0);
     }
 
     @Test
@@ -84,8 +73,6 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.incrementExceptionCount();
         networkStatsbeat.incrementExceptionCount();
         assertEquals(networkStatsbeat.getExceptionCount(), 2);
-        networkStatsbeat.reset();
-        assertEquals(networkStatsbeat.getExceptionCount(), 0);
     }
 
     @Test

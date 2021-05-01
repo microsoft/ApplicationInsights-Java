@@ -38,7 +38,7 @@ import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelp
 public class FeatureStatsbeat extends BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(FeatureStatsbeat.class);
-    private static Set<String> featureList = new HashSet<>(64);
+    private volatile Set<String> featureList = new HashSet<>(64);
 
     public FeatureStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
@@ -59,12 +59,6 @@ public class FeatureStatsbeat extends BaseStatsbeat {
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_FEATURE, String.valueOf(getFeature()));
         telemetryClient.track(statsbeatTelemetry);
         logger.debug("send a FeatureStatsbeat {}", statsbeatTelemetry);
-    }
-
-    @Override
-    protected synchronized void reset() {
-        featureList = new HashSet<>(64);
-        initFeatureList();
     }
 
     private void initFeatureList() {

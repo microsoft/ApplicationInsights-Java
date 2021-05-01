@@ -50,13 +50,6 @@ public class AttachStatsbeat extends BaseStatsbeat {
         }
     }
 
-    @Override
-    protected synchronized void reset() {
-        resourceProviderId = null;
-        metadataInstanceResponse = null;
-        initResourceProviderId();
-    }
-
     /**
      * @return the unique identifier of the resource provider.
      */
