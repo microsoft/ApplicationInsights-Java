@@ -32,9 +32,9 @@ public final class AzureMetadataService {
         return INSTANCE;
     }
 
-    public void initialize() {
+    public void initialize(long interval) {
         jsonAdapter = new Moshi.Builder().build().adapter(MetadataInstanceResponse.class);
-        scheduledExecutor.scheduleAtFixedRate(new InvokeMetadataServiceTask(), DEFAULT_STATSBEAT_INTERVAL, DEFAULT_STATSBEAT_INTERVAL, TimeUnit.SECONDS);
+        scheduledExecutor.scheduleAtFixedRate(new InvokeMetadataServiceTask(), interval, interval, TimeUnit.SECONDS);
     }
 
     public void parseJsonResponse(String response) throws IOException {
