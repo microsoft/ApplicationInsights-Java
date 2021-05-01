@@ -102,10 +102,15 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         }
     }
 
+    // TODO create a new instrumentation set automatically when its capacity reaches 64
     public void addInstrumentation(String instrumentation) {
         synchronized (lock) {
             current.instrumentationList.add(instrumentation);
         }
+    }
+
+    public Set<String> getInstrumentationList() {
+        return current.instrumentationList;
     }
 
     /**

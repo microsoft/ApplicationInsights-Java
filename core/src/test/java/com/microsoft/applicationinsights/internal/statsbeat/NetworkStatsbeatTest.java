@@ -1,8 +1,14 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import com.microsoft.applicationinsights.TelemetryClient;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
@@ -78,5 +84,38 @@ public class NetworkStatsbeatTest {
     @Test
     public void testInterval() {
         assertEquals(networkStatsbeat.getInterval(), DEFAULT_STATSBEAT_INTERVAL);
+    }
+
+    @Test
+    public void testRaceCondition() throws InterruptedException {
+        final ExecutorService executorService = Executors.newFixedThreadPool(100);
+        final AtomicDouble durationCounter = new AtomicDouble();
+        final AtomicInteger instrumentationCounter = new AtomicInteger();
+        for (int i = 0; i < 100; i++) {
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    for (int j = 0; j < 1000; j++) {
+                        networkStatsbeat.incrementRequestSuccessCount();
+                        networkStatsbeat.incrementRequestFailureCount();
+                        networkStatsbeat.incrementRetryCount();
+                        networkStatsbeat.incrementThrottlingCount();
+                        networkStatsbeat.incrementExceptionCount();
+                        networkStatsbeat.addRequestDuration(durationCounter.getAndAdd(0.5));
+                        networkStatsbeat.addInstrumentation("instrumentation" + instrumentationCounter.getAndDecrement());
+                    }
+                }
+            });
+        }
+
+        executorService.shutdown();
+        executorService.awaitTermination(10, TimeUnit.MINUTES);
+        assertEquals(networkStatsbeat.getRequestSuccessCount(), 100000);
+        assertEquals(networkStatsbeat.getRequestFailureCount(), 100000);
+        assertEquals(networkStatsbeat.getRetryCount(), 100000);
+        assertEquals(networkStatsbeat.getThrottlingCount(), 100000);
+        assertEquals(networkStatsbeat.getExceptionCount(), 100000);
+        assertEquals(networkStatsbeat.getRequestDurations().size(), 100000);
+        assertEquals(networkStatsbeat.getInstrumentationList().size(), 100000);
     }
 }
