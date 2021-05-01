@@ -23,8 +23,6 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -42,7 +40,6 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.THR
 
 public class NetworkStatsbeat extends BaseStatsbeat {
 
-    private static final Logger logger = LoggerFactory.getLogger(NetworkStatsbeat.class);
     private volatile IntervalMetrics current;
     private final Object lock = new Object();
 
@@ -62,14 +59,12 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             MetricTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT, local.requestSuccessCount.get());
             requestSuccessCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestSuccessCountSt);
-            logger.debug("send a NetworkStatsbeat {}: {}", REQUEST_SUCCESS_COUNT, requestSuccessCountSt);
         }
 
         if (local.requestFailureCount.get() != 0) {
             MetricTelemetry requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT, local.requestFailureCount.get());
             requestFailureCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestFailureCountSt);
-            logger.debug("send a NetworkStatsbeat {}: {}", REQUEST_FAILURE_COUNT, requestFailureCountSt);
         }
 
         double durationAvg = getRequestDurationAvg();
@@ -77,28 +72,24 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             MetricTelemetry requestDurationSt = createStatsbeatTelemetry(REQUEST_DURATION, durationAvg);
             requestDurationSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestDurationSt);
-            logger.debug("send a NetworkStatsbeat {}: {}", REQUEST_DURATION, requestDurationSt);
         }
 
         if (local.retryCount.get() != 0) {
             MetricTelemetry retryCountSt = createStatsbeatTelemetry(RETRY_COUNT, local.retryCount.get());
             retryCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(retryCountSt);
-            logger.debug("send a NetworkStatsbeat {}: {}", RETRY_COUNT, retryCountSt);
         }
 
         if (local.throttlingCount.get() != 0) {
             MetricTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT, local.throttlingCount.get());
             throttleCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(throttleCountSt);
-            logger.debug("send a NetworkStatsbeat {}: {}", THROTTLE_COUNT, throttleCountSt);
         }
 
         if (local.exceptionCount.get() != 0) {
             MetricTelemetry exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT, local.exceptionCount.get());
             exceptionCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(exceptionCountSt);
-            logger.debug("send a NetworkStatsbeat{}: {}", EXCEPTION_COUNT, exceptionCountSt);
         }
     }
 

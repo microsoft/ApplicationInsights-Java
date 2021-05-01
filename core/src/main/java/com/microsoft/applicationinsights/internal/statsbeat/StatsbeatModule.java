@@ -29,7 +29,6 @@ public final class StatsbeatModule {
     private NetworkStatsbeat networkStatsbeat;
     private AttachStatsbeat attachStatsbeat;
     private FeatureStatsbeat featureStatsbeat;
-    private static final Object lock = new Object();
 
     public static StatsbeatModule getInstance() {
         return INSTANCE;
@@ -41,9 +40,7 @@ public final class StatsbeatModule {
         featureStatsbeat = new FeatureStatsbeat(telemetryClient, featureInterval);
     }
 
-    public NetworkStatsbeat getNetworkStatsbeat() {
-        return networkStatsbeat;
-    }
+    public NetworkStatsbeat getNetworkStatsbeat() { return networkStatsbeat; }
 
     public AttachStatsbeat getAttachStatsbeat() {
         return attachStatsbeat;

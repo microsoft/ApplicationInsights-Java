@@ -23,8 +23,6 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -37,7 +35,6 @@ import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelp
 
 public class FeatureStatsbeat extends BaseStatsbeat {
 
-    private static final Logger logger = LoggerFactory.getLogger(FeatureStatsbeat.class);
     private volatile Set<String> featureList = new HashSet<>(64);
 
     public FeatureStatsbeat(TelemetryClient telemetryClient, long interval) {
@@ -58,7 +55,6 @@ public class FeatureStatsbeat extends BaseStatsbeat {
         MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE, 0);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_FEATURE, String.valueOf(getFeature()));
         telemetryClient.track(statsbeatTelemetry);
-        logger.debug("send a FeatureStatsbeat {}", statsbeatTelemetry);
     }
 
     private void initFeatureList() {
