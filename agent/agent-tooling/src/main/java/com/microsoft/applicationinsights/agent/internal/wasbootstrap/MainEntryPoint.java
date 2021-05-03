@@ -66,9 +66,10 @@ public class MainEntryPoint {
     public static void start(Instrumentation instrumentation, URL bootstrapURL) {
         boolean success = false;
         Logger startupLogger = null;
-        String version = SdkVersionFinder.readVersion();
+        String version = "(unknown)";
         try {
             Path agentPath = new File(bootstrapURL.toURI()).toPath();
+            version = SdkVersionFinder.initVersion(agentPath);
             DiagnosticsHelper.setAgentJarFile(agentPath);
             // configuration is only read this early in order to extract logging configuration
             rpConfiguration = RpConfigurationBuilder.create(agentPath);
