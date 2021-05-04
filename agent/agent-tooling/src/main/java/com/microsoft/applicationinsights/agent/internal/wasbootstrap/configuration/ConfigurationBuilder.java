@@ -291,6 +291,14 @@ public class ConfigurationBuilder {
         if (rpConfiguration.ignoreRemoteParentNotSampled != null) {
             config.preview.ignoreRemoteParentNotSampled = rpConfiguration.ignoreRemoteParentNotSampled;
         }
+        if (isTrimEmpty(config.role.name)) {
+            // only use rp configuration role name as a fallback, similar to WEBSITE_SITE_NAME
+            config.role.name = rpConfiguration.role.name;
+        }
+        if (isTrimEmpty(config.role.instance)) {
+            // only use rp configuration role name as a fallback, similar to WEBSITE_INSTANCE_ID
+            config.role.instance = rpConfiguration.role.instance;
+        }
     }
 
     private static String getConfigPath() {
