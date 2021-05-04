@@ -33,20 +33,12 @@ public class SdkVersionFinder extends CachedDiagnosticsValueFinder {
     private static String readVersion(Path agentPath) {
         try {
             // reading from file instead of from classpath, in order to avoid triggering jar file signature verification
-            JarFile jarFile = new JarFile(agentPath.toFile(), false);
-            JarEntry entry = jarFile.getJarEntry("ai.sdk-version.properties");
-            InputStream in = jarFile.getInputStream(entry);
-            try {
-                Properties props = new Properties();
-                props.load(in);
-                return props.getProperty("version");
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            try (JarFile jarFile = new JarFile(agentPath.toFile(), false)) {
+                JarEntry entry = jarFile.getJarEntry("ai.sdk-version.properties");
+                try (InputStream in = jarFile.getInputStream(entry)) {
+                    Properties props = new Properties();
+                    props.load(in);
+                    return props.getProperty("version");
                 }
             }
         } catch (IOException e) {
