@@ -48,6 +48,8 @@ import org.slf4j.MDC;
 // this class initializes configuration and logging before passing control to opentelemetry-java-instrumentation
 public class MainEntryPoint {
 
+    private static final boolean DEBUG_SIGNED_JAR_ACCESS = Boolean.getBoolean("applicationinsights.debug.signedJarAccess");
+
     private static RpConfiguration rpConfiguration;
     private static Configuration configuration;
 
@@ -68,6 +70,12 @@ public class MainEntryPoint {
         Logger startupLogger = null;
         String version = "(unknown)";
         try {
+            if (DEBUG_SIGNED_JAR_ACCESS) {
+                JarVerifierClassFileTransformer transformer = new JarVerifierClassFileTransformer();
+                instrumentation.addTransformer(transformer, true);
+                instrumentation.retransformClasses(Class.forName("java.util.jar.JarVerifier"));
+                instrumentation.removeTransformer(transformer);
+            }
             Path agentPath = new File(bootstrapURL.toURI()).toPath();
             version = SdkVersionFinder.initVersion(agentPath);
             DiagnosticsHelper.setAgentJarFile(agentPath);
