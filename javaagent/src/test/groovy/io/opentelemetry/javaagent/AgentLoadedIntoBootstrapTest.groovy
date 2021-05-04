@@ -7,6 +7,7 @@ package io.opentelemetry.javaagent
 
 import jvmbootstraptest.AgentLoadedChecker
 import jvmbootstraptest.MyClassLoaderIsNotBootstrap
+import spock.lang.Ignore
 import spock.lang.Specification
 import spock.lang.Timeout
 
@@ -32,6 +33,7 @@ class AgentLoadedIntoBootstrapTest extends Specification {
   // file to the bootstrap class loader, that can cause some applications to break, as there's a
   // lot of application and library code that doesn't handle getClassLoader() returning null
   // (e.g. https://github.com/qos-ch/logback/pull/291)
+  @Ignore
   def "application uber jar should not be added to the bootstrap class loader"() {
     setup:
     def mainClassName = MyClassLoaderIsNotBootstrap.getName()
