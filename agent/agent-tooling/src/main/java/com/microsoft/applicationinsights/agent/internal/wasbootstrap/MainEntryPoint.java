@@ -176,13 +176,8 @@ public class MainEntryPoint {
 
     private static Logger configureLogging(SelfDiagnostics selfDiagnostics, Path agentPath) {
         // FIXME (trask) clean this up now that it doesn't need to live in bootstrap class loader
-        LoggingConfigurator.level = selfDiagnostics.level;
-        LoggingConfigurator.destination = selfDiagnostics.destination;
-        LoggingConfigurator.filePath = agentPath.resolveSibling(selfDiagnostics.file.path);
-        LoggingConfigurator.fileMaxSizeMb = selfDiagnostics.file.maxSizeMb;
-        LoggingConfigurator.fileMaxHistory = selfDiagnostics.file.maxHistory;
 
-        new LoggingConfigurator().configure((LoggerContext) LoggerFactory.getILoggerFactory());
+        new LoggingConfigurator(selfDiagnostics, agentPath).configure();
 
         return LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
     }

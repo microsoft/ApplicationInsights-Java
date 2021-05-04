@@ -8,91 +8,110 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.encoder.Encoder;
+import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import ch.qos.logback.core.rolling.FixedWindowRollingPolicy;
 import ch.qos.logback.core.rolling.RollingFileAppender;
+import ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.EtwAppender;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.MoshiJsonFormatter;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.Locale;
 
 import static org.slf4j.Logger.ROOT_LOGGER_NAME;
 
-public class LoggingConfigurator {
+class LoggingConfigurator {
 
-    public static String level;
-    public static String destination;
+    private final LoggerContext loggerContext;
 
-    public static Path filePath;
-    public static int fileMaxSizeMb;
-    public static int fileMaxHistory;
+    public Level level;
+    public String destination;
 
-    public void configure(LoggerContext loggerContext) {
+    public Path filePath;
+    public int fileMaxSizeMb;
+    public int fileMaxHistory;
 
+    LoggingConfigurator(Configuration.SelfDiagnostics selfDiagnostics, Path agentPath) {
+        loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+        level = getLevel(selfDiagnostics.level);
+        destination = selfDiagnostics.destination;
+        filePath = agentPath.resolveSibling(selfDiagnostics.file.path);
+        fileMaxSizeMb = selfDiagnostics.file.maxSizeMb;
+        fileMaxHistory = selfDiagnostics.file.maxHistory;
+    }
+
+    void configure() {
         loggerContext.getLogger(ROOT_LOGGER_NAME).detachAndStopAllAppenders();
 
         if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
-            configureAppSvcs(loggerContext);
+            configureAppSvcs();
         } else if (destination == null || destination.equalsIgnoreCase("file+console")) {
-            configureFileAndConsole(loggerContext);
+            configureFileAndConsole();
         } else if (destination.equalsIgnoreCase("file")) {
-            configureFile(loggerContext);
+            configureFile();
         } else if (destination.equalsIgnoreCase("console")) {
-            configureConsole(loggerContext);
+            configureConsole();
         } else {
             throw new IllegalStateException("Unknown self-diagnostics destination: " + destination);
         }
     }
 
-    private void configureAppSvcs(LoggerContext loggerContext) {
+    private void configureAppSvcs() {
+        Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
+        rootLogger.addAppender(configureFileAppender());
+        rootLogger.addAppender(configureConsoleAppender());
+
         // Diagnostics IPA log file location. Disabled by default.
-        final String internalLogOutputLocation = System.getenv(DiagnosticsHelper.APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY);
-        if (internalLogOutputLocation == null || internalLogOutputLocation.isEmpty()) {
-            System.setProperty("ai.config.appender.diagnostics.location", "");
+        String diagnosticsOutputDirectory = System.getenv(DiagnosticsHelper.APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY);
+        if (diagnosticsOutputDirectory != null && !diagnosticsOutputDirectory.isEmpty()) {
+            rootLogger.addAppender(configureDiagnosticAppender(diagnosticsOutputDirectory));
         }
 
-        // Diagnostics IPA ETW provider. Windows-only.
-        if (!DiagnosticsHelper.isOsWindows()) {
-            System.setProperty("ai.config.appender.etw.location", "");
+        if (DiagnosticsHelper.isOsWindows()) {
+            rootLogger.addAppender(configureEtwAppender());
         }
+        // TODO what about linux?
 
-        // FIXME (trask)
-
-
-
-        configureLoggingLevels(loggerContext);
+        configureLoggingLevels();
     }
 
-    private void configureFileAndConsole(LoggerContext loggerContext) {
+    private void configureFileAndConsole() {
         Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
-        rootLogger.addAppender(configureFileAppender(loggerContext));
-        rootLogger.addAppender(configureConsoleAppender(loggerContext));
+        rootLogger.addAppender(configureFileAppender());
+        rootLogger.addAppender(configureConsoleAppender());
 
-        configureLoggingLevels(loggerContext);
+        configureLoggingLevels();
         // these messages are specifically designed for attach
         loggerContext.getLogger("applicationinsights.extension.diagnostics").setLevel(Level.OFF);
     }
 
-    private void configureFile(LoggerContext loggerContext) {
+    private void configureFile() {
         Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
-        rootLogger.addAppender(configureFileAppender(loggerContext));
+        rootLogger.addAppender(configureFileAppender());
 
-        configureLoggingLevels(loggerContext);
+        configureLoggingLevels();
         // these messages are specifically designed for attach
         loggerContext.getLogger("applicationinsights.extension.diagnostics").setLevel(Level.OFF);
     }
 
-    private void configureConsole(LoggerContext loggerContext) {
+    private void configureConsole() {
         Logger rootLogger = loggerContext.getLogger(ROOT_LOGGER_NAME);
-        rootLogger.addAppender(configureConsoleAppender(loggerContext));
+        rootLogger.addAppender(configureConsoleAppender());
 
-        configureLoggingLevels(loggerContext);
+        configureLoggingLevels();
         // these messages are specifically designed for attach
         loggerContext.getLogger("applicationinsights.extension.diagnostics").setLevel(Level.OFF);
     }
 
-    private Appender<ILoggingEvent> configureFileAppender(LoggerContext loggerContext) {
+    private Appender<ILoggingEvent> configureFileAppender() {
         Path logFileNamePath = filePath.getFileName();
         if (logFileNamePath == null) {
             throw new IllegalStateException("Unexpected empty self-diagnostics file path");
@@ -129,27 +148,86 @@ public class LoggingConfigurator {
 
         appender.setTriggeringPolicy(triggeringPolicy);
 
-        appender.setEncoder(createEncoder(loggerContext));
+        appender.setEncoder(createEncoder());
         appender.start();
 
         return appender;
     }
 
-    private Appender<ILoggingEvent> configureConsoleAppender(LoggerContext loggerContext) {
+    private Appender<ILoggingEvent> configureConsoleAppender() {
         ConsoleAppender<ILoggingEvent> appender = new ConsoleAppender<>();
         appender.setContext(loggerContext);
         appender.setName("CONSOLE");
 
-        appender.setEncoder(createEncoder(loggerContext));
+        appender.setEncoder(createEncoder());
         appender.start();
 
         return appender;
     }
 
-    private static void configureLoggingLevels(LoggerContext loggerContext) {
+    private Appender<ILoggingEvent> configureDiagnosticAppender(String diagnosticsOutputDirectory) {
+        RollingFileAppender<ILoggingEvent> appender = new RollingFileAppender<>();
+        appender.setContext(loggerContext);
+        appender.setName("DIAGNOSTICS_FILE");
+        appender.setFile(diagnosticsOutputDirectory + "/applicationinsights-extension.log");
 
-        Level level = getLevel(LoggingConfigurator.level);
+        SizeAndTimeBasedRollingPolicy<ILoggingEvent> rollingPolicy = new SizeAndTimeBasedRollingPolicy<>();
+        rollingPolicy.setContext(loggerContext);
+        rollingPolicy.setFileNamePattern(diagnosticsOutputDirectory + "/applicationinsights-extension-%d{yyyy-MM-dd}.%i.log.old");
+        rollingPolicy.setMaxHistory(1);
+        rollingPolicy.setTotalSizeCap(new FileSize(10 * 1024 * 1024));
+        rollingPolicy.setMaxFileSize(new FileSize(5 * 1024 * 1024));
+        rollingPolicy.setParent(appender);
+        rollingPolicy.start();
 
+        appender.setRollingPolicy(rollingPolicy);
+
+        LayoutWrappingEncoder<ILoggingEvent> encoder = new LayoutWrappingEncoder<>();
+        encoder.setContext(loggerContext);
+
+        ApplicationInsightsJsonLayout layout = new ApplicationInsightsJsonLayout();
+        layout.setContext(loggerContext);
+        layout.setTimestampFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+        layout.setTimestampFormatTimezoneId("Etc/UTC");
+        layout.setAppendLineSeparator(true);
+
+        MoshiJsonFormatter jsonFormatter = new MoshiJsonFormatter();
+        jsonFormatter.setPrettyPrint(false);
+
+        layout.setJsonFormatter(jsonFormatter);
+        layout.start();
+
+        encoder.setLayout(layout);
+        encoder.start();
+
+        appender.setEncoder(encoder);
+
+        ApplicationInsightsDiagnosticsLogFilter filter = new ApplicationInsightsDiagnosticsLogFilter();
+        filter.setContext(loggerContext);
+        filter.start();
+
+        appender.addFilter(filter);
+        appender.start();
+
+        return appender;
+    }
+
+    private Appender<ILoggingEvent> configureEtwAppender() {
+        EtwAppender appender = new EtwAppender();
+        appender.setContext(loggerContext);
+        appender.setName("ETW_PROVIDER");
+
+        ApplicationInsightsDiagnosticsLogFilter filter = new ApplicationInsightsDiagnosticsLogFilter();
+        filter.setContext(loggerContext);
+        filter.start();
+
+        appender.addFilter(filter);
+        appender.start();
+
+        return appender;
+    }
+
+    private void configureLoggingLevels() {
         // never want to log apache http at trace or debug, it's just way to verbose
         Level atLeastInfoLevel = getMaxLevel(level, Level.INFO);
 
@@ -169,7 +247,7 @@ public class LoggingConfigurator {
         loggerContext.getLogger(ROOT_LOGGER_NAME).setLevel(otherLibsLevel);
     }
 
-    private static Encoder<ILoggingEvent> createEncoder(LoggerContext loggerContext) {
+    private Encoder<ILoggingEvent> createEncoder() {
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
         encoder.setContext(loggerContext);
         encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss.SSSX} %-5level %logger{36} - %msg%n");
