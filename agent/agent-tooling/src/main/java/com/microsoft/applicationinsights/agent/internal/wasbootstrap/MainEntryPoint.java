@@ -29,7 +29,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
-import ch.qos.logback.classic.LoggerContext;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
@@ -175,10 +174,7 @@ public class MainEntryPoint {
     }
 
     private static Logger configureLogging(SelfDiagnostics selfDiagnostics, Path agentPath) {
-        // FIXME (trask) clean this up now that it doesn't need to live in bootstrap class loader
-
         new LoggingConfigurator(selfDiagnostics, agentPath).configure();
-
         return LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
     }
 }
