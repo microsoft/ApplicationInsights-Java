@@ -31,12 +31,12 @@ class LoggingConfigurator {
 
     private final LoggerContext loggerContext;
 
-    public Level level;
-    public String destination;
+    private final Level level;
+    private final String destination;
 
-    public Path filePath;
-    public int fileMaxSizeMb;
-    public int fileMaxHistory;
+    private final Path filePath;
+    private final int fileMaxSizeMb;
+    private final int fileMaxHistory;
 
     LoggingConfigurator(Configuration.SelfDiagnostics selfDiagnostics, Path agentPath) {
         loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
