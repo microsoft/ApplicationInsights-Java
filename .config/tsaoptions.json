@@ -1,0 +1,15 @@
+{
+  "instanceUrl"        :  "https://msazure.visualstudio.com",
+  "areaPath"           :  "One\\TelReachSDKTeam",
+  "projectName"        :  "One",
+  "iterationPath"      :  "One",
+  "notificationAliases":  [
+    "Trask.Stalnaker@microsoft.com",
+    "Helen.Yang@microsoft.com"
+  ],
+  "codebaseAdmins"     : [
+    "Trask.Stalnaker@microsoft.com",
+    "Helen.Yang@microsoft.com"
+  ],
+  "ignoreBranchName"   : true
+}
