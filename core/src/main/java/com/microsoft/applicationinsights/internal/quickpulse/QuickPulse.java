@@ -32,9 +32,10 @@ import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import org.apache.http.client.HttpClient;
+//import org.apache.http.client.HttpClient;
+import com.azure.core.http.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-
+import com.azure.core.http.HttpRequest;
 import com.microsoft.applicationinsights.TelemetryClient;
 
 /**
@@ -83,8 +84,8 @@ public enum QuickPulse {
                 if (!initialized) {
                     initialized = true;
                     final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-                    HttpClient httpClient = LazyHttpClient.getInstance();
-                    ArrayBlockingQueue<HttpPost> sendQueue = new ArrayBlockingQueue<>(256, true);
+                    HttpClient httpClient = HttpClient.createDefault();
+                    ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
                     quickPulseDataSender = new DefaultQuickPulseDataSender(httpClient, sendQueue);
 

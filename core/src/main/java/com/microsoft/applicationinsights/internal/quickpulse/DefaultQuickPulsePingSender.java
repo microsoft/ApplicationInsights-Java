@@ -22,16 +22,22 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.netty.NettyAsyncHttpClientBuilder;
 import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+//import org.apache.http.HttpResponse;
+import com.azure.core.http.HttpClient;
+import com.azure.core.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 
@@ -88,15 +94,20 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
         final Date currentDate = new Date();
         final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-        final HttpPost request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
+        final HttpRequest request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
 
-        final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
-        request.setEntity(pingEntity);
+        final byte[] content = buildPingEntity(currentDate.getTime());
+        //final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
+        request.setBody(content);
 
         final long sendTime = System.nanoTime();
         HttpResponse response = null;
+        HttpClient httpClient = HttpClient.createDefault();
+        HttpPipeline pipeline = new HttpPipelineBuilder()
+                .httpClient(httpClient).build();
         try {
-            response = httpClient.execute(request);
+            //response = httpClient.execute(request);
+            response = pipeline.send(request).block();
             if (networkHelper.isSuccess(response)) {
                 final QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                 switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
@@ -113,11 +124,10 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
             if(!friendlyExceptionThrown.getAndSet(true)) {
                 logger.error(e.getMessage());
             }
-        } catch (IOException e) {
-            // chomp
         } finally {
             if (response != null) {
-                LazyHttpClient.dispose(response);
+                response.close();
+                //LazyHttpClient.dispose(response);
             }
         }
         return onPingError(sendTime);
@@ -137,12 +147,12 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         return telemetryClient.getEndpointProvider().getLiveEndpointURL().toString();
     }
 
-    private ByteArrayEntity buildPingEntity(long timeInMillis) {
+    private byte[] buildPingEntity(long timeInMillis) {
         String sb = pingPrefix + timeInMillis +
                 ")\\/\"," +
                 "\"Version\":\"2.2.0-738\"" +
                 "}";
-        return new ByteArrayEntity(sb.getBytes());
+        return sb.getBytes(StandardCharsets.UTF_8);
     }
 
     private QuickPulseHeaderInfo onPingError(long sendTime) {

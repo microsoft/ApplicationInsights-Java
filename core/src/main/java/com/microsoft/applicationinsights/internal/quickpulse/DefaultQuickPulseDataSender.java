@@ -24,9 +24,10 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import com.azure.core.http.*;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+//import org.apache.http.HttpResponse;
+//import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 
 /**
@@ -40,9 +41,9 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
     private volatile boolean stopped = false;
     private long lastValidTransmission = 0;
 
-    private final ArrayBlockingQueue<HttpPost> sendQueue;
+    private final ArrayBlockingQueue<HttpRequest> sendQueue;
 
-    public DefaultQuickPulseDataSender(final HttpClient httpClient, final ArrayBlockingQueue<HttpPost> sendQueue) {
+    public DefaultQuickPulseDataSender(final HttpClient httpClient, final ArrayBlockingQueue<HttpRequest> sendQueue) {
         this.httpClient = httpClient;
         this.sendQueue = sendQueue;
     }
@@ -51,15 +52,18 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
     public void run() {
         try {
             while (!stopped) {
-                HttpPost post = sendQueue.take();
+                HttpRequest post = sendQueue.take();
                 if (quickPulseHeaderInfo.getQuickPulseStatus() != QuickPulseStatus.QP_IS_ON) {
                     continue;
                 }
 
                 final long sendTime = System.nanoTime();
                 HttpResponse response = null;
+                HttpClient httpClient = HttpClient.createDefault();
+                HttpPipeline pipeline = new HttpPipelineBuilder()
+                        .httpClient(httpClient).build();
                 try {
-                    response = httpClient.execute(post);
+                    response = pipeline.send(post).block();
                     if (networkHelper.isSuccess(response)) {
                         QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                         switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
@@ -77,11 +81,9 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
                                 break;
                         }
                     }
-                } catch (IOException e) {
-                    onPostError(sendTime);
                 } finally {
                     if (response != null) {
-                        LazyHttpClient.dispose(response);
+                        response.close();
                     }
                 }
             }
