@@ -17,11 +17,12 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.ServiceLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class ConfigInitializer {
-  private static final Logger log = LoggerFactory.getLogger(ConfigInitializer.class);
+
+  // NOTE it's important not to use slf4j in this class, because this class is used before slf4j is
+  // configured, and so using slf4j here would initialize slf4j-simple before we have a chance to
+  // configure the logging levels
 
   private static final String CONFIGURATION_FILE_PROPERTY = "otel.javaagent.configuration-file";
   private static final String CONFIGURATION_FILE_ENV_VAR = "OTEL_JAVAAGENT_CONFIGURATION_FILE";
@@ -75,18 +76,21 @@ public final class ConfigInitializer {
     // Configuration properties file is optional
     File configurationFile = new File(configurationFilePath);
     if (!configurationFile.exists()) {
-      log.error("Configuration file '{}' not found.", configurationFilePath);
-      return properties;
+      throw new IllegalStateException(
+          "Configuration file '" + configurationFilePath + "' not found.");
     }
 
     try (InputStreamReader reader =
         new InputStreamReader(new FileInputStream(configurationFile), StandardCharsets.UTF_8)) {
       properties.load(reader);
     } catch (FileNotFoundException fnf) {
-      log.error("Configuration file '{}' not found.", configurationFilePath);
+      throw new IllegalStateException(
+          "Configuration file '" + configurationFilePath + "' not found.");
     } catch (IOException ioe) {
-      log.error(
-          "Configuration file '{}' cannot be accessed or correctly parsed.", configurationFilePath);
+      throw new IllegalStateException(
+          "Configuration file '"
+              + configurationFilePath
+              + "' cannot be accessed or correctly parsed.");
     }
 
     return properties;
