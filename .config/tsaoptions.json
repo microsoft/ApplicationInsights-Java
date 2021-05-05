@@ -4,12 +4,7 @@
   "projectName"        :  "One",
   "iterationPath"      :  "One",
   "notificationAliases":  [
-    "Trask.Stalnaker@microsoft.com",
-    "Helen.Yang@microsoft.com"
-  ],
-  "codebaseAdmins"     : [
-    "Trask.Stalnaker@microsoft.com",
-    "Helen.Yang@microsoft.com"
+    "appinsightsjavahelp@microsoft.com"
   ],
   "ignoreBranchName"   : true
 }
