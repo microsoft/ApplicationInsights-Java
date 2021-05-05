@@ -1,4 +1,12 @@
 # CHANGELOG
+# Version 3.0.4-BETA.2
+* Enable users to override iKey, cloud role name and cloud role instance per telemetry [#1630](https://github.com/microsoft/ApplicationInsights-Java/pull/1630).
+* Fix duplicate headers [#1640](https://github.com/microsoft/ApplicationInsights-Java/pull/1640).
+* Add preview instrumentations for javaHttpClient, rabbitmq, and jaxws [#1650](https://github.com/microsoft/ApplicationInsights-Java/pull/1650).
+* Add a new env var called APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE.
+* Add cloud role name and instance to applicationinsights-rp.json configuration.
+* Improve agent start up time.
+
 # Version 3.0.4-BETA
 * Enable Azure Functions to update the instrumentation logging level at runtime.
 * Enable Azure Functions to update the self-diagnostics logging level at runtime.

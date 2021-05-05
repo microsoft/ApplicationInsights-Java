@@ -368,6 +368,36 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void shouldOverridePreviewJavaHttpClientInstrumentation() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAVA_HTTP_CLIENT_ENABLED", "true");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertTrue(configuration.preview.instrumentation.javaHttpClient.enabled);
+    }
+
+    @Test
+    public void shouldOverridePreviewJaxwsInstrumentation() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAXWS_ENABLED", "true");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertTrue(configuration.preview.instrumentation.jaxws.enabled);
+    }
+
+    @Test
+    public void shouldOverridePreviewRabbitmqInstrumentation() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED", "true");
+
+        Configuration configuration = loadConfiguration();
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertTrue(configuration.preview.instrumentation.rabbitmq.enabled);
+    }
+
+    @Test
     public void shouldOverridePreviewLiveMetricsEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED", "false");
 
@@ -455,6 +485,32 @@ public class ConfigurationTest {
         ConfigurationBuilder.overlayEnvVars(configuration);
 
         assertFalse(configuration.instrumentation.springScheduling.enabled);
+    }
+
+    @Test
+    public void shouldUseRpConfigRole() {
+        Configuration configuration = new Configuration();
+        RpConfiguration rpConfiguration = new RpConfiguration();
+        rpConfiguration.role.name = "role-name-from-rp";
+        rpConfiguration.role.instance = "role-instance-from-rp";
+        ConfigurationBuilder.overlayRpConfiguration(configuration, rpConfiguration);
+
+        assertEquals("role-name-from-rp", configuration.role.name);
+        assertEquals("role-instance-from-rp", configuration.role.instance);
+    }
+
+    @Test
+    public void shouldNotUseRpConfigRole() {
+        Configuration configuration = new Configuration();
+        configuration.role.name = "role-name";
+        configuration.role.instance = "role-instance";
+        RpConfiguration rpConfiguration = new RpConfiguration();
+        rpConfiguration.role.name = "role-name-from-rp";
+        rpConfiguration.role.instance = "role-instance-from-rp";
+        ConfigurationBuilder.overlayRpConfiguration(configuration, rpConfiguration);
+
+        assertEquals("role-name", configuration.role.name);
+        assertEquals("role-instance", configuration.role.instance);
     }
 
     @Test(expected = JsonDataException.class)

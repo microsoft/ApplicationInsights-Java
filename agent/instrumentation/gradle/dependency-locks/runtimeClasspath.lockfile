@@ -1,6 +1,8 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+ch.qos.logback.contrib:logback-json-classic:0.1.5
+ch.qos.logback.contrib:logback-json-core:0.1.5
 ch.qos.logback:logback-classic:1.2.3
 ch.qos.logback:logback-core:1.2.3
 com.azure:azure-core-tracing-opentelemetry:1.0.0-beta.8
@@ -24,6 +26,9 @@ commons-logging:commons-logging:1.2
 io.opentelemetry.instrumentation:opentelemetry-grpc-1.5:1.0.0+ai.patch.1-alpha
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:1.0.0+ai.patch.1-alpha
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:1.0.0+ai.patch.1-alpha
+io.opentelemetry.instrumentation:opentelemetry-jaxws-2.0-axis2-1.6:1.0.0+ai.patch.1-alpha
+io.opentelemetry.instrumentation:opentelemetry-jaxws-2.0-cxf-3.0:1.0.0+ai.patch.1-alpha
+io.opentelemetry.instrumentation:opentelemetry-jaxws-common:1.0.0+ai.patch.1-alpha
 io.opentelemetry.instrumentation:opentelemetry-lettuce-5.1:1.0.0+ai.patch.1-alpha
 io.opentelemetry.instrumentation:opentelemetry-netty-4.1:1.0.0+ai.patch.1-alpha
 io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:1.0.0+ai.patch.1-alpha
@@ -44,12 +49,17 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-eclipse-osgi-
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-executors:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.5:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-http-url-connection:1.0.0+ai.patch.1-alpha
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-httpclient:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-1.0:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-common:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-jersey-2.0:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-resteasy-3.0:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-2.0-resteasy-3.1:1.0.0+ai.patch.1-alpha
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0-axis2-1.6:1.0.0+ai.patch.1-alpha
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0-cxf-3.0:1.0.0+ai.patch.1-alpha
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0-metro-2.2:1.0.0+ai.patch.1-alpha
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxws-2.0:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jdbc:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jedis-1.4:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jedis-3.0:1.0.0+ai.patch.1-alpha
@@ -75,6 +85,7 @@ io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:1.0
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-annotations-1.0:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-opentelemetry-api-1.0:1.0.0+ai.patch.1-alpha
+io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-rabbitmq-2.7:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-3.1:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-netty-0.9:1.0.0+ai.patch.1-alpha
 io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-reactor-netty-1.0:1.0.0+ai.patch.1-alpha

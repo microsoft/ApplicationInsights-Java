@@ -24,12 +24,17 @@ dependencies {
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-executors', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-grpc-1.5', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-http-url-connection', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-java-httpclient', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-java-util-logging-spans', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-1.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-jersey-2.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-resteasy-3.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-resteasy-3.1', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-common', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxws-2.0', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxws-2.0-axis2-1.6', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxws-2.0-cxf-3.0', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxws-2.0-metro-2.2', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jdbc', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jedis-1.4', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jedis-3.0', version: versions.opentelemetryInstrumentationAlpha
@@ -60,6 +65,7 @@ dependencies {
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-okhttp-3.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-opentelemetry-annotations-1.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-opentelemetry-api-1.0', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-rabbitmq-2.7', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-reactor-3.1', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-reactor-netty-0.9', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-reactor-netty-1.0', version: versions.opentelemetryInstrumentationAlpha
@@ -102,7 +108,9 @@ task shadowJarStep1(type: com.github.jengelman.gradle.plugins.shadow.tasks.Shado
         // exclude bootstrap dependencies from shadowJar
         exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-bootstrap'))
         exclude(dependency('io.opentelemetry:opentelemetry-api'))
+        exclude(dependency('io.opentelemetry:opentelemetry-context'))
         exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
+        exclude(dependency('io.opentelemetry:opentelemetry-semconv'))
         exclude(dependency('io.grpc:grpc-context'))
         exclude(dependency('org.slf4j:slf4j-api'))
         exclude(dependency('ch.qos.logback:logback-classic'))
@@ -127,10 +135,14 @@ shadowJar {
     }
 
     dependencies {
+        //These classes are added to bootstrap classloader by javaagent module
         // exclude bootstrap dependencies from shadowJar
         exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-bootstrap'))
         exclude(dependency('io.opentelemetry:opentelemetry-api'))
+        exclude(dependency('io.opentelemetry:opentelemetry-context'))
         exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
+        exclude(dependency('io.opentelemetry:opentelemetry-semconv'))
+        // TODO (trask) are these exclusions still needed?
         exclude(dependency('io.grpc:grpc-context'))
         exclude(dependency('org.slf4j:slf4j-api'))
         exclude(dependency('ch.qos.logback:logback-classic'))
@@ -145,18 +157,18 @@ shadowJar {
     relocate 'org.slf4j', 'io.opentelemetry.javaagent.slf4j'
 
     // rewrite library instrumentation dependencies
-    relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
-        exclude "io.opentelemetry.javaagent.instrumentation.**"
-    }
-
-    // prevents conflict with library instrumentation
-    relocate 'io.opentelemetry.instrumentation.api', 'io.opentelemetry.javaagent.shaded.instrumentation.api'
+    relocate "io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation"
 
     // relocate OpenTelemetry API usage
     relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
     relocate "io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv"
-    relocate "io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi"
     relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
+
+    // relocate the OpenTelemetry extensions that are used by instrumentation modules
+    // these extensions live in the AgentClassLoader, and are injected into the user's class loader
+    // by the instrumentation modules that use them
+    relocate "io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws"
+    relocate "io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin"
 
     // this is for instrumentation on opentelemetry-api itself
     relocate "application.io.opentelemetry", "io.opentelemetry"
