@@ -101,7 +101,6 @@ public final class CustomDimensions {
             properties.put(CUSTOM_DIMENSIONS_CIKEY, customerIkey);
         }
         properties.put(CUSTOM_DIMENSIONS_RUNTIME_VERSION, runtimeVersion);
-        System.out.println("OperatingSystem: " + operatingSystem);
         properties.put(CUSTOM_DIMENSIONS_OS, operatingSystem);
         properties.put(CUSTOM_DIMENSIONS_LANGUAGE, LANGUAGE);
         properties.put(CUSTOM_DIMENSIONS_VERSION, version);
