@@ -5,7 +5,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import okio.BufferedSource;
 import okio.Okio;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -15,6 +14,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_OS;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_RP;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_AKS;
@@ -46,7 +47,7 @@ public class AttachStatsbeatTest {
         source.close();
         AzureMetadataService.getInstance().parseJsonResponse(result);
         assertEquals(attachStatsbeat.getResourceProviderId(), "2a1216c3-a2a0-4fc5-a941-b1f5acde7051/65b2f83e-7bf1-4be3-bafc-3a4163265a52");
-        assertEquals(attachStatsbeat.getOperatingSystem(), "Linux");
+        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_OS), "Linux");
     }
 
     @Test
@@ -57,7 +58,7 @@ public class AttachStatsbeatTest {
         Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_HOSTNAME)).thenReturn("test_hostname");
 
         mockedAttachStatsbeat.updateResourceProvider(RP_APPSVC);
-        assertEquals(mockedAttachStatsbeat.getResourceProvider(), RP_APPSVC);
+        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), RP_APPSVC);
         assertEquals(mockedAttachStatsbeat.getResourceProviderId(), "test_site_name/test_stamp_name/test_hostname");
     }
 
@@ -67,25 +68,25 @@ public class AttachStatsbeatTest {
         Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_HOSTNAME)).thenReturn("test_function_name");
 
         mockedAttachStatsbeat.updateResourceProvider(RP_FUNCTIONS);
-        assertEquals(mockedAttachStatsbeat.getResourceProvider(), RP_FUNCTIONS);
+        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), RP_FUNCTIONS);
         assertEquals(mockedAttachStatsbeat.getResourceProviderId(), "test_function_name");
-    }
-
-    @Ignore
-    public void testUnknownResourceProviderId() {
-        assertEquals(attachStatsbeat.getResourceProvider(), UNKNOWN);
-        assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
     }
 
     @Test
     public void testAksResourceProviderId() {
         attachStatsbeat.updateResourceProvider(RP_AKS);
-        assertEquals(attachStatsbeat.getResourceProvider(), RP_AKS);
+        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), RP_AKS);
         assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
     }
 
     @Test
     public void testInterval() {
         assertEquals(attachStatsbeat.getInterval(), DEFAULT_STATSBEAT_INTERVAL);
+    }
+
+    @Test
+    public void testUnknownResourceProviderId() {
+        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), UNKNOWN);
+        assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
     }
 }

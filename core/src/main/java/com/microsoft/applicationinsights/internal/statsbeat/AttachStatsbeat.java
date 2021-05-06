@@ -67,7 +67,7 @@ public class AttachStatsbeat extends BaseStatsbeat {
     }
 
     protected void updateResourceProvider(String rp) {
-        commonProperties.resourceProvider = rp;
+        CustomDimensions.getInstance().getProperties().put(CUSTOM_DIMENSIONS_RP, rp);
         initResourceProviderId();
     }
 
@@ -75,12 +75,12 @@ public class AttachStatsbeat extends BaseStatsbeat {
     private void updateOperatingSystem() {
         String osType = metadataInstanceResponse.getOsType();
         if (osType != null && !"unknown".equalsIgnoreCase(osType)) {
-            commonProperties.operatingSystem = osType;
+            CustomDimensions.getInstance().getProperties().put(CUSTOM_DIMENSIONS_OS, osType);
         }
     }
 
     private void initResourceProviderId() {
-        switch (commonProperties.resourceProvider) {
+        switch (CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP)) {
             case RP_APPSVC:
                 resourceProviderId = getEnvironmentVariable(WEBSITE_SITE_NAME) + "/" + getEnvironmentVariable(WEBSITE_HOME_STAMPNAME) + "/" + getEnvironmentVariable(WEBSITE_HOSTNAME);
                 break;
