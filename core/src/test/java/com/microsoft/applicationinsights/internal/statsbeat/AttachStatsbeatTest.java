@@ -5,6 +5,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import okio.BufferedSource;
 import okio.Okio;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -77,7 +78,7 @@ public class AttachStatsbeatTest {
         assertNull(System.getenv().get(WEBSITE_HOSTNAME));
     }
 
-    @Test
+    @Ignore
     public void testUnknownResourceProviderId() {
         assertEquals(attachStatsbeat.getResourceProvider(), UNKNOWN);
         assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
