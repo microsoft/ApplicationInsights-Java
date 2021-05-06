@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.STATSBEAT_TELEMETRY_NAME;
 
 public abstract class BaseStatsbeat {
 
@@ -41,7 +41,6 @@ public abstract class BaseStatsbeat {
     protected static final ScheduledExecutorService scheduledExecutor =
             Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
     protected final long interval;
-    private final Object lock = new Object();
 
     public BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
         this.telemetryClient = telemetryClient;
