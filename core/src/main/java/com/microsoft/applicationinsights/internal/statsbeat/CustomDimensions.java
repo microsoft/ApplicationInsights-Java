@@ -32,16 +32,24 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
 public final class CustomDimensions {
 
-    private static final CustomDimensions INSTANCE = new CustomDimensions();
+    private static CustomDimensions instance;
     private String resourceProvider;
     private String operatingSystem;
     private String customerIkey;
     private String version;
     private String runtimeVersion;
     private ConcurrentMap<String, String> properties;
+    private static final Object lock = new Object();
     
     public static CustomDimensions getInstance() {
-        return INSTANCE;
+        if (instance == null) {
+            synchronized (lock) {
+                if (instance == null) {
+                    instance = new CustomDimensions();
+                }
+            }
+        }
+        return instance;
     }
     
     private CustomDimensions() {
@@ -93,6 +101,7 @@ public final class CustomDimensions {
             properties.put(CUSTOM_DIMENSIONS_CIKEY, customerIkey);
         }
         properties.put(CUSTOM_DIMENSIONS_RUNTIME_VERSION, runtimeVersion);
+        System.out.println("OperatingSystem: " + operatingSystem);
         properties.put(CUSTOM_DIMENSIONS_OS, operatingSystem);
         properties.put(CUSTOM_DIMENSIONS_LANGUAGE, LANGUAGE);
         properties.put(CUSTOM_DIMENSIONS_VERSION, version);
@@ -100,5 +109,9 @@ public final class CustomDimensions {
 
     public ConcurrentMap<String, String> getProperties() {
         return properties;
+    }
+
+    public static synchronized void reset() {
+        instance = null;
     }
 }
