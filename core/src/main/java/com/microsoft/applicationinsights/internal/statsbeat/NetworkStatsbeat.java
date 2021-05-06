@@ -67,7 +67,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             telemetryClient.track(requestFailureCountSt);
         }
 
-        double durationAvg = getRequestDurationAvg();
+        double durationAvg = getRequestDurationAvg(local);
         if (durationAvg != 0) {
             MetricTelemetry requestDurationSt = createStatsbeatTelemetry(REQUEST_DURATION, durationAvg);
             requestDurationSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
@@ -161,14 +161,14 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         return current.exceptionCount.get();
     }
 
-    protected double getRequestDurationAvg() {
+    protected double getRequestDurationAvg(IntervalMetrics local) {
         double sum = 0.0;
-        for (double elem : current.requestDurations) {
+        for (double elem : local.requestDurations) {
             sum += elem;
         }
 
-        if (current.requestDurations.size() != 0) {
-            return sum / current.requestDurations.size();
+        if (local.requestDurations.size() != 0) {
+            return sum / local.requestDurations.size();
         }
 
         return  sum;
