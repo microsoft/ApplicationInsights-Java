@@ -161,6 +161,10 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         return current.exceptionCount.get();
     }
 
+    public IntervalMetrics getIntervalMetrics() {
+        return current;
+    }
+
     protected double getRequestDurationAvg(IntervalMetrics local) {
         double sum = 0.0;
         for (double elem : local.requestDurations) {

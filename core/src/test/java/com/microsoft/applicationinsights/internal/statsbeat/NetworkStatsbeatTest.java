@@ -54,7 +54,7 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.addRequestDuration(1000);
         networkStatsbeat.addRequestDuration(3000);
         assertEquals(networkStatsbeat.getRequestDurations().size(), 2);
-        assertEquals(networkStatsbeat.getRequestDurationAvg(), 2000.0, 0);
+        assertEquals(networkStatsbeat.getRequestDurationAvg(networkStatsbeat.getIntervalMetrics()), 2000.0, 0);
     }
 
     @Test
