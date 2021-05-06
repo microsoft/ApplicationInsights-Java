@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
@@ -81,10 +82,10 @@ public class AttachStatsbeat extends BaseStatsbeat {
     private void initResourceProviderId() {
         switch (commonProperties.resourceProvider) {
             case RP_APPSVC:
-                resourceProviderId = System.getenv().get(WEBSITE_SITE_NAME) + "/" + System.getenv().get(WEBSITE_HOME_STAMPNAME) + "/" + System.getenv().get(WEBSITE_HOSTNAME);
+                resourceProviderId = getEnvironmentVariable(WEBSITE_SITE_NAME) + "/" + getEnvironmentVariable(WEBSITE_HOME_STAMPNAME) + "/" + getEnvironmentVariable(WEBSITE_HOSTNAME);
                 break;
             case RP_FUNCTIONS:
-                resourceProviderId = System.getenv().get(WEBSITE_HOSTNAME);
+                resourceProviderId = getEnvironmentVariable(WEBSITE_HOSTNAME);
                 break;
             case RP_VM:
                 if (metadataInstanceResponse != null) {
@@ -99,5 +100,10 @@ public class AttachStatsbeat extends BaseStatsbeat {
                 resourceProviderId = UNKNOWN;
                 break;
         }
+    }
+
+    @VisibleForTesting
+    String getEnvironmentVariable(String envVar) {
+        return System.getenv(envVar);
     }
 }

@@ -6,9 +6,8 @@ import okio.BufferedSource;
 import okio.Okio;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +25,6 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.WEB
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.WEBSITE_HOSTNAME;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.WEBSITE_SITE_NAME;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 public class AttachStatsbeatTest {
 
@@ -39,7 +37,7 @@ public class AttachStatsbeatTest {
     }
 
     @Test
-    public void testVirtualMachineResouceProviderId() throws IOException {
+    public void testVirtualMachineResourceProviderId() throws IOException {
         assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
         Path path = new File(Resources.getResource("metadata_instance_linux.json").getPath()).toPath();
         InputStream in = Files.newInputStream(path);
@@ -51,31 +49,26 @@ public class AttachStatsbeatTest {
         assertEquals(attachStatsbeat.getOperatingSystem(), "Linux");
     }
 
-    @Rule
-    public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
-
     @Test
     public void testAppSvcResourceProviderId() {
-        environmentVariables.set(WEBSITE_SITE_NAME, "test_site_name");
-        environmentVariables.set(WEBSITE_HOME_STAMPNAME, "test_stamp_name");
-        environmentVariables.set(WEBSITE_HOSTNAME, "test_hostname");
-        attachStatsbeat.updateResourceProvider(RP_APPSVC);
-        assertEquals(attachStatsbeat.getResourceProvider(), RP_APPSVC);
-        assertEquals(attachStatsbeat.getResourceProviderId(), "test_site_name/test_stamp_name/test_hostname");
-        environmentVariables.clear(WEBSITE_SITE_NAME, WEBSITE_HOME_STAMPNAME, WEBSITE_HOSTNAME);
-        assertNull(System.getenv().get(WEBSITE_SITE_NAME));
-        assertNull(System.getenv().get(WEBSITE_HOME_STAMPNAME));
-        assertNull(System.getenv().get(WEBSITE_HOSTNAME));
+        AttachStatsbeat mockedAttachStatsbeat = Mockito.spy(attachStatsbeat);
+        Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_SITE_NAME)).thenReturn("test_site_name");
+        Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_HOME_STAMPNAME)).thenReturn("test_stamp_name");
+        Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_HOSTNAME)).thenReturn("test_hostname");
+
+        mockedAttachStatsbeat.updateResourceProvider(RP_APPSVC);
+        assertEquals(mockedAttachStatsbeat.getResourceProvider(), RP_APPSVC);
+        assertEquals(mockedAttachStatsbeat.getResourceProviderId(), "test_site_name/test_stamp_name/test_hostname");
     }
 
     @Test
     public void testFunctionsResourceProviderId() {
-        environmentVariables.set(WEBSITE_HOSTNAME, "test_function_name");
-        attachStatsbeat.updateResourceProvider(RP_FUNCTIONS);
-        assertEquals(attachStatsbeat.getResourceProvider(), RP_FUNCTIONS);
-        assertEquals(attachStatsbeat.getResourceProviderId(), "test_function_name");
-        environmentVariables.clear(WEBSITE_HOSTNAME);
-        assertNull(System.getenv().get(WEBSITE_HOSTNAME));
+        AttachStatsbeat mockedAttachStatsbeat = Mockito.spy(attachStatsbeat);
+        Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_HOSTNAME)).thenReturn("test_function_name");
+
+        mockedAttachStatsbeat.updateResourceProvider(RP_FUNCTIONS);
+        assertEquals(mockedAttachStatsbeat.getResourceProvider(), RP_FUNCTIONS);
+        assertEquals(mockedAttachStatsbeat.getResourceProviderId(), "test_function_name");
     }
 
     @Ignore
