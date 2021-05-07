@@ -24,16 +24,15 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 
+import java.time.Duration;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.CpuPerformanceCounterCalculator;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -42,8 +41,7 @@ import org.slf4j.LoggerFactory;
 public enum QuickPulseDataCollector {
     INSTANCE;
 
-    private String ikey;
-    private TelemetryConfiguration config;
+    private TelemetryClient telemetryClient;
 
     static class FinalCounters {
         public final double exceptions;
@@ -149,16 +147,8 @@ public enum QuickPulseDataCollector {
         counters.set(null);
     }
 
-    @Deprecated
-    public synchronized void enable(final String ikey) {
-        this.ikey = ikey;
-        this.config = null;
-        counters.set(new Counters());
-    }
-
-    public synchronized void enable(TelemetryConfiguration config) {
-        this.config = config;
-        this.ikey = null;
+    public synchronized void enable(TelemetryClient telemetryClient) {
+        this.telemetryClient = telemetryClient;
         counters.set(new Counters());
     }
 
@@ -180,37 +170,35 @@ public enum QuickPulseDataCollector {
         return null;
     }
 
-    public void add(Telemetry telemetry) {
-        if (!telemetry.getContext().getInstrumentationKey().equals(getInstrumentationKey())) {
+    public void add(TelemetryItem telemetryItem) {
+        if (!telemetryItem.getInstrumentationKey().equals(getInstrumentationKey())) {
             return;
         }
 
-        if (telemetry instanceof RequestTelemetry) {
-            RequestTelemetry requestTelemetry = (RequestTelemetry)telemetry;
+        MonitorDomain data = telemetryItem.getData().getBaseData();
+        if (data instanceof RequestData) {
+            RequestData requestTelemetry = (RequestData)data;
             addRequest(requestTelemetry);
-        } else if (telemetry instanceof RemoteDependencyTelemetry) {
-            addDependency((RemoteDependencyTelemetry) telemetry);
-        } else if (telemetry instanceof ExceptionTelemetry) {
+        } else if (data instanceof RemoteDependencyData) {
+            addDependency((RemoteDependencyData) data);
+        } else if (data instanceof TelemetryExceptionData) {
             addException();
         }
     }
 
     private synchronized String getInstrumentationKey() {
-        if (config != null) {
-            return config.getInstrumentationKey();
-        } else {
-            return ikey;
-        }
+        return telemetryClient.getInstrumentationKey();
     }
 
-    private void addDependency(RemoteDependencyTelemetry telemetry) {
+    private void addDependency(RemoteDependencyData telemetry) {
         Counters counters = this.counters.get();
         if (counters == null) {
             return;
         }
         counters.rddsAndDuations.addAndGet(
-                Counters.encodeCountAndDuration(1, telemetry.getDuration().getTotalMilliseconds()));
-        if (!telemetry.getSuccess()) {
+                Counters.encodeCountAndDuration(1, toMilliseconds(telemetry.getDuration())));
+        Boolean success = telemetry.isSuccess();
+        if (success != null && !success) { // success should not be null
             counters.unsuccessfulRdds.incrementAndGet();
         }
     }
@@ -224,15 +212,33 @@ public enum QuickPulseDataCollector {
         counters.exceptions.incrementAndGet();
     }
 
-    private void addRequest(RequestTelemetry requestTelemetry) {
+    private void addRequest(RequestData requestTelemetry) {
         Counters counters = this.counters.get();
         if (counters == null) {
             return;
         }
 
-        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, requestTelemetry.getDuration().getTotalMilliseconds()));
+        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, toMilliseconds(requestTelemetry.getDuration())));
         if (!requestTelemetry.isSuccess()) {
             counters.unsuccessfulRequests.incrementAndGet();
         }
+    }
+
+    // FIXME (trask) move live metrics request capture to OpenTelemetry layer so don't have to parse String duration?
+    private static long toMilliseconds(String duration) {
+        // format is DD.HH:MM:SS.MMMMMM
+        StringTokenizer tokenizer = new StringTokenizer(duration, ".:");
+        int days = Integer.parseInt(tokenizer.nextToken());
+        int hours = Integer.parseInt(tokenizer.nextToken());
+        int minutes = Integer.parseInt(tokenizer.nextToken());
+        int seconds = Integer.parseInt(tokenizer.nextToken());
+        int microseconds = Integer.parseInt(tokenizer.nextToken());
+
+        return Duration.ofDays(days)
+                .plusHours(hours)
+                .plusMinutes(minutes)
+                .plusSeconds(seconds)
+                .plusNanos(microseconds * 1000L)
+                .toMillis();
     }
 }

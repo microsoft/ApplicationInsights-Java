@@ -21,26 +21,12 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import java.io.File;
-import java.lang.instrument.Instrumentation;
-import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
-
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.HeartBeatModuleClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.RequestTelemetryClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.*;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
@@ -49,15 +35,8 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import com.microsoft.applicationinsights.extensibility.initializer.ResourceAttributesContextInitializer;
-import com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
-import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
-import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
-import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
-import com.microsoft.applicationinsights.internal.config.ParamXmlElement;
-import com.microsoft.applicationinsights.internal.config.TelemetryConfigurationFactory;
-import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
+import com.microsoft.applicationinsights.internal.config.*;
 import com.microsoft.applicationinsights.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
@@ -69,6 +48,11 @@ import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.lang.instrument.Instrumentation;
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -152,22 +136,16 @@ public class AiComponentInstaller implements ComponentInstaller {
         }
         AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
 
-        TelemetryConfiguration configuration = TelemetryConfiguration.getActiveWithoutInitializingConfig();
-        TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
-        configuration.getContextInitializers().add(new SdkVersionContextInitializer());
-        configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
+        TelemetryClient telemetryClient = TelemetryClient.initActive(config.customDimensions, buildXmlConfiguration(config));
 
         Global.setSamplingPercentage(config.sampling.percentage);
-        final TelemetryClient telemetryClient = new TelemetryClient();
         Global.setTelemetryClient(telemetryClient);
 
         ProfilerServiceInitializer.initialize(
                 appIdSupplier::get,
                 SystemInformation.INSTANCE.getProcessId(),
                 formServiceProfilerConfig(config.preview.profiler),
-                configuration.getRoleInstance(),
-                // TODO this will not work with Azure Spring Cloud updating connection string at runtime
-                configuration.getInstrumentationKey(),
+                config.role.instance,
                 telemetryClient,
                 formApplicationInsightsUserAgent(),
                 formGcEventMonitorConfiguration(config.preview.gcEvents)
@@ -198,7 +176,7 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
         if (rpConfiguration != null) {
-            RpConfigurationPolling.startPolling(rpConfiguration, config);
+            RpConfigurationPolling.startPolling(rpConfiguration, config, telemetryClient);
         }
     }
 
@@ -300,7 +278,8 @@ public class AiComponentInstaller implements ComponentInstaller {
         xmlConfiguration.getQuickPulse().setEnabled(config.preview.liveMetrics.enabled);
 
         if (config.preview.developerMode) {
-            xmlConfiguration.getChannel().setDeveloperMode(true);
+            // FIXME (trask)
+            // xmlConfiguration.getChannel().setDeveloperMode(true);
         }
         return xmlConfiguration;
     }

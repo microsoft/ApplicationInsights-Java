@@ -1,14 +1,15 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,10 +91,10 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
   }
 
   @Override
-  public void initialize(TelemetryConfiguration configuration) {
+  public void initialize(TelemetryClient telemetryClient) {
     if (isEnabled) {
       if (this.telemetryClient == null) {
-        this.telemetryClient = new TelemetryClient(configuration);
+        this.telemetryClient = telemetryClient;
       }
 
       //Submit task to set properties to dictionary using separate thread. we do not wait for the
@@ -159,12 +160,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
   @Override
   public void setHeartBeatInterval(long timeUnit) {
     // user set time unit in seconds
-    if (timeUnit <= HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL) {
-      this.interval = HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL;
-    }
-    else {
-      this.interval = timeUnit;
-    }
+    this.interval = Math.max(timeUnit, HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL);
   }
 
   @Override
@@ -182,9 +178,9 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
    */
   private void send() {
 
-    MetricTelemetry telemetry = gatherData();
-    telemetry.getContext().getOperation().setSyntheticSource(HEARTBEAT_SYNTHETIC_METRIC_NAME);
-    telemetryClient.track(telemetry);
+    TelemetryItem telemetry = gatherData();
+    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
+    telemetryClient.trackAsync(telemetry);
     logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
 
   }
@@ -193,17 +189,29 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
    * Creates and returns the heartbeat telemetry.
    * @return Metric Telemetry which represent heartbeat.
    */
-  private MetricTelemetry gatherData() {
-
-    MetricTelemetry heartbeat = new MetricTelemetry(HEARTBEAT_SYNTHETIC_METRIC_NAME, 0.0);
-    Map<String, String> property = heartbeat.getProperties();
+  // visible for testing
+  TelemetryItem gatherData() {
+    Map<String, String> properties = new HashMap<>();
+    double numHealthy = 0;
     for (Map.Entry<String, HeartBeatPropertyPayload> entry : heartbeatProperties.entrySet()) {
-      property.put(entry.getKey(), entry.getValue().getPayloadValue());
-      double currentValue = heartbeat.getValue();
-      currentValue += entry.getValue().isHealthy() ? 0 : 1;
-      heartbeat.setValue(currentValue);
+      HeartBeatPropertyPayload payload = entry.getValue();
+      properties.put(entry.getKey(), payload.getPayloadValue());
+      numHealthy += payload.isHealthy() ? 0 : 1;
     }
-    return heartbeat;
+    TelemetryItem telemetry = new TelemetryItem();
+    MetricsData data = new MetricsData();
+    MetricDataPoint point = new MetricDataPoint();
+    TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
+
+    point.setName(HEARTBEAT_SYNTHETIC_METRIC_NAME);
+    point.setValue(numHealthy);
+    point.setDataPointType(DataPointType.MEASUREMENT);
+
+    data.setProperties(properties);
+
+    telemetry.setTime(TelemetryUtil.getFormattedNow());
+
+    return telemetry;
   }
 
   /**
@@ -211,17 +219,13 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
    * @return Runnable which has logic to send heartbeat.
    */
   private Runnable heartBeatPulse() {
-    return new Runnable() {
-      @Override
-      public void run() {
-        try {
-         send();
-        }
-        catch (Exception e) {
-          logger.warn("Error occured while sending heartbeat");
-        }
+    return () -> {
+      try {
+       send();
+      }
+      catch (Exception e) {
+        logger.warn("Error occured while sending heartbeat");
       }
     };
   }
-
 }

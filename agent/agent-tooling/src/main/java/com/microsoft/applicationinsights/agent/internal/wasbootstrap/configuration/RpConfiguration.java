@@ -44,6 +44,6 @@ public class RpConfiguration {
 
     public static class Sampling {
 
-        public double percentage = 100;
+        public float percentage = 100;
     }
 }

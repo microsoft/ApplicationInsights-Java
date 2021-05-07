@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import org.junit.*;
 
 import static org.junit.Assert.*;
@@ -67,29 +67,32 @@ public class LazyConfigurationAccessorTest {
     @Test
     //"LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is TRUE"
     public void disableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNull() {
-        String oldConnectionString = TelemetryConfiguration.getActive().getConnectionString();
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
         assertTrue(LazyConfigurationAccessor.shouldSetConnectionString(false, "true"));
-        LazyConfigurationAccessor.setConnectionString(null, null);
-        assertEquals(TelemetryConfiguration.getActive().getConnectionString(), oldConnectionString);
+        LazyConfigurationAccessor.setConnectionString(null, null, telemetryClient);
+        assertEquals(telemetryClient.getConnectionString(), "InstrumentationKey=00000000-0000-0000-0000-000000000000");
     }
 
     @Test
     //"LazySetOptIn is FALSE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent is TRUE"
     public void disableLazySetWithLazySetOptInOffConnectionStringNotNullInstrumentationKeyNull() {
         assertTrue(LazyConfigurationAccessor.shouldSetConnectionString(false, "true"));
-        LazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
-        assertEquals(TelemetryConfiguration.getActive().getConnectionString(), CONNECTION_STRING);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        LazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null, telemetryClient);
+        assertEquals(telemetryClient.getConnectionString(), CONNECTION_STRING);
 
-        LazyConfigurationAccessor.setWebsiteSiteName(WEBSITE_SITE_NAME);
-        assertEquals(TelemetryConfiguration.getActive().getRoleName(), WEBSITE_SITE_NAME);
+        LazyConfigurationAccessor.setWebsiteSiteName(WEBSITE_SITE_NAME, telemetryClient);
+        assertEquals(telemetryClient.getRoleName(), WEBSITE_SITE_NAME);
     }
 
     @Test
     //"LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE")
     public void enableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNotNull() {
         assertTrue(LazyConfigurationAccessor.shouldSetConnectionString(false, "true"));
-        LazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
-        assertEquals(TelemetryConfiguration.getActive().getConnectionString(), "InstrumentationKey=" + INSTRUMENTATION_KEY);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        LazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY, telemetryClient);
+        assertEquals(telemetryClient.getConnectionString(), "InstrumentationKey=" + INSTRUMENTATION_KEY);
     }
 
     @Test
@@ -113,25 +116,28 @@ public class LazyConfigurationAccessorTest {
     @Test
     //"LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is TRUE"
     public void disableLazySetWithLazySetOptInOnConnectionStringNullAndInstrumentationKeyNull() {
-        String oldConnectionString = TelemetryConfiguration.getActive().getConnectionString();
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setConnectionString("InstrumentationKey=00000000-0000-0000-0000-000000000000");
         assertTrue(LazyConfigurationAccessor.shouldSetConnectionString(true, "true"));
-        LazyConfigurationAccessor.setConnectionString(null, null);
-        assertEquals(TelemetryConfiguration.getActive().getConnectionString(), oldConnectionString);
+        LazyConfigurationAccessor.setConnectionString(null, null, telemetryClient);
+        assertEquals(telemetryClient.getConnectionString(), "InstrumentationKey=00000000-0000-0000-0000-000000000000");
     }
 
     @Test
     //"LazySetOptIn is TRUE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent is TRUE"
     public void enableLazySetWithLazySetOptInOnConnectionStringNotNullInstrumentationKeyNull() {
         assertTrue(LazyConfigurationAccessor.shouldSetConnectionString(false, "true"));
-        LazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null);
-        assertEquals(TelemetryConfiguration.getActive().getConnectionString(), CONNECTION_STRING);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        LazyConfigurationAccessor.setConnectionString(CONNECTION_STRING, null, telemetryClient);
+        assertEquals(telemetryClient.getConnectionString(), CONNECTION_STRING);
     }
 
     @Test
     //"LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE"
     public void enableLazySetWithLazySetOptInOnConnectionStringNullInstrumentationKeyNotNull() {
         assertTrue(LazyConfigurationAccessor.shouldSetConnectionString(false, "true"));
-        LazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY);
-        assertEquals(TelemetryConfiguration.getActive().getConnectionString(), "InstrumentationKey=" + INSTRUMENTATION_KEY);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        LazyConfigurationAccessor.setConnectionString(null, INSTRUMENTATION_KEY, telemetryClient);
+        assertEquals(telemetryClient.getConnectionString(), "InstrumentationKey=" + INSTRUMENTATION_KEY);
     }
 }

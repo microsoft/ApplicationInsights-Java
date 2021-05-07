@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,11 +44,8 @@ public final class ReflectionUtils {
     private static final Map<String, Class<?>> builtInMap = new HashMap<>();
 
     static {
-        addClass(com.microsoft.applicationinsights.channel.concrete.inprocess.InProcessTelemetryChannel.class);
-
         addClass(com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule.class);
         addClass(com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule.class);
-        addClass(com.microsoft.applicationinsights.extensibility.initializer.SdkVersionContextInitializer.class);
     }
 
     static void addClass(Class<?> clazz) {
@@ -124,7 +121,7 @@ public final class ReflectionUtils {
         return null;
     }
 
-    static <T> T createConfiguredInstance(String className, Class<T> interfaceClass, TelemetryConfiguration configuration, Map<String, String> componentConfig) {
+    static <T> T createConfiguredInstance(String className, Class<T> interfaceClass, TelemetryClient telemetryClient, Map<String, String> componentConfig) {
         try {
             if (LocalStringsUtils.isNullOrEmpty(className)) {
                 return null;
@@ -135,8 +132,8 @@ public final class ReflectionUtils {
             } else {
                 clazz = clazz.asSubclass(interfaceClass);
             }
-            Constructor<?> clazzConstructor = clazz.getConstructor(TelemetryConfiguration.class, Map.class);
-            return (T) clazzConstructor.newInstance(configuration, componentConfig);
+            Constructor<?> clazzConstructor = clazz.getConstructor(TelemetryClient.class, Map.class);
+            return (T) clazzConstructor.newInstance(telemetryClient, componentConfig);
         } catch (Exception e) {
             logger.error("Failed to instantiate {}", className, e);
         }

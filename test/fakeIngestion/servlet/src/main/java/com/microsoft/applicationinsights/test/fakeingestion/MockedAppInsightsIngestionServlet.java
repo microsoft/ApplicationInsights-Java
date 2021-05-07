@@ -156,7 +156,9 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
         logit("caught: POST "+req.getPathInfo());
 
         switch (req.getPathInfo()) {
+            // FIXME (trask) this only accept be "/v2/track"
             case "/v2/track":
+            case "/v2//track":
                 StringWriter w = new StringWriter();
                 try {
                     String contentEncoding = req.getHeader("content-encoding");
@@ -175,6 +177,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
                         resp.getWriter().append(PONG);
                     }
                     else {
+                        resp.setContentType("application/json");
                         logit("Deserializing payload...");
                         if (config.isLogPayloadsEnabled()) {
                             logit("raw payload:\n\n"+body+"\n");

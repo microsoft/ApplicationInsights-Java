@@ -29,11 +29,11 @@ import java.util.ArrayList;
 
 import static java.lang.Math.min;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +74,14 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
     @Override
     public void report(TelemetryClient telemetryClient) {
-        MetricTelemetry mt = new MetricTelemetry(METRIC_NAME, 0.0);
+        TelemetryItem telemetry = new TelemetryItem();
+        MetricsData data = new MetricsData();
+        MetricDataPoint point = new MetricDataPoint();
+        TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
+
+        point.setName(METRIC_NAME);
+        point.setValue(0);
+        point.setDataPointType(DataPointType.MEASUREMENT);
 
         long[] threadIds = threadBean.findDeadlockedThreads();
         if (threadIds != null && threadIds.length > 0) {
@@ -94,15 +101,25 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
             if (!blockedThreads.isEmpty()) {
                 String uuid = LocalStringsUtils.generateRandomIntegerId();
 
-                mt.setValue(blockedThreads.size());
-                mt.getContext().getOperation().setId(uuid);
+                data.getMetrics().get(0).setValue(blockedThreads.size());
+                telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
 
-                TraceTelemetry trace = new TraceTelemetry(String.format("%s%s", "Suspected deadlocked threads: ", sb.toString()));
-                trace.getContext().getOperation().setId(uuid);
-                telemetryClient.track(trace);
+                TelemetryItem messageTelemetry = new TelemetryItem();
+                MessageData messageData = new MessageData();
+                TelemetryClient.getActive().initMessageTelemetry(messageTelemetry, messageData);
+
+                messageData.setMessage(String.format("%s%s", "Suspected deadlocked threads: ", sb));
+
+                messageTelemetry.setTime(TelemetryUtil.getFormattedNow());
+                messageTelemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
+
+                telemetryClient.trackAsync(messageTelemetry);
             }
         }
-        telemetryClient.track(mt);
+
+        telemetry.setTime(TelemetryUtil.getFormattedNow());
+
+        telemetryClient.trackAsync(telemetry);
     }
     private void setThreadInfoAndStack(StringBuilder sb, ThreadInfo ti) {
         try {
@@ -114,10 +131,10 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
             int maxTraceToReport = min(MAX_STACK_TRACE, stacktrace.length);
             for (int i = 0; i < maxTraceToReport; i++) {
                 StackTraceElement ste = stacktrace[i];
-                sb.append(INDENT + "at " + ste.toString());
+                sb.append(INDENT + "at ").append(ste);
                 for (MonitorInfo mi : monitors) {
                     if (mi.getLockedStackDepth() == i) {
-                        sb.append(INDENT + "  - is locked " + mi);
+                        sb.append(INDENT + "  - is locked ").append(mi);
                     }
                 }
             }
@@ -143,7 +160,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
         sb.append(" is in ");
         sb.append(ti.getThreadState());
         if (ti.getLockName() != null) {
-            sb.append(" on lock=" + ti.getLockName());
+            sb.append(" on lock=").append(ti.getLockName());
         }
         if (ti.isSuspended()) {
             sb.append(" (suspended)");
@@ -152,7 +169,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
             sb.append(" (running in native)");
         }
         if (ti.getLockOwnerName() != null) {
-            sb.append(INDENT + " is owned by " + ti.getLockOwnerName() + " Id=" + ti.getLockOwnerId());
+            sb.append(INDENT + " is owned by ").append(ti.getLockOwnerName()).append(" Id=").append(ti.getLockOwnerId());
         }
     }
 }

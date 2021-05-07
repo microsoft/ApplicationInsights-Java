@@ -21,223 +21,462 @@
 
 package com.microsoft.applicationinsights;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
+import com.azure.core.http.HttpHeaders;
+import com.azure.core.util.serializer.*;
+import com.azure.core.util.tracing.Tracer;
+import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
+import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.NdJsonSerializer;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.channel.TelemetryChannel;
-import com.microsoft.applicationinsights.common.CommonUtils;
-import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.extensibility.context.ContextTagKeys;
-import com.microsoft.applicationinsights.extensibility.context.InternalContext;
-import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
+import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
+import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
+import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
+import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
+import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import org.apache.commons.text.StringSubstitutor;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
-// Created by gupele
-/**
- * Create an instance of this class to send telemetry to Azure Application Insights.
- * General overview https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics
- */
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.Collections.singletonList;
+
 public class TelemetryClient {
 
     private static final Logger logger = LoggerFactory.getLogger(TelemetryClient.class);
 
-    private final TelemetryConfiguration configuration;
-    private volatile TelemetryContext context;
-    private TelemetryChannel channel;
+    // Synchronization for instance initialization
+    private static final Object s_lock = new Object();
+    private static volatile TelemetryClient active;
 
-    private static final Object TELEMETRY_CONTEXT_LOCK = new Object();
+    private volatile String instrumentationKey;
+    private volatile String connectionString;
+    private volatile String roleName;
+    private volatile String roleInstance;
 
-    private static final AtomicLong generateCounter = new AtomicLong(0);
-    /**
-     * Initializes a new instance of the TelemetryClient class. Send telemetry with the specified configuration.
-     * @param configuration The configuration this instance will work with.
-     */
-    public TelemetryClient(TelemetryConfiguration configuration) {
-        if (configuration == null) {
-            configuration = TelemetryConfiguration.getActive();
-        }
+    // cached based on instrumentationKey
+    private volatile String eventTelemetryName;
+    private volatile String exceptionTelemetryName;
+    private volatile String messageTelemetryName;
+    private volatile String metricTelemetryName;
+    private volatile String pageViewTelemetryName;
+    private volatile String remoteDependencyTelemetryName;
+    private volatile String requestTelemetryName;
 
-        this.configuration = configuration;
-    }
+    private final EndpointProvider endpointProvider = new EndpointProvider();
 
-    /**
-     * Initializes a new instance of the TelemetryClient class, configured from the active configuration.
-     */
+    // globalTags contain:
+    // * cloud role name
+    // * cloud role instance
+    // * sdk version
+    // * application version (if provided in customDimensions)
+    private final Map<String, String> globalTags;
+    // contains customDimensions from json configuration
+    private final Map<String, String> globalProperties;
+
+    private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
+
+    private final Object channelInitLock = new Object();
+    private volatile @Nullable ApplicationInsightsClientImpl channel;
+
+    // only used by tests
     public TelemetryClient() {
-        this(TelemetryConfiguration.getActive());
+        this(new HashMap<>());
     }
 
-    /**
-     * Gets the current context that is used to augment telemetry you send.
-     * @return A telemetry context used for all records. Changes to it will impact all future telemetry in this
-     * application session.
-     */
-    public TelemetryContext getContext() {
-        if (context == null || (context.getInstrumentationKey() != null &&  !context.getInstrumentationKey().equals(configuration.getInstrumentationKey()))) {
-            // lock and recheck there is still no initialized context. If so, create one.
-            synchronized (TELEMETRY_CONTEXT_LOCK) {
-                if (context==null || (context.getInstrumentationKey() != null && !context.getInstrumentationKey().equals(configuration.getInstrumentationKey()))) {
-                    context = createInitializedContext();
-                }
-            }
-        }
-
-        return context;
-    }
-
-    /**
-     * Checks whether tracking is enabled.
-     * @return 'true' if tracking is disabled, 'false' otherwise.
-     */
-    public boolean isDisabled() {
-        return Strings.isNullOrEmpty(configuration.getInstrumentationKey()) && Strings.isNullOrEmpty(getContext().getInstrumentationKey());
-    }
-
-    /**
-     * This method is part of the Application Insights infrastructure. Do not call it directly.
-     * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
-     */
-    public void track(Telemetry telemetry) {
-
-        if (generateCounter.incrementAndGet() % 10000 == 0) {
-            logger.debug("Total events generated till now {}", generateCounter.get());
-        }
-
-        if (telemetry == null) {
-            throw new IllegalArgumentException("telemetry item cannot be null");
-        }
-
-        if (isDisabled()) {
-            return;
-        }
-
-        if (telemetry.getTimestamp() == null) {
-            telemetry.setTimestamp(new Date());
-        }
-
-        TelemetryContext context = telemetry.getContext();
-        // do not overwrite if the user has explicitly set the instrumentation key
-        // (either via 2.x SDK or ai.preview.instrumentation_key span attribute)
-        if (Strings.isNullOrEmpty(context.getInstrumentationKey())) {
-            context.setInstrumentationKey(getContext().getInstrumentationKey(), getContext().getNormalizedInstrumentationKey());
-        }
-
-        // the TelemetryClient's base context contains tags:
-        // * cloud role name
-        // * cloud role instance
-        // * sdk version
-        // * component version
-        // do not overwrite if the user has explicitly set the cloud role name, cloud role instance,
-        // or application version (either via 2.x SDK, ai.preview.service_name, ai.preview.service_instance_id,
-        // or ai.preview.service_version span attributes)
-        for (Map.Entry<String, String> entry : getContext().getTags().entrySet()) {
+    public TelemetryClient(Map<String, String> customDimensions) {
+        StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
+        Map<String, String> globalProperties = new HashMap<>();
+        Map<String, String> globalTags = new HashMap<>();
+        for (Map.Entry<String, String> entry : customDimensions.entrySet()) {
             String key = entry.getKey();
-            // only overwrite ai.internal.* tags, e.g. sdk version
-            if (key.startsWith("ai.internal.") || !context.getTags().containsKey(key)) {
-                context.getTags().put(key, entry.getValue());
+            if (key.equals("service.version")) {
+                globalTags.put(ContextTagKeys.AI_APPLICATION_VER.toString(), substitutor.replace(entry.getValue()));
+            } else {
+                globalProperties.put(key, substitutor.replace(entry.getValue()));
             }
         }
 
-        // the TelemetryClient's base context contains properties:
-        // * "customDimensions" provided by json configuration
-        context.getProperties().putAll(getContext().getProperties());
+        globalTags.put(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), PropertyHelper.getQualifiedSdkVersionString());
 
-        try {
-            QuickPulseDataCollector.INSTANCE.add(telemetry);
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-        }
-
-        try {
-            getChannel().send(telemetry);
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                logger.error("Exception while sending telemetry: '{}'",t.toString());            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-
-        TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.consume(telemetry));
+        this.globalProperties = globalProperties;
+        this.globalTags = globalTags;
     }
 
     /**
-     * Flushes possible pending Telemetries in the channel. Not required for a continuously-running server application.
+     * Gets the active {@link TelemetryClient} instance loaded from the
+     * ApplicationInsights.xml file. If the configuration file does not exist, the active configuration instance is
+     * initialized with minimum defaults needed to send telemetry to Application Insights.
+     * @return The 'Active' instance
      */
-    public void flush() {
-        getChannel().flush();
-    }
+    public static TelemetryClient getActive() {
+        if (active == null) {
+            throw new IllegalStateException("agent was not initialized");
+        }
 
-    public void shutdown(long timeout, TimeUnit timeUnit) throws InterruptedException {
-        getChannel().shutdown(timeout, timeUnit);
+        return active;
     }
 
     /**
-     * Gets the channel used by the client.
+     * This method provides the new instance of TelmetryConfiguration without loading the configuration
+     * from configuration file. This will just give a plain bare bone instance. Typically used when
+     * performing configuration programatically by creating beans, using @Beans tags. This is a common
+     * scenario in SpringBoot.
+     * @return {@link TelemetryClient}
      */
-    TelemetryChannel getChannel() {
-        if (this.channel == null) {
-            this.channel = configuration.getChannel();
+    public static TelemetryClient initActive(Map<String, String> customDimensions, ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
+        if (active != null) {
+            throw new IllegalStateException("Already initialized");
         }
-
-        return this.channel;
-    }
-
-    private TelemetryContext createInitializedContext() {
-        TelemetryContext ctx = new TelemetryContext();
-        ctx.setInstrumentationKey(configuration.getInstrumentationKey());
-        String roleName = configuration.getRoleName();
-        if (StringUtils.isNotEmpty(roleName)) {
-            ctx.getCloud().setRole(roleName);
-        }
-        String roleInstance = configuration.getRoleInstance();
-        if (StringUtils.isNotEmpty(roleInstance)) {
-            ctx.getCloud().setRoleInstance(roleInstance);
-        }
-        for (ContextInitializer init : configuration.getContextInitializers()) {
-            if (init == null) { // since collection reference is exposed, we need a null check here
-                logger.warn("Found null ContextInitializer in configuration. Skipping...");
-                continue;
-            }
-
-            try {
-                init.initialize(ctx);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t) {
-                try {
-                    if (logger.isErrorEnabled()) {
-                        logger.error("Exception in context initializer, {}: {}", init.getClass().getSimpleName(), ExceptionUtils.getStackTrace(t));
-                    }
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
+        if (active == null) {
+            synchronized (s_lock) {
+                if (active == null) {
+                    TelemetryClient active = new TelemetryClient(customDimensions);
+                    TelemetryClientInitializer.INSTANCE.initialize(active, applicationInsightsConfig);
+                    TelemetryClient.active = active;
                 }
             }
         }
+        return active;
+    }
 
-        // Set the nodeName for billing purpose if it does not already exist
-        InternalContext internal = ctx.getInternal();
-        if (CommonUtils.isNullOrEmpty(internal.getNodeName())) {
-            String host = CommonUtils.getHostName();
-            if (!CommonUtils.isNullOrEmpty(host)) {
-                internal.setNodeName(host);
+    // FIXME (trask) inject TelemetryClient in tests instead of using global
+    @Deprecated
+    public static void resetForTesting() {
+        active = null;
+    }
+
+    public void trackAsync(TelemetryItem telemetryItem) {
+        trackAsync(singletonList(telemetryItem))
+                .subscriberContext(Context.of(Tracer.DISABLE_TRACING_KEY, true))
+                .subscribe();
+    }
+
+    public Mono<ExportResult> trackAsync(List<TelemetryItem> telemetryItems) {
+        for (TelemetryItem telemetry : telemetryItems) {
+
+            if (telemetry.getSampleRate() == null) {
+                // FIXME (trask) is this required?
+                telemetry.setSampleRate(100f);
+            }
+
+            if (telemetry.getTime() == null) {
+                // TODO (trask) remove this after confident no code paths hit this
+                throw new IllegalArgumentException("telemetry item is missing time");
+            }
+
+            QuickPulseDataCollector.INSTANCE.add(telemetry);
+
+            TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetry));
+        }
+
+        // FIXME (trask) implement batching here!!!
+        return getChannel().trackAsync(telemetryItems);
+    }
+
+    public ApplicationInsightsClientImpl getChannel() {
+        if (channel == null) {
+            synchronized (channelInitLock) {
+                if (channel == null) {
+                    channel = createChannel();
+                }
             }
         }
-        return ctx;
+        return channel;
+    }
+
+    private ApplicationInsightsClientImpl createChannel() {
+        ApplicationInsightsClientImplBuilder restServiceClientBuilder = new ApplicationInsightsClientImplBuilder();
+        restServiceClientBuilder.serializerAdapter(new JacksonJsonAdapter());
+        URI endpoint = endpointProvider.getIngestionEndpoint();
+        try {
+            URI hostOnly = new URI(endpoint.getScheme(), endpoint.getUserInfo(), endpoint.getHost(), endpoint.getPort(), null, null, null);
+            restServiceClientBuilder.host(hostOnly.toString());
+        } catch (URISyntaxException e) {
+            // TODO (trask) revisit what's an appropriate action here?
+            logger.error(e.getMessage(), e);
+        }
+
+        return restServiceClientBuilder.buildClient();
+    }
+
+    public List<TelemetryModule> getTelemetryModules() {
+        return telemetryModules;
+    }
+
+    /**
+     * Gets or sets the default instrumentation key for the application.
+     */
+    public String getInstrumentationKey() {
+        return instrumentationKey;
+    }
+
+    /**
+     * Gets or sets the default instrumentation key for the application.
+     */
+    public void setInstrumentationKey(String key) {
+
+        // A non null, non empty instrumentation key is a must
+        if (Strings.isNullOrEmpty(key)) {
+            throw new IllegalArgumentException("key");
+        }
+
+        instrumentationKey = key;
+
+        String formattedInstrumentationKey = instrumentationKey.replaceAll("-", "");
+        eventTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Event";
+        exceptionTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Exception";
+        messageTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Message";
+        metricTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Metric";
+        pageViewTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".PageView";
+        remoteDependencyTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".RemoteDependency";
+        requestTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Request";
+    }
+
+    public @Nullable String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+        globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
+    }
+
+    public String getRoleInstance() {
+        return roleInstance;
+    }
+
+    public void setRoleInstance(String roleInstance) {
+        this.roleInstance = roleInstance;
+        globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
+    }
+
+    public String getConnectionString() {
+        return connectionString;
+    }
+
+    public void setConnectionString(String connectionString) {
+        try {
+            ConnectionString.parseInto(connectionString, this);
+        } catch (InvalidConnectionStringException e) {
+            throw new IllegalArgumentException("Invalid connection string", e);
+        }
+        this.connectionString = connectionString;
+    }
+
+    public EndpointProvider getEndpointProvider() {
+        return endpointProvider;
+    }
+
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
+    public void initEventTelemetry(TelemetryItem telemetry, TelemetryEventData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
+        initTelemetry(telemetry, data, eventTelemetryName, "EventData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
+    public void initExceptionTelemetry(TelemetryItem telemetry, TelemetryExceptionData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
+        initTelemetry(telemetry, data, exceptionTelemetryName, "ExceptionData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
+    public void initMessageTelemetry(TelemetryItem telemetry, MessageData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
+        initTelemetry(telemetry, data, messageTelemetryName, "MessageData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
+    // FIXME (trask) rename MetricsData to MetricData to match the telemetryName and baseType?
+    public void initMetricTelemetry(TelemetryItem telemetry, MetricsData data, MetricDataPoint point) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
+        initTelemetry(telemetry, data, metricTelemetryName, "MetricData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+        data.setMetrics(singletonList(point));
+    }
+
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
+    public void initPageViewTelemetry(TelemetryItem telemetry, PageViewData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
+        initTelemetry(telemetry, data, pageViewTelemetryName, "PageViewData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
+    public void initRemoteDependencyTelemetry(TelemetryItem telemetry, RemoteDependencyData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
+        initTelemetry(telemetry, data, remoteDependencyTelemetryName, "RemoteDependencyData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    // must be called before setting any telemetry tags or data properties
+    //
+    // telemetry tags will be non-null after this call
+    // data properties may or may not be non-null after this call
+    public void initRequestTelemetry(TelemetryItem telemetry, RequestData data) {
+        if (telemetry.getTags() != null) {
+            throw new AssertionError("must not set telemetry tags before calling init");
+        }
+        if (data.getProperties() != null) {
+            throw new AssertionError("must not set data properties before calling init");
+        }
+        initTelemetry(telemetry, data, requestTelemetryName, "RequestData");
+        if (!globalProperties.isEmpty()) {
+            data.setProperties(new HashMap<>(globalProperties));
+        }
+    }
+
+    private void initTelemetry(TelemetryItem telemetry, MonitorDomain data, String telemetryName, String baseType) {
+        telemetry.setVersion(1);
+        telemetry.setName(telemetryName);
+        telemetry.setInstrumentationKey(instrumentationKey);
+        telemetry.setTags(new HashMap<>(globalTags));
+
+        data.setVersion(2);
+
+        MonitorBase monitorBase = new MonitorBase();
+        telemetry.setData(monitorBase);
+        monitorBase.setBaseType(baseType);
+        monitorBase.setBaseData(data);
+    }
+
+    public void flush() {
+        // FIXME (trask)
+    }
+
+    public void shutdown(int time, TimeUnit unit) throws InterruptedException {
+        // FIXME (trask)
+    }
+
+    // need to implement our own SerializerAdapter for the agent in order to avoid instantiating any xml classes
+    // because wildfly sets system property:
+    //   javax.xml.stream.XMLInputFactory=__redirected.__XMLInputFactory
+    // and that class is available in the system class loader, but not in the agent class loader
+    // because the agent class loader parents the bootstrap class loader directly
+    private static class JacksonJsonAdapter implements SerializerAdapter {
+
+        private final ObjectMapper mapper;
+
+        private JacksonJsonAdapter() {
+            mapper = JsonMapper.builder().build();
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+            // Customize serializer to use NDJSON
+            SimpleModule ndjsonModule = new SimpleModule("Ndjson List Serializer");
+            ndjsonModule.addSerializer(new NdJsonSerializer());
+            mapper.registerModule(ndjsonModule);
+        }
+
+        @Override
+        public String serialize(Object object, SerializerEncoding encoding) throws IOException {
+            if (object == null) {
+                return null;
+            }
+            return mapper.writeValueAsString(object);
+        }
+
+        @Override
+        public String serializeRaw(Object object) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String serializeList(List<?> list, CollectionFormat format) {
+            return serializeIterable(list, format);
+        }
+
+        @Override
+        public <T> T deserialize(String value, Type type, SerializerEncoding encoding) {
+            // FIXME (trask)
+            return null;
+        }
+
+        @Override
+        public <T> T deserialize(HttpHeaders headers, Type type) {
+            // FIXME (trask)
+            return null;
+        }
     }
 }

@@ -26,7 +26,7 @@ import java.net.URI;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -67,9 +67,9 @@ public class AppIdSupplier implements AiAppId.Supplier {
     private volatile String appId;
 
     private void internalStartAppIdRetrieval() {
-        TelemetryConfiguration configuration = TelemetryConfiguration.getActive();
-        String instrumentationKey = configuration.getInstrumentationKey();
-        GetAppIdTask newTask = new GetAppIdTask(configuration.getEndpointProvider().getAppIdEndpointURL(instrumentationKey));
+        TelemetryClient telemetryClient = TelemetryClient.getActive();
+        String instrumentationKey = telemetryClient.getInstrumentationKey();
+        GetAppIdTask newTask = new GetAppIdTask(telemetryClient.getEndpointProvider().getAppIdEndpointURL(instrumentationKey));
         synchronized (taskLock) {
             appId = null;
             if (task != null) {
@@ -82,7 +82,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
     }
 
     public String get() {
-        String instrumentationKey = TelemetryConfiguration.getActive().getInstrumentationKey();
+        String instrumentationKey = TelemetryClient.getActive().getInstrumentationKey();
         if (instrumentationKey == null) {
             // this is possible in Azure Function consumption plan prior to "specialization"
             return "";

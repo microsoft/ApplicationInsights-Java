@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
-import com.microsoft.applicationinsights.TelemetryConfigurationTestHelper;
+import com.microsoft.applicationinsights.TelemetryClient;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -20,21 +19,12 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class DefaultQuickPulsePingSenderTests {
-    @Before
-    public void cleanUpActive() {
-        TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
-    }
-
-    @After
-    public void cleanUpActiveAgain() {
-        TelemetryConfigurationTestHelper.resetActiveTelemetryConfiguration();
-    }
 
     @Test
     public void endpointIsFormattedCorrectlyWhenUsingConnectionString() {
-        final TelemetryConfiguration config = new TelemetryConfiguration();
-        config.setConnectionString("InstrumentationKey=testing-123");
-        DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, config, null,null, null,null);
+        final TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setConnectionString("InstrumentationKey=testing-123");
+        DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, telemetryClient, null,null, null,null);
         final String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
         final String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
         try {
@@ -50,9 +40,9 @@ public class DefaultQuickPulsePingSenderTests {
 
     @Test
     public void endpointIsFormattedCorrectlyWhenUsingInstrumentationKey() {
-        final TelemetryConfiguration config = new TelemetryConfiguration();
-        config.setInstrumentationKey("A-test-instrumentation-key");
-        DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, config, null, null,null,null);
+        final TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setInstrumentationKey("A-test-instrumentation-key");
+        DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, telemetryClient, null, null,null,null);
         final String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
         final String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
         try {
@@ -69,7 +59,7 @@ public class DefaultQuickPulsePingSenderTests {
     @Test
     public void endpointChangesWithRedirectHeaderAndGetNewPingInterval() throws IOException {
         final CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
-        final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, null, "machine1",
+        final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, new TelemetryClient(), "machine1",
                 "instance1", "role1", "qpid123");
 
         CloseableHttpResponse response = new BasicCloseableHttpResponse(new BasicStatusLine(new ProtocolVersion("a",1,2), 200, "OK"));

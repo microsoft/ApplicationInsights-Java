@@ -17,7 +17,7 @@ import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampl
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
@@ -47,6 +47,8 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
         // Reversing the order of processors before passing it to SpanProcessor
         Collections.reverse(processors);
 
+        SpanExporter exporter = new Exporter(TelemetryClient.getActive(), config.preview.httpMethodInOperationName);
+
         // NOTE if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         if (!processors.isEmpty()) {
             SpanExporter currExporter = null;
@@ -54,8 +56,8 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
                 if (currExporter == null) {
                     currExporter = processorConfig.type == ProcessorType.attribute ?
-                            new ExporterWithAttributeProcessor(processorConfig, new Exporter(telemetryClient, config.preview.httpMethodInOperationName)) :
-                            new ExporterWithSpanProcessor(processorConfig, new Exporter(telemetryClient, config.preview.httpMethodInOperationName));
+                            new ExporterWithAttributeProcessor(processorConfig, exporter) :
+                            new ExporterWithSpanProcessor(processorConfig, exporter);
 
                 } else {
                     currExporter = processorConfig.type == ProcessorType.attribute ?
@@ -64,10 +66,18 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
                 }
             }
 
-            tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(currExporter));
+            // using batch size 1 here because batching is done at a lower level
+            // but still using BatchSpanProcessor in order to get off of the application thread as soon as possible
+            tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(currExporter)
+                    .setMaxExportBatchSize(1)
+                    .build());
 
         } else {
-            tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(new Exporter(telemetryClient, config.preview.httpMethodInOperationName)));
+            // using batch size 1 here because batching is done at a lower level
+            // but still using BatchSpanProcessor in order to get off of the application thread as soon as possible
+            tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(exporter)
+                    .setMaxExportBatchSize(1)
+                    .build());
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -32,9 +32,9 @@ public interface HeartBeatProviderInterface {
 
   /**
    * This method initializes the concrete module.
-   * @param configuration TelemetryConfiguration
+   * @param telemetryClient TelemetryClient
    */
-  void initialize(TelemetryConfiguration configuration);
+  void initialize(TelemetryClient telemetryClient);
 
   /**
    * Adds the heartbeat property to the heartbeat payload.

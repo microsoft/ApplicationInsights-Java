@@ -26,6 +26,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -35,10 +36,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ExportResult;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
+import com.microsoft.applicationinsights.TelemetryObservers;
+import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
@@ -51,15 +57,14 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.Uplo
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.jfr.Recording;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
 
@@ -71,15 +76,22 @@ public class ProfilerServiceTest {
     final String stampId = "a-stamp-id";
     final String jfrExtension = "jfr";
 
+    @BeforeClass
+    public static void setUp() {
+        // FIXME (trask) inject TelemetryClient in tests instead of using global
+        TelemetryClient.resetForTesting();
+        TelemetryClient.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
+    }
+
     @Test
     public void endToEndAlertTriggerCpu() throws InterruptedException, ExecutionException {
         endToEndAlertTriggerCycle(
                 false,
-                new MetricTelemetry(TOTAL_CPU_PC_METRIC_NAME, 100.0),
+                createMetricsTelemetry(TOTAL_CPU_PC_METRIC_NAME, 100.0),
                 telemetry -> {
                     Assert.assertEquals("JFR-CPU", telemetry.getProperties().get("Source"));
-                    Assert.assertEquals(100.0, telemetry.getMetrics().get("AverageCPUUsage"), 0.01);
-                    Assert.assertEquals(0.0, telemetry.getMetrics().get("AverageMemoryUsage"), 0.01);
+                    Assert.assertEquals(100.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
+                    Assert.assertEquals(0.0, telemetry.getMeasurements().get("AverageMemoryUsage"), 0.01);
                 });
     }
 
@@ -87,17 +99,17 @@ public class ProfilerServiceTest {
     public void endToEndAlertTriggerManual() throws InterruptedException, ExecutionException {
         endToEndAlertTriggerCycle(
                 true,
-                new MetricTelemetry(HEAP_MEM_USED_PERCENTAGE, 0.0),
+                createMetricsTelemetry(HEAP_MEM_USED_PERCENTAGE, 0.0),
                 telemetry -> {
                     Assert.assertEquals("JFR-MANUAL", telemetry.getProperties().get("Source"));
-                    Assert.assertEquals(0.0, telemetry.getMetrics().get("AverageCPUUsage"), 0.01);
-                    Assert.assertEquals(0.0, telemetry.getMetrics().get("AverageMemoryUsage"), 0.01);
+                    Assert.assertEquals(0.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
+                    Assert.assertEquals(0.0, telemetry.getMeasurements().get("AverageMemoryUsage"), 0.01);
                 });
     }
 
-    public void endToEndAlertTriggerCycle(boolean triggerNow, MetricTelemetry metricTelemetry, Consumer<EventTelemetry> assertTelemetry) throws InterruptedException, ExecutionException {
+    public void endToEndAlertTriggerCycle(boolean triggerNow, TelemetryItem metricTelemetry, Consumer<TelemetryEventData> assertTelemetry) throws InterruptedException, ExecutionException {
         AtomicBoolean profileInvoked = new AtomicBoolean(false);
-        AtomicReference<EventTelemetry> serviceProfilerIndex = new AtomicReference<>();
+        AtomicReference<TelemetryEventData> serviceProfilerIndex = new AtomicReference<>();
 
         String appId = UUID.randomUUID().toString();
 
@@ -111,12 +123,14 @@ public class ProfilerServiceTest {
 
         Object monitor = new Object();
 
+        // FIXME (trask) revisit this, why is subclassing TelemetryClient needed?
         TelemetryClient client = new TelemetryClient() {
             @Override
-            public void track(Telemetry telemetry) {
-                if (telemetry instanceof EventTelemetry) {
-                    if ("ServiceProfilerIndex".equals(((EventTelemetry) telemetry).getName())) {
-                        serviceProfilerIndex.set((EventTelemetry) telemetry);
+            public void trackAsync(TelemetryItem telemetry) {
+                MonitorDomain data = telemetry.getData().getBaseData();
+                if (data instanceof TelemetryEventData) {
+                    if ("ServiceProfilerIndex".equals(((TelemetryEventData) data).getName())) {
+                        serviceProfilerIndex.set((TelemetryEventData) data);
                     }
                     synchronized (monitor) {
                         monitor.notifyAll();
@@ -165,7 +179,7 @@ public class ProfilerServiceTest {
             TelemetryObservers
                     .INSTANCE
                     .getObservers()
-                    .forEach(telemetryObserver -> telemetryObserver.consume(metricTelemetry));
+                    .forEach(telemetryObserver -> telemetryObserver.accept(metricTelemetry));
 
             synchronized (monitor) {
                 if (serviceProfilerIndex.get() != null) {

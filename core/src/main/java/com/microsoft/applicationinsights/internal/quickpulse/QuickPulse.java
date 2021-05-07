@@ -35,7 +35,7 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 
 /**
  * Created by gupele on 12/4/2016.
@@ -54,16 +54,16 @@ public enum QuickPulse {
     // can cause slowness during startup in some environments
     @Deprecated
     public void initialize() {
-        initialize(TelemetryConfiguration.getActive());
+        initialize(TelemetryClient.getActive());
     }
 
-    public void initialize(final TelemetryConfiguration configuration) {
-        Preconditions.checkNotNull(configuration);
+    public void initialize(final TelemetryClient telemetryClient) {
+        Preconditions.checkNotNull(telemetryClient);
         final CountDownLatch latch = new CountDownLatch(1);
         Executors.newSingleThreadExecutor(ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class)).execute(new Runnable() {
             @Override
             public void run() {
-                initializeSync(latch, configuration);
+                initializeSync(latch, telemetryClient);
             }
         });
         // don't return until initialization thread has INSTANCE lock
@@ -74,7 +74,7 @@ public enum QuickPulse {
         }
     }
 
-    private void initializeSync(CountDownLatch latch, TelemetryConfiguration configuration) {
+    private void initializeSync(CountDownLatch latch, TelemetryClient telemetryClient) {
         if (initialized) {
             latch.countDown();
         } else {
@@ -88,8 +88,8 @@ public enum QuickPulse {
 
                     quickPulseDataSender = new DefaultQuickPulseDataSender(httpClient, sendQueue);
 
-                    String instanceName = configuration.getRoleInstance();
-                    String roleName = configuration.getRoleName();
+                    String instanceName = telemetryClient.getRoleInstance();
+                    String roleName = telemetryClient.getRoleName();
                     String machineName = DeviceInfo.getHostName();
 
                     if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
@@ -99,8 +99,8 @@ public enum QuickPulse {
                         instanceName = "Unknown host";
                     }
 
-                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, configuration, machineName, instanceName, roleName, quickPulseId);
-                    final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, configuration, machineName, instanceName, roleName, quickPulseId);
+                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, telemetryClient, machineName, instanceName, roleName, quickPulseId);
+                    final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, telemetryClient, machineName, instanceName, roleName, quickPulseId);
 
                     final QuickPulseCoordinatorInitData coordinatorInitData =
                             new QuickPulseCoordinatorInitDataBuilder()
@@ -119,7 +119,7 @@ public enum QuickPulse {
                     thread.setDaemon(true);
                     thread.start();
 
-                    QuickPulseDataCollector.INSTANCE.enable(configuration);
+                    QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
                 }
             }
         }

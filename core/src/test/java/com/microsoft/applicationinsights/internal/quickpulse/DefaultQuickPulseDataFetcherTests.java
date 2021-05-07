@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.TelemetryClient;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -24,7 +24,7 @@ public class DefaultQuickPulseDataFetcherTests {
 
     @Test
     public void testGetCurrentSdkVersion() {
-        DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration) null, null,
+        DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, null, null,
                 null, null,null);
         String sdkVersion = dataFetcher.getCurrentSdkVersion();
         assertNotNull(sdkVersion);
@@ -33,9 +33,9 @@ public class DefaultQuickPulseDataFetcherTests {
 
     @Test
     public void endpointIsFormattedCorrectlyWhenUsingConfig() {
-        final TelemetryConfiguration config = new TelemetryConfiguration();
-        config.setConnectionString("InstrumentationKey=testing-123");
-        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, config, null, null,null,null);
+        final TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setConnectionString("InstrumentationKey=testing-123");
+        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, telemetryClient, null, null,null,null);
         final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
         final String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
         try {
@@ -49,7 +49,7 @@ public class DefaultQuickPulseDataFetcherTests {
 
     @Test
     public void endpointIsFormattedCorrectlyWhenConfigIsNull() {
-        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, (TelemetryConfiguration)null,
+        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, null,
                 null,null, null,null);
         final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
         final String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
@@ -65,7 +65,7 @@ public class DefaultQuickPulseDataFetcherTests {
     @Test
     public void endpointChangesWithRedirectHeaderAndGetNewPingInterval() throws IOException {
         final CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
-        final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, null, "machine1",
+        final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, new TelemetryClient(), "machine1",
                 "instance1", "role1", "qpid123");
 
         CloseableHttpResponse response = new BasicCloseableHttpResponse(new BasicStatusLine(new ProtocolVersion("a",1,2), 200, "OK"));

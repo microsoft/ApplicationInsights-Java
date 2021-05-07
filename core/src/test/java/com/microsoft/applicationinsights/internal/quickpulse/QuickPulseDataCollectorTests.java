@@ -1,21 +1,32 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.FinalCounters;
-import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import org.junit.*;
 
 import java.util.Date;
+import java.util.HashMap;
 
+import static com.microsoft.applicationinsights.TelemetryUtil.*;
 import static org.junit.Assert.*;
 
 public class QuickPulseDataCollectorTests {
 
     private static final String FAKE_INSTRUMENTATION_KEY = "fake-instrumentation-key";
+
+    @BeforeClass
+    public static void setUp() {
+        // FIXME (trask) inject TelemetryClient in tests instead of using global
+        TelemetryClient.resetForTesting();
+        TelemetryClient.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
+    }
 
     @Before
     public void setup() {
@@ -34,27 +45,33 @@ public class QuickPulseDataCollectorTests {
 
     @Test
     public void emptyCountsAndDurationsAfterEnable() {
-        QuickPulseDataCollector.INSTANCE.enable(FAKE_INSTRUMENTATION_KEY);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
         final FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
         assertCountersReset(counters);
     }
 
     @Test
     public void nullCountersAfterDisable() {
-        QuickPulseDataCollector.INSTANCE.enable(FAKE_INSTRUMENTATION_KEY);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
         QuickPulseDataCollector.INSTANCE.disable();
         assertNull(QuickPulseDataCollector.INSTANCE.peek());
     }
 
     @Test
     public void requestTelemetryIsCounted_DurationIsSum() {
-        QuickPulseDataCollector.INSTANCE.enable(FAKE_INSTRUMENTATION_KEY);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
         // add a success and peek
         final long duration = 112233L;
-        RequestTelemetry rt = new RequestTelemetry("request-test", new Date(), duration, "200", true);
-        rt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.add(rt);
+        TelemetryItem telemetry = createRequestTelemetry("request-test", new Date(), duration, "200", true);
+        telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.add(telemetry);
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
         assertEquals(1, counters.requests);
         assertEquals(0, counters.unsuccessfulRequests);
@@ -62,9 +79,9 @@ public class QuickPulseDataCollectorTests {
 
         // add another success and peek
         final long duration2 = 65421L;
-        rt = new RequestTelemetry("request-test-2", new Date(), duration2, "200", true);
-        rt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.add(rt);
+        telemetry = createRequestTelemetry("request-test-2", new Date(), duration2, "200", true);
+        telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.peek();
         double total = duration + duration2;
         assertEquals(2, counters.requests);
@@ -73,9 +90,9 @@ public class QuickPulseDataCollectorTests {
 
         // add a failure and get/reset
         final long duration3 = 9988L;
-        rt = new RequestTelemetry("request-test-3", new Date(), duration3, "400", false);
-        rt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.add(rt);
+        telemetry = createRequestTelemetry("request-test-3", new Date(), duration3, "400", false);
+        telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
         total += duration3;
         assertEquals(3, counters.requests);
@@ -87,13 +104,15 @@ public class QuickPulseDataCollectorTests {
 
     @Test
     public void dependencyTelemetryIsCounted_DurationIsSum() {
-        QuickPulseDataCollector.INSTANCE.enable(FAKE_INSTRUMENTATION_KEY);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
         // add a success and peek.
         final long duration = 112233L;
-        RemoteDependencyTelemetry rdt = new RemoteDependencyTelemetry("dep-test", "dep-test-cmd", new Duration(duration), true);
-        rdt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.add(rdt);
+        TelemetryItem telemetry = createRemoteDependencyTelemetry("dep-test", "dep-test-cmd", duration, true);
+        telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.add(telemetry);
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
         assertEquals(1, counters.rdds);
         assertEquals(0, counters.unsuccessfulRdds);
@@ -101,9 +120,9 @@ public class QuickPulseDataCollectorTests {
 
         // add another success and peek.
         final long duration2 = 334455L;
-        rdt = new RemoteDependencyTelemetry("dep-test-2", "dep-test-cmd-2", new Duration(duration2), true);
-        rdt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.add(rdt);
+        telemetry = createRemoteDependencyTelemetry("dep-test-2", "dep-test-cmd-2", duration2, true);
+        telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.peek();
         assertEquals(2, counters.rdds);
         assertEquals(0, counters.unsuccessfulRdds);
@@ -112,9 +131,9 @@ public class QuickPulseDataCollectorTests {
 
         // add a failure and get/reset.
         final long duration3 = 123456L;
-        rdt = new RemoteDependencyTelemetry("dep-test-3", "dep-test-cmd-3", new Duration(duration3), false);
-        rdt.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.add(rdt);
+        telemetry = createRemoteDependencyTelemetry("dep-test-3", "dep-test-cmd-3", duration3, false);
+        telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
         assertEquals(3, counters.rdds);
         assertEquals(1, counters.unsuccessfulRdds);
@@ -126,17 +145,19 @@ public class QuickPulseDataCollectorTests {
 
     @Test
     public void exceptionTelemetryIsCounted() {
-        QuickPulseDataCollector.INSTANCE.enable(FAKE_INSTRUMENTATION_KEY);
+        TelemetryClient telemetryClient = new TelemetryClient();
+        telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
 
-        ExceptionTelemetry et = new ExceptionTelemetry(new Exception());
-        et.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.add(et);
+        TelemetryItem telemetry = createExceptionTelemetry(new Exception());
+        telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.add(telemetry);
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
         assertEquals(1, counters.exceptions, Math.ulp(1.0));
 
-        et = new ExceptionTelemetry(new Exception());
-        et.getContext().setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
-        QuickPulseDataCollector.INSTANCE.add(et);
+        telemetry = createExceptionTelemetry(new Exception());
+        telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
+        QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
         assertEquals(2, counters.exceptions, Math.ulp(2.0));
 
@@ -151,6 +172,43 @@ public class QuickPulseDataCollectorTests {
         final CountAndDuration inputs = Counters.decodeCountAndDuration(encoded);
         assertEquals(count, inputs.count);
         assertEquals(duration, inputs.duration);
+    }
+
+    private static TelemetryItem createRequestTelemetry(String name, Date timestamp, long duration, String responseCode, boolean success) {
+        TelemetryItem telemetry = new TelemetryItem();
+        RequestData data = new RequestData();
+        TelemetryClient.getActive().initRequestTelemetry(telemetry, data);
+
+        data.setName(name);
+        data.setDuration(getFormattedDuration(duration));
+        data.setResponseCode(responseCode);
+        data.setSuccess(success);
+
+        telemetry.setTime(getFormattedTime(timestamp.getTime()));
+        return telemetry;
+    }
+
+    private static TelemetryItem createRemoteDependencyTelemetry(String name, String command, long durationMillis, boolean success) {
+        TelemetryItem telemetry = new TelemetryItem();
+        RemoteDependencyData data = new RemoteDependencyData();
+        TelemetryClient.getActive().initRemoteDependencyTelemetry(telemetry, data);
+
+        data.setName(name);
+        data.setData(command);
+        data.setDuration(getFormattedDuration(durationMillis));
+        data.setSuccess(success);
+
+        return telemetry;
+    }
+
+    private static TelemetryItem createExceptionTelemetry(Exception exception) {
+        TelemetryItem telemetry = new TelemetryItem();
+        TelemetryExceptionData data = new TelemetryExceptionData();
+        TelemetryClient.getActive().initExceptionTelemetry(telemetry, data);
+
+        data.setExceptions(getExceptions(exception));
+
+        return telemetry;
     }
 
     private void assertCountersReset(FinalCounters counters) {

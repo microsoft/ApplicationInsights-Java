@@ -28,10 +28,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
+import com.microsoft.applicationinsights.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
@@ -40,7 +43,6 @@ import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,8 +65,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
-                                               String instrumentationKey,
-                                               TelemetryClient client,
+                                               TelemetryClient telemetryClient,
                                                String userAgent,
                                                GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
         initialize(
@@ -72,8 +73,7 @@ public class ProfilerServiceInitializer {
                 processId,
                 config,
                 machineName,
-                instrumentationKey,
-                client,
+                telemetryClient,
                 LazyHttpClient.getInstance(),
                 userAgent,
                 gcEventMonitorConfiguration
@@ -84,8 +84,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
-                                               String instrumentationKey,
-                                               TelemetryClient client,
+                                               TelemetryClient telemetryClient,
                                                CloseableHttpClient httpClient,
                                                String userAgent,
                                                GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
@@ -112,16 +111,16 @@ public class ProfilerServiceInitializer {
                     ThreadPoolUtils.createDaemonThreadFactory(ProfilerServiceFactory.class, "ServiceProfilerAlertingService")
             );
 
-            AlertingSubsystem alerting = createAlertMonitor(alertServiceExecutorService, client, gcEventMonitorConfiguration);
+            AlertingSubsystem alerting = createAlertMonitor(alertServiceExecutorService, telemetryClient, gcEventMonitorConfiguration);
 
             Future<ProfilerService> future = factory.initialize(
                     appIdSupplier,
-                    sendServiceProfilerIndex(client),
+                    sendServiceProfilerIndex(telemetryClient),
                     updateAlertingConfig(alerting),
                     processId,
                     config,
                     machineName,
-                    instrumentationKey,
+                    telemetryClient.getInstrumentationKey(),
                     httpClient,
                     serviceProfilerExecutorService,
                     userAgent
@@ -158,10 +157,17 @@ public class ProfilerServiceInitializer {
 
     static UploadCompleteHandler sendServiceProfilerIndex(TelemetryClient telemetryClient) {
         return done -> {
-            EventTelemetry event = new EventTelemetry("ServiceProfilerIndex");
-            event.getProperties().putAll(done.getServiceProfilerIndex().getProperties());
-            event.getMetrics().putAll(done.getServiceProfilerIndex().getMetrics());
-            telemetryClient.track(event);
+            TelemetryItem telemetry = new TelemetryItem();
+            TelemetryEventData data = new TelemetryEventData();
+            TelemetryClient.getActive().initEventTelemetry(telemetry, data);
+
+            data.setName("ServiceProfilerIndex");
+            data.setProperties(done.getServiceProfilerIndex().getProperties());
+            data.setMeasurements(done.getServiceProfilerIndex().getMetrics());
+
+            telemetry.setTime(TelemetryUtil.getFormattedNow());
+
+            telemetryClient.trackAsync(telemetry);
         };
     }
 

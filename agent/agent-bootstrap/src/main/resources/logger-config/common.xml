@@ -9,5 +9,7 @@
   <!-- muzzleMatcher logs at WARN level, so by default this is OFF, but enabled when DEBUG logging is enabled -->
   <logger name="muzzleMatcher" level="${applicationinsights.logback.level.muzzleMatcher}" />
   <logger name="com.microsoft.applicationinsights" level="${applicationinsights.logback.level}" />
+  <!-- FIXME (trask) revisit -->
+  <logger name="com.azure.monitor.opentelemetry.exporter" level="${applicationinsights.logback.level}" />
   <root level="${applicationinsights.logback.level.other}" />
 </included>

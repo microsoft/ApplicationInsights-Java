@@ -3,7 +3,7 @@ package com.microsoft.applicationinsights.agent.internal.propagator;
 import java.util.Collection;
 import javax.annotation.Nullable;
 
-import com.microsoft.applicationinsights.agent.Exporter;
+import com.microsoft.applicationinsights.TelemetryUtil;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -66,12 +66,12 @@ public class DelegatingPropagator implements TextMapPropagator {
             // sampling percentage should always be present, so no need to optimize with checking if present
             TraceState traceState = spanContext.getTraceState();
             TraceState updatedTraceState;
-            if (traceState.size() == 1 && traceState.get(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE) != null) {
+            if (traceState.size() == 1 && traceState.get(TelemetryUtil.SAMPLING_PERCENTAGE_TRACE_STATE) != null) {
                 // this is a common case, worth optimizing
                 updatedTraceState = TraceState.getDefault();
             } else {
                 updatedTraceState = traceState.toBuilder()
-                        .remove(Exporter.SAMPLING_PERCENTAGE_TRACE_STATE)
+                        .remove(TelemetryUtil.SAMPLING_PERCENTAGE_TRACE_STATE)
                         .build();
             }
             SpanContext updatedSpanContext = new ModifiedSpanContext(spanContext, updatedTraceState);

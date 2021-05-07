@@ -15,8 +15,8 @@ public class SamplingPercentageTest {
         assertEquals(50, roundToNearest(50), 0);
         assertEquals(10, roundToNearest(10), 0);
         assertEquals(2, roundToNearest(2), 0);
-        assertEquals(0.1, roundToNearest(0.1), 0.001);
-        assertEquals(0.001, roundToNearest(0.001), 0.00001);
+        assertEquals(0.1, roundToNearest(0.1f), 0.001);
+        assertEquals(0.001, roundToNearest(0.001f), 0.00001);
         assertEquals(0, roundToNearest(0), 0);
 
         // imperfect

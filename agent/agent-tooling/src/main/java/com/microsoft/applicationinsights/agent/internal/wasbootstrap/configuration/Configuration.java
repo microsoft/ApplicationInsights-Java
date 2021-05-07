@@ -85,7 +85,7 @@ public class Configuration {
 
     public static class Sampling {
 
-        public double percentage = 100;
+        public float percentage = 100;
     }
 
     public static class SamplingPreview {
@@ -234,7 +234,7 @@ public class Configuration {
         // not using include/exclude, because you can still get exclude with this by adding a second (exclude) override above it
         // (since only the first matching override is used)
         public List<SamplingOverrideAttribute> attributes = new ArrayList<>();
-        public Double percentage;
+        public Float percentage;
         public String id; // optional, used for debugging purposes only
 
         public void validate() throws FriendlyException {
