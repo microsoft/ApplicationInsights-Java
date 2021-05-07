@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.profiler.GcReportingLevel;
 
 import java.util.ArrayList;
@@ -49,10 +50,10 @@ public class Configuration {
     public List<JmxMetric> jmxMetrics = new ArrayList<>();
     public Instrumentation instrumentation = new Instrumentation();
     public Heartbeat heartbeat = new Heartbeat();
-    public Statsbeat statsbeat = new Statsbeat();
     public Proxy proxy = new Proxy();
     public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
     public PreviewConfiguration preview = new PreviewConfiguration();
+    public InternalConfiguration internal = new InternalConfiguration();
 
     // this is just here to detect if using old format in order to give a helpful error message
     public Map<String, Object> instrumentationSettings;
@@ -159,8 +160,8 @@ public class Configuration {
     }
 
     public static class Statsbeat {
-        // TODO place this inside InternalConfiguration, and separate ikey/endpoint, and add documentation
-        public String connectionString = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"; //workspace-aistatsbeat
+        public String ikey = "c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint"; //workspace-aistatsbeat
+        public String endpoint = ConnectionString.Defaults.INGESTION_ENDPOINT; // this supports the government cloud
         public long intervalSeconds = DEFAULT_STATSBEAT_INTERVAL;
         public long featureIntervalSeconds = FEATURE_STATSBEAT_INTERVAL;
     }
@@ -191,6 +192,11 @@ public class Configuration {
 
         public ProfilerConfiguration profiler = new ProfilerConfiguration();
         public GcEventConfiguration gcEvents = new GcEventConfiguration();
+    }
+
+    public static class InternalConfiguration {
+        // This is used for collecting internal stats
+        public Statsbeat statsbeat = new Statsbeat();
     }
 
     public static class PreviewInstrumentation {

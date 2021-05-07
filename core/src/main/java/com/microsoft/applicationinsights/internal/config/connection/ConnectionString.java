@@ -26,8 +26,16 @@ public class ConnectionString {
         mapToConnectionConfiguration(getKeyValuePairs(connectionString), targetConfig);
     }
 
-    public static void parseStatsbeatConnectionString(String connectionString, TelemetryConfiguration targetConfig) throws InvalidConnectionStringException {
-        mapStatsbeatConnectionStringToConfig(getKeyValuePairs(connectionString), targetConfig);
+    public static void updateStatsbeatConnectionString(String ikey, String endpoint, TelemetryConfiguration config) throws InvalidConnectionStringException {
+        if (Strings.isNullOrEmpty(ikey)) {
+            logger.warn("Missing Statsbeat '"+Keywords.INSTRUMENTATION_KEY+"'");
+        }
+
+        config.setStatsbeatInstrumentationKey(ikey);
+
+        if (!Strings.isNullOrEmpty(endpoint)) {
+            config.getEndpointProvider().setStatsbeatEndpoint(toUriOrThrow(endpoint, Keywords.INGESTION_ENDPOINT));
+        }
     }
 
     private static Map<String, String> getKeyValuePairs(String connectionString) throws InvalidConnectionStringException {
@@ -44,34 +52,6 @@ public class ConnectionString {
         }
 
         return kvps;
-    }
-
-    private static void mapStatsbeatConnectionStringToConfig(Map<String, String> kvps, TelemetryConfiguration config) throws InvalidConnectionStringException {
-        // get ikey
-        String instrumentationKey = kvps.get(Keywords.INSTRUMENTATION_KEY);
-        if (Strings.isNullOrEmpty(instrumentationKey)) {
-            throw new InvalidConnectionStringException("Missing '"+Keywords.INSTRUMENTATION_KEY+"'");
-        }
-        if (!Strings.isNullOrEmpty(config.getInstrumentationKey())) {
-            logger.warn("Connection string is overriding previously configured instrumentation key.");
-        }
-
-        config.setStatsbeatInstrumentationKey(instrumentationKey);
-
-        String suffix = kvps.get(Keywords.ENDPOINT_SUFFIX);
-        if (!Strings.isNullOrEmpty(suffix)) {
-            try {
-                config.getEndpointProvider().setStatsbeatEndpoint(constructSecureEndpoint(EndpointPrefixes.INGESTION_ENDPOINT_PREFIX, suffix));
-            } catch (URISyntaxException e) {
-                throw new InvalidConnectionStringException(Keywords.ENDPOINT_SUFFIX + " is invalid: " + suffix, e);
-            }
-        }
-
-        // set explicit endpoints for Statsbeat
-        String statsbeatEndpoint = kvps.get(Keywords.INGESTION_ENDPOINT);
-        if (!Strings.isNullOrEmpty(statsbeatEndpoint)) {
-            config.getEndpointProvider().setStatsbeatEndpoint(toUriOrThrow(statsbeatEndpoint, Keywords.INGESTION_ENDPOINT));
-        }
     }
 
     private static void mapToConnectionConfiguration(Map<String, String> kvps, TelemetryConfiguration config) throws InvalidConnectionStringException {

@@ -161,7 +161,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
         try {
-            ConnectionString.parseStatsbeatConnectionString(config.statsbeat.connectionString, configuration);
+            ConnectionString.updateStatsbeatConnectionString(config.internal.statsbeat.ikey, config.internal.statsbeat.endpoint, configuration);
         } catch (InvalidConnectionStringException ex) {
             startupLogger.warn("Statsbeat connection string is invalid. {}", ex.getMessage());
         }
@@ -211,7 +211,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         }
 
         // initialize StatsbeatModule
-        StatsbeatModule.getInstance().initialize(telemetryClient, config.statsbeat.intervalSeconds, config.statsbeat.featureIntervalSeconds);
+        StatsbeatModule.getInstance().initialize(telemetryClient, config.internal.statsbeat.intervalSeconds, config.internal.statsbeat.featureIntervalSeconds);
     }
 
     private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {
