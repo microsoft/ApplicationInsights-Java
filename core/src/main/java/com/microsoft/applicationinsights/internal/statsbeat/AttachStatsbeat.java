@@ -34,17 +34,15 @@ public class AttachStatsbeat extends BaseStatsbeat {
 
     public AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
-        initResourceProviderId();
+        resourceProviderId = initResourceProviderId(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP));
         AzureMetadataService.getInstance().initialize(interval);
     }
 
     @Override
     protected void send() {
-        if (resourceProviderId != null) {
-            MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH, 0);
-            statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_RP_ID, resourceProviderId);
-            telemetryClient.track(statsbeatTelemetry);
-        }
+        MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH, 0);
+        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_RP_ID, resourceProviderId);
+        telemetryClient.track(statsbeatTelemetry);
     }
 
     /**
@@ -54,6 +52,10 @@ public class AttachStatsbeat extends BaseStatsbeat {
         return resourceProviderId;
     }
 
+    public void setResourceProviderId(String resourceProviderId) {
+        this.resourceProviderId = resourceProviderId;
+    }
+
     public MetadataInstanceResponse getMetadataInstanceResponse() {
         return metadataInstanceResponse;
     }
@@ -61,45 +63,34 @@ public class AttachStatsbeat extends BaseStatsbeat {
     public void updateMetadataInstance(MetadataInstanceResponse response) {
         if (response != null) {
             metadataInstanceResponse = response;
-            updateResourceProvider(RP_VM);
-            updateOperatingSystem();
+            resourceProviderId = initResourceProviderId(RP_VM);
         }
     }
 
-    protected void updateResourceProvider(String rp) {
-        CustomDimensions.getInstance().getProperties().put(CUSTOM_DIMENSIONS_RP, rp);
-        initResourceProviderId();
-    }
-
-    // osType from the Azure Metadata Service has a higher precedence over the running app’s operating system.
-    private void updateOperatingSystem() {
-        String osType = metadataInstanceResponse.getOsType();
-        if (osType != null && !"unknown".equalsIgnoreCase(osType)) {
-            CustomDimensions.getInstance().getProperties().put(CUSTOM_DIMENSIONS_OS, osType);
-        }
-    }
-
-    private void initResourceProviderId() {
-        switch (CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP)) {
+    protected String initResourceProviderId(String resourceProvider) {
+        String result = null;
+        switch (resourceProvider) {
             case RP_APPSVC:
-                resourceProviderId = getEnvironmentVariable(WEBSITE_SITE_NAME) + "/" + getEnvironmentVariable(WEBSITE_HOME_STAMPNAME) + "/" + getEnvironmentVariable(WEBSITE_HOSTNAME);
+                result = getEnvironmentVariable(WEBSITE_SITE_NAME) + "/" + getEnvironmentVariable(WEBSITE_HOME_STAMPNAME) + "/" + getEnvironmentVariable(WEBSITE_HOSTNAME);
                 break;
             case RP_FUNCTIONS:
-                resourceProviderId = getEnvironmentVariable(WEBSITE_HOSTNAME);
+                result = getEnvironmentVariable(WEBSITE_HOSTNAME);
                 break;
             case RP_VM:
                 if (metadataInstanceResponse != null) {
-                    resourceProviderId = metadataInstanceResponse.getVmId() + "/" + metadataInstanceResponse.getSubscriptionId();
+                    result = metadataInstanceResponse.getVmId() + "/" + metadataInstanceResponse.getSubscriptionId();
                 } else {
-                    resourceProviderId = UNKNOWN;
+                    result = UNKNOWN;
                 }
                 break;
             case RP_AKS: // TODO will update resourceProviderId when cluster_id becomes available from the AKS AzureMetadataService extension.
             case UNKNOWN:
             default:
-                resourceProviderId = UNKNOWN;
+                result = UNKNOWN;
                 break;
         }
+
+        return result;
     }
 
     @VisibleForTesting

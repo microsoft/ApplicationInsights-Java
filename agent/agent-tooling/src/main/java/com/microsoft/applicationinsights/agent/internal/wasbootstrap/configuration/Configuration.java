@@ -159,6 +159,7 @@ public class Configuration {
     }
 
     public static class Statsbeat {
+        // TODO place this inside InternalConfiguration, and separate ikey/endpoint, and add documentation
         public String connectionString = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"; //workspace-aistatsbeat
         public long intervalSeconds = DEFAULT_STATSBEAT_INTERVAL;
         public long featureIntervalSeconds = FEATURE_STATSBEAT_INTERVAL;

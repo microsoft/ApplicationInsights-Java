@@ -15,6 +15,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_OS;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_RP;
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_VM;
+
 public final class AzureMetadataService {
 
     private static final Logger logger = LoggerFactory.getLogger(AzureMetadataService.class);
@@ -38,10 +42,20 @@ public final class AzureMetadataService {
 
     public void parseJsonResponse(String response) throws IOException {
         if (response != null) {
-            StatsbeatModule.getInstance().getAttachStatsbeat().updateMetadataInstance(jsonAdapter.fromJson(response));
+            MetadataInstanceResponse metadataInstanceResponse = jsonAdapter.fromJson(response);
+            StatsbeatModule.getInstance().getAttachStatsbeat().updateMetadataInstance(metadataInstanceResponse);
+            CustomDimensions.getInstance().getProperties().put(CUSTOM_DIMENSIONS_RP, RP_VM);
+
+            // osType from the Azure Metadata Service has a higher precedence over the running app’s operating system.
+            String osType = metadataInstanceResponse.getOsType();
+            if (osType != null && !"unknown".equalsIgnoreCase(osType)) {
+                CustomDimensions.getInstance().getProperties().put(CUSTOM_DIMENSIONS_OS, osType);
+            }
         }
     }
 
+    // Querying Azure Metadata Service is required for every 15 mins since VM id will get updated frequently.
+    // Starting and restarting a VM will generate a new VM id each time.
     private class InvokeMetadataServiceTask implements Runnable {
 
         @Override

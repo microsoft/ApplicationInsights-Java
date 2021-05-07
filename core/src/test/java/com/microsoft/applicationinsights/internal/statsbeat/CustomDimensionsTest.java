@@ -24,7 +24,6 @@ public class CustomDimensionsTest {
 
     @Test
     public void testResourceProvider() {
-        System.out.println("#### " + CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP));
         assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), UNKNOWN);
     }
 

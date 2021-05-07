@@ -58,8 +58,7 @@ public class AttachStatsbeatTest {
         Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_HOME_STAMPNAME)).thenReturn("test_stamp_name");
         Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_HOSTNAME)).thenReturn("test_hostname");
 
-        mockedAttachStatsbeat.updateResourceProvider(RP_APPSVC);
-        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), RP_APPSVC);
+        mockedAttachStatsbeat.setResourceProviderId(mockedAttachStatsbeat.initResourceProviderId(RP_APPSVC));
         assertEquals(mockedAttachStatsbeat.getResourceProviderId(), "test_site_name/test_stamp_name/test_hostname");
     }
 
@@ -68,15 +67,13 @@ public class AttachStatsbeatTest {
         AttachStatsbeat mockedAttachStatsbeat = Mockito.spy(attachStatsbeat);
         Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_HOSTNAME)).thenReturn("test_function_name");
 
-        mockedAttachStatsbeat.updateResourceProvider(RP_FUNCTIONS);
-        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), RP_FUNCTIONS);
+        mockedAttachStatsbeat.setResourceProviderId(mockedAttachStatsbeat.initResourceProviderId(RP_FUNCTIONS));
         assertEquals(mockedAttachStatsbeat.getResourceProviderId(), "test_function_name");
     }
 
     @Test
     public void testAksResourceProviderId() {
-        attachStatsbeat.updateResourceProvider(RP_AKS);
-        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), RP_AKS);
+        attachStatsbeat.setResourceProviderId(attachStatsbeat.initResourceProviderId(RP_AKS));
         assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
     }
 

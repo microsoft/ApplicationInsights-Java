@@ -35,12 +35,20 @@ import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelp
 
 public class FeatureStatsbeat extends BaseStatsbeat {
 
-    private volatile Set<String> featureList = new HashSet<>(64);
+    private final Set<String> featureList = new HashSet<>(64);
 
     public FeatureStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
-        initFeatureList();
-        scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), interval, interval, TimeUnit.SECONDS);
+
+        // track java distribution
+        String javaVendor = System.getProperty("java.vendor");
+        if (javaVendor != null && !javaVendor.isEmpty()) {
+            if (FEATURE_MAP.get(javaVendor) == null) {
+                featureList.add(JAVA_VENDOR_OTHER);
+            } else {
+                featureList.add(javaVendor);
+            }
+        }
     }
 
     /**
@@ -55,17 +63,5 @@ public class FeatureStatsbeat extends BaseStatsbeat {
         MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE, 0);
         statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_FEATURE, String.valueOf(getFeature()));
         telemetryClient.track(statsbeatTelemetry);
-    }
-
-    private void initFeatureList() {
-        // track java distribution
-        String javaVendor = System.getProperty("java.vendor");
-        if (javaVendor != null && !javaVendor.isEmpty()) {
-            if (FEATURE_MAP.get(javaVendor) == null) {
-                featureList.add(JAVA_VENDOR_OTHER);
-            } else {
-                featureList.add(javaVendor);
-            }
-        }
     }
 }

@@ -45,7 +45,7 @@ public abstract class BaseStatsbeat {
     public BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
         this.telemetryClient = telemetryClient;
         this.interval = interval;
-        scheduledExecutor.scheduleAtFixedRate(sendStatsbeat(), interval, interval, TimeUnit.SECONDS);
+        scheduledExecutor.scheduleAtFixedRate(new StatsbeatSender(), interval, interval, TimeUnit.SECONDS);
     }
 
     protected abstract void send();
@@ -60,20 +60,17 @@ public abstract class BaseStatsbeat {
 
     /**
      * Runnable which is responsible for calling the send method to transmit Statsbeat telemetry
-     * @return Runnable which has logic to send statsbeat.
      */
-    protected Runnable sendStatsbeat() {
-        return new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    send();
-                }
-                catch (Exception e) {
-                    logger.error("Error occurred while sending statsbeat", e);
-                }
+    private class StatsbeatSender implements Runnable {
+        @Override
+        public void run() {
+            try {
+                send();
             }
-        };
+            catch (Exception e) {
+                logger.error("Error occurred while sending statsbeat", e);
+            }
+        }
     }
 
     protected long getInterval() {
