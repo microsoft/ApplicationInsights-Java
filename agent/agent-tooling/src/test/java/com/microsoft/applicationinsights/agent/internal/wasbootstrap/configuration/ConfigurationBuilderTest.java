@@ -81,6 +81,7 @@ public class ConfigurationBuilderTest {
         }
     }
 
+    @Test
     public void testGetJsonEncodingExceptionMessage() {
         String pathNull = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file",null);
         String pathEmpty = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file","");

@@ -192,6 +192,16 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void shouldParseAuthenticationConfiguration() throws IOException {
+
+        Configuration configuration = loadConfiguration("applicationinsights_aadauth.json");
+        PreviewConfiguration preview = configuration.preview;
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
+        assertEquals(Configuration.AuthenticationType.SAMI, preview.authentication.type);
+        assertEquals("123xyz", preview.authentication.clientId);
+    }
+
+    @Test
     public void shouldUseDefaults() throws IOException {
         envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
         envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");

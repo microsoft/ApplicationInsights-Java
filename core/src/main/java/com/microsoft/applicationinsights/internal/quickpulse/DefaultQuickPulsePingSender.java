@@ -21,26 +21,17 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.azure.core.http.HttpPipeline;
-import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
-import com.azure.core.http.netty.NettyAsyncHttpClientBuilder;
 import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-//import org.apache.http.HttpResponse;
-import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +43,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulsePingSender.class);
 
     private final TelemetryClient telemetryClient;
-    private final HttpClient httpClient;
+    private final HttpPipeline httpPipeline;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private final String pingPrefix;
     private final String roleName;
@@ -62,9 +53,9 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private long lastValidTransmission = 0;
     private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
-    public DefaultQuickPulsePingSender(HttpClient httpClient, TelemetryClient telemetryClient, String machineName, String instanceName, String roleName, String quickPulseId) {
+    public DefaultQuickPulsePingSender(HttpPipeline httpPipeline, TelemetryClient telemetryClient, String machineName, String instanceName, String roleName, String quickPulseId) {
         this.telemetryClient = telemetryClient;
-        this.httpClient = httpClient;
+        this.httpPipeline = httpPipeline;
         this.roleName = roleName;
         this.instanceName = instanceName;
         this.machineName = machineName;
@@ -102,12 +93,12 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
         final long sendTime = System.nanoTime();
         HttpResponse response = null;
-        HttpClient httpClient = HttpClient.createDefault();
-        HttpPipeline pipeline = new HttpPipelineBuilder()
-                .httpClient(httpClient).build();
+       // HttpClient httpClient = HttpClient.createDefault();
+       // HttpPipeline pipeline = new HttpPipelineBuilder()
+       //         .httpClient(httpClient).build();
         try {
             //response = httpClient.execute(request);
-            response = pipeline.send(request).block();
+            response = httpPipeline.send(request).block();
             if (networkHelper.isSuccess(response)) {
                 final QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                 switch (quickPulseHeaderInfo.getQuickPulseStatus()) {

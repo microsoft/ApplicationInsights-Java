@@ -105,7 +105,6 @@ public class DefaultQuickPulseCoordinatorTest {
     }
 
     // FIXME (trask) seeing sporadic CI failures, tried bumping sleep timeout below from 1000
-    @Ignore
     @Test
     public void testOnePingAndThenOnePostWithRedirectedLink() throws InterruptedException {
         final QuickPulseDataFetcher mockFetcher = Mockito.mock(QuickPulseDataFetcher.class);

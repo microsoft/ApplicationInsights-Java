@@ -35,6 +35,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.authentication.HttpPipeLineWithAuthentication;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.config.*;
 import com.microsoft.applicationinsights.internal.profiler.GcEventMonitor;
@@ -115,6 +116,22 @@ public class AiComponentInstaller implements ComponentInstaller {
         // Function to validate user provided processor configuration
         validateProcessorConfiguration(config);
 
+        // Function to validate user provided authentication configuration
+        validateAuthenticationConfiguration(config);
+
+        //Inject authentication configuration
+        if(config.preview != null && config.preview.authentication != null) {
+            Configuration.AADAuthentication authentication = config.preview.authentication;
+            HttpPipeLineWithAuthentication.authenticationType = authentication.type;
+            if(authentication.clientId != null) {
+                HttpPipeLineWithAuthentication.clientId = authentication.clientId;
+            }
+            if(authentication.keePassDatabasePath!=null) {
+                HttpPipeLineWithAuthentication.keePassDatabasePath = authentication.keePassDatabasePath;
+            }
+        }
+
+
         // FIXME do something with config
 
         // FIXME set doNotWeavePrefixes = "com.microsoft.applicationinsights.agent."
@@ -134,6 +151,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         if (config.proxy.host != null) {
             LazyHttpClient.proxy = new HttpHost(config.proxy.host, config.proxy.port);
         }
+
         AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
 
         TelemetryClient telemetryClient = TelemetryClient.initActive(config.customDimensions, buildXmlConfiguration(config));
@@ -208,6 +226,11 @@ public class AiComponentInstaller implements ComponentInstaller {
         for (ProcessorConfig processorConfig : config.preview.processors) {
             processorConfig.validate();
         }
+    }
+
+    private static void validateAuthenticationConfiguration(Configuration config) throws FriendlyException {
+        if (config.preview == null || config.preview.authentication == null) return;
+        config.preview.authentication.validate();
     }
 
     @Nullable

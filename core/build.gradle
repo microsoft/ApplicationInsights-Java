@@ -62,6 +62,7 @@ dependencies {
     implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.4'
 
     implementation group: 'com.azure', name: 'azure-core', version: '1.15.0'
+    implementation group: 'com.azure', name: 'azure-identity', version: '1.2.4'
     implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: versions.opentelemetry
 
     testImplementation group: 'junit', name: 'junit', version: versions.junit

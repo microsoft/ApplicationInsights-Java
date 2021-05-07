@@ -27,7 +27,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.HttpPipelineBuilder;
 import com.google.common.base.Preconditions;
+import com.microsoft.applicationinsights.internal.authentication.HttpPipeLineWithAuthentication;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -84,10 +87,10 @@ public enum QuickPulse {
                 if (!initialized) {
                     initialized = true;
                     final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-                    HttpClient httpClient = HttpClient.createDefault();
+                    HttpPipeline httpPipeline = HttpPipeLineWithAuthentication.getHttpPipeLineWithAuthentication();
                     ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
-                    quickPulseDataSender = new DefaultQuickPulseDataSender(httpClient, sendQueue);
+                    quickPulseDataSender = new DefaultQuickPulseDataSender(httpPipeline, sendQueue);
 
                     String instanceName = telemetryClient.getRoleInstance();
                     String roleName = telemetryClient.getRoleName();
@@ -100,7 +103,7 @@ public enum QuickPulse {
                         instanceName = "Unknown host";
                     }
 
-                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpClient, telemetryClient, machineName, instanceName, roleName, quickPulseId);
+                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, telemetryClient, machineName, instanceName, roleName, quickPulseId);
                     final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, telemetryClient, machineName, instanceName, roleName, quickPulseId);
 
                     final QuickPulseCoordinatorInitData coordinatorInitData =

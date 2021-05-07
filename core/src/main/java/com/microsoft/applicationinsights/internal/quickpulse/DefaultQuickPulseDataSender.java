@@ -21,14 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import java.io.IOException;
-import java.util.concurrent.ArrayBlockingQueue;
+import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
 
-import com.azure.core.http.*;
-import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
-//import org.apache.http.HttpResponse;
-//import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
+import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * Created by gupele on 12/12/2016.
@@ -36,15 +33,15 @@ import org.apache.http.client.methods.HttpPost;
 final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
 
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-    private final HttpClient httpClient;
+    private final HttpPipeline httpPipeline;
     private volatile QuickPulseHeaderInfo quickPulseHeaderInfo;
     private volatile boolean stopped = false;
     private long lastValidTransmission = 0;
 
     private final ArrayBlockingQueue<HttpRequest> sendQueue;
 
-    public DefaultQuickPulseDataSender(final HttpClient httpClient, final ArrayBlockingQueue<HttpRequest> sendQueue) {
-        this.httpClient = httpClient;
+    public DefaultQuickPulseDataSender(final HttpPipeline httpPipeline, final ArrayBlockingQueue<HttpRequest> sendQueue) {
+        this.httpPipeline = httpPipeline;
         this.sendQueue = sendQueue;
     }
 
@@ -59,11 +56,8 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
 
                 final long sendTime = System.nanoTime();
                 HttpResponse response = null;
-                HttpClient httpClient = HttpClient.createDefault();
-                HttpPipeline pipeline = new HttpPipelineBuilder()
-                        .httpClient(httpClient).build();
                 try {
-                    response = pipeline.send(post).block();
+                    response = httpPipeline.send(post).block();
                     if (networkHelper.isSuccess(response)) {
                         QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                         switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
