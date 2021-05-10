@@ -2,8 +2,5 @@
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.docker.internal:6060/",
   "preview": {
     "metricIntervalSeconds": 5
-  },
-  "preview": {
-    "httpMethodInOperationName": true
   }
 }

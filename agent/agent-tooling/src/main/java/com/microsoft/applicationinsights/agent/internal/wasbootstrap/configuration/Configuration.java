@@ -136,6 +136,7 @@ public class Configuration {
     public static class MicrometerInstrumentation {
         public boolean enabled = true;
         // this is just here to detect if using this old undocumented setting in order to give a helpful error message
+        @Deprecated
         public int reportingIntervalSeconds = 60;
     }
 
@@ -176,7 +177,8 @@ public class Configuration {
         // ignoreRemoteParentNotSampled is currently needed
         // because .NET SDK always propagates trace flags "00" (not sampled)
         public boolean ignoreRemoteParentNotSampled = true;
-        // TODO consider turning this on by default in 3.1.0
+        // this is just here to detect if using this old setting in order to give a helpful message
+        @Deprecated
         public boolean httpMethodInOperationName;
         public LiveMetrics liveMetrics = new LiveMetrics();
 
