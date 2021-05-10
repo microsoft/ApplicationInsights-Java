@@ -5,17 +5,27 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.policy.BearerTokenAuthenticationPolicy;
 import com.azure.identity.*;
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 public class HttpPipeLineWithAuthentication {
-    private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE = "https://monitor.azure.com//.default";
+    private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE = "https://monitor.azure.com/.default";
 
-    public static AuthenticationType authenticationType;
+    public volatile static AuthenticationType authenticationType;
 
-    public static String clientId;
+    public volatile static String clientId;
 
-    public static String keePassDatabasePath;
+    public volatile static String keePassDatabasePath;
 
-    public static HttpPipeline getHttpPipeLineWithAuthentication() {
+    public volatile static String tenantId;
+
+    public volatile static String clientSecret;
+
+    public volatile static String authorityHost;
+
+    public static HttpPipeline newHttpPipeLineWithAuthentication() {
+
+        if(authenticationType == null) return getHttpPipeLineWithoutAuthentication();
+
         switch(authenticationType) {
             case UAMI:
                 return getHttpPipeLineWithUAMI(clientId);
@@ -25,6 +35,8 @@ public class HttpPipeLineWithAuthentication {
                 return getHttpPipeLineWithSAMI();
             case VSCODE:
                 return getHttpPipeLineWithVsCode();
+            case CLIENTSECRET:
+                return getHttpPipeLineWithClientSecret();
             default:
                 return getHttpPipeLineWithoutAuthentication();
         }
@@ -64,9 +76,10 @@ public class HttpPipeLineWithAuthentication {
 
     private static HttpPipeline getHttpPipeLineWithIntellij(String keePassDatabasePath) {
         HttpClient httpClient = HttpClient.createDefault();
-        IntelliJCredential intelliJCredential = new IntelliJCredentialBuilder()
-                // KeePass configuration required only for Windows. No configuration needed for Linux / Mac
+        // KeePass configuration required only for Windows. No configuration needed for Linux / Mac
+        IntelliJCredential intelliJCredential = SystemInformation.INSTANCE.isWindows() ? new IntelliJCredentialBuilder()
                 .keePassDatabasePath(keePassDatabasePath)
+                .build() : new IntelliJCredentialBuilder()
                 .build();
         BearerTokenAuthenticationPolicy policy= new BearerTokenAuthenticationPolicy(intelliJCredential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
         HttpPipeline httpPipeline = new HttpPipelineBuilder()
@@ -82,6 +95,26 @@ public class HttpPipeLineWithAuthentication {
                 .clientId(clientId)
                 .build();
         BearerTokenAuthenticationPolicy policy= new BearerTokenAuthenticationPolicy(managedIdentityCredential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
+        HttpPipeline httpPipeline = new HttpPipelineBuilder()
+                .httpClient(httpClient)
+                .policies(policy)
+                .build();
+        return httpPipeline;
+    }
+
+    private static HttpPipeline getHttpPipeLineWithClientSecret() {
+        HttpClient httpClient = HttpClient.createDefault();
+        ClientSecretCredential credential = authorityHost == null ? new ClientSecretCredentialBuilder()
+                .tenantId(tenantId)
+                .clientSecret(clientSecret)
+                .clientId(clientId)
+                .build() : new ClientSecretCredentialBuilder()
+                .authorityHost(authorityHost)
+                .tenantId(tenantId)
+                .clientSecret(clientSecret)
+                .clientId(clientId)
+                .build();
+        BearerTokenAuthenticationPolicy policy= new BearerTokenAuthenticationPolicy(credential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
         HttpPipeline httpPipeline = new HttpPipelineBuilder()
                 .httpClient(httpClient)
                 .policies(policy)

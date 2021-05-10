@@ -23,12 +23,13 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.util.Date;
 
-import com.azure.core.http.*;
+
+import com.azure.core.http.HttpHeader;
+import com.azure.core.http.HttpHeaders;
+import com.azure.core.http.HttpMethod;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import org.apache.http.Header;
-//import org.apache.http.HttpRequest;
-//import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
 
 /**
  * Created by gupele on 12/12/2016.

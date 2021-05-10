@@ -116,21 +116,16 @@ public class AiComponentInstaller implements ComponentInstaller {
         // Function to validate user provided processor configuration
         validateProcessorConfiguration(config);
 
-        // Function to validate user provided authentication configuration
-        validateAuthenticationConfiguration(config);
-
-        //Inject authentication configuration
-        if(config.preview != null && config.preview.authentication != null) {
-            Configuration.AADAuthentication authentication = config.preview.authentication;
+        if(config.preview.authentication.validate()) {
+            //Inject authentication configuration
+            Configuration.AadAuthentication authentication = config.preview.authentication;
             HttpPipeLineWithAuthentication.authenticationType = authentication.type;
-            if(authentication.clientId != null) {
-                HttpPipeLineWithAuthentication.clientId = authentication.clientId;
-            }
-            if(authentication.keePassDatabasePath!=null) {
-                HttpPipeLineWithAuthentication.keePassDatabasePath = authentication.keePassDatabasePath;
-            }
+            HttpPipeLineWithAuthentication.clientId = authentication.clientId;
+            HttpPipeLineWithAuthentication.keePassDatabasePath = authentication.keePassDatabasePath;
+            HttpPipeLineWithAuthentication.tenantId = authentication.tenantId;
+            HttpPipeLineWithAuthentication.clientSecret = authentication.clientSecret;
+            HttpPipeLineWithAuthentication.authorityHost = authentication.authorityHost;
         }
-
 
         // FIXME do something with config
 
@@ -226,11 +221,6 @@ public class AiComponentInstaller implements ComponentInstaller {
         for (ProcessorConfig processorConfig : config.preview.processors) {
             processorConfig.validate();
         }
-    }
-
-    private static void validateAuthenticationConfiguration(Configuration config) throws FriendlyException {
-        if (config.preview == null || config.preview.authentication == null) return;
-        config.preview.authentication.validate();
     }
 
     @Nullable

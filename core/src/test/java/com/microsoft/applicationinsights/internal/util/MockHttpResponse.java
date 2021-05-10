@@ -8,12 +8,9 @@ import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.serializer.JacksonAdapter;
 import com.azure.core.util.serializer.SerializerAdapter;
-import com.azure.core.util.serializer.SerializerEncoding;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -34,32 +31,8 @@ public class MockHttpResponse extends HttpResponse {
         this.bodyBytes = bodyBytes;
     }
 
-    public MockHttpResponse(HttpRequest request, int statusCode) {
-        this(request, statusCode, new HttpHeaders(), new byte[0]);
-    }
-
     public MockHttpResponse(HttpRequest request, int statusCode, HttpHeaders headers) {
         this(request, statusCode, headers, new byte[0]);
-    }
-
-    public MockHttpResponse(HttpRequest request, int statusCode, HttpHeaders headers, Object serializable) {
-        this(request, statusCode, headers, serialize(serializable));
-    }
-
-    public MockHttpResponse(HttpRequest request, int statusCode, Object serializable) {
-        this(request, statusCode, new HttpHeaders(), serialize(serializable));
-    }
-
-    private static byte[] serialize(Object serializable) {
-        try {
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            SERIALIZER.serialize(serializable, SerializerEncoding.JSON, stream);
-
-            return stream.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     @Override

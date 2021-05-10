@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -86,18 +85,12 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         final Date currentDate = new Date();
         final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
         final HttpRequest request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
-
-        final byte[] content = buildPingEntity(currentDate.getTime());
-        //final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
-        request.setBody(content);
+        request.setBody(buildPingEntity(currentDate.getTime()));
 
         final long sendTime = System.nanoTime();
         HttpResponse response = null;
-       // HttpClient httpClient = HttpClient.createDefault();
-       // HttpPipeline pipeline = new HttpPipelineBuilder()
-       //         .httpClient(httpClient).build();
         try {
-            //response = httpClient.execute(request);
+
             response = httpPipeline.send(request).block();
             if (networkHelper.isSuccess(response)) {
                 final QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
@@ -138,12 +131,12 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         return telemetryClient.getEndpointProvider().getLiveEndpointURL().toString();
     }
 
-    private byte[] buildPingEntity(long timeInMillis) {
-        String sb = pingPrefix + timeInMillis +
+    private String buildPingEntity(long timeInMillis) {
+        String pingEntity = pingPrefix + timeInMillis +
                 ")\\/\"," +
                 "\"Version\":\"2.2.0-738\"" +
                 "}";
-        return sb.getBytes(StandardCharsets.UTF_8);
+        return pingEntity;
     }
 
     private QuickPulseHeaderInfo onPingError(long sendTime) {

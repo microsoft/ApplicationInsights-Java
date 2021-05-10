@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -101,10 +100,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
             final Date currentDate = new Date();
             final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
             final HttpRequest request = networkHelper.buildRequest(currentDate, this.getEndpointUrl(endpointPrefix));
-
-            final byte[] content = buildPostEntity(counters);
-
-            request.setBody(content);
+            request.setBody(buildPostEntity(counters));
 
             if (!sendQueue.offer(request)) {
                 logger.trace("Quick Pulse send queue is full");
@@ -140,7 +136,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         }
     }
 
-    private byte[] buildPostEntity(QuickPulseDataCollector.FinalCounters counters) {
+    private String buildPostEntity(QuickPulseDataCollector.FinalCounters counters) {
         StringBuilder sb = new StringBuilder(postPrefix);
         formatMetrics(counters, sb);
         sb.append("\"Timestamp\": \"\\/Date(");
@@ -150,7 +146,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         sb.append("\"Version\": \"");
         sb.append(sdkVersion);
         sb.append("\"}]");
-        return sb.toString().getBytes(StandardCharsets.UTF_8);
+        return sb.toString();
     }
 
     private void formatDocuments(StringBuilder sb) {
