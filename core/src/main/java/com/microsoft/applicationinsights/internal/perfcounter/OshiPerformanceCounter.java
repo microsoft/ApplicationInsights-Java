@@ -85,7 +85,7 @@ public class OshiPerformanceCounter implements PerformanceCounter {
     }
 
     private static void updateAttributes(OSProcess processInfo) {
-        if (!processInfo.updateAttributes()) {
+        if (processInfo != null && !processInfo.updateAttributes()) {
             logger.debug("could not update process attributes");
         }
     }
