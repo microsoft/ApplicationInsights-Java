@@ -33,12 +33,12 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 public final class CustomDimensions {
 
     private static CustomDimensions instance;
-    private String resourceProvider;
-    private String operatingSystem;
-    private String customerIkey;
-    private String version;
-    private String runtimeVersion;
-    private ConcurrentMap<String, String> properties;
+    private volatile String resourceProvider;
+    private volatile String operatingSystem;
+    private final String customerIkey;
+    private final String version;
+    private final String runtimeVersion;
+    private final ConcurrentMap<String, String> properties;
     private static final Object lock = new Object();
     
     public static CustomDimensions getInstance() {
@@ -51,10 +51,6 @@ public final class CustomDimensions {
     }
     
     private CustomDimensions() {
-        initialize();
-    }
-
-    private void initialize() {
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
         if (sdkVersion.startsWith("awr")) {
             resourceProvider = RP_APPSVC;
@@ -91,7 +87,7 @@ public final class CustomDimensions {
         customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
         version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
         runtimeVersion = System.getProperty("java.version");
-        
+
         properties = new ConcurrentHashMap<>();
         properties.put(CUSTOM_DIMENSIONS_RP, resourceProvider);
         properties.put(CUSTOM_DIMENSIONS_ATTACH_TYPE, ATTACH_TYPE_CODELESS);
@@ -108,7 +104,8 @@ public final class CustomDimensions {
         return properties;
     }
 
-    public static synchronized void reset() {
+    // only used by tests
+    static void reset() {
         instance = null;
     }
 }

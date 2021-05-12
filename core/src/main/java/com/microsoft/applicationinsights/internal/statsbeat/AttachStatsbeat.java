@@ -61,10 +61,8 @@ public class AttachStatsbeat extends BaseStatsbeat {
     }
 
     public void updateMetadataInstance(MetadataInstanceResponse response) {
-        if (response != null) {
-            metadataInstanceResponse = response;
-            resourceProviderId = initResourceProviderId(RP_VM);
-        }
+        metadataInstanceResponse = response;
+        resourceProviderId = initResourceProviderId(RP_VM);
     }
 
     protected String initResourceProviderId(String resourceProvider) {

@@ -72,7 +72,8 @@ public abstract class BaseStatsbeat {
         }
     }
 
-    protected long getInterval() {
+    // only used by tests
+    long getInterval() {
         return interval;
     }
 }

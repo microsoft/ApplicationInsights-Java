@@ -161,7 +161,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
 
         try {
-            ConnectionString.updateStatsbeatConnectionString(config.internal.statsbeat.ikey, config.internal.statsbeat.endpoint, configuration);
+            ConnectionString.updateStatsbeatConnectionString(config.internal.statsbeat.instrumentationKey, config.internal.statsbeat.endpoint, configuration);
         } catch (InvalidConnectionStringException ex) {
             startupLogger.warn("Statsbeat connection string is invalid. {}", ex.getMessage());
         }

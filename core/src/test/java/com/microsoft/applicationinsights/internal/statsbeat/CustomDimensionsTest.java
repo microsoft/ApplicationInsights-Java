@@ -24,7 +24,7 @@ public class CustomDimensionsTest {
 
     @Test
     public void testResourceProvider() {
-        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), UNKNOWN);
+        assertEquals(UNKNOWN, CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP));
     }
 
     @Test
@@ -36,23 +36,23 @@ public class CustomDimensionsTest {
             os = OS_LINUX;
         }
 
-        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_OS), os);
+        assertEquals(os, CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_OS));
     }
 
     @Test
     public void testCustomerIkey() {
-        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_CIKEY), null);
+        assertEquals(null, CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_CIKEY));
     }
 
     @Test
     public void testVersion() {
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
         String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
-        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_VERSION), version);
+        assertEquals(version, CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_VERSION));
     }
 
     @Test
     public void testRuntimeVersion() {
-        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RUNTIME_VERSION), System.getProperty("java.version"));
+        assertEquals(System.getProperty("java.version"), CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RUNTIME_VERSION));
     }
 }

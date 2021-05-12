@@ -160,7 +160,7 @@ public class Configuration {
     }
 
     public static class Statsbeat {
-        public String ikey = "c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint"; //workspace-aistatsbeat
+        public String instrumentationKey = "c4a29126-a7cb-47e5-b348-11414998b11e"; //workspace-aistatsbeat
         public String endpoint = ConnectionString.Defaults.INGESTION_ENDPOINT; // this supports the government cloud
         public long intervalSeconds = DEFAULT_STATSBEAT_INTERVAL;
         public long featureIntervalSeconds = FEATURE_STATSBEAT_INTERVAL;

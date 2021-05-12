@@ -2,13 +2,10 @@
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.docker.internal:6060/",
   "internal": {
     "statsbeat": {
-      "ikey": "00000000-0000-0000-0000-0FEEDDADBEEG",
+      "instrumentationKey": "00000000-0000-0000-0000-0FEEDDADBEEG",
       "endpoint": "http://host.docker.internal:6060/",
       "intervalSeconds": 30,
       "featureIntervalSeconds": 30
     }
-  },
-  "preview": {
-    "httpMethodInOperationName": true
   }
 }

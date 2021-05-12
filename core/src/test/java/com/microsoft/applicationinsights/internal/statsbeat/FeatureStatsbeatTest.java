@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,9 +25,7 @@ public class FeatureStatsbeatTest {
     @Test
     public void testFeatureList() {
         String javaVendor = System.getProperty("java.vendor");
-        final Set<String> features = new HashSet<String>() {{
-            add(javaVendor);
-        }};
+        final Set<String> features = Collections.singleton(javaVendor);
         long featureLongVal = StatsbeatHelper.encodeFeature(features);
         assertEquals(featureStatsbeat.getFeature(), featureLongVal);
     }

@@ -48,7 +48,7 @@ public final class AzureMetadataService {
 
             // osType from the Azure Metadata Service has a higher precedence over the running app’s operating system.
             String osType = metadataInstanceResponse.getOsType();
-            if (osType != null && !"unknown".equalsIgnoreCase(osType)) {
+            if (!"unknown".equalsIgnoreCase(osType)) {
                 CustomDimensions.getInstance().getProperties().put(CUSTOM_DIMENSIONS_OS, osType);
             }
         }
