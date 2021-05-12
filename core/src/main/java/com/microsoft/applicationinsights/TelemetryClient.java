@@ -22,11 +22,11 @@
 package com.microsoft.applicationinsights;
 
 import com.azure.core.http.HttpHeaders;
+import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.util.serializer.*;
 import com.azure.core.util.tracing.Tracer;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.NdJsonSerializer;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,12 +34,14 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
+import com.microsoft.applicationinsights.internal.util.CollectionTypeJsonSerializer;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -215,7 +217,12 @@ public class TelemetryClient {
             // TODO (trask) revisit what's an appropriate action here?
             logger.error(e.getMessage(), e);
         }
-
+        // handle AAD authentication
+        // TODO handle authentication exceptions
+        HttpPipelinePolicy authenticationPolicy = AadAuthentication.getAuthenticationPolicy();
+        if(authenticationPolicy != null) {
+            restServiceClientBuilder.addPolicy(authenticationPolicy);
+        }
         return restServiceClientBuilder.buildClient();
     }
 
@@ -445,7 +452,7 @@ public class TelemetryClient {
 
             // Customize serializer to use NDJSON
             SimpleModule ndjsonModule = new SimpleModule("Ndjson List Serializer");
-            ndjsonModule.addSerializer(new NdJsonSerializer());
+            ndjsonModule.setSerializers(new CollectionTypeJsonSerializer());
             mapper.registerModule(ndjsonModule);
         }
 

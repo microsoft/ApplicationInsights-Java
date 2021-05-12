@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.azure.core.http.HttpPipeline;
 import com.google.common.base.Preconditions;
-import com.microsoft.applicationinsights.internal.authentication.HttpPipeLineWithAuthentication;
+import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -82,7 +82,7 @@ public enum QuickPulse {
                 if (!initialized) {
                     initialized = true;
                     final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-                    HttpPipeline httpPipeline = HttpPipeLineWithAuthentication.newHttpPipeLineWithAuthentication();
+                    HttpPipeline httpPipeline = AadAuthentication.newHttpPipeLineWithAuthentication();
                     ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
                     quickPulseDataSender = new DefaultQuickPulseDataSender(httpPipeline, sendQueue);

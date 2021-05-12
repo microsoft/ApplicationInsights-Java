@@ -35,7 +35,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import com.microsoft.applicationinsights.internal.authentication.HttpPipeLineWithAuthentication;
+import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.config.*;
 import com.microsoft.applicationinsights.internal.profiler.GcEventMonitor;
@@ -119,12 +119,12 @@ public class AiComponentInstaller implements ComponentInstaller {
         if(config.preview.authentication.validate()) {
             //Inject authentication configuration
             Configuration.AadAuthentication authentication = config.preview.authentication;
-            HttpPipeLineWithAuthentication.authenticationType = authentication.type;
-            HttpPipeLineWithAuthentication.clientId = authentication.clientId;
-            HttpPipeLineWithAuthentication.keePassDatabasePath = authentication.keePassDatabasePath;
-            HttpPipeLineWithAuthentication.tenantId = authentication.tenantId;
-            HttpPipeLineWithAuthentication.clientSecret = authentication.clientSecret;
-            HttpPipeLineWithAuthentication.authorityHost = authentication.authorityHost;
+            AadAuthentication.authenticationType = authentication.type;
+            AadAuthentication.clientId = authentication.clientId;
+            AadAuthentication.keePassDatabasePath = authentication.keePassDatabasePath;
+            AadAuthentication.tenantId = authentication.tenantId;
+            AadAuthentication.clientSecret = authentication.clientSecret;
+            AadAuthentication.authorityHost = authentication.authorityHost;
         }
 
         // FIXME do something with config
