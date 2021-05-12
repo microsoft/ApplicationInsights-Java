@@ -37,9 +37,8 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.STA
 public abstract class BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
+    protected static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
     protected final TelemetryClient telemetryClient;
-    protected static final ScheduledExecutorService scheduledExecutor =
-            Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
     protected final long interval;
 
     public BaseStatsbeat(TelemetryClient telemetryClient, long interval) {

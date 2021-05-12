@@ -68,29 +68,22 @@ public class AttachStatsbeat extends BaseStatsbeat {
     }
 
     protected String initResourceProviderId(String resourceProvider) {
-        String result = null;
         switch (resourceProvider) {
             case RP_APPSVC:
-                result = getEnvironmentVariable(WEBSITE_SITE_NAME) + "/" + getEnvironmentVariable(WEBSITE_HOME_STAMPNAME) + "/" + getEnvironmentVariable(WEBSITE_HOSTNAME);
-                break;
+                return getEnvironmentVariable(WEBSITE_SITE_NAME) + "/" + getEnvironmentVariable(WEBSITE_HOME_STAMPNAME) + "/" + getEnvironmentVariable(WEBSITE_HOSTNAME);
             case RP_FUNCTIONS:
-                result = getEnvironmentVariable(WEBSITE_HOSTNAME);
-                break;
+                return getEnvironmentVariable(WEBSITE_HOSTNAME);
             case RP_VM:
                 if (metadataInstanceResponse != null) {
-                    result = metadataInstanceResponse.getVmId() + "/" + metadataInstanceResponse.getSubscriptionId();
+                    return metadataInstanceResponse.getVmId() + "/" + metadataInstanceResponse.getSubscriptionId();
                 } else {
-                    result = UNKNOWN;
+                    return UNKNOWN;
                 }
-                break;
             case RP_AKS: // TODO will update resourceProviderId when cluster_id becomes available from the AKS AzureMetadataService extension.
             case UNKNOWN:
             default:
-                result = UNKNOWN;
-                break;
+                return UNKNOWN;
         }
-
-        return result;
     }
 
     @VisibleForTesting

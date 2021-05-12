@@ -25,9 +25,11 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_INSTRUMENTATION;
@@ -179,7 +181,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     private static class IntervalMetrics {
-        private volatile Set<String> instrumentationList = new HashSet<>(64);
+        private final Set<String> instrumentationList = Collections.newSetFromMap(new ConcurrentHashMap<>());
         private final AtomicLong requestSuccessCount = new AtomicLong(0);
         private final AtomicLong requestFailureCount = new AtomicLong(0);
         private volatile List<Double> requestDurations = new ArrayList<>();

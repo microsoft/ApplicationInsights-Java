@@ -29,7 +29,7 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.jdbc");
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.tomcat-7.0");
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.http-url-connection");
-        assertEquals(networkStatsbeat.getInstrumentation(), 144115188077961216L);
+        assertEquals(networkStatsbeat.getInstrumentation(), 144115188077961216L); // 2^13 + 2^21 + 2^57 (Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
     }
 
     @Test

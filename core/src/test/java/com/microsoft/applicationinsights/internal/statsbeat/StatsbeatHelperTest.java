@@ -16,7 +16,7 @@ public class StatsbeatHelperTest {
         add("io.opentelemetry.javaagent.http-url-connection");
     }};
 
-    private long instrumentation = 144115188077961216L;
+    private long instrumentation = 144115188077961216L; // 2^13 + 2^21 + 2^57 (Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
 
     private static final Set<String> features = new HashSet<String>() {{
         add(JAVA_VENDOR_ZULU);
