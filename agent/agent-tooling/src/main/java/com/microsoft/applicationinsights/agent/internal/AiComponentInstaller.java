@@ -119,12 +119,8 @@ public class AiComponentInstaller implements ComponentInstaller {
         if(config.preview.authentication.validate()) {
             //Inject authentication configuration
             Configuration.AadAuthentication authentication = config.preview.authentication;
-            AadAuthentication.authenticationType = authentication.type;
-            AadAuthentication.clientId = authentication.clientId;
-            AadAuthentication.keePassDatabasePath = authentication.keePassDatabasePath;
-            AadAuthentication.tenantId = authentication.tenantId;
-            AadAuthentication.clientSecret = authentication.clientSecret;
-            AadAuthentication.authorityHost = authentication.authorityHost;
+            AadAuthentication.init(authentication.type, authentication.clientId, authentication.keePassDatabasePath,
+                    authentication.tenantId, authentication.clientSecret, authentication.authorityHost);
         }
 
         // FIXME do something with config

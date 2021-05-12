@@ -82,7 +82,7 @@ public enum QuickPulse {
                 if (!initialized) {
                     initialized = true;
                     final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-                    HttpPipeline httpPipeline = AadAuthentication.newHttpPipeLineWithAuthentication();
+                    HttpPipeline httpPipeline = AadAuthentication.getInstance().newHttpPipeLineWithAuthentication();
                     ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
                     quickPulseDataSender = new DefaultQuickPulseDataSender(httpPipeline, sendQueue);

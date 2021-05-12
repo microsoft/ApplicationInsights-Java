@@ -219,7 +219,7 @@ public class TelemetryClient {
         }
         // handle AAD authentication
         // TODO handle authentication exceptions
-        HttpPipelinePolicy authenticationPolicy = AadAuthentication.getAuthenticationPolicy();
+        HttpPipelinePolicy authenticationPolicy = AadAuthentication.getInstance().getAuthenticationPolicy();
         if(authenticationPolicy != null) {
             restServiceClientBuilder.addPolicy(authenticationPolicy);
         }

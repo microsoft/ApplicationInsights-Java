@@ -11,19 +11,39 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 public class AadAuthentication {
     private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE = "https://monitor.azure.com/.default";
 
-    public volatile static AuthenticationType authenticationType;
+    private static volatile AadAuthentication instance;
 
-    public volatile static String clientId;
+    public final AuthenticationType authenticationType;
+    public final String clientId;
+    public final String keePassDatabasePath;
+    public final String tenantId;
+    public final String clientSecret;
+    public final String authorityHost;
 
-    public volatile static String keePassDatabasePath;
+    public static void init(AuthenticationType authenticationType, String clientId, String keePassDatabasePath,
+                            String tenantId, String clientSecret, String authorityHost) {
+        AadAuthentication.instance = new AadAuthentication(authenticationType, clientId, keePassDatabasePath, tenantId,
+                clientSecret, authorityHost);
+    }
 
-    public volatile static String tenantId;
+    public static AadAuthentication getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("must init before using");
+        }
+        return instance;
+    }
 
-    public volatile static String clientSecret;
+    private AadAuthentication(AuthenticationType authenticationType, String clientId, String keePassDatabasePath,
+                             String tenantId, String clientSecret, String authorityHost) {
+        this.authenticationType = authenticationType;
+        this.clientId = clientId;
+        this.keePassDatabasePath = keePassDatabasePath;
+        this.tenantId = tenantId;
+        this.clientSecret = clientSecret;
+        this.authorityHost = authorityHost;
+    }
 
-    public volatile static String authorityHost;
-
-    public static HttpPipelinePolicy getAuthenticationPolicy() {
+    public HttpPipelinePolicy getAuthenticationPolicy() {
         if (authenticationType == null) return null;
         switch (authenticationType) {
             case UAMI:
@@ -41,7 +61,7 @@ public class AadAuthentication {
         }
     }
 
-    private static HttpPipelinePolicy getAuthenticationPolicyWithClientSecret() {
+    private HttpPipelinePolicy getAuthenticationPolicyWithClientSecret() {
         ClientSecretCredential credential = authorityHost == null ? new ClientSecretCredentialBuilder()
                 .tenantId(tenantId)
                 .clientSecret(clientSecret)
@@ -83,7 +103,7 @@ public class AadAuthentication {
         return new BearerTokenAuthenticationPolicy(managedIdentityCredential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
     }
 
-    public static HttpPipeline newHttpPipeLineWithAuthentication() {
+    public HttpPipeline newHttpPipeLineWithAuthentication() {
 
         HttpPipelinePolicy authenticationPolicy = getAuthenticationPolicy();
         HttpClient httpClient = HttpClient.createDefault();
