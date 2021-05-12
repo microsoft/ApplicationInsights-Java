@@ -50,10 +50,10 @@ public class NetworkStatsbeatTest {
 
     @Test
     public void testAddRequestDuration() {
-        assertEquals(networkStatsbeat.getRequestDurations().size(), 0);
+        assertEquals(networkStatsbeat.getRequestDurationCount(), 0);
         networkStatsbeat.addRequestDuration(1000);
         networkStatsbeat.addRequestDuration(3000);
-        assertEquals(networkStatsbeat.getRequestDurations().size(), 2);
+        assertEquals(networkStatsbeat.getRequestDurationCount(), 2);
         assertEquals(networkStatsbeat.getRequestDurationAvg(networkStatsbeat.getIntervalMetrics()), 2000.0, 0);
     }
 
@@ -115,7 +115,7 @@ public class NetworkStatsbeatTest {
         assertEquals(networkStatsbeat.getRetryCount(), 100000);
         assertEquals(networkStatsbeat.getThrottlingCount(), 100000);
         assertEquals(networkStatsbeat.getExceptionCount(), 100000);
-        assertEquals(networkStatsbeat.getRequestDurations().size(), 100000);
+        assertEquals(networkStatsbeat.getRequestDurationCount(), 100000);
         assertEquals(networkStatsbeat.getInstrumentationList().size(), 100000);
     }
 }

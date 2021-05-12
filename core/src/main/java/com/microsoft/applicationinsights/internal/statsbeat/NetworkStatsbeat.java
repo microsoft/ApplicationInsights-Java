@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
@@ -30,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_INSTRUMENTATION;
@@ -123,7 +125,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
     public void addRequestDuration(double duration) {
         synchronized (lock) {
-            current.requestDurations.add(duration);
+            current.requestDurationCount.incrementAndGet();
+            current.totalRequestDuration.getAndAdd(duration);
         }
     }
 
@@ -147,9 +150,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         return current.requestFailureCount.get();
     }
 
-    public List<Double> getRequestDurations() {
-        return current.requestDurations;
-    }
+    public int getRequestDurationCount() { return current.requestDurationCount.get(); }
 
     public long getRetryCount() {
         return current.retryCount.get();
@@ -168,13 +169,9 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     protected double getRequestDurationAvg(IntervalMetrics local) {
-        double sum = 0.0;
-        for (double elem : local.requestDurations) {
-            sum += elem;
-        }
-
-        if (local.requestDurations.size() != 0) {
-            return sum / local.requestDurations.size();
+        double sum = local.totalRequestDuration.get();
+        if (local.requestDurationCount.get() != 0) {
+            return sum / local.requestDurationCount.get();
         }
 
         return  sum;
@@ -184,7 +181,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         private final Set<String> instrumentationList = Collections.newSetFromMap(new ConcurrentHashMap<>());
         private final AtomicLong requestSuccessCount = new AtomicLong(0);
         private final AtomicLong requestFailureCount = new AtomicLong(0);
-        private volatile List<Double> requestDurations = new ArrayList<>();
+        private final AtomicInteger requestDurationCount = new AtomicInteger(0);
+        private final AtomicDouble totalRequestDuration = new AtomicDouble(0.0);
         private final AtomicLong retryCount = new AtomicLong(0);
         private final AtomicLong throttlingCount = new AtomicLong(0);
         private final AtomicLong exceptionCount = new AtomicLong(0);
