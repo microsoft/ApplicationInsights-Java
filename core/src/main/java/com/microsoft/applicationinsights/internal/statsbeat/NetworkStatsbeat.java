@@ -159,7 +159,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     // only used by tests
-    int getRequestDurationCount() { return current.totalRequestDurationCount.get(); }
+    long getRequestDurationCount() { return current.totalRequestDurationCount.get(); }
 
     // only used by tests
     double getRequestDurationAvg() { return current.getRequestDurationAvg(); }
@@ -189,7 +189,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         private final AtomicLong requestSuccessCount = new AtomicLong();
         private final AtomicLong requestFailureCount = new AtomicLong();
         // TODO (heya) is total count always success count + failure count? also why int and others are long?
-        private final AtomicInteger totalRequestDurationCount = new AtomicInteger();
+        private final AtomicLong totalRequestDurationCount = new AtomicLong();
         private final AtomicLong totalRequestDuration = new AtomicLong(); // duration in milliseconds
         private final AtomicLong retryCount = new AtomicLong();
         private final AtomicLong throttlingCount = new AtomicLong();
