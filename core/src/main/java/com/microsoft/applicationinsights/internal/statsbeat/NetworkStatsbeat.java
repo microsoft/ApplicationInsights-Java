@@ -53,13 +53,17 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
     @Override
     protected void send() {
-        IntervalMetrics local = current;
-        current = new IntervalMetrics();
+        IntervalMetrics local;
+        synchronized (lock) {
+            local = current;
+            current = new IntervalMetrics();
+        }
 
-        String instrumentation = String.valueOf(getInstrumentation());
+        String instrumentation = Long.toString(StatsbeatHelper.encodeInstrumentations(current.instrumentationList));
 
         if (local.requestSuccessCount.get() != 0) {
             MetricTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT, local.requestSuccessCount.get());
+            // TODO (heya) is this encoded in kusto as a long or a string?
             requestSuccessCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
             telemetryClient.track(requestSuccessCountSt);
         }
@@ -102,23 +106,16 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         }
     }
 
-    Set<String> getInstrumentationList() {
-        return current.instrumentationList;
-    }
-
-    /**
-     * @return a 64-bit long that represents a list of instrumentations enabled. Each bitfield maps to an instrumentation.
-     */
-    long getInstrumentation() {
-        return StatsbeatHelper.encodeInstrumentations(current.instrumentationList);
-    }
-
     public void incrementRequestSuccessCount() {
-        current.requestSuccessCount.incrementAndGet();
+        synchronized (lock) {
+            current.requestSuccessCount.incrementAndGet();
+        }
     }
 
     public void incrementRequestFailureCount() {
-        current.requestFailureCount.incrementAndGet();
+        synchronized (lock) {
+            current.requestFailureCount.incrementAndGet();
+        }
     }
 
     public void addRequestDuration(double duration) {
@@ -129,52 +126,69 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     public void incrementRetryCount() {
-        current.retryCount.incrementAndGet();
+        synchronized (lock) {
+            current.retryCount.incrementAndGet();
+        }
     }
 
     public void incrementThrottlingCount() {
-        current.throttlingCount.incrementAndGet();
+        synchronized (lock) {
+            current.throttlingCount.incrementAndGet();
+        }
     }
 
     void incrementExceptionCount() {
-        current.exceptionCount.incrementAndGet();
+        synchronized (lock) {
+            current.exceptionCount.incrementAndGet();
+        }
     }
 
-    @VisibleForTesting
+    // only used by tests
+    long getInstrumentation() {
+        return StatsbeatHelper.encodeInstrumentations(current.instrumentationList);
+    }
+
+    // only used by tests
     long getRequestSuccessCount() {
         return current.requestSuccessCount.get();
     }
 
-    @VisibleForTesting
+    // only used by tests
     long getRequestFailureCount() {
         return current.requestFailureCount.get();
     }
 
-    @VisibleForTesting
+    // only used by tests
     int getRequestDurationCount() { return current.totalRequestDurationCount.get(); }
 
-    @VisibleForTesting
+    // only used by tests
     double getRequestDurationAvg() { return current.getRequestDurationAvg(); }
 
-    @VisibleForTesting
+    // only used by tests
     long getRetryCount() {
         return current.retryCount.get();
     }
 
-    @VisibleForTesting
+    // only used by tests
     long getThrottlingCount() {
         return current.throttlingCount.get();
     }
 
-    @VisibleForTesting
+    // only used by tests
     long getExceptionCount() {
         return current.exceptionCount.get();
+    }
+
+    // only used by tests
+    Set<String> getInstrumentationList() {
+        return current.instrumentationList;
     }
 
     private static class IntervalMetrics {
         private final Set<String> instrumentationList = Collections.newSetFromMap(new ConcurrentHashMap<>());
         private final AtomicLong requestSuccessCount = new AtomicLong(0);
         private final AtomicLong requestFailureCount = new AtomicLong(0);
+        // TODO (heya) is total count always success count + failure count? also why int and others are long?
         private final AtomicInteger totalRequestDurationCount = new AtomicInteger(0);
         private final AtomicDouble totalRequestDuration = new AtomicDouble(0.0);
         private final AtomicLong retryCount = new AtomicLong(0);
