@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 public class Constants {
 
+    // TODO (trask) remove this when migrating to swagger-based telemetry client branch
     public static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
 
     private Constants() {
