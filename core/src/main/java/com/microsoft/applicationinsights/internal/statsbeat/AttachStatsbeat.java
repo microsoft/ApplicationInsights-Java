@@ -33,7 +33,7 @@ class AttachStatsbeat extends BaseStatsbeat {
 
     AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
-        resourceProviderId = initResourceProviderId(CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_RP), null);
+        resourceProviderId = initResourceProviderId(CustomDimensions.get().getResourceProvider(), null);
     }
 
     @Override
@@ -56,11 +56,11 @@ class AttachStatsbeat extends BaseStatsbeat {
 
     void updateMetadataInstance(MetadataInstanceResponse response) {
         metadataInstanceResponse = response;
-        resourceProviderId = initResourceProviderId(RP_VM, response);
+        resourceProviderId = initResourceProviderId(ResourceProvider.RP_VM, response);
     }
 
     // visible for testing
-    static String initResourceProviderId(String resourceProvider, MetadataInstanceResponse response) {
+    static String initResourceProviderId(ResourceProvider resourceProvider, MetadataInstanceResponse response) {
         switch (resourceProvider) {
             case RP_APPSVC:
                 return System.getenv(WEBSITE_SITE_NAME) + "/" + System.getenv(WEBSITE_HOME_STAMPNAME) + "/" + System.getenv(WEBSITE_HOSTNAME);
@@ -70,12 +70,12 @@ class AttachStatsbeat extends BaseStatsbeat {
                 if (response != null) {
                     return response.getVmId() + "/" + response.getSubscriptionId();
                 } else {
-                    return UNKNOWN;
+                    return UNKNOWN_RP_ID;
                 }
             case RP_AKS: // TODO will update resourceProviderId when cluster_id becomes available from the AKS AzureMetadataService extension.
             case UNKNOWN:
             default:
-                return UNKNOWN;
+                return UNKNOWN_RP_ID;
         }
     }
 }

@@ -29,12 +29,26 @@ public class Constants {
     public static final long DEFAULT_STATSBEAT_INTERVAL = TimeUnit.MINUTES.toSeconds(15); // default to 15 minutes
     public static final long FEATURE_STATSBEAT_INTERVAL = TimeUnit.DAYS.toSeconds(1); // FeatureStatsbeat default to daily interval
 
-    // rp
-    static final String RP_FUNCTIONS = "functions";
-    static final String RP_APPSVC = "appsvc";
-    static final String RP_VM = "vm";
-    static final String RP_AKS = "aks";
-    static final String UNKNOWN = "unknown";
+    public static final String UNKNOWN_RP_ID = "unknown";
+
+    public enum ResourceProvider {
+        RP_FUNCTIONS("functions"),
+        RP_APPSVC("appsvc"),
+        RP_VM("vm"),
+        RP_AKS("aks"),
+        UNKNOWN("unknown");
+
+        private final String id;
+
+        ResourceProvider(String id) {
+            this.id = id;
+        }
+
+        @Override
+        public String toString() {
+            return id;
+        }
+    }
 
     static final String LANGUAGE = "java";
     static final String ATTACH_TYPE_CODELESS = "codeless";
@@ -78,5 +92,6 @@ public class Constants {
     static final String EXCEPTION_COUNT = "Exception Count";
     static final String FEATURE = "Feature";
 
-    private Constants() {}
+    private Constants() {
+    }
 }

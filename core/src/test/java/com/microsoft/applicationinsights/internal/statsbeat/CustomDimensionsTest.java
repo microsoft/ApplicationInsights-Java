@@ -1,18 +1,16 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.microsoft.applicationinsights.internal.statsbeat.Constants.ResourceProvider;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import org.junit.Before;
 import org.junit.Test;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_CIKEY;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_OS;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_RP;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_RUNTIME_VERSION;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_VERSION;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.OS_LINUX;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.OS_WINDOWS;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.UNKNOWN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -22,7 +20,7 @@ public class CustomDimensionsTest {
     public void testResourceProvider() {
         CustomDimensions customDimensions = new CustomDimensions();
 
-        assertEquals(UNKNOWN, customDimensions.getProperties().get(CUSTOM_DIMENSIONS_RP));
+        assertEquals(ResourceProvider.UNKNOWN, customDimensions.getResourceProvider());
     }
 
     @Test
@@ -35,14 +33,14 @@ public class CustomDimensionsTest {
         } else if (SystemInformation.INSTANCE.isUnix()) {
             os = OS_LINUX;
         }
-        assertEquals(os, customDimensions.getProperties().get(CUSTOM_DIMENSIONS_OS));
+        assertEquals(os, customDimensions.getProperty(CUSTOM_DIMENSIONS_OS));
     }
 
     @Test
     public void testCustomerIkey() {
         CustomDimensions customDimensions = new CustomDimensions();
 
-        assertNull(customDimensions.getProperties().get(CUSTOM_DIMENSIONS_CIKEY));
+        assertNull(customDimensions.getProperty(CUSTOM_DIMENSIONS_CIKEY));
     }
 
     @Test
@@ -51,13 +49,13 @@ public class CustomDimensionsTest {
 
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
         String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
-        assertEquals(version, customDimensions.getProperties().get(CUSTOM_DIMENSIONS_VERSION));
+        assertEquals(version, customDimensions.getProperty(CUSTOM_DIMENSIONS_VERSION));
     }
 
     @Test
     public void testRuntimeVersion() {
         CustomDimensions customDimensions = new CustomDimensions();
 
-        assertEquals(System.getProperty("java.version"), customDimensions.getProperties().get(CUSTOM_DIMENSIONS_RUNTIME_VERSION));
+        assertEquals(System.getProperty("java.version"), customDimensions.getProperty(CUSTOM_DIMENSIONS_RUNTIME_VERSION));
     }
 }

@@ -25,6 +25,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -33,6 +34,8 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 class CustomDimensions {
 
     private static final CustomDimensions instance = new CustomDimensions();
+
+    private volatile ResourceProvider resourceProvider;
 
     private final ConcurrentMap<String, String> properties;
 
@@ -44,28 +47,27 @@ class CustomDimensions {
     CustomDimensions() {
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
 
-        String resourceProvider;
         String operatingSystem;
         if (sdkVersion.startsWith("awr")) {
-            resourceProvider = RP_APPSVC;
+            resourceProvider = ResourceProvider.RP_APPSVC;
             operatingSystem = OS_WINDOWS;
         } else if (sdkVersion.startsWith("alr")) {
-            resourceProvider = RP_APPSVC;
+            resourceProvider = ResourceProvider.RP_APPSVC;
             operatingSystem = OS_LINUX;
         } else if (sdkVersion.startsWith("kwr")) {
-            resourceProvider = RP_AKS;
+            resourceProvider = ResourceProvider.RP_AKS;
             operatingSystem = OS_WINDOWS;
         } else if (sdkVersion.startsWith("klr")) {
-            resourceProvider = RP_AKS;
+            resourceProvider = ResourceProvider.RP_AKS;
             operatingSystem = OS_LINUX;
         } else if (sdkVersion.startsWith("fwr")) {
-            resourceProvider = RP_FUNCTIONS;
+            resourceProvider = ResourceProvider.RP_FUNCTIONS;
             operatingSystem = OS_WINDOWS;
         } else if (sdkVersion.startsWith("flr")) {
-            resourceProvider = RP_FUNCTIONS;
+            resourceProvider = ResourceProvider.RP_FUNCTIONS;
             operatingSystem = OS_LINUX;
         } else {
-            resourceProvider = UNKNOWN;
+            resourceProvider = ResourceProvider.UNKNOWN;
             operatingSystem = getOperatingSystem();
         }
 
@@ -74,7 +76,6 @@ class CustomDimensions {
         String runtimeVersion = System.getProperty("java.version");
 
         properties = new ConcurrentHashMap<>();
-        properties.put(CUSTOM_DIMENSIONS_RP, resourceProvider);
         properties.put(CUSTOM_DIMENSIONS_ATTACH_TYPE, ATTACH_TYPE_CODELESS);
         if (customerIkey != null) { // Unit test
             properties.put(CUSTOM_DIMENSIONS_CIKEY, customerIkey);
@@ -85,8 +86,27 @@ class CustomDimensions {
         properties.put(CUSTOM_DIMENSIONS_VERSION, version);
     }
 
-    ConcurrentMap<String, String> getProperties() {
-        return properties;
+    public ResourceProvider getResourceProvider() {
+        return resourceProvider;
+    }
+
+    public void setResourceProvider(ResourceProvider resourceProvider) {
+        this.resourceProvider = resourceProvider;
+    }
+
+    // TODO replace with individual getters
+    String getProperty(String key) {
+        return properties.get(key);
+    }
+
+    // TODO replace with individual getters
+    void updateProperty(String key, String value) {
+        properties.put(key, value);
+    }
+
+    void populateProperties(Map<String, String> properties) {
+        properties.putAll(this.properties);
+        properties.put(CUSTOM_DIMENSIONS_RP, resourceProvider.toString());
     }
 
     private static String getOperatingSystem() {
