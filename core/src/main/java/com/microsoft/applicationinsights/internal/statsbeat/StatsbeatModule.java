@@ -23,9 +23,10 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 
-public final class StatsbeatModule {
+public class StatsbeatModule {
 
     private static final StatsbeatModule INSTANCE = new StatsbeatModule();
+
     private NetworkStatsbeat networkStatsbeat;
     private AttachStatsbeat attachStatsbeat;
     private FeatureStatsbeat featureStatsbeat;
@@ -34,7 +35,7 @@ public final class StatsbeatModule {
         return INSTANCE;
     }
 
-    public void initialize(TelemetryClient telemetryClient, long interval, long featureInterval) {
+    void initialize(TelemetryClient telemetryClient, long interval, long featureInterval) {
         networkStatsbeat = new NetworkStatsbeat(telemetryClient, interval);
         attachStatsbeat = new AttachStatsbeat(telemetryClient, interval);
         featureStatsbeat = new FeatureStatsbeat(telemetryClient, featureInterval);
@@ -42,11 +43,11 @@ public final class StatsbeatModule {
 
     public NetworkStatsbeat getNetworkStatsbeat() { return networkStatsbeat; }
 
-    public AttachStatsbeat getAttachStatsbeat() {
+    AttachStatsbeat getAttachStatsbeat() {
         return attachStatsbeat;
     }
 
-    public FeatureStatsbeat getFeatureStatsbeat() {
+    FeatureStatsbeat getFeatureStatsbeat() {
         return featureStatsbeat;
     }
 }

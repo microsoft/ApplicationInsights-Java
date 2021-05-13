@@ -26,7 +26,7 @@ import com.squareup.moshi.Json;
 /**
  * Metadata instance response from the Azure Metadata Service.
  */
-public class MetadataInstanceResponse {
+class MetadataInstanceResponse {
 
     @Json(name = "vmId")
     private final String vmId;
@@ -35,31 +35,31 @@ public class MetadataInstanceResponse {
     private final String subscriptionId;
 
     @Json(name = "osType")
-    public final String osType;
+    private final String osType;
 
     @Json(name = "resourceGroupName")
-    public final String resourceGroupName;
+    private final String resourceGroupName;
 
-    public MetadataInstanceResponse(String vmId, String subscriptionId, String osType, String resourceGroupName, String resourceId) {
+    MetadataInstanceResponse(String vmId, String subscriptionId, String osType, String resourceGroupName, String resourceId) {
         this.vmId = vmId;
         this.subscriptionId = subscriptionId;
         this.osType = osType;
         this.resourceGroupName = resourceGroupName;
     }
 
-    public String getVmId() {
+    String getVmId() {
         return vmId;
     }
 
-    public String getSubscriptionId() {
+    String getSubscriptionId() {
         return subscriptionId;
     }
 
-    public String getOsType() {
+    String getOsType() {
         return osType;
     }
 
-    public String getResourceGroupName() {
+    String getResourceGroupName() {
         return resourceGroupName;
     }
 }

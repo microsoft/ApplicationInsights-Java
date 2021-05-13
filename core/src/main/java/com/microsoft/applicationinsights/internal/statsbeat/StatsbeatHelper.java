@@ -33,7 +33,7 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAV
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_REDHAT;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_ZULU;
 
-public final class StatsbeatHelper {
+final class StatsbeatHelper {
 
     private static final Map<String, Integer> INSTRUMENTATION_MAP;
     static final Map<String, Integer> FEATURE_MAP;
@@ -108,11 +108,11 @@ public final class StatsbeatHelper {
         FEATURE_MAP.put(JAVA_VENDOR_OTHER, 5);
     }
 
-    public static long encodeInstrumentations(Set<String> instrumentations) {
+    static long encodeInstrumentations(Set<String> instrumentations) {
         return encode(instrumentations, INSTRUMENTATION_MAP);
     }
 
-    public static long encodeFeature(Set<String> features) {
+    static long encodeFeature(Set<String> features) {
         return encode(features, FEATURE_MAP);
     }
 

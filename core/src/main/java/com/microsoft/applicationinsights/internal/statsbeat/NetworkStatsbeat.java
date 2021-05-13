@@ -45,7 +45,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     private volatile IntervalMetrics current;
     private final Object lock = new Object();
 
-    public NetworkStatsbeat(TelemetryClient telemetryClient, long interval) {
+    NetworkStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
         current = new IntervalMetrics();
     }
@@ -95,20 +95,20 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         }
     }
 
-    public void addInstrumentation(String instrumentation) {
+    void addInstrumentation(String instrumentation) {
         synchronized (lock) {
             current.instrumentationList.add(instrumentation);
         }
     }
 
-    public Set<String> getInstrumentationList() {
+    Set<String> getInstrumentationList() {
         return current.instrumentationList;
     }
 
     /**
      * @return a 64-bit long that represents a list of instrumentations enabled. Each bitfield maps to an instrumentation.
      */
-    public long getInstrumentation() {
+    long getInstrumentation() {
         return StatsbeatHelper.encodeInstrumentations(current.instrumentationList);
     }
 
@@ -135,7 +135,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         current.throttlingCount.incrementAndGet();
     }
 
-    public void incrementExceptionCount() {
+    void incrementExceptionCount() {
         current.exceptionCount.incrementAndGet();
     }
 

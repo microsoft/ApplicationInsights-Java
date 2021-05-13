@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
-public final class CustomDimensions {
+class CustomDimensions {
 
     private static CustomDimensions instance;
     private volatile String resourceProvider;
@@ -42,7 +42,7 @@ public final class CustomDimensions {
     private final ConcurrentMap<String, String> properties;
     private static final Object lock = new Object();
     
-    public static CustomDimensions getInstance() {
+    static CustomDimensions getInstance() {
         synchronized (lock) {
             if (instance == null) {
                 instance = new CustomDimensions();
@@ -101,7 +101,7 @@ public final class CustomDimensions {
         properties.put(CUSTOM_DIMENSIONS_VERSION, version);
     }
 
-    public ConcurrentMap<String, String> getProperties() {
+    ConcurrentMap<String, String> getProperties() {
         return properties;
     }
 

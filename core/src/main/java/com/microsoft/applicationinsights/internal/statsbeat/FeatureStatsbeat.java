@@ -33,11 +33,11 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEA
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_OTHER;
 import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelper.FEATURE_MAP;
 
-public class FeatureStatsbeat extends BaseStatsbeat {
+class FeatureStatsbeat extends BaseStatsbeat {
 
     private final Set<String> featureList = new HashSet<>(64);
 
-    public FeatureStatsbeat(TelemetryClient telemetryClient, long interval) {
+    FeatureStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
 
         // track java distribution
@@ -54,7 +54,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     /**
      * @return a 64-bit long that represents a list of features enabled. Each bitfield maps to a feature.
      */
-    protected long getFeature() {
+    long getFeature() {
         return StatsbeatHelper.encodeFeature(featureList);
     }
 

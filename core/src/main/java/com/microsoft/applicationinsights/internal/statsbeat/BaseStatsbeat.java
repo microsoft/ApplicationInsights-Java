@@ -35,12 +35,14 @@ import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.STATSBEAT_TELEMETRY_NAME;
 
-public abstract class BaseStatsbeat {
+abstract class BaseStatsbeat {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
-    protected static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
+    private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
+
     protected final TelemetryClient telemetryClient;
-    protected final long interval;
+
+    private final long interval;
 
     public BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
         this.telemetryClient = telemetryClient;

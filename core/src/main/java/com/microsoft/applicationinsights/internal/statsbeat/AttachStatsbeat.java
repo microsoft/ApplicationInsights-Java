@@ -26,12 +26,12 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
-public class AttachStatsbeat extends BaseStatsbeat {
+class AttachStatsbeat extends BaseStatsbeat {
 
     private String resourceProviderId;
     private MetadataInstanceResponse metadataInstanceResponse;
 
-    public AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
+    AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
         resourceProviderId = initResourceProviderId(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), null);
         // TODO (trask) move out to caller?
@@ -48,15 +48,15 @@ public class AttachStatsbeat extends BaseStatsbeat {
     /**
      * @return the unique identifier of the resource provider.
      */
-    public String getResourceProviderId() {
+    String getResourceProviderId() {
         return resourceProviderId;
     }
 
-    public MetadataInstanceResponse getMetadataInstanceResponse() {
+    MetadataInstanceResponse getMetadataInstanceResponse() {
         return metadataInstanceResponse;
     }
 
-    public void updateMetadataInstance(MetadataInstanceResponse response) {
+    void updateMetadataInstance(MetadataInstanceResponse response) {
         metadataInstanceResponse = response;
         resourceProviderId = initResourceProviderId(RP_VM, response);
     }

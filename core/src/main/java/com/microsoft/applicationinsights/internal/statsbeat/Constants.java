@@ -23,60 +23,60 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 import java.util.concurrent.TimeUnit;
 
-public final class Constants {
+public class Constants {
 
     public static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
-    public final static long DEFAULT_STATSBEAT_INTERVAL = TimeUnit.MINUTES.toSeconds(15); // default to 15 minutes
-    public final static long FEATURE_STATSBEAT_INTERVAL = TimeUnit.DAYS.toSeconds(1); // FeatureStatsbeat default to daily interval
+    public static final long DEFAULT_STATSBEAT_INTERVAL = TimeUnit.MINUTES.toSeconds(15); // default to 15 minutes
+    public static final long FEATURE_STATSBEAT_INTERVAL = TimeUnit.DAYS.toSeconds(1); // FeatureStatsbeat default to daily interval
 
     // rp
-    public static final String RP_FUNCTIONS = "functions";
-    public static final String RP_APPSVC = "appsvc";
-    public static final String RP_VM = "vm";
-    public static final String RP_AKS = "aks";
-    public static final String UNKNOWN = "unknown";
+    static final String RP_FUNCTIONS = "functions";
+    static final String RP_APPSVC = "appsvc";
+    static final String RP_VM = "vm";
+    static final String RP_AKS = "aks";
+    static final String UNKNOWN = "unknown";
 
-    public static final String LANGUAGE = "java";
-    public static final String ATTACH_TYPE_CODELESS = "codeless";
+    static final String LANGUAGE = "java";
+    static final String ATTACH_TYPE_CODELESS = "codeless";
 
-    public static final String OS_WINDOWS = "windows";
-    public static final String OS_LINUX = "linux";
-    public static final String OS_UNKNOW = "unknown";
+    static final String OS_WINDOWS = "windows";
+    static final String OS_LINUX = "linux";
+    static final String OS_UNKNOW = "unknown";
 
     // attach
-    public static final String WEBSITE_SITE_NAME = "appSrv_SiteName";
-    public static final String WEBSITE_HOSTNAME = "appSrv_wsHost";
-    public static final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
+    static final String WEBSITE_SITE_NAME = "appSrv_SiteName";
+    static final String WEBSITE_HOSTNAME = "appSrv_wsHost";
+    static final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
 
     // custom dimensions
-    public static final String CUSTOM_DIMENSIONS_RP = "rp";
-    public static final String CUSTOM_DIMENSIONS_RP_ID = "rpId";
-    public static final String CUSTOM_DIMENSIONS_ATTACH_TYPE = "attach";
-    public static final String CUSTOM_DIMENSIONS_CIKEY = "cikey";
-    public static final String CUSTOM_DIMENSIONS_RUNTIME_VERSION = "runtimeVersion";
-    public static final String CUSTOM_DIMENSIONS_OS = "os";
-    public static final String CUSTOM_DIMENSIONS_LANGUAGE = "language";
-    public static final String CUSTOM_DIMENSIONS_VERSION = "version";
-    public static final String CUSTOM_DIMENSIONS_INSTRUMENTATION = "instrumentation";
-    public static final String CUSTOM_DIMENSIONS_FEATURE = "feature";
+    static final String CUSTOM_DIMENSIONS_RP = "rp";
+    static final String CUSTOM_DIMENSIONS_RP_ID = "rpId";
+    static final String CUSTOM_DIMENSIONS_ATTACH_TYPE = "attach";
+    static final String CUSTOM_DIMENSIONS_CIKEY = "cikey";
+    static final String CUSTOM_DIMENSIONS_RUNTIME_VERSION = "runtimeVersion";
+    static final String CUSTOM_DIMENSIONS_OS = "os";
+    static final String CUSTOM_DIMENSIONS_LANGUAGE = "language";
+    static final String CUSTOM_DIMENSIONS_VERSION = "version";
+    static final String CUSTOM_DIMENSIONS_INSTRUMENTATION = "instrumentation";
+    static final String CUSTOM_DIMENSIONS_FEATURE = "feature";
 
     // features
-    public static final String JAVA_VENDOR_ORACLE = "Oracle Corporation"; // https://www.oracle.com/technetwork/java/javase/downloads/index.html
-    public static final String JAVA_VENDOR_ZULU = "Azul Systems, Inc."; // https://www.azul.com/downloads/zulu/
-    public static final String JAVA_VENDOR_MICROSOFT = "Microsoft"; // https://www.microsoft.com/openjdk
-    public static final String JAVA_VENDOR_ADOPT_OPENJDK = "AdoptOpenJDK"; // https://adoptopenjdk.net/
-    public static final String JAVA_VENDOR_REDHAT = "Red Hat, Inc."; // https://developers.redhat.com/products/openjdk/download/
-    public static final String JAVA_VENDOR_OTHER = "other";
+    static final String JAVA_VENDOR_ORACLE = "Oracle Corporation"; // https://www.oracle.com/technetwork/java/javase/downloads/index.html
+    static final String JAVA_VENDOR_ZULU = "Azul Systems, Inc."; // https://www.azul.com/downloads/zulu/
+    static final String JAVA_VENDOR_MICROSOFT = "Microsoft"; // https://www.microsoft.com/openjdk
+    static final String JAVA_VENDOR_ADOPT_OPENJDK = "AdoptOpenJDK"; // https://adoptopenjdk.net/
+    static final String JAVA_VENDOR_REDHAT = "Red Hat, Inc."; // https://developers.redhat.com/products/openjdk/download/
+    static final String JAVA_VENDOR_OTHER = "other";
 
     // statsbeat metrics' names
-    public static final String ATTACH = "Attach";
-    public static final String REQUEST_SUCCESS_COUNT = "Request Success Count";
-    public static final String REQUEST_FAILURE_COUNT = "Requests Failure Count ";
-    public static final String REQUEST_DURATION = "Request Duration";
-    public static final String RETRY_COUNT = "Retry Count";
-    public static final String THROTTLE_COUNT = "Throttle Count";
-    public static final String EXCEPTION_COUNT = "Exception Count";
-    public static final String FEATURE = "Feature";
+    static final String ATTACH = "Attach";
+    static final String REQUEST_SUCCESS_COUNT = "Request Success Count";
+    static final String REQUEST_FAILURE_COUNT = "Requests Failure Count ";
+    static final String REQUEST_DURATION = "Request Duration";
+    static final String RETRY_COUNT = "Retry Count";
+    static final String THROTTLE_COUNT = "Throttle Count";
+    static final String EXCEPTION_COUNT = "Exception Count";
+    static final String FEATURE = "Feature";
 
     private Constants() {}
 }

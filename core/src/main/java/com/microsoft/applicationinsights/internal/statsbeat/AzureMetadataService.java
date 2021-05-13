@@ -20,7 +20,7 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUS
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_VM;
 
 
-public final class AzureMetadataService implements Runnable {
+class AzureMetadataService implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(AzureMetadataService.class);
 
@@ -34,7 +34,7 @@ public final class AzureMetadataService implements Runnable {
     private static final JsonAdapter<MetadataInstanceResponse> jsonAdapter =
             new Moshi.Builder().build().adapter(MetadataInstanceResponse.class);
 
-    public static void scheduleAtFixedRate(long interval) {
+    static void scheduleAtFixedRate(long interval) {
         // Querying Azure Metadata Service is required for every 15 mins since VM id will get updated frequently.
         // Starting and restarting a VM will generate a new VM id each time.
         // TODO need to confirm if restarting VM will also restart the Java Agent
