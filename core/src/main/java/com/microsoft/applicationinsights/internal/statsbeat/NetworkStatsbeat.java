@@ -29,16 +29,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.EXCEPTION_COUNT;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.REQUEST_DURATION;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.REQUEST_FAILURE_COUNT;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.REQUEST_SUCCESS_COUNT;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RETRY_COUNT;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.THROTTLE_COUNT;
-
 public class NetworkStatsbeat extends BaseStatsbeat {
 
-    private static final String CUSTOM_DIMENSIONS_INSTRUMENTATION = "instrumentation";
+    private static final String REQUEST_SUCCESS_COUNT_METRIC_NAME = "Request Success Count";
+    private static final String REQUEST_FAILURE_COUNT_METRIC_NAME = "Requests Failure Count ";
+    private static final String REQUEST_DURATION_METRIC_NAME = "Request Duration";
+    private static final String RETRY_COUNT_METRIC_NAME = "Retry Count";
+    private static final String THROTTLE_COUNT_METRIC_NAME = "Throttle Count";
+    private static final String EXCEPTION_COUNT_METRIC_NAME = "Exception Count";
+
+    private static final String INSTRUMENTATION_CUSTOM_DIMENSION = "instrumentation";
 
     private volatile IntervalMetrics current;
 
@@ -60,40 +60,40 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         String instrumentation = Long.toString(StatsbeatHelper.encodeInstrumentations(current.instrumentationList));
 
         if (local.requestSuccessCount.get() != 0) {
-            MetricTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT, local.requestSuccessCount.get());
+            MetricTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
             // TODO (heya) is this encoded in kusto as a long or a string?
-            requestSuccessCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
+            requestSuccessCountSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.track(requestSuccessCountSt);
         }
 
         if (local.requestFailureCount.get() != 0) {
-            MetricTelemetry requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT, local.requestFailureCount.get());
-            requestFailureCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
+            MetricTelemetry requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
+            requestFailureCountSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.track(requestFailureCountSt);
         }
 
         double durationAvg = local.getRequestDurationAvg();
         if (durationAvg != 0) {
-            MetricTelemetry requestDurationSt = createStatsbeatTelemetry(REQUEST_DURATION, durationAvg);
-            requestDurationSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
+            MetricTelemetry requestDurationSt = createStatsbeatTelemetry(REQUEST_DURATION_METRIC_NAME, durationAvg);
+            requestDurationSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.track(requestDurationSt);
         }
 
         if (local.retryCount.get() != 0) {
-            MetricTelemetry retryCountSt = createStatsbeatTelemetry(RETRY_COUNT, local.retryCount.get());
-            retryCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
+            MetricTelemetry retryCountSt = createStatsbeatTelemetry(RETRY_COUNT_METRIC_NAME, local.retryCount.get());
+            retryCountSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.track(retryCountSt);
         }
 
         if (local.throttlingCount.get() != 0) {
-            MetricTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT, local.throttlingCount.get());
-            throttleCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
+            MetricTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
+            throttleCountSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.track(throttleCountSt);
         }
 
         if (local.exceptionCount.get() != 0) {
-            MetricTelemetry exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT, local.exceptionCount.get());
-            exceptionCountSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
+            MetricTelemetry exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
+            exceptionCountSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.track(exceptionCountSt);
         }
     }

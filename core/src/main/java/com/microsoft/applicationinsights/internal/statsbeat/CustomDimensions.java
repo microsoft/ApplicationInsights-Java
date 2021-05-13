@@ -31,13 +31,6 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
 class CustomDimensions {
 
-    private static final String CUSTOM_DIMENSIONS_RP = "rp";
-    private static final String CUSTOM_DIMENSIONS_ATTACH_TYPE = "attach";
-    private static final String CUSTOM_DIMENSIONS_CUSTOMER_IKEY = "cikey";
-    private static final String CUSTOM_DIMENSIONS_RUNTIME_VERSION = "runtimeVersion";
-    private static final String CUSTOM_DIMENSIONS_OS = "os";
-    private static final String CUSTOM_DIMENSIONS_LANGUAGE = "language";
-    private static final String CUSTOM_DIMENSIONS_SDK_VERSION = "version";
     private static final CustomDimensions instance = new CustomDimensions();
 
     private volatile ResourceProvider resourceProvider;
@@ -84,8 +77,9 @@ class CustomDimensions {
         sdkVersion = qualifiedSdkVersion.substring(qualifiedSdkVersion.lastIndexOf(':') + 1);
         runtimeVersion = System.getProperty("java.version");
 
-        attachType = ATTACH_TYPE_CODELESS;
-        language = LANGUAGE;
+        // TODO (heya) is this correct to always set attach type to codeless?
+        attachType = "codeless";
+        language = "java";
     }
 
     public ResourceProvider getResourceProvider() {
@@ -105,13 +99,13 @@ class CustomDimensions {
     }
 
     void populateProperties(Map<String, String> properties) {
-        properties.put(CUSTOM_DIMENSIONS_RP, resourceProvider.toString());
-        properties.put(CUSTOM_DIMENSIONS_OS, operatingSystem.toString());
-        properties.put(CUSTOM_DIMENSIONS_ATTACH_TYPE, attachType);
-        properties.put(CUSTOM_DIMENSIONS_CUSTOMER_IKEY, customerIkey);
-        properties.put(CUSTOM_DIMENSIONS_RUNTIME_VERSION, runtimeVersion);
-        properties.put(CUSTOM_DIMENSIONS_LANGUAGE, language);
-        properties.put(CUSTOM_DIMENSIONS_SDK_VERSION, sdkVersion);
+        properties.put("rp", resourceProvider.toString());
+        properties.put("os", operatingSystem.toString());
+        properties.put("attach", attachType);
+        properties.put("cikey", customerIkey);
+        properties.put("runtimeVersion", runtimeVersion);
+        properties.put("language", language);
+        properties.put("version", sdkVersion);
     }
 
     private static OperatingSystem initOperatingSystem() {

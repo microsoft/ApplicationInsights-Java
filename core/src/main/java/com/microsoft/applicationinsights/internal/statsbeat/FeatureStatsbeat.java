@@ -28,11 +28,9 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE;
-
 class FeatureStatsbeat extends BaseStatsbeat {
 
-    private static final String CUSTOM_DIMENSIONS_FEATURE = "feature";
+    private static final String FEATURE_METRIC_NAME = "Feature";
 
     private final Set<Feature> featureList = new HashSet<>(64);
 
@@ -53,8 +51,8 @@ class FeatureStatsbeat extends BaseStatsbeat {
 
     @Override
     protected void send() {
-        MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE, 0);
-        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_FEATURE, String.valueOf(getFeature()));
+        MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(FEATURE_METRIC_NAME, 0);
+        statsbeatTelemetry.getProperties().put("feature", String.valueOf(getFeature()));
         telemetryClient.track(statsbeatTelemetry);
     }
 }

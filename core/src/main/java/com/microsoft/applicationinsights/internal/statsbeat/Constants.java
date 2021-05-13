@@ -52,9 +52,6 @@ public class Constants {
         }
     }
 
-    static final String LANGUAGE = "java";
-    static final String ATTACH_TYPE_CODELESS = "codeless";
-
     enum OperatingSystem {
         OS_WINDOWS("Windows"), OS_LINUX("Linux"), OS_UNKNOWN("unknown");
 
@@ -109,18 +106,7 @@ public class Constants {
         javaVendorFeatureMap.put("Microsoft", Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
         javaVendorFeatureMap.put("AdoptOpenJDK", Feature.JAVA_VENDOR_ADOPT_OPENJDK); // https://adoptopenjdk.net/
         javaVendorFeatureMap.put("Red Hat, Inc.", Feature.JAVA_VENDOR_REDHAT); // https://developers.redhat.com/products/openjdk/download/
-
     }
-
-    // statsbeat metrics' names
-    static final String ATTACH = "Attach";
-    static final String REQUEST_SUCCESS_COUNT = "Request Success Count";
-    static final String REQUEST_FAILURE_COUNT = "Requests Failure Count ";
-    static final String REQUEST_DURATION = "Request Duration";
-    static final String RETRY_COUNT = "Retry Count";
-    static final String THROTTLE_COUNT = "Throttle Count";
-    static final String EXCEPTION_COUNT = "Exception Count";
-    static final String FEATURE = "Feature";
 
     private Constants() {
     }

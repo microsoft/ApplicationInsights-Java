@@ -28,7 +28,7 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
 class AttachStatsbeat extends BaseStatsbeat {
 
-    private static final String CUSTOM_DIMENSIONS_RP_ID = "rpId";
+    private static final String ATTACH_METRIC_NAME = "Attach";
 
     private volatile String resourceProviderId;
     private volatile MetadataInstanceResponse metadataInstanceResponse;
@@ -40,8 +40,8 @@ class AttachStatsbeat extends BaseStatsbeat {
 
     @Override
     protected void send() {
-        MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH, 0);
-        statsbeatTelemetry.getProperties().put(CUSTOM_DIMENSIONS_RP_ID, resourceProviderId);
+        MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH_METRIC_NAME, 0);
+        statsbeatTelemetry.getProperties().put("rpId", resourceProviderId);
         telemetryClient.track(statsbeatTelemetry);
     }
 
