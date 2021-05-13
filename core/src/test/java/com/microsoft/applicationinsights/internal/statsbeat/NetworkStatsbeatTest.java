@@ -73,11 +73,6 @@ public class NetworkStatsbeatTest {
     }
 
     @Test
-    public void testInterval() {
-        assertEquals(DEFAULT_STATSBEAT_INTERVAL, networkStatsbeat.getInterval());
-    }
-
-    @Test
     public void testRaceCondition() throws InterruptedException {
         final ExecutorService executorService = Executors.newFixedThreadPool(100);
         final AtomicInteger instrumentationCounter = new AtomicInteger();

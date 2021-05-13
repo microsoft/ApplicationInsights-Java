@@ -44,7 +44,7 @@ abstract class BaseStatsbeat {
 
     private final long interval;
 
-    public BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
+    BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
         this.telemetryClient = telemetryClient;
         this.interval = interval;
         scheduledExecutor.scheduleAtFixedRate(new StatsbeatSender(), interval, interval, TimeUnit.SECONDS);
@@ -73,10 +73,5 @@ abstract class BaseStatsbeat {
                 logger.error("Error occurred while sending statsbeat", e);
             }
         }
-    }
-
-    @VisibleForTesting
-    long getInterval() {
-        return interval;
     }
 }

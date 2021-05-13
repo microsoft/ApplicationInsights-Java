@@ -76,11 +76,6 @@ public class AttachStatsbeatTest {
     }
 
     @Test
-    public void testInterval() {
-        assertEquals(DEFAULT_STATSBEAT_INTERVAL, attachStatsbeat.getInterval());
-    }
-
-    @Test
     public void testUnknownResourceProviderId() {
         assertEquals(UNKNOWN, new CustomDimensions().getProperties().get(CUSTOM_DIMENSIONS_RP));
         assertEquals(UNKNOWN, attachStatsbeat.getResourceProviderId());

@@ -27,9 +27,4 @@ public class FeatureStatsbeatTest {
         long featureLongVal = StatsbeatHelper.encodeFeature(features);
         assertEquals(featureLongVal, featureStatsbeat.getFeature());
     }
-
-    @Test
-    public void testFrequencyInterval() {
-        assertEquals(FEATURE_STATSBEAT_INTERVAL, featureStatsbeat.getInterval());
-    }
 }
