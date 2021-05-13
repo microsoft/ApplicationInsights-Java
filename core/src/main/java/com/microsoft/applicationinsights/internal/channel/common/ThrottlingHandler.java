@@ -63,7 +63,10 @@ public class ThrottlingHandler implements TransmissionHandler {
             case TransmissionSendResult.THROTTLED_OVER_EXTENDED_TIME:
                 suspendTransmissions(TransmissionPolicy.BLOCKED_BUT_CAN_BE_PERSISTED, args.getRetryHeader());
                 args.getTransmissionDispatcher().dispatch(args.getTransmission());
-                StatsbeatModule.get().getNetworkStatsbeat().incrementThrottlingCount();
+                // TODO (heya) remove this null check later
+                if (StatsbeatModule.get() != null) {
+                    StatsbeatModule.get().getNetworkStatsbeat().incrementThrottlingCount();
+                }
                 return true;
             default:
                 logger.trace("Http response code {} not handled by {}", args.getResponseCode(),

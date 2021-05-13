@@ -40,9 +40,6 @@ public class StatsbeatModule {
     }
 
     public static StatsbeatModule get() {
-        if (instance == null) {
-            throw new IllegalStateException("initialize must be called first");
-        }
         return instance;
     }
 
