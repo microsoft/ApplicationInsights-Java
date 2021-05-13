@@ -45,7 +45,7 @@ class FeatureStatsbeat extends BaseStatsbeat {
      * @return a 64-bit long that represents a list of features enabled. Each bitfield maps to a feature.
      */
     long getFeature() {
-        return StatsbeatHelper.encodeFeature(featureList);
+        return Feature.encode(featureList);
     }
 
     @Override

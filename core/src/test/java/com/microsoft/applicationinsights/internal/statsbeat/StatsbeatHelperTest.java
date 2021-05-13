@@ -26,7 +26,7 @@ public class StatsbeatHelperTest {
 
     @Test
     public void testEncodeAndDecodeInstrumentations() {
-        long num = StatsbeatHelper.encodeInstrumentations(instrumentations);
+        long num = Instrumentations.encode(instrumentations);
         assertEquals(EXPECTED_INSTRUMENTATION, num);
         Set<String> result = StatsbeatTestUtils.decodeInstrumentations(num);
         assertEquals(instrumentations, result);
@@ -34,7 +34,7 @@ public class StatsbeatHelperTest {
 
     @Test
     public void tesEncodeAndDecodeFeature() {
-        long num = StatsbeatHelper.encodeFeature(features);
+        long num = Feature.encode(features);
         assertEquals(EXPECTED_FEATURE, num);
         Set<Feature> result = StatsbeatTestUtils.decodeFeature(num);
         assertEquals(features, result);

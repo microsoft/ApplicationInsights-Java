@@ -1,24 +1,3 @@
-/*
- * ApplicationInsights-Java
- * Copyright (c) Microsoft Corporation
- * All rights reserved.
- *
- * MIT License
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the ""Software""), to deal in the Software
- * without restriction, including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
- * persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
- * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- */
-
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import java.util.BitSet;
@@ -26,7 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-final class StatsbeatHelper {
+// TODO consider making this enum similar to Feature, and could implement same interface that handles bitmap encoding
+class Instrumentations {
 
     private static final Map<String, Integer> INSTRUMENTATION_MAP;
 
@@ -92,33 +72,13 @@ final class StatsbeatHelper {
         INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.tomcat-7.0", 57);
     }
 
-    static long encodeInstrumentations(Set<String> instrumentations) {
-        return encode(instrumentations, INSTRUMENTATION_MAP);
-    }
-
-    static long encodeFeature(Set<Feature> features) {
-        return encode(features);
-    }
-
-    private static <E> long encode(Set<E> list, Map<E, Integer> map) {
+    static long encode(Set<String> instrumentations) {
         BitSet number = new BitSet(64);
-        for (E item : list) {
-            int index = map.get(item);
+        for (String instrumentation : instrumentations) {
+            int index = INSTRUMENTATION_MAP.get(instrumentation);
             number.set(index);
         }
         long[] longArray = number.toLongArray();
         return longArray.length == 0 ? 0L : longArray[0];
-    }
-
-    private static long encode(Set<Feature> list) {
-        BitSet number = new BitSet(64);
-        for (Feature item : list) {
-            number.set(item.getBitmapIndex());
-        }
-        long[] longArray = number.toLongArray();
-        return longArray.length == 0 ? 0L : longArray[0];
-    }
-
-    private StatsbeatHelper() {
     }
 }

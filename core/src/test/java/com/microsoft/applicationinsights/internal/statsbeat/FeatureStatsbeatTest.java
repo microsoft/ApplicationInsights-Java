@@ -22,7 +22,7 @@ public class FeatureStatsbeatTest {
     public void testFeatureList() {
         String javaVendor = System.getProperty("java.vendor");
         final Set<Feature> features = Collections.singleton(Feature.fromJavaVendor(javaVendor));
-        long featureLongVal = StatsbeatHelper.encodeFeature(features);
+        long featureLongVal = Feature.encode(features);
         assertEquals(featureLongVal, featureStatsbeat.getFeature());
     }
 }

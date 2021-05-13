@@ -1,7 +1,9 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 enum Feature {
 
@@ -29,12 +31,17 @@ enum Feature {
         this.bitmapIndex = bitmapIndex;
     }
 
-    int getBitmapIndex() {
-        return bitmapIndex;
-    }
-
     static Feature fromJavaVendor(String javaVendor) {
         Feature feature = javaVendorFeatureMap.get(javaVendor);
         return feature != null ? feature : Feature.JAVA_VENDOR_OTHER;
+    }
+
+    static long encode(Set<Feature> features) {
+        BitSet number = new BitSet(64);
+        for (Feature feature : features) {
+            number.set(feature.bitmapIndex);
+        }
+        long[] longArray = number.toLongArray();
+        return longArray.length == 0 ? 0L : longArray[0];
     }
 }

@@ -57,7 +57,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             current = new IntervalMetrics();
         }
 
-        String instrumentation = Long.toString(StatsbeatHelper.encodeInstrumentations(current.instrumentationList));
+        String instrumentation = Long.toString(Instrumentations.encode(current.instrumentationList));
 
         if (local.requestSuccessCount.get() != 0) {
             MetricTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
@@ -138,7 +138,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
     // only used by tests
     long getInstrumentation() {
-        return StatsbeatHelper.encodeInstrumentations(current.instrumentationList);
+        return Instrumentations.encode(current.instrumentationList);
     }
 
     // only used by tests
