@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
@@ -33,24 +32,16 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
 class CustomDimensions {
 
-    private static CustomDimensions instance;
+    private static final CustomDimensions instance = new CustomDimensions();
 
     private final ConcurrentMap<String, String> properties;
 
-    private static final Object lock = new Object();
-    
     static CustomDimensions get() {
-        if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new CustomDimensions();
-                }
-            }
-        }
         return instance;
     }
-    
-    private CustomDimensions() {
+
+    // visible for testing
+    CustomDimensions() {
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
 
         String resourceProvider;
@@ -106,10 +97,5 @@ class CustomDimensions {
         } else {
             return OS_UNKNOW;
         }
-    }
-
-    @VisibleForTesting
-    static void resetForTest() {
-        instance = null;
     }
 }

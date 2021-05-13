@@ -14,45 +14,50 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.OS_
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.OS_WINDOWS;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.UNKNOWN;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class CustomDimensionsTest {
 
-    @Before
-    public void setup() {
-        CustomDimensions.resetForTest();
-    }
-
     @Test
     public void testResourceProvider() {
-        assertEquals(UNKNOWN, CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_RP));
+        CustomDimensions customDimensions = new CustomDimensions();
+
+        assertEquals(UNKNOWN, customDimensions.getProperties().get(CUSTOM_DIMENSIONS_RP));
     }
 
     @Test
     public void testOperatingSystem() {
+        CustomDimensions customDimensions = new CustomDimensions();
+
         String os = "UNKNOWN";
         if (SystemInformation.INSTANCE.isWindows()) {
             os = OS_WINDOWS;
         } else if (SystemInformation.INSTANCE.isUnix()) {
             os = OS_LINUX;
         }
-
-        assertEquals(os, CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_OS));
+        assertEquals(os, customDimensions.getProperties().get(CUSTOM_DIMENSIONS_OS));
     }
 
     @Test
     public void testCustomerIkey() {
-        assertEquals(null, CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_CIKEY));
+        CustomDimensions customDimensions = new CustomDimensions();
+
+        assertNull(customDimensions.getProperties().get(CUSTOM_DIMENSIONS_CIKEY));
     }
 
     @Test
     public void testVersion() {
+        CustomDimensions customDimensions = new CustomDimensions();
+
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
         String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
-        assertEquals(version, CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_VERSION));
+        assertEquals(version, customDimensions.getProperties().get(CUSTOM_DIMENSIONS_VERSION));
     }
 
     @Test
     public void testRuntimeVersion() {
-        assertEquals(System.getProperty("java.version"), CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_RUNTIME_VERSION));
+        CustomDimensions customDimensions = new CustomDimensions();
+
+        assertEquals(System.getProperty("java.version"), customDimensions.getProperties().get(CUSTOM_DIMENSIONS_RUNTIME_VERSION));
     }
 }
