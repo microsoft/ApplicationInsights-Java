@@ -34,7 +34,8 @@ public class AttachStatsbeat extends BaseStatsbeat {
     public AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
         resourceProviderId = initResourceProviderId(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), null);
-        AzureMetadataService.getInstance().initialize(interval);
+        // TODO (trask) move out to caller?
+        AzureMetadataService.scheduleAtFixedRate(interval);
     }
 
     @Override
