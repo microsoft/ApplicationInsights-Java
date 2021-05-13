@@ -38,8 +38,9 @@ public class AttachStatsbeatTest {
     @Before
     public void setup() {
         CustomDimensions.resetForTest();
-        StatsbeatModule.resetForTest(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
-        attachStatsbeat = StatsbeatModule.getInstance().getAttachStatsbeat();
+        StatsbeatModule.resetForTest();
+        StatsbeatModule.initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
+        attachStatsbeat = StatsbeatModule.get().getAttachStatsbeat();
     }
 
     @Test
@@ -52,7 +53,7 @@ public class AttachStatsbeatTest {
         source.close();
         AzureMetadataService.parseJsonResponse(result);
         assertEquals(attachStatsbeat.getResourceProviderId(), "2a1216c3-a2a0-4fc5-a941-b1f5acde7051/65b2f83e-7bf1-4be3-bafc-3a4163265a52");
-        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_OS), "Linux");
+        assertEquals(CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_OS), "Linux");
     }
 
     @Test
@@ -83,7 +84,7 @@ public class AttachStatsbeatTest {
 
     @Test
     public void testUnknownResourceProviderId() {
-        assertEquals(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), UNKNOWN);
+        assertEquals(CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_RP), UNKNOWN);
         assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
     }
 }

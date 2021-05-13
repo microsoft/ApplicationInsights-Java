@@ -23,7 +23,8 @@ public class AzureMetadataServiceTest {
     @Before
     public void setup() {
         CustomDimensions.resetForTest();
-        StatsbeatModule.resetForTest(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
+        StatsbeatModule.resetForTest();
+        StatsbeatModule.initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
     }
 
     @Test
@@ -34,7 +35,7 @@ public class AzureMetadataServiceTest {
         String result = source.readUtf8();
         source.close();
         AzureMetadataService.parseJsonResponse(result);
-        MetadataInstanceResponse response = StatsbeatModule.getInstance().getAttachStatsbeat().getMetadataInstanceResponse();
+        MetadataInstanceResponse response = StatsbeatModule.get().getAttachStatsbeat().getMetadataInstanceResponse();
         assertEquals(response.getVmId(), "2a1216c3-a2a0-4fc5-a941-b1f5acde7051");
         assertEquals(response.getOsType(), "Linux");
         assertEquals(response.getResourceGroupName(), "heya-java-ipa");
@@ -49,7 +50,7 @@ public class AzureMetadataServiceTest {
         String result = source.readUtf8();
         source.close();
         AzureMetadataService.parseJsonResponse(result);
-        MetadataInstanceResponse response = StatsbeatModule.getInstance().getAttachStatsbeat().getMetadataInstanceResponse();
+        MetadataInstanceResponse response = StatsbeatModule.get().getAttachStatsbeat().getMetadataInstanceResponse();
         assertEquals(response.getVmId(), "2955a129-2323-4c1f-8918-994a7a83eefd");
         assertEquals(response.getOsType(), "Windows");
         assertEquals(response.getResourceGroupName(), "heya-java-ipa");

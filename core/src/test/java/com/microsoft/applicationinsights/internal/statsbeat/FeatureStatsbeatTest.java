@@ -17,8 +17,9 @@ public class FeatureStatsbeatTest {
 
     @Before
     public void init() {
-        StatsbeatModule.resetForTest(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
-        featureStatsbeat = StatsbeatModule.getInstance().getFeatureStatsbeat();
+        StatsbeatModule.resetForTest();
+        StatsbeatModule.initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
+        featureStatsbeat = StatsbeatModule.get().getFeatureStatsbeat();
     }
 
     @Test

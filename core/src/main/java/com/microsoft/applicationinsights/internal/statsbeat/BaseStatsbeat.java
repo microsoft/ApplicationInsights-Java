@@ -56,7 +56,7 @@ abstract class BaseStatsbeat {
         MetricTelemetry telemetry = new MetricTelemetry(name, value);
         telemetry.setTelemetryName(STATSBEAT_TELEMETRY_NAME);
         telemetry.getContext().setInstrumentationKey(TelemetryConfiguration.getActive().getStatsbeatInstrumentationKey());
-        telemetry.getProperties().putAll(CustomDimensions.getInstance().getProperties());
+        telemetry.getProperties().putAll(CustomDimensions.get().getProperties());
         return telemetry;
     }
 

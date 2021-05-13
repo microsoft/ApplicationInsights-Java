@@ -45,13 +45,13 @@ class AzureMetadataService implements Runnable {
     static void parseJsonResponse(String response) throws IOException {
         if (response != null) {
             MetadataInstanceResponse metadataInstanceResponse = jsonAdapter.fromJson(response);
-            StatsbeatModule.getInstance().getAttachStatsbeat().updateMetadataInstance(metadataInstanceResponse);
-            CustomDimensions.getInstance().getProperties().put(CUSTOM_DIMENSIONS_RP, RP_VM);
+            StatsbeatModule.get().getAttachStatsbeat().updateMetadataInstance(metadataInstanceResponse);
+            CustomDimensions.get().getProperties().put(CUSTOM_DIMENSIONS_RP, RP_VM);
 
             // osType from the Azure Metadata Service has a higher precedence over the running app’s operating system.
             String osType = metadataInstanceResponse.getOsType();
             if (!"unknown".equalsIgnoreCase(osType)) {
-                CustomDimensions.getInstance().getProperties().put(CUSTOM_DIMENSIONS_OS, osType);
+                CustomDimensions.get().getProperties().put(CUSTOM_DIMENSIONS_OS, osType);
             }
         }
     }

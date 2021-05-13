@@ -174,7 +174,7 @@ public class Exporter implements SpanExporter {
     private void export(SpanData span) {
         SpanKind kind = span.getKind();
         String instrumentationName = span.getInstrumentationLibraryInfo().getName();
-        StatsbeatModule.getInstance().getNetworkStatsbeat().addInstrumentation(instrumentationName);
+        StatsbeatModule.get().getNetworkStatsbeat().addInstrumentation(instrumentationName);
         Matcher matcher = COMPONENT_PATTERN.matcher(instrumentationName);
         String stdComponent = matcher.matches() ? matcher.group(1) : null;
         if (kind == SpanKind.INTERNAL) {

@@ -33,7 +33,7 @@ class AttachStatsbeat extends BaseStatsbeat {
 
     AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
-        resourceProviderId = initResourceProviderId(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), null);
+        resourceProviderId = initResourceProviderId(CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_RP), null);
     }
 
     @Override

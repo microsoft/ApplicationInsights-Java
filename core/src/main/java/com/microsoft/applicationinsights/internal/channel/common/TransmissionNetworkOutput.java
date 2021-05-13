@@ -158,42 +158,42 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 transmissionPolicyManager.clearBackoff();
                 // Increment Success Counter
                 networkExceptionStats.recordSuccess();
-                StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestSuccessCount();
-                StatsbeatModule.getInstance().getNetworkStatsbeat().addRequestDuration(duration);
+                StatsbeatModule.get().getNetworkStatsbeat().incrementRequestSuccessCount();
+                StatsbeatModule.get().getNetworkStatsbeat().addRequestDuration(duration);
             }
             return true;
         } catch (ConnectionPoolTimeoutException e) {
             networkExceptionStats.recordFailure("connection pool timeout exception: " + e, e);
-            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (SocketException e) {
             networkExceptionStats.recordFailure("socket exception: " + e, e);
-            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (SocketTimeoutException e) {
             networkExceptionStats.recordFailure("socket timeout exception: " + e, e);
-            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (UnknownHostException e) {
             networkExceptionStats.recordFailure("wrong host address or cannot reach address due to network issues: " + e, e);
-            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (IOException e) {
             networkExceptionStats.recordFailure("I/O exception: " + e, e);
-            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (FriendlyException e) {
             ex = e;
             // TODO should this be merged into networkExceptionStats?
             if(!friendlyExceptionThrown.getAndSet(true)) {
                 logger.error(e.getMessage());
             }
-            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (Exception e) {
             networkExceptionStats.recordFailure("unexpected exception: " + e, e);
-            StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             ex = t;
             try {
                 networkExceptionStats.recordFailure("unexpected exception: " + t, t);
-                StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
+                StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -207,7 +207,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
             if (code == HttpStatus.SC_BAD_REQUEST) {
                 networkExceptionStats.recordFailure("ingestion service returned 400 (" + reason + ")");
-                StatsbeatModule.getInstance().getNetworkStatsbeat().incrementRequestFailureCount();
+                StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
             } else if (code != HttpStatus.SC_OK) {
                 // Invoke the listeners for handling things like errors
                 // The listeners will handle the back off logic as well as the dispatch

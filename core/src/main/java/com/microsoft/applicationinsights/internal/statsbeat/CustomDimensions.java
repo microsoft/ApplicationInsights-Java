@@ -39,10 +39,12 @@ class CustomDimensions {
 
     private static final Object lock = new Object();
     
-    static CustomDimensions getInstance() {
-        synchronized (lock) {
-            if (instance == null) {
-                instance = new CustomDimensions();
+    static CustomDimensions get() {
+        if (instance == null) {
+            synchronized (lock) {
+                if (instance == null) {
+                    instance = new CustomDimensions();
+                }
             }
         }
         return instance;

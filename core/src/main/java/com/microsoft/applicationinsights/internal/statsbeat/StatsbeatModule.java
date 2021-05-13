@@ -39,7 +39,7 @@ public class StatsbeatModule {
         AzureMetadataService.scheduleAtFixedRate(interval);
     }
 
-    public static StatsbeatModule getInstance() {
+    public static StatsbeatModule get() {
         if (instance == null) {
             throw new IllegalStateException("initialize must be called first");
         }
@@ -62,7 +62,7 @@ public class StatsbeatModule {
         return featureStatsbeat;
     }
 
-    static void resetForTest(TelemetryClient telemetryClient, long interval, long featureInterval) {
-        instance = new StatsbeatModule(telemetryClient, interval, featureInterval);
+    static void resetForTest() {
+        instance = null;
     }
 }
