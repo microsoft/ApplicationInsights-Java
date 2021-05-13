@@ -4,14 +4,13 @@ enum OperatingSystem {
 
     OS_WINDOWS("Windows"), OS_LINUX("Linux"), OS_UNKNOWN("unknown");
 
-    private final String id;
+    private final String value;
 
-    OperatingSystem(String id) {
-        this.id = id;
+    OperatingSystem(String value) {
+        this.value = value;
     }
 
-    @Override
-    public String toString() {
-        return id;
+    String getValue() {
+        return value;
     }
 }

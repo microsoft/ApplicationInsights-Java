@@ -97,8 +97,8 @@ class CustomDimensions {
     }
 
     void populateProperties(Map<String, String> properties) {
-        properties.put("rp", resourceProvider.toString());
-        properties.put("os", operatingSystem.toString());
+        properties.put("rp", resourceProvider.getValue());
+        properties.put("os", operatingSystem.getValue());
         properties.put("attach", attachType);
         properties.put("cikey", customerIkey);
         properties.put("runtimeVersion", runtimeVersion);

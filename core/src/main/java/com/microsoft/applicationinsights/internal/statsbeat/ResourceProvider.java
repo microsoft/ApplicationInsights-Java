@@ -8,14 +8,13 @@ enum ResourceProvider {
     RP_AKS("aks"),
     UNKNOWN("unknown");
 
-    private final String id;
+    private final String value;
 
-    ResourceProvider(String id) {
-        this.id = id;
+    ResourceProvider(String value) {
+        this.value = value;
     }
 
-    @Override
-    public String toString() {
-        return id;
+    String getValue() {
+        return value;
     }
 }

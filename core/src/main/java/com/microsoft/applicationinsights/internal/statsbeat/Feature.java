@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 import java.util.HashMap;
 import java.util.Map;
 
-// features
 enum Feature {
 
     JAVA_VENDOR_ORACLE(0),
