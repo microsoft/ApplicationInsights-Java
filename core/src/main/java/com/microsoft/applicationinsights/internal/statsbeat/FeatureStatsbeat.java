@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.statsbeat.Constants.Feature;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 import java.util.HashSet;
@@ -29,25 +30,17 @@ import java.util.Set;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_FEATURE;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_OTHER;
-import static com.microsoft.applicationinsights.internal.statsbeat.StatsbeatHelper.FEATURE_MAP;
 
 class FeatureStatsbeat extends BaseStatsbeat {
 
-    private final Set<String> featureList = new HashSet<>(64);
+    private final Set<Feature> featureList = new HashSet<>(64);
 
     FeatureStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
 
         // track java distribution
         String javaVendor = System.getProperty("java.vendor");
-        if (javaVendor != null && !javaVendor.isEmpty()) {
-            if (FEATURE_MAP.containsKey(javaVendor)) {
-                featureList.add(javaVendor);
-            } else {
-                featureList.add(JAVA_VENDOR_OTHER);
-            }
-        }
+        featureList.add(Feature.fromJavaVendor(javaVendor));
     }
 
     /**

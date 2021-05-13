@@ -1,24 +1,19 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.microsoft.applicationinsights.internal.statsbeat.Constants.Feature;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_ADOPT_OPENJDK;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_MICROSOFT;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_ORACLE;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_OTHER;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_REDHAT;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_ZULU;
-
 public final class StatsbeatTestUtils {
 
     private static final Map<Integer, String> INSTRUMENTATION_MAP_DECODING;
-    private static final Map<Integer, String> FEATURE_MAP_DECODING;
+    private static final Map<Integer, Feature> FEATURE_MAP_DECODING;
 
     static {
-        INSTRUMENTATION_MAP_DECODING = new HashMap<Integer, String>();
+        INSTRUMENTATION_MAP_DECODING = new HashMap<>();
         INSTRUMENTATION_MAP_DECODING.put(0, "io.opentelemetry.javaagent.apache-httpasyncclient-4.1");
         INSTRUMENTATION_MAP_DECODING.put(1, "io.opentelemetry.javaagent.apache-httpclient-2.0");
         INSTRUMENTATION_MAP_DECODING.put(2, "io.opentelemetry.javaagent.apache-httpclient-4.0");
@@ -78,33 +73,32 @@ public final class StatsbeatTestUtils {
         INSTRUMENTATION_MAP_DECODING.put(56, "io.opentelemetry.javaagent.spring-webmvc-3.1");
         INSTRUMENTATION_MAP_DECODING.put(57, "io.opentelemetry.javaagent.tomcat-7.0");
 
-        FEATURE_MAP_DECODING = new HashMap<Integer, String>();
-        FEATURE_MAP_DECODING.put(0, JAVA_VENDOR_ORACLE);
-        FEATURE_MAP_DECODING.put(1, JAVA_VENDOR_ZULU);
-        FEATURE_MAP_DECODING.put(2, JAVA_VENDOR_MICROSOFT);
-        FEATURE_MAP_DECODING.put(3, JAVA_VENDOR_ADOPT_OPENJDK);
-        FEATURE_MAP_DECODING.put(4, JAVA_VENDOR_REDHAT);
-        FEATURE_MAP_DECODING.put(5, JAVA_VENDOR_OTHER);
+        FEATURE_MAP_DECODING = new HashMap<>();
+        FEATURE_MAP_DECODING.put(0, Feature.JAVA_VENDOR_ORACLE);
+        FEATURE_MAP_DECODING.put(1, Feature.JAVA_VENDOR_ZULU);
+        FEATURE_MAP_DECODING.put(2, Feature.JAVA_VENDOR_MICROSOFT);
+        FEATURE_MAP_DECODING.put(3, Feature.JAVA_VENDOR_ADOPT_OPENJDK);
+        FEATURE_MAP_DECODING.put(4, Feature.JAVA_VENDOR_REDHAT);
+        FEATURE_MAP_DECODING.put(5, Feature.JAVA_VENDOR_OTHER);
     }
 
     static Set<String> decodeInstrumentations(long num) {
         return decode(num, INSTRUMENTATION_MAP_DECODING);
     }
 
-    static Set<String> decodeFeature(long num) {
+    static Set<Feature> decodeFeature(long num) {
         return decode(num, FEATURE_MAP_DECODING);
     }
 
-    private static Set<String> decode(long num, Map<Integer, String> decodedMap) {
-        Set<String> result = new HashSet<>();
-        for(Map.Entry entry: decodedMap.entrySet()) {
-            double value = (int) entry.getKey();
-            Long powerVal = (long)Math.pow(2, value);
+    private static <E> Set<E> decode(long num, Map<Integer, E> decodedMap) {
+        Set<E> result = new HashSet<>();
+        for(Map.Entry<Integer, E> entry: decodedMap.entrySet()) {
+            double value = entry.getKey();
+            long powerVal = (long) Math.pow(2, value);
             if ((powerVal & num) == powerVal) {
-                result.add((String) entry.getValue());
+                result.add(entry.getValue());
             }
         }
-
         return result;
     }
 

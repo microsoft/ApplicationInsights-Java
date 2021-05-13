@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class Constants {
@@ -31,7 +33,7 @@ public class Constants {
 
     public static final String UNKNOWN_RP_ID = "unknown";
 
-    public enum ResourceProvider {
+    enum ResourceProvider {
         RP_FUNCTIONS("functions"),
         RP_APPSVC("appsvc"),
         RP_VM("vm"),
@@ -53,7 +55,7 @@ public class Constants {
     static final String LANGUAGE = "java";
     static final String ATTACH_TYPE_CODELESS = "codeless";
 
-    public enum OperatingSystem {
+    enum OperatingSystem {
         OS_WINDOWS("windows"), OS_LINUX("linux"), OS_UNKNOWN("unknown");
 
         private final String id;
@@ -87,12 +89,41 @@ public class Constants {
     static final String CUSTOM_DIMENSIONS_FEATURE = "feature";
 
     // features
-    static final String JAVA_VENDOR_ORACLE = "Oracle Corporation"; // https://www.oracle.com/technetwork/java/javase/downloads/index.html
-    static final String JAVA_VENDOR_ZULU = "Azul Systems, Inc."; // https://www.azul.com/downloads/zulu/
-    static final String JAVA_VENDOR_MICROSOFT = "Microsoft"; // https://www.microsoft.com/openjdk
-    static final String JAVA_VENDOR_ADOPT_OPENJDK = "AdoptOpenJDK"; // https://adoptopenjdk.net/
-    static final String JAVA_VENDOR_REDHAT = "Red Hat, Inc."; // https://developers.redhat.com/products/openjdk/download/
-    static final String JAVA_VENDOR_OTHER = "other";
+    enum Feature {
+        JAVA_VENDOR_ORACLE(0),
+        JAVA_VENDOR_ZULU(1),
+        JAVA_VENDOR_MICROSOFT(2),
+        JAVA_VENDOR_ADOPT_OPENJDK(3),
+        JAVA_VENDOR_REDHAT(4),
+        JAVA_VENDOR_OTHER(5);
+
+        private final int bitmapIndex;
+
+        Feature(int bitmapIndex) {
+            this.bitmapIndex = bitmapIndex;
+        }
+
+        int getBitmapIndex() {
+            return bitmapIndex;
+        }
+
+        static Feature fromJavaVendor(String javaVendor) {
+            Feature feature = javaVendorFeatureMap.get(javaVendor);
+            return feature != null ? feature : Feature.JAVA_VENDOR_OTHER;
+        }
+    }
+
+    private static final Map<String, Feature> javaVendorFeatureMap;
+
+    static {
+        javaVendorFeatureMap = new HashMap<>();
+        javaVendorFeatureMap.put("Oracle Corporation", Feature.JAVA_VENDOR_ORACLE); // https://www.oracle.com/technetwork/java/javase/downloads/index.html
+        javaVendorFeatureMap.put("Azul Systems, Inc.", Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
+        javaVendorFeatureMap.put("Microsoft", Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
+        javaVendorFeatureMap.put("AdoptOpenJDK", Feature.JAVA_VENDOR_ADOPT_OPENJDK); // https://adoptopenjdk.net/
+        javaVendorFeatureMap.put("Red Hat, Inc.", Feature.JAVA_VENDOR_REDHAT); // https://developers.redhat.com/products/openjdk/download/
+
+    }
 
     // statsbeat metrics' names
     static final String ATTACH = "Attach";

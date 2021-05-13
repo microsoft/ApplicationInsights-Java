@@ -21,22 +21,16 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.microsoft.applicationinsights.internal.statsbeat.Constants.Feature;
+
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_ADOPT_OPENJDK;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_MICROSOFT;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_ORACLE;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_OTHER;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_REDHAT;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_ZULU;
-
 final class StatsbeatHelper {
 
     private static final Map<String, Integer> INSTRUMENTATION_MAP;
-    static final Map<String, Integer> FEATURE_MAP;
 
     static {
         INSTRUMENTATION_MAP = new HashMap<>();
@@ -98,29 +92,30 @@ final class StatsbeatHelper {
         INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.spring-webflux-5.0", 55);
         INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.spring-webmvc-3.1", 56);
         INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.tomcat-7.0", 57);
-
-        FEATURE_MAP = new HashMap<>();
-        FEATURE_MAP.put(JAVA_VENDOR_ORACLE, 0);
-        FEATURE_MAP.put(JAVA_VENDOR_ZULU, 1);
-        FEATURE_MAP.put(JAVA_VENDOR_MICROSOFT, 2);
-        FEATURE_MAP.put(JAVA_VENDOR_ADOPT_OPENJDK, 3);
-        FEATURE_MAP.put(JAVA_VENDOR_REDHAT, 4);
-        FEATURE_MAP.put(JAVA_VENDOR_OTHER, 5);
     }
 
     static long encodeInstrumentations(Set<String> instrumentations) {
         return encode(instrumentations, INSTRUMENTATION_MAP);
     }
 
-    static long encodeFeature(Set<String> features) {
-        return encode(features, FEATURE_MAP);
+    static long encodeFeature(Set<Feature> features) {
+        return encode(features);
     }
 
-    private static long encode(Set<String> list, Map<String, Integer> map) {
+    private static <E> long encode(Set<E> list, Map<E, Integer> map) {
         BitSet number = new BitSet(64);
-        for (String item : list) {
+        for (E item : list) {
             int index = map.get(item);
             number.set(index);
+        }
+        long[] longArray = number.toLongArray();
+        return longArray.length == 0 ? 0L : longArray[0];
+    }
+
+    private static long encode(Set<Feature> list) {
+        BitSet number = new BitSet(64);
+        for (Feature item : list) {
+            number.set(item.getBitmapIndex());
         }
         long[] longArray = number.toLongArray();
         return longArray.length == 0 ? 0L : longArray[0];

@@ -1,12 +1,12 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.microsoft.applicationinsights.internal.statsbeat.Constants.Feature;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.JAVA_VENDOR_ZULU;
 import static org.junit.Assert.assertEquals;
 
 public class StatsbeatHelperTest {
@@ -21,7 +21,7 @@ public class StatsbeatHelperTest {
 
     private static final long EXPECTED_INSTRUMENTATION = (long)(Math.pow(2, 13) + Math.pow(2, 21) + Math.pow(2, 57)); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
 
-    private static final Set<String> features = Collections.singleton(JAVA_VENDOR_ZULU);
+    private static final Set<Feature> features = Collections.singleton(Feature.JAVA_VENDOR_ZULU);
 
     private static final long EXPECTED_FEATURE = 2L;
 
@@ -37,7 +37,7 @@ public class StatsbeatHelperTest {
     public void tesEncodeAndDecodeFeature() {
         long num = StatsbeatHelper.encodeFeature(features);
         assertEquals(EXPECTED_FEATURE, num);
-        Set<String> result = StatsbeatTestUtils.decodeFeature(num);
+        Set<Feature> result = StatsbeatTestUtils.decodeFeature(num);
         assertEquals(features, result);
     }
 }
