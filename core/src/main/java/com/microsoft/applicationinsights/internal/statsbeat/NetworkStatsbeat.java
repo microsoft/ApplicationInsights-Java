@@ -98,7 +98,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         }
     }
 
-    void addInstrumentation(String instrumentation) {
+    // this is used by Exporter
+    public void addInstrumentation(String instrumentation) {
         synchronized (lock) {
             current.instrumentationList.add(instrumentation);
         }
