@@ -28,17 +28,6 @@ import com.squareup.moshi.Json;
  */
 public class MetadataInstanceResponse {
 
-    public transient String location;
-    public transient String name;
-    public transient String offer;
-    public transient String platformFaultDomain;
-    public transient String platformUpdateDomain;
-    public transient String publisher;
-    public transient String sku;
-    public transient String tags;
-    public transient String version;
-    public transient String vmSize;
-
     @Json(name = "vmId")
     private final String vmId;
 
