@@ -5,8 +5,9 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import okio.BufferedSource;
 import okio.Okio;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,9 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.WEB
 import static org.junit.Assert.assertEquals;
 
 public class AttachStatsbeatTest {
+
+    @Rule
+    public EnvironmentVariables envVars = new EnvironmentVariables();
 
     private AttachStatsbeat attachStatsbeat;
 
@@ -53,28 +57,23 @@ public class AttachStatsbeatTest {
 
     @Test
     public void testAppSvcResourceProviderId() {
-        AttachStatsbeat mockedAttachStatsbeat = Mockito.spy(attachStatsbeat);
-        Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_SITE_NAME)).thenReturn("test_site_name");
-        Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_HOME_STAMPNAME)).thenReturn("test_stamp_name");
-        Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_HOSTNAME)).thenReturn("test_hostname");
+        envVars.set(WEBSITE_SITE_NAME, "test_site_name");
+        envVars.set(WEBSITE_HOME_STAMPNAME, "test_stamp_name");
+        envVars.set(WEBSITE_HOSTNAME, "test_hostname");
 
-        mockedAttachStatsbeat.setResourceProviderId(mockedAttachStatsbeat.initResourceProviderId(RP_APPSVC));
-        assertEquals(mockedAttachStatsbeat.getResourceProviderId(), "test_site_name/test_stamp_name/test_hostname");
+        assertEquals("test_site_name/test_stamp_name/test_hostname", AttachStatsbeat.initResourceProviderId(RP_APPSVC, null));
     }
 
     @Test
     public void testFunctionsResourceProviderId() {
-        AttachStatsbeat mockedAttachStatsbeat = Mockito.spy(attachStatsbeat);
-        Mockito.when(mockedAttachStatsbeat.getEnvironmentVariable(WEBSITE_HOSTNAME)).thenReturn("test_function_name");
+        envVars.set(WEBSITE_HOSTNAME, "test_function_name");
 
-        mockedAttachStatsbeat.setResourceProviderId(mockedAttachStatsbeat.initResourceProviderId(RP_FUNCTIONS));
-        assertEquals(mockedAttachStatsbeat.getResourceProviderId(), "test_function_name");
+        assertEquals("test_function_name", AttachStatsbeat.initResourceProviderId(RP_FUNCTIONS, null));
     }
 
     @Test
     public void testAksResourceProviderId() {
-        attachStatsbeat.setResourceProviderId(attachStatsbeat.initResourceProviderId(RP_AKS));
-        assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
+        assertEquals(UNKNOWN, AttachStatsbeat.initResourceProviderId(RP_AKS, null));
     }
 
     @Test

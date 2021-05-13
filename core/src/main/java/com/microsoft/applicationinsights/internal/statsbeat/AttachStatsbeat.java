@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
@@ -34,7 +33,7 @@ public class AttachStatsbeat extends BaseStatsbeat {
 
     public AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);
-        resourceProviderId = initResourceProviderId(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP));
+        resourceProviderId = initResourceProviderId(CustomDimensions.getInstance().getProperties().get(CUSTOM_DIMENSIONS_RP), null);
         AzureMetadataService.getInstance().initialize(interval);
     }
 
@@ -52,28 +51,25 @@ public class AttachStatsbeat extends BaseStatsbeat {
         return resourceProviderId;
     }
 
-    public void setResourceProviderId(String resourceProviderId) {
-        this.resourceProviderId = resourceProviderId;
-    }
-
     public MetadataInstanceResponse getMetadataInstanceResponse() {
         return metadataInstanceResponse;
     }
 
     public void updateMetadataInstance(MetadataInstanceResponse response) {
         metadataInstanceResponse = response;
-        resourceProviderId = initResourceProviderId(RP_VM);
+        resourceProviderId = initResourceProviderId(RP_VM, response);
     }
 
-    protected String initResourceProviderId(String resourceProvider) {
+    // visible for testing
+    static String initResourceProviderId(String resourceProvider, MetadataInstanceResponse response) {
         switch (resourceProvider) {
             case RP_APPSVC:
                 return getEnvironmentVariable(WEBSITE_SITE_NAME) + "/" + getEnvironmentVariable(WEBSITE_HOME_STAMPNAME) + "/" + getEnvironmentVariable(WEBSITE_HOSTNAME);
             case RP_FUNCTIONS:
                 return getEnvironmentVariable(WEBSITE_HOSTNAME);
             case RP_VM:
-                if (metadataInstanceResponse != null) {
-                    return metadataInstanceResponse.getVmId() + "/" + metadataInstanceResponse.getSubscriptionId();
+                if (response != null) {
+                    return response.getVmId() + "/" + response.getSubscriptionId();
                 } else {
                     return UNKNOWN;
                 }
@@ -84,8 +80,7 @@ public class AttachStatsbeat extends BaseStatsbeat {
         }
     }
 
-    @VisibleForTesting
-    String getEnvironmentVariable(String envVar) {
+    private static String getEnvironmentVariable(String envVar) {
         return System.getenv(envVar);
     }
 }
