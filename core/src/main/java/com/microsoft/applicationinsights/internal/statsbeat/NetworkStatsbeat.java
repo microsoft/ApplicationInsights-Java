@@ -27,7 +27,6 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_INSTRUMENTATION;
@@ -105,22 +104,16 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         }
     }
 
-    public void incrementRequestSuccessCount() {
+    public void incrementRequestSuccessCount(long duration) {
         synchronized (lock) {
             current.requestSuccessCount.incrementAndGet();
+            current.totalRequestDuration.getAndAdd(duration);
         }
     }
 
     public void incrementRequestFailureCount() {
         synchronized (lock) {
             current.requestFailureCount.incrementAndGet();
-        }
-    }
-
-    // duration in milliseconds
-    public void addRequestDuration(long duration) {
-        synchronized (lock) {
-            current.totalRequestDuration.getAndAdd(duration);
         }
     }
 
@@ -156,8 +149,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     long getRequestFailureCount() {
         return current.requestFailureCount.get();
     }
-
-    long getRequestDurationCount() { return current.requestSuccessCount.get(); }
 
     // only used by tests
     double getRequestDurationAvg() { return current.getRequestDurationAvg(); }

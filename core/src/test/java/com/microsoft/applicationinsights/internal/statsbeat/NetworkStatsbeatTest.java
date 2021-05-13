@@ -33,9 +33,11 @@ public class NetworkStatsbeatTest {
     @Test
     public void testIncrementRequestSuccessCount() {
         assertEquals(0, networkStatsbeat.getRequestSuccessCount());
-        networkStatsbeat.incrementRequestSuccessCount();
-        networkStatsbeat.incrementRequestSuccessCount();
+        assertEquals(0, networkStatsbeat.getRequestDurationAvg(), 0);
+        networkStatsbeat.incrementRequestSuccessCount(1000);
+        networkStatsbeat.incrementRequestSuccessCount(3000);
         assertEquals(2, networkStatsbeat.getRequestSuccessCount());
+        assertEquals(2000.0, networkStatsbeat.getRequestDurationAvg(), 0);
     }
 
     @Test
@@ -44,17 +46,6 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.incrementRequestFailureCount();
         networkStatsbeat.incrementRequestFailureCount();
         assertEquals(2, networkStatsbeat.getRequestFailureCount());
-    }
-
-    @Test
-    public void testAddRequestDuration() {
-        assertEquals(0, networkStatsbeat.getRequestDurationCount());
-        networkStatsbeat.incrementRequestSuccessCount();
-        networkStatsbeat.incrementRequestSuccessCount();
-        networkStatsbeat.addRequestDuration(1000);
-        networkStatsbeat.addRequestDuration(3000);
-        assertEquals(2, networkStatsbeat.getRequestDurationCount());
-        assertEquals(2000.0, networkStatsbeat.getRequestDurationAvg(), 0);
     }
 
     @Test
@@ -89,19 +80,17 @@ public class NetworkStatsbeatTest {
     @Test
     public void testRaceCondition() throws InterruptedException {
         final ExecutorService executorService = Executors.newFixedThreadPool(100);
-        final AtomicLong durationCounter = new AtomicLong();
         final AtomicInteger instrumentationCounter = new AtomicInteger();
         for (int i = 0; i < 100; i++) {
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
                     for (int j = 0; j < 1000; j++) {
-                        networkStatsbeat.incrementRequestSuccessCount();
+                        networkStatsbeat.incrementRequestSuccessCount(j % 2 == 0 ? 5 : 10);
                         networkStatsbeat.incrementRequestFailureCount();
                         networkStatsbeat.incrementRetryCount();
                         networkStatsbeat.incrementThrottlingCount();
                         networkStatsbeat.incrementExceptionCount();
-                        networkStatsbeat.addRequestDuration(durationCounter.getAndAdd(5));
                         networkStatsbeat.addInstrumentation("instrumentation" + instrumentationCounter.getAndDecrement());
                     }
                 }
@@ -115,7 +104,7 @@ public class NetworkStatsbeatTest {
         assertEquals(100000, networkStatsbeat.getRetryCount());
         assertEquals(100000, networkStatsbeat.getThrottlingCount());
         assertEquals(100000, networkStatsbeat.getExceptionCount());
-        assertEquals(100000, networkStatsbeat.getRequestDurationCount());
+        assertEquals(7.5, networkStatsbeat.getRequestDurationAvg(), 0);
         assertEquals(100000, networkStatsbeat.getInstrumentationList().size());
     }
 }

@@ -158,8 +158,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 transmissionPolicyManager.clearBackoff();
                 // Increment Success Counter
                 networkExceptionStats.recordSuccess();
-                StatsbeatModule.get().getNetworkStatsbeat().incrementRequestSuccessCount();
-                StatsbeatModule.get().getNetworkStatsbeat().addRequestDuration(duration);
+                StatsbeatModule.get().getNetworkStatsbeat().incrementRequestSuccessCount(duration);
             }
             return true;
         } catch (ConnectionPoolTimeoutException e) {
