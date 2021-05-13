@@ -3,8 +3,5 @@
   "role": {
     "name": "testrolename",
     "instance": "testroleinstance"
-  },
-  "preview": {
-    "httpMethodInOperationName": true
   }
 }

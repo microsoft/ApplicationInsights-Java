@@ -4,8 +4,5 @@
     "mongo": {
       "enabled": false
     }
-  },
-  "preview": {
-    "httpMethodInOperationName": true
   }
 }

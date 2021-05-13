@@ -1,4 +1,7 @@
 # CHANGELOG
+# Version 3.1.0
+* Capture http method in the operation name [#1679](https://github.com/microsoft/ApplicationInsights-Java/pull/1679)
+
 # Version 3.0.4-BETA.2
 * Enable users to override iKey, cloud role name and cloud role instance per telemetry [#1630](https://github.com/microsoft/ApplicationInsights-Java/pull/1630).
 * Fix duplicate headers [#1640](https://github.com/microsoft/ApplicationInsights-Java/pull/1640).

@@ -129,11 +129,8 @@ public class Exporter implements SpanExporter {
 
     private final TelemetryClient telemetryClient;
 
-    private final boolean httpMethodInOperationName;
-
-    public Exporter(TelemetryClient telemetryClient, boolean httpMethodInOperationName) {
+    public Exporter(TelemetryClient telemetryClient) {
         this.telemetryClient = telemetryClient;
-        this.httpMethodInOperationName = httpMethodInOperationName;
     }
 
     /**
@@ -625,7 +622,7 @@ public class Exporter implements SpanExporter {
 
     private String getTelemetryName(SpanData span) {
         String name = span.getName();
-        if (!httpMethodInOperationName || !name.startsWith("/")) {
+        if (!name.startsWith("/")) {
             return name;
         }
         String httpMethod = span.getAttributes().get(SemanticAttributes.HTTP_METHOD);
