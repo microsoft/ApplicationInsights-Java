@@ -42,11 +42,8 @@ abstract class BaseStatsbeat {
 
     protected final TelemetryClient telemetryClient;
 
-    private final long interval;
-
     BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
         this.telemetryClient = telemetryClient;
-        this.interval = interval;
         scheduledExecutor.scheduleAtFixedRate(new StatsbeatSender(), interval, interval, TimeUnit.SECONDS);
     }
 
