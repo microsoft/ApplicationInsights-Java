@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-// TODO consider making this enum similar to Feature, and could implement same interface that handles bitmap encoding
+// this class is not currently implemented as an enum (similar to Feature)
+// because instrumentations may be more dynamic than features
 class Instrumentations {
 
     private static final Map<String, Integer> INSTRUMENTATION_MAP;

@@ -29,6 +29,7 @@ public class StatsbeatModule {
 
     private final NetworkStatsbeat networkStatsbeat;
     private final AttachStatsbeat attachStatsbeat;
+    // TODO (heya) is this correct that this is unused?
     private final FeatureStatsbeat featureStatsbeat;
 
     public static void initialize(TelemetryClient telemetryClient, long interval, long featureInterval) {
