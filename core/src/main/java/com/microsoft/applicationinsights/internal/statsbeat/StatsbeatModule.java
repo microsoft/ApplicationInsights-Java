@@ -25,20 +25,30 @@ import com.microsoft.applicationinsights.TelemetryClient;
 
 public class StatsbeatModule {
 
-    private static final StatsbeatModule INSTANCE = new StatsbeatModule();
+    private static volatile StatsbeatModule instance;
 
-    private NetworkStatsbeat networkStatsbeat;
-    private AttachStatsbeat attachStatsbeat;
-    private FeatureStatsbeat featureStatsbeat;
+    private final NetworkStatsbeat networkStatsbeat;
+    private final AttachStatsbeat attachStatsbeat;
+    private final FeatureStatsbeat featureStatsbeat;
 
-    public static StatsbeatModule getInstance() {
-        return INSTANCE;
+    public static void init(TelemetryClient telemetryClient, long interval, long featureInterval) {
+        instance = new StatsbeatModule(
+                new NetworkStatsbeat(telemetryClient, interval),
+                new AttachStatsbeat(telemetryClient, interval),
+                new FeatureStatsbeat(telemetryClient, featureInterval));
     }
 
-    void initialize(TelemetryClient telemetryClient, long interval, long featureInterval) {
-        networkStatsbeat = new NetworkStatsbeat(telemetryClient, interval);
-        attachStatsbeat = new AttachStatsbeat(telemetryClient, interval);
-        featureStatsbeat = new FeatureStatsbeat(telemetryClient, featureInterval);
+    public static StatsbeatModule getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("init must be called first");
+        }
+        return instance;
+    }
+
+    private StatsbeatModule(NetworkStatsbeat networkStatsbeat, AttachStatsbeat attachStatsbeat, FeatureStatsbeat featureStatsbeat) {
+        this.networkStatsbeat = networkStatsbeat;
+        this.attachStatsbeat = attachStatsbeat;
+        this.featureStatsbeat = featureStatsbeat;
     }
 
     public NetworkStatsbeat getNetworkStatsbeat() { return networkStatsbeat; }
