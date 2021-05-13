@@ -62,16 +62,21 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
 
         long currCollectionTimeMillis = System.currentTimeMillis();
-        updateAttributes(processInfo);
-        long currProcessBytes = getProcessBytes(processInfo);
+        long currProcessBytes = 0L;
+        if (processInfo != null) {
+            updateAttributes(processInfo);
+            currProcessBytes = getProcessBytes(processInfo);
+        }
         long currTotalProcessorMillis = getTotalProcessorMillis(processor);
 
         if (prevCollectionTimeMillis != 0) {
             double elapsedMillis = currCollectionTimeMillis - prevCollectionTimeMillis;
             double elapsedSeconds = elapsedMillis / MILLIS_IN_SECOND;
-            double processBytes = (currProcessBytes - prevProcessBytes) / elapsedSeconds;
-            send(telemetryClient, processBytes, Constants.PROCESS_IO_PC_METRIC_NAME);
-            logger.trace("Sent performance counter for '{}': '{}'", Constants.PROCESS_IO_PC_METRIC_NAME, processBytes);
+            if (processInfo != null) {
+                double processBytes = (currProcessBytes - prevProcessBytes) / elapsedSeconds;
+                send(telemetryClient, processBytes, Constants.PROCESS_IO_PC_METRIC_NAME);
+                logger.trace("Sent performance counter for '{}': '{}'", Constants.PROCESS_IO_PC_METRIC_NAME, processBytes);
+            }
 
             double processorLoad = (currTotalProcessorMillis - prevTotalProcessorMillis) / (elapsedMillis * processor.getLogicalProcessorCount());
             double processorPercentage = 100 * processorLoad;
@@ -85,7 +90,7 @@ public class OshiPerformanceCounter implements PerformanceCounter {
     }
 
     private static void updateAttributes(OSProcess processInfo) {
-        if (processInfo != null && !processInfo.updateAttributes()) {
+        if (!processInfo.updateAttributes()) {
             logger.debug("could not update process attributes");
         }
     }
