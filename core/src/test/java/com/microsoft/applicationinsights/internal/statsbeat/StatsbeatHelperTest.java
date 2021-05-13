@@ -29,7 +29,7 @@ public class StatsbeatHelperTest {
     public void testEncodeAndDecodeInstrumentations() {
         long num = StatsbeatHelper.encodeInstrumentations(instrumentations);
         assertEquals(EXPECTED_INSTRUMENTATION, num);
-        Set<String> result = StatsbeatHelper.decodeInstrumentations(num);
+        Set<String> result = StatsbeatTestUtils.decodeInstrumentations(num);
         assertEquals(instrumentations, result);
     }
 
@@ -37,7 +37,7 @@ public class StatsbeatHelperTest {
     public void tesEncodeAndDecodeFeature() {
         long num = StatsbeatHelper.encodeFeature(features);
         assertEquals(EXPECTED_FEATURE, num);
-        Set<String> result = StatsbeatHelper.decodeFeature(num);
+        Set<String> result = StatsbeatTestUtils.decodeFeature(num);
         assertEquals(features, result);
     }
 }
