@@ -1,7 +1,5 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.microsoft.applicationinsights.internal.statsbeat.Constants.OperatingSystem;
-import com.microsoft.applicationinsights.internal.statsbeat.Constants.ResourceProvider;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.junit.Test;

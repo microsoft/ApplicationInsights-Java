@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.statsbeat.Constants.Feature;
 import org.junit.Before;
 import org.junit.Test;
 

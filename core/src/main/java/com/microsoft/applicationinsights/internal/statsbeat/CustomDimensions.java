@@ -27,8 +27,6 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 
 import java.util.Map;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
-
 class CustomDimensions {
 
     private static final CustomDimensions instance = new CustomDimensions();

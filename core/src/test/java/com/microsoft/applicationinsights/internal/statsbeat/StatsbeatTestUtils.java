@@ -1,7 +1,5 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.microsoft.applicationinsights.internal.statsbeat.Constants.Feature;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

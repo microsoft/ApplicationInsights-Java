@@ -22,7 +22,6 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.statsbeat.Constants.Feature;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 import java.util.HashSet;

@@ -1,8 +1,6 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
-import com.microsoft.applicationinsights.internal.statsbeat.Constants.OperatingSystem;
-import com.microsoft.applicationinsights.internal.statsbeat.Constants.ResourceProvider;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonEncodingException;

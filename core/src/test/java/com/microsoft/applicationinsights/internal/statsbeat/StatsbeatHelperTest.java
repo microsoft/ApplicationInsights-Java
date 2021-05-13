@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.microsoft.applicationinsights.internal.statsbeat.Constants.Feature;
 import org.junit.Test;
 
 import java.util.Collections;

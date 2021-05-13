@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.microsoft.applicationinsights.internal.statsbeat.Constants.Feature;
-
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
