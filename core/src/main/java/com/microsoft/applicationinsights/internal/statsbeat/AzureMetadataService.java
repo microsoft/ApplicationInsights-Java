@@ -34,19 +34,27 @@ class AzureMetadataService implements Runnable {
     private static final JsonAdapter<MetadataInstanceResponse> jsonAdapter =
             new Moshi.Builder().build().adapter(MetadataInstanceResponse.class);
 
-    static void scheduleAtFixedRate(long interval) {
+    private final AttachStatsbeat attachStatsbeat;
+    private final CustomDimensions customDimensions;
+
+    AzureMetadataService(AttachStatsbeat attachStatsbeat, CustomDimensions customDimensions) {
+        this.attachStatsbeat = attachStatsbeat;
+        this.customDimensions = customDimensions;
+    }
+
+    void scheduleAtFixedRate(long interval) {
         // Querying Azure Metadata Service is required for every 15 mins since VM id will get updated frequently.
         // Starting and restarting a VM will generate a new VM id each time.
         // TODO need to confirm if restarting VM will also restart the Java Agent
-        scheduledExecutor.scheduleAtFixedRate(new AzureMetadataService(), interval, interval, TimeUnit.SECONDS);
+        scheduledExecutor.scheduleAtFixedRate(this, interval, interval, TimeUnit.SECONDS);
     }
 
     // visible for testing
-    static void parseJsonResponse(String response) throws IOException {
+    void parseJsonResponse(String response) throws IOException {
         if (response != null) {
             MetadataInstanceResponse metadataInstanceResponse = jsonAdapter.fromJson(response);
-            StatsbeatModule.get().getAttachStatsbeat().updateMetadataInstance(metadataInstanceResponse);
-            CustomDimensions.get().getProperties().put(CUSTOM_DIMENSIONS_RP, RP_VM);
+            attachStatsbeat.updateMetadataInstance(metadataInstanceResponse);
+            customDimensions.getProperties().put(CUSTOM_DIMENSIONS_RP, RP_VM);
 
             // osType from the Azure Metadata Service has a higher precedence over the running app’s operating system.
             String osType = metadataInstanceResponse.getOsType();

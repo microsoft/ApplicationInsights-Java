@@ -20,13 +20,6 @@ import static org.junit.Assert.assertEquals;
 
 public class AzureMetadataServiceTest {
 
-    @Before
-    public void setup() {
-        CustomDimensions.resetForTest();
-        StatsbeatModule.resetForTest();
-        StatsbeatModule.initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
-    }
-
     @Test
     public void testParseJsonResponseLinux() throws IOException, JsonDataException {
         Path path = new File(Resources.getResource("metadata_instance_linux.json").getPath()).toPath();
@@ -34,8 +27,12 @@ public class AzureMetadataServiceTest {
         BufferedSource source = Okio.buffer(Okio.source(in));
         String result = source.readUtf8();
         source.close();
-        AzureMetadataService.parseJsonResponse(result);
-        MetadataInstanceResponse response = StatsbeatModule.get().getAttachStatsbeat().getMetadataInstanceResponse();
+
+        AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL);
+        AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, CustomDimensions.get());
+        azureMetadataService.parseJsonResponse(result);
+
+        MetadataInstanceResponse response = attachStatsbeat.getMetadataInstanceResponse();
         assertEquals(response.getVmId(), "2a1216c3-a2a0-4fc5-a941-b1f5acde7051");
         assertEquals(response.getOsType(), "Linux");
         assertEquals(response.getResourceGroupName(), "heya-java-ipa");
@@ -49,8 +46,12 @@ public class AzureMetadataServiceTest {
         BufferedSource source = Okio.buffer(Okio.source(in));
         String result = source.readUtf8();
         source.close();
-        AzureMetadataService.parseJsonResponse(result);
-        MetadataInstanceResponse response = StatsbeatModule.get().getAttachStatsbeat().getMetadataInstanceResponse();
+
+        AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL);
+        AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, CustomDimensions.get());
+        azureMetadataService.parseJsonResponse(result);
+
+        MetadataInstanceResponse response = attachStatsbeat.getMetadataInstanceResponse();
         assertEquals(response.getVmId(), "2955a129-2323-4c1f-8918-994a7a83eefd");
         assertEquals(response.getOsType(), "Windows");
         assertEquals(response.getResourceGroupName(), "heya-java-ipa");

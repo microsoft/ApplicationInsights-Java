@@ -18,7 +18,6 @@ import java.nio.file.Path;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_OS;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_RP;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_AKS;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_APPSVC;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RP_FUNCTIONS;
@@ -37,10 +36,7 @@ public class AttachStatsbeatTest {
 
     @Before
     public void setup() {
-        CustomDimensions.resetForTest();
-        StatsbeatModule.resetForTest();
-        StatsbeatModule.initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
-        attachStatsbeat = StatsbeatModule.get().getAttachStatsbeat();
+        attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL);
     }
 
     @Test
@@ -51,7 +47,8 @@ public class AttachStatsbeatTest {
         BufferedSource source = Okio.buffer(Okio.source(in));
         String result = source.readUtf8();
         source.close();
-        AzureMetadataService.parseJsonResponse(result);
+        AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, CustomDimensions.get());
+        azureMetadataService.parseJsonResponse(result);
         assertEquals(attachStatsbeat.getResourceProviderId(), "2a1216c3-a2a0-4fc5-a941-b1f5acde7051/65b2f83e-7bf1-4be3-bafc-3a4163265a52");
         assertEquals(CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_OS), "Linux");
     }

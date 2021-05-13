@@ -36,7 +36,7 @@ public class StatsbeatModule {
             throw new IllegalStateException("initialize already called");
         }
         instance = new StatsbeatModule(telemetryClient, interval, featureInterval);
-        AzureMetadataService.scheduleAtFixedRate(interval);
+        new AzureMetadataService(instance.attachStatsbeat, CustomDimensions.get()).scheduleAtFixedRate(interval);
     }
 
     public static StatsbeatModule get() {
@@ -46,7 +46,8 @@ public class StatsbeatModule {
         return instance;
     }
 
-    private StatsbeatModule(TelemetryClient telemetryClient, long interval, long featureInterval) {
+    // visible for testing
+    StatsbeatModule(TelemetryClient telemetryClient, long interval, long featureInterval) {
         this.networkStatsbeat = new NetworkStatsbeat(telemetryClient, interval);
         this.attachStatsbeat = new AttachStatsbeat(telemetryClient, interval);
         this.featureStatsbeat = new FeatureStatsbeat(telemetryClient, featureInterval);
@@ -54,15 +55,13 @@ public class StatsbeatModule {
 
     public NetworkStatsbeat getNetworkStatsbeat() { return networkStatsbeat; }
 
+    // TODO (trask) this is unused?
     AttachStatsbeat getAttachStatsbeat() {
         return attachStatsbeat;
     }
 
+    // TODO (trask) this is unused?
     FeatureStatsbeat getFeatureStatsbeat() {
         return featureStatsbeat;
-    }
-
-    static void resetForTest() {
-        instance = null;
     }
 }
