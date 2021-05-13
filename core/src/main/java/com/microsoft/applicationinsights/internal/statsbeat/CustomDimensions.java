@@ -35,13 +35,8 @@ class CustomDimensions {
 
     private static CustomDimensions instance;
 
-    private volatile String resourceProvider;
-    private volatile String operatingSystem;
-
-    private final String customerIkey;
-    private final String version;
-    private final String runtimeVersion;
     private final ConcurrentMap<String, String> properties;
+
     private static final Object lock = new Object();
     
     static CustomDimensions getInstance() {
@@ -55,6 +50,9 @@ class CustomDimensions {
     
     private CustomDimensions() {
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
+
+        String resourceProvider;
+        String operatingSystem;
         if (sdkVersion.startsWith("awr")) {
             resourceProvider = RP_APPSVC;
             operatingSystem = OS_WINDOWS;
@@ -73,23 +71,14 @@ class CustomDimensions {
         } else if (sdkVersion.startsWith("flr")) {
             resourceProvider = RP_FUNCTIONS;
             operatingSystem = OS_LINUX;
-        } else if (sdkVersion.startsWith(LANGUAGE)) {
+        } else {
             resourceProvider = UNKNOWN;
+            operatingSystem = getOperatingSystem();
         }
 
-        if (operatingSystem == null) {
-            if (SystemInformation.INSTANCE.isWindows()) {
-                operatingSystem = OS_WINDOWS;
-            } else if (SystemInformation.INSTANCE.isUnix()) {
-                operatingSystem = OS_LINUX;
-            } else {
-                operatingSystem = OS_UNKNOW;
-            }
-        }
-
-        customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
-        runtimeVersion = System.getProperty("java.version");
+        String customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
+        String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
+        String runtimeVersion = System.getProperty("java.version");
 
         properties = new ConcurrentHashMap<>();
         properties.put(CUSTOM_DIMENSIONS_RP, resourceProvider);
@@ -105,6 +94,16 @@ class CustomDimensions {
 
     ConcurrentMap<String, String> getProperties() {
         return properties;
+    }
+
+    private static String getOperatingSystem() {
+        if (SystemInformation.INSTANCE.isWindows()) {
+            return OS_WINDOWS;
+        } else if (SystemInformation.INSTANCE.isUnix()) {
+            return OS_LINUX;
+        } else {
+            return OS_UNKNOW;
+        }
     }
 
     @VisibleForTesting
