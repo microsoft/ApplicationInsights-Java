@@ -6,10 +6,9 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.junit.Test;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_CIKEY;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_OS;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_RUNTIME_VERSION;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_VERSION;
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -39,22 +38,31 @@ public class CustomDimensionsTest {
     public void testCustomerIkey() {
         CustomDimensions customDimensions = new CustomDimensions();
 
-        assertNull(customDimensions.getProperty(CUSTOM_DIMENSIONS_CIKEY));
+        Map<String, String> properties = new HashMap<>();
+        customDimensions.populateProperties(properties);
+
+        assertNull(properties.get("cikey"));
     }
 
     @Test
     public void testVersion() {
         CustomDimensions customDimensions = new CustomDimensions();
 
+        Map<String, String> properties = new HashMap<>();
+        customDimensions.populateProperties(properties);
+
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
         String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
-        assertEquals(version, customDimensions.getProperty(CUSTOM_DIMENSIONS_VERSION));
+        assertEquals(version, properties.get("version"));
     }
 
     @Test
     public void testRuntimeVersion() {
         CustomDimensions customDimensions = new CustomDimensions();
 
-        assertEquals(System.getProperty("java.version"), customDimensions.getProperty(CUSTOM_DIMENSIONS_RUNTIME_VERSION));
+        Map<String, String> properties = new HashMap<>();
+        customDimensions.populateProperties(properties);
+
+        assertEquals(System.getProperty("java.version"), properties.get("runtimeVersion"));
     }
 }

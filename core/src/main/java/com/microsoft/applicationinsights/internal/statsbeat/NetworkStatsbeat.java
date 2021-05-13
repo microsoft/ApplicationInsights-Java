@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_INSTRUMENTATION;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.EXCEPTION_COUNT;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.REQUEST_DURATION;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.REQUEST_FAILURE_COUNT;
@@ -38,6 +37,8 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.RET
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.THROTTLE_COUNT;
 
 public class NetworkStatsbeat extends BaseStatsbeat {
+
+    private static final String CUSTOM_DIMENSIONS_INSTRUMENTATION = "instrumentation";
 
     private volatile IntervalMetrics current;
 

@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 import static org.junit.Assert.assertEquals;
@@ -42,7 +44,10 @@ public class AttachStatsbeatTest {
         AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, customDimensions);
         azureMetadataService.parseJsonResponse(result);
         assertEquals(attachStatsbeat.getResourceProviderId(), "2a1216c3-a2a0-4fc5-a941-b1f5acde7051/65b2f83e-7bf1-4be3-bafc-3a4163265a52");
-        assertEquals("Linux", customDimensions.getProperty(CUSTOM_DIMENSIONS_OS));
+
+        Map<String, String> properties = new HashMap<>();
+        customDimensions.populateProperties(properties);
+        assertEquals("Linux", properties.get("os"));
     }
 
     @Test

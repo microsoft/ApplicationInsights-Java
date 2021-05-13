@@ -56,7 +56,7 @@ public class Constants {
     static final String ATTACH_TYPE_CODELESS = "codeless";
 
     enum OperatingSystem {
-        OS_WINDOWS("windows"), OS_LINUX("linux"), OS_UNKNOWN("unknown");
+        OS_WINDOWS("Windows"), OS_LINUX("Linux"), OS_UNKNOWN("unknown");
 
         private final String id;
 
@@ -74,19 +74,6 @@ public class Constants {
     static final String WEBSITE_SITE_NAME = "appSrv_SiteName";
     static final String WEBSITE_HOSTNAME = "appSrv_wsHost";
     static final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
-
-    // custom dimensions
-    // TODO can these be private in CustomDimensions?
-    static final String CUSTOM_DIMENSIONS_RP = "rp";
-    static final String CUSTOM_DIMENSIONS_RP_ID = "rpId";
-    static final String CUSTOM_DIMENSIONS_ATTACH_TYPE = "attach";
-    static final String CUSTOM_DIMENSIONS_CIKEY = "cikey";
-    static final String CUSTOM_DIMENSIONS_RUNTIME_VERSION = "runtimeVersion";
-    static final String CUSTOM_DIMENSIONS_OS = "os";
-    static final String CUSTOM_DIMENSIONS_LANGUAGE = "language";
-    static final String CUSTOM_DIMENSIONS_VERSION = "version";
-    static final String CUSTOM_DIMENSIONS_INSTRUMENTATION = "instrumentation";
-    static final String CUSTOM_DIMENSIONS_FEATURE = "feature";
 
     // features
     enum Feature {

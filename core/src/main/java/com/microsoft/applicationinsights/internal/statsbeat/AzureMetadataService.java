@@ -1,6 +1,7 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
+import com.microsoft.applicationinsights.internal.statsbeat.Constants.OperatingSystem;
 import com.microsoft.applicationinsights.internal.statsbeat.Constants.ResourceProvider;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.squareup.moshi.JsonAdapter;
@@ -15,10 +16,6 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_OS;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_RP;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.ResourceProvider.RP_VM;
 
 class AzureMetadataService implements Runnable {
 
@@ -57,8 +54,13 @@ class AzureMetadataService implements Runnable {
 
         // osType from the Azure Metadata Service has a higher precedence over the running app’s operating system.
         String osType = metadataInstanceResponse.getOsType();
-        if (!"unknown".equalsIgnoreCase(osType)) {
-            customDimensions.updateProperty(CUSTOM_DIMENSIONS_OS, osType);
+        switch (osType) {
+            case "Windows":
+                customDimensions.setOperatingSystem(OperatingSystem.OS_WINDOWS);
+                break;
+            case "Linux":
+                customDimensions.setOperatingSystem(OperatingSystem.OS_LINUX);
+                break;
         }
     }
 

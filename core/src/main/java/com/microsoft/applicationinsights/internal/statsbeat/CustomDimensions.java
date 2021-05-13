@@ -26,20 +26,28 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
 class CustomDimensions {
 
+    private static final String CUSTOM_DIMENSIONS_RP = "rp";
+    private static final String CUSTOM_DIMENSIONS_ATTACH_TYPE = "attach";
+    private static final String CUSTOM_DIMENSIONS_CUSTOMER_IKEY = "cikey";
+    private static final String CUSTOM_DIMENSIONS_RUNTIME_VERSION = "runtimeVersion";
+    private static final String CUSTOM_DIMENSIONS_OS = "os";
+    private static final String CUSTOM_DIMENSIONS_LANGUAGE = "language";
+    private static final String CUSTOM_DIMENSIONS_SDK_VERSION = "version";
     private static final CustomDimensions instance = new CustomDimensions();
 
     private volatile ResourceProvider resourceProvider;
+    private volatile OperatingSystem operatingSystem;
 
-    private final OperatingSystem operatingSystem;
-
-    private final ConcurrentMap<String, String> properties;
+    private final String attachType;
+    private final String customerIkey;
+    private final String runtimeVersion;
+    private final String language;
+    private final String sdkVersion;
 
     static CustomDimensions get() {
         return instance;
@@ -47,24 +55,24 @@ class CustomDimensions {
 
     // visible for testing
     CustomDimensions() {
-        String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
+        String qualifiedSdkVersion = PropertyHelper.getQualifiedSdkVersionString();
 
-        if (sdkVersion.startsWith("awr")) {
+        if (qualifiedSdkVersion.startsWith("awr")) {
             resourceProvider = ResourceProvider.RP_APPSVC;
             operatingSystem = OperatingSystem.OS_WINDOWS;
-        } else if (sdkVersion.startsWith("alr")) {
+        } else if (qualifiedSdkVersion.startsWith("alr")) {
             resourceProvider = ResourceProvider.RP_APPSVC;
             operatingSystem = OperatingSystem.OS_LINUX;
-        } else if (sdkVersion.startsWith("kwr")) {
+        } else if (qualifiedSdkVersion.startsWith("kwr")) {
             resourceProvider = ResourceProvider.RP_AKS;
             operatingSystem = OperatingSystem.OS_WINDOWS;
-        } else if (sdkVersion.startsWith("klr")) {
+        } else if (qualifiedSdkVersion.startsWith("klr")) {
             resourceProvider = ResourceProvider.RP_AKS;
             operatingSystem = OperatingSystem.OS_LINUX;
-        } else if (sdkVersion.startsWith("fwr")) {
+        } else if (qualifiedSdkVersion.startsWith("fwr")) {
             resourceProvider = ResourceProvider.RP_FUNCTIONS;
             operatingSystem = OperatingSystem.OS_WINDOWS;
-        } else if (sdkVersion.startsWith("flr")) {
+        } else if (qualifiedSdkVersion.startsWith("flr")) {
             resourceProvider = ResourceProvider.RP_FUNCTIONS;
             operatingSystem = OperatingSystem.OS_LINUX;
         } else {
@@ -72,18 +80,12 @@ class CustomDimensions {
             operatingSystem = initOperatingSystem();
         }
 
-        String customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
-        String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
-        String runtimeVersion = System.getProperty("java.version");
+        customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
+        sdkVersion = qualifiedSdkVersion.substring(qualifiedSdkVersion.lastIndexOf(':') + 1);
+        runtimeVersion = System.getProperty("java.version");
 
-        properties = new ConcurrentHashMap<>();
-        properties.put(CUSTOM_DIMENSIONS_ATTACH_TYPE, ATTACH_TYPE_CODELESS);
-        if (customerIkey != null) { // Unit test
-            properties.put(CUSTOM_DIMENSIONS_CIKEY, customerIkey);
-        }
-        properties.put(CUSTOM_DIMENSIONS_RUNTIME_VERSION, runtimeVersion);
-        properties.put(CUSTOM_DIMENSIONS_LANGUAGE, LANGUAGE);
-        properties.put(CUSTOM_DIMENSIONS_VERSION, version);
+        attachType = ATTACH_TYPE_CODELESS;
+        language = LANGUAGE;
     }
 
     public ResourceProvider getResourceProvider() {
@@ -98,20 +100,18 @@ class CustomDimensions {
         this.resourceProvider = resourceProvider;
     }
 
-    // TODO replace with individual getters
-    String getProperty(String key) {
-        return properties.get(key);
-    }
-
-    // TODO replace with individual getters
-    void updateProperty(String key, String value) {
-        properties.put(key, value);
+    public void setOperatingSystem(OperatingSystem operatingSystem) {
+        this.operatingSystem = operatingSystem;
     }
 
     void populateProperties(Map<String, String> properties) {
-        properties.putAll(this.properties);
         properties.put(CUSTOM_DIMENSIONS_RP, resourceProvider.toString());
         properties.put(CUSTOM_DIMENSIONS_OS, operatingSystem.toString());
+        properties.put(CUSTOM_DIMENSIONS_ATTACH_TYPE, attachType);
+        properties.put(CUSTOM_DIMENSIONS_CUSTOMER_IKEY, customerIkey);
+        properties.put(CUSTOM_DIMENSIONS_RUNTIME_VERSION, runtimeVersion);
+        properties.put(CUSTOM_DIMENSIONS_LANGUAGE, language);
+        properties.put(CUSTOM_DIMENSIONS_SDK_VERSION, sdkVersion);
     }
 
     private static OperatingSystem initOperatingSystem() {

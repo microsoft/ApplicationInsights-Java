@@ -28,6 +28,8 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
 class AttachStatsbeat extends BaseStatsbeat {
 
+    private static final String CUSTOM_DIMENSIONS_RP_ID = "rpId";
+
     private volatile String resourceProviderId;
     private volatile MetadataInstanceResponse metadataInstanceResponse;
 

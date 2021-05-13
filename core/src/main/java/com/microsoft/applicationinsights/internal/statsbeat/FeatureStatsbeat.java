@@ -28,10 +28,11 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_FEATURE;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE;
 
 class FeatureStatsbeat extends BaseStatsbeat {
+
+    private static final String CUSTOM_DIMENSIONS_FEATURE = "feature";
 
     private final Set<Feature> featureList = new HashSet<>(64);
 
