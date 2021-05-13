@@ -28,8 +28,6 @@ import java.util.concurrent.TimeUnit;
 public class Constants {
 
     public static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
-    public static final long DEFAULT_STATSBEAT_INTERVAL = TimeUnit.MINUTES.toSeconds(15); // default to 15 minutes
-    public static final long FEATURE_STATSBEAT_INTERVAL = TimeUnit.DAYS.toSeconds(1); // FeatureStatsbeat default to daily interval
 
     public static final String UNKNOWN_RP_ID = "unknown";
 

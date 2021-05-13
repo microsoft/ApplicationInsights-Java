@@ -35,8 +35,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
+import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 // an assumption is made throughout this file that user will not explicitly use `null` value in json file
@@ -163,8 +162,8 @@ public class Configuration {
     public static class Statsbeat {
         public String instrumentationKey = "c4a29126-a7cb-47e5-b348-11414998b11e"; //workspace-aistatsbeat
         public String endpoint = ConnectionString.Defaults.INGESTION_ENDPOINT; // this supports the government cloud
-        public long intervalSeconds = DEFAULT_STATSBEAT_INTERVAL;
-        public long featureIntervalSeconds = FEATURE_STATSBEAT_INTERVAL;
+        public long intervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
+        public long featureIntervalSeconds = DAYS.toSeconds(1); // default to daily
     }
 
     public static class Proxy {

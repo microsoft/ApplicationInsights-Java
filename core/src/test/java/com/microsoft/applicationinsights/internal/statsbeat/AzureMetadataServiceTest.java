@@ -5,7 +5,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.squareup.moshi.JsonDataException;
 import okio.BufferedSource;
 import okio.Okio;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -14,8 +13,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static org.junit.Assert.assertEquals;
 
 public class AzureMetadataServiceTest {
@@ -28,7 +25,7 @@ public class AzureMetadataServiceTest {
         String result = source.readUtf8();
         source.close();
 
-        AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL);
+        AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), Long.MAX_VALUE);
         AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, new CustomDimensions());
         azureMetadataService.parseJsonResponse(result);
 
@@ -47,7 +44,7 @@ public class AzureMetadataServiceTest {
         String result = source.readUtf8();
         source.close();
 
-        AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL);
+        AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), Long.MAX_VALUE);
         AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, new CustomDimensions());
         azureMetadataService.parseJsonResponse(result);
 

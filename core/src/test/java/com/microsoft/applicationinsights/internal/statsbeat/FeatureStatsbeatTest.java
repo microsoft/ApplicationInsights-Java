@@ -8,7 +8,6 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.Set;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static org.junit.Assert.assertEquals;
 
 public class FeatureStatsbeatTest {
@@ -17,7 +16,7 @@ public class FeatureStatsbeatTest {
 
     @Before
     public void init() {
-        featureStatsbeat = new FeatureStatsbeat(new TelemetryClient(), FEATURE_STATSBEAT_INTERVAL);
+        featureStatsbeat = new FeatureStatsbeat(new TelemetryClient(), Long.MAX_VALUE);
     }
 
     @Test

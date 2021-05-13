@@ -29,7 +29,7 @@ public class AttachStatsbeatTest {
 
     @Before
     public void setup() {
-        attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL);
+        attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), Long.MAX_VALUE);
     }
 
     @Test
