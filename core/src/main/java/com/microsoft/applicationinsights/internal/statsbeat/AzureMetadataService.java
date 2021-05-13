@@ -68,9 +68,7 @@ class AzureMetadataService implements Runnable {
         request.addHeader("Metadata", "true");
         try {
             HttpResponse response = LazyHttpClient.getInstance().execute(request);
-            if (response != null) {
-                parseJsonResponse(response.toString());
-            }
+            parseJsonResponse(response.toString());
         } catch (JsonEncodingException jsonEncodingException) {
             // When it's not VM/VMSS, server does not return json back, and instead it returns text like the following:
             // "<br />Error: NetworkUnreachable (0x2743). <br />System.Net.Sockets.SocketException A socket operation was attempted to an unreachable network 169.254.169.254:80".
