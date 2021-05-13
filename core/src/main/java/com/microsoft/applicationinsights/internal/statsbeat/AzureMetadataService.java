@@ -59,7 +59,7 @@ class AzureMetadataService implements Runnable {
             // osType from the Azure Metadata Service has a higher precedence over the running app’s operating system.
             String osType = metadataInstanceResponse.getOsType();
             if (!"unknown".equalsIgnoreCase(osType)) {
-                CustomDimensions.get().getProperties().put(CUSTOM_DIMENSIONS_OS, osType);
+                customDimensions.getProperties().put(CUSTOM_DIMENSIONS_OS, osType);
             }
         }
     }

@@ -120,7 +120,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     // duration in milliseconds
     public void addRequestDuration(long duration) {
         synchronized (lock) {
-            current.totalRequestDurationCount.incrementAndGet();
             current.totalRequestDuration.getAndAdd(duration);
         }
     }
@@ -158,8 +157,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         return current.requestFailureCount.get();
     }
 
-    // only used by tests
-    long getRequestDurationCount() { return current.totalRequestDurationCount.get(); }
+    long getRequestDurationCount() { return current.requestSuccessCount.get(); }
 
     // only used by tests
     double getRequestDurationAvg() { return current.getRequestDurationAvg(); }
@@ -188,8 +186,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         private final Set<String> instrumentationList = Collections.newSetFromMap(new ConcurrentHashMap<>());
         private final AtomicLong requestSuccessCount = new AtomicLong();
         private final AtomicLong requestFailureCount = new AtomicLong();
-        // TODO (heya) is total count always success count + failure count? also why int and others are long?
-        private final AtomicLong totalRequestDurationCount = new AtomicLong();
+        // request duration count only counts request success.
         private final AtomicLong totalRequestDuration = new AtomicLong(); // duration in milliseconds
         private final AtomicLong retryCount = new AtomicLong();
         private final AtomicLong throttlingCount = new AtomicLong();
@@ -197,8 +194,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
         private double getRequestDurationAvg() {
             double sum = totalRequestDuration.get();
-            if (totalRequestDurationCount.get() != 0) {
-                return sum / totalRequestDurationCount.get();
+            if (requestSuccessCount.get() != 0) {
+                return sum / requestSuccessCount.get();
             }
 
             return  sum;
