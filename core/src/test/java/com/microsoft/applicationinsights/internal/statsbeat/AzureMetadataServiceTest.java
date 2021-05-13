@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.google.common.io.Resources;
-import com.google.common.math.Stats;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.squareup.moshi.JsonDataException;
 import okio.BufferedSource;
@@ -16,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static org.junit.Assert.assertEquals;
 
@@ -24,7 +22,7 @@ public class AzureMetadataServiceTest {
 
     @Before
     public void setup() {
-        CustomDimensions.reset();
+        CustomDimensions.resetForTest();
         StatsbeatModule.resetForTest(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
     }
 

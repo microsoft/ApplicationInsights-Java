@@ -19,7 +19,7 @@ public class CustomDimensionsTest {
 
     @Before
     public void setup() {
-        CustomDimensions.reset();
+        CustomDimensions.resetForTest();
     }
 
     @Test

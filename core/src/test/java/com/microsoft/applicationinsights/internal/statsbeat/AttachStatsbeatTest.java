@@ -37,7 +37,7 @@ public class AttachStatsbeatTest {
 
     @Before
     public void setup() {
-        CustomDimensions.reset();
+        CustomDimensions.resetForTest();
         StatsbeatModule.resetForTest(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
         attachStatsbeat = StatsbeatModule.getInstance().getAttachStatsbeat();
     }

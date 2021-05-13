@@ -108,7 +108,7 @@ class CustomDimensions {
     }
 
     @VisibleForTesting
-    static void reset() {
+    static void resetForTest() {
         instance = null;
     }
 }

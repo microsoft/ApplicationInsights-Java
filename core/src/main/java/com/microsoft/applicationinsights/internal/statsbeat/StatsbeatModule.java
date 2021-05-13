@@ -36,6 +36,7 @@ public class StatsbeatModule {
             throw new IllegalStateException("initialize already called");
         }
         instance = new StatsbeatModule(telemetryClient, interval, featureInterval);
+        AzureMetadataService.scheduleAtFixedRate(interval);
     }
 
     public static StatsbeatModule getInstance() {
