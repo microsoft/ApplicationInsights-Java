@@ -122,8 +122,8 @@ final class StatsbeatHelper {
             int index = map.get(item);
             number.set(index);
         }
-
-        return number.toLongArray()[0];
+        long[] longArray = number.toLongArray();
+        return longArray.length == 0 ? 0L : longArray[0];
     }
 
     private StatsbeatHelper() {
