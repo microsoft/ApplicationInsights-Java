@@ -21,8 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.util.concurrent.AtomicDouble;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
@@ -118,7 +116,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         }
     }
 
-    public void addRequestDuration(double duration) {
+    // duration in milliseconds
+    public void addRequestDuration(long duration) {
         synchronized (lock) {
             current.totalRequestDurationCount.incrementAndGet();
             current.totalRequestDuration.getAndAdd(duration);
@@ -186,14 +185,14 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
     private static class IntervalMetrics {
         private final Set<String> instrumentationList = Collections.newSetFromMap(new ConcurrentHashMap<>());
-        private final AtomicLong requestSuccessCount = new AtomicLong(0);
-        private final AtomicLong requestFailureCount = new AtomicLong(0);
+        private final AtomicLong requestSuccessCount = new AtomicLong();
+        private final AtomicLong requestFailureCount = new AtomicLong();
         // TODO (heya) is total count always success count + failure count? also why int and others are long?
-        private final AtomicInteger totalRequestDurationCount = new AtomicInteger(0);
-        private final AtomicDouble totalRequestDuration = new AtomicDouble(0.0);
-        private final AtomicLong retryCount = new AtomicLong(0);
-        private final AtomicLong throttlingCount = new AtomicLong(0);
-        private final AtomicLong exceptionCount = new AtomicLong(0);
+        private final AtomicInteger totalRequestDurationCount = new AtomicInteger();
+        private final AtomicLong totalRequestDuration = new AtomicLong(); // duration in milliseconds
+        private final AtomicLong retryCount = new AtomicLong();
+        private final AtomicLong throttlingCount = new AtomicLong();
+        private final AtomicLong exceptionCount = new AtomicLong();
 
         private double getRequestDurationAvg() {
             double sum = totalRequestDuration.get();

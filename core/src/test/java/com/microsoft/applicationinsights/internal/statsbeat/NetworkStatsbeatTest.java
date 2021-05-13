@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
@@ -88,7 +89,7 @@ public class NetworkStatsbeatTest {
     @Test
     public void testRaceCondition() throws InterruptedException {
         final ExecutorService executorService = Executors.newFixedThreadPool(100);
-        final AtomicDouble durationCounter = new AtomicDouble();
+        final AtomicLong durationCounter = new AtomicLong();
         final AtomicInteger instrumentationCounter = new AtomicInteger();
         for (int i = 0; i < 100; i++) {
             executorService.execute(new Runnable() {
@@ -100,7 +101,7 @@ public class NetworkStatsbeatTest {
                         networkStatsbeat.incrementRetryCount();
                         networkStatsbeat.incrementThrottlingCount();
                         networkStatsbeat.incrementExceptionCount();
-                        networkStatsbeat.addRequestDuration(durationCounter.getAndAdd(0.5));
+                        networkStatsbeat.addRequestDuration(durationCounter.getAndAdd(5));
                         networkStatsbeat.addInstrumentation("instrumentation" + instrumentationCounter.getAndDecrement());
                     }
                 }
