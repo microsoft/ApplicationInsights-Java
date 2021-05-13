@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import com.microsoft.applicationinsights.TelemetryClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +11,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE_STATSBEAT_INTERVAL;
 import static org.junit.Assert.assertEquals;
 
 public class NetworkStatsbeatTest {
