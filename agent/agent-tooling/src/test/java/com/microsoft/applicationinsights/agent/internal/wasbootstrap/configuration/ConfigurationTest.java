@@ -198,8 +198,13 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration("applicationinsights_aadauth.json");
         PreviewConfiguration preview = configuration.preview;
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
+        assertEquals(true, preview.authentication.authenticationEnabled);
         assertEquals(AuthenticationType.SAMI, preview.authentication.type);
         assertEquals("123xyz", preview.authentication.clientId);
+        assertEquals("tenant123", preview.authentication.tenantId);
+        assertEquals("clientsecret123", preview.authentication.clientSecret);
+        assertEquals("path/to/keePass", preview.authentication.keePassDatabasePath);
+        assertEquals("https://test.com/microsoft/", preview.authentication.authorityHost);
     }
 
     @Test

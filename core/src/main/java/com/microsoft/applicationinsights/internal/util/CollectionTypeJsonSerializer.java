@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.internal.util;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.NdJsonSerializer;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonSerializer;

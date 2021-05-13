@@ -58,7 +58,7 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
                 HttpResponse response = null;
                 try {
                     response = httpPipeline.send(post).block();
-                    if (networkHelper.isSuccess(response)) {
+                    if (response != null && networkHelper.isSuccess(response)) {
                         QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                         switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
                             case QP_IS_OFF:

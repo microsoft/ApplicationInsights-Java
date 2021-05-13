@@ -92,7 +92,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         try {
 
             response = httpPipeline.send(request).block();
-            if (networkHelper.isSuccess(response)) {
+            if (response != null && networkHelper.isSuccess(response)) {
                 final QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                 switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
                     case QP_IS_OFF:
@@ -111,7 +111,6 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         } finally {
             if (response != null) {
                 response.close();
-                //LazyHttpClient.dispose(response);
             }
         }
         return onPingError(sendTime);
@@ -132,11 +131,10 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     }
 
     private String buildPingEntity(long timeInMillis) {
-        String pingEntity = pingPrefix + timeInMillis +
+         return pingPrefix + timeInMillis +
                 ")\\/\"," +
                 "\"Version\":\"2.2.0-738\"" +
                 "}";
-        return pingEntity;
     }
 
     private QuickPulseHeaderInfo onPingError(long sendTime) {
