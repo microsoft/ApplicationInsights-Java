@@ -20,7 +20,7 @@ public class NetworkStatsbeatTest {
 
     @Before
     public void init() {
-        StatsbeatModule.getInstance().initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
+        StatsbeatModule.resetForTest(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
         networkStatsbeat = StatsbeatModule.getInstance().getNetworkStatsbeat();
     }
 

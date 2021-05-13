@@ -31,24 +31,24 @@ public class StatsbeatModule {
     private final AttachStatsbeat attachStatsbeat;
     private final FeatureStatsbeat featureStatsbeat;
 
-    public static void init(TelemetryClient telemetryClient, long interval, long featureInterval) {
-        instance = new StatsbeatModule(
-                new NetworkStatsbeat(telemetryClient, interval),
-                new AttachStatsbeat(telemetryClient, interval),
-                new FeatureStatsbeat(telemetryClient, featureInterval));
+    public static void initialize(TelemetryClient telemetryClient, long interval, long featureInterval) {
+        if (instance == null) {
+            throw new IllegalStateException("initialize already called");
+        }
+        instance = new StatsbeatModule(telemetryClient, interval, featureInterval);
     }
 
     public static StatsbeatModule getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("init must be called first");
+            throw new IllegalStateException("initialize must be called first");
         }
         return instance;
     }
 
-    private StatsbeatModule(NetworkStatsbeat networkStatsbeat, AttachStatsbeat attachStatsbeat, FeatureStatsbeat featureStatsbeat) {
-        this.networkStatsbeat = networkStatsbeat;
-        this.attachStatsbeat = attachStatsbeat;
-        this.featureStatsbeat = featureStatsbeat;
+    private StatsbeatModule(TelemetryClient telemetryClient, long interval, long featureInterval) {
+        this.networkStatsbeat = new NetworkStatsbeat(telemetryClient, interval);
+        this.attachStatsbeat = new AttachStatsbeat(telemetryClient, interval);
+        this.featureStatsbeat = new FeatureStatsbeat(telemetryClient, featureInterval);
     }
 
     public NetworkStatsbeat getNetworkStatsbeat() { return networkStatsbeat; }
@@ -59,5 +59,9 @@ public class StatsbeatModule {
 
     FeatureStatsbeat getFeatureStatsbeat() {
         return featureStatsbeat;
+    }
+
+    static void resetForTest(TelemetryClient telemetryClient, long interval, long featureInterval) {
+        instance = new StatsbeatModule(telemetryClient, interval, featureInterval);
     }
 }

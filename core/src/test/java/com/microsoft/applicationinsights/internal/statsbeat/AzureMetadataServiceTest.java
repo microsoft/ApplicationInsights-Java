@@ -25,7 +25,7 @@ public class AzureMetadataServiceTest {
     @Before
     public void setup() {
         CustomDimensions.reset();
-        StatsbeatModule.getInstance().initialize(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
+        StatsbeatModule.resetForTest(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL, FEATURE_STATSBEAT_INTERVAL);
     }
 
     @Test
