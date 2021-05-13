@@ -54,14 +54,4 @@ public class StatsbeatModule {
     }
 
     public NetworkStatsbeat getNetworkStatsbeat() { return networkStatsbeat; }
-
-    // TODO (trask) this is unused?
-    AttachStatsbeat getAttachStatsbeat() {
-        return attachStatsbeat;
-    }
-
-    // TODO (trask) this is unused?
-    FeatureStatsbeat getFeatureStatsbeat() {
-        return featureStatsbeat;
-    }
 }
