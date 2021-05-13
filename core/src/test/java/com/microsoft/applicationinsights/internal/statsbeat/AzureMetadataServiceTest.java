@@ -29,14 +29,14 @@ public class AzureMetadataServiceTest {
         source.close();
 
         AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL);
-        AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, CustomDimensions.get());
+        AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, new CustomDimensions());
         azureMetadataService.parseJsonResponse(result);
 
         MetadataInstanceResponse response = attachStatsbeat.getMetadataInstanceResponse();
-        assertEquals(response.getVmId(), "2a1216c3-a2a0-4fc5-a941-b1f5acde7051");
-        assertEquals(response.getOsType(), "Linux");
-        assertEquals(response.getResourceGroupName(), "heya-java-ipa");
-        assertEquals(response.getSubscriptionId(), "65b2f83e-7bf1-4be3-bafc-3a4163265a52");
+        assertEquals("2a1216c3-a2a0-4fc5-a941-b1f5acde7051", response.getVmId());
+        assertEquals("Linux", response.getOsType());
+        assertEquals("heya-java-ipa", response.getResourceGroupName());
+        assertEquals("65b2f83e-7bf1-4be3-bafc-3a4163265a52", response.getSubscriptionId());
     }
 
     @Test
@@ -48,13 +48,13 @@ public class AzureMetadataServiceTest {
         source.close();
 
         AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), DEFAULT_STATSBEAT_INTERVAL);
-        AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, CustomDimensions.get());
+        AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, new CustomDimensions());
         azureMetadataService.parseJsonResponse(result);
 
         MetadataInstanceResponse response = attachStatsbeat.getMetadataInstanceResponse();
-        assertEquals(response.getVmId(), "2955a129-2323-4c1f-8918-994a7a83eefd");
-        assertEquals(response.getOsType(), "Windows");
-        assertEquals(response.getResourceGroupName(), "heya-java-ipa");
-        assertEquals(response.getSubscriptionId(), "65b2f83e-7bf1-4be3-bafc-3a4163265a52");
+        assertEquals("2955a129-2323-4c1f-8918-994a7a83eefd", response.getVmId());
+        assertEquals("Windows", response.getOsType());
+        assertEquals("heya-java-ipa", response.getResourceGroupName());
+        assertEquals("65b2f83e-7bf1-4be3-bafc-3a4163265a52", response.getSubscriptionId());
     }
 }

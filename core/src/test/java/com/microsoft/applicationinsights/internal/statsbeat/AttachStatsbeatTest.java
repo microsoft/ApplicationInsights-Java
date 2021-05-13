@@ -41,16 +41,17 @@ public class AttachStatsbeatTest {
 
     @Test
     public void testVirtualMachineResourceProviderId() throws IOException {
-        assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
+        assertEquals(UNKNOWN, attachStatsbeat.getResourceProviderId());
         Path path = new File(Resources.getResource("metadata_instance_linux.json").getPath()).toPath();
         InputStream in = Files.newInputStream(path);
         BufferedSource source = Okio.buffer(Okio.source(in));
         String result = source.readUtf8();
         source.close();
-        AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, CustomDimensions.get());
+        CustomDimensions customDimensions = new CustomDimensions();
+        AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, customDimensions);
         azureMetadataService.parseJsonResponse(result);
         assertEquals(attachStatsbeat.getResourceProviderId(), "2a1216c3-a2a0-4fc5-a941-b1f5acde7051/65b2f83e-7bf1-4be3-bafc-3a4163265a52");
-        assertEquals(CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_OS), "Linux");
+        assertEquals("Linux", customDimensions.getProperties().get(CUSTOM_DIMENSIONS_OS));
     }
 
     @Test
@@ -76,12 +77,12 @@ public class AttachStatsbeatTest {
 
     @Test
     public void testInterval() {
-        assertEquals(attachStatsbeat.getInterval(), DEFAULT_STATSBEAT_INTERVAL);
+        assertEquals(DEFAULT_STATSBEAT_INTERVAL, attachStatsbeat.getInterval());
     }
 
     @Test
     public void testUnknownResourceProviderId() {
-        assertEquals(CustomDimensions.get().getProperties().get(CUSTOM_DIMENSIONS_RP), UNKNOWN);
-        assertEquals(attachStatsbeat.getResourceProviderId(), UNKNOWN);
+        assertEquals(UNKNOWN, new CustomDimensions().getProperties().get(CUSTOM_DIMENSIONS_RP));
+        assertEquals(UNKNOWN, attachStatsbeat.getResourceProviderId());
     }
 }
