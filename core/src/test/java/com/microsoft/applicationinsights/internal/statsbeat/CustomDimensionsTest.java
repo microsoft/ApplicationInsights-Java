@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.microsoft.applicationinsights.internal.statsbeat.Constants.OperatingSystem;
 import com.microsoft.applicationinsights.internal.statsbeat.Constants.ResourceProvider;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
@@ -9,8 +10,6 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUS
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_OS;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_RUNTIME_VERSION;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_VERSION;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.OS_LINUX;
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.OS_WINDOWS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -27,13 +26,13 @@ public class CustomDimensionsTest {
     public void testOperatingSystem() {
         CustomDimensions customDimensions = new CustomDimensions();
 
-        String os = "UNKNOWN";
+        OperatingSystem os = OperatingSystem.OS_UNKNOWN;
         if (SystemInformation.INSTANCE.isWindows()) {
-            os = OS_WINDOWS;
+            os = OperatingSystem.OS_WINDOWS;
         } else if (SystemInformation.INSTANCE.isUnix()) {
-            os = OS_LINUX;
+            os = OperatingSystem.OS_LINUX;
         }
-        assertEquals(os, customDimensions.getProperty(CUSTOM_DIMENSIONS_OS));
+        assertEquals(os, customDimensions.getOperatingSystem());
     }
 
     @Test

@@ -53,9 +53,20 @@ public class Constants {
     static final String LANGUAGE = "java";
     static final String ATTACH_TYPE_CODELESS = "codeless";
 
-    static final String OS_WINDOWS = "windows";
-    static final String OS_LINUX = "linux";
-    static final String OS_UNKNOW = "unknown";
+    public enum OperatingSystem {
+        OS_WINDOWS("windows"), OS_LINUX("linux"), OS_UNKNOWN("unknown");
+
+        private final String id;
+
+        OperatingSystem(String id) {
+            this.id = id;
+        }
+
+        @Override
+        public String toString() {
+            return id;
+        }
+    }
 
     // attach
     static final String WEBSITE_SITE_NAME = "appSrv_SiteName";
@@ -63,6 +74,7 @@ public class Constants {
     static final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
 
     // custom dimensions
+    // TODO can these be private in CustomDimensions?
     static final String CUSTOM_DIMENSIONS_RP = "rp";
     static final String CUSTOM_DIMENSIONS_RP_ID = "rpId";
     static final String CUSTOM_DIMENSIONS_ATTACH_TYPE = "attach";

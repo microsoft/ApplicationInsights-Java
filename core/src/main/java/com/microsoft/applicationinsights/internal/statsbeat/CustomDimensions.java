@@ -37,6 +37,8 @@ class CustomDimensions {
 
     private volatile ResourceProvider resourceProvider;
 
+    private final OperatingSystem operatingSystem;
+
     private final ConcurrentMap<String, String> properties;
 
     static CustomDimensions get() {
@@ -47,28 +49,27 @@ class CustomDimensions {
     CustomDimensions() {
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
 
-        String operatingSystem;
         if (sdkVersion.startsWith("awr")) {
             resourceProvider = ResourceProvider.RP_APPSVC;
-            operatingSystem = OS_WINDOWS;
+            operatingSystem = OperatingSystem.OS_WINDOWS;
         } else if (sdkVersion.startsWith("alr")) {
             resourceProvider = ResourceProvider.RP_APPSVC;
-            operatingSystem = OS_LINUX;
+            operatingSystem = OperatingSystem.OS_LINUX;
         } else if (sdkVersion.startsWith("kwr")) {
             resourceProvider = ResourceProvider.RP_AKS;
-            operatingSystem = OS_WINDOWS;
+            operatingSystem = OperatingSystem.OS_WINDOWS;
         } else if (sdkVersion.startsWith("klr")) {
             resourceProvider = ResourceProvider.RP_AKS;
-            operatingSystem = OS_LINUX;
+            operatingSystem = OperatingSystem.OS_LINUX;
         } else if (sdkVersion.startsWith("fwr")) {
             resourceProvider = ResourceProvider.RP_FUNCTIONS;
-            operatingSystem = OS_WINDOWS;
+            operatingSystem = OperatingSystem.OS_WINDOWS;
         } else if (sdkVersion.startsWith("flr")) {
             resourceProvider = ResourceProvider.RP_FUNCTIONS;
-            operatingSystem = OS_LINUX;
+            operatingSystem = OperatingSystem.OS_LINUX;
         } else {
             resourceProvider = ResourceProvider.UNKNOWN;
-            operatingSystem = getOperatingSystem();
+            operatingSystem = initOperatingSystem();
         }
 
         String customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
@@ -81,13 +82,16 @@ class CustomDimensions {
             properties.put(CUSTOM_DIMENSIONS_CIKEY, customerIkey);
         }
         properties.put(CUSTOM_DIMENSIONS_RUNTIME_VERSION, runtimeVersion);
-        properties.put(CUSTOM_DIMENSIONS_OS, operatingSystem);
         properties.put(CUSTOM_DIMENSIONS_LANGUAGE, LANGUAGE);
         properties.put(CUSTOM_DIMENSIONS_VERSION, version);
     }
 
     public ResourceProvider getResourceProvider() {
         return resourceProvider;
+    }
+
+    public OperatingSystem getOperatingSystem() {
+        return operatingSystem;
     }
 
     public void setResourceProvider(ResourceProvider resourceProvider) {
@@ -107,15 +111,16 @@ class CustomDimensions {
     void populateProperties(Map<String, String> properties) {
         properties.putAll(this.properties);
         properties.put(CUSTOM_DIMENSIONS_RP, resourceProvider.toString());
+        properties.put(CUSTOM_DIMENSIONS_OS, operatingSystem.toString());
     }
 
-    private static String getOperatingSystem() {
+    private static OperatingSystem initOperatingSystem() {
         if (SystemInformation.INSTANCE.isWindows()) {
-            return OS_WINDOWS;
+            return OperatingSystem.OS_WINDOWS;
         } else if (SystemInformation.INSTANCE.isUnix()) {
-            return OS_LINUX;
+            return OperatingSystem.OS_LINUX;
         } else {
-            return OS_UNKNOW;
+            return OperatingSystem.OS_UNKNOWN;
         }
     }
 }
