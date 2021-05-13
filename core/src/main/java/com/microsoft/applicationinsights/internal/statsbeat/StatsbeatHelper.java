@@ -99,7 +99,7 @@ final class StatsbeatHelper {
         INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.spring-webmvc-3.1", 56);
         INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.tomcat-7.0", 57);
 
-        FEATURE_MAP = new HashMap<String, Integer>();
+        FEATURE_MAP = new HashMap<>();
         FEATURE_MAP.put(JAVA_VENDOR_ORACLE, 0);
         FEATURE_MAP.put(JAVA_VENDOR_ZULU, 1);
         FEATURE_MAP.put(JAVA_VENDOR_MICROSOFT, 2);

@@ -28,8 +28,8 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 
 class AttachStatsbeat extends BaseStatsbeat {
 
-    private String resourceProviderId;
-    private MetadataInstanceResponse metadataInstanceResponse;
+    private volatile String resourceProviderId;
+    private volatile MetadataInstanceResponse metadataInstanceResponse;
 
     AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
         super(telemetryClient, interval);

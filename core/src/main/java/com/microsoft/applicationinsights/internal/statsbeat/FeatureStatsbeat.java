@@ -26,7 +26,6 @@ import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.CUSTOM_DIMENSIONS_FEATURE;
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.FEATURE;

@@ -34,8 +34,10 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
 class CustomDimensions {
 
     private static CustomDimensions instance;
+
     private volatile String resourceProvider;
     private volatile String operatingSystem;
+
     private final String customerIkey;
     private final String version;
     private final String runtimeVersion;

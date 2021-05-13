@@ -43,6 +43,7 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.THR
 public class NetworkStatsbeat extends BaseStatsbeat {
 
     private volatile IntervalMetrics current;
+
     private final Object lock = new Object();
 
     NetworkStatsbeat(TelemetryClient telemetryClient, long interval) {
