@@ -24,11 +24,15 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.*;
-
 class AttachStatsbeat extends BaseStatsbeat {
 
     private static final String ATTACH_METRIC_NAME = "Attach";
+
+    private static final String UNKNOWN_RP_ID = "unknown";
+
+    private static final String WEBSITE_SITE_NAME = "appSrv_SiteName";
+    private static final String WEBSITE_HOSTNAME = "appSrv_wsHost";
+    private static final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
 
     private volatile String resourceProviderId;
     private volatile MetadataInstanceResponse metadataInstanceResponse;

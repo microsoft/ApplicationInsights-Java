@@ -34,7 +34,7 @@ public class AttachStatsbeatTest {
 
     @Test
     public void testVirtualMachineResourceProviderId() throws IOException {
-        assertEquals(UNKNOWN_RP_ID, attachStatsbeat.getResourceProviderId());
+        assertEquals("unknown", attachStatsbeat.getResourceProviderId());
         Path path = new File(Resources.getResource("metadata_instance_linux.json").getPath()).toPath();
         InputStream in = Files.newInputStream(path);
         BufferedSource source = Okio.buffer(Okio.source(in));
@@ -52,28 +52,28 @@ public class AttachStatsbeatTest {
 
     @Test
     public void testAppSvcResourceProviderId() {
-        envVars.set(WEBSITE_SITE_NAME, "test_site_name");
-        envVars.set(WEBSITE_HOME_STAMPNAME, "test_stamp_name");
-        envVars.set(WEBSITE_HOSTNAME, "test_hostname");
+        envVars.set("appSrv_SiteName", "test_site_name");
+        envVars.set("appSrv_wsStamp", "test_stamp_name");
+        envVars.set("appSrv_wsHost", "test_hostname");
 
         assertEquals("test_site_name/test_stamp_name/test_hostname", AttachStatsbeat.initResourceProviderId(ResourceProvider.RP_APPSVC, null));
     }
 
     @Test
     public void testFunctionsResourceProviderId() {
-        envVars.set(WEBSITE_HOSTNAME, "test_function_name");
+        envVars.set("appSrv_wsHost", "test_function_name");
 
         assertEquals("test_function_name", AttachStatsbeat.initResourceProviderId(ResourceProvider.RP_FUNCTIONS, null));
     }
 
     @Test
     public void testAksResourceProviderId() {
-        assertEquals(UNKNOWN_RP_ID, AttachStatsbeat.initResourceProviderId(ResourceProvider.RP_AKS, null));
+        assertEquals("unknown", AttachStatsbeat.initResourceProviderId(ResourceProvider.RP_AKS, null));
     }
 
     @Test
     public void testUnknownResourceProviderId() {
         assertEquals(ResourceProvider.UNKNOWN, new CustomDimensions().getResourceProvider());
-        assertEquals(UNKNOWN_RP_ID, attachStatsbeat.getResourceProviderId());
+        assertEquals("unknown", attachStatsbeat.getResourceProviderId());
     }
 }

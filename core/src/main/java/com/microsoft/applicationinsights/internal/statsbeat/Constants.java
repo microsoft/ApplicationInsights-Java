@@ -25,14 +25,6 @@ public class Constants {
 
     public static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
 
-    public static final String UNKNOWN_RP_ID = "unknown";
-
-    // attach
-    static final String WEBSITE_SITE_NAME = "appSrv_SiteName";
-    static final String WEBSITE_HOSTNAME = "appSrv_wsHost";
-    static final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
-
-
     private Constants() {
     }
 }
