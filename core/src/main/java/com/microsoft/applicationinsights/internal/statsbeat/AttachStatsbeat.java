@@ -63,9 +63,9 @@ class AttachStatsbeat extends BaseStatsbeat {
     static String initResourceProviderId(String resourceProvider, MetadataInstanceResponse response) {
         switch (resourceProvider) {
             case RP_APPSVC:
-                return getEnvironmentVariable(WEBSITE_SITE_NAME) + "/" + getEnvironmentVariable(WEBSITE_HOME_STAMPNAME) + "/" + getEnvironmentVariable(WEBSITE_HOSTNAME);
+                return System.getenv(WEBSITE_SITE_NAME) + "/" + System.getenv(WEBSITE_HOME_STAMPNAME) + "/" + System.getenv(WEBSITE_HOSTNAME);
             case RP_FUNCTIONS:
-                return getEnvironmentVariable(WEBSITE_HOSTNAME);
+                return System.getenv(WEBSITE_HOSTNAME);
             case RP_VM:
                 if (response != null) {
                     return response.getVmId() + "/" + response.getSubscriptionId();
@@ -77,9 +77,5 @@ class AttachStatsbeat extends BaseStatsbeat {
             default:
                 return UNKNOWN;
         }
-    }
-
-    private static String getEnvironmentVariable(String envVar) {
-        return System.getenv(envVar);
     }
 }
