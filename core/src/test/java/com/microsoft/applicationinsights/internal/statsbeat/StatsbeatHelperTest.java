@@ -19,7 +19,7 @@ public class StatsbeatHelperTest {
         instrumentations.add("io.opentelemetry.javaagent.http-url-connection");
     }
 
-    private static final long EXPECTED_INSTRUMENTATION = (long)(Math.pow(2, 13) + Math.pow(2, 21) + Math.pow(2, 57));; // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
+    private static final long EXPECTED_INSTRUMENTATION = (long)(Math.pow(2, 13) + Math.pow(2, 21) + Math.pow(2, 57)); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
 
     private static final Set<String> features = Collections.singleton(JAVA_VENDOR_ZULU);
 

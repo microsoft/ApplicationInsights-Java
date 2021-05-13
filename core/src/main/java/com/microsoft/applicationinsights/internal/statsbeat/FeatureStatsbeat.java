@@ -43,10 +43,10 @@ public class FeatureStatsbeat extends BaseStatsbeat {
         // track java distribution
         String javaVendor = System.getProperty("java.vendor");
         if (javaVendor != null && !javaVendor.isEmpty()) {
-            if (FEATURE_MAP.get(javaVendor) == null) {
-                featureList.add(JAVA_VENDOR_OTHER);
-            } else {
+            if (FEATURE_MAP.containsKey(javaVendor)) {
                 featureList.add(javaVendor);
+            } else {
+                featureList.add(JAVA_VENDOR_OTHER);
             }
         }
     }

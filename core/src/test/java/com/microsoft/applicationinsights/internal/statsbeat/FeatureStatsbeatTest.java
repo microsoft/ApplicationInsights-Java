@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.DEFAULT_STATSBEAT_INTERVAL;
@@ -27,11 +26,11 @@ public class FeatureStatsbeatTest {
         String javaVendor = System.getProperty("java.vendor");
         final Set<String> features = Collections.singleton(javaVendor);
         long featureLongVal = StatsbeatHelper.encodeFeature(features);
-        assertEquals(featureStatsbeat.getFeature(), featureLongVal);
+        assertEquals(featureLongVal, featureStatsbeat.getFeature());
     }
 
     @Test
     public void testFrequencyInterval() {
-        assertEquals(featureStatsbeat.getInterval(), FEATURE_STATSBEAT_INTERVAL);
+        assertEquals(FEATURE_STATSBEAT_INTERVAL, featureStatsbeat.getInterval());
     }
 }

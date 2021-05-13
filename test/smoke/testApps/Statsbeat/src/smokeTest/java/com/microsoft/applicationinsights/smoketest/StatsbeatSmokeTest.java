@@ -35,8 +35,7 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
         assertNotNull(data.getProperties().get("feature"));
         assertEquals(8, data.getProperties().size());
 
-        List<Envelope> attachMetrics = mockedIngestion.waitForItems(getMetricPredicate("Attach"), 2, 70, TimeUnit.SECONDS);
-        assertEquals(2, attachMetrics.size());
+        List<Envelope> attachMetrics = mockedIngestion.waitForItems(getMetricPredicate("Attach"), 1, 70, TimeUnit.SECONDS);
 
         MetricData attachData = (MetricData) ((Data<?>) attachMetrics.get(0).getData()).getBaseData();
         assertNotNull(attachData.getProperties().get("rp"));
@@ -49,8 +48,7 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
         assertNotNull(attachData.getProperties().get("rpId"));
         assertEquals(8, data.getProperties().size());
 
-        List<Envelope> requestSuccessCountMetrics = mockedIngestion.waitForItems(getMetricPredicate("Request Success Count"), 2, 70, TimeUnit.SECONDS);
-        assertEquals(2, requestSuccessCountMetrics.size());
+        List<Envelope> requestSuccessCountMetrics = mockedIngestion.waitForItems(getMetricPredicate("Request Success Count"), 1, 70, TimeUnit.SECONDS);
 
         MetricData requestSuccessCountData = (MetricData) ((Data<?>) requestSuccessCountMetrics.get(0).getData()).getBaseData();
         assertNotNull(requestSuccessCountData.getProperties().get("rp"));
@@ -63,8 +61,7 @@ public class StatsbeatSmokeTest extends AiSmokeTest {
         assertNotNull(requestSuccessCountData.getProperties().get("instrumentation"));
         assertEquals(8, data.getProperties().size());
 
-        List<Envelope> requestDurationMetrics = mockedIngestion.waitForItems(getMetricPredicate("Request Duration"), 2, 70, TimeUnit.SECONDS);
-        assertEquals(2, requestDurationMetrics.size());
+        List<Envelope> requestDurationMetrics = mockedIngestion.waitForItems(getMetricPredicate("Request Duration"), 1, 70, TimeUnit.SECONDS);
 
         MetricData requestDurationData = (MetricData) ((Data<?>) requestDurationMetrics.get(0).getData()).getBaseData();
         assertNotNull(requestDurationData.getProperties().get("rp"));

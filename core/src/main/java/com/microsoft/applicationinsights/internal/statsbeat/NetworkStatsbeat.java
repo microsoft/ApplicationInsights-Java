@@ -21,14 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -71,7 +69,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             telemetryClient.track(requestFailureCountSt);
         }
 
-        double durationAvg = getRequestDurationAvg(local);
+        double durationAvg = local.getRequestDurationAvg();
         if (durationAvg != 0) {
             MetricTelemetry requestDurationSt = createStatsbeatTelemetry(REQUEST_DURATION, durationAvg);
             requestDurationSt.getProperties().put(CUSTOM_DIMENSIONS_INSTRUMENTATION, instrumentation);
@@ -125,7 +123,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
     public void addRequestDuration(double duration) {
         synchronized (lock) {
-            current.requestDurationCount.incrementAndGet();
+            current.totalRequestDurationCount.incrementAndGet();
             current.totalRequestDuration.getAndAdd(duration);
         }
     }
@@ -142,49 +140,54 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         current.exceptionCount.incrementAndGet();
     }
 
-    public long getRequestSuccessCount() {
+    @VisibleForTesting
+    long getRequestSuccessCount() {
         return current.requestSuccessCount.get();
     }
 
-    public long getRequestFailureCount() {
+    @VisibleForTesting
+    long getRequestFailureCount() {
         return current.requestFailureCount.get();
     }
 
-    public int getRequestDurationCount() { return current.requestDurationCount.get(); }
+    @VisibleForTesting
+    int getRequestDurationCount() { return current.totalRequestDurationCount.get(); }
 
-    public long getRetryCount() {
+    @VisibleForTesting
+    double getRequestDurationAvg() { return current.getRequestDurationAvg(); }
+
+    @VisibleForTesting
+    long getRetryCount() {
         return current.retryCount.get();
     }
 
-    public long getThrottlingCount() {
+    @VisibleForTesting
+    long getThrottlingCount() {
         return current.throttlingCount.get();
     }
 
-    public long getExceptionCount() {
+    @VisibleForTesting
+    long getExceptionCount() {
         return current.exceptionCount.get();
-    }
-
-    public IntervalMetrics getIntervalMetrics() {
-        return current;
-    }
-
-    protected double getRequestDurationAvg(IntervalMetrics local) {
-        double sum = local.totalRequestDuration.get();
-        if (local.requestDurationCount.get() != 0) {
-            return sum / local.requestDurationCount.get();
-        }
-
-        return  sum;
     }
 
     private static class IntervalMetrics {
         private final Set<String> instrumentationList = Collections.newSetFromMap(new ConcurrentHashMap<>());
         private final AtomicLong requestSuccessCount = new AtomicLong(0);
         private final AtomicLong requestFailureCount = new AtomicLong(0);
-        private final AtomicInteger requestDurationCount = new AtomicInteger(0);
+        private final AtomicInteger totalRequestDurationCount = new AtomicInteger(0);
         private final AtomicDouble totalRequestDuration = new AtomicDouble(0.0);
         private final AtomicLong retryCount = new AtomicLong(0);
         private final AtomicLong throttlingCount = new AtomicLong(0);
         private final AtomicLong exceptionCount = new AtomicLong(0);
+
+        private double getRequestDurationAvg() {
+            double sum = totalRequestDuration.get();
+            if (totalRequestDurationCount.get() != 0) {
+                return sum / totalRequestDurationCount.get();
+            }
+
+            return  sum;
+        }
     }
 }

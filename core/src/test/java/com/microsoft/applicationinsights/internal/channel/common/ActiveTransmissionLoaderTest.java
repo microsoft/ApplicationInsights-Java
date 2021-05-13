@@ -118,9 +118,9 @@ public class ActiveTransmissionLoaderTest {
                     Mockito.verify(mockDispatcher, Mockito.times(amount)).dispatch(anyObject());
                     break;
                 } catch (Error e) {
-                    e.printStackTrace();
                     ++i;
                     if (i == 7) {
+                        e.printStackTrace();
                         assertFalse(true);
                     }
                     Thread.sleep(1000);

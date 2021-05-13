@@ -29,7 +29,7 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.jdbc");
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.tomcat-7.0");
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.http-url-connection");
-        assertEquals(networkStatsbeat.getInstrumentation(), (long)(Math.pow(2, 13) + Math.pow(2, 21) + Math.pow(2, 57))); // 2^13 + 2^21 + 2^57 (Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
+        assertEquals(networkStatsbeat.getInstrumentation(), (long)(Math.pow(2, 13) + Math.pow(2, 21) + Math.pow(2, 57))); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
     }
 
     @Test
@@ -54,7 +54,7 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.addRequestDuration(1000);
         networkStatsbeat.addRequestDuration(3000);
         assertEquals(networkStatsbeat.getRequestDurationCount(), 2);
-        assertEquals(networkStatsbeat.getRequestDurationAvg(networkStatsbeat.getIntervalMetrics()), 2000.0, 0);
+        assertEquals(networkStatsbeat.getRequestDurationAvg(), 2000.0, 0);
     }
 
     @Test

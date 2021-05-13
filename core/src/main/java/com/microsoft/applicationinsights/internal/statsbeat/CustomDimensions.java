@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
@@ -104,7 +105,7 @@ public final class CustomDimensions {
         return properties;
     }
 
-    // only used by tests
+    @VisibleForTesting
     static void reset() {
         instance = null;
     }

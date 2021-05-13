@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -186,11 +188,13 @@ public final class StatsbeatHelper {
         return encode(features, FEATURE_MAP);
     }
 
-    public static Set<String> decodeInstrumentations(long num) {
+    @VisibleForTesting
+    static Set<String> decodeInstrumentations(long num) {
         return decode(num, INSTRUMENTATION_MAP_DECODING);
     }
 
-    public static Set<String> decodeFeature(long num) {
+    @VisibleForTesting
+    static Set<String> decodeFeature(long num) {
         return decode(num, FEATURE_MAP_DECODING);
     }
 
@@ -198,7 +202,7 @@ public final class StatsbeatHelper {
         long number = 0L;
         for (String item : list) {
             int index = map.get(item);
-            number |= getPowerOf2(index);
+            number |= (long)Math.pow(2, index);
         }
 
         return number;
@@ -207,21 +211,13 @@ public final class StatsbeatHelper {
     private static Set<String> decode(long num, Map<Integer, String> decodedMap) {
         Set<String> result = new HashSet<>();
         for(Map.Entry entry: decodedMap.entrySet()) {
-            Long powerVal = getPowerOf2((int) entry.getKey());
+            double value = (int) entry.getKey();
+            Long powerVal = (long)Math.pow(2, value);
             if ((powerVal & num) == powerVal) {
                 result.add((String) entry.getValue());
             }
         }
 
-        return result;
-    }
-
-    private static Long getPowerOf2(int exponent) {
-        long result = 1L;
-        while (exponent != 0) {
-            result *= 2;
-            exponent--;
-        }
         return result;
     }
 

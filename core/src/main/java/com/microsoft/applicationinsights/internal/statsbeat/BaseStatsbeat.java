@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -72,7 +73,7 @@ public abstract class BaseStatsbeat {
         }
     }
 
-    // only used by tests
+    @VisibleForTesting
     long getInterval() {
         return interval;
     }
