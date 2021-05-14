@@ -65,6 +65,7 @@ public class TelemetryClient {
     private volatile String connectionString;
     private volatile String roleName;
     private volatile String roleInstance;
+    private volatile String statsbeatInstrumentationKey;
 
     // cached based on instrumentationKey
     private volatile String eventTelemetryName;
@@ -241,6 +242,14 @@ public class TelemetryClient {
         pageViewTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".PageView";
         remoteDependencyTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".RemoteDependency";
         requestTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Request";
+    }
+
+    public String getStatsbeatInstrumentationKey() {
+        return statsbeatInstrumentationKey;
+    }
+
+    public void setStatsbeatInstrumentationKey(String key) {
+        statsbeatInstrumentationKey = key;
     }
 
     public @Nullable String getRoleName() {
