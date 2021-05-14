@@ -13,5 +13,5 @@ public interface ConfiguredTransmitterFactory<T> {
      * @param maxInstantRetries
      * @return
      */
-    TelemetriesTransmitter<T> create(@Nullable TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries);
+    TelemetriesTransmitter<T> create(@Nullable TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries, boolean isStatsbeat);
 }

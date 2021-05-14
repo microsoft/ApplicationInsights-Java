@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.channel.TransmissionDispatcher;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
 import com.microsoft.applicationinsights.internal.channel.TransmissionOutputSync;
+import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -76,29 +77,32 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
     private final String serverUri;
 
     private final TelemetryConfiguration configuration;
+    private final boolean isStatsbeat;
 
     // Use one instance for optimization
     private final HttpClient httpClient;
 
     private final TransmissionPolicyManager transmissionPolicyManager;
 
-    public static TransmissionNetworkOutput create(TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
-        return new TransmissionNetworkOutput(null, configuration, transmissionPolicyManager);
+    public static TransmissionNetworkOutput create(TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager, boolean isStatsbeat) {
+        return new TransmissionNetworkOutput(null, configuration, transmissionPolicyManager, isStatsbeat);
     }
 
-    private TransmissionNetworkOutput(@Nullable String serverUri, @Nullable TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager) {
+    private TransmissionNetworkOutput(@Nullable String serverUri, @Nullable TelemetryConfiguration configuration, TransmissionPolicyManager transmissionPolicyManager, boolean isStatsbeat) {
         Preconditions.checkNotNull(transmissionPolicyManager, "transmissionPolicyManager should be a valid non-null value");
         this.serverUri = serverUri;
         this.configuration = configuration;
+        this.isStatsbeat = isStatsbeat;
         if (StringUtils.isNotEmpty(serverUri)) {
             logger.warn("Setting the endpoint via the <Channel> element is deprecated and will be removed in a future version. Use the top-level element <ConnectionString>.");
         }
         httpClient = LazyHttpClient.getInstance();
         this.transmissionPolicyManager = transmissionPolicyManager;
         if (logger.isTraceEnabled()) {
-            logger.trace("{} using endpoint {}", TransmissionNetworkOutput.class.getSimpleName(), getIngestionEndpoint());
+            logger.trace("{} using endpoint {}", TransmissionNetworkOutput.class.getSimpleName(), (isStatsbeat ? getStatsbeatEndpoint() : getIngestionEndpoint()));
         }
     }
+
     /**
      * Used to inject the dispatcher used for this output so it can be injected to the retry logic.
      *
@@ -136,7 +140,9 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
         try {
             // POST the transmission data to the endpoint
             request = createTransmissionPostRequest(transmission);
+            long startTime = System.currentTimeMillis();
             response = httpClient.execute(request);
+            long duration = System.currentTimeMillis() - startTime;
             HttpEntity respEntity = response.getEntity();
             code = response.getStatusLine().getStatusCode();
             reason = response.getStatusLine().getReasonPhrase();
@@ -152,32 +158,41 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
                 transmissionPolicyManager.clearBackoff();
                 // Increment Success Counter
                 networkExceptionStats.recordSuccess();
+                StatsbeatModule.get().getNetworkStatsbeat().incrementRequestSuccessCount(duration);
             }
             return true;
         } catch (ConnectionPoolTimeoutException e) {
             networkExceptionStats.recordFailure("connection pool timeout exception: " + e, e);
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (SocketException e) {
             networkExceptionStats.recordFailure("socket exception: " + e, e);
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (SocketTimeoutException e) {
             networkExceptionStats.recordFailure("socket timeout exception: " + e, e);
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (UnknownHostException e) {
             networkExceptionStats.recordFailure("wrong host address or cannot reach address due to network issues: " + e, e);
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (IOException e) {
             networkExceptionStats.recordFailure("I/O exception: " + e, e);
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (FriendlyException e) {
             ex = e;
             // TODO should this be merged into networkExceptionStats?
             if(!friendlyExceptionThrown.getAndSet(true)) {
                 logger.error(e.getMessage());
             }
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (Exception e) {
             networkExceptionStats.recordFailure("unexpected exception: " + e, e);
+            StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) {
             ex = t;
             try {
                 networkExceptionStats.recordFailure("unexpected exception: " + t, t);
+                StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
             } catch (ThreadDeath td) {
                 throw td;
             } catch (Throwable t2) {
@@ -191,6 +206,7 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
 
             if (code == HttpStatus.SC_BAD_REQUEST) {
                 networkExceptionStats.recordFailure("ingestion service returned 400 (" + reason + ")");
+                StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
             } else if (code != HttpStatus.SC_OK) {
                 // Invoke the listeners for handling things like errors
                 // The listeners will handle the back off logic as well as the dispatch
@@ -219,7 +235,8 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
      * @return The completed {@link HttpPost} object
      */
     private HttpPost createTransmissionPostRequest(Transmission transmission) {
-        HttpPost request = new HttpPost(getIngestionEndpoint());
+        String endpoint = isStatsbeat ? getStatsbeatEndpoint() : getIngestionEndpoint();
+        HttpPost request = new HttpPost(endpoint);
         request.addHeader(CONTENT_TYPE_HEADER, transmission.getWebContentType());
         request.addHeader(CONTENT_ENCODING_HEADER, transmission.getWebContentEncodingType());
 
@@ -234,6 +251,16 @@ public final class TransmissionNetworkOutput implements TransmissionOutputSync {
             return serverUri;
         } else if (configuration != null) {
             return configuration.getEndpointProvider().getIngestionEndpointURL().toString();
+        } else {
+            return DEFAULT_SERVER_URI;
+        }
+    }
+
+    private String getStatsbeatEndpoint() {
+        if (serverUri != null) {
+            return serverUri;
+        } else if (configuration != null) {
+            return configuration.getEndpointProvider().getStatsbeatEndpointUrl().toString();
         } else {
             return DEFAULT_SERVER_URI;
         }

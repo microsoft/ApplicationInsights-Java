@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.internal.channel.common;
 
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandler;
 import com.microsoft.applicationinsights.internal.channel.TransmissionHandlerArgs;
+import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,10 @@ public class ErrorHandler implements TransmissionHandler {
             case TransmissionSendResult.SERVICE_UNAVAILABLE:
             case TransmissionSendResult.CLIENT_SIDE_EXCEPTION:
                 backoffAndSendTransmission(args);
+                // TODO (heya) remove this null check later
+                if (StatsbeatModule.get() != null) {
+                    StatsbeatModule.get().getNetworkStatsbeat().incrementRetryCount();
+                }
                 return true;
             default:
                 logger.trace("Http response code {} not handled by {}", args.getResponseCode(),
