@@ -1,6 +1,6 @@
 # CHANGELOG
 # Version 3.1.1-BETA
-* Fix NullPointerException for App Services [#1681](https://github.com/microsoft/ApplicationInsights-Java/pull/1681#issuecomment-840169103).
+* Fix NullPointerExceptions for App Services [#1681](https://github.com/microsoft/ApplicationInsights-Java/pull/1681#issuecomment-840169103).
 * Add Application Insights stats.
 
 # Version 3.1.0
