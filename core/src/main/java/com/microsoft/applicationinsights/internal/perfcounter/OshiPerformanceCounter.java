@@ -60,13 +60,13 @@ public class OshiPerformanceCounter implements PerformanceCounter {
             processor = systemInfo.getHardware().getProcessor();
         }
 
-
         long currCollectionTimeMillis = System.currentTimeMillis();
         long currProcessBytes = 0L;
         if (processInfo != null) {
             updateAttributes(processInfo);
             currProcessBytes = getProcessBytes(processInfo);
         }
+
         long currTotalProcessorMillis = getTotalProcessorMillis(processor);
 
         if (prevCollectionTimeMillis != 0) {
