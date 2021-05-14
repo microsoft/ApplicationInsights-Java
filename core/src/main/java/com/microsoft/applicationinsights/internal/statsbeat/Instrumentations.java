@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import java.util.Base64;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,13 +74,14 @@ class Instrumentations {
         INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.tomcat-7.0", 57);
     }
 
-    static long encode(Set<String> instrumentations) {
-        BitSet number = new BitSet(64);
+    // encode BitSet to a base64 encoded string
+    static String encode(Set<String> instrumentations) {
+        BitSet bitSet = new BitSet(64);
         for (String instrumentation : instrumentations) {
             int index = INSTRUMENTATION_MAP.get(instrumentation);
-            number.set(index);
+            bitSet.set(index);
         }
-        long[] longArray = number.toLongArray();
-        return longArray.length == 0 ? 0L : longArray[0];
+
+        return Base64.getEncoder().encodeToString(bitSet.toByteArray());
     }
 }

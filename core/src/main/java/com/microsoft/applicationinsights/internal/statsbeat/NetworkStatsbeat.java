@@ -57,11 +57,11 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             current = new IntervalMetrics();
         }
 
-        String instrumentation = Long.toString(Instrumentations.encode(current.instrumentationList));
+        // send instrumentation as a base64 encoded string instead of the UTF-8 string
+        String instrumentation = Instrumentations.encode(current.instrumentationList);
 
         if (local.requestSuccessCount.get() != 0) {
             MetricTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
-            // TODO (heya) is this encoded in kusto as a long or a string?
             requestSuccessCountSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.track(requestSuccessCountSt);
         }
@@ -137,7 +137,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     // only used by tests
-    long getInstrumentation() {
+    String getInstrumentationAsBase64EncodedString() {
         return Instrumentations.encode(current.instrumentationList);
     }
 
