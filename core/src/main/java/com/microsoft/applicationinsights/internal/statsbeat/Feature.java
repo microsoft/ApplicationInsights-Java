@@ -64,6 +64,6 @@ enum Feature {
             bitSet.set(feature.bitmapIndex);
         }
 
-        return Base64.getEncoder().encodeToString(bitSet.toByteArray());
+        return Base64.getEncoder().withoutPadding().encodeToString(bitSet.toByteArray());
     }
 }

@@ -103,6 +103,6 @@ class Instrumentations {
             bitSet.set(index);
         }
 
-        return Base64.getEncoder().encodeToString(bitSet.toByteArray());
+        return Base64.getEncoder().withoutPadding().encodeToString(bitSet.toByteArray());
     }
 }
