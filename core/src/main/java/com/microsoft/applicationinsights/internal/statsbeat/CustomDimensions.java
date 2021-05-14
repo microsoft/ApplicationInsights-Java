@@ -75,7 +75,6 @@ class CustomDimensions {
         sdkVersion = qualifiedSdkVersion.substring(qualifiedSdkVersion.lastIndexOf(':') + 1);
         runtimeVersion = System.getProperty("java.version");
 
-        // TODO (heya) is this correct to always set attach type to codeless?
         attachType = "codeless";
         language = "java";
     }
