@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 public class StatsbeatModule {
 
     private static volatile StatsbeatModule instance;
+    private static final Object lock = new Object();
 
     private final NetworkStatsbeat networkStatsbeat;
     private final AttachStatsbeat attachStatsbeat;
@@ -33,10 +34,13 @@ public class StatsbeatModule {
     private final FeatureStatsbeat featureStatsbeat;
 
     public static void initialize(TelemetryClient telemetryClient, long interval, long featureInterval) {
-        if (instance != null) {
-            throw new IllegalStateException("initialize already called");
+        synchronized (lock) {
+            if (instance != null) {
+                throw new IllegalStateException("initialize already called");
+            }
+            instance = new StatsbeatModule(telemetryClient, interval, featureInterval);
         }
-        instance = new StatsbeatModule(telemetryClient, interval, featureInterval);
+        // will only reach here the first time, after instance has been instantiated
         new AzureMetadataService(instance.attachStatsbeat, CustomDimensions.get()).scheduleAtFixedRate(interval);
     }
 
