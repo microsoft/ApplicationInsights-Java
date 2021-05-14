@@ -107,7 +107,7 @@ public final class StatsbeatTestUtils {
         byte[] bytes = Base64.getDecoder().decode(base64EncodedString.getBytes());
         long result = 0;
         for (int i = 0; i < bytes.length; i++) {
-            result += ((long) bytes[i] & 0xffL) << (8 * i);
+            result += ((long) bytes[i] & 0xffL) << (8 * i); // use Big Endian Byte Order.
         }
         return result;
     }
