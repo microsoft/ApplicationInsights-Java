@@ -6,6 +6,7 @@ import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.policy.BearerTokenAuthenticationPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.identity.*;
+import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 public class AadAuthentication {
@@ -106,7 +107,7 @@ public class AadAuthentication {
     public HttpPipeline newHttpPipeLineWithAuthentication() {
 
         HttpPipelinePolicy authenticationPolicy = getAuthenticationPolicy();
-        HttpClient httpClient = HttpClient.createDefault();
+        HttpClient httpClient = LazyAzureHttpClient.getInstance();
 
         if (authenticationPolicy == null) {
             return new HttpPipelineBuilder()

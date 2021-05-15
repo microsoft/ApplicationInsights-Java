@@ -585,18 +585,19 @@ public class Configuration {
     }
 
     public static class AadAuthentication {
-        public AadAuthentication() {
-            this.authenticationEnabled = false;
-        }
-        public boolean authenticationEnabled;
+        public boolean enabled;
         public AuthenticationType type;
         public String clientId;
         public String keePassDatabasePath;
         public String tenantId;
         public String clientSecret;
         public String authorityHost;
+        public AadAuthentication() {
+            this.enabled = false;
+        }
+        
         public boolean validate() throws FriendlyException {
-            if(!authenticationEnabled) return true;
+            if(!enabled) return true;
             if(type == null) {
                 throw new FriendlyException("AAD Authentication configuration is missing authentication \"type\".",
                         "Please provide a valid authentication \"type\" under the \"authentication\" configuration. " +

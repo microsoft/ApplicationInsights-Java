@@ -198,7 +198,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration("applicationinsights_aadauth.json");
         PreviewConfiguration preview = configuration.preview;
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals(true, preview.authentication.authenticationEnabled);
+        assertEquals(true, preview.authentication.enabled);
         assertEquals(AuthenticationType.SAMI, preview.authentication.type);
         assertEquals("123xyz", preview.authentication.clientId);
         assertEquals("tenant123", preview.authentication.tenantId);

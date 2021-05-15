@@ -2,7 +2,7 @@
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
   "preview" : {
     "authentication" : {
-      "authenticationEnabled": true,
+      "enabled": true,
       "type": "SAMI",
       "clientId" : "123xyz",
       "keePassDatabasePath" : "path/to/keePass",
