@@ -131,16 +131,17 @@ public class AppIdSupplier implements AiAppId.Supplier {
                 return;
             }
 
-            String body;
-            body = response.getBodyAsString().block();
-
-            int statusCode = response.getStatusCode();
-            if (statusCode != 200) {
-                backOff("received " + statusCode + " from " + uri
-                        + "\nfull response:\n" + body, null);
-                return;
+            String body = null;
+            if(response != null) {
+                body = response.getBodyAsString().block();
+                int statusCode = response.getStatusCode();
+                if (statusCode != 200) {
+                    backOff("received " + statusCode + " from " + uri
+                            + "\nfull response:\n" + body, null);
+                    return;
+                }
             }
-
+            
             // check for case when breeze returns invalid value
             if (body == null || body.isEmpty()) {
                 backOff("received empty body from " + uri, null);
