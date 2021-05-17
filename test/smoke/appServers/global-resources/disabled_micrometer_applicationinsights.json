@@ -6,7 +6,6 @@
     }
   },
   "preview": {
-    "httpMethodInOperationName": true,
     "metricIntervalSeconds": 5
   }
 }

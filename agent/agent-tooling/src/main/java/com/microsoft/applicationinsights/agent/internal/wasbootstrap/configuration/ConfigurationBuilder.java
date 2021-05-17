@@ -95,6 +95,10 @@ public class ConfigurationBuilder {
                             " (and note that metricIntervalSeconds applies to all auto-collected metrics," +
                             " not only micrometer)"));
         }
+        if (config.preview.httpMethodInOperationName) {
+            configurationWarnMessages.add(new ConfigurationWarnMessage(
+                    "\"httpMethodInOperationName\" preview setting is now the (one and only) default behavior"));
+        }
         overlayEnvVars(config);
         applySamplingPercentageRounding(config);
         // rp configuration should always be last (so it takes precedence)
@@ -280,7 +284,8 @@ public class ConfigurationBuilder {
         }
     }
 
-    private static void overlayRpConfiguration(Configuration config, RpConfiguration rpConfiguration)  {
+    // visible for testing
+    static void overlayRpConfiguration(Configuration config, RpConfiguration rpConfiguration)  {
         String connectionString = rpConfiguration.connectionString;
         if (!isTrimEmpty(connectionString)) {
             config.connectionString = connectionString;
@@ -290,6 +295,14 @@ public class ConfigurationBuilder {
         }
         if (rpConfiguration.ignoreRemoteParentNotSampled != null) {
             config.preview.ignoreRemoteParentNotSampled = rpConfiguration.ignoreRemoteParentNotSampled;
+        }
+        if (isTrimEmpty(config.role.name)) {
+            // only use rp configuration role name as a fallback, similar to WEBSITE_SITE_NAME
+            config.role.name = rpConfiguration.role.name;
+        }
+        if (isTrimEmpty(config.role.instance)) {
+            // only use rp configuration role name as a fallback, similar to WEBSITE_INSTANCE_ID
+            config.role.instance = rpConfiguration.role.instance;
         }
     }
 

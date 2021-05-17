@@ -4,8 +4,5 @@
     "logging": {
       "level": "warn"
     }
-  },
-  "preview": {
-    "httpMethodInOperationName": true
   }
 }

@@ -185,7 +185,7 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     private static String formApplicationInsightsUserAgent() {
-        String aiVersion = SdkVersionFinder.readVersion();
+        String aiVersion = SdkVersionFinder.getTheValue();
         String javaVersion = System.getProperty("java.version");
         String osName = System.getProperty("os.name");
         String arch = System.getProperty("os.arch");
@@ -199,7 +199,9 @@ public class AiComponentInstaller implements ComponentInstaller {
                 configuration.periodicRecordingDurationSeconds,
                 configuration.periodicRecordingIntervalSeconds,
                 configuration.serviceProfilerFrontEndPoint,
-                configuration.enabled
+                configuration.enabled,
+                configuration.memoryTriggeredSettings,
+                configuration.cpuTriggeredSettings
         );
     }
 

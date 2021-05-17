@@ -70,8 +70,30 @@ Profiler may also be enabled via adding a config section to applicationinsights.
     }
 ```
 
-The profiler periodically polls for configuration changes made within the UI. This can be adjusted via
-`configPollPeriod`.
+### Json Configuration Parameters
+`configPollPeriodSeconds` - The profiler periodically polls for configuration changes made within the UI.
 
 
+`memoryTriggeredSettings` - This configuration will be used in the event of a memory profile is requested. This can be one of:
+  - "profile" (default value). Uses the `profile` jfc configuration that ships with JFR.
+    
+  - "profile_without_env_data". Uses a profile similar to the `profile` jfc configuration that ships with JFR, however
+    with the following settings disabled:
+    - jdk.JVMInformation
+    - jdk.InitialSystemProperty
+    - jdk.OSInformation
+    - jdk.InitialEnvironmentVariable
+    - jdk.SystemProcess
+  - A path to a custom jfc configuration file on the file system.
 
+`cpuTriggeredSettings` - This configuration will be used in the event of a cpu profile is requested. This can be one of:
+- "profile" (default value). Uses the `profile` jfc configuration that ships with JFR.
+
+- "profile_without_env_data". Uses a profile similar to the `profile` jfc configuration that ships with JFR, however
+  with the following settings disabled:
+    - jdk.JVMInformation
+    - jdk.InitialSystemProperty
+    - jdk.OSInformation
+    - jdk.InitialEnvironmentVariable
+    - jdk.SystemProcess
+- A path to a custom jfc configuration file on the file system.

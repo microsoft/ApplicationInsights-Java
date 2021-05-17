@@ -40,6 +40,7 @@ import com.microsoft.applicationinsights.internal.config.connection.ConnectionSt
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
+import com.microsoft.applicationinsights.internal.util.CollectionTypeJsonSerializer;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -445,7 +446,7 @@ public class TelemetryClient {
 
             // Customize serializer to use NDJSON
             SimpleModule ndjsonModule = new SimpleModule("Ndjson List Serializer");
-            ndjsonModule.addSerializer(new NdJsonSerializer());
+            ndjsonModule.setSerializers(new CollectionTypeJsonSerializer());
             mapper.registerModule(ndjsonModule);
         }
 

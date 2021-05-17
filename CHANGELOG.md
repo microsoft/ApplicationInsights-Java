@@ -1,4 +1,19 @@
 # CHANGELOG
+# Version 3.1.1-BETA
+* Fix NullPointerExceptions for App Services [#1681](https://github.com/microsoft/ApplicationInsights-Java/pull/1681#issuecomment-840169103).
+* Add Application Insights stats.
+
+# Version 3.1.0
+* Capture http method in the operation name [#1679](https://github.com/microsoft/ApplicationInsights-Java/pull/1679)
+
+# Version 3.0.4-BETA.2
+* Enable users to override iKey, cloud role name and cloud role instance per telemetry [#1630](https://github.com/microsoft/ApplicationInsights-Java/pull/1630).
+* Fix duplicate headers [#1640](https://github.com/microsoft/ApplicationInsights-Java/pull/1640).
+* Add preview instrumentations for javaHttpClient, rabbitmq, and jaxws [#1650](https://github.com/microsoft/ApplicationInsights-Java/pull/1650).
+* Add a new env var called APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE.
+* Add cloud role name and instance to applicationinsights-rp.json configuration.
+* Improve agent start up time.
+
 # Version 3.0.4-BETA
 * Enable Azure Functions to update the instrumentation logging level at runtime.
 * Enable Azure Functions to update the self-diagnostics logging level at runtime.
