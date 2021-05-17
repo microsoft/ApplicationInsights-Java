@@ -4,8 +4,5 @@
     "test": "value",
     "home": "${HOME}",
     "service.version": "123"
-  },
-  "preview": {
-    "httpMethodInOperationName": true
   }
 }

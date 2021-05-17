@@ -136,6 +136,7 @@ public class Configuration {
     public static class MicrometerInstrumentation {
         public boolean enabled = true;
         // this is just here to detect if using this old undocumented setting in order to give a helpful error message
+        @Deprecated
         public int reportingIntervalSeconds = 60;
     }
 
@@ -176,7 +177,8 @@ public class Configuration {
         // ignoreRemoteParentNotSampled is currently needed
         // because .NET SDK always propagates trace flags "00" (not sampled)
         public boolean ignoreRemoteParentNotSampled = true;
-        // TODO consider turning this on by default in 3.1.0
+        // this is just here to detect if using this old setting in order to give a helpful message
+        @Deprecated
         public boolean httpMethodInOperationName;
         public LiveMetrics liveMetrics = new LiveMetrics();
 
@@ -309,7 +311,7 @@ public class Configuration {
             } catch (PatternSyntaxException exception) {
                 // TODO different links for different processor types throughout?
                 throw new FriendlyException(processorType.anX + " processor configuration has an invalid regex:" + value,
-                                "Please provide a valid regex in the " + processorType + " processor configuration. " +
+                        "Please provide a valid regex in the " + processorType + " processor configuration. " +
                                 "Learn more about " + processorType + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
         }
@@ -334,7 +336,7 @@ public class Configuration {
             if (type == ProcessorType.attribute) {
                 if (actions.isEmpty()) {
                     throw new FriendlyException("An attribute processor configuration has no actions.",
-                                    "Please provide at least one action in the attribute processor configuration. " +
+                            "Please provide at least one action in the attribute processor configuration. " +
                                     "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
                 // TODO validate name == null?
@@ -348,7 +350,7 @@ public class Configuration {
             if (type == ProcessorType.log || type == ProcessorType.span) {
                 if (name == null) {
                     throw new FriendlyException(type.anX +  " processor configuration is missing a \"name\" section.",
-                                    "Please provide a \"name\" section in the " + type + " processor configuration. " +
+                            "Please provide a \"name\" section in the " + type + " processor configuration. " +
                                     "Learn more about " + type + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
                 // TODO validate actions.isEmpty()?
@@ -366,7 +368,7 @@ public class Configuration {
             if (fromAttributes.isEmpty() && toAttributes == null) {
                 // TODO different links for different processor types?
                 throw new FriendlyException(processorType.anX + " processor configuration has \"name\" action with no \"fromAttributes\" and no \"toAttributes\".",
-                                "Please provide at least one of \"fromAttributes\" or \"toAttributes\" under the name section of the " + processorType + " processor configuration. " +
+                        "Please provide at least one of \"fromAttributes\" or \"toAttributes\" under the name section of the " + processorType + " processor configuration. " +
                                 "Learn more about " + processorType + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             if (toAttributes != null) {
@@ -381,7 +383,7 @@ public class Configuration {
         public void validate(ProcessorType processorType) throws FriendlyException {
             if (rules.isEmpty()) {
                 throw new FriendlyException(processorType.anX + " processor configuration has \"toAttributes\" section with no \"rules\".",
-                                "Please provide at least one rule under the \"toAttributes\" section of the " + processorType + " processor configuration. " +
+                        "Please provide at least one rule under the \"toAttributes\" section of the " + processorType + " processor configuration. " +
                                 "Learn more about " + processorType + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             for (String rule : rules) {
@@ -440,7 +442,7 @@ public class Configuration {
         private void validAttributeProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
             if (spanNames.isEmpty() && attributes.isEmpty()) {
                 throw new FriendlyException("An attribute processor configuration has an " + includeExclude + " section with no \"spanNames\" and no \"attributes\".",
-                                "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the attribute processor configuration. " +
+                        "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the attribute processor configuration. " +
                                 "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             if (matchType == MatchType.regexp) {
@@ -453,7 +455,7 @@ public class Configuration {
         private void validateLogProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
             if (logNames.isEmpty() && attributes.isEmpty()) {
                 throw new FriendlyException("A log processor configuration has an " + includeExclude + " section with no \"logNames\" and no \"attributes\".",
-                                "Please provide at least one of \"logNames\" or \"attributes\" under the " + includeExclude + " section of the log processor configuration. " +
+                        "Please provide at least one of \"logNames\" or \"attributes\" under the " + includeExclude + " section of the log processor configuration. " +
                                 "Learn more about log processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             if (matchType == MatchType.regexp) {
@@ -466,7 +468,7 @@ public class Configuration {
         private void validateSpanProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
             if (spanNames.isEmpty() && attributes.isEmpty()) {
                 throw new FriendlyException("A span processor configuration has " + includeExclude + " section with no \"spanNames\" and no \"attributes\".",
-                                "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the span processor configuration. " +
+                        "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the span processor configuration. " +
                                 "Learn more about span processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             if (matchType == MatchType.regexp) {
@@ -573,6 +575,8 @@ public class Configuration {
         public int periodicRecordingIntervalSeconds = 60 * 60;
         public String serviceProfilerFrontEndPoint = null;
         public boolean enabled = false;
+        public String memoryTriggeredSettings = "profile";
+        public String cpuTriggeredSettings = "profile";
     }
 
     public static class GcEventConfiguration {

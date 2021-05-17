@@ -4,8 +4,5 @@
     "kafka": {
       "enabled": false
     }
-  },
-  "preview": {
-    "httpMethodInOperationName": true
   }
 }

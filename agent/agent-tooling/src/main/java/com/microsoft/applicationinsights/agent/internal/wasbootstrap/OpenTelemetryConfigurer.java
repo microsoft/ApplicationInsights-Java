@@ -47,7 +47,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
         // Reversing the order of processors before passing it to SpanProcessor
         Collections.reverse(processors);
 
-        SpanExporter exporter = new Exporter(TelemetryClient.getActive(), config.preview.httpMethodInOperationName);
+        SpanExporter exporter = new Exporter(TelemetryClient.getActive());
 
         // NOTE if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         if (!processors.isEmpty()) {

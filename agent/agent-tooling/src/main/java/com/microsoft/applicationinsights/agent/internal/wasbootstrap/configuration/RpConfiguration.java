@@ -21,6 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.Role;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.Sampling;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.nio.file.Path;
@@ -38,12 +40,12 @@ public class RpConfiguration {
     // intentionally null, so that we can tell if rp is providing or not
     public Sampling sampling = new Sampling();
 
+    // this is needed in Azure Spring Cloud because it will set the role name to application name
+    // on behalf of customers by default.
+    // Note the role doesn't support hot load due to unnecessary currently.
+    public Role role = new Role();
+
     // this is needed in Azure Functions because .NET SDK always propagates trace flags "00" (not sampled)
     // null means do not override the users selection
     public @Nullable Boolean ignoreRemoteParentNotSampled;
-
-    public static class Sampling {
-
-        public float percentage = 100;
-    }
 }

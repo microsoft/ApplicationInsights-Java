@@ -23,7 +23,7 @@ ext {
 
             azureStorageBlob                 : "12.11.0-beta.3",
             azureClientRuntime               : "2.1.1",
-            microsoftJfrStreaming            : "1.0.0",
+            microsoftJfrStreaming            : "1.1.0",
 
             // TODO remove dependency on guava
             guava                            : "30.1.1-jre",
