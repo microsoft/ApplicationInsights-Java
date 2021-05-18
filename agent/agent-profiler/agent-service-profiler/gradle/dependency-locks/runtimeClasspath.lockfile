@@ -14,7 +14,7 @@ com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.2
 com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.12.2
 com.fasterxml.jackson:jackson-bom:2.12.2
 com.fasterxml.woodstox:woodstox-core:6.2.4
-com.microsoft.jfr:jfr-streaming:1.1.0
+com.microsoft.jfr:jfr-streaming:1.2.0
 com.microsoft.rest.v2:client-runtime:2.1.1
 com.squareup.moshi:moshi-adapters:1.9.3
 com.squareup.moshi:moshi:1.9.3
