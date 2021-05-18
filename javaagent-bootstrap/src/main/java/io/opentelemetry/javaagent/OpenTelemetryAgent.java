@@ -5,17 +5,14 @@
 
 package io.opentelemetry.javaagent;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.security.CodeSource;
 import java.util.Arrays;
 import java.util.List;
@@ -47,14 +44,19 @@ import java.util.regex.Pattern;
 public class OpenTelemetryAgent {
   private static final Class<?> thisClass = OpenTelemetryAgent.class;
 
-  public static void premain(String agentArgs, Instrumentation inst) {
-    agentmain(agentArgs, inst);
+  public static void agentmain(String agentArgs, Instrumentation inst) {
+    premain(agentArgs, inst);
   }
 
-  public static void agentmain(String agentArgs, Instrumentation inst) {
+  public static void premain(String agentArgs, Instrumentation inst) {
+    premain(agentArgs, inst, OpenTelemetryAgent.class);
+  }
+
+  // this is exposed for other agents that want to wrap this one
+  public static void premain(String agentArgs, Instrumentation inst, Class<?> premainClass) {
     try {
 
-      URL bootstrapUrl = installBootstrapJar(inst);
+      URL bootstrapUrl = installBootstrapJar(inst, premainClass);
 
       Class<?> agentInitializerClass =
           ClassLoader.getSystemClassLoader()
@@ -80,7 +82,7 @@ public class OpenTelemetryAgent {
     }
   }
 
-  private static synchronized URL installBootstrapJar(Instrumentation inst)
+  private static synchronized URL installBootstrapJar(Instrumentation inst, Class<?> premainClass)
       throws IOException, URISyntaxException {
     URL javaAgentJarUrl = null;
 
@@ -92,7 +94,7 @@ public class OpenTelemetryAgent {
       File bootstrapFile = new File(javaAgentJarUrl.toURI());
 
       if (!bootstrapFile.isDirectory()) {
-        checkJarManifestMainClassIsThis(javaAgentJarUrl);
+        checkJarManifestMainClassIsThis(javaAgentJarUrl, premainClass);
         inst.appendToBootstrapClassLoaderSearch(new JarFile(bootstrapFile));
         return javaAgentJarUrl;
       }
@@ -136,7 +138,7 @@ public class OpenTelemetryAgent {
       throw new RuntimeException("Unable to find javaagent file: " + javaagentFile);
     }
     javaAgentJarUrl = javaagentFile.toURI().toURL();
-    checkJarManifestMainClassIsThis(javaAgentJarUrl);
+    checkJarManifestMainClassIsThis(javaAgentJarUrl, premainClass);
     inst.appendToBootstrapClassLoaderSearch(new JarFile(javaagentFile));
 
     return javaAgentJarUrl;
@@ -180,25 +182,10 @@ public class OpenTelemetryAgent {
     }
   }
 
-  private static boolean checkJarManifestMainClassIsThis(URL jarUrl) throws IOException {
-    URL manifestUrl = new URL("jar:" + jarUrl + "!/META-INF/MANIFEST.MF");
-    String mainClassLine = "Main-Class: " + thisClass.getCanonicalName();
-    try (BufferedReader reader =
-        new BufferedReader(
-            new InputStreamReader(manifestUrl.openStream(), StandardCharsets.UTF_8))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        if (line.equals(mainClassLine)) {
-          return true;
-        }
-      }
-    }
-    throw new RuntimeException(
-        "opentelemetry-javaagent is not installed, because class '"
-            + thisClass.getCanonicalName()
-            + "' is located in '"
-            + jarUrl
-            + "'. Make sure you don't have this .class file anywhere, besides opentelemetry-javaagent.jar");
+  private static boolean checkJarManifestMainClassIsThis(URL jarUrl, Class<?> premainClass)
+      throws IOException {
+    // removed because it causes slowness when jar file is signed on Java 8
+    return true;
   }
 
   /**
