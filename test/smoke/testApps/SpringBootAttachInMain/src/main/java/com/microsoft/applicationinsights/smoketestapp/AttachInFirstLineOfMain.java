@@ -66,7 +66,8 @@ public class AttachInFirstLineOfMain {
                 if (configFile != null) {
                     Files.delete(configFile);
                 }
-            } catch (IOException ignored) {
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
