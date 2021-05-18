@@ -24,8 +24,6 @@ package com.microsoft.applicationinsights;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.util.serializer.*;
-import com.azure.core.util.tracing.Tracer;
-import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -47,8 +45,6 @@ import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
-import reactor.util.context.Context;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -98,7 +94,7 @@ public class TelemetryClient {
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
     private final Object channelInitLock = new Object();
-    private volatile @Nullable ApplicationInsightsClientImpl channel;
+    private volatile @Nullable BatchSpanProcessor channel;
 
     // only used by tests
     public TelemetryClient() {
@@ -167,35 +163,31 @@ public class TelemetryClient {
         active = null;
     }
 
-    public void trackAsync(TelemetryItem telemetryItem) {
-        trackAsync(singletonList(telemetryItem))
-                .subscriberContext(Context.of(Tracer.DISABLE_TRACING_KEY, true))
-                .subscribe();
+    public void trackAsync(List<TelemetryItem> telemetryItems) {
+        for (TelemetryItem telemetry : telemetryItems) {
+            trackAsync(telemetry);
+        }
     }
 
-    public Mono<ExportResult> trackAsync(List<TelemetryItem> telemetryItems) {
-        for (TelemetryItem telemetry : telemetryItems) {
-
-            if (telemetry.getSampleRate() == null) {
-                // FIXME (trask) is this required?
-                telemetry.setSampleRate(100f);
-            }
-
-            if (telemetry.getTime() == null) {
-                // TODO (trask) remove this after confident no code paths hit this
-                throw new IllegalArgumentException("telemetry item is missing time");
-            }
-
-            QuickPulseDataCollector.INSTANCE.add(telemetry);
-
-            TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetry));
+    public void trackAsync(TelemetryItem telemetry) {
+        if (telemetry.getSampleRate() == null) {
+            // FIXME (trask) is this required?
+            telemetry.setSampleRate(100f);
         }
 
-        // FIXME (trask) implement batching here!!!
-        return getChannel().trackAsync(telemetryItems);
+        if (telemetry.getTime() == null) {
+            // TODO (trask) remove this after confident no code paths hit this
+            throw new IllegalArgumentException("telemetry item is missing time");
+        }
+
+        QuickPulseDataCollector.INSTANCE.add(telemetry);
+
+        TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetry));
+
+        getChannel().trackAsync(telemetry);
     }
 
-    public ApplicationInsightsClientImpl getChannel() {
+    public BatchSpanProcessor getChannel() {
         if (channel == null) {
             synchronized (channelInitLock) {
                 if (channel == null) {
@@ -206,7 +198,7 @@ public class TelemetryClient {
         return channel;
     }
 
-    private ApplicationInsightsClientImpl createChannel() {
+    private BatchSpanProcessor createChannel() {
         ApplicationInsightsClientImplBuilder restServiceClientBuilder = new ApplicationInsightsClientImplBuilder();
         restServiceClientBuilder.serializerAdapter(new JacksonJsonAdapter());
         URI endpoint = endpointProvider.getIngestionEndpoint();
@@ -223,7 +215,8 @@ public class TelemetryClient {
         if(authenticationPolicy != null) {
             restServiceClientBuilder.addPolicy(authenticationPolicy);
         }
-        return restServiceClientBuilder.buildClient();
+
+        return BatchSpanProcessor.builder(restServiceClientBuilder.buildClient()).build();
     }
 
     public List<TelemetryModule> getTelemetryModules() {

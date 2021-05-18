@@ -81,6 +81,7 @@ org.apache.httpcomponents:httpclient:4.5.13
 org.apache.httpcomponents:httpcore:4.4.13
 org.checkerframework:checker-qual:3.8.0
 org.codehaus.woodstox:stax2-api:4.2.1
+org.jctools:jctools-core:3.3.0
 org.jetbrains:annotations:15.0
 org.linguafranca.pwdb:KeePassJava2-dom:2.1.4
 org.linguafranca.pwdb:KeePassJava2-jaxb:2.1.4

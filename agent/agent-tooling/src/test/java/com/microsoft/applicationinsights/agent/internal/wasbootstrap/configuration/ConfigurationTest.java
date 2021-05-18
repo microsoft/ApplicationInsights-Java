@@ -503,6 +503,32 @@ public class ConfigurationTest {
         assertFalse(configuration.instrumentation.springScheduling.enabled);
     }
 
+    @Test
+    public void shouldUseRpConfigRole() {
+        Configuration configuration = new Configuration();
+        RpConfiguration rpConfiguration = new RpConfiguration();
+        rpConfiguration.role.name = "role-name-from-rp";
+        rpConfiguration.role.instance = "role-instance-from-rp";
+        ConfigurationBuilder.overlayRpConfiguration(configuration, rpConfiguration);
+
+        assertEquals("role-name-from-rp", configuration.role.name);
+        assertEquals("role-instance-from-rp", configuration.role.instance);
+    }
+
+    @Test
+    public void shouldNotUseRpConfigRole() {
+        Configuration configuration = new Configuration();
+        configuration.role.name = "role-name";
+        configuration.role.instance = "role-instance";
+        RpConfiguration rpConfiguration = new RpConfiguration();
+        rpConfiguration.role.name = "role-name-from-rp";
+        rpConfiguration.role.instance = "role-instance-from-rp";
+        ConfigurationBuilder.overlayRpConfiguration(configuration, rpConfiguration);
+
+        assertEquals("role-name", configuration.role.name);
+        assertEquals("role-instance", configuration.role.instance);
+    }
+
     @Test(expected = JsonDataException.class)
     public void shouldNotParseFaultyJson() throws IOException {
         loadConfiguration("applicationinsights_faulty.json");

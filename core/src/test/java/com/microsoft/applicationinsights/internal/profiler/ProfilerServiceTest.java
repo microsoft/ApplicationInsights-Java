@@ -162,7 +162,9 @@ public class ProfilerServiceTest {
                         2,
                         3,
                         "localhost",
-                        true
+                        true,
+                        null,
+                        null
                 ),
                 jfrProfiler,
                 ProfilerServiceInitializer.updateAlertingConfig(alertService),
@@ -220,7 +222,9 @@ public class ProfilerServiceTest {
                 2,
                 3,
                 "localhost",
-                true)) {
+                false,
+                null,
+                null)) {
             @Override
             protected void profileAndUpload(AlertBreach alertBreach, Duration duration) {
                 profileInvoked.set(true);

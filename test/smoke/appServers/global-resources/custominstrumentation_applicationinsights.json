@@ -1,7 +1,6 @@
 {
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.docker.internal:6060/",
   "preview": {
-    "httpMethodInOperationName": true,
     "customInstrumentation": [
       {
         "className": "com.microsoft.applicationinsights.smoketestapp.TargetObject",

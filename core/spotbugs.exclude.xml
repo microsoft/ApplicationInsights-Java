@@ -84,4 +84,11 @@
             <Bug pattern="NM_METHOD_NAMING_CONVENTION" />
         </Or>
     </Match>
+    <Match>
+        <Or>
+            <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" />
+            <Bug pattern="RV_RETURN_VALUE_IGNORED" />
+        </Or>
+        <Class name="com.microsoft.applicationinsights.BatchSpanProcessor$Worker" />
+    </Match>
 </FindBugsFilter>
