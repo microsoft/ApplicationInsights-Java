@@ -116,13 +116,11 @@ public class AiComponentInstaller implements ComponentInstaller {
         }
         // Function to validate user provided processor configuration
         validateProcessorConfiguration(config);
-
-        if(config.preview.authentication.validate()) {
-            //Inject authentication configuration
-            Configuration.AadAuthentication authentication = config.preview.authentication;
-            AadAuthentication.init(authentication.type, authentication.clientId, authentication.keePassDatabasePath,
-                    authentication.tenantId, authentication.clientSecret, authentication.authorityHost);
-        }
+        config.preview.authentication.validate();
+        //Inject authentication configuration
+        Configuration.AadAuthentication authentication = config.preview.authentication;
+        AadAuthentication.init(authentication.type, authentication.clientId, authentication.keePassDatabasePath,
+                authentication.tenantId, authentication.clientSecret, authentication.authorityHost);
 
         // FIXME do something with config
 

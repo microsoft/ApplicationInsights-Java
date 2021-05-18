@@ -7,7 +7,6 @@ import com.azure.core.http.ProxyOptions;
 import com.azure.core.http.netty.NettyAsyncHttpClientBuilder;
 import com.azure.core.util.Context;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import org.apache.http.HttpHost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;

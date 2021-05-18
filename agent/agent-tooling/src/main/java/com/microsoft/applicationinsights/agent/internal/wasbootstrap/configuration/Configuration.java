@@ -596,8 +596,8 @@ public class Configuration {
             this.enabled = false;
         }
         
-        public boolean validate() throws FriendlyException {
-            if(!enabled) return true;
+        public void validate() throws FriendlyException {
+            if(!enabled) return;
             if(type == null) {
                 throw new FriendlyException("AAD Authentication configuration is missing authentication \"type\".",
                         "Please provide a valid authentication \"type\" under the \"authentication\" configuration. " +
@@ -622,26 +622,24 @@ public class Configuration {
             }
 
             if(type == AuthenticationType.CLIENTSECRET) {
-                if(isEmpty(clientId)) {
+                if (isEmpty(clientId)) {
                     throw new FriendlyException("AAD Authentication configuration of type Client Secret Identity is missing \"clientId\".",
                             "Please provide a valid \"clientId\" under the \"authentication\" configuration. " +
                                     "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
                 }
 
-                if(isEmpty(tenantId)) {
+                if (isEmpty(tenantId)) {
                     throw new FriendlyException("AAD Authentication configuration of type Client Secret Identity is missing \"tenantId\".",
                             "Please provide a valid \"tenantId\" under the \"authentication\" configuration. " +
                                     "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
                 }
 
-                if(isEmpty(clientSecret)) {
+                if (isEmpty(clientSecret)) {
                     throw new FriendlyException("AAD Authentication configuration of type Client Secret Identity is missing \"clientSecret\".",
                             "Please provide a valid \"clientSecret\" under the \"authentication\" configuration. " +
                                     "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
                 }
             }
-
-            return true;
         }
     }
 
