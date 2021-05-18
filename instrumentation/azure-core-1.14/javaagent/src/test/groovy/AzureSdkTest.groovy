@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import com.azure.core.http.policy.HttpPolicyProviders
 import com.azure.core.util.Context
 import com.azure.core.util.tracing.TracerProxy
 import io.opentelemetry.api.trace.StatusCode
@@ -13,6 +14,12 @@ class AzureSdkTest extends AgentInstrumentationSpecification {
   def "test helper classes injected"() {
     expect:
     TracerProxy.isTracingEnabled()
+
+    def list = new ArrayList()
+    HttpPolicyProviders.addAfterRetryPolicies(list)
+
+    list.size() == 1
+    list.get(0).getClass().getName() == "com.azure.core.tracing.opentelemetry.OpenTelemetryHttpPolicy"
   }
 
   def "test span"() {
