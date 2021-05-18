@@ -63,6 +63,7 @@ dependencies {
 
     implementation group: 'com.azure', name: 'azure-core', version: '1.15.0'
     implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: versions.opentelemetry
+    implementation group: 'org.jctools', name: 'jctools-core', version: '3.3.0'
 
     testImplementation group: 'junit', name: 'junit', version: versions.junit
     testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest

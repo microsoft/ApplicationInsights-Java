@@ -31,8 +31,6 @@ import java.util.regex.Pattern;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.microsoft.applicationinsights.TelemetryUtil;
-import reactor.util.context.Context;
-import com.azure.core.util.tracing.Tracer;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -127,20 +125,18 @@ public class Exporter implements SpanExporter {
             return CompletableResultCode.ofSuccess();
         }
 
-        CompletableResultCode completableResultCode = new CompletableResultCode();
         try {
             List<TelemetryItem> telemetryItems = new ArrayList<>();
             for (SpanData span : spans) {
                 logger.debug("exporting span: {}", span);
                 export(span, telemetryItems);
             }
-            telemetryClient.trackAsync(telemetryItems)
-                    .subscriberContext(Context.of(Tracer.DISABLE_TRACING_KEY, true))
-                    .subscribe(ignored -> { }, error -> completableResultCode.fail(), completableResultCode::succeed);
-            return completableResultCode;
+            telemetryClient.trackAsync(telemetryItems);
+            // FIXME (trask)
+            return CompletableResultCode.ofSuccess();
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
-            return completableResultCode.fail();
+            return CompletableResultCode.ofFailure();
         }
     }
 
