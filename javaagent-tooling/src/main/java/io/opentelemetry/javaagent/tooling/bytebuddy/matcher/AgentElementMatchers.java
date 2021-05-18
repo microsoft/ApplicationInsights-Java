@@ -29,6 +29,12 @@ public class AgentElementMatchers {
         .and(new SafeHasSuperTypeMatcher<>(new SafeErasureMatcher<>(matcher), true));
   }
 
+  // TODO (trask) this is just temporary until updating fork to 1.2.0
+  public static <T extends TypeDescription> ElementMatcher.Junction<T> implementsInterfaceBetter(
+      ElementMatcher<? super TypeDescription> matcher) {
+    return new SafeHasSuperTypeMatcher<>(new SafeErasureMatcher<>(matcher), true);
+  }
+
   public static <T extends TypeDescription> ElementMatcher.Junction<T> hasInterface(
       ElementMatcher<? super TypeDescription> matcher) {
     return new SafeHasSuperTypeMatcher<>(new SafeErasureMatcher<>(matcher), true);

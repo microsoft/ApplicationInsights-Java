@@ -86,6 +86,7 @@ include ':instrumentation:azure-functions:javaagent'
 include ':instrumentation:azure-functions:javaagent-unittests'
 include ':instrumentation:cassandra:cassandra-3.0:javaagent'
 include ':instrumentation:cassandra:cassandra-4.0:javaagent'
+include ':instrumentation:azure-core-1.14:javaagent' // out of order to avoid merge conflict with azure-functions instrumentation
 include ':instrumentation:cdi-testing'
 include ':instrumentation:classloaders:javaagent'
 include ':instrumentation:classloaders:javaagent:jboss-testing'
