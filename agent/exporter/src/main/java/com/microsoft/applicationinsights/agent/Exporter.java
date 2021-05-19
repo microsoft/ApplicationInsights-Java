@@ -190,7 +190,10 @@ public class Exporter implements SpanExporter {
             }
         } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
             exportRemoteDependency(span, false);
-        } else if (kind == SpanKind.CONSUMER && !span.getParentSpanContext().isRemote()) {
+        } else if (kind == SpanKind.CONSUMER && !span.getParentSpanContext().isRemote() && !span.getName().equals("EventHubs.process")) {
+            // earlier versions of the azure sdk opentelemetry shim did not set remote parent
+            // see https://github.com/Azure/azure-sdk-for-java/pull/21667
+
             // TODO need spec clarification, but it seems polling for messages can be CONSUMER also
             //  in which case the span will not have a remote parent and should be treated as a dependency instead of a request
             exportRemoteDependency(span, false);
@@ -208,12 +211,10 @@ public class Exporter implements SpanExporter {
         addLinks(remoteDependencyData.getProperties(), span.getLinks());
         remoteDependencyData.setName(getTelemetryName(span));
 
-        Attributes attributes = span.getAttributes();
-
         if (inProc) {
             remoteDependencyData.setType("InProc");
         } else {
-            applySemanticConventions(attributes, remoteDependencyData, span.getKind());
+            applySemanticConventions(span, remoteDependencyData);
         }
 
         remoteDependencyData.setId(span.getSpanId());
@@ -229,7 +230,7 @@ public class Exporter implements SpanExporter {
 
         remoteDependencyData.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
-        setExtraAttributes(remoteDependencyData, attributes);
+        setExtraAttributes(remoteDependencyData, span.getAttributes());
 
         double samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         track(remoteDependencyData, samplingPercentage);
@@ -277,7 +278,8 @@ public class Exporter implements SpanExporter {
         });
     }
 
-    private void applySemanticConventions(Attributes attributes, RemoteDependencyTelemetry remoteDependencyData, SpanKind spanKind) {
+    private void applySemanticConventions(SpanData span, RemoteDependencyTelemetry remoteDependencyData) {
+        Attributes attributes = span.getAttributes();
         String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
         if (httpMethod != null) {
             applyHttpClientSpan(attributes, remoteDependencyData);
@@ -294,8 +296,8 @@ public class Exporter implements SpanExporter {
             return;
         }
         String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
-        if (messagingSystem != null) {
-            applyMessagingClientSpan(attributes, remoteDependencyData, messagingSystem, spanKind);
+        if (messagingSystem != null || span.getName().equals("EventHubs.message")) {
+            applyMessagingClientSpan(attributes, remoteDependencyData, messagingSystem, span.getKind());
             return;
         }
     }
