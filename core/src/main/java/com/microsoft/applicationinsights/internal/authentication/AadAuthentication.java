@@ -16,7 +16,7 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class AadAuthentication {
-    private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE = "https://monitor.azure.com/.default";
+    private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE = "https://monitor.azure.com//.default";
 
     private static volatile AadAuthentication instance;
 
@@ -65,7 +65,7 @@ public class AadAuthentication {
             case CLIENTSECRET:
                 return getAuthenticationPolicyWithClientSecret();
             default:
-                throw new IllegalStateException("Invalid Authentication Type used in AAD Authentication");
+                throw new IllegalStateException("Invalid Authentication Type used in AAD Authentication: " + authenticationType);
         }
     }
 

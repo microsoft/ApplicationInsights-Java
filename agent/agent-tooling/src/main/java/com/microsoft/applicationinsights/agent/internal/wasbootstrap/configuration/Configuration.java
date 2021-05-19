@@ -596,10 +596,7 @@ public class Configuration {
         public String tenantId;
         public String clientSecret;
         public String authorityHost;
-        public AadAuthentication() {
-            this.enabled = false;
-        }
-        
+
         public void validate() throws FriendlyException {
             if(!enabled) return;
             if(type == null) {

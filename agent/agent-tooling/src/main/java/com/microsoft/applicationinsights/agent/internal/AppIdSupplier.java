@@ -21,9 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -35,8 +33,6 @@ import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpCl
 import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,8 +115,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
                 return;
             }
 
-            //HttpGet request = new HttpGet(uri);
-            HttpRequest request = new HttpRequest(HttpMethod.POST, uri.toString());
+            HttpRequest request = new HttpRequest(HttpMethod.GET, uri.toString());
             HttpResponse response;
             try {
                 response = LazyAzureHttpClient.getInstance().send(request).block();
