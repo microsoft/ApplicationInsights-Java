@@ -45,7 +45,7 @@ abstract class BaseStatsbeat {
 
     BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
         this.telemetryClient = telemetryClient;
-        scheduledExecutor.scheduleAtFixedRate(new StatsbeatSender(), interval, interval, TimeUnit.SECONDS);
+        scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(), interval, interval, TimeUnit.SECONDS);
     }
 
     protected abstract void send();
