@@ -23,6 +23,22 @@ public class ConnectionString {
     private ConnectionString(){}
 
     public static void parseInto(String connectionString, TelemetryConfiguration targetConfig) throws InvalidConnectionStringException {
+        mapToConnectionConfiguration(getKeyValuePairs(connectionString), targetConfig);
+    }
+
+    public static void updateStatsbeatConnectionString(String ikey, String endpoint, TelemetryConfiguration config) throws InvalidConnectionStringException {
+        if (Strings.isNullOrEmpty(ikey)) {
+            logger.warn("Missing Statsbeat '"+Keywords.INSTRUMENTATION_KEY+"'");
+        }
+
+        config.setStatsbeatInstrumentationKey(ikey);
+
+        if (!Strings.isNullOrEmpty(endpoint)) {
+            config.getEndpointProvider().setStatsbeatEndpoint(toUriOrThrow(endpoint, Keywords.INGESTION_ENDPOINT));
+        }
+    }
+
+    private static Map<String, String> getKeyValuePairs(String connectionString) throws InvalidConnectionStringException {
         if (connectionString.length() > CONNECTION_STRING_MAX_LENGTH) { // guard against malicious input
             throw new InvalidConnectionStringException("ConnectionString values with more than " + CONNECTION_STRING_MAX_LENGTH + " characters are not allowed.");
         }
@@ -35,7 +51,7 @@ public class ConnectionString {
             throw new InvalidConnectionStringException("Could not parse connection string.");
         }
 
-        mapToConnectionConfiguration(kvps, targetConfig);
+        return kvps;
     }
 
     private static void mapToConnectionConfiguration(Map<String, String> kvps, TelemetryConfiguration config) throws InvalidConnectionStringException {
@@ -84,7 +100,6 @@ public class ConnectionString {
             config.getEndpointProvider().setSnapshotEndpoint(toUriOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
         }
     }
-
 
     private static URI toUriOrThrow(String uri, String field) throws InvalidConnectionStringException {
         try {

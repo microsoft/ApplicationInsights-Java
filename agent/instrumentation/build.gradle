@@ -73,8 +73,8 @@ dependencies {
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-servlet-3.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-servlet-common', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-spring-scheduling-3.1', version: versions.opentelemetryInstrumentationAlpha
-    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-spring-webmvc-3.1', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-spring-webflux-5.0', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-spring-webmvc-3.1', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-tomcat-7.0', version: versions.opentelemetryInstrumentationAlpha
 
     // also: jaxrs, spring, struts

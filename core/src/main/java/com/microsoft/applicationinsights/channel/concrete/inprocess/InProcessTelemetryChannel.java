@@ -24,9 +24,12 @@ package com.microsoft.applicationinsights.channel.concrete.inprocess;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.channel.concrete.TelemetryChannelBase;
 import com.microsoft.applicationinsights.internal.channel.ConfiguredTransmitterFactory;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 
 import java.util.Map;
+
+import static com.microsoft.applicationinsights.internal.statsbeat.Constants.STATSBEAT_TELEMETRY_NAME;
 
 /**
  * An implementation of {@link com.microsoft.applicationinsights.channel.TelemetryChannel}
@@ -64,7 +67,18 @@ public final class InProcessTelemetryChannel extends TelemetryChannelBase<Teleme
         if (telemetry.previouslyUsed()) {
             throw new IllegalStateException("Telemetry was previously used: " + telemetry);
         }
-        telemetryBuffer.add(telemetry);
+
+        // TODO Prepare for AAD support for Statsbeat iKey
+        if (telemetry instanceof MetricTelemetry) {
+            MetricTelemetry mt = (MetricTelemetry) telemetry;
+            if (STATSBEAT_TELEMETRY_NAME.equalsIgnoreCase(mt.getTelemetryName())) {
+                statsbeatBuffer.add(telemetry);
+            } else {
+                telemetryBuffer.add(telemetry);
+            }
+        } else {
+            telemetryBuffer.add(telemetry);
+        }
         return true;
     }
 
@@ -72,5 +86,4 @@ public final class InProcessTelemetryChannel extends TelemetryChannelBase<Teleme
     protected ConfiguredTransmitterFactory<Telemetry> createTransmitterFactory() {
         return new InProcessTelemetryTransmitterFactory();
     }
-
 }
