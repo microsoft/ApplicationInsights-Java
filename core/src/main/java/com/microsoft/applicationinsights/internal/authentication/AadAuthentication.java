@@ -79,24 +79,16 @@ public class AadAuthentication {
     }
 
     private HttpPipelinePolicy getAuthenticationPolicyWithUAMI() {
-        ManagedIdentityCredentialBuilder managedIdentityCredential = new ManagedIdentityCredentialBuilder();
-        if(clientId != null) {
-            managedIdentityCredential.clientId(clientId);
-        }
+        ManagedIdentityCredentialBuilder managedIdentityCredential = new ManagedIdentityCredentialBuilder()
+                .clientId(clientId);
         return new BearerTokenAuthenticationPolicy(managedIdentityCredential.build(), APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
     }
 
     private HttpPipelinePolicy getAuthenticationPolicyWithClientSecret() {
-        ClientSecretCredentialBuilder credential = new ClientSecretCredentialBuilder();
-        if(tenantId != null) {
-            credential.tenantId(tenantId);
-        }
-        if(clientSecret != null) {
-            credential.clientSecret(clientSecret);
-        }
-        if(clientId != null) {
-            credential.clientId(clientId);
-        }
+        ClientSecretCredentialBuilder credential = new ClientSecretCredentialBuilder()
+            .tenantId(tenantId)
+            .clientSecret(clientSecret)
+            .clientId(clientId);
         if (authorityHost != null) {
             credential.authorityHost(authorityHost);
         }
