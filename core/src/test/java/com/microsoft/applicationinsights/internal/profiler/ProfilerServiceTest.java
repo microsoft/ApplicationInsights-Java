@@ -65,6 +65,20 @@ import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
 import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.UnsupportedCharsetException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
 
@@ -84,7 +98,7 @@ public class ProfilerServiceTest {
     }
 
     @Test
-    public void endToEndAlertTriggerCpu() throws InterruptedException, ExecutionException {
+    public void endToEndAlertTriggerCpu() throws Exception {
         endToEndAlertTriggerCycle(
                 false,
                 createMetricsTelemetry(TOTAL_CPU_PC_METRIC_NAME, 100.0),
@@ -96,7 +110,7 @@ public class ProfilerServiceTest {
     }
 
     @Test
-    public void endToEndAlertTriggerManual() throws InterruptedException, ExecutionException {
+    public void endToEndAlertTriggerManual() throws Exception {
         endToEndAlertTriggerCycle(
                 true,
                 createMetricsTelemetry(HEAP_MEM_USED_PERCENTAGE, 0.0),
@@ -107,7 +121,7 @@ public class ProfilerServiceTest {
                 });
     }
 
-    public void endToEndAlertTriggerCycle(boolean triggerNow, TelemetryItem metricTelemetry, Consumer<TelemetryEventData> assertTelemetry) throws InterruptedException, ExecutionException {
+    public void endToEndAlertTriggerCycle(boolean triggerNow, TelemetryItem metricTelemetry, Consumer<TelemetryEventData> assertTelemetry) throws Exception {
         AtomicBoolean profileInvoked = new AtomicBoolean(false);
         AtomicReference<TelemetryEventData> serviceProfilerIndex = new AtomicReference<>();
 
@@ -161,7 +175,7 @@ public class ProfilerServiceTest {
                         1,
                         2,
                         3,
-                        "localhost",
+                        new URI("http://localhost"),
                         true,
                         null,
                         null
@@ -216,12 +230,12 @@ public class ProfilerServiceTest {
         return service.get();
     }
 
-    private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) {
+    private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws URISyntaxException {
         return new JfrProfiler(new ServiceProfilerServiceConfig(
                 1,
                 2,
                 3,
-                "localhost",
+                new URI("http://localhost"),
                 false,
                 null,
                 null)) {
