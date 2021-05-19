@@ -587,7 +587,6 @@ public class Configuration {
         public int configPollPeriodSeconds = 60;
         public int periodicRecordingDurationSeconds = 120;
         public int periodicRecordingIntervalSeconds = 60 * 60;
-        public String serviceProfilerFrontEndPoint = null;
         public boolean enabled = false;
         public String memoryTriggeredSettings = "profile";
         public String cpuTriggeredSettings = "profile";

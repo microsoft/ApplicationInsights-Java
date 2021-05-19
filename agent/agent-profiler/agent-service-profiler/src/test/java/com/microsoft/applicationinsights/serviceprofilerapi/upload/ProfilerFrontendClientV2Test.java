@@ -21,6 +21,7 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.Date;
@@ -42,7 +43,7 @@ public class ProfilerFrontendClientV2Test {
 
         CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
 
-        ProfilerFrontendClientV2 profilerFrontendClientV2 = new ProfilerFrontendClientV2("a-host", "a-instrumentation-key", httpClient);
+        ProfilerFrontendClientV2 profilerFrontendClientV2 = new ProfilerFrontendClientV2(new URI("a-host"), "a-instrumentation-key", httpClient);
         Date now = Date.from(Instant.now());
         profilerFrontendClientV2.getSettings(now);
 
@@ -79,7 +80,7 @@ public class ProfilerFrontendClientV2Test {
 
         CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
 
-        ProfilerFrontendClientV2 profilerFrontendClientV2 = new ProfilerFrontendClientV2("a-host", "a-instrumentation-key", httpClient);
+        ProfilerFrontendClientV2 profilerFrontendClientV2 = new ProfilerFrontendClientV2(new URI("a-host"), "a-instrumentation-key", httpClient);
         profilerFrontendClientV2.getUploadAccess(id);
 
         Mockito.verify(httpClient, Mockito.times(1))
@@ -94,7 +95,7 @@ public class ProfilerFrontendClientV2Test {
 
         CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
 
-        ProfilerFrontendClientV2 profilerFrontendClientV2 = new ProfilerFrontendClientV2("a-host", "a-instrumentation-key", httpClient);
+        ProfilerFrontendClientV2 profilerFrontendClientV2 = new ProfilerFrontendClientV2(new URI("a-host"), "a-instrumentation-key", httpClient);
         UUID id = UUID.randomUUID();
         profilerFrontendClientV2.reportUploadFinish(id, "an-etag");
 
