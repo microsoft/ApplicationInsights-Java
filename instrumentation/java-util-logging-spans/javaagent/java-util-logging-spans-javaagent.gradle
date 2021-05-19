@@ -1,0 +1,17 @@
+apply from: "$rootDir/gradle/instrumentation.gradle"
+
+muzzle {
+  pass {
+    group = 'org.jboss.logmanager'
+    module = 'jboss-logmanager'
+    versions = '(,)'
+  }
+}
+
+dependencies {
+  testLibrary 'org.jboss.logmanager:jboss-logmanager:1.0.0.GA'
+}
+
+tasks.withType(Test) {
+  jvmArgs "-Dotel.experimental.log.capture.threshold=warn"
+}
