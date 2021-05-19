@@ -6,6 +6,7 @@
 package io.opentelemetry.javaagent.instrumentation.azuresdk;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
@@ -13,7 +14,6 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import net.bytebuddy.description.method.MethodDescription;
@@ -47,17 +47,19 @@ public class AzureSdkInstrumentationModule extends InstrumentationModule {
 
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
-    return Collections.singletonList(new EmptyTypeInstrumentation());
+    return asList(new EmptyTypeInstrumentation(), new AzureHttpClientInstrumentation());
   }
 
   public static class EmptyTypeInstrumentation implements TypeInstrumentation {
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-      // we cannot use com.azure.core.util.tracing.Tracer here because one of the classes that we
-      // inject implements this interface, causing the interface to be loaded while it's being
-      // transformed, which leads to duplicate class definition error after the interface is
+      // we cannot use com.azure.core.http.policy.AfterRetryPolicyProvider
+      // or com.azure.core.util.tracing.Tracer here because we inject classes that implement these
+      // interfaces, causing the first one of these interfaces to be transformed to cause itself to
+      // be loaded (again), which leads to duplicate class definition error after the interface is
       // transformed and the triggering class loader tries to load it.
-      return named("com.azure.core.util.tracing.TracerProxy");
+      return named("com.azure.core.http.policy.HttpPolicyProviders")
+          .or(named("com.azure.core.util.tracing.TracerProxy"));
     }
 
     @Override
