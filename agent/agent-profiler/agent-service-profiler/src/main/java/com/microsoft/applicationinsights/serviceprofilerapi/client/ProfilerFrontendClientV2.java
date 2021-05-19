@@ -63,14 +63,14 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
     public static final String FEATURE_VERSION = "1.0.0";
     public static final String API_FEATURE_VERSION = "2020-10-14-preview";
 
-    private final String hostUrl;
+    private final URI hostUrl;
     private final String instrumentationKey;
     private final CloseableHttpClient httpClient;
     private final String userAgent;
 
     private boolean closed;
 
-    public ProfilerFrontendClientV2(String hostUrl, String instrumentationKey, CloseableHttpClient httpClient, String userAgent) {
+    public ProfilerFrontendClientV2(URI hostUrl, String instrumentationKey, CloseableHttpClient httpClient, String userAgent) {
         this.hostUrl = hostUrl;
         this.instrumentationKey = instrumentationKey;
         this.httpClient = httpClient;
@@ -78,7 +78,7 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
         closed = false;
     }
 
-    public ProfilerFrontendClientV2(String hostUrl, String instrumentationKey, CloseableHttpClient httpClient) {
+    public ProfilerFrontendClientV2(URI hostUrl, String instrumentationKey, CloseableHttpClient httpClient) {
         this(hostUrl, instrumentationKey, httpClient, null);
     }
 

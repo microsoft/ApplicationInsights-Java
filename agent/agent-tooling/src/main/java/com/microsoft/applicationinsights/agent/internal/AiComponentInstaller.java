@@ -70,6 +70,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
@@ -228,11 +229,12 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     private static ServiceProfilerServiceConfig formServiceProfilerConfig(ProfilerConfiguration configuration) {
+        URI serviceProfilerFrontEndPoint = TelemetryConfiguration.getActive().getEndpointProvider().getProfilerEndpoint();
         return new ServiceProfilerServiceConfig(
                 configuration.configPollPeriodSeconds,
                 configuration.periodicRecordingDurationSeconds,
                 configuration.periodicRecordingIntervalSeconds,
-                configuration.serviceProfilerFrontEndPoint,
+                serviceProfilerFrontEndPoint,
                 configuration.enabled,
                 configuration.memoryTriggeredSettings,
                 configuration.cpuTriggeredSettings

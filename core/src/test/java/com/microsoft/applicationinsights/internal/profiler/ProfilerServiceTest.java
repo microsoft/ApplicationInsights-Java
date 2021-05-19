@@ -47,12 +47,13 @@ import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -72,7 +73,7 @@ public class ProfilerServiceTest {
     final String jfrExtension = "jfr";
 
     @Test
-    public void endToEndAlertTriggerCpu() throws InterruptedException, ExecutionException {
+    public void endToEndAlertTriggerCpu() throws Exception {
         endToEndAlertTriggerCycle(
                 false,
                 new MetricTelemetry(TOTAL_CPU_PC_METRIC_NAME, 100.0),
@@ -84,7 +85,7 @@ public class ProfilerServiceTest {
     }
 
     @Test
-    public void endToEndAlertTriggerManual() throws InterruptedException, ExecutionException {
+    public void endToEndAlertTriggerManual() throws Exception {
         endToEndAlertTriggerCycle(
                 true,
                 new MetricTelemetry(HEAP_MEM_USED_PERCENTAGE, 0.0),
@@ -95,7 +96,7 @@ public class ProfilerServiceTest {
                 });
     }
 
-    public void endToEndAlertTriggerCycle(boolean triggerNow, MetricTelemetry metricTelemetry, Consumer<EventTelemetry> assertTelemetry) throws InterruptedException, ExecutionException {
+    public void endToEndAlertTriggerCycle(boolean triggerNow, MetricTelemetry metricTelemetry, Consumer<EventTelemetry> assertTelemetry) throws Exception {
         AtomicBoolean profileInvoked = new AtomicBoolean(false);
         AtomicReference<EventTelemetry> serviceProfilerIndex = new AtomicReference<>();
 
@@ -147,7 +148,7 @@ public class ProfilerServiceTest {
                         1,
                         2,
                         3,
-                        "localhost",
+                        new URI("http://localhost"),
                         true,
                         null,
                         null
@@ -202,12 +203,12 @@ public class ProfilerServiceTest {
         return service.get();
     }
 
-    private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) {
+    private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws URISyntaxException {
         return new JfrProfiler(new ServiceProfilerServiceConfig(
                 1,
                 2,
                 3,
-                "localhost",
+                new URI("http://localhost"),
                 false,
                 null,
                 null)) {
