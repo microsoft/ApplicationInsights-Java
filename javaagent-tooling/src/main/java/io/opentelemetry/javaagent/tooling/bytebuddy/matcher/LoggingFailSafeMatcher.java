@@ -50,6 +50,12 @@ class LoggingFailSafeMatcher<T> extends ElementMatcher.Junction.AbstractBase<T> 
   public boolean matches(T target) {
     try {
       return matcher.matches(target);
+    } catch (IllegalStateException e) {
+      if (!e.getMessage()
+          .startsWith("Cannot resolve type description for io.opentelemetry.javaagent.")) {
+        log.debug(description, e);
+      }
+      return fallback;
     } catch (Exception e) {
       log.debug(description, e);
       return fallback;
