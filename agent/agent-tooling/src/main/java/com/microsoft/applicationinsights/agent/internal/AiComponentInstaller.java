@@ -61,6 +61,8 @@ import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
+import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import org.apache.http.HttpHost;
@@ -69,10 +71,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -213,6 +217,14 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         // initialize StatsbeatModule
         StatsbeatModule.initialize(telemetryClient, config.internal.statsbeat.intervalSeconds, config.internal.statsbeat.featureIntervalSeconds);
+
+        try {
+            doDeepStack();
+        } catch (StackOverflowError ex) {
+            ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(ex);
+            exceptionTelemetry.setSeverityLevel(SeverityLevel.Error);
+            telemetryClient.track(exceptionTelemetry);
+        }
     }
 
     private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {
@@ -326,5 +338,11 @@ public class AiComponentInstaller implements ComponentInstaller {
         paramXml.setName(name);
         paramXml.setValue(value);
         return paramXml;
+    }
+
+    private static final AtomicLong stackDepth = new AtomicLong();
+    private static void doDeepStack() {
+        startupLogger.debug("############# current stack depth: {}", stackDepth.incrementAndGet());
+        doDeepStack();
     }
 }
