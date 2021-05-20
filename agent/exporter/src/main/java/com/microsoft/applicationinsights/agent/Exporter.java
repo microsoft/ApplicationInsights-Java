@@ -809,7 +809,7 @@ public class Exporter implements SpanExporter {
             case "ALL":
                 return SeverityLevel.Verbose;
             default:
-                logger.error("Unexpected level {}, using TRACE level as default", level);
+                logger.debug("Unexpected level {}, using TRACE level as default", level);
                 return SeverityLevel.Verbose;
         }
     }
