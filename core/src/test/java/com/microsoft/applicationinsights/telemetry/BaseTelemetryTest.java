@@ -114,7 +114,7 @@ public final class BaseTelemetryTest {
         writer.close();
         String asJson = new String(buffer.readByteArray(), Charsets.UTF_8);
 
-        int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.aif00000000111122223333000000000000.Stub\"");
+        int index = asJson.indexOf("\"name\":\"Stub\"");
         assertTrue(index != -1);
     }
 
@@ -132,7 +132,7 @@ public final class BaseTelemetryTest {
         writer.close();
         String asJson = new String(buffer.readByteArray(), Charsets.UTF_8);
 
-        int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.Stub\"");
+        int index = asJson.indexOf("\"name\":\"Stub\"");
         assertTrue(index != -1);
     }
 
@@ -149,7 +149,7 @@ public final class BaseTelemetryTest {
         writer.close();
         String asJson = new String(buffer.readByteArray(), Charsets.UTF_8);
 
-        int index = asJson.indexOf("\"name\":\"Microsoft.ApplicationInsights.Stub\"");
+        int index = asJson.indexOf("\"name\":\"Stub\"");
         assertTrue(index != -1);
     }
 
