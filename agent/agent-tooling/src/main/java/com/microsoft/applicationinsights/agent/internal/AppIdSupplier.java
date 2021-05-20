@@ -126,15 +126,17 @@ public class AppIdSupplier implements AiAppId.Supplier {
                 return;
             }
 
-            String body = null;
-            if(response != null) {
-                body = response.getBodyAsString().block();
-                int statusCode = response.getStatusCode();
-                if (statusCode != 200) {
-                    backOff("received " + statusCode + " from " + uri
-                            + "\nfull response:\n" + body, null);
-                    return;
-                }
+            // this check is needed to make spotbugs happy
+            if (response == null) {
+                throw new IllegalStateException("response should never be null");
+            }
+
+            String body = response.getBodyAsString().block();
+            int statusCode = response.getStatusCode();
+            if (statusCode != 200) {
+                backOff("received " + statusCode + " from " + uri
+                        + "\nfull response:\n" + body, null);
+                return;
             }
             
             // check for case when breeze returns invalid value
