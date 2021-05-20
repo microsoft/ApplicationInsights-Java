@@ -124,6 +124,9 @@ public class Exporter implements SpanExporter {
     private static final AttributeKey<String> AI_LOGGER_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.logger_name");
     private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY = AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
 
+    private static final AttributeKey<String> EVENTHUBS_PEER_ADDRESS = AttributeKey.stringKey("peer.address");
+    private static final AttributeKey<String> EVENTHUBS_MESSAGE_BUS_DESTINATION = AttributeKey.stringKey("message_bus.destination");
+
     private static final AtomicBoolean alreadyLoggedSamplingPercentageMissing = new AtomicBoolean();
     private static final AtomicBoolean alreadyLoggedSamplingPercentageParseError = new AtomicBoolean();
 
@@ -295,9 +298,17 @@ public class Exporter implements SpanExporter {
             applyDatabaseClientSpan(attributes, remoteDependencyData, dbSystem);
             return;
         }
+
         String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
-        if (messagingSystem != null || span.getName().equals("EventHubs.message")) {
+        if (messagingSystem != null) {
             applyMessagingClientSpan(attributes, remoteDependencyData, messagingSystem, span.getKind());
+            return;
+        }
+        // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
+        //  but no rush as messaging semantic conventions may still change
+        String name = span.getName();
+        if (name.equals("EventHubs.send") || name.equals("EventHubs.message")) {
+            applyEventHubsSpan(attributes, remoteDependencyData);
             return;
         }
     }
@@ -506,6 +517,15 @@ public class Exporter implements SpanExporter {
         } else {
             telemetry.setTarget(messagingSystem);
         }
+    }
+
+    // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
+    //  but no rush as messaging semantic conventions may still change
+    private void applyEventHubsSpan(Attributes attributes, RemoteDependencyTelemetry telemetry) {
+        telemetry.setType("Microsoft.EventHub");
+        String peerAddress = attributes.get(EVENTHUBS_PEER_ADDRESS);
+        String destination = attributes.get(EVENTHUBS_MESSAGE_BUS_DESTINATION);
+        telemetry.setTarget(peerAddress + "/" + destination);
     }
 
     private static int getDefaultPortForDbSystem(String dbSystem) {
