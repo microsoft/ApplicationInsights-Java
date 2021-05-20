@@ -124,6 +124,9 @@ public class Exporter implements SpanExporter {
     private static final AttributeKey<String> AI_LOGGER_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.logger_name");
     private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY = AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
 
+    private static final AttributeKey<String> EVENTHUBS_PEER_ADDRESS = AttributeKey.stringKey("peer.address");
+    private static final AttributeKey<String> EVENTHUBS_MESSAGE_BUS_DESTINATION = AttributeKey.stringKey("message_bus.destination");
+
     private static final AtomicBoolean alreadyLoggedSamplingPercentageMissing = new AtomicBoolean();
     private static final AtomicBoolean alreadyLoggedSamplingPercentageParseError = new AtomicBoolean();
 
@@ -190,7 +193,10 @@ public class Exporter implements SpanExporter {
             }
         } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
             exportRemoteDependency(span, false);
-        } else if (kind == SpanKind.CONSUMER && !span.getParentSpanContext().isRemote()) {
+        } else if (kind == SpanKind.CONSUMER && !span.getParentSpanContext().isRemote() && !span.getName().equals("EventHubs.process")) {
+            // earlier versions of the azure sdk opentelemetry shim did not set remote parent
+            // see https://github.com/Azure/azure-sdk-for-java/pull/21667
+
             // TODO need spec clarification, but it seems polling for messages can be CONSUMER also
             //  in which case the span will not have a remote parent and should be treated as a dependency instead of a request
             exportRemoteDependency(span, false);
@@ -208,12 +214,10 @@ public class Exporter implements SpanExporter {
         addLinks(remoteDependencyData.getProperties(), span.getLinks());
         remoteDependencyData.setName(getTelemetryName(span));
 
-        Attributes attributes = span.getAttributes();
-
         if (inProc) {
             remoteDependencyData.setType("InProc");
         } else {
-            applySemanticConventions(attributes, remoteDependencyData, span.getKind());
+            applySemanticConventions(span, remoteDependencyData);
         }
 
         remoteDependencyData.setId(span.getSpanId());
@@ -229,7 +233,7 @@ public class Exporter implements SpanExporter {
 
         remoteDependencyData.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
-        setExtraAttributes(remoteDependencyData, attributes);
+        setExtraAttributes(remoteDependencyData, span.getAttributes());
 
         double samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         track(remoteDependencyData, samplingPercentage);
@@ -277,7 +281,8 @@ public class Exporter implements SpanExporter {
         });
     }
 
-    private void applySemanticConventions(Attributes attributes, RemoteDependencyTelemetry remoteDependencyData, SpanKind spanKind) {
+    private void applySemanticConventions(SpanData span, RemoteDependencyTelemetry remoteDependencyData) {
+        Attributes attributes = span.getAttributes();
         String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
         if (httpMethod != null) {
             applyHttpClientSpan(attributes, remoteDependencyData);
@@ -293,9 +298,17 @@ public class Exporter implements SpanExporter {
             applyDatabaseClientSpan(attributes, remoteDependencyData, dbSystem);
             return;
         }
+
         String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
         if (messagingSystem != null) {
-            applyMessagingClientSpan(attributes, remoteDependencyData, messagingSystem, spanKind);
+            applyMessagingClientSpan(attributes, remoteDependencyData, messagingSystem, span.getKind());
+            return;
+        }
+        // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
+        //  but no rush as messaging semantic conventions may still change
+        String name = span.getName();
+        if (name.equals("EventHubs.send") || name.equals("EventHubs.message")) {
+            applyEventHubsSpan(attributes, remoteDependencyData);
             return;
         }
     }
@@ -504,6 +517,15 @@ public class Exporter implements SpanExporter {
         } else {
             telemetry.setTarget(messagingSystem);
         }
+    }
+
+    // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
+    //  but no rush as messaging semantic conventions may still change
+    private void applyEventHubsSpan(Attributes attributes, RemoteDependencyTelemetry telemetry) {
+        telemetry.setType("Microsoft.EventHub");
+        String peerAddress = attributes.get(EVENTHUBS_PEER_ADDRESS);
+        String destination = attributes.get(EVENTHUBS_MESSAGE_BUS_DESTINATION);
+        telemetry.setTarget(peerAddress + "/" + destination);
     }
 
     private static int getDefaultPortForDbSystem(String dbSystem) {
