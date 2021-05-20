@@ -617,7 +617,7 @@ public class Configuration {
             if(type == AuthenticationType.INTELLIJ && SystemInformation.INSTANCE.isWindows()) {
                 if(isEmpty(keePassDatabasePath)) {
                     throw new FriendlyException("AAD Authentication configuration of type Intellij is missing \"keePassDatabasePath\".",
-                            "Please provide a valid authentication \"keePassDatabasePath\" under the \"authentication\" configuration. This is only required for Windows." +
+                            "Please provide a valid authentication \"keePassDatabasePath\" under the \"authentication\" configuration. This is only required for Windows. " +
                                     "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
                 }
             }
