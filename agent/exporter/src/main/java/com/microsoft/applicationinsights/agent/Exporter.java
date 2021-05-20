@@ -840,7 +840,7 @@ public class Exporter implements SpanExporter {
                 return SeverityLevel.VERBOSE;
             default:
                 // TODO (trask) is this good fallback?
-                logger.error("Unexpected level {}, using VERBOSE level as default", level);
+                logger.debug("Unexpected level {}, using VERBOSE level as default", level);
                 return SeverityLevel.VERBOSE;
         }
     }
