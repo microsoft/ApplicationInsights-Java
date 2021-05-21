@@ -49,6 +49,15 @@ import static java.util.Arrays.asList;
 
 public class TelemetryClient {
 
+    // TODO (heya) can you confirm these are the same as used in 3.1.1?
+    private static final String EVENT_TELEMETRY_NAME = "Event";
+    private static final String EXCEPTION_TELEMETRY_NAME = "Exception";
+    private static final String MESSAGE_TELEMETRY_NAME = "Message";
+    private static final String METRIC_TELEMETRY_NAME = "Metric";
+    private static final String PAGE_VIEW_TELEMETRY_NAME = "PageView";
+    private static final String REMOTE_DEPENDENCY_TELEMETRY_NAME = "RemoteDependency";
+    private static final String REQUEST_TELEMETRY_NAME = "Request";
+
     // Synchronization for instance initialization
     private static final Object s_lock = new Object();
     private static volatile TelemetryClient active;
@@ -66,15 +75,6 @@ public class TelemetryClient {
     private volatile String roleName;
     private volatile String roleInstance;
     private volatile String statsbeatInstrumentationKey;
-
-    // cached based on instrumentationKey
-    private volatile String eventTelemetryName;
-    private volatile String exceptionTelemetryName;
-    private volatile String messageTelemetryName;
-    private volatile String metricTelemetryName;
-    private volatile String pageViewTelemetryName;
-    private volatile String remoteDependencyTelemetryName;
-    private volatile String requestTelemetryName;
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
@@ -234,16 +234,6 @@ public class TelemetryClient {
         }
 
         instrumentationKey = key;
-
-        // FIXME (trask) use the simple versions
-        String formattedInstrumentationKey = instrumentationKey.replaceAll("-", "");
-        eventTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Event";
-        exceptionTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Exception";
-        messageTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Message";
-        metricTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Metric";
-        pageViewTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".PageView";
-        remoteDependencyTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".RemoteDependency";
-        requestTelemetryName = "Microsoft.ApplicationInsights." + formattedInstrumentationKey + ".Request";
     }
 
     public String getStatsbeatInstrumentationKey() {
@@ -300,7 +290,7 @@ public class TelemetryClient {
         if (data.getProperties() != null) {
             throw new AssertionError("must not set data properties before calling init");
         }
-        initTelemetry(telemetry, data, eventTelemetryName, "EventData");
+        initTelemetry(telemetry, data, EVENT_TELEMETRY_NAME, "EventData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
@@ -317,7 +307,7 @@ public class TelemetryClient {
         if (data.getProperties() != null) {
             throw new AssertionError("must not set data properties before calling init");
         }
-        initTelemetry(telemetry, data, exceptionTelemetryName, "ExceptionData");
+        initTelemetry(telemetry, data, EXCEPTION_TELEMETRY_NAME, "ExceptionData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
@@ -334,7 +324,7 @@ public class TelemetryClient {
         if (data.getProperties() != null) {
             throw new AssertionError("must not set data properties before calling init");
         }
-        initTelemetry(telemetry, data, messageTelemetryName, "MessageData");
+        initTelemetry(telemetry, data, MESSAGE_TELEMETRY_NAME, "MessageData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
@@ -352,7 +342,7 @@ public class TelemetryClient {
         if (data.getProperties() != null) {
             throw new AssertionError("must not set data properties before calling init");
         }
-        initTelemetry(telemetry, data, metricTelemetryName, "MetricData");
+        initTelemetry(telemetry, data, METRIC_TELEMETRY_NAME, "MetricData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
@@ -370,7 +360,7 @@ public class TelemetryClient {
         if (data.getProperties() != null) {
             throw new AssertionError("must not set data properties before calling init");
         }
-        initTelemetry(telemetry, data, pageViewTelemetryName, "PageViewData");
+        initTelemetry(telemetry, data, PAGE_VIEW_TELEMETRY_NAME, "PageViewData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
@@ -387,7 +377,7 @@ public class TelemetryClient {
         if (data.getProperties() != null) {
             throw new AssertionError("must not set data properties before calling init");
         }
-        initTelemetry(telemetry, data, remoteDependencyTelemetryName, "RemoteDependencyData");
+        initTelemetry(telemetry, data, REMOTE_DEPENDENCY_TELEMETRY_NAME, "RemoteDependencyData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
@@ -404,7 +394,7 @@ public class TelemetryClient {
         if (data.getProperties() != null) {
             throw new AssertionError("must not set data properties before calling init");
         }
-        initTelemetry(telemetry, data, requestTelemetryName, "RequestData");
+        initTelemetry(telemetry, data, REQUEST_TELEMETRY_NAME, "RequestData");
         if (!globalProperties.isEmpty()) {
             data.setProperties(new HashMap<>(globalProperties));
         }
