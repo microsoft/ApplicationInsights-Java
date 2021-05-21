@@ -227,9 +227,8 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     }
 
     /***
-     * Gets the stack frame length for only the strings in the stack frame.
      * @param stackFrame
-     * @return
+     * @return the stack frame length for only the strings in the stack frame.
      */
     private static int getStackFrameLength(StackFrame stackFrame)
     {
