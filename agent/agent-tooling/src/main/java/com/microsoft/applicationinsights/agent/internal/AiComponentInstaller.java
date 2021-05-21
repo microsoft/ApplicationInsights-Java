@@ -217,14 +217,6 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         // initialize StatsbeatModule
         StatsbeatModule.initialize(telemetryClient, config.internal.statsbeat.intervalSeconds, config.internal.statsbeat.featureIntervalSeconds);
-
-        try {
-            doDeepStack();
-        } catch (StackOverflowError ex) {
-            ExceptionTelemetry exceptionTelemetry = new ExceptionTelemetry(ex);
-            exceptionTelemetry.setSeverityLevel(SeverityLevel.Error);
-            telemetryClient.track(exceptionTelemetry);
-        }
     }
 
     private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {
@@ -338,11 +330,5 @@ public class AiComponentInstaller implements ComponentInstaller {
         paramXml.setName(name);
         paramXml.setValue(value);
         return paramXml;
-    }
-
-    private static final AtomicLong stackDepth = new AtomicLong();
-    private static void doDeepStack() {
-        startupLogger.debug("############# current stack depth: {}", stackDepth.incrementAndGet());
-        doDeepStack();
     }
 }
