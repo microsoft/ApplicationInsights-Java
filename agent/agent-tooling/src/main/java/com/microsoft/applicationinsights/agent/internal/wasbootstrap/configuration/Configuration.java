@@ -24,7 +24,9 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.authentication.AuthenticationType;
 import com.microsoft.applicationinsights.internal.profiler.GcReportingLevel;
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,6 +78,8 @@ public class Configuration {
             this.anX = anX;
         }
     }
+
+
 
     public static class Role {
 
@@ -184,6 +188,7 @@ public class Configuration {
 
         public ProfilerConfiguration profiler = new ProfilerConfiguration();
         public GcEventConfiguration gcEvents = new GcEventConfiguration();
+        public AadAuthentication authentication = new AadAuthentication();
     }
 
     public static class PreviewInstrumentation {
@@ -581,6 +586,62 @@ public class Configuration {
 
     public static class GcEventConfiguration {
         public GcReportingLevel reportingLevel = GcReportingLevel.TENURED_ONLY;
+    }
+
+    public static class AadAuthentication {
+        public boolean enabled;
+        public AuthenticationType type;
+        public String clientId;
+        public String keePassDatabasePath;
+        public String tenantId;
+        public String clientSecret;
+        public String authorityHost;
+
+        public void validate() throws FriendlyException {
+            if(!enabled) return;
+            if(type == null) {
+                throw new FriendlyException("AAD Authentication configuration is missing authentication \"type\".",
+                        "Please provide a valid authentication \"type\" under the \"authentication\" configuration. " +
+                                "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+            }
+
+            if(type == AuthenticationType.UAMI) {
+                if(isEmpty(clientId)) {
+                    throw new FriendlyException("AAD Authentication configuration of type User Assigned Managed Identity is missing \"clientId\".",
+                            "Please provide a valid \"clientId\" under the \"authentication\" configuration. " +
+                                    "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+                }
+            }
+
+            // keePassDatabasePath is only required for Windows. No configuration needed for Linux / Mac.
+            if(type == AuthenticationType.INTELLIJ && SystemInformation.INSTANCE.isWindows()) {
+                if(isEmpty(keePassDatabasePath)) {
+                    throw new FriendlyException("AAD Authentication configuration of type Intellij is missing \"keePassDatabasePath\".",
+                            "Please provide a valid authentication \"keePassDatabasePath\" under the \"authentication\" configuration. This is only required for Windows. " +
+                                    "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+                }
+            }
+
+            if(type == AuthenticationType.CLIENTSECRET) {
+                if (isEmpty(clientId)) {
+                    throw new FriendlyException("AAD Authentication configuration of type Client Secret Identity is missing \"clientId\".",
+                            "Please provide a valid \"clientId\" under the \"authentication\" configuration. " +
+                                    "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+                }
+
+                if (isEmpty(tenantId)) {
+                    throw new FriendlyException("AAD Authentication configuration of type Client Secret Identity is missing \"tenantId\".",
+                            "Please provide a valid \"tenantId\" under the \"authentication\" configuration. " +
+                                    "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+                }
+
+                if (isEmpty(clientSecret)) {
+                    throw new FriendlyException("AAD Authentication configuration of type Client Secret Identity is missing \"clientSecret\".",
+                            "Please provide a valid \"clientSecret\" under the \"authentication\" configuration. " +
+                                    "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+                }
+            }
+        }
     }
 
     private static boolean isEmpty(String str) {

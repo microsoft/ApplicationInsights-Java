@@ -36,4 +36,5 @@ public class CollectionTypeJsonSerializer extends SimpleSerializers {
         }
         return false;
     }
+
 }

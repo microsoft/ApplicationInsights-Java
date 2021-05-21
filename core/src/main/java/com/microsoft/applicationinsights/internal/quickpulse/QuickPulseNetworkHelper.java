@@ -23,10 +23,13 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 
 import java.util.Date;
 
+
+import com.azure.core.http.HttpHeader;
+import com.azure.core.http.HttpHeaders;
+import com.azure.core.http.HttpMethod;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
 
 /**
  * Created by gupele on 12/12/2016.
@@ -43,38 +46,38 @@ final class QuickPulseNetworkHelper {
     private static final String QPS_ROLE_NAME_HEADER = "x-ms-qps-role-name";
     private static final String QPS_INVARIANT_VERSION_HEADER = "x-ms-qps-invariant-version";
 
-    public HttpPost buildPingRequest(Date currentDate, String address, String quickPulseId, String machineName, String roleName, String instanceName) {
+    public HttpRequest buildPingRequest(Date currentDate, String address, String quickPulseId, String machineName, String roleName, String instanceName) {
 
-        HttpPost request = buildRequest(currentDate, address);
-        request.addHeader(QPS_ROLE_NAME_HEADER, roleName);
-        request.addHeader(QPS_MACHINE_NAME_HEADER, machineName);
-        request.addHeader(QPS_STREAM_ID_HEADER, quickPulseId);
-        request.addHeader(QPS_INSTANCE_NAME_HEADER, instanceName);
-        request.addHeader(QPS_INVARIANT_VERSION_HEADER, Integer.toString(QuickPulse.QP_INVARIANT_VERSION));
+        HttpRequest request = buildRequest(currentDate, address);
+        request.setHeader(QPS_ROLE_NAME_HEADER, roleName);
+        request.setHeader(QPS_MACHINE_NAME_HEADER, machineName);
+        request.setHeader(QPS_STREAM_ID_HEADER, quickPulseId);
+        request.setHeader(QPS_INSTANCE_NAME_HEADER, instanceName);
+        request.setHeader(QPS_INVARIANT_VERSION_HEADER, Integer.toString(QuickPulse.QP_INVARIANT_VERSION));
         return request;
     }
 
-    public HttpPost buildRequest(Date currentDate, String address) {
+    public HttpRequest buildRequest(Date currentDate, String address) {
         final long ticks = currentDate.getTime() * 10000 + TICKS_AT_EPOCH;
 
-        HttpPost request = new HttpPost(address);
-        request.addHeader(HEADER_TRANSMISSION_TIME, String.valueOf(ticks));
+        HttpRequest request = new HttpRequest(HttpMethod.POST, address);
+        request.setHeader(HEADER_TRANSMISSION_TIME, String.valueOf(ticks));
         return request;
     }
 
     public boolean isSuccess(HttpResponse response) {
-        final int responseCode = response.getStatusLine().getStatusCode();
+        final int responseCode = response.getStatusCode();
         return responseCode == 200;
     }
 
     public QuickPulseHeaderInfo getQuickPulseHeaderInfo(HttpResponse response) {
-        Header[] headers = response.getAllHeaders();
+        HttpHeaders headers = response.getHeaders();
         QuickPulseStatus status = QuickPulseStatus.ERROR;
         long servicePollingIntervalHint = -1;
         String serviceEndpointRedirect = null;
         final QuickPulseHeaderInfo quickPulseHeaderInfo;
 
-        for (Header header: headers) {
+        for (HttpHeader header: headers) {
             if (QPS_STATUS_HEADER.equalsIgnoreCase(header.getName())) {
                 final String qpStatus = header.getValue();
                 if ("true".equalsIgnoreCase(qpStatus)) {

@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.ConfigurationException;
+import com.microsoft.applicationinsights.internal.authentication.AuthenticationType;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonReader;
@@ -189,6 +190,21 @@ public class ConfigurationTest {
         assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute.pattern);
         assertEquals(4,attributesExtractConfig.actions.get(0).extractAttribute.groupNames.size());
         assertEquals("httpProtocol",attributesExtractConfig.actions.get(0).extractAttribute.groupNames.get(0));
+    }
+
+    @Test
+    public void shouldParseAuthenticationConfiguration() throws IOException {
+
+        Configuration configuration = loadConfiguration("applicationinsights_aadauth.json");
+        PreviewConfiguration preview = configuration.preview;
+        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
+        assertEquals(true, preview.authentication.enabled);
+        assertEquals(AuthenticationType.SAMI, preview.authentication.type);
+        assertEquals("123xyz", preview.authentication.clientId);
+        assertEquals("tenant123", preview.authentication.tenantId);
+        assertEquals("clientsecret123", preview.authentication.clientSecret);
+        assertEquals("path/to/keePass", preview.authentication.keePassDatabasePath);
+        assertEquals("https://test.com/microsoft/", preview.authentication.authorityHost);
     }
 
     @Test

@@ -11,6 +11,8 @@ public class SpringBootAutoTest extends AiSmokeTest {
 
     @Test
     @TargetUri("/delayedSystemExit")
+    // FIXME (trask)
+    @Ignore
     public void doDelayedSystemExitTest() throws Exception {
         mockedIngestion.waitForItems("RequestData", 1);
         mockedIngestion.waitForItem(input -> {

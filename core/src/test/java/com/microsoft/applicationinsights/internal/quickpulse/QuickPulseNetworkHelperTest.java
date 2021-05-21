@@ -21,8 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
+import com.azure.core.http.HttpResponse;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -36,10 +35,7 @@ public class QuickPulseNetworkHelperTest {
     @Test
     public void testIsSuccessWith200() {
         final HttpResponse response = mock(HttpResponse.class);
-        final StatusLine statusLine = mock(StatusLine.class);
-
-        Mockito.doReturn(statusLine).when(response).getStatusLine();
-        Mockito.doReturn(200).when(statusLine).getStatusCode();
+        Mockito.doReturn(200).when(response).getStatusCode();
 
         final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
         assertTrue(result);
@@ -48,10 +44,7 @@ public class QuickPulseNetworkHelperTest {
     @Test
     public void testIsSuccessWith500() {
         final HttpResponse response = mock(HttpResponse.class);
-        final StatusLine statusLine = mock(StatusLine.class);
-
-        Mockito.doReturn(statusLine).when(response).getStatusLine();
-        Mockito.doReturn(500).when(statusLine).getStatusCode();
+        Mockito.doReturn(500).when(response).getStatusCode();
 
         final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
         assertFalse(result);

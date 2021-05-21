@@ -21,19 +21,18 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import com.azure.core.http.HttpMethod;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
+import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
 import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,11 +115,10 @@ public class AppIdSupplier implements AiAppId.Supplier {
                 return;
             }
 
-            HttpGet request = new HttpGet(uri);
-
+            HttpRequest request = new HttpRequest(HttpMethod.GET, uri.toString());
             HttpResponse response;
             try {
-                response = LazyHttpClient.getInstance().execute(request);
+                response = LazyAzureHttpClient.getInstance().send(request).block();
             } catch (Exception e) {
                 // TODO handle Friendly SSL exception
                 logger.debug(e.getMessage(), e);
@@ -128,22 +126,19 @@ public class AppIdSupplier implements AiAppId.Supplier {
                 return;
             }
 
-            String body;
-            try {
-                body = EntityUtils.toString(response.getEntity());
-            } catch (IOException e) {
-                logger.debug(e.getMessage(), e);
-                backOff("exception reading response from " + uri, e);
-                return;
+            // this check is needed to make spotbugs happy
+            if (response == null) {
+                throw new IllegalStateException("response should never be null");
             }
 
-            int statusCode = response.getStatusLine().getStatusCode();
+            String body = response.getBodyAsString().block();
+            int statusCode = response.getStatusCode();
             if (statusCode != 200) {
-                backOff("received " + statusCode + " " + response.getStatusLine().getReasonPhrase() + " from " + uri
+                backOff("received " + statusCode + " from " + uri
                         + "\nfull response:\n" + body, null);
                 return;
             }
-
+            
             // check for case when breeze returns invalid value
             if (body == null || body.isEmpty()) {
                 backOff("received empty body from " + uri, null);

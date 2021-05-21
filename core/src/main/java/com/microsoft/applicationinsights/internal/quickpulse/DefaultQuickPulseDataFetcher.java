@@ -24,12 +24,11 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import com.azure.core.http.HttpRequest;
 import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,24 +41,24 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulseDataFetcher.class);
 
     private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
-    private final ArrayBlockingQueue<HttpPost> sendQueue;
+    private final ArrayBlockingQueue<HttpRequest> sendQueue;
     private final TelemetryClient telemetryClient;
     private final String ikey;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private final String postPrefix;
     private final String sdkVersion;
 
-    public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryClient telemetryClient, String machineName,
+    public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpRequest> sendQueue, TelemetryClient telemetryClient, String machineName,
                                         String instanceName, String roleName, String quickPulseId) {
         this(sendQueue, telemetryClient, null, machineName, instanceName, roleName, quickPulseId);
     }
 
     @Deprecated
-    public DefaultQuickPulseDataFetcher(final ArrayBlockingQueue<HttpPost> sendQueue, final String ikey, final String machineName, final String instanceName, final String quickPulseId) {
+    public DefaultQuickPulseDataFetcher(final ArrayBlockingQueue<HttpRequest> sendQueue, final String ikey, final String machineName, final String instanceName, final String quickPulseId) {
         this(sendQueue, null, ikey, machineName, instanceName, quickPulseId);
     }
 
-    private DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpPost> sendQueue, TelemetryClient telemetryClient, String ikey, String machineName,
+    private DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpRequest> sendQueue, TelemetryClient telemetryClient, String ikey, String machineName,
                                          String instanceName, String roleName, String quickPulseId) {
         this.sendQueue = sendQueue;
         this.telemetryClient = telemetryClient;
@@ -100,11 +99,8 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
 
             final Date currentDate = new Date();
             final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-            final HttpPost request = networkHelper.buildRequest(currentDate, this.getEndpointUrl(endpointPrefix));
-
-            final ByteArrayEntity postEntity = buildPostEntity(counters);
-
-            request.setEntity(postEntity);
+            final HttpRequest request = networkHelper.buildRequest(currentDate, this.getEndpointUrl(endpointPrefix));
+            request.setBody(buildPostEntity(counters));
 
             if (!sendQueue.offer(request)) {
                 logger.trace("Quick Pulse send queue is full");
@@ -140,7 +136,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         }
     }
 
-    private ByteArrayEntity buildPostEntity(QuickPulseDataCollector.FinalCounters counters) {
+    private String buildPostEntity(QuickPulseDataCollector.FinalCounters counters) {
         StringBuilder sb = new StringBuilder(postPrefix);
         formatMetrics(counters, sb);
         sb.append("\"Timestamp\": \"\\/Date(");
@@ -150,7 +146,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         sb.append("\"Version\": \"");
         sb.append(sdkVersion);
         sb.append("\"}]");
-        return new ByteArrayEntity(sb.toString().getBytes());
+        return sb.toString();
     }
 
     private void formatDocuments(StringBuilder sb) {
