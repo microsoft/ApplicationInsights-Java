@@ -61,8 +61,6 @@ import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.SeverityLevel;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import org.apache.http.HttpHost;
@@ -71,12 +69,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
