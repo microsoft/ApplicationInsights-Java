@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.*;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.OpenTelemetryConfigurer;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
@@ -44,8 +45,11 @@ import com.microsoft.applicationinsights.internal.profiler.ProfilerServiceInitia
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -56,6 +60,7 @@ import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
+import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -173,14 +178,25 @@ public class AiComponentInstaller implements ComponentInstaller {
             @Override
             public void run() {
                 startupLogger.debug("running shutdown hook");
-                try {
-                    telemetryClient.flush();
-                    telemetryClient.shutdown(5, SECONDS);
-                    startupLogger.debug("completed shutdown hook");
-                } catch (InterruptedException e) {
-                    startupLogger.debug("interrupted while flushing telemetry during shutdown");
-                } catch (Throwable t) {
-                    startupLogger.debug(t.getMessage(), t);
+                CompletableResultCode otelFlush = OpenTelemetryConfigurer.flush();
+                CompletableResultCode result = new CompletableResultCode();
+                otelFlush.whenComplete(() -> {
+                        CompletableResultCode batchingClientFlush = telemetryClient.flushBatchingClient();
+                        batchingClientFlush.whenComplete(() -> {
+                            if (otelFlush.isSuccess() && batchingClientFlush.isSuccess()) {
+                                result.succeed();
+                            } else {
+                                result.fail();
+                            }
+                        });
+                });
+                result.join(5, SECONDS);
+                if (result.isSuccess()) {
+                    startupLogger.debug("flushing telemetry on shutdown completed successfully");
+                } else if (Thread.interrupted()) {
+                    startupLogger.debug("interrupted while flushing telemetry on shutdown");
+                } else {
+                    startupLogger.debug("flushing telemetry on shutdown has taken more than 5 seconds, shutting down anyways...");
                 }
             }
         });

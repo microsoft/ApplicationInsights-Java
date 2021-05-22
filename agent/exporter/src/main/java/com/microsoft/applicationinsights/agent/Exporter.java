@@ -126,13 +126,12 @@ public class Exporter implements SpanExporter {
         }
 
         try {
-            List<TelemetryItem> telemetryItems = new ArrayList<>();
             for (SpanData span : spans) {
                 logger.debug("exporting span: {}", span);
-                export(span, telemetryItems);
+                export(span);
             }
-            telemetryClient.trackAsync(telemetryItems);
-            // FIXME (trask)
+            // batching, retry, and writing to disk on failure occur downstream
+            // for simplicity not reporting back success/failure from this layer
             return CompletableResultCode.ofSuccess();
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
@@ -150,7 +149,7 @@ public class Exporter implements SpanExporter {
         return CompletableResultCode.ofSuccess();
     }
 
-    private void export(SpanData span, List<TelemetryItem> telemetryItems) {
+    private void export(SpanData span) {
         SpanKind kind = span.getKind();
         String instrumentationName = span.getInstrumentationLibraryInfo().getName();
         Matcher matcher = COMPONENT_PATTERN.matcher(instrumentationName);
@@ -158,22 +157,22 @@ public class Exporter implements SpanExporter {
         if (kind == SpanKind.INTERNAL) {
             Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
             if (isLog != null && isLog) {
-                exportLogSpan(span, telemetryItems);
+                exportLogSpan(span);
             } else if ("spring-scheduling".equals(stdComponent) && !span.getParentSpanContext().isValid()) {
                 // TODO (trask) need semantic convention for determining whether to map INTERNAL to request or
                 //  dependency (or need clarification to use SERVER for this)
-                exportRequest(span, telemetryItems);
+                exportRequest(span);
             } else {
-                exportRemoteDependency(span, true, telemetryItems);
+                exportRemoteDependency(span, true);
             }
         } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
-            exportRemoteDependency(span, false, telemetryItems);
+            exportRemoteDependency(span, false);
         } else if (kind == SpanKind.CONSUMER && !span.getParentSpanContext().isRemote()) {
             // TODO need spec clarification, but it seems polling for messages can be CONSUMER also
             //  in which case the span will not have a remote parent and should be treated as a dependency instead of a request
-            exportRemoteDependency(span, false, telemetryItems);
+            exportRemoteDependency(span, false);
         } else if (kind == SpanKind.SERVER || kind == SpanKind.CONSUMER) {
-            exportRequest(span, telemetryItems);
+            exportRequest(span);
         } else {
             throw new UnsupportedOperationException(kind.name());
         }
@@ -195,8 +194,7 @@ public class Exporter implements SpanExporter {
         return Collections.singletonList(details);
     }
 
-    private void exportRemoteDependency(SpanData span, boolean inProc,
-                                        List<TelemetryItem> telemetryItems) {
+    private void exportRemoteDependency(SpanData span, boolean inProc) {
         TelemetryItem telemetry = new TelemetryItem();
         RemoteDependencyData data = new RemoteDependencyData();
         telemetryClient.initRemoteDependencyTelemetry(telemetry, data);
@@ -228,8 +226,8 @@ public class Exporter implements SpanExporter {
 
         float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         telemetry.setSampleRate(samplingPercentage);
-        telemetryItems.add(telemetry);
-        exportEvents(span, samplingPercentage, telemetryItems);
+        telemetryClient.trackAsync(telemetry);
+        exportEvents(span, samplingPercentage);
     }
 
     private static float getSamplingPercentage(TraceState traceState) {
@@ -259,16 +257,16 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private void exportLogSpan(SpanData span, List<TelemetryItem> telemetryItems) {
+    private void exportLogSpan(SpanData span) {
         String errorStack = span.getAttributes().get(AI_LOG_ERROR_STACK_KEY);
         if (errorStack == null) {
-            trackTrace(span, telemetryItems);
+            trackTrace(span);
         } else {
-            trackTraceAsException(span, errorStack, telemetryItems);
+            trackTraceAsException(span, errorStack);
         }
     }
 
-    private void trackTrace(SpanData span, List<TelemetryItem> telemetryItems) {
+    private void trackTrace(SpanData span) {
         Attributes attributes = span.getAttributes();
         String level = attributes.get(AI_LOG_LEVEL_KEY);
         String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
@@ -292,10 +290,10 @@ public class Exporter implements SpanExporter {
 
         float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         telemetry.setSampleRate(samplingPercentage);
-        telemetryItems.add(telemetry);
+        telemetryClient.trackAsync(telemetry);
     }
 
-    private void trackTraceAsException(SpanData span, String errorStack, List<TelemetryItem> telemetryItems) {
+    private void trackTraceAsException(SpanData span, String errorStack) {
         Attributes attributes = span.getAttributes();
         String level = attributes.get(AI_LOG_LEVEL_KEY);
         String loggerName = attributes.get(AI_LOGGER_NAME_KEY);
@@ -318,7 +316,7 @@ public class Exporter implements SpanExporter {
 
         float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         telemetry.setSampleRate(samplingPercentage);
-        telemetryItems.add(telemetry);
+        telemetryClient.trackAsync(telemetry);
     }
 
     private static void setLoggerProperties(MonitorDomain data, String level, String loggerName) {
@@ -498,7 +496,7 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    private void exportRequest(SpanData span, List<TelemetryItem> telemetryItems) {
+    private void exportRequest(SpanData span) {
         TelemetryItem telemetry = new TelemetryItem();
         RequestData data = new RequestData();
         telemetryClient.initRequestTelemetry(telemetry, data);
@@ -585,8 +583,8 @@ public class Exporter implements SpanExporter {
 
         float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         telemetry.setSampleRate(samplingPercentage);
-        telemetryItems.add(telemetry);
-        exportEvents(span, samplingPercentage, telemetryItems);
+        telemetryClient.trackAsync(telemetry);
+        exportEvents(span, samplingPercentage);
     }
 
     private String getTelemetryName(SpanData span) {
@@ -611,7 +609,7 @@ public class Exporter implements SpanExporter {
         return str1 + separator + str2;
     }
 
-    private void exportEvents(SpanData span, float samplingPercentage, List<TelemetryItem> telemetryItems) {
+    private void exportEvents(SpanData span, float samplingPercentage) {
         for (EventData event : span.getEvents()) {
             boolean lettuce51 =
                     span.getInstrumentationLibraryInfo().getName().equals("io.opentelemetry.javaagent.lettuce-5.1");
@@ -635,17 +633,17 @@ public class Exporter implements SpanExporter {
                 // TODO map OpenTelemetry exception to Application Insights exception better
                 String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
                 if (stacktrace != null) {
-                    trackException(stacktrace, span, operationId, span.getSpanId(), samplingPercentage, telemetryItems);
+                    trackException(stacktrace, span, operationId, span.getSpanId(), samplingPercentage);
                 }
             } else {
                 telemetry.setSampleRate(samplingPercentage);
-                telemetryItems.add(telemetry);
+                telemetryClient.trackAsync(telemetry);
             }
         }
     }
 
     private void trackException(String errorStack, SpanData span, String operationId,
-                                String id, float samplingPercentage, List<TelemetryItem> telemetryItems) {
+                                String id, float samplingPercentage) {
         TelemetryItem telemetry = new TelemetryItem();
         TelemetryExceptionData data = new TelemetryExceptionData();
         telemetryClient.initExceptionTelemetry(telemetry, data);
@@ -655,7 +653,7 @@ public class Exporter implements SpanExporter {
         telemetry.setTime(getFormattedTime(span.getEndEpochNanos()));
         telemetry.setSampleRate(samplingPercentage);
         data.setExceptions(minimalParse(errorStack));
-        telemetryItems.add(telemetry);
+        telemetryClient.trackAsync(telemetry);
     }
 
     private static final long NANOSECONDS_PER_DAY = DAYS.toNanos(1);

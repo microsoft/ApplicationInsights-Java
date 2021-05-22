@@ -217,16 +217,14 @@ public final class BatchSpanProcessor {
       }
 
       try {
+        CompletableResultCode result = new CompletableResultCode();
           spanExporter.trackAsync(Collections.unmodifiableList(batch))
-              .subscriberContext(Context.of(Tracer.DISABLE_TRACING_KEY, true))
-                  .subscribe();
-        // FIXME (trask)
-                //.subscribe(ignored -> { }, error -> completableResultCode.fail(), completableResultCode::succeed);
-        // FIXME (trask)
-//        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
-//        if (!result.isSuccess()) {
-//          logger.log(Level.FINE, "Exporter failed");
-//        }
+              .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
+                .subscribe(ignored -> { }, error -> result.fail(), result::succeed);
+        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        if (!result.isSuccess()) {
+          logger.log(Level.FINE, "Exporter failed");
+        }
       } catch (RuntimeException e) {
         logger.log(Level.WARNING, "Exporter threw an Exception", e);
       } finally {

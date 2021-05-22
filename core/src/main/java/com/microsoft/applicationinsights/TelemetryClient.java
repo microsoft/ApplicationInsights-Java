@@ -24,6 +24,8 @@ package com.microsoft.applicationinsights;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.util.serializer.*;
+import com.azure.core.util.tracing.Tracer;
+import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
 import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -41,10 +43,12 @@ import com.microsoft.applicationinsights.internal.config.connection.InvalidConne
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.internal.util.CollectionTypeJsonSerializer;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.util.context.Context;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -54,7 +58,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.singletonList;
 
@@ -93,8 +96,9 @@ public class TelemetryClient {
 
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
-    private final Object channelInitLock = new Object();
-    private volatile @Nullable BatchSpanProcessor channel;
+    private final Object clientInitLock = new Object();
+    private volatile @Nullable ApplicationInsightsClientImpl client;
+    private volatile @Nullable BatchSpanProcessor batchingClient;
 
     // only used by tests
     public TelemetryClient() {
@@ -163,12 +167,6 @@ public class TelemetryClient {
         active = null;
     }
 
-    public void trackAsync(List<TelemetryItem> telemetryItems) {
-        for (TelemetryItem telemetry : telemetryItems) {
-            trackAsync(telemetry);
-        }
-    }
-
     public void trackAsync(TelemetryItem telemetry) {
         if (telemetry.getSampleRate() == null) {
             // FIXME (trask) is this required?
@@ -184,21 +182,40 @@ public class TelemetryClient {
 
         TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetry));
 
-        getChannel().trackAsync(telemetry);
+        // batching, retry, and writing to disk on failure occur downstream
+        // for simplicity not reporting back success/failure from this layer
+        getBatchingClient().trackAsync(telemetry);
     }
 
-    public BatchSpanProcessor getChannel() {
-        if (channel == null) {
-            synchronized (channelInitLock) {
-                if (channel == null) {
-                    channel = createChannel();
+    public CompletableResultCode flushBatchingClient() {
+        return batchingClient.forceFlush();
+    }
+
+    public ApplicationInsightsClientImpl getClient() {
+        if (client == null) {
+            synchronized (clientInitLock) {
+                if (client == null) {
+                    client = createClient();
+                    batchingClient = BatchSpanProcessor.builder(client).build();
                 }
             }
         }
-        return channel;
+        return client;
     }
 
-    private BatchSpanProcessor createChannel() {
+    public BatchSpanProcessor getBatchingClient() {
+        if (batchingClient == null) {
+            synchronized (clientInitLock) {
+                if (batchingClient == null) {
+                    client = createClient();
+                    batchingClient = BatchSpanProcessor.builder(client).build();
+                }
+            }
+        }
+        return batchingClient;
+    }
+
+    private ApplicationInsightsClientImpl createClient() {
         ApplicationInsightsClientImplBuilder restServiceClientBuilder = new ApplicationInsightsClientImplBuilder();
         restServiceClientBuilder.serializerAdapter(new JacksonJsonAdapter());
         URI endpoint = endpointProvider.getIngestionEndpoint();
@@ -216,7 +233,7 @@ public class TelemetryClient {
             restServiceClientBuilder.addPolicy(authenticationPolicy);
         }
 
-        return BatchSpanProcessor.builder(restServiceClientBuilder.buildClient()).build();
+        return restServiceClientBuilder.buildClient();
     }
 
     public List<TelemetryModule> getTelemetryModules() {
@@ -420,14 +437,6 @@ public class TelemetryClient {
         telemetry.setData(monitorBase);
         monitorBase.setBaseType(baseType);
         monitorBase.setBaseData(data);
-    }
-
-    public void flush() {
-        // FIXME (trask)
-    }
-
-    public void shutdown(int time, TimeUnit unit) throws InterruptedException {
-        // FIXME (trask)
     }
 
     // need to implement our own SerializerAdapter for the agent in order to avoid instantiating any xml classes
