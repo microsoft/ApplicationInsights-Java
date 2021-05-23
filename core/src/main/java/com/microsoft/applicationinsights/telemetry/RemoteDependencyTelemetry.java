@@ -65,7 +65,7 @@ public final class RemoteDependencyTelemetry extends BaseSampleSourceTelemetry<R
     }
 
     /**
-     * Initializes an instnace with the given parameters.
+     * Initializes an instance with the given parameters.
      * @param dependencyName The dependency name.
      * @param commandName The command name or call details.
      * @param duration How long it took to process the call.
