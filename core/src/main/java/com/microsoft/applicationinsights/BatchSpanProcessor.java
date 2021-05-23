@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 // copied from io.opentelemetry.sdk.trace.export.BatchSpanProcessor
@@ -211,10 +212,10 @@ public final class BatchSpanProcessor {
       }
 
       try {
-        // batching, retry, and writing to disk on failure occur downstream
-        // for simplicity not reporting back success/failure from this layer
-        // only that it was successfully delivered to the next layer
-        spanExporter.send(Collections.unmodifiableList(batch));
+        // batching, retry, logging, and writing to disk on failure occur downstream
+        final CompletableResultCode result =
+                spanExporter.send(Collections.unmodifiableList(batch));
+        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
       } finally {
         batch.clear();
       }
