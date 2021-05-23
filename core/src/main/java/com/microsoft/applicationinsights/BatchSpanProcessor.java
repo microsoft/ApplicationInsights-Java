@@ -5,15 +5,10 @@
 
 package com.microsoft.applicationinsights;
 
-import com.azure.core.util.tracing.Tracer;
-import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ExportResult;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueue;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
-import reactor.core.publisher.Mono;
-import reactor.util.context.Context;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,10 +19,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// copied from io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder
+// copied from io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 public final class BatchSpanProcessor {
 
   private static final String WORKER_THREAD_NAME =
@@ -43,12 +37,12 @@ public final class BatchSpanProcessor {
    * @return a new {@link BatchSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
-  public static BatchSpanProcessorBuilder builder(ApplicationInsightsClientImpl spanExporter) {
+  public static BatchSpanProcessorBuilder builder(LowLevelClient spanExporter) {
     return new BatchSpanProcessorBuilder(spanExporter);
   }
 
   BatchSpanProcessor(
-      ApplicationInsightsClientImpl spanExporter,
+      LowLevelClient spanExporter,
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
@@ -84,7 +78,7 @@ public final class BatchSpanProcessor {
   private static final class Worker implements Runnable {
 
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
-    private final ApplicationInsightsClientImpl spanExporter;
+    private final LowLevelClient spanExporter;
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
@@ -105,7 +99,7 @@ public final class BatchSpanProcessor {
     private final ArrayList<TelemetryItem> batch;
 
     private Worker(
-        ApplicationInsightsClientImpl spanExporter,
+            LowLevelClient spanExporter,
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
@@ -217,16 +211,10 @@ public final class BatchSpanProcessor {
       }
 
       try {
-        CompletableResultCode result = new CompletableResultCode();
-          spanExporter.trackAsync(Collections.unmodifiableList(batch))
-              .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
-                .subscribe(ignored -> { }, error -> result.fail(), result::succeed);
-        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
-        if (!result.isSuccess()) {
-          logger.log(Level.FINE, "Exporter failed");
-        }
-      } catch (RuntimeException e) {
-        logger.log(Level.WARNING, "Exporter threw an Exception", e);
+        // batching, retry, and writing to disk on failure occur downstream
+        // for simplicity not reporting back success/failure from this layer
+        // only that it was successfully delivered to the next layer
+        spanExporter.send(Collections.unmodifiableList(batch));
       } finally {
         batch.clear();
       }

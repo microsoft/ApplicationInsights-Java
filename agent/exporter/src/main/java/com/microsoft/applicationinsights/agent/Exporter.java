@@ -132,6 +132,7 @@ public class Exporter implements SpanExporter {
             }
             // batching, retry, and writing to disk on failure occur downstream
             // for simplicity not reporting back success/failure from this layer
+            // only that it was successfully delivered to the next layer
             return CompletableResultCode.ofSuccess();
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);

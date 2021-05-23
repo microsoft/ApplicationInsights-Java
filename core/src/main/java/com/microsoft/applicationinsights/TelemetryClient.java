@@ -21,39 +21,23 @@
 
 package com.microsoft.applicationinsights;
 
-import com.azure.core.http.HttpHeaders;
-import com.azure.core.http.policy.HttpPipelinePolicy;
-import com.azure.core.util.serializer.*;
-import com.azure.core.util.tracing.Tracer;
-import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImpl;
-import com.azure.monitor.opentelemetry.exporter.implementation.ApplicationInsightsClientImplBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
-import com.microsoft.applicationinsights.internal.util.CollectionTypeJsonSerializer;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.util.context.Context;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,7 +81,6 @@ public class TelemetryClient {
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
     private final Object clientInitLock = new Object();
-    private volatile @Nullable ApplicationInsightsClientImpl client;
     private volatile @Nullable BatchSpanProcessor batchingClient;
 
     // only used by tests
@@ -184,6 +167,7 @@ public class TelemetryClient {
 
         // batching, retry, and writing to disk on failure occur downstream
         // for simplicity not reporting back success/failure from this layer
+        // only that it was successfully delivered to the next layer
         getBatchingClient().trackAsync(telemetry);
     }
 
@@ -191,23 +175,11 @@ public class TelemetryClient {
         return batchingClient.forceFlush();
     }
 
-    public ApplicationInsightsClientImpl getClient() {
-        if (client == null) {
-            synchronized (clientInitLock) {
-                if (client == null) {
-                    client = createClient();
-                    batchingClient = BatchSpanProcessor.builder(client).build();
-                }
-            }
-        }
-        return client;
-    }
-
     public BatchSpanProcessor getBatchingClient() {
         if (batchingClient == null) {
             synchronized (clientInitLock) {
                 if (batchingClient == null) {
-                    client = createClient();
+                    LowLevelClient client = createClient();
                     batchingClient = BatchSpanProcessor.builder(client).build();
                 }
             }
@@ -215,25 +187,14 @@ public class TelemetryClient {
         return batchingClient;
     }
 
-    private ApplicationInsightsClientImpl createClient() {
-        ApplicationInsightsClientImplBuilder restServiceClientBuilder = new ApplicationInsightsClientImplBuilder();
-        restServiceClientBuilder.serializerAdapter(new JacksonJsonAdapter());
-        URI endpoint = endpointProvider.getIngestionEndpoint();
+    private LowLevelClient createClient() {
         try {
-            URI hostOnly = new URI(endpoint.getScheme(), endpoint.getUserInfo(), endpoint.getHost(), endpoint.getPort(), null, null, null);
-            restServiceClientBuilder.host(hostOnly.toString());
-        } catch (URISyntaxException e) {
-            // TODO (trask) revisit what's an appropriate action here?
+            return new LowLevelClient(endpointProvider.getIngestionEndpoint().toURL());
+        } catch (MalformedURLException e) {
+            // this shouldn't happen
             logger.error(e.getMessage(), e);
+            throw new IllegalStateException(e);
         }
-        // handle AAD authentication
-        // TODO handle authentication exceptions
-        HttpPipelinePolicy authenticationPolicy = AadAuthentication.getInstance().getAuthenticationPolicy();
-        if(authenticationPolicy != null) {
-            restServiceClientBuilder.addPolicy(authenticationPolicy);
-        }
-
-        return restServiceClientBuilder.buildClient();
     }
 
     public List<TelemetryModule> getTelemetryModules() {
@@ -437,55 +398,5 @@ public class TelemetryClient {
         telemetry.setData(monitorBase);
         monitorBase.setBaseType(baseType);
         monitorBase.setBaseData(data);
-    }
-
-    // need to implement our own SerializerAdapter for the agent in order to avoid instantiating any xml classes
-    // because wildfly sets system property:
-    //   javax.xml.stream.XMLInputFactory=__redirected.__XMLInputFactory
-    // and that class is available in the system class loader, but not in the agent class loader
-    // because the agent class loader parents the bootstrap class loader directly
-    private static class JacksonJsonAdapter implements SerializerAdapter {
-
-        private final ObjectMapper mapper;
-
-        private JacksonJsonAdapter() {
-            mapper = JsonMapper.builder().build();
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-            // Customize serializer to use NDJSON
-            SimpleModule ndjsonModule = new SimpleModule("Ndjson List Serializer");
-            ndjsonModule.setSerializers(new CollectionTypeJsonSerializer());
-            mapper.registerModule(ndjsonModule);
-        }
-
-        @Override
-        public String serialize(Object object, SerializerEncoding encoding) throws IOException {
-            if (object == null) {
-                return null;
-            }
-            return mapper.writeValueAsString(object);
-        }
-
-        @Override
-        public String serializeRaw(Object object) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String serializeList(List<?> list, CollectionFormat format) {
-            return serializeIterable(list, format);
-        }
-
-        @Override
-        public <T> T deserialize(String value, Type type, SerializerEncoding encoding) {
-            // FIXME (trask)
-            return null;
-        }
-
-        @Override
-        public <T> T deserialize(HttpHeaders headers, Type type) {
-            // FIXME (trask)
-            return null;
-        }
     }
 }
