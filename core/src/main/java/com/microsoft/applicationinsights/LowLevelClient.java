@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 
+// TODO performance testing
 class LowLevelClient {
 
     private static final Logger logger = LoggerFactory.getLogger(LowLevelClient.class);
@@ -43,6 +44,7 @@ class LowLevelClient {
         if (authenticationPolicy != null) {
             pipeline.policies(authenticationPolicy);
         }
+        // TODO check existing retry policy, and its configuration
         this.pipeline = pipeline.build();
         this.endpoint = endpoint;
     }
@@ -94,12 +96,13 @@ class LowLevelClient {
         request.setHeader("User-Agent", "");
 
         // TODO(trask) subscribe with listener
-        //  * retry on first failure
+        //  * retry on first failure (may not need to worry about this if retry policy in pipeline already, see above)
         //  * write to disk on second failure
         CompletableResultCode result = new CompletableResultCode();
         pipeline.send(request)
                 .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
                 .subscribe(response -> {
+                    // TODO parse response, looking for throttling, partial successes, etc
                     System.out.println("on response: " + response);
                 }, error -> {
                     System.out.println("on error...");
