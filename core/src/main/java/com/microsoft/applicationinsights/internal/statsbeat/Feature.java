@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import java.util.Base64;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,12 +57,17 @@ enum Feature {
         return feature != null ? feature : Feature.JAVA_VENDOR_OTHER;
     }
 
-    static String encode(Set<Feature> features) {
+    static long encode(Set<Feature> features) {
         BitSet bitSet = new BitSet(64);
         for (Feature feature : features) {
             bitSet.set(feature.bitmapIndex);
         }
 
-        return Base64.getEncoder().withoutPadding().encodeToString(bitSet.toByteArray());
+        long[] longArray = bitSet.toLongArray();
+        if (longArray.length > 0) {
+            return longArray[0];
+        }
+
+        return 0L;
     }
 }
