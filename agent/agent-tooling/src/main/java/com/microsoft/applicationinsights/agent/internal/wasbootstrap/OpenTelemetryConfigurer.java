@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithS
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -30,6 +31,8 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
     }
 
     @Override
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+                        justification = "this method is only called once during initialization")
     public void configure(SdkTracerProviderBuilder tracerProvider) {
         TelemetryClient telemetryClient = Global.getTelemetryClient();
         if (telemetryClient == null) {

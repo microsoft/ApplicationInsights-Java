@@ -24,6 +24,7 @@ com.github.stephenc.jcip:jcip-annotations:1.0-1
 com.google.auto.service:auto-service-annotations:1.0-rc7
 com.google.auto.service:auto-service:1.0-rc7
 com.google.auto:auto-common:0.10
+com.google.code.findbugs:annotations:3.0.1
 com.google.code.findbugs:jsr305:3.0.2
 com.google.code.gson:gson:2.8.2
 com.google.errorprone:error_prone_annotations:2.5.1
@@ -99,6 +100,7 @@ net.bytebuddy:byte-buddy-agent:1.10.18
 net.bytebuddy:byte-buddy:1.10.18
 net.java.dev.jna:jna-platform:5.7.0
 net.java.dev.jna:jna:5.7.0
+net.jcip:jcip-annotations:1.0
 net.minidev:accessors-smart:1.2
 net.minidev:json-smart:2.3
 org.apache.commons:commons-lang3:3.11
