@@ -110,13 +110,13 @@ class TelemetryChannel {
                 .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
                 .subscribe(response -> {
                     // TODO parse response, looking for throttling, partial successes, etc
-                    System.out.println("on response: " + response);
+                    // System.out.println("on response: " + response);
                 }, error -> {
-                    System.out.println("on error...");
+                    // System.out.println("on error...");
                     byteBufferPool.offer(byteBuffers);
                     result.fail();
                 }, () -> {
-                    System.out.println("on complete...");
+                    // System.out.println("on complete...");
                     byteBufferPool.offer(byteBuffers);
                     result.succeed();
                 });
