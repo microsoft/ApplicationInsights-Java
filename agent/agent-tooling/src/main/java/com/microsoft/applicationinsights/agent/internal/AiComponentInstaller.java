@@ -171,32 +171,7 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         // this is currently used by Micrometer instrumentation in addition to 2.x SDK
         BytecodeUtil.setDelegate(new BytecodeUtilImpl());
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                startupLogger.debug("running shutdown hook");
-                CompletableResultCode otelFlush = OpenTelemetryConfigurer.flush();
-                CompletableResultCode result = new CompletableResultCode();
-                otelFlush.whenComplete(() -> {
-                        CompletableResultCode batchingClientFlush = telemetryClient.flushChannelBatcher();
-                        batchingClientFlush.whenComplete(() -> {
-                            if (otelFlush.isSuccess() && batchingClientFlush.isSuccess()) {
-                                result.succeed();
-                            } else {
-                                result.fail();
-                            }
-                        });
-                });
-                result.join(5, SECONDS);
-                if (result.isSuccess()) {
-                    startupLogger.debug("flushing telemetry on shutdown completed successfully");
-                } else if (Thread.interrupted()) {
-                    startupLogger.debug("interrupted while flushing telemetry on shutdown");
-                } else {
-                    startupLogger.debug("flushing telemetry on shutdown has taken more than 5 seconds, shutting down anyways...");
-                }
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new ShutdownHook(telemetryClient));
 
         RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
         if (rpConfiguration != null) {
@@ -315,5 +290,38 @@ public class AiComponentInstaller implements ComponentInstaller {
         paramXml.setName(name);
         paramXml.setValue(value);
         return paramXml;
+    }
+
+    private static class ShutdownHook extends Thread {
+        private final TelemetryClient telemetryClient;
+
+        public ShutdownHook(TelemetryClient telemetryClient) {
+            this.telemetryClient = telemetryClient;
+        }
+
+        @Override
+        public void run() {
+            startupLogger.debug("running shutdown hook");
+            CompletableResultCode otelFlush = OpenTelemetryConfigurer.flush();
+            CompletableResultCode result = new CompletableResultCode();
+            otelFlush.whenComplete(() -> {
+                    CompletableResultCode batchingClientFlush = telemetryClient.flushChannelBatcher();
+                    batchingClientFlush.whenComplete(() -> {
+                        if (otelFlush.isSuccess() && batchingClientFlush.isSuccess()) {
+                            result.succeed();
+                        } else {
+                            result.fail();
+                        }
+                    });
+            });
+            result.join(5, SECONDS);
+            if (result.isSuccess()) {
+                startupLogger.debug("flushing telemetry on shutdown completed successfully");
+            } else if (Thread.interrupted()) {
+                startupLogger.debug("interrupted while flushing telemetry on shutdown");
+            } else {
+                startupLogger.debug("flushing telemetry on shutdown has taken more than 5 seconds, shutting down anyways...");
+            }
+        }
     }
 }
