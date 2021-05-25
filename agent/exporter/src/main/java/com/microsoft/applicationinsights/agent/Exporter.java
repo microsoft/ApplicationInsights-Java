@@ -130,7 +130,7 @@ public class Exporter implements SpanExporter {
                 logger.debug("exporting span: {}", span);
                 export(span);
             }
-            // batching, retry, and writing to disk on failure occur downstream
+            // batching, retry, throttling, and writing to disk on failure occur downstream
             // for simplicity not reporting back success/failure from this layer
             // only that it was successfully delivered to the next layer
             return CompletableResultCode.ofSuccess();

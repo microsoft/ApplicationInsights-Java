@@ -20,9 +20,9 @@ import java.util.Iterator;
 import java.util.List;
 
 // TODO performance testing
-class LowLevelClient {
+class TelemetryChannel {
 
-    private static final Logger logger = LoggerFactory.getLogger(LowLevelClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(TelemetryChannel.class);
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -35,7 +35,7 @@ class LowLevelClient {
     private final HttpPipeline pipeline;
     private final URL endpoint;
 
-    LowLevelClient(URL endpoint) {
+    TelemetryChannel(URL endpoint) {
         HttpClient client = HttpClient.createDefault();
         HttpPipelineBuilder pipeline = new HttpPipelineBuilder()
                 .httpClient(client);

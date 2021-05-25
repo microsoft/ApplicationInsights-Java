@@ -19,13 +19,13 @@ final class BatchSpanProcessorBuilder {
   private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   private static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
 
-  private final LowLevelClient spanExporter;
+  private final TelemetryChannel spanExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
 
-  BatchSpanProcessorBuilder(LowLevelClient spanExporter) {
+  BatchSpanProcessorBuilder(TelemetryChannel spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
   }
 

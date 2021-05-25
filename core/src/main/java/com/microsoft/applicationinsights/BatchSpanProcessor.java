@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 // copied from io.opentelemetry.sdk.trace.export.BatchSpanProcessor
@@ -38,12 +37,12 @@ public final class BatchSpanProcessor {
    * @return a new {@link BatchSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
-  public static BatchSpanProcessorBuilder builder(LowLevelClient spanExporter) {
+  public static BatchSpanProcessorBuilder builder(TelemetryChannel spanExporter) {
     return new BatchSpanProcessorBuilder(spanExporter);
   }
 
   BatchSpanProcessor(
-      LowLevelClient spanExporter,
+      TelemetryChannel spanExporter,
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
@@ -79,7 +78,7 @@ public final class BatchSpanProcessor {
   private static final class Worker implements Runnable {
 
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
-    private final LowLevelClient spanExporter;
+    private final TelemetryChannel spanExporter;
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
@@ -100,7 +99,7 @@ public final class BatchSpanProcessor {
     private final ArrayList<TelemetryItem> batch;
 
     private Worker(
-            LowLevelClient spanExporter,
+            TelemetryChannel spanExporter,
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,

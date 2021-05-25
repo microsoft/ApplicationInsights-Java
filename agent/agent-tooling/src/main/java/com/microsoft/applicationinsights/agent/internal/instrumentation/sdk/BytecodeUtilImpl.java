@@ -334,7 +334,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     @Override
     public void flush() {
         // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
-        checkNotNull(Global.getTelemetryClient()).flushBatchingClient();
+        checkNotNull(Global.getTelemetryClient()).flushChannelBatcher();
     }
 
     @Override

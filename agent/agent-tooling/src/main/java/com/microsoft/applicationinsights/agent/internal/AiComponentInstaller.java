@@ -45,10 +45,8 @@ import com.microsoft.applicationinsights.internal.profiler.ProfilerServiceInitia
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -60,7 +58,6 @@ import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
-import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -181,7 +178,7 @@ public class AiComponentInstaller implements ComponentInstaller {
                 CompletableResultCode otelFlush = OpenTelemetryConfigurer.flush();
                 CompletableResultCode result = new CompletableResultCode();
                 otelFlush.whenComplete(() -> {
-                        CompletableResultCode batchingClientFlush = telemetryClient.flushBatchingClient();
+                        CompletableResultCode batchingClientFlush = telemetryClient.flushChannelBatcher();
                         batchingClientFlush.whenComplete(() -> {
                             if (otelFlush.isSuccess() && batchingClientFlush.isSuccess()) {
                                 result.succeed();

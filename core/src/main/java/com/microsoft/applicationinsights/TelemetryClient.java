@@ -80,8 +80,8 @@ public class TelemetryClient {
 
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
-    private final Object clientInitLock = new Object();
-    private volatile @Nullable BatchSpanProcessor batchingClient;
+    private final Object channelInitLock = new Object();
+    private volatile @Nullable BatchSpanProcessor channelBatcher;
 
     // only used by tests
     public TelemetryClient() {
@@ -165,36 +165,33 @@ public class TelemetryClient {
 
         TelemetryObservers.INSTANCE.getObservers().forEach(consumer -> consumer.accept(telemetry));
 
-        // batching, retry, and writing to disk on failure occur downstream
+        // batching, retry, throttling, and writing to disk on failure occur downstream
         // for simplicity not reporting back success/failure from this layer
         // only that it was successfully delivered to the next layer
-        getBatchingClient().trackAsync(telemetry);
+        getChannelBatcher().trackAsync(telemetry);
     }
 
-    public CompletableResultCode flushBatchingClient() {
-        return batchingClient.forceFlush();
+    public CompletableResultCode flushChannelBatcher() {
+        return channelBatcher.forceFlush();
     }
 
-    public BatchSpanProcessor getBatchingClient() {
-        if (batchingClient == null) {
-            synchronized (clientInitLock) {
-                if (batchingClient == null) {
-                    LowLevelClient client = createClient();
-                    batchingClient = BatchSpanProcessor.builder(client).build();
+    public BatchSpanProcessor getChannelBatcher() {
+        if (channelBatcher == null) {
+            synchronized (channelInitLock) {
+                if (channelBatcher == null) {
+                    TelemetryChannel channel;
+                    try {
+                        channel = new TelemetryChannel(endpointProvider.getIngestionEndpoint().toURL());
+                    } catch (MalformedURLException e) {
+                        // this shouldn't happen
+                        logger.error(e.getMessage(), e);
+                        throw new IllegalStateException(e);
+                    }
+                    channelBatcher = BatchSpanProcessor.builder(channel).build();
                 }
             }
         }
-        return batchingClient;
-    }
-
-    private LowLevelClient createClient() {
-        try {
-            return new LowLevelClient(endpointProvider.getIngestionEndpoint().toURL());
-        } catch (MalformedURLException e) {
-            // this shouldn't happen
-            logger.error(e.getMessage(), e);
-            throw new IllegalStateException(e);
-        }
+        return channelBatcher;
     }
 
     public List<TelemetryModule> getTelemetryModules() {
