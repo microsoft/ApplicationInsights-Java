@@ -67,16 +67,22 @@ class TelemetryChannel {
 
     List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
         ByteBufferOutputStream out = new ByteBufferOutputStream(byteBufferPool);
-        for (Iterator<TelemetryItem> i = telemetryItems.iterator(); i.hasNext(); ) {
-            mapper.writeValue(out, i.next());
-            if (i.hasNext()) {
-                out.write('\n');
+        try {
+            for (Iterator<TelemetryItem> i = telemetryItems.iterator(); i.hasNext(); ) {
+                mapper.writeValue(out, i.next());
+                if (i.hasNext()) {
+                    out.write('\n');
+                }
             }
+        } catch (IOException e) {
+            byteBufferPool.offer(out.getByteBuffers());
+            throw e;
         }
-        out.close(); // closing ByteBufferOutputStream is not really needed, but this makes LGTM happy
+        out.close(); // closing ByteBufferOutputStream is a no-op, but this line makes LGTM happy
+
         List<ByteBuffer> byteBuffers = out.getByteBuffers();
-        for (ByteBuffer bb : byteBuffers) {
-            bb.flip();
+        for (ByteBuffer byteBuffer : byteBuffers) {
+            byteBuffer.flip();
         }
         return byteBuffers;
     }
