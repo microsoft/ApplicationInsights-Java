@@ -73,6 +73,7 @@ class LowLevelClient {
                 out.write('\n');
             }
         }
+        out.close(); // closing ByteBufferOutputStream is not really needed, but this makes LGTM happy
         List<ByteBuffer> byteBuffers = out.getByteBuffers();
         for (ByteBuffer bb : byteBuffers) {
             bb.flip();
