@@ -25,7 +25,7 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.jdbc");
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.tomcat-7.0");
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.http-url-connection");
-        assertEquals((long)(Math.pow(2, 13) + Math.pow(2, 21) + Math.pow(2, 57)), StatsbeatTestUtils.convertBase64EncodedStringToLong(networkStatsbeat.getInstrumentationAsBase64EncodedString())); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
+        assertEquals((long)(Math.pow(2, 13) + Math.pow(2, 21) + Math.pow(2, 57)), networkStatsbeat.getInstrumentation()); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
     }
 
     @Test
