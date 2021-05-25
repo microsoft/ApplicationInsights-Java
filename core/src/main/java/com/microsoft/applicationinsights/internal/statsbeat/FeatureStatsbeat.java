@@ -42,9 +42,9 @@ class FeatureStatsbeat extends BaseStatsbeat {
     }
 
     /**
-     * @return a base 64 encoded string of a 64-bit long that represents a list of features enabled. Each bitfield maps to a feature.
+     * @return a long that represents a list of features enabled. Each bitfield maps to a feature.
      */
-    String getFeature() {
+    long getFeature() {
         return Feature.encode(featureList);
     }
 

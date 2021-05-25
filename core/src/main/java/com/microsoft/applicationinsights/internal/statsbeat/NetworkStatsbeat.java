@@ -57,8 +57,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             current = new IntervalMetrics();
         }
 
-        // send instrumentation as a base64 encoded string instead of the UTF-8 string
-        String instrumentation = Instrumentations.encode(local.instrumentationList);
+        // send instrumentation as an UTF-8 string
+        String instrumentation = Long.toString(Instrumentations.encode(local.instrumentationList));
 
         if (local.requestSuccessCount.get() != 0) {
             MetricTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
@@ -137,7 +137,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     }
 
     // only used by tests
-    String getInstrumentationAsBase64EncodedString() {
+    long getInstrumentation() {
         return Instrumentations.encode(current.instrumentationList);
     }
 

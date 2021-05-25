@@ -26,17 +26,17 @@ public class StatsbeatHelperTest {
 
     @Test
     public void testEncodeAndDecodeInstrumentations() {
-        String base64EncodedString = Instrumentations.encode(instrumentations);
-        assertEquals(EXPECTED_INSTRUMENTATION, StatsbeatTestUtils.convertBase64EncodedStringToLong(base64EncodedString));
-        Set<String> result = StatsbeatTestUtils.decodeInstrumentations(base64EncodedString);
+        long longVal = Instrumentations.encode(instrumentations);
+        assertEquals(EXPECTED_INSTRUMENTATION, longVal);
+        Set<String> result = StatsbeatTestUtils.decodeInstrumentations(longVal);
         assertEquals(instrumentations, result);
     }
 
     @Test
     public void tesEncodeAndDecodeFeature() {
-        String base64String = Feature.encode(features);
-        assertEquals(EXPECTED_FEATURE, StatsbeatTestUtils.convertBase64EncodedStringToLong(base64String));
-        Set<Feature> result = StatsbeatTestUtils.decodeFeature(base64String);
+        long number = Feature.encode(features);
+        assertEquals(EXPECTED_FEATURE, number);
+        Set<Feature> result = StatsbeatTestUtils.decodeFeature(number);
         assertEquals(features, result);
     }
 }

@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -81,16 +80,15 @@ public final class StatsbeatTestUtils {
         FEATURE_MAP_DECODING.put(5, Feature.JAVA_VENDOR_OTHER);
     }
 
-    static Set<String> decodeInstrumentations(String based64String) {
-        return decode(based64String, INSTRUMENTATION_MAP_DECODING);
+    static Set<String> decodeInstrumentations(long number) {
+        return decode(number, INSTRUMENTATION_MAP_DECODING);
     }
 
-    static Set<Feature> decodeFeature(String based64String) {
-        return decode(based64String, FEATURE_MAP_DECODING);
+    static Set<Feature> decodeFeature(long num) {
+        return decode(num, FEATURE_MAP_DECODING);
     }
 
-    private static <E> Set<E> decode(String based64String, Map<Integer, E> decodedMap) {
-        long num = convertBase64EncodedStringToLong(based64String);
+    private static <E> Set<E> decode(long num, Map<Integer, E> decodedMap) {
         Set<E> result = new HashSet<>();
         for(Map.Entry<Integer, E> entry: decodedMap.entrySet()) {
             double value = entry.getKey();
@@ -100,18 +98,5 @@ public final class StatsbeatTestUtils {
             }
         }
         return result;
-    }
-
-    // convert base64 encoded string to long
-    static long convertBase64EncodedStringToLong(String base64EncodedString) {
-        byte[] bytes = Base64.getDecoder().decode(base64EncodedString.getBytes());
-        long result = 0;
-        for (int i = 0; i < bytes.length; i++) {
-            result += ((long) bytes[i] & 0xffL) << (8 * i); // use Big Endian Byte Order.
-        }
-        return result;
-    }
-
-    private StatsbeatTestUtils() {
     }
 }
