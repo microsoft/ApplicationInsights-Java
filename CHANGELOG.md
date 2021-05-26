@@ -4,7 +4,6 @@
 * Fix exceptions with deep stack trace exceeding 64 KB rejected by Application Insights backend [#1702](https://github.com/microsoft/ApplicationInsights-Java/pull/1702).
 * Use shorter telemetry names for all telemetry types to reduce payload [#1700](https://github.com/microsoft/ApplicationInsights-Java/pull/1700).
 * Improve Azure SDK support [#1698](https://github.com/microsoft/ApplicationInsights-Java/pull/1698).
-* Enable agentmain to support loading Java Codeless Agent programmatically not via the jvm arguments [#1680](https://github.com/microsoft/ApplicationInsights-Java/issues/1680).
 
 # Version 3.1.1-BETA
 * Fix NullPointerExceptions for App Services [#1681](https://github.com/microsoft/ApplicationInsights-Java/pull/1681#issuecomment-840169103).
