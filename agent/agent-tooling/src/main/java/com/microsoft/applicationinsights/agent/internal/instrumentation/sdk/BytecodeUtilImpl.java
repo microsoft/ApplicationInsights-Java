@@ -352,8 +352,12 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
                 // sampled out
                 return;
             }
-            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), context.getTraceId());
-            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), context.getSpanId());
+            if (!telemetry.getTags().containsKey(ContextTagKeys.AI_OPERATION_ID.toString())) {
+                telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), context.getTraceId());
+            }
+            if (!telemetry.getTags().containsKey(ContextTagKeys.AI_OPERATION_PARENT_ID.toString())) {
+                telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), context.getSpanId());
+            }
             samplingPercentage =
                     TelemetryUtil.getSamplingPercentage(context.getTraceState(), Global.getSamplingPercentage(), false);
         } else {
