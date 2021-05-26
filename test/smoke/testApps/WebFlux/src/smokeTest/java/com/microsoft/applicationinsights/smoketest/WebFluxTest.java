@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.smoketest;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.List;
@@ -11,6 +12,9 @@ import static org.junit.Assert.*;
 
 @UseAgent
 public class WebFluxTest extends AiSmokeTest {
+
+    @Rule
+    public Retry retry = new Retry(3);
 
     @Test
     @TargetUri("/test")
