@@ -25,7 +25,7 @@ public class Log4jSpans {
   private static final Logger log = LoggerFactory.getLogger(Log4jSpans.class);
 
   private static final Tracer TRACER =
-      GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.log4j-1.1");
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.log4j-spans-1.2");
 
   // these constants are copied from org.apache.log4j.Priority and org.apache.log4j.Level because
   // Level was only introduced in 1.2, and then Level.TRACE was only introduced in 1.2.12

@@ -5,8 +5,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.log4j.v2_0;
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.extendsClass;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static java.util.Collections.singletonList;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isProtected;
@@ -16,15 +16,13 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.logger.LoggerDepth;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.logging.log4j.Level;
@@ -35,7 +33,7 @@ import org.apache.logging.log4j.message.Message;
 public class Log4jSpansInstrumentationModule extends InstrumentationModule {
   public Log4jSpansInstrumentationModule() {
     // this name is important currently because it's used to disable this instrumentation
-    super("log4j");
+    super("log4j-spans");
   }
 
   @Override
@@ -46,7 +44,7 @@ public class Log4jSpansInstrumentationModule extends InstrumentationModule {
   private static final class Log4jSpansInstrumentation implements TypeInstrumentation {
 
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return extendsClass(named("org.apache.logging.log4j.spi.AbstractLogger"));
     }
 
@@ -56,9 +54,8 @@ public class Log4jSpansInstrumentationModule extends InstrumentationModule {
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-      transformers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(isPublic())
               .and(named("logMessage"))
@@ -70,7 +67,7 @@ public class Log4jSpansInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(4, named("java.lang.Throwable"))),
           Log4jSpansInstrumentationModule.class.getName() + "$LogMessageAdvice");
       // log4j 2.12.1 introduced and started using this new log() method
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(isProtected().or(isPublic()))
               .and(named("log"))
@@ -82,7 +79,6 @@ public class Log4jSpansInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(4, named("org.apache.logging.log4j.message.Message")))
               .and(takesArgument(5, named("java.lang.Throwable"))),
           Log4jSpansInstrumentationModule.class.getName() + "$LogAdvice");
-      return transformers;
     }
   }
 

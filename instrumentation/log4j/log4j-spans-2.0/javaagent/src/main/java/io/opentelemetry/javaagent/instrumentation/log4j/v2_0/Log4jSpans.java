@@ -24,7 +24,7 @@ public class Log4jSpans {
   private static final org.slf4j.Logger log = LoggerFactory.getLogger(Log4jSpans.class);
 
   private static final Tracer TRACER =
-      GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.log4j-2.0");
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.log4j-spans-2.0");
 
   public static void capture(
       final Logger logger, final Level level, final Message message, final Throwable t) {
