@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.*;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.OpenTelemetryConfigurer;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
@@ -46,6 +47,7 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
@@ -169,21 +171,7 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         // this is currently used by Micrometer instrumentation in addition to 2.x SDK
         BytecodeUtil.setDelegate(new BytecodeUtilImpl());
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                startupLogger.debug("running shutdown hook");
-                try {
-                    telemetryClient.flush();
-                    telemetryClient.shutdown(5, SECONDS);
-                    startupLogger.debug("completed shutdown hook");
-                } catch (InterruptedException e) {
-                    startupLogger.debug("interrupted while flushing telemetry during shutdown");
-                } catch (Throwable t) {
-                    startupLogger.debug(t.getMessage(), t);
-                }
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new ShutdownHook(telemetryClient));
 
         RpConfiguration rpConfiguration = MainEntryPoint.getRpConfiguration();
         if (rpConfiguration != null) {
@@ -302,5 +290,38 @@ public class AiComponentInstaller implements ComponentInstaller {
         paramXml.setName(name);
         paramXml.setValue(value);
         return paramXml;
+    }
+
+    private static class ShutdownHook extends Thread {
+        private final TelemetryClient telemetryClient;
+
+        public ShutdownHook(TelemetryClient telemetryClient) {
+            this.telemetryClient = telemetryClient;
+        }
+
+        @Override
+        public void run() {
+            startupLogger.debug("running shutdown hook");
+            CompletableResultCode otelFlush = OpenTelemetryConfigurer.flush();
+            CompletableResultCode result = new CompletableResultCode();
+            otelFlush.whenComplete(() -> {
+                    CompletableResultCode batchingClientFlush = telemetryClient.flushChannelBatcher();
+                    batchingClientFlush.whenComplete(() -> {
+                        if (otelFlush.isSuccess() && batchingClientFlush.isSuccess()) {
+                            result.succeed();
+                        } else {
+                            result.fail();
+                        }
+                    });
+            });
+            result.join(5, SECONDS);
+            if (result.isSuccess()) {
+                startupLogger.debug("flushing telemetry on shutdown completed successfully");
+            } else if (Thread.interrupted()) {
+                startupLogger.debug("interrupted while flushing telemetry on shutdown");
+            } else {
+                startupLogger.debug("flushing telemetry on shutdown has taken more than 5 seconds, shutting down anyways...");
+            }
+        }
     }
 }

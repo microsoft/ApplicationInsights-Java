@@ -60,6 +60,7 @@ dependencies {
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
 
     implementation group: 'org.checkerframework', name: 'checker-qual', version: versions.checker
+    implementation 'com.google.code.findbugs:annotations:3.0.1'
 
     implementation(project(':core')) {
         // excluding commons-logging and replacing it with jcl-over-slf4j (below)
