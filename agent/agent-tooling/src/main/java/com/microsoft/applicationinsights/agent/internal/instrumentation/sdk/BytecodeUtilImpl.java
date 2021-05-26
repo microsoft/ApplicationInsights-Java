@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.agent.Exporter;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
+import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -238,8 +239,13 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
                 // sampled out
                 return;
             }
-            telemetry.getContext().getOperation().setId(context.getTraceId());
-            telemetry.getContext().getOperation().setParentId(context.getSpanId());
+            OperationContext operation = telemetry.getContext().getOperation();
+            if (operation.getId() == null) {
+                operation.setId(context.getTraceId());
+            }
+            if (operation.getParentId() == null) {
+                operation.setParentId(context.getSpanId());
+            }
             samplingPercentage =
                     Exporter.getSamplingPercentage(context.getTraceState(), Global.getSamplingPercentage(), false);
         } else {
