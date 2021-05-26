@@ -124,8 +124,10 @@ public class Exporter implements SpanExporter {
     private static final AttributeKey<String> AI_LOGGER_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.logger_name");
     private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY = AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
 
-    private static final AttributeKey<String> EVENTHUBS_PEER_ADDRESS = AttributeKey.stringKey("peer.address");
-    private static final AttributeKey<String> EVENTHUBS_MESSAGE_BUS_DESTINATION = AttributeKey.stringKey("message_bus.destination");
+    // note: this gets filtered out of user dimensions automatically since it shares official "peer." prefix
+    // (even though it's not an official semantic convention attribute)
+    private static final AttributeKey<String> AZURE_SDK_PEER_ADDRESS = AttributeKey.stringKey("peer.address");
+    private static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION = AttributeKey.stringKey("message_bus.destination");
 
     private static final AtomicBoolean alreadyLoggedSamplingPercentageMissing = new AtomicBoolean();
     private static final AtomicBoolean alreadyLoggedSamplingPercentageParseError = new AtomicBoolean();
@@ -193,7 +195,8 @@ public class Exporter implements SpanExporter {
             }
         } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
             exportRemoteDependency(span, false);
-        } else if (kind == SpanKind.CONSUMER && !span.getParentSpanContext().isRemote() && !span.getName().equals("EventHubs.process")) {
+        } else if (kind == SpanKind.CONSUMER && !span.getParentSpanContext().isRemote()
+                && !span.getName().equals("EventHubs.process") && !span.getName().equals("ServiceBus.process")) {
             // earlier versions of the azure sdk opentelemetry shim did not set remote parent
             // see https://github.com/Azure/azure-sdk-for-java/pull/21667
 
@@ -306,9 +309,17 @@ public class Exporter implements SpanExporter {
         }
         // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
         //  but no rush as messaging semantic conventions may still change
+        //  https://github.com/Azure/azure-sdk-for-java/issues/21684
         String name = span.getName();
         if (name.equals("EventHubs.send") || name.equals("EventHubs.message")) {
             applyEventHubsSpan(attributes, remoteDependencyData);
+            return;
+        }
+        // TODO (trask) ideally ServiceBus SDK should conform and fit the above path used for other messaging systems
+        //  but no rush as messaging semantic conventions may still change
+        //  https://github.com/Azure/azure-sdk-for-java/issues/21686
+        if (name.equals("ServiceBus.message") || name.equals("ServiceBus.process")) {
+            applyServiceBusSpan(attributes, remoteDependencyData);
             return;
         }
     }
@@ -521,10 +532,21 @@ public class Exporter implements SpanExporter {
 
     // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
     //  but no rush as messaging semantic conventions may still change
+    //  https://github.com/Azure/azure-sdk-for-java/issues/21684
     private void applyEventHubsSpan(Attributes attributes, RemoteDependencyTelemetry telemetry) {
         telemetry.setType("Microsoft.EventHub");
-        String peerAddress = attributes.get(EVENTHUBS_PEER_ADDRESS);
-        String destination = attributes.get(EVENTHUBS_MESSAGE_BUS_DESTINATION);
+        String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
+        String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
+        telemetry.setTarget(peerAddress + "/" + destination);
+    }
+
+    // TODO (trask) ideally ServiceBus SDK should conform and fit the above path used for other messaging systems
+    //  but no rush as messaging semantic conventions may still change
+    //  https://github.com/Azure/azure-sdk-for-java/issues/21686
+    private void applyServiceBusSpan(Attributes attributes, RemoteDependencyTelemetry telemetry) {
+        telemetry.setType("AZURE SERVICE BUS");
+        String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
+        String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
         telemetry.setTarget(peerAddress + "/" + destination);
     }
 
@@ -746,6 +768,12 @@ public class Exporter implements SpanExporter {
         attributes.forEach((key, value) -> {
             String stringKey = key.getKey();
             if (stringKey.startsWith("applicationinsights.internal.")) {
+                return;
+            }
+            // TODO use az.namespace for something?
+            if (stringKey.equals(AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
+                    || stringKey.equals("az.namespace")) {
+                // these are from azure SDK
                 return;
             }
             // special case mappings
