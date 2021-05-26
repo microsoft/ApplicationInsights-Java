@@ -6,7 +6,7 @@ muzzle {
     module = "log4j"
     versions = "[1.2,)"
     // for some reason only this version depends on jms jar which is not found in MavenCentral
-    skipVersions += '1.2.15'
+    skip('1.2.15')
   }
 }
 
