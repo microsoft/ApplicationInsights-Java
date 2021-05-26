@@ -28,6 +28,8 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
         pvt2.getContext().getCloud().setRole("role-goes-here");
         pvt2.getContext().getCloud().setRoleInstance("role-instance-goes-here");
         pvt2.getContext().getOperation().setName("operation-name-goes-here");
+        pvt2.getContext().getOperation().setId("operation-id-goes-here");
+        pvt2.getContext().getOperation().setParentId("operation-parent-id-goes-here");
         pvt2.getContext().getUser().setId("user-id-goes-here");
         pvt2.getContext().getUser().setAccountId("account-id-goes-here");
         pvt2.getContext().getUser().setUserAgent("user-agent-goes-here");
@@ -49,6 +51,8 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
         otherClient.getContext().getCloud().setRole("role-goes-here");
         otherClient.getContext().getCloud().setRoleInstance("role-instance-goes-here");
         otherClient.getContext().getOperation().setName("operation-name-goes-here");
+        otherClient.getContext().getOperation().setId("operation-id-goes-here");
+        otherClient.getContext().getOperation().setParentId("operation-parent-id-goes-here");
         otherClient.getContext().getUser().setId("user-id-goes-here");
         otherClient.getContext().getUser().setAccountId("account-id-goes-here");
         otherClient.getContext().getUser().setUserAgent("user-agent-goes-here");
