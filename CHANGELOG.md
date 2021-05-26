@@ -3,7 +3,7 @@
 * Support explicit operation id and parent id from 2.x SDK [#1708](https://github.com/microsoft/ApplicationInsights-Java/pull/1708).
 * Fix exceptions with deep stack trace exceeding 64 KB rejected by Application Insights backend [#1702](https://github.com/microsoft/ApplicationInsights-Java/pull/1702).
 * Use shorter telemetry names for all telemetry types to reduce payload [#1700](https://github.com/microsoft/ApplicationInsights-Java/pull/1700).
-* Improve EventHubs support [#1698](https://github.com/microsoft/ApplicationInsights-Java/pull/1698).
+* Improve Azure SDK support [#1698](https://github.com/microsoft/ApplicationInsights-Java/pull/1698).
 * Enable agentmain to support loading Java Codeless Agent programmatically not via the jvm arguments [#1680](https://github.com/microsoft/ApplicationInsights-Java/issues/1680).
 
 # Version 3.1.1-BETA
