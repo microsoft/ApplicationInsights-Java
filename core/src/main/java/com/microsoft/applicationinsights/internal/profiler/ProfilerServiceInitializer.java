@@ -163,6 +163,7 @@ public class ProfilerServiceInitializer {
             event.getProperties().putAll(done.getServiceProfilerIndex().getProperties());
             event.getMetrics().putAll(done.getServiceProfilerIndex().getMetrics());
             telemetryClient.track(event);
+            // This is an event that the backend specifically looks for to track when a profile is complete
             telemetryClient.track(new TraceTelemetry("StopProfiler succeeded."));
         };
     }
@@ -177,6 +178,7 @@ public class ProfilerServiceInitializer {
     private static Consumer<AlertBreach> alertAction(TelemetryClient telemetryClient) {
         return alert -> {
             if (profilerService != null) {
+                // This is an event that the backend specifically looks for to track when a profile is started
                 telemetryClient.track(new TraceTelemetry("StartProfiler triggered."));
                 profilerService.getProfiler().accept(alert);
             }
