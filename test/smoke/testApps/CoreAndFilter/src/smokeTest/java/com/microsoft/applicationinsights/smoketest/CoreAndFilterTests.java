@@ -255,8 +255,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         List<Envelope> rdList = mockedIngestion.waitForItems("RequestData", 1);
 
         Envelope rdEnvelope = rdList.get(0);
-        String operationId = rdEnvelope.getTags().get("ai.operation.id");
-        List<Envelope> pvdList = mockedIngestion.waitForItemsInOperation("PageViewData", 3, operationId);
+        List<Envelope> pvdList = mockedIngestion.waitForItems("PageViewData", 3);
         assertEquals(0, mockedIngestion.getCountForType("EventData"));
 
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
@@ -330,8 +329,14 @@ public class CoreAndFilterTests extends AiSmokeTest {
         assertTrue(pvdEnvelope3.getTags().get("ai.internal.sdkVersion").startsWith("java:3."));
 
         assertParentChild(rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter/trackPageView");
-        assertParentChild(rd, rdEnvelope, pvdEnvelope2, "GET /CoreAndFilter/trackPageView", "operation-name-goes-here");
-        assertParentChild(rd, rdEnvelope, pvdEnvelope3, "GET /CoreAndFilter/trackPageView", "operation-name-goes-here");
+
+        assertEquals("operation-id-goes-here", pvdEnvelope2.getTags().get("ai.operation.id"));
+        assertEquals("operation-parent-id-goes-here", pvdEnvelope2.getTags().get("ai.operation.parentId"));
+        assertEquals("operation-name-goes-here", pvdEnvelope2.getTags().get("ai.operation.name"));
+
+        assertEquals("operation-id-goes-here", pvdEnvelope3.getTags().get("ai.operation.id"));
+        assertEquals("operation-parent-id-goes-here", pvdEnvelope3.getTags().get("ai.operation.parentId"));
+        assertEquals("operation-name-goes-here", pvdEnvelope3.getTags().get("ai.operation.name"));
     }
 
     @Test
