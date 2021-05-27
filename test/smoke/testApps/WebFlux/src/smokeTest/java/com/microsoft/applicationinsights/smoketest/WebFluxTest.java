@@ -13,6 +13,7 @@ import static org.junit.Assert.*;
 @UseAgent
 public class WebFluxTest extends AiSmokeTest {
 
+    // TODO revisit and try to get to the bottom of this sporadic failure
     @Rule
     public Retry retry = new Retry(5);
 
