@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 public class WebFluxTest extends AiSmokeTest {
 
     @Rule
-    public Retry retry = new Retry(3);
+    public Retry retry = new Retry(5);
 
     @Test
     @TargetUri("/test")

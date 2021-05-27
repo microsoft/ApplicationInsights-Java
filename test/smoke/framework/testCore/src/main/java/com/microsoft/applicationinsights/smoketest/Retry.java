@@ -32,6 +32,7 @@ public class Retry implements TestRule {
                     }
                 }
                 System.err.println(description.getDisplayName() + ": giving up after " + retryCount + " failures");
+                caughtThrowable.printStackTrace();
                 throw caughtThrowable;
             }
         };
