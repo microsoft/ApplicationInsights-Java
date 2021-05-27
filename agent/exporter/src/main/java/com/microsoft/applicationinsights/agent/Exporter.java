@@ -323,6 +323,10 @@ public class Exporter implements SpanExporter {
             return;
         }
 
+        String target = getTargetFromPeerAttributes(attributes, -1);
+        if (target != null) {
+            remoteDependencyData.setTarget(target);
+        }
         // with no target, the App Map falls back to creating a node based on the telemetry name,
         // which is very confusing, e.g. when multiple unrelated nodes all point to a single node
         // because they had dependencies with the same telemetry name
