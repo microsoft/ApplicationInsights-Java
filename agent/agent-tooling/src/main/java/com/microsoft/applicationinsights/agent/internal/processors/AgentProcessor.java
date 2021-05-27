@@ -36,9 +36,10 @@ public abstract class AgentProcessor {
         return exclude;
     }
 
+
     public static abstract class IncludeExclude {
         // Function to compare span with user provided span names or span patterns
-        public abstract boolean isMatch(SpanData span);
+        public abstract boolean isMatch(SpanData span, boolean isLog);
 
     }
 
@@ -46,10 +47,12 @@ public abstract class AgentProcessor {
     public static class StrictIncludeExclude extends IncludeExclude {
         private final List<ProcessorAttribute> attributes;
         private final List<String> spanNames;
+        private final List<String> logNames;
 
-        public StrictIncludeExclude(List<ProcessorAttribute> attributes, List<String> spanNames) {
+        public StrictIncludeExclude(List<ProcessorAttribute> attributes, List<String> spanNames, List<String> logNames) {
             this.attributes = attributes;
             this.spanNames = spanNames;
+            this.logNames = logNames;
         }
 
         public static StrictIncludeExclude create(ProcessorIncludeExclude includeExclude) {
@@ -61,17 +64,33 @@ public abstract class AgentProcessor {
             if (spanNames == null) {
                 spanNames = new ArrayList<>();
             }
-            return new StrictIncludeExclude(attributes, spanNames);
+            List<String> logNames = includeExclude.logNames;
+            if (logNames == null) {
+                logNames = new ArrayList<>();
+            }
+
+            return new StrictIncludeExclude(attributes, spanNames, logNames);
         }
 
-        // Function to compare span with user provided span names
-        public boolean isMatch(SpanData span) {
-            if (!spanNames.isEmpty() && !spanNames.contains(span.getName())) {
-                // span name doesn't match
-                return false;
+        // Function to compare span with user provided span names and log names
+        public boolean isMatch(SpanData span, boolean isLog) {
+
+            if(spanNames.isEmpty() && logNames.isEmpty()) {
+                // check attributes for both spans and logs
+                return this.checkAttributes(span);
             }
+            if(isLog) {
+               if(logNames.isEmpty()) return false;
+               if(!logNames.isEmpty() && !logNames.contains(span.getName())) return false;
+            } else {
+                if(spanNames.isEmpty()) return false;
+                if(!spanNames.isEmpty() && !spanNames.contains(span.getName())) return false;
+            }
+
             return this.checkAttributes(span);
         }
+
+
 
         // Function to compare span with user provided attributes list
         private boolean checkAttributes(SpanData span) {
@@ -98,10 +117,12 @@ public abstract class AgentProcessor {
     public static class RegexpIncludeExclude extends IncludeExclude {
 
         private final List<Pattern> spanPatterns;
+        private final List<Pattern> logPatterns;
         private final Map<AttributeKey<?>, Pattern> attributeValuePatterns;
 
-        public RegexpIncludeExclude(List<Pattern> spanPatterns, Map<AttributeKey<?>, Pattern> attributeValuePatterns) {
+        public RegexpIncludeExclude(List<Pattern> spanPatterns, List<Pattern> logPatterns, Map<AttributeKey<?>, Pattern> attributeValuePatterns) {
             this.spanPatterns = spanPatterns;
+            this.logPatterns = logPatterns;
             this.attributeValuePatterns = attributeValuePatterns;
         }
 
@@ -115,6 +136,7 @@ public abstract class AgentProcessor {
                     }
                 }
             }
+
             List<Pattern> spanPatterns = new ArrayList<>();
             if (includeExclude.spanNames != null) {
                 for (String regex : includeExclude.spanNames) {
@@ -122,7 +144,14 @@ public abstract class AgentProcessor {
                 }
             }
 
-            return new RegexpIncludeExclude(spanPatterns, attributeKeyValuePatterns);
+            List<Pattern> logPatterns = new ArrayList<>();
+            if (includeExclude.logNames != null) {
+                for (String regex : includeExclude.logNames) {
+                    logPatterns.add(Pattern.compile(regex));
+                }
+            }
+
+            return new RegexpIncludeExclude(spanPatterns, logPatterns, attributeKeyValuePatterns);
         }
 
         // Function to compare span attribute value with user provided value
@@ -130,8 +159,8 @@ public abstract class AgentProcessor {
             return valuePattern.matcher(attributeValue).find();
         }
 
-        private boolean isPatternFound(SpanData span) {
-            for (Pattern pattern : spanPatterns) {
+        private static boolean isPatternFound(SpanData span, List<Pattern> patterns) {
+            for (Pattern pattern : patterns) {
                 if (pattern.matcher(span.getName()).find()) {
                     // pattern matches the span!!!
                     return true;
@@ -142,10 +171,21 @@ public abstract class AgentProcessor {
         }
 
         // Function to compare span with user provided span patterns
-        public boolean isMatch(SpanData span) {
-            if (!spanPatterns.isEmpty() && !isPatternFound(span)) {
-                return false;
+        public boolean isMatch(SpanData span, boolean isLog) {
+
+            if(spanPatterns.isEmpty() && logPatterns.isEmpty()) {
+                // check attributes for both spans and logs
+                return checkAttributes(span);
             }
+
+            if(isLog) {
+                if(logPatterns.isEmpty()) return false;
+                if(!logPatterns.isEmpty() && !isPatternFound(span, logPatterns)) return false;
+            } else {
+                if(spanPatterns.isEmpty()) return false;
+                if(!spanPatterns.isEmpty() && !isPatternFound(span, spanPatterns)) return false;
+            }
+
             return checkAttributes(span);
         }
 

@@ -454,8 +454,8 @@ public class Configuration {
         }
 
         private void validAttributeProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
-            if (spanNames.isEmpty() && attributes.isEmpty()) {
-                throw new FriendlyException("An attribute processor configuration has an " + includeExclude + " section with no \"spanNames\" and no \"attributes\".",
+            if (attributes.isEmpty() && spanNames.isEmpty() && logNames.isEmpty()) {
+                throw new FriendlyException("An attribute processor configuration has an " + includeExclude + " section with no \"spanNames\", \"logNames\" and no \"attributes\".",
                         "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the attribute processor configuration. " +
                                 "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }

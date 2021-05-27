@@ -6,9 +6,9 @@ import java.util.List;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.Exporter;
+import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
@@ -51,16 +51,13 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
         if (!processors.isEmpty()) {
             SpanExporter currExporter = null;
             for (ProcessorConfig processorConfig : processors) {
-
-                if (currExporter == null) {
-                    currExporter = processorConfig.type == ProcessorType.attribute ?
-                            new ExporterWithAttributeProcessor(processorConfig, new Exporter(telemetryClient)) :
-                            new ExporterWithSpanProcessor(processorConfig, new Exporter(telemetryClient));
-
-                } else {
-                    currExporter = processorConfig.type == ProcessorType.attribute ?
-                            new ExporterWithAttributeProcessor(processorConfig, currExporter) :
-                            new ExporterWithSpanProcessor(processorConfig, currExporter);
+                if(processorConfig.type != null) { // Added this condition to resolve spotbugs NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD issue
+                    switch (processorConfig.type) {
+                        case attribute : currExporter = new ExporterWithAttributeProcessor(processorConfig, currExporter); break;
+                        case span : currExporter = new ExporterWithSpanProcessor(processorConfig, currExporter); break;
+                        case log: currExporter = new ExporterWithLogProcessor(processorConfig, currExporter); break;
+                        default: throw new IllegalStateException("Not an expected ProcessorType: "+processorConfig.type);
+                    }
                 }
             }
 
