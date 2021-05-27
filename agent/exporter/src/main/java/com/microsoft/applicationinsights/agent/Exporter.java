@@ -330,6 +330,9 @@ public class Exporter implements SpanExporter {
         // with no target, the App Map falls back to creating a node based on the telemetry name,
         // which is very confusing, e.g. when multiple unrelated nodes all point to a single node
         // because they had dependencies with the same telemetry name
+        //
+        // so we mark these as InProc, even though they aren't INTERNAL spans,
+        // in order to prevent App Map from considering them
         remoteDependencyData.setType("InProc");
     }
 
