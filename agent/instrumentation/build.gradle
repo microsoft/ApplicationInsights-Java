@@ -19,12 +19,14 @@ dependencies {
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-azure-core-1.14', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-cassandra-3.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-cassandra-4.0', version: versions.opentelemetryInstrumentationAlpha
-    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-classloaders', version: versions.opentelemetryInstrumentationAlpha
-    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-eclipse-osgi-3.6', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-executors', version: versions.opentelemetryInstrumentationAlpha
-    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-grpc-1.5', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-grpc-1.6', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-http-url-connection', version: versions.opentelemetryInstrumentationAlpha
-    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-java-httpclient', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-internal-class-loader', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-internal-eclipse-osgi-3.6', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-internal-proxy', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-internal-url-class-loader', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-java-http-client', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-java-util-logging-spans', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-1.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jaxrs-2.0-jersey-2.0', version: versions.opentelemetryInstrumentationAlpha
@@ -58,8 +60,8 @@ dependencies {
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-micrometer-1.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-mongo-3.1', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-mongo-3.7', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-mongo-4.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-mongo-async-3.3', version: versions.opentelemetryInstrumentationAlpha
-    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-mongo-common', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-netty-4.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-netty-4.1', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-okhttp-3.0', version: versions.opentelemetryInstrumentationAlpha
