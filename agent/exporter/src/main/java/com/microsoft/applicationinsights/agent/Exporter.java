@@ -322,6 +322,11 @@ public class Exporter implements SpanExporter {
             applyServiceBusSpan(attributes, remoteDependencyData);
             return;
         }
+
+        // with no target, the App Map falls back to creating a node based on the telemetry name,
+        // which is very confusing, e.g. when multiple unrelated nodes all point to a single node
+        // because they had dependencies with the same telemetry name
+        remoteDependencyData.setType("InProc");
     }
 
     private void exportLogSpan(SpanData span) {
