@@ -21,11 +21,11 @@ import net.bytebuddy.matcher.ElementMatcher;
  *
  * <p>TODO: refactor/optimize this class (spring boot approach as a possible solution)
  */
-public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
-    extends ElementMatcher.Junction.AbstractBase<T> {
+public class AdditionalLibraryIgnoresMatcher
+    extends ElementMatcher.Junction.AbstractBase<TypeDescription> {
 
-  public static <T extends TypeDescription> Junction<T> additionalLibraryIgnoresMatcher() {
-    return new AdditionalLibraryIgnoresMatcher<>();
+  public static Junction<TypeDescription> additionalLibraryIgnoresMatcher() {
+    return new AdditionalLibraryIgnoresMatcher();
   }
 
   /**
@@ -34,7 +34,7 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
    * don't have to load additional info.
    */
   @Override
-  public boolean matches(T target) {
+  public boolean matches(TypeDescription target) {
     String name = target.getActualName();
 
     if (name.startsWith("com.beust.jcommander.")
@@ -108,6 +108,7 @@ public class AdditionalLibraryIgnoresMatcher<T extends TypeDescription>
       if (name.startsWith("org.springframework.boot.")) {
         return !instrumentedSpringBootClasses(name)
             && !name.startsWith("org.springframework.boot.context.web.")
+            && !name.startsWith("org.springframework.boot.logging.logback.")
             && !name.startsWith("org.springframework.boot.web.filter.")
             && !name.startsWith("org.springframework.boot.web.servlet.");
       }

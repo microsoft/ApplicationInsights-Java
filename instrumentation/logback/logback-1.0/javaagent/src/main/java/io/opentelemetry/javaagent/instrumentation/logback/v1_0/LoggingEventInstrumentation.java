@@ -8,9 +8,8 @@ package io.opentelemetry.javaagent.instrumentation.logback.v1_0;
 import static io.opentelemetry.instrumentation.api.log.LoggingContextConstants.SPAN_ID;
 import static io.opentelemetry.instrumentation.api.log.LoggingContextConstants.TRACE_FLAGS;
 import static io.opentelemetry.instrumentation.api.log.LoggingContextConstants.TRACE_ID;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static java.util.Collections.singletonMap;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -20,12 +19,12 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.instrumentation.logback.v1_0.internal.UnionMap;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.HashMap;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.implementation.bytecode.assign.Assigner.Typing;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -37,13 +36,13 @@ public class LoggingEventInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return implementsInterface(named("ch.qos.logback.classic.spi.ILoggingEvent"));
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return singletonMap(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(named("getMDCPropertyMap").or(named("getMdc")))

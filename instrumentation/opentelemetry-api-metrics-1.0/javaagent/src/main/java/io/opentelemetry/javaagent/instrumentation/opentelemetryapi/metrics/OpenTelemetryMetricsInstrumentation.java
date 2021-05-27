@@ -10,25 +10,23 @@ import static net.bytebuddy.matcher.ElementMatchers.isStatic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.opentelemetryapi.metrics.bridge.ApplicationMeterProvider;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Collections;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
 public class OpenTelemetryMetricsInstrumentation implements TypeInstrumentation {
 
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
-    return named("application.io.opentelemetry.api.metrics.GlobalMetricsProvider");
+  public ElementMatcher<TypeDescription> typeMatcher() {
+    return named("application.io.opentelemetry.api.metrics.GlobalMeterProvider");
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return Collections.singletonMap(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod().and(isStatic()).and(named("get")).and(takesArguments(0)),
         OpenTelemetryMetricsInstrumentation.class.getName() + "$GetGlobalMetricsAdvice");
   }

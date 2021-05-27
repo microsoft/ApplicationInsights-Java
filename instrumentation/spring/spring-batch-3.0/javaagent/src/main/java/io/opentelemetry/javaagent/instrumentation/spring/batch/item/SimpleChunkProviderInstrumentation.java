@@ -7,17 +7,15 @@ package io.opentelemetry.javaagent.instrumentation.spring.batch.item;
 
 import static io.opentelemetry.javaagent.instrumentation.spring.batch.SpringBatchInstrumentationConfig.shouldTraceItems;
 import static io.opentelemetry.javaagent.instrumentation.spring.batch.item.ItemTracer.tracer;
-import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isProtected;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Map;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -25,13 +23,13 @@ import net.bytebuddy.matcher.ElementMatcher;
 // after beforeRead(), using listener here would cause unfinished spans/scopes
 public class SimpleChunkProviderInstrumentation implements TypeInstrumentation {
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return named("org.springframework.batch.core.step.item.SimpleChunkProvider");
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return singletonMap(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isProtected().and(named("doRead")).and(takesArguments(0)),
         this.getClass().getName() + "$ReadAdvice");
   }

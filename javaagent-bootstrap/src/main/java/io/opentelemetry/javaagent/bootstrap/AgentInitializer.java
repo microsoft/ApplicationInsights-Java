@@ -34,6 +34,8 @@ public class AgentInitializer {
       throws Exception {
     if (AGENT_CLASSLOADER == null) {
       ClassLoader agentClassLoader = createAgentClassLoader("inst", bootstrapUrl);
+      AGENT_CLASSLOADER = agentClassLoader;
+
       Class<?> agentInstallerClass;
       try {
         agentInstallerClass =
@@ -42,17 +44,22 @@ public class AgentInitializer {
         agentInstallerClass =
             agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
       }
+
       Method agentInstallerMethod =
           agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class, URL.class);
       ClassLoader savedContextClassLoader = Thread.currentThread().getContextClassLoader();
       try {
-        Thread.currentThread().setContextClassLoader(AGENT_CLASSLOADER);
+        Thread.currentThread().setContextClassLoader(agentClassLoader);
         agentInstallerMethod.invoke(null, inst, bootstrapUrl);
       } finally {
         Thread.currentThread().setContextClassLoader(savedContextClassLoader);
       }
-      AGENT_CLASSLOADER = agentClassLoader;
     }
+  }
+
+  // TODO misleading name
+  public static synchronized ClassLoader getAgentClassloader() {
+    return AGENT_CLASSLOADER;
   }
 
   /**
@@ -63,6 +70,7 @@ public class AgentInitializer {
    *     classloader
    * @return Agent Classloader
    */
+  @SuppressWarnings("unchecked")
   private static ClassLoader createAgentClassLoader(String innerJarFilename, URL bootstrapUrl)
       throws Exception {
     ClassLoader agentParent;
@@ -76,16 +84,25 @@ public class AgentInitializer {
     Class<?> loaderClass =
         ClassLoader.getSystemClassLoader()
             .loadClass("io.opentelemetry.javaagent.bootstrap.AgentClassLoader");
-    Constructor constructor =
-        loaderClass.getDeclaredConstructor(URL.class, String.class, ClassLoader.class);
-    return (ClassLoader) constructor.newInstance(bootstrapUrl, innerJarFilename, agentParent);
+    Constructor<ClassLoader> constructor =
+        (Constructor<ClassLoader>)
+            loaderClass.getDeclaredConstructor(URL.class, String.class, ClassLoader.class);
+    ClassLoader agentClassLoader =
+        constructor.newInstance(bootstrapUrl, innerJarFilename, agentParent);
+
+    Class<?> extensionClassLoaderClass =
+        agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.ExtensionClassLoader");
+    return (ClassLoader)
+        extensionClassLoaderClass
+            .getDeclaredMethod("getInstance", ClassLoader.class)
+            .invoke(null, agentClassLoader);
   }
 
   private static ClassLoader getPlatformClassLoader()
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     /*
      Must invoke ClassLoader.getPlatformClassLoader by reflection to remain
-     compatible with java 7 + 8.
+     compatible with java 8.
     */
     Method method = ClassLoader.class.getDeclaredMethod("getPlatformClassLoader");
     return (ClassLoader) method.invoke(null);

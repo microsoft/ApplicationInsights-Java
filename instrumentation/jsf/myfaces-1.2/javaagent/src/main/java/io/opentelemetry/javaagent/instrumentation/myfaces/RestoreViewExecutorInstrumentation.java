@@ -6,29 +6,27 @@
 package io.opentelemetry.javaagent.instrumentation.myfaces;
 
 import static io.opentelemetry.javaagent.instrumentation.myfaces.MyFacesTracer.tracer;
-import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Map;
 import javax.faces.context.FacesContext;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
 public class RestoreViewExecutorInstrumentation implements TypeInstrumentation {
 
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return named("org.apache.myfaces.lifecycle.RestoreViewExecutor");
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return singletonMap(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         named("execute").and(takesArgument(0, named("javax.faces.context.FacesContext"))),
         RestoreViewExecutorInstrumentation.class.getName() + "$ExecuteAdvice");
   }

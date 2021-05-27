@@ -6,11 +6,12 @@
 package io.opentelemetry.javaagent.instrumentation.springwebmvc;
 
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL;
+import static io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming.Source.CONTROLLER;
 
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.instrumentation.api.servlet.ServerSpanNaming;
 import io.opentelemetry.instrumentation.api.servlet.ServletContextPath;
 import io.opentelemetry.instrumentation.api.tracer.BaseTracer;
 import java.lang.reflect.Method;
@@ -28,7 +29,7 @@ public class SpringWebMvcTracer extends BaseTracer {
 
   private static final SpringWebMvcTracer TRACER = new SpringWebMvcTracer();
 
-  private final boolean captureExperimentalSpanAttributes =
+  private static final boolean CAPTURE_EXPERIMENTAL_SPAN_ATTRIBUTES =
       Config.get()
           .getBooleanProperty(
               "otel.instrumentation.spring-webmvc.experimental-span-attributes", false);
@@ -37,7 +38,8 @@ public class SpringWebMvcTracer extends BaseTracer {
     return TRACER;
   }
 
-  public @Nullable Context startHandlerSpan(Context parentContext, Object handler) {
+  @Nullable
+  public Context startHandlerSpan(Context parentContext, Object handler) {
     String spanName = spanNameOnHandle(handler);
     if (spanName != null) {
       return startSpan(parentContext, spanName, INTERNAL);
@@ -52,12 +54,15 @@ public class SpringWebMvcTracer extends BaseTracer {
     return parentContext.with(span.startSpan());
   }
 
-  public void onRequest(Context context, Span span, HttpServletRequest request) {
+  public void updateServerSpanName(Context context, HttpServletRequest request) {
     if (request != null) {
       Object bestMatchingPattern =
           request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
       if (bestMatchingPattern != null) {
-        span.updateName(ServletContextPath.prepend(context, bestMatchingPattern.toString()));
+        ServerSpanNaming.updateServerSpanName(
+            context,
+            CONTROLLER,
+            () -> ServletContextPath.prepend(context, bestMatchingPattern.toString()));
       }
     }
   }
@@ -109,7 +114,7 @@ public class SpringWebMvcTracer extends BaseTracer {
   }
 
   private void onRender(SpanBuilder span, ModelAndView mv) {
-    if (captureExperimentalSpanAttributes) {
+    if (CAPTURE_EXPERIMENTAL_SPAN_ATTRIBUTES) {
       span.setAttribute("spring-webmvc.view.name", mv.getViewName());
       View view = mv.getView();
       if (view != null) {

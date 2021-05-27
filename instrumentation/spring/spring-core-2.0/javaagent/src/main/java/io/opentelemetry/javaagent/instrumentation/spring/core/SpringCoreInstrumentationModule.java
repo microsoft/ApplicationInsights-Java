@@ -5,16 +5,13 @@
 
 package io.opentelemetry.javaagent.instrumentation.spring.core;
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.instrumentation.api.concurrent.State;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.matcher.ElementMatcher;
 
 @AutoService(InstrumentationModule.class)
@@ -26,11 +23,6 @@ public class SpringCoreInstrumentationModule extends InstrumentationModule {
   @Override
   public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
     return hasClassesNamed("org.springframework.core.task.SimpleAsyncTaskExecutor");
-  }
-
-  @Override
-  protected Map<String, String> contextStore() {
-    return singletonMap(Runnable.class.getName(), State.class.getName());
   }
 
   @Override

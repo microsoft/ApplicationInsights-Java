@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import static io.opentelemetry.instrumentation.test.utils.PortUtils.UNUSABLE_PORT
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
 import static org.junit.Assume.assumeTrue
@@ -14,6 +13,7 @@ import io.netty.channel.Channel
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInitializer
+import io.netty.channel.ChannelOption
 import io.netty.channel.ChannelPipeline
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.embedded.EmbeddedChannel
@@ -27,27 +27,25 @@ import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpVersion
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.base.HttpClientTest
+import io.opentelemetry.instrumentation.test.base.SingleConnection
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.client.HttpClientTracingHandler
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import spock.lang.Shared
-import spock.lang.Timeout
 import spock.lang.Unroll
 
-@Timeout(5)
 @Unroll
-class Netty41ClientTest extends HttpClientTest implements AgentTestTrait {
+class Netty41ClientTest extends HttpClientTest<DefaultFullHttpRequest> implements AgentTestTrait {
 
   @Shared
   private Bootstrap bootstrap
 
   def setupSpec() {
-    EventLoopGroup group = new NioEventLoopGroup()
+    EventLoopGroup group = getEventLoopGroup()
     bootstrap = new Bootstrap()
     bootstrap.group(group)
-      .channel(NioSocketChannel)
+      .channel(getChannelClass())
+      .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MS)
       .handler(new ChannelInitializer<SocketChannel>() {
         @Override
         protected void initChannel(SocketChannel socketChannel) throws Exception {
@@ -55,21 +53,72 @@ class Netty41ClientTest extends HttpClientTest implements AgentTestTrait {
           pipeline.addLast(new HttpClientCodec())
         }
       })
+  }
 
+  EventLoopGroup getEventLoopGroup() {
+    return new NioEventLoopGroup()
+  }
+
+  Class<Channel> getChannelClass() {
+    return NioSocketChannel
   }
 
   @Override
-  int doRequest(String method, URI uri, Map<String, String> headers, Closure callback) {
-    Channel ch = bootstrap.connect(uri.host, uri.port).sync().channel()
-    def result = new CompletableFuture<Integer>()
-    ch.pipeline().addLast(new ClientHandler(callback, result))
-
+  DefaultFullHttpRequest buildRequest(String method, URI uri, Map<String, String> headers) {
     def request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), uri.toString(), Unpooled.EMPTY_BUFFER)
     request.headers().set(HttpHeaderNames.HOST, uri.host)
     headers.each { k, v -> request.headers().set(k, v) }
+    return request
+  }
 
-    ch.writeAndFlush(request).get()
+  @Override
+  int sendRequest(DefaultFullHttpRequest request, String method, URI uri, Map<String, String> headers) {
+    def channel = bootstrap.connect(uri.host, getPort(uri)).sync().channel()
+    def result = new CompletableFuture<Integer>()
+    channel.pipeline().addLast(new ClientHandler(result))
+    channel.writeAndFlush(request).get()
     return result.get(20, TimeUnit.SECONDS)
+  }
+
+  @Override
+  void sendRequestWithCallback(DefaultFullHttpRequest request, String method, URI uri, Map<String, String> headers, RequestResult requestResult) {
+    Channel ch
+    try {
+      ch = bootstrap.connect(uri.host, getPort(uri)).sync().channel()
+    } catch (Exception exception) {
+      requestResult.complete(exception)
+      return
+    }
+    def result = new CompletableFuture<Integer>()
+    result.whenComplete { status, throwable ->
+      requestResult.complete({ status }, throwable)
+    }
+    ch.pipeline().addLast(new ClientHandler(result))
+    ch.writeAndFlush(request)
+  }
+
+  @Override
+  String expectedClientSpanName(URI uri, String method) {
+    switch (uri.toString()) {
+      case "http://localhost:61/": // unopened port
+      case "http://www.google.com:81/": // dropped request
+      case "https://192.0.2.1/": // non routable address
+        return "CONNECT"
+      default:
+        return super.expectedClientSpanName(uri, method)
+    }
+  }
+
+  @Override
+  boolean hasClientSpanAttributes(URI uri) {
+    switch (uri.toString()) {
+      case "http://localhost:61/": // unopened port
+      case "http://www.google.com:81/": // dropped request
+      case "https://192.0.2.1/": // non routable address
+        return false
+      default:
+        return true
+    }
   }
 
   @Override
@@ -78,61 +127,9 @@ class Netty41ClientTest extends HttpClientTest implements AgentTestTrait {
   }
 
   @Override
-  boolean testConnectionFailure() {
+  boolean testHttps() {
     false
   }
-
-  @Override
-  boolean testRemoteConnection() {
-    return false
-  }
-
-  def "test connection interference"() {
-    setup:
-    //Create a simple Netty pipeline
-    EventLoopGroup group = new NioEventLoopGroup()
-    Bootstrap b = new Bootstrap()
-    b.group(group)
-      .channel(NioSocketChannel)
-      .handler(new ChannelInitializer<SocketChannel>() {
-        @Override
-        protected void initChannel(SocketChannel socketChannel) throws Exception {
-          ChannelPipeline pipeline = socketChannel.pipeline()
-          pipeline.addLast(new HttpClientCodec())
-        }
-      })
-
-    //Important! Separate connect, outside of any request
-    Channel ch = b.connect(server.address.host, server.address.port).sync().channel()
-
-    def request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, server.address.resolve("/success").toString(), Unpooled.EMPTY_BUFFER)
-    request.headers().set(HttpHeaderNames.HOST, server.address.host)
-
-    when:
-    runUnderTrace("parent1") {
-      ch.writeAndFlush(request).get()
-    }
-    runUnderTrace("parent2") {
-      ch.writeAndFlush(request).get()
-    }
-
-    then:
-    assertTraces(2) {
-      trace(0, 3) {
-        basicSpan(it, 0, "parent1")
-        clientSpan(it, 1, span(0))
-        serverSpan(it, 2, span(1))
-      }
-      trace(1, 3) {
-        basicSpan(it, 0, "parent2")
-        clientSpan(it, 1, span(0))
-        serverSpan(it, 2, span(1))
-      }
-    }
-    cleanup:
-    group.shutdownGracefully()
-  }
-
 
   def "test connection reuse and second request with lazy execute"() {
     setup:
@@ -192,43 +189,6 @@ class Netty41ClientTest extends HttpClientTest implements AgentTestTrait {
 
     cleanup:
     group.shutdownGracefully()
-  }
-
-  def "connection error (unopened port)"() {
-    given:
-    def uri = new URI("http://localhost:$UNUSABLE_PORT/")
-
-    when:
-    runUnderTrace("parent") {
-      doRequest(method, uri)
-    }
-
-    then:
-    def ex = thrown(Exception)
-    def thrownException = ex instanceof ExecutionException ? ex.cause : ex
-    thrownException instanceof ConnectException || thrownException instanceof TimeoutException
-
-    and:
-    assertTraces(1) {
-      def size = traces[0].size()
-      trace(0, size) {
-        basicSpan(it, 0, "parent", null, thrownException)
-
-        // AsyncHttpClient retries across multiple resolved IP addresses (e.g. 127.0.0.1 and 0:0:0:0:0:0:0:1)
-        // for up to a total of 10 seconds (default connection time limit)
-        for (def i = 1; i < size; i++) {
-          span(i) {
-            name "CONNECT"
-            childOf span(0)
-            errored true
-            errorEvent(thrownException.class, ~/Connection refused:( no further information:)? localhost\/\[?[0-9.:]+\]?:$UNUSABLE_PORT/)
-          }
-        }
-      }
-    }
-
-    where:
-    method = "GET"
   }
 
   def "when a handler is added to the netty pipeline we add our tracing handler"() {
@@ -299,8 +259,9 @@ class Netty41ClientTest extends HttpClientTest implements AgentTestTrait {
     channel.pipeline().addLast(new TracedHandlerFromInitializerHandler())
 
     then:
+    null != channel.pipeline().get(HttpClientTracingHandler.getName())
     null != channel.pipeline().remove("added_in_initializer")
-    null != channel.pipeline().remove(HttpClientTracingHandler.getName())
+    null == channel.pipeline().get(HttpClientTracingHandler.getName())
   }
 
   def "request with trace annotated method #method"() {
@@ -308,19 +269,18 @@ class Netty41ClientTest extends HttpClientTest implements AgentTestTrait {
     def annotatedClass = new TracedClass()
 
     when:
-    def status = runUnderTrace("parent") {
+    def responseCode = runUnderTrace("parent") {
       annotatedClass.tracedMethod(method)
     }
 
     then:
-    status == 200
+    responseCode == 200
     assertTraces(1) {
       trace(0, 4) {
         basicSpan(it, 0, "parent")
         span(1) {
           childOf span(0)
           name "tracedMethod"
-          errored false
           attributes {
           }
         }
@@ -375,5 +335,10 @@ class Netty41ClientTest extends HttpClientTest implements AgentTestTrait {
       // This replicates how reactor 0.8.x add the HttpClientCodec
       ch.pipeline().addLast("added_in_initializer", new HttpClientCodec())
     }
+  }
+
+  @Override
+  SingleConnection createSingleConnection(String host, int port) {
+    return new SingleNettyConnection(host, port)
   }
 }

@@ -7,7 +7,6 @@ package io.opentelemetry.javaagent.instrumentation.azurefunctions;
 
 import static io.opentelemetry.javaagent.instrumentation.azurefunctions.InvocationRequestExtractAdapter.GETTER;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
@@ -19,12 +18,11 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -43,13 +41,13 @@ public class AzureFunctionsInstrumentationModule extends InstrumentationModule {
   private static class AzureFunctionsInstrumentation implements TypeInstrumentation {
 
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return named("com.microsoft.azure.functions.worker.handler.InvocationRequestHandler");
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      return singletonMap(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(

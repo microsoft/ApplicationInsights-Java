@@ -6,6 +6,7 @@
 package io.opentelemetry.javaagent.instrumentation.lettuce.v5_1
 
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP
 
 import io.lettuce.core.RedisClient
 import io.opentelemetry.api.trace.SpanKind
@@ -36,17 +37,15 @@ class LettuceReactiveClientTest extends AbstractLettuceReactiveClientTest implem
       trace(0, 3) {
         span(0) {
           name "test-parent"
-          errored false
           attributes {
           }
         }
         span(1) {
           name "SET"
           kind SpanKind.CLIENT
-          errored false
           childOf span(0)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" port
             "${SemanticAttributes.DB_CONNECTION_STRING.key}" "redis://127.0.0.1:$port"
@@ -63,10 +62,9 @@ class LettuceReactiveClientTest extends AbstractLettuceReactiveClientTest implem
         span(2) {
           name "GET"
           kind SpanKind.CLIENT
-          errored false
           childOf span(0)
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" port
             "${SemanticAttributes.DB_CONNECTION_STRING.key}" "redis://127.0.0.1:$port"

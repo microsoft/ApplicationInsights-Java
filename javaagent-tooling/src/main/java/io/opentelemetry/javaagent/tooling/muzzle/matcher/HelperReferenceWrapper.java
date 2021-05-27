@@ -7,20 +7,23 @@ package io.opentelemetry.javaagent.tooling.muzzle.matcher;
 
 import static net.bytebuddy.description.method.MethodDescription.CONSTRUCTOR_INTERNAL_NAME;
 
-import io.opentelemetry.javaagent.tooling.muzzle.Reference;
-import io.opentelemetry.javaagent.tooling.muzzle.Reference.Flag.ManifestationFlag;
-import io.opentelemetry.javaagent.tooling.muzzle.Reference.Flag.OwnershipFlag;
-import io.opentelemetry.javaagent.tooling.muzzle.Reference.Flag.VisibilityFlag;
+import io.opentelemetry.javaagent.extension.muzzle.ClassRef;
+import io.opentelemetry.javaagent.extension.muzzle.FieldRef;
+import io.opentelemetry.javaagent.extension.muzzle.Flag.ManifestationFlag;
+import io.opentelemetry.javaagent.extension.muzzle.Flag.OwnershipFlag;
+import io.opentelemetry.javaagent.extension.muzzle.Flag.VisibilityFlag;
+import io.opentelemetry.javaagent.extension.muzzle.MethodRef;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
+import net.bytebuddy.description.field.FieldDescription;
 import net.bytebuddy.description.method.MethodDescription.InDefinedShape;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.pool.TypePool;
 import net.bytebuddy.pool.TypePool.Resolution;
 
-/** This class provides a common interface for {@link Reference} and {@link TypeDescription}. */
-public interface HelperReferenceWrapper {
+/** This class provides a common interface for {@link ClassRef} and {@link TypeDescription}. */
+interface HelperReferenceWrapper {
   boolean isAbstract();
 
   /**
@@ -37,6 +40,9 @@ public interface HelperReferenceWrapper {
 
   /** Returns an iterable with all non-private, non-static methods declared in the wrapped type. */
   Stream<Method> getMethods();
+
+  /** Returns an iterable with all non-private fields declared in the wrapped type. */
+  Stream<Field> getFields();
 
   final class Method {
     private final boolean isAbstract;
@@ -85,16 +91,51 @@ public interface HelperReferenceWrapper {
     }
   }
 
+  final class Field {
+    private final String name;
+    private final String descriptor;
+
+    public Field(String name, String descriptor) {
+      this.name = name;
+      this.descriptor = descriptor;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public String getDescriptor() {
+      return descriptor;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      Field field = (Field) o;
+      return Objects.equals(name, field.name) && Objects.equals(descriptor, field.descriptor);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name, descriptor);
+    }
+  }
+
   class Factory {
     private final TypePool classpathPool;
-    private final Map<String, Reference> helperReferences;
+    private final Map<String, ClassRef> helperReferences;
 
-    public Factory(TypePool classpathPool, Map<String, Reference> helperReferences) {
+    public Factory(TypePool classpathPool, Map<String, ClassRef> helperReferences) {
       this.classpathPool = classpathPool;
       this.helperReferences = helperReferences;
     }
 
-    public HelperReferenceWrapper create(Reference reference) {
+    public HelperReferenceWrapper create(ClassRef reference) {
       return new ReferenceType(reference);
     }
 
@@ -103,6 +144,10 @@ public interface HelperReferenceWrapper {
       if (resolution.isResolved()) {
         return new ClasspathType(resolution.resolve());
       }
+      // checking helper references is needed when one helper class A extends another helper class B
+      // and the subclass A also implements a library interface C
+      // B needs to be resolved as part of checking that A implements all required methods of C
+      // but B cannot be resolved on the classpath, so B needs to be resolved from helper references
       if (helperReferences.containsKey(className)) {
         return new ReferenceType(helperReferences.get(className));
       }
@@ -110,9 +155,9 @@ public interface HelperReferenceWrapper {
     }
 
     private final class ReferenceType implements HelperReferenceWrapper {
-      private final Reference reference;
+      private final ClassRef reference;
 
-      private ReferenceType(Reference reference) {
+      private ReferenceType(ClassRef reference) {
         this.reference = reference;
       }
 
@@ -123,24 +168,24 @@ public interface HelperReferenceWrapper {
 
       @Override
       public boolean hasSuperTypes() {
-        return hasActualSuperType() || reference.getInterfaces().size() > 0;
+        return hasActualSuperType() || reference.getInterfaceNames().size() > 0;
       }
 
       @Override
       public Stream<HelperReferenceWrapper> getSuperTypes() {
         Stream<HelperReferenceWrapper> superClass = Stream.empty();
         if (hasActualSuperType()) {
-          superClass = Stream.of(Factory.this.create(reference.getSuperName()));
+          superClass = Stream.of(Factory.this.create(reference.getSuperClassName()));
         }
 
         Stream<HelperReferenceWrapper> interfaces =
-            reference.getInterfaces().stream().map(Factory.this::create);
+            reference.getInterfaceNames().stream().map(Factory.this::create);
 
         return Stream.concat(superClass, interfaces);
       }
 
       private boolean hasActualSuperType() {
-        return reference.getSuperName() != null;
+        return reference.getSuperClassName() != null;
       }
 
       @Override
@@ -148,18 +193,33 @@ public interface HelperReferenceWrapper {
         return reference.getMethods().stream().filter(this::isOverrideable).map(this::toMethod);
       }
 
-      private boolean isOverrideable(Reference.Method method) {
+      private boolean isOverrideable(MethodRef method) {
         return !(method.getFlags().contains(OwnershipFlag.STATIC)
             || method.getFlags().contains(VisibilityFlag.PRIVATE)
             || CONSTRUCTOR_INTERNAL_NAME.equals(method.getName()));
       }
 
-      private Method toMethod(Reference.Method method) {
+      private Method toMethod(MethodRef method) {
         return new Method(
             method.getFlags().contains(ManifestationFlag.ABSTRACT),
             reference.getClassName(),
             method.getName(),
             method.getDescriptor());
+      }
+
+      @Override
+      public Stream<Field> getFields() {
+        return reference.getFields().stream()
+            .filter(this::isDeclaredAndNotPrivate)
+            .map(this::toField);
+      }
+
+      private boolean isDeclaredAndNotPrivate(FieldRef field) {
+        return field.isDeclared() && !field.getFlags().contains(VisibilityFlag.PRIVATE);
+      }
+
+      private Field toField(FieldRef field) {
+        return new Field(field.getName(), field.getDescriptor());
       }
     }
 
@@ -209,6 +269,19 @@ public interface HelperReferenceWrapper {
       private Method toMethod(InDefinedShape method) {
         return new Method(
             method.isAbstract(), type.getName(), method.getInternalName(), method.getDescriptor());
+      }
+
+      @Override
+      public Stream<Field> getFields() {
+        return type.getDeclaredFields().stream().filter(this::isNotPrivate).map(this::toField);
+      }
+
+      private boolean isNotPrivate(FieldDescription.InDefinedShape field) {
+        return !field.isPrivate();
+      }
+
+      private Field toField(FieldDescription.InDefinedShape field) {
+        return new Field(field.getName(), field.getDescriptor());
       }
     }
   }

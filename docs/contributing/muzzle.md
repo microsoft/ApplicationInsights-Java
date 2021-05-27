@@ -21,13 +21,21 @@ The compile-time reference collection and code generation process is implemented
 plugin (called `MuzzleCodeGenerationPlugin`).
 
 For each instrumentation module the ByteBuddy plugin collects symbols referring to both internal and
-third party APIs used by the currently processed module's type instrumentations (`InstrumentationModule#typeInstrumentations()`).
-The reference collection process starts from advice classes (values of the map returned by the
-`TypeInstrumentation#transformers()`method) and traverses the class graph until it encounters
-a reference to a non-instrumentation class (determined by `InstrumentationClassPredicate`).
-Aside from references, the collection process also builds a graph of dependencies between internal
-instrumentation helper classes - this dependency graph is later used to construct a list of helper
-classes that will be injected to the application classloader (`InstrumentationModule#getMuzzleHelperClassNames()`).
+third party APIs used by the currently processed module's type
+instrumentations (`InstrumentationModule#typeInstrumentations()`). The reference collection process
+starts from advice classes (values of the map returned by the
+`TypeInstrumentation#transformers()` method) and traverses the class graph until it encounters a
+reference to a non-instrumentation class (determined by `InstrumentationClassPredicate` and
+the `InstrumentationModule#isHelperClass(String)` predicate). Aside from references,
+the collection process also builds a graph of dependencies between internal instrumentation helper
+classes - this dependency graph is later used to construct a list of helper classes that will be
+injected to the application classloader (`InstrumentationModule#getMuzzleHelperClassNames()`).
+Muzzle also automatically generates the `InstrumentationModule#getMuzzleContextStoreClasses()`
+method.
+
+If you extend any of these `getMuzzle...()` methods in your `InstrumentationModule`, the muzzle
+compile plugin will not override your code: muzzle will only override those methods that do not have
+a custom implementation.
 
 All collected references are then used to create a `ReferenceMatcher` instance. This matcher
 is stored in the instrumentation module class in the method `InstrumentationModule#getMuzzleReferenceMatcher()`
@@ -90,7 +98,7 @@ muzzle {
     // versions from this range are checked
     versions = "[,4.0)"
     // this version is not checked by muzzle
-    skipVersions += '3.1-jenkins-1'
+    skip('3.1-jenkins-1')
   }
   // it is expected that muzzle passes the runtime check for this component
   pass {
@@ -98,8 +106,8 @@ muzzle {
     module = 'spring-webmvc'
     versions = "[3.1.0.RELEASE,]"
     // except these versions
-    skipVersions += ['1.2.1', '1.2.2', '1.2.3', '1.2.4']
-    skipVersions += '3.2.1.RELEASE'
+    skip('1.2.1', '1.2.2', '1.2.3', '1.2.4')
+    skip('3.2.1.RELEASE')
     // this dependency will be added to the classpath when muzzle check is run
     extraDependency "javax.servlet:javax.servlet-api:3.0.1"
     // verify that all other versions - [,3.1.0.RELEASE) in this case - fail the muzzle runtime check

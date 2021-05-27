@@ -11,12 +11,10 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import application.io.opentelemetry.context.Context;
 import application.io.opentelemetry.context.ContextStorage;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.opentelemetryapi.context.AgentContextStorage;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Collections;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -29,13 +27,13 @@ import net.bytebuddy.matcher.ElementMatcher;
 public class ContextInstrumentation implements TypeInstrumentation {
 
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return named("application.io.opentelemetry.context.ArrayBasedContext");
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return Collections.singletonMap(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod().and(isStatic()).and(named("root")),
         ContextInstrumentation.class.getName() + "$GetAdvice");
   }

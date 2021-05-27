@@ -5,12 +5,11 @@
 
 package io.opentelemetry.javaagent.instrumentation.jaxws.jws.v1_1;
 
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperMethod;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.methodIsDeclaredByType;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.instrumentation.jaxws.common.JaxWsTracer.tracer;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.hasInterface;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.hasSuperMethod;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.methodIsDeclaredByType;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.inheritsAnnotation;
 import static net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
@@ -19,13 +18,12 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.lang.reflect.Method;
-import java.util.Map;
 import javax.jws.WebService;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -40,15 +38,15 @@ public class JwsAnnotationsInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return hasInterface(isAnnotatedWith(named(JWS_WEB_SERVICE_ANNOTATION)))
+    return implementsInterface(isAnnotatedWith(named(JWS_WEB_SERVICE_ANNOTATION)))
         .or(isAnnotatedWith(named(JWS_WEB_SERVICE_ANNOTATION)));
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
+  public void transform(TypeTransformer transformer) {
     // JaxWS WebService methods are defined either by implementing an interface annotated
     // with @WebService or by any public method from a class annotated with @WebService.
-    return singletonMap(
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(

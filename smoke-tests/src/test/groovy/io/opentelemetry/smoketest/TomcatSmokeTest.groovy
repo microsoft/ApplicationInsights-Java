@@ -15,9 +15,13 @@ package io.opentelemetry.smoketest
 @AppServer(version = "9.0.40", jdk = "8-openj9")
 @AppServer(version = "9.0.40", jdk = "11")
 @AppServer(version = "9.0.40", jdk = "11-openj9")
+@AppServer(version = "10.0.4", jdk = "11")
+@AppServer(version = "10.0.4", jdk = "11-openj9")
+@AppServer(version = "10.0.4", jdk = "15")
+@AppServer(version = "10.0.4", jdk = "15-openj9")
 class TomcatSmokeTest extends AppServerTest {
 
-  protected String getTargetImage(String jdk, String serverVersion) {
-    "ghcr.io/open-telemetry/java-test-containers:tomcat-${serverVersion}-jdk$jdk-20210223.592806654"
+  protected String getTargetImagePrefix() {
+    "ghcr.io/open-telemetry/java-test-containers:tomcat"
   }
 }

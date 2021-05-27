@@ -5,8 +5,6 @@
 
 package io.opentelemetry.javaagent.instrumentation.netty.v4_1;
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -25,53 +23,41 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.util.Attribute;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.netty.v4_1.AttributeKeys;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
+import io.opentelemetry.javaagent.instrumentation.netty.common.AbstractNettyChannelPipelineInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.client.HttpClientRequestTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.client.HttpClientResponseTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.client.HttpClientTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.HttpServerRequestTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.HttpServerResponseTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.HttpServerTracingHandler;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.HashMap;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
-import net.bytebuddy.description.type.TypeDescription;
-import net.bytebuddy.matcher.ElementMatcher;
 
-public class NettyChannelPipelineInstrumentation implements TypeInstrumentation {
+public class NettyChannelPipelineInstrumentation
+    extends AbstractNettyChannelPipelineInstrumentation {
 
   @Override
-  public ElementMatcher<ClassLoader> classLoaderOptimization() {
-    return hasClassesNamed("io.netty.channel.ChannelPipeline");
-  }
+  public void transform(TypeTransformer transformer) {
+    super.transform(transformer);
 
-  @Override
-  public ElementMatcher<TypeDescription> typeMatcher() {
-    return implementsInterface(named("io.netty.channel.ChannelPipeline"));
-  }
-
-  @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(nameStartsWith("add"))
             .and(takesArgument(1, String.class))
             .and(takesArgument(2, named("io.netty.channel.ChannelHandler"))),
         NettyChannelPipelineInstrumentation.class.getName() + "$ChannelPipelineAddAdvice");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod().and(named("connect")).and(returns(named("io.netty.channel.ChannelFuture"))),
         NettyChannelPipelineInstrumentation.class.getName() + "$ChannelPipelineConnectAdvice");
-    return transformers;
   }
 
   /**
    * When certain handlers are added to the pipeline, we want to add our corresponding tracing
-   * handlers. If those handlers are later removed, we may want to remove our handlers. That is not
-   * currently implemented.
+   * handlers. If those handlers are later removed, we also remove our handlers. Support for
+   * replacing handlers and removeFirst/removeLast is currently not implemented.
    */
   public static class ChannelPipelineAddAdvice {
     @Advice.OnMethodEnter
@@ -110,39 +96,32 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
         name = context.name();
       }
 
-      try {
-        // Server pipeline handlers
-        if (handler instanceof HttpServerCodec) {
-          pipeline.addAfter(
-              name, HttpServerTracingHandler.class.getName(), new HttpServerTracingHandler());
-        } else if (handler instanceof HttpRequestDecoder) {
-          pipeline.addAfter(
-              name,
-              HttpServerRequestTracingHandler.class.getName(),
-              new HttpServerRequestTracingHandler());
-        } else if (handler instanceof HttpResponseEncoder) {
-          pipeline.addAfter(
-              name,
-              HttpServerResponseTracingHandler.class.getName(),
-              new HttpServerResponseTracingHandler());
-        } else
+      ChannelHandler ourHandler = null;
+      // Server pipeline handlers
+      if (handler instanceof HttpServerCodec) {
+        ourHandler = new HttpServerTracingHandler();
+      } else if (handler instanceof HttpRequestDecoder) {
+        ourHandler = new HttpServerRequestTracingHandler();
+      } else if (handler instanceof HttpResponseEncoder) {
+        ourHandler = new HttpServerResponseTracingHandler();
         // Client pipeline handlers
-        if (handler instanceof HttpClientCodec) {
-          pipeline.addAfter(
-              name, HttpClientTracingHandler.class.getName(), new HttpClientTracingHandler());
-        } else if (handler instanceof HttpRequestEncoder) {
-          pipeline.addAfter(
-              name,
-              HttpClientRequestTracingHandler.class.getName(),
-              new HttpClientRequestTracingHandler());
-        } else if (handler instanceof HttpResponseDecoder) {
-          pipeline.addAfter(
-              name,
-              HttpClientResponseTracingHandler.class.getName(),
-              new HttpClientResponseTracingHandler());
+      } else if (handler instanceof HttpClientCodec) {
+        ourHandler = new HttpClientTracingHandler();
+      } else if (handler instanceof HttpRequestEncoder) {
+        ourHandler = new HttpClientRequestTracingHandler();
+      } else if (handler instanceof HttpResponseDecoder) {
+        ourHandler = new HttpClientResponseTracingHandler();
+      }
+
+      if (ourHandler != null) {
+        try {
+          pipeline.addAfter(name, ourHandler.getClass().getName(), ourHandler);
+          // associate our handle with original handler so they could be removed together
+          InstrumentationContext.get(ChannelHandler.class, ChannelHandler.class)
+              .putIfAbsent(handler, ourHandler);
+        } catch (IllegalArgumentException e) {
+          // Prevented adding duplicate handlers.
         }
-      } catch (IllegalArgumentException e) {
-        // Prevented adding duplicate handlers.
       }
     }
   }

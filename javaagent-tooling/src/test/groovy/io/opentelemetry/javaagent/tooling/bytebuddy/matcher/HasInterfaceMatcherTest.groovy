@@ -5,8 +5,7 @@
 
 package io.opentelemetry.javaagent.tooling.bytebuddy.matcher
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.hasInterface
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface
 import static net.bytebuddy.matcher.ElementMatchers.named
 
 import io.opentelemetry.javaagent.tooling.AgentTooling
@@ -17,7 +16,6 @@ import io.opentelemetry.javaagent.tooling.bytebuddy.matcher.testclasses.F
 import io.opentelemetry.javaagent.tooling.bytebuddy.matcher.testclasses.G
 import net.bytebuddy.description.type.TypeDescription
 import net.bytebuddy.description.type.TypeList
-import net.bytebuddy.jar.asm.Opcodes
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -29,7 +27,7 @@ class HasInterfaceMatcherTest extends Specification {
 
   def "test matcher #matcherClass.simpleName -> #type.simpleName"() {
     expect:
-    hasInterface(matcher).matches(argument) == result
+    implementsInterface(matcher).matches(argument) == result
 
     where:
     matcherClass | type | result
@@ -61,7 +59,6 @@ class HasInterfaceMatcherTest extends Specification {
     then:
     !result // default to false
     noExceptionThrown()
-    1 * type.getModifiers() >> Opcodes.ACC_ABSTRACT
     1 * type.isInterface() >> true
     1 * type.asGenericType() >> typeGeneric
     1 * typeGeneric.asErasure() >> { throw new Exception("asErasure exception") }

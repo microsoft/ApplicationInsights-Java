@@ -5,6 +5,7 @@
 
 package io.opentelemetry.javaagent.bootstrap;
 
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +19,11 @@ import org.checkerframework.checker.lock.qual.GuardedBy;
 public class ClassLoaderMatcherCacheHolder {
 
   @GuardedBy("allCaches")
-  private static final List<WeakCache<ClassLoader, Boolean>> allCaches = new ArrayList<>();
+  private static final List<Cache<ClassLoader, Boolean>> allCaches = new ArrayList<>();
 
   private ClassLoaderMatcherCacheHolder() {}
 
-  public static void addCache(WeakCache<ClassLoader, Boolean> cache) {
+  public static void addCache(Cache<ClassLoader, Boolean> cache) {
     synchronized (allCaches) {
       allCaches.add(cache);
     }
@@ -30,7 +31,7 @@ public class ClassLoaderMatcherCacheHolder {
 
   public static void invalidateAllCachesForClassLoader(ClassLoader loader) {
     synchronized (allCaches) {
-      for (WeakCache<ClassLoader, Boolean> cache : allCaches) {
+      for (Cache<ClassLoader, Boolean> cache : allCaches) {
         cache.remove(loader);
       }
     }

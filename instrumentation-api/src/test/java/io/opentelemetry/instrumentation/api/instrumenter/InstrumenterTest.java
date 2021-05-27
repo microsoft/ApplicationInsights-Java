@@ -23,6 +23,7 @@ import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,8 +86,7 @@ class InstrumenterTest {
     }
   }
 
-  enum MapGetter implements TextMapGetter<Map<String, String>> {
-    INSTANCE;
+  class MapGetter implements TextMapGetter<Map<String, String>> {
 
     @Override
     public Iterable<String> keys(Map<String, String> carrier) {
@@ -108,7 +108,7 @@ class InstrumenterTest {
         Instrumenter.<Map<String, String>, Map<String, String>>newBuilder(
                 otelTesting.getOpenTelemetry(), "test", unused -> "span")
             .addAttributesExtractors(new AttributesExtractor1(), new AttributesExtractor2())
-            .newServerInstrumenter(MapGetter.INSTANCE);
+            .newServerInstrumenter(new MapGetter());
 
     Context context = instrumenter.start(Context.root(), REQUEST);
     SpanContext spanContext = Span.fromContext(context).getSpanContext();
@@ -150,7 +150,7 @@ class InstrumenterTest {
         Instrumenter.<Map<String, String>, Map<String, String>>newBuilder(
                 otelTesting.getOpenTelemetry(), "test", unused -> "span")
             .addAttributesExtractors(new AttributesExtractor1(), new AttributesExtractor2())
-            .newServerInstrumenter(MapGetter.INSTANCE);
+            .newServerInstrumenter(new MapGetter());
 
     Context context = instrumenter.start(Context.root(), REQUEST);
     SpanContext spanContext = Span.fromContext(context).getSpanContext();
@@ -174,7 +174,7 @@ class InstrumenterTest {
         Instrumenter.<Map<String, String>, Map<String, String>>newBuilder(
                 otelTesting.getOpenTelemetry(), "test", unused -> "span")
             .addAttributesExtractors(new AttributesExtractor1(), new AttributesExtractor2())
-            .newServerInstrumenter(MapGetter.INSTANCE);
+            .newServerInstrumenter(new MapGetter());
 
     Map<String, String> request = new HashMap<>(REQUEST);
     W3CTraceContextPropagator.getInstance()
@@ -314,5 +314,30 @@ class InstrumenterTest {
                             .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
                             .hasSpanId(spanContext.getSpanId())
                             .hasParentSpanId("090a0b0c0d0e0f00")));
+  }
+
+  @Test
+  void shouldStartSpanWithGivenStartTime() {
+    // given
+    Instrumenter<Instant, Instant> instrumenter =
+        Instrumenter.<Instant, Instant>newBuilder(
+                otelTesting.getOpenTelemetry(), "test", request -> "test span")
+            .setTimeExtractors(request -> request, response -> response)
+            .newInstrumenter();
+
+    Instant startTime = Instant.ofEpochSecond(100);
+    Instant endTime = Instant.ofEpochSecond(123);
+
+    // when
+    Context context = instrumenter.start(Context.root(), startTime);
+    instrumenter.end(context, startTime, endTime, null);
+
+    // then
+    otelTesting
+        .assertTraces()
+        .hasTracesSatisfyingExactly(
+            trace ->
+                trace.hasSpansSatisfyingExactly(
+                    span -> span.hasName("test span").startsAt(startTime).endsAt(endTime)));
   }
 }

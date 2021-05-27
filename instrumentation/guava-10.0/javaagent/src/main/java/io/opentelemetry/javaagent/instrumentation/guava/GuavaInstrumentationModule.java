@@ -6,25 +6,24 @@
 package io.opentelemetry.javaagent.instrumentation.guava;
 
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
+import static net.bytebuddy.matcher.ElementMatchers.isConstructor;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import com.google.auto.service.AutoService;
 import com.google.common.util.concurrent.AbstractFuture;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.api.concurrent.ExecutorInstrumentationUtils;
 import io.opentelemetry.javaagent.instrumentation.api.concurrent.RunnableWrapper;
 import io.opentelemetry.javaagent.instrumentation.api.concurrent.State;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executor;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatchers;
@@ -41,11 +40,6 @@ public class GuavaInstrumentationModule extends InstrumentationModule {
     return singletonList(new ListenableFutureInstrumentation());
   }
 
-  @Override
-  public Map<String, String> contextStore() {
-    return singletonMap(Runnable.class.getName(), State.class.getName());
-  }
-
   public static class ListenableFutureInstrumentation implements TypeInstrumentation {
     @Override
     public ElementMatcher<TypeDescription> typeMatcher() {
@@ -53,10 +47,19 @@ public class GuavaInstrumentationModule extends InstrumentationModule {
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      return singletonMap(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
+          isConstructor(), GuavaInstrumentationModule.class.getName() + "$AbstractFutureAdvice");
+      transformer.applyAdviceToMethod(
           named("addListener").and(ElementMatchers.takesArguments(Runnable.class, Executor.class)),
           GuavaInstrumentationModule.class.getName() + "$AddListenerAdvice");
+    }
+  }
+
+  public static class AbstractFutureAdvice {
+    @Advice.OnMethodExit(suppress = Throwable.class)
+    public static void onConstruction() {
+      InstrumentationHelper.initialize();
     }
   }
 

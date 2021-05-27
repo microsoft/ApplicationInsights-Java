@@ -7,6 +7,10 @@ package io.opentelemetry.instrumentation.api.instrumenter;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.instrumentation.api.instrumenter.db.DbAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.net.NetAttributesExtractor;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Extractor of {@link io.opentelemetry.api.common.Attributes} for a given request and response.
@@ -16,6 +20,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
  * lifecycle. It is best to populate as much as possible in {@link #onStart(AttributesBuilder,
  * Object)} to have it available during sampling.
  *
+ * @see DbAttributesExtractor
  * @see HttpAttributesExtractor
  * @see NetAttributesExtractor
  */
@@ -30,7 +35,8 @@ public abstract class AttributesExtractor<REQUEST, RESPONSE> {
    * Extracts attributes from the {@link REQUEST} and {@link RESPONSE} into the {@link
    * AttributesBuilder} at the end of a request.
    */
-  protected abstract void onEnd(AttributesBuilder attributes, REQUEST request, RESPONSE response);
+  protected abstract void onEnd(
+      AttributesBuilder attributes, REQUEST request, @Nullable RESPONSE response);
 
   /**
    * Sets the {@code value} with the given {@code key} to the {@link AttributesBuilder} if {@code

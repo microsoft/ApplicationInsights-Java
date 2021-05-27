@@ -5,12 +5,11 @@
 
 package io.opentelemetry.javaagent.instrumentation.httpurlconnection;
 
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.extendsClass;
+import static io.opentelemetry.javaagent.extension.matcher.NameMatchers.namedOneOf;
 import static io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge.currentContext;
 import static io.opentelemetry.javaagent.instrumentation.httpurlconnection.HttpUrlConnectionTracer.tracer;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.NameMatchers.namedOneOf;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
@@ -19,23 +18,22 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.tracer.HttpStatusConverter;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepth;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.HttpURLConnection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatchers;
@@ -50,11 +48,6 @@ public class HttpUrlConnectionInstrumentationModule extends InstrumentationModul
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return singletonList(new HttpUrlConnectionInstrumentation());
-  }
-
-  @Override
-  public Map<String, String> contextStore() {
-    return singletonMap("java.net.HttpURLConnection", getClass().getName() + "$HttpUrlState");
   }
 
   public static class HttpUrlConnectionInstrumentation implements TypeInstrumentation {
@@ -73,17 +66,15 @@ public class HttpUrlConnectionInstrumentationModule extends InstrumentationModul
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<MethodDescription>, String> map = new HashMap<>();
-      map.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(isPublic())
               .and(namedOneOf("connect", "getOutputStream", "getInputStream")),
           HttpUrlConnectionInstrumentationModule.class.getName() + "$HttpUrlConnectionAdvice");
-      map.put(
+      transformer.applyAdviceToMethod(
           isMethod().and(isPublic()).and(named("getResponseCode")),
           HttpUrlConnectionInstrumentationModule.class.getName() + "$GetResponseCodeAdvice");
-      return map;
     }
   }
 
@@ -148,7 +139,14 @@ public class HttpUrlConnectionInstrumentationModule extends InstrumentationModul
       scope.close();
 
       if (throwable != null) {
-        tracer().endExceptionally(httpUrlState.context, throwable);
+        if (responseCode >= 400) {
+          // HttpURLConnection unnecessarily throws exception on error response.
+          // None of the other http clients do this, so not recording the exception on the span
+          // to be consistent with the telemetry for other http clients.
+          tracer().end(httpUrlState.context, new HttpUrlResponse(connection, responseCode));
+        } else {
+          tracer().endExceptionally(httpUrlState.context, throwable);
+        }
         httpUrlState.finished = true;
       } else if (methodName.equals("getInputStream") && responseCode > 0) {
         // responseCode field is sometimes not populated.
@@ -176,7 +174,10 @@ public class HttpUrlConnectionInstrumentationModule extends InstrumentationModul
       if (httpUrlState != null) {
         Span span = Java8BytecodeBridge.spanFromContext(httpUrlState.context);
         span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, returnValue);
-        span.setStatus(HttpStatusConverter.statusFromHttpStatus(returnValue));
+        StatusCode statusCode = HttpStatusConverter.statusFromHttpStatus(returnValue);
+        if (statusCode != StatusCode.UNSET) {
+          span.setStatus(statusCode);
+        }
       }
     }
   }

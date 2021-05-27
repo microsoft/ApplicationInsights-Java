@@ -68,9 +68,11 @@ configurations {
 
 if (testLatestDeps) {
   afterEvaluate {
-    def latestDepTest = tasks.findByName('latestDepTest')
-    if (latestDepTest) {
-      tasks.test.dependsOn latestDepTest
+    if (tasks.names.contains('latestDepTest')) {
+      def latestDepTest = tasks.named('latestDepTest')
+      tasks.named('test').configure {
+        dependsOn(latestDepTest)
+      }
     }
   }
 }

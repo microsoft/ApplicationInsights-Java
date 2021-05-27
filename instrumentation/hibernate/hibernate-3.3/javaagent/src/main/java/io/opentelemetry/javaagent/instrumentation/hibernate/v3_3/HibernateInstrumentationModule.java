@@ -5,17 +5,13 @@
 
 package io.opentelemetry.javaagent.instrumentation.hibernate.v3_3;
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static java.util.Arrays.asList;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Collections;
-import java.util.HashMap;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.matcher.ElementMatcher;
 
 @AutoService(InstrumentationModule.class)
@@ -42,16 +38,5 @@ public class HibernateInstrumentationModule extends InstrumentationModule {
         new SessionFactoryInstrumentation(),
         new SessionInstrumentation(),
         new TransactionInstrumentation());
-  }
-
-  @Override
-  public Map<String, String> contextStore() {
-    Map<String, String> map = new HashMap<>();
-    map.put("org.hibernate.Criteria", Context.class.getName());
-    map.put("org.hibernate.Query", Context.class.getName());
-    map.put("org.hibernate.Session", Context.class.getName());
-    map.put("org.hibernate.StatelessSession", Context.class.getName());
-    map.put("org.hibernate.Transaction", Context.class.getName());
-    return Collections.unmodifiableMap(map);
   }
 }

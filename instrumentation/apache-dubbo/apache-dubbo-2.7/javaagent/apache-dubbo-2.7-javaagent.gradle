@@ -4,16 +4,18 @@ muzzle {
   pass {
     group = "org.apache.dubbo"
     module = "dubbo"
-    versions = "[2.7.0,)"
+    versions = "[2.7.0,3.0.0)"
   }
 }
 
 dependencies {
   implementation project(':instrumentation:apache-dubbo:apache-dubbo-2.7:library')
 
-  library group: 'org.apache.dubbo', name: 'dubbo', version: '2.7.0'
+  library "org.apache.dubbo:dubbo:2.7.0"
 
   testImplementation project(':instrumentation:apache-dubbo:apache-dubbo-2.7:testing')
 
-  testLibrary group: 'org.apache.dubbo', name: 'dubbo-config-api', version: '2.7.0'
+  testLibrary "org.apache.dubbo:dubbo-config-api:2.7.0"
+  latestDepTestLibrary "org.apache.dubbo:dubbo:2.+"
+  latestDepTestLibrary "org.apache.dubbo:dubbo-config-api:2.+"
 }

@@ -21,22 +21,25 @@ muzzle {
 }
 
 dependencies {
-  compileOnly group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0'
-  library group: 'org.jboss.resteasy', name: 'resteasy-jaxrs', version: '3.1.0.Final'
+  compileOnly "javax.ws.rs:javax.ws.rs-api:2.0"
+  library "org.jboss.resteasy:resteasy-jaxrs:3.1.0.Final"
 
   implementation project(':instrumentation:jaxrs:jaxrs-2.0:jaxrs-2.0-common:javaagent')
+  implementation project(':instrumentation:jaxrs:jaxrs-2.0:jaxrs-2.0-resteasy-common:javaagent')
 
   testInstrumentation project(':instrumentation:servlet:servlet-3.0:javaagent')
-  testInstrumentation project(':instrumentation:servlet:servlet-common:javaagent')
+  testInstrumentation project(':instrumentation:servlet:servlet-javax-common:javaagent')
 
   testImplementation project(':instrumentation:jaxrs:jaxrs-2.0:jaxrs-2.0-testing')
+  testImplementation "org.eclipse.jetty:jetty-webapp:9.4.6.v20170531"
 
-  testLibrary(group: 'org.jboss.resteasy', name: 'resteasy-undertow', version: '3.1.0.Final') {
+  testLibrary("org.jboss.resteasy:resteasy-undertow:3.1.0.Final") {
     exclude group: 'org.jboss.resteasy', module: 'resteasy-client'
   }
+  testLibrary "org.jboss.resteasy:resteasy-servlet-initializer:3.1.0.Final"
 
   // artifact name changed from 'resteasy-jaxrs' to 'resteasy-core' starting from version 4.0.0
-  latestDepTestLibrary group: 'org.jboss.resteasy', name: 'resteasy-core', version: '+'
+  latestDepTestLibrary "org.jboss.resteasy:resteasy-core:+"
 }
 
 test {
@@ -50,7 +53,7 @@ if (findProperty('testLatestDeps')) {
   }
 }
 
-tasks.withType(Test) {
+tasks.withType(Test).configureEach {
   // TODO run tests both with and without experimental span attributes
   jvmArgs "-Dotel.instrumentation.jaxrs.experimental-span-attributes=true"
 }

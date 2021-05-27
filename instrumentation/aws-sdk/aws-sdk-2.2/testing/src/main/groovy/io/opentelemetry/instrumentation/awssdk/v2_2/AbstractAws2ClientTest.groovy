@@ -7,7 +7,9 @@ package io.opentelemetry.instrumentation.awssdk.v2_2
 
 import static com.google.common.collect.ImmutableMap.of
 import static io.opentelemetry.api.trace.SpanKind.CLIENT
+import static io.opentelemetry.api.trace.StatusCode.ERROR
 import static io.opentelemetry.instrumentation.test.server.http.TestHttpServer.httpServer
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP
 
 import io.opentelemetry.instrumentation.test.InstrumentationSpecification
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
@@ -153,10 +155,9 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
         span(0) {
           name "DynamoDb.CreateTable"
           kind CLIENT
-          errored false
           hasNoParent()
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
             "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.address}${path}") }
@@ -190,10 +191,9 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
         span(0) {
           name "DynamoDb.Query"
           kind CLIENT
-          errored false
           hasNoParent()
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
             "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.address}${path}") }
@@ -226,10 +226,9 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
         span(0) {
           name "$service.$operation"
           kind CLIENT
-          errored false
           hasNoParent()
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
             "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.address}${path}") }
@@ -340,10 +339,9 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
         span(0) {
           name "$service.$operation"
           kind CLIENT
-          errored false
           hasNoParent()
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
             "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.address}${path}") }
@@ -430,10 +428,9 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
         span(0) {
           name "$service.$operation"
           kind CLIENT
-          errored false
           hasNoParent()
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
             "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.address}${path}") }
@@ -531,11 +528,11 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
         span(0) {
           name "S3.GetObject"
           kind CLIENT
-          errored true
+          status ERROR
           errorEvent SdkClientException, "Unable to execute HTTP request: Read timed out"
           hasNoParent()
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
             "${SemanticAttributes.HTTP_URL.key}" "$server.address/somebucket/somekey"

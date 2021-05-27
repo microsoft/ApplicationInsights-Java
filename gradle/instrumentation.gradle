@@ -2,7 +2,6 @@
 import io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator
 
 apply plugin: 'net.bytebuddy.byte-buddy'
-apply plugin: 'muzzle'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 ext {
@@ -19,6 +18,8 @@ if (project.ext.find("skipPublish") != true) {
 apply from: "$rootDir/gradle/instrumentation-common.gradle"
 
 if (projectDir.name == 'javaagent') {
+  apply plugin: 'muzzle'
+
   archivesBaseName = projectDir.parentFile.name
 }
 
@@ -40,9 +41,15 @@ afterEvaluate {
     compileOnly project(':javaagent-api')
     compileOnly project(':javaagent-bootstrap')
     // Apply common dependencies for instrumentation.
+    compileOnly(project(':javaagent-extension-api')) {
+      // OpenTelemetry SDK is not needed for compilation
+      exclude group: 'io.opentelemetry', module: 'opentelemetry-sdk'
+      exclude group: 'io.opentelemetry', module: 'opentelemetry-sdk-metrics'
+    }
     compileOnly(project(':javaagent-tooling')) {
       // OpenTelemetry SDK is not needed for compilation
       exclude group: 'io.opentelemetry', module: 'opentelemetry-sdk'
+      exclude group: 'io.opentelemetry', module: 'opentelemetry-sdk-metrics'
     }
     compileOnly deps.bytebuddy
     annotationProcessor deps.autoservice
@@ -58,6 +65,7 @@ afterEvaluate {
     testImplementation deps.testcontainers
 
     toolingRuntime(project(path: ":javaagent-tooling", configuration: 'instrumentationMuzzle'))
+    toolingRuntime(project(path: ":javaagent-extension-api", configuration: 'instrumentationMuzzle'))
 
     bootstrapRuntime(project(path: ":javaagent-bootstrap", configuration: 'instrumentationMuzzle'))
   }
@@ -72,7 +80,7 @@ configurations {
   testInstrumentation
 }
 
-shadowJar {
+tasks.named('shadowJar').configure {
   configurations = [project.configurations.runtimeClasspath, project.configurations.testInstrumentation]
   mergeServiceFiles()
 
@@ -93,7 +101,6 @@ shadowJar {
   // relocate OpenTelemetry API usage
   relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
   relocate "io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv"
-  relocate "io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi"
   relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
 
   // relocate the OpenTelemetry extensions that are used by instrumentation modules
@@ -108,39 +115,42 @@ shadowJar {
 
 evaluationDependsOn(":testing:agent-for-testing")
 
-tasks.withType(Test).configureEach {
-  inputs.file(shadowJar.archiveFile)
+// need to run this after evaluate because testSets plugin adds new test tasks
+afterEvaluate {
+  tasks.withType(Test).configureEach {
+    inputs.file(shadowJar.archiveFile)
 
-  jvmArgs "-Dotel.javaagent.debug=true"
-  jvmArgs "-javaagent:${project(":testing:agent-for-testing").tasks.shadowJar.archiveFile.get().asFile.absolutePath}"
-  jvmArgs "-Dotel.javaagent.experimental.initializer.jar=${shadowJar.archiveFile.get().asFile.absolutePath}"
-  jvmArgs "-Dotel.javaagent.testing.additional-library-ignores.enabled=false"
-  jvmArgs "-Dotel.javaagent.testing.fail-on-context-leak=true"
-  // prevent sporadic gradle deadlocks, see SafeLogger for more details
-  jvmArgs "-Dotel.javaagent.testing.transform-safe-logging.enabled=true"
-  jvmArgs "-Dai.internal.testing.appId=1234"
+    jvmArgs "-Dotel.javaagent.debug=true"
+    jvmArgs "-javaagent:${project(":testing:agent-for-testing").tasks.shadowJar.archiveFile.get().asFile.absolutePath}"
+    jvmArgs "-Dotel.javaagent.experimental.initializer.jar=${shadowJar.archiveFile.get().asFile.absolutePath}"
+    jvmArgs "-Dotel.javaagent.testing.additional-library-ignores.enabled=false"
+    jvmArgs "-Dotel.javaagent.testing.fail-on-context-leak=true"
+    // prevent sporadic gradle deadlocks, see SafeLogger for more details
+    jvmArgs "-Dotel.javaagent.testing.transform-safe-logging.enabled=true"
+    jvmArgs "-Dai.internal.testing.appId=1234"
 
-  dependsOn shadowJar
-  dependsOn ":testing:agent-for-testing:shadowJar"
+    dependsOn shadowJar
+    dependsOn ":testing:agent-for-testing:shadowJar"
 
-  // We do fine-grained filtering of the classpath of this codebase's sources since Gradle's
-  // configurations will include transitive dependencies as well, which tests do often need.
-  classpath = classpath.filter {
-    // The sources are packaged into the testing jar so we need to make sure to exclude from the test
-    // classpath, which automatically inherits them, to ensure our shaded versions are used.
-    if (file("$buildDir/resources/main").equals(it) || file("$buildDir/classes/java/main").equals(it)) {
-      return false
+    // We do fine-grained filtering of the classpath of this codebase's sources since Gradle's
+    // configurations will include transitive dependencies as well, which tests do often need.
+    classpath = classpath.filter {
+      // The sources are packaged into the testing jar so we need to make sure to exclude from the test
+      // classpath, which automatically inherits them, to ensure our shaded versions are used.
+      if (file("$buildDir/resources/main").equals(it) || file("$buildDir/classes/java/main").equals(it)) {
+        return false
+      }
+      // If agent depends on some shared instrumentation module that is not a testing module, it will
+      // be packaged into the testing jar so we need to make sure to exclude from the test classpath.
+      String libPath = it.absolutePath
+      String instrumentationPath = file("${rootDir}/instrumentation/").absolutePath
+      if (libPath.startsWith(instrumentationPath) &&
+        libPath.endsWith(".jar") &&
+        !libPath.substring(instrumentationPath.size()).contains("testing")) {
+        return false
+      }
+      return true
     }
-    // If agent depends on some shared instrumentation module that is not a testing module, it will
-    // be packaged into the testing jar so we need to make sure to exclude from the test classpath.
-    String libPath = it.absolutePath
-    String instrumentationPath = file("${rootDir}/instrumentation/").absolutePath
-    if (libPath.startsWith(instrumentationPath) &&
-      libPath.endsWith(".jar") &&
-      !libPath.substring(instrumentationPath.size()).contains("testing")) {
-      return false
-    }
-    return true
   }
 }
 

@@ -10,16 +10,14 @@ import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import library.KeyClass;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -38,8 +36,8 @@ public class ContextTestInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  protected String[] additionalHelperClassNames() {
-    return new String[] {getClass().getName() + "$Context"};
+  public boolean isHelperClass(String className) {
+    return className.equals(getClass().getName() + "$Context");
   }
 
   @Override
@@ -47,38 +45,22 @@ public class ContextTestInstrumentationModule extends InstrumentationModule {
     return singletonList(new ContextTestInstrumentation());
   }
 
-  @Override
-  public Map<String, String> contextStore() {
-    Map<String, String> store = new HashMap<>(3);
-    store.put("library.KeyClass", getClass().getName() + "$Context");
-    store.put("library.UntransformableKeyClass", getClass().getName() + "$Context");
-    store.put("library.DisabledKeyClass", getClass().getName() + "$Context");
-    return store;
-  }
-
   public static class ContextTestInstrumentation implements TypeInstrumentation {
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return nameStartsWith("library.");
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>(7);
-      transformers.put(named("isInstrumented"), MarkInstrumentedAdvice.class.getName());
-      transformers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
+          named("isInstrumented"), MarkInstrumentedAdvice.class.getName());
+      transformer.applyAdviceToMethod(
           named("incrementContextCount"), StoreAndIncrementApiUsageAdvice.class.getName());
-      transformers.put(named("getContextCount"), GetApiUsageAdvice.class.getName());
-      transformers.put(named("putContextCount"), PutApiUsageAdvice.class.getName());
-      transformers.put(named("removeContextCount"), RemoveApiUsageAdvice.class.getName());
-      transformers.put(
-          named("incorrectKeyClassUsage"), IncorrectKeyClassContextApiUsageAdvice.class.getName());
-      transformers.put(
-          named("incorrectContextClassUsage"),
-          IncorrectContextClassContextApiUsageAdvice.class.getName());
-      transformers.put(
-          named("incorrectCallUsage"), IncorrectCallContextApiUsageAdvice.class.getName());
-      return transformers;
+      transformer.applyAdviceToMethod(named("getContextCount"), GetApiUsageAdvice.class.getName());
+      transformer.applyAdviceToMethod(named("putContextCount"), PutApiUsageAdvice.class.getName());
+      transformer.applyAdviceToMethod(
+          named("removeContextCount"), RemoveApiUsageAdvice.class.getName());
     }
   }
 
@@ -139,30 +121,6 @@ public class ContextTestInstrumentationModule extends InstrumentationModule {
       ContextStore<KeyClass, Context> contextStore =
           InstrumentationContext.get(KeyClass.class, Context.class);
       contextStore.put(thiz, null);
-    }
-  }
-
-  public static class IncorrectKeyClassContextApiUsageAdvice {
-    @Advice.OnMethodExit
-    public static void methodExit() {
-      InstrumentationContext.get(Object.class, Context.class);
-    }
-  }
-
-  public static class IncorrectContextClassContextApiUsageAdvice {
-    @Advice.OnMethodExit
-    public static void methodExit() {
-      InstrumentationContext.get(KeyClass.class, Object.class);
-    }
-  }
-
-  public static class IncorrectCallContextApiUsageAdvice {
-    @Advice.OnMethodExit
-    public static void methodExit() {
-      // Our instrumentation doesn't handle variables being passed to InstrumentationContext.get,
-      // so we make sure that this actually fails instrumentation.
-      Class clazz = null;
-      InstrumentationContext.get(clazz, Object.class);
     }
   }
 

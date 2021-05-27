@@ -13,15 +13,13 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.logger.LoggerDepth;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.log4j.Category;
@@ -32,7 +30,7 @@ public class Log4jSpansInstrumentationModule extends InstrumentationModule {
 
   public Log4jSpansInstrumentationModule() {
     // this name is important currently because it's used to disable this instrumentation
-    super("log4j");
+    super("log4j-spans");
   }
 
   @Override
@@ -43,14 +41,13 @@ public class Log4jSpansInstrumentationModule extends InstrumentationModule {
   private static final class Log4jSpansInstrumentation implements TypeInstrumentation {
 
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return named("org.apache.log4j.Category");
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-      transformers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(isProtected())
               .and(named("forcedLog"))
@@ -60,7 +57,6 @@ public class Log4jSpansInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(2, named("java.lang.Object")))
               .and(takesArgument(3, named("java.lang.Throwable"))),
           Log4jSpansInstrumentationModule.class.getName() + "$ForcedLogAdvice");
-      return transformers;
     }
   }
 

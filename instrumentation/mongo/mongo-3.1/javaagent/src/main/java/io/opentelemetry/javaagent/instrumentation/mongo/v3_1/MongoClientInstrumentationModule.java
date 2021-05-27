@@ -6,25 +6,21 @@
 package io.opentelemetry.javaagent.instrumentation.mongo.v3_1;
 
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.declaresMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.event.CommandListener;
-import io.opentelemetry.javaagent.instrumentation.mongo.TracingCommandListener;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -48,19 +44,15 @@ public class MongoClientInstrumentationModule extends InstrumentationModule {
           .and(
               declaresMethod(
                   named("addCommandListener")
+                      .and(isPublic())
                       .and(
-                          takesArguments(
-                              new TypeDescription.Latent(
-                                  "com.mongodb.event.CommandListener",
-                                  Modifier.PUBLIC,
-                                  null,
-                                  Collections.<TypeDescription.Generic>emptyList())))
-                      .and(isPublic())));
+                          takesArguments(1)
+                              .and(takesArgument(0, named("com.mongodb.event.CommandListener"))))));
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      return singletonMap(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           isMethod().and(isPublic()).and(named("build")).and(takesArguments(0)),
           MongoClientInstrumentationModule.class.getName() + "$MongoClientAdvice");
     }
@@ -73,11 +65,11 @@ public class MongoClientInstrumentationModule extends InstrumentationModule {
         @Advice.This MongoClientOptions.Builder builder,
         @Advice.FieldValue("commandListeners") List<CommandListener> commandListeners) {
       for (CommandListener commandListener : commandListeners) {
-        if (commandListener instanceof TracingCommandListener) {
+        if (commandListener == MongoInstrumentationSingletons.LISTENER) {
           return;
         }
       }
-      builder.addCommandListener(new TracingCommandListener());
+      builder.addCommandListener(MongoInstrumentationSingletons.LISTENER);
     }
   }
 }

@@ -5,17 +5,18 @@
 
 package io.opentelemetry.javaagent.instrumentation.grizzly;
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.extendsClass;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.instrumentation.grizzly.GrizzlyHttpServerTracer.tracer;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Collections;
-import java.util.Map;
-import net.bytebuddy.description.method.MethodDescription;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -27,18 +28,28 @@ public class HttpHandlerInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
-    return safeHasSuperType(named("org.glassfish.grizzly.http.server.HttpHandler"));
+  public ElementMatcher<TypeDescription> typeMatcher() {
+    return extendsClass(named("org.glassfish.grizzly.http.server.HttpHandler"));
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return Collections.singletonMap(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(named("service"))
             .and(takesArgument(0, named("org.glassfish.grizzly.http.server.Request")))
             .and(takesArgument(1, named("org.glassfish.grizzly.http.server.Response"))),
-        HttpHandlerAdvice.class.getName());
+        HttpHandlerInstrumentation.class.getName() + "$ServiceAdvice");
+  }
+
+  public static class ServiceAdvice {
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
+    public static void onExit(@Advice.Thrown Throwable throwable) {
+      if (throwable != null) {
+        tracer().onException(Java8BytecodeBridge.currentContext(), throwable);
+      }
+    }
   }
 }

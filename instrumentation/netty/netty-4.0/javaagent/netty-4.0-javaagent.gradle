@@ -11,6 +11,8 @@ muzzle {
     group = "io.netty"
     module = "netty-all"
     versions = "[4.0.0.Final,4.1.0.Final)"
+    // Could not find netty-tcnative-2.0.39.Final-${os.detected.classifier}.jar (io.netty:netty-tcnative:2.0.39.Final)
+    skip("4.1.64.Final")
     assertInverse = true
   }
   fail {
@@ -27,8 +29,9 @@ muzzle {
 }
 
 dependencies {
-  library group: 'io.netty', name: 'netty-codec-http', version: '4.0.0.Final'
-  latestDepTestLibrary group: 'io.netty', name: 'netty-codec-http', version: '4.0.56.Final'
+  library "io.netty:netty-codec-http:4.0.0.Final"
+  implementation project(':instrumentation:netty:netty-4-common:javaagent')
+  latestDepTestLibrary "io.netty:netty-codec-http:4.0.56.Final"
 }
 
 // We need to force the dependency to the earliest supported version because other libraries declare newer versions.

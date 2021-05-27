@@ -31,7 +31,7 @@ abstract class AbstractCouchbaseTest extends AgentInstrumentationSpecification {
   static final PASSWORD = "password"
 
   @Shared
-  private int port = PortUtils.randomOpenPort()
+  private int port = PortUtils.findOpenPort()
 
   @Shared
   private String testBucketName = this.getClass().simpleName
@@ -107,7 +107,6 @@ abstract class AbstractCouchbaseTest extends AgentInstrumentationSpecification {
     trace.span(index) {
       name spanName
       kind CLIENT
-      errored false
       if (parentSpan == null) {
         hasNoParent()
       } else {
@@ -118,7 +117,7 @@ abstract class AbstractCouchbaseTest extends AgentInstrumentationSpecification {
         if (bucketName != null) {
           "${SemanticAttributes.DB_NAME.key}" bucketName
         }
-        "${SemanticAttributes.DB_STATEMENT.key}" (statement ?: spanName)
+        "${SemanticAttributes.DB_STATEMENT.key}"(statement ?: spanName)
       }
     }
   }

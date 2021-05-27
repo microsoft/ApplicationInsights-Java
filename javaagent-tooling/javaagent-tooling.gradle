@@ -18,7 +18,7 @@ configurations {
 
 dependencies {
   implementation project(':javaagent-bootstrap')
-  implementation project(':javaagent-spi')
+  implementation project(':javaagent-extension-api')
   implementation project(':javaagent-api')
   implementation project(':instrumentation-api')
 
@@ -46,14 +46,14 @@ dependencies {
 
   implementation deps.opentelemetryZipkin
 
-  implementation group: 'com.blogspot.mydailyjava', name: 'weak-lock-free', version: '0.15'
-  implementation deps.bytebuddy
+  api deps.bytebuddy
   implementation deps.bytebuddyagent
   annotationProcessor deps.autoservice
   implementation deps.autoservice
   implementation deps.slf4j
+  implementation deps.guava
 
-  implementation group: 'io.grpc', name: 'grpc-netty', version: '1.34.1'
+  implementation "io.grpc:grpc-netty-shaded:1.35.1"
 
   testImplementation project(':testing-common')
   testImplementation deps.assertj

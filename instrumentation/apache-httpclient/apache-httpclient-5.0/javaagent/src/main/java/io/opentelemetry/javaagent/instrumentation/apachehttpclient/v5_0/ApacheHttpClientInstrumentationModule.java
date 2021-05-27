@@ -5,10 +5,10 @@
 
 package io.opentelemetry.javaagent.instrumentation.apachehttpclient.v5_0;
 
-import static io.opentelemetry.javaagent.instrumentation.apachehttpclient.v5_0.ApacheHttpClientTracer.tracer;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.instrumentation.apachehttpclient.v5_0.ApacheHttpClientInstrumenters.instrumenter;
 import static io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge.currentContext;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static java.util.Collections.singletonList;
 import static net.bytebuddy.matcher.ElementMatchers.isAbstract;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
@@ -20,13 +20,11 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.HashMap;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.hc.core5.http.ClassicHttpRequest;
@@ -57,13 +55,12 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
+    public void transform(TypeTransformer transformer) {
       // There are 8 execute(...) methods. Depending on the version, they may or may not delegate
       // to each other. Thus, all methods need to be instrumented. Because of argument position and
       // type, some methods can share the same advice class. The call depth tracking ensures only 1
       // span is created
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
@@ -71,7 +68,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
               .and(takesArgument(0, named("org.apache.hc.core5.http.ClassicHttpRequest"))),
           ApacheHttpClientInstrumentationModule.class.getName() + "$RequestAdvice");
 
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
@@ -80,7 +77,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
               .and(takesArgument(1, named("org.apache.hc.core5.http.protocol.HttpContext"))),
           ApacheHttpClientInstrumentationModule.class.getName() + "$RequestAdvice");
 
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
@@ -89,7 +86,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
               .and(takesArgument(1, named("org.apache.hc.core5.http.ClassicHttpRequest"))),
           ApacheHttpClientInstrumentationModule.class.getName() + "$RequestWithHostAdvice");
 
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
@@ -99,7 +96,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
               .and(takesArgument(2, named("org.apache.hc.core5.http.protocol.HttpContext"))),
           ApacheHttpClientInstrumentationModule.class.getName() + "$RequestWithHostAdvice");
 
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
@@ -109,7 +106,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
                   takesArgument(1, named("org.apache.hc.core5.http.io.HttpClientResponseHandler"))),
           ApacheHttpClientInstrumentationModule.class.getName() + "$RequestWithHandlerAdvice");
 
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
@@ -121,7 +118,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
           ApacheHttpClientInstrumentationModule.class.getName()
               + "$RequestWithContextAndHandlerAdvice");
 
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
@@ -133,7 +130,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
           ApacheHttpClientInstrumentationModule.class.getName()
               + "$RequestWithHostAndHandlerAdvice");
 
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
@@ -145,8 +142,6 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
                   takesArgument(3, named("org.apache.hc.core5.http.io.HttpClientResponseHandler"))),
           ApacheHttpClientInstrumentationModule.class.getName()
               + "$RequestWithHostAndContextAndHandlerAdvice");
-
-      return transformers;
     }
   }
 
@@ -157,16 +152,17 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
       Context parentContext = currentContext();
-      if (!tracer().shouldStartSpan(parentContext)) {
+      if (!instrumenter().shouldStart(parentContext, request)) {
         return;
       }
 
-      context = tracer().startSpan(parentContext, request);
+      context = instrumenter().start(parentContext, request);
       scope = context.makeCurrent();
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
     public static void methodExit(
+        @Advice.Argument(0) ClassicHttpRequest request,
         @Advice.Return Object result,
         @Advice.Thrown Throwable throwable,
         @Advice.Local("otelContext") Context context,
@@ -176,7 +172,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
       }
 
       scope.close();
-      ApacheHttpClientHelper.doMethodExit(context, result, throwable);
+      ApacheHttpClientHelper.doMethodExit(context, request, result, throwable);
     }
   }
 
@@ -189,21 +185,23 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
       Context parentContext = currentContext();
-      if (!tracer().shouldStartSpan(parentContext)) {
+      if (!instrumenter().shouldStart(parentContext, request)) {
         return;
       }
 
-      context = tracer().startSpan(parentContext, request);
+      context = instrumenter().start(parentContext, request);
       scope = context.makeCurrent();
 
       // Wrap the handler so we capture the status code
       if (handler != null) {
-        handler = new WrappingStatusSettingResponseHandler(context, parentContext, handler);
+        handler =
+            new WrappingStatusSettingResponseHandler(context, parentContext, request, handler);
       }
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
     public static void methodExit(
+        @Advice.Argument(0) ClassicHttpRequest request,
         @Advice.Return Object result,
         @Advice.Thrown Throwable throwable,
         @Advice.Local("otelContext") Context context,
@@ -213,7 +211,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
       }
 
       scope.close();
-      ApacheHttpClientHelper.doMethodExit(context, result, throwable);
+      ApacheHttpClientHelper.doMethodExit(context, request, result, throwable);
     }
   }
 
@@ -226,21 +224,23 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
       Context parentContext = currentContext();
-      if (!tracer().shouldStartSpan(parentContext)) {
+      if (!instrumenter().shouldStart(parentContext, request)) {
         return;
       }
 
-      context = tracer().startSpan(parentContext, request);
+      context = instrumenter().start(parentContext, request);
       scope = context.makeCurrent();
 
       // Wrap the handler so we capture the status code
       if (handler != null) {
-        handler = new WrappingStatusSettingResponseHandler(context, parentContext, handler);
+        handler =
+            new WrappingStatusSettingResponseHandler(context, parentContext, request, handler);
       }
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
     public static void methodExit(
+        @Advice.Argument(0) ClassicHttpRequest request,
         @Advice.Return Object result,
         @Advice.Thrown Throwable throwable,
         @Advice.Local("otelContext") Context context,
@@ -250,7 +250,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
       }
 
       scope.close();
-      ApacheHttpClientHelper.doMethodExit(context, result, throwable);
+      ApacheHttpClientHelper.doMethodExit(context, request, result, throwable);
     }
   }
 
@@ -259,14 +259,16 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
     public static void methodEnter(
         @Advice.Argument(0) HttpHost host,
         @Advice.Argument(1) ClassicHttpRequest request,
+        @Advice.Local("otelFullRequest") ClassicHttpRequest fullRequest,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
       Context parentContext = currentContext();
-      if (!tracer().shouldStartSpan(parentContext)) {
+      fullRequest = new RequestWithHost(host, request);
+      if (!instrumenter().shouldStart(parentContext, fullRequest)) {
         return;
       }
 
-      context = tracer().startSpan(parentContext, host, request);
+      context = instrumenter().start(parentContext, fullRequest);
       scope = context.makeCurrent();
     }
 
@@ -274,6 +276,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
     public static void methodExit(
         @Advice.Return Object result,
         @Advice.Thrown Throwable throwable,
+        @Advice.Local("otelFullRequest") ClassicHttpRequest fullRequest,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
       if (scope == null) {
@@ -281,7 +284,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
       }
 
       scope.close();
-      ApacheHttpClientHelper.doMethodExit(context, result, throwable);
+      ApacheHttpClientHelper.doMethodExit(context, fullRequest, result, throwable);
     }
   }
 
@@ -292,19 +295,23 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
         @Advice.Argument(0) HttpHost host,
         @Advice.Argument(1) ClassicHttpRequest request,
         @Advice.Argument(value = 2, readOnly = false) HttpClientResponseHandler<?> handler,
+        @Advice.Local("otelFullRequest") ClassicHttpRequest fullRequest,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
+
       Context parentContext = currentContext();
-      if (!tracer().shouldStartSpan(parentContext)) {
+      fullRequest = new RequestWithHost(host, request);
+      if (!instrumenter().shouldStart(parentContext, fullRequest)) {
         return;
       }
 
-      context = tracer().startSpan(parentContext, host, request);
+      context = instrumenter().start(parentContext, fullRequest);
       scope = context.makeCurrent();
 
       // Wrap the handler so we capture the status code
       if (handler != null) {
-        handler = new WrappingStatusSettingResponseHandler(context, parentContext, handler);
+        handler =
+            new WrappingStatusSettingResponseHandler(context, parentContext, fullRequest, handler);
       }
     }
 
@@ -312,6 +319,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
     public static void methodExit(
         @Advice.Return Object result,
         @Advice.Thrown Throwable throwable,
+        @Advice.Local("otelFullRequest") ClassicHttpRequest fullRequest,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
       if (scope == null) {
@@ -319,7 +327,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
       }
 
       scope.close();
-      ApacheHttpClientHelper.doMethodExit(context, result, throwable);
+      ApacheHttpClientHelper.doMethodExit(context, fullRequest, result, throwable);
     }
   }
 
@@ -330,19 +338,23 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
         @Advice.Argument(0) HttpHost host,
         @Advice.Argument(1) ClassicHttpRequest request,
         @Advice.Argument(value = 3, readOnly = false) HttpClientResponseHandler<?> handler,
+        @Advice.Local("otelFullRequest") ClassicHttpRequest fullRequest,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
+
       Context parentContext = currentContext();
-      if (!tracer().shouldStartSpan(parentContext)) {
+      fullRequest = new RequestWithHost(host, request);
+      if (!instrumenter().shouldStart(parentContext, fullRequest)) {
         return;
       }
 
-      context = tracer().startSpan(parentContext, host, request);
+      context = instrumenter().start(parentContext, fullRequest);
       scope = context.makeCurrent();
 
       // Wrap the handler so we capture the status code
       if (handler != null) {
-        handler = new WrappingStatusSettingResponseHandler(context, parentContext, handler);
+        handler =
+            new WrappingStatusSettingResponseHandler(context, parentContext, fullRequest, handler);
       }
     }
 
@@ -350,6 +362,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
     public static void methodExit(
         @Advice.Return Object result,
         @Advice.Thrown Throwable throwable,
+        @Advice.Local("otelFullRequest") ClassicHttpRequest fullRequest,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
       if (scope == null) {
@@ -357,7 +370,7 @@ public class ApacheHttpClientInstrumentationModule extends InstrumentationModule
       }
 
       scope.close();
-      ApacheHttpClientHelper.doMethodExit(context, result, throwable);
+      ApacheHttpClientHelper.doMethodExit(context, fullRequest, result, throwable);
     }
   }
 }

@@ -8,7 +8,6 @@ buildscript {
 
   dependencies {
     classpath "net.bytebuddy:byte-buddy-gradle-plugin:${versions.bytebuddy}"
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
   }
 }
 plugins {
@@ -21,7 +20,9 @@ subprojects {
   afterEvaluate { Project subProj ->
     if (subProj.getPlugins().hasPlugin('java')) {
       // Make it so all instrumentation subproject tests can be run with a single command.
-      instr_project.tasks.test.dependsOn(subProj.tasks.test)
+      instr_project.tasks.named('test').configure {
+        dependsOn(subProj.tasks.test)
+      }
 
       if (subProj.name == 'javaagent') {
         instr_project.dependencies {
@@ -35,7 +36,8 @@ subprojects {
 dependencies {
   compileOnly project(':instrumentation-api')
   compileOnly project(':javaagent-api')
-  implementation(project(':javaagent-tooling'))
+  implementation project(':javaagent-tooling')
+  implementation project(':javaagent-extension-api')
 }
 
 configurations {
@@ -94,7 +96,6 @@ shadowJar {
   // relocate OpenTelemetry API usage
   relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
   relocate "io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv"
-  relocate "io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi"
   relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
 
   // relocate the OpenTelemetry extensions that are used by instrumentation modules

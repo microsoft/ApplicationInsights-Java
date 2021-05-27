@@ -22,13 +22,14 @@ public class ChannelTraceContext {
   private Context connectionContext;
   private Context clientParentContext;
   private Context context;
+  private boolean connectionSpanCreated;
 
   public Context getConnectionContext() {
     return connectionContext;
   }
 
-  public void setConnectionContext(Context connectionContinuation) {
-    this.connectionContext = connectionContinuation;
+  public void setConnectionContext(Context connectionContext) {
+    this.connectionContext = connectionContext;
   }
 
   public Context getClientParentContext() {
@@ -45,6 +46,14 @@ public class ChannelTraceContext {
 
   public void setContext(Context context) {
     this.context = context;
+  }
+
+  public boolean createConnectionSpan() {
+    if (connectionSpanCreated) {
+      return false;
+    }
+    connectionSpanCreated = true;
+    return true;
   }
 
   @Override

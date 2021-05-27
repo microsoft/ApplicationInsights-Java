@@ -5,11 +5,12 @@
 
 package io.opentelemetry.javaagent.instrumentation.servlet.v2_2;
 
-import static io.opentelemetry.javaagent.instrumentation.servlet.v2_2.Servlet2HttpServerTracer.tracer;
+import static io.opentelemetry.instrumentation.servlet.v2_2.Servlet2HttpServerTracer.tracer;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.servlet.AppServerBridge;
+import io.opentelemetry.instrumentation.servlet.v2_2.ResponseWithStatus;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
@@ -38,8 +39,7 @@ public class Servlet2Advice {
 
     Context serverContext = tracer().getServerContext(httpServletRequest);
     if (serverContext != null) {
-      Context updatedContext =
-          tracer().updateContext(serverContext, httpServletRequest, httpServletResponse);
+      Context updatedContext = tracer().updateContext(serverContext, httpServletRequest);
       if (updatedContext != serverContext) {
         // updateContext updated context, need to re-scope
         scope = updatedContext.makeCurrent();

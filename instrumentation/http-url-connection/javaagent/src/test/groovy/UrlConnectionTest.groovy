@@ -4,8 +4,10 @@
  */
 
 import static io.opentelemetry.api.trace.SpanKind.CLIENT
+import static io.opentelemetry.api.trace.StatusCode.ERROR
 import static io.opentelemetry.instrumentation.test.utils.PortUtils.UNUSABLE_PORT
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP
 
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
@@ -32,17 +34,17 @@ class UrlConnectionTest extends AgentInstrumentationSpecification {
         span(0) {
           name "someTrace"
           hasNoParent()
-          errored true
+          status ERROR
           errorEvent ConnectException, String
         }
         span(1) {
           name expectedOperationName("GET")
           kind CLIENT
           childOf span(0)
-          errored true
+          status ERROR
           errorEvent ConnectException, String
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" UNUSABLE_PORT
             "${SemanticAttributes.HTTP_URL.key}" "$url"

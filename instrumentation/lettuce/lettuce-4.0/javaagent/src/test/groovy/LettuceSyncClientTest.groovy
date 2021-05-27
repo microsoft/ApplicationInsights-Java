@@ -4,6 +4,7 @@
  */
 
 import static io.opentelemetry.api.trace.SpanKind.CLIENT
+import static io.opentelemetry.api.trace.StatusCode.ERROR
 
 import com.lambdaworks.redis.ClientOptions
 import com.lambdaworks.redis.RedisClient
@@ -13,7 +14,7 @@ import com.lambdaworks.redis.api.sync.RedisCommands
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.instrumentation.test.utils.PortUtils
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
-import redis.embedded.RedisServer
+import org.testcontainers.containers.FixedHostPortGenericContainer
 import spock.lang.Shared
 
 class LettuceSyncClientTest extends AgentInstrumentationSpecification {
@@ -21,6 +22,8 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
   public static final int DB_INDEX = 0
   // Disable autoreconnect so we do not get stray traces popping up on server shutdown
   public static final ClientOptions CLIENT_OPTIONS = new ClientOptions.Builder().autoReconnect(false).build()
+
+  private static FixedHostPortGenericContainer redis = new FixedHostPortGenericContainer<>("redis:6.2.3-alpine")
 
   @Shared
   int port
@@ -36,9 +39,6 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
   String embeddedDbUri
 
   @Shared
-  RedisServer redisServer
-
-  @Shared
   Map<String, String> testHashMap = [
     firstname: "John",
     lastname : "Doe",
@@ -50,25 +50,22 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
   RedisCommands<String, ?> syncCommands
 
   def setupSpec() {
-    port = PortUtils.randomOpenPort()
-    incorrectPort = PortUtils.randomOpenPort()
+    port = PortUtils.findOpenPort()
+    incorrectPort = PortUtils.findOpenPort()
     dbAddr = HOST + ":" + port + "/" + DB_INDEX
     dbAddrNonExistent = HOST + ":" + incorrectPort + "/" + DB_INDEX
     dbUriNonExistent = "redis://" + dbAddrNonExistent
     embeddedDbUri = "redis://" + dbAddr
 
-    redisServer = RedisServer.builder()
-    // bind to localhost to avoid firewall popup
-      .setting("bind " + HOST)
-    // set max memory to avoid problems in CI
-      .setting("maxmemory 128M")
-      .port(port).build()
+    redis = redis.withFixedExposedPort(port, 6379)
   }
 
   def setup() {
+    //TODO do not restart server for every test
+    redis.start()
+
     redisClient = RedisClient.create(embeddedDbUri)
 
-    redisServer.start()
     connection = redisClient.connect()
     syncCommands = connection.sync()
 
@@ -81,7 +78,7 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
 
   def cleanup() {
     connection.close()
-    redisServer.stop()
+    redis.stop()
   }
 
   def "connect"() {
@@ -98,13 +95,10 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "CONNECT"
           kind CLIENT
-          errored false
           attributes {
             "${SemanticAttributes.NET_PEER_NAME.key}" HOST
-            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" port
             "${SemanticAttributes.DB_SYSTEM.key}" "redis"
-            "${SemanticAttributes.DB_STATEMENT.key}" "CONNECT"
           }
         }
       }
@@ -129,14 +123,12 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "CONNECT"
           kind CLIENT
-          errored true
+          status ERROR
           errorEvent RedisConnectionException, String
           attributes {
             "${SemanticAttributes.NET_PEER_NAME.key}" HOST
-            "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" incorrectPort
             "${SemanticAttributes.DB_SYSTEM.key}" "redis"
-            "${SemanticAttributes.DB_STATEMENT.key}" "CONNECT"
           }
         }
       }
@@ -154,9 +146,9 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "SET"
           kind CLIENT
-          errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key}" "redis"
+            "${SemanticAttributes.DB_OPERATION.key}" "SET"
             "${SemanticAttributes.DB_STATEMENT.key}" "SET"
           }
         }
@@ -175,9 +167,9 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "GET"
           kind CLIENT
-          errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key}" "redis"
+            "${SemanticAttributes.DB_OPERATION.key}" "GET"
             "${SemanticAttributes.DB_STATEMENT.key}" "GET"
           }
         }
@@ -196,9 +188,9 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "GET"
           kind CLIENT
-          errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key}" "redis"
+            "${SemanticAttributes.DB_OPERATION.key}" "GET"
             "${SemanticAttributes.DB_STATEMENT.key}" "GET"
           }
         }
@@ -217,9 +209,9 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "RANDOMKEY"
           kind CLIENT
-          errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key}" "redis"
+            "${SemanticAttributes.DB_OPERATION.key}" "RANDOMKEY"
             "${SemanticAttributes.DB_STATEMENT.key}" "RANDOMKEY"
           }
         }
@@ -238,9 +230,9 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "LPUSH"
           kind CLIENT
-          errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key}" "redis"
+            "${SemanticAttributes.DB_OPERATION.key}" "LPUSH"
             "${SemanticAttributes.DB_STATEMENT.key}" "LPUSH"
           }
         }
@@ -259,9 +251,9 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "HMSET"
           kind CLIENT
-          errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key}" "redis"
+            "${SemanticAttributes.DB_OPERATION.key}" "HMSET"
             "${SemanticAttributes.DB_STATEMENT.key}" "HMSET"
           }
         }
@@ -280,9 +272,9 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "HGETALL"
           kind CLIENT
-          errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key}" "redis"
+            "${SemanticAttributes.DB_OPERATION.key}" "HGETALL"
             "${SemanticAttributes.DB_STATEMENT.key}" "HGETALL"
           }
         }
@@ -300,9 +292,9 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "DEBUG"
           kind CLIENT
-          errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key}" "redis"
+            "${SemanticAttributes.DB_OPERATION.key}" "DEBUG"
             "${SemanticAttributes.DB_STATEMENT.key}" "DEBUG"
           }
         }
@@ -320,9 +312,9 @@ class LettuceSyncClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "SHUTDOWN"
           kind CLIENT
-          errored false
           attributes {
             "${SemanticAttributes.DB_SYSTEM.key}" "redis"
+            "${SemanticAttributes.DB_OPERATION.key}" "SHUTDOWN"
             "${SemanticAttributes.DB_STATEMENT.key}" "SHUTDOWN"
           }
         }

@@ -16,46 +16,42 @@ import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.HashMap;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
 public class TelemetryContextInstrumentation implements TypeInstrumentation {
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return named("com.microsoft.applicationinsights.telemetry.TelemetryContext");
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-    transformers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
             .and(named("getUser"))
             .and(takesNoArguments()),
         TelemetryContextInstrumentation.class.getName() + "$GetUserAdvice");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
             .and(named("getOperation"))
             .and(takesNoArguments()),
         TelemetryContextInstrumentation.class.getName() + "$GetOperationAdvice");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
             .and(not(named("getUser")))
             .and(not(named("getOperation"))),
         TelemetryContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
-    return transformers;
   }
 
   public static class GetUserAdvice {

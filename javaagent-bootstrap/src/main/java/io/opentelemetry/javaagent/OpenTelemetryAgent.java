@@ -17,6 +17,7 @@ import java.security.CodeSource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,17 +70,6 @@ public class OpenTelemetryAgent {
       System.err.println("ERROR " + thisClass.getName());
       ex.printStackTrace();
     }
-
-    try {
-      // Call oshi.SystemInfo.getCurrentPlatformEnum() to activate SystemMetrics.
-      // Oshi instrumentation will intercept this call and enable SystemMetrics.
-      Class<?> oshiSystemInfoClass =
-          ClassLoader.getSystemClassLoader().loadClass("oshi.SystemInfo");
-      Method getCurrentPlatformEnumMethod = oshiSystemInfoClass.getMethod("getCurrentPlatformEnum");
-      getCurrentPlatformEnumMethod.invoke(null);
-    } catch (Throwable ex) {
-      // OK
-    }
   }
 
   private static synchronized URL installBootstrapJar(Instrumentation inst, Class<?> premainClass)
@@ -94,8 +84,9 @@ public class OpenTelemetryAgent {
       File bootstrapFile = new File(javaAgentJarUrl.toURI());
 
       if (!bootstrapFile.isDirectory()) {
-        checkJarManifestMainClassIsThis(javaAgentJarUrl, premainClass);
-        inst.appendToBootstrapClassLoaderSearch(new JarFile(bootstrapFile));
+        JarFile agentJar = new JarFile(bootstrapFile, false);
+        checkJarManifestMainClassIsThis(javaAgentJarUrl, agentJar, premainClass);
+        inst.appendToBootstrapClassLoaderSearch(agentJar);
         return javaAgentJarUrl;
       }
     }
@@ -138,19 +129,21 @@ public class OpenTelemetryAgent {
       throw new RuntimeException("Unable to find javaagent file: " + javaagentFile);
     }
     javaAgentJarUrl = javaagentFile.toURI().toURL();
-    checkJarManifestMainClassIsThis(javaAgentJarUrl, premainClass);
-    inst.appendToBootstrapClassLoaderSearch(new JarFile(javaagentFile));
+    JarFile agentJar = new JarFile(javaagentFile, false);
+    checkJarManifestMainClassIsThis(javaAgentJarUrl, agentJar, premainClass);
+    inst.appendToBootstrapClassLoaderSearch(agentJar);
 
     return javaAgentJarUrl;
   }
 
   private static List<String> getVmArgumentsThroughReflection() {
+    ClassLoader classLoader = ClassLoader.getSystemClassLoader();
     try {
       // Try Oracle-based
       Class managementFactoryHelperClass =
-          thisClass.getClassLoader().loadClass("sun.management.ManagementFactoryHelper");
+          classLoader.loadClass("sun.management.ManagementFactoryHelper");
 
-      Class vmManagementClass = thisClass.getClassLoader().loadClass("sun.management.VMManagement");
+      Class vmManagementClass = classLoader.loadClass("sun.management.VMManagement");
 
       Object vmManagement;
 
@@ -169,7 +162,7 @@ public class OpenTelemetryAgent {
 
     } catch (ReflectiveOperationException e) {
       try { // Try IBM-based.
-        Class vmClass = thisClass.getClassLoader().loadClass("com.ibm.oti.vm.VM");
+        Class vmClass = classLoader.loadClass("com.ibm.oti.vm.VM");
         String[] argArray = (String[]) vmClass.getMethod("getVMArgs").invoke(null);
         return Arrays.asList(argArray);
       } catch (ReflectiveOperationException e1) {
@@ -182,10 +175,19 @@ public class OpenTelemetryAgent {
     }
   }
 
-  private static boolean checkJarManifestMainClassIsThis(URL jarUrl, Class<?> premainClass)
-      throws IOException {
-    // removed because it causes slowness when jar file is signed on Java 8
-    return true;
+  private static boolean checkJarManifestMainClassIsThis(
+      URL jarUrl, JarFile agentJar, Class<?> premainClass) throws IOException {
+    Manifest manifest = agentJar.getManifest();
+    String mainClass = manifest.getMainAttributes().getValue("Premain-Class");
+    if (premainClass.getCanonicalName().equals(mainClass)) {
+      return true;
+    }
+    throw new RuntimeException(
+        "opentelemetry-javaagent is not installed, because class '"
+            + thisClass.getCanonicalName()
+            + "' is located in '"
+            + jarUrl
+            + "'. Make sure you don't have this .class file anywhere, besides opentelemetry-javaagent.jar");
   }
 
   /**

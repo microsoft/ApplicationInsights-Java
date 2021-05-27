@@ -5,15 +5,13 @@
 
 package io.opentelemetry.javaagent.instrumentation.cxf;
 
-import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesNoArguments;
 
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Map;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.cxf.endpoint.Endpoint;
@@ -27,8 +25,8 @@ public class EndpointImplTypeInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return singletonMap(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         named("create")
             .and(takesNoArguments().and(returns(named("org.apache.cxf.endpoint.Server")))),
         EndpointImplTypeInstrumentation.class.getName() + "$CreateServerAdvice");

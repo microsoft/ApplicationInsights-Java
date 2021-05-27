@@ -5,17 +5,15 @@
 
 package io.opentelemetry.javaagent.instrumentation.micrometer;
 
-import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.bootstrap.AgentInitializer;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.io.InputStream;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.springframework.core.io.ClassPathResource;
@@ -30,8 +28,8 @@ public final class ClassPathResourceInstrumentation implements TypeInstrumentati
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return singletonMap(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         named("getInputStream").and(takesArguments(0)).and(returns(InputStream.class)),
         ClassPathResourceInstrumentation.class.getName() + "$GetInputStreamAdvice");
   }
