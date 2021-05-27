@@ -62,6 +62,7 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
+import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -90,7 +91,7 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     @Override
-    public void beforeByteBuddyAgent() {
+    public void beforeByteBuddyAgent(Config config) {
         start(instrumentation);
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
@@ -105,7 +106,7 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     @Override
-    public void afterByteBuddyAgent() {
+    public void afterByteBuddyAgent(Config config) {
         // only safe now to resolve app id because SSL initialization
         // triggers loading of java.util.logging (starting with Java 8u231)
         // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
