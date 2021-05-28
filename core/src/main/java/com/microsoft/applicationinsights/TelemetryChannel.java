@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights;
 
 import com.azure.core.http.*;
 import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.core.http.policy.RetryPolicy;
 import com.azure.core.util.tracing.Tracer;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -16,6 +17,7 @@ import reactor.util.context.Context;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -36,15 +38,18 @@ class TelemetryChannel {
     private final URL endpoint;
 
     TelemetryChannel(URL endpoint) {
+        List<HttpPipelinePolicy> policies = new ArrayList<>();
         HttpClient client = HttpClient.createDefault();
         HttpPipelineBuilder pipeline = new HttpPipelineBuilder()
                 .httpClient(client);
+        // Retry policy for failed requests
+        policies.add(new RetryPolicy());
         // TODO handle authentication exceptions
         HttpPipelinePolicy authenticationPolicy = AadAuthentication.getInstance().getAuthenticationPolicy();
         if (authenticationPolicy != null) {
-            pipeline.policies(authenticationPolicy);
+            policies.add(authenticationPolicy);
         }
-        // TODO check existing retry policy, and its configuration
+        pipeline.policies(policies.toArray(new HttpPipelinePolicy[0]));
         this.pipeline = pipeline.build();
         this.endpoint = endpoint;
     }
@@ -88,7 +93,7 @@ class TelemetryChannel {
     }
 
     private CompletableResultCode internalSend(List<ByteBuffer> byteBuffers) {
-        HttpRequest request = new HttpRequest(HttpMethod.POST, endpoint + "v2/track");
+        HttpRequest request = new HttpRequest(HttpMethod.POST, endpoint + "v2.1/track");
 
         request.setBody(Flux.fromIterable(byteBuffers));
 

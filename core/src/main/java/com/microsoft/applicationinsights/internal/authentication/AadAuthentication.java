@@ -5,6 +5,7 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.policy.BearerTokenAuthenticationPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.core.http.policy.RetryPolicy;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.azure.identity.IntelliJCredentialBuilder;
 import com.azure.identity.ManagedIdentityCredential;
@@ -14,6 +15,9 @@ import com.azure.identity.VisualStudioCodeCredentialBuilder;
 import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AadAuthentication {
     private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE = "https://monitor.azure.com//.default";
@@ -108,13 +112,16 @@ public class AadAuthentication {
     }
     
     public HttpPipeline newHttpPipeLineWithAuthentication() {
-
+        List<HttpPipelinePolicy> policies = new ArrayList<>();
+        // Retry policy for failed requests
+        policies.add(new RetryPolicy());
         HttpPipelinePolicy authenticationPolicy = getAuthenticationPolicy();
         HttpClient httpClient = LazyAzureHttpClient.getInstance();
         HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(httpClient);
         if(authenticationPolicy != null) {
-            pipelineBuilder.policies(authenticationPolicy);
+            policies.add(authenticationPolicy);
         }
+        pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
         return pipelineBuilder.build();
     }
 }

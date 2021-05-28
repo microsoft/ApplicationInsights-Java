@@ -159,6 +159,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
             // FIXME (trask) this only accept be "/v2/track"
             case "/v2/track":
             case "/v2//track":
+            case "/v2.1/track":
                 StringWriter w = new StringWriter();
                 try {
                     String contentEncoding = req.getHeader("content-encoding");
@@ -173,7 +174,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
                     CharStreams.copy(reader, w);
                     String body = w.toString();
                     if (PING.equals(body)) {
-                        logit("Ping received for /v2/track");
+                        logit("Ping received for /v2.1/track");
                         resp.getWriter().append(PONG);
                     }
                     else {
