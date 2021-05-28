@@ -5,18 +5,20 @@
 
 package client
 
+import io.netty.channel.ConnectTimeoutException
 import io.opentelemetry.instrumentation.test.AgentTestTrait
+import io.opentelemetry.instrumentation.test.asserts.SpanAssert
 import io.opentelemetry.instrumentation.test.base.HttpClientTest
 import java.time.Duration
-import ratpack.exec.ExecResult
+import ratpack.exec.Operation
+import ratpack.exec.Promise
 import ratpack.http.client.HttpClient
+import ratpack.http.client.HttpClientSpec
 import ratpack.test.exec.ExecHarness
 import spock.lang.AutoCleanup
 import spock.lang.Shared
-import spock.lang.Timeout
 
-@Timeout(5)
-class RatpackHttpClientTest extends HttpClientTest implements AgentTestTrait {
+class RatpackHttpClientTest extends HttpClientTest<Void> implements AgentTestTrait {
 
   @AutoCleanup
   @Shared
@@ -26,26 +28,86 @@ class RatpackHttpClientTest extends HttpClientTest implements AgentTestTrait {
   def client = HttpClient.of {
     it.readTimeout(Duration.ofSeconds(2))
     // Connect timeout added in 1.5
+    // execController method added in 1.9
+    if (HttpClientSpec.metaClass.getMetaMethod("execController") != null) {
+      it.execController(exec.getController())
+    }
+    configureClient(it)
+  }
+
+  void configureClient(HttpClientSpec spec) {
   }
 
   @Override
-  int doRequest(String method, URI uri, Map<String, String> headers, Closure callback) {
-    ExecResult<Integer> result = exec.yield {
-      def resp = client.request(uri) { spec ->
-        spec.connectTimeout(Duration.ofSeconds(2))
-        spec.method(method)
-        spec.headers { headersSpec ->
-          headers.entrySet().each {
-            headersSpec.add(it.key, it.value)
-          }
+  Void buildRequest(String method, URI uri, Map<String, String> headers) {
+    return null
+  }
+
+  @Override
+  int sendRequest(Void request, String method, URI uri, Map<String, String> headers) {
+    return exec.yield {
+      internalSendRequest(method, uri, headers)
+    }.valueOrThrow
+  }
+
+  @Override
+  void sendRequestWithCallback(Void request, String method, URI uri, Map<String, String> headers, RequestResult requestResult) {
+    exec.execute(Operation.of {
+      internalSendRequest(method, uri, headers).result {result ->
+        requestResult.complete({ result.value }, result.throwable)
+      }
+    })
+  }
+
+  // overridden in RatpackForkedHttpClientTest
+  Promise<Integer> internalSendRequest(String method, URI uri, Map<String, String> headers) {
+    def resp = client.request(uri) { spec ->
+      spec.connectTimeout(Duration.ofSeconds(2))
+      spec.method(method)
+      spec.headers { headersSpec ->
+        headers.entrySet().each {
+          headersSpec.add(it.key, it.value)
         }
       }
-      return resp.map {
-        callback?.call()
-        it.status.code
-      }
     }
-    return result.value
+    return resp.map {
+      it.status.code
+    }
+  }
+
+  @Override
+  String expectedClientSpanName(URI uri, String method) {
+    switch (uri.toString()) {
+      case "http://localhost:61/": // unopened port
+      case "http://www.google.com:81/": // dropped request
+      case "https://192.0.2.1/": // non routable address
+        return "CONNECT"
+      default:
+        return super.expectedClientSpanName(uri, method)
+    }
+  }
+
+  @Override
+  void assertClientSpanErrorEvent(SpanAssert spanAssert, URI uri, Throwable exception) {
+    switch (uri.toString()) {
+      case "http://www.google.com:81/": // dropped request
+      case "https://192.0.2.1/": // non routable address
+        spanAssert.errorEvent(ConnectTimeoutException, ~/connection timed out:/)
+        return
+    }
+    super.assertClientSpanErrorEvent(spanAssert, uri, exception)
+  }
+
+  @Override
+  boolean hasClientSpanAttributes(URI uri) {
+    switch (uri.toString()) {
+      case "http://localhost:61/": // unopened port
+      case "http://www.google.com:81/": // dropped request
+      case "https://192.0.2.1/": // non routable address
+        return false
+      default:
+        return true
+    }
   }
 
   @Override
@@ -54,12 +116,13 @@ class RatpackHttpClientTest extends HttpClientTest implements AgentTestTrait {
   }
 
   @Override
-  boolean testConnectionFailure() {
+  boolean testReusedRequest() {
+    // these tests will pass, but they don't really test anything since REQUEST is Void
     false
   }
 
   @Override
-  boolean testRemoteConnection() {
-    return false
+  boolean testHttps() {
+    false
   }
 }

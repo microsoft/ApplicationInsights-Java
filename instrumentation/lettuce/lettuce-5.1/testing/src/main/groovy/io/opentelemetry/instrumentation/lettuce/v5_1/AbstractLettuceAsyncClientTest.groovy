@@ -6,8 +6,8 @@
 package io.opentelemetry.instrumentation.lettuce.v5_1
 
 import static io.opentelemetry.api.trace.SpanKind.CLIENT
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP
 
-import io.lettuce.core.ClientOptions
 import io.lettuce.core.ConnectionFuture
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisFuture
@@ -25,15 +25,15 @@ import java.util.function.BiConsumer
 import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Function
-import redis.embedded.RedisServer
+import org.testcontainers.containers.FixedHostPortGenericContainer
 import spock.lang.Shared
 import spock.util.concurrent.AsyncConditions
 
 abstract class AbstractLettuceAsyncClientTest extends InstrumentationSpecification {
   public static final String HOST = "127.0.0.1"
   public static final int DB_INDEX = 0
-  // Disable autoreconnect so we do not get stray traces popping up on server shutdown
-  public static final ClientOptions CLIENT_OPTIONS = ClientOptions.builder().autoReconnect(false).build()
+
+  private static FixedHostPortGenericContainer redisServer = new FixedHostPortGenericContainer<>("redis:6.2.3-alpine")
 
   abstract RedisClient createClient(String uri)
 
@@ -51,9 +51,6 @@ abstract class AbstractLettuceAsyncClientTest extends InstrumentationSpecificati
   String embeddedDbUri
 
   @Shared
-  RedisServer redisServer
-
-  @Shared
   Map<String, String> testHashMap = [
     firstname: "John",
     lastname : "Doe",
@@ -66,27 +63,21 @@ abstract class AbstractLettuceAsyncClientTest extends InstrumentationSpecificati
   RedisCommands<String, ?> syncCommands
 
   def setupSpec() {
-    port = PortUtils.randomOpenPort()
-    incorrectPort = PortUtils.randomOpenPort()
+    port = PortUtils.findOpenPort()
+    incorrectPort = PortUtils.findOpenPort()
     dbAddr = HOST + ":" + port + "/" + DB_INDEX
     dbAddrNonExistent = HOST + ":" + incorrectPort + "/" + DB_INDEX
     dbUriNonExistent = "redis://" + dbAddrNonExistent
     embeddedDbUri = "redis://" + dbAddr
 
-    redisServer = RedisServer.builder()
-    // bind to localhost to avoid firewall popup
-      .setting("bind " + HOST)
-    // set max memory to avoid problems in CI
-      .setting("maxmemory 128M")
-      .port(port).build()
+    redisServer = redisServer.withFixedExposedPort(port, 6379)
   }
 
   def setup() {
     redisClient = createClient(embeddedDbUri)
 
-    println "Using redis: $redisServer.args"
     redisServer.start()
-    redisClient.setOptions(CLIENT_OPTIONS)
+    redisClient.setOptions(LettuceTestUtil.CLIENT_OPTIONS)
 
     connection = redisClient.connect()
     asyncCommands = connection.async()
@@ -106,11 +97,11 @@ abstract class AbstractLettuceAsyncClientTest extends InstrumentationSpecificati
   def "connect using get on ConnectionFuture"() {
     setup:
     RedisClient testConnectionClient = RedisClient.create(embeddedDbUri)
-    testConnectionClient.setOptions(CLIENT_OPTIONS)
+    testConnectionClient.setOptions(LettuceTestUtil.CLIENT_OPTIONS)
 
     when:
     ConnectionFuture connectionFuture = testConnectionClient.connectAsync(StringCodec.UTF8,
-      new RedisURI(HOST, port, 3, TimeUnit.SECONDS))
+      RedisURI.create("redis://${HOST}:${port}?timeout=3s"))
     StatefulConnection connection = connectionFuture.get()
 
     then:
@@ -125,11 +116,11 @@ abstract class AbstractLettuceAsyncClientTest extends InstrumentationSpecificati
   def "connect exception inside the connection future"() {
     setup:
     RedisClient testConnectionClient = RedisClient.create(dbUriNonExistent)
-    testConnectionClient.setOptions(CLIENT_OPTIONS)
+    testConnectionClient.setOptions(LettuceTestUtil.CLIENT_OPTIONS)
 
     when:
     ConnectionFuture connectionFuture = testConnectionClient.connectAsync(StringCodec.UTF8,
-      new RedisURI(HOST, incorrectPort, 3, TimeUnit.SECONDS))
+      RedisURI.create("redis://${HOST}:${incorrectPort}?timeout=3s"))
     StatefulConnection connection = connectionFuture.get()
 
     then:
@@ -151,9 +142,8 @@ abstract class AbstractLettuceAsyncClientTest extends InstrumentationSpecificati
         span(0) {
           name "SET"
           kind CLIENT
-          errored false
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" port
             "${SemanticAttributes.DB_CONNECTION_STRING.key}" "redis://127.0.0.1:$port"
@@ -194,9 +184,8 @@ abstract class AbstractLettuceAsyncClientTest extends InstrumentationSpecificati
         span(0) {
           name "GET"
           kind CLIENT
-          errored false
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" port
             "${SemanticAttributes.DB_CONNECTION_STRING.key}" "redis://127.0.0.1:$port"
@@ -251,9 +240,8 @@ abstract class AbstractLettuceAsyncClientTest extends InstrumentationSpecificati
         span(0) {
           name "GET"
           kind CLIENT
-          errored false
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" port
             "${SemanticAttributes.DB_CONNECTION_STRING.key}" "redis://127.0.0.1:$port"
@@ -294,9 +282,8 @@ abstract class AbstractLettuceAsyncClientTest extends InstrumentationSpecificati
         span(0) {
           name "RANDOMKEY"
           kind CLIENT
-          errored false
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" port
             "${SemanticAttributes.DB_CONNECTION_STRING.key}" "redis://127.0.0.1:$port"
@@ -355,9 +342,8 @@ abstract class AbstractLettuceAsyncClientTest extends InstrumentationSpecificati
         span(0) {
           name "HMSET"
           kind CLIENT
-          errored false
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" port
             "${SemanticAttributes.DB_CONNECTION_STRING.key}" "redis://127.0.0.1:$port"
@@ -376,9 +362,8 @@ abstract class AbstractLettuceAsyncClientTest extends InstrumentationSpecificati
         span(0) {
           name "HGETALL"
           kind CLIENT
-          errored false
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"
             "${SemanticAttributes.NET_PEER_PORT.key}" port
             "${SemanticAttributes.DB_CONNECTION_STRING.key}" "redis://127.0.0.1:$port"

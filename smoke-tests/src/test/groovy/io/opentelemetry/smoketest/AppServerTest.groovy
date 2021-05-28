@@ -5,6 +5,9 @@
 
 package io.opentelemetry.smoketest
 
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OS_TYPE
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OsTypeValues.LINUX
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.OsTypeValues.WINDOWS
 import static org.junit.Assume.assumeTrue
 
 import io.opentelemetry.proto.trace.v1.Span
@@ -21,13 +24,33 @@ abstract class AppServerTest extends SmokeTest {
   String jdk
   @Shared
   String serverVersion
+  @Shared
+  boolean isWindows
 
   def setupSpec() {
     def appServer = AppServerTestRunner.currentAppServer(this.getClass())
     serverVersion = appServer.version()
     jdk = appServer.jdk()
-    startTarget(jdk, serverVersion)
+
+    isWindows = System.getProperty("os.name").toLowerCase().contains("windows") &&
+      "1" != System.getenv("USE_LINUX_CONTAINERS")
+    startTarget(jdk, serverVersion, isWindows)
   }
+
+  @Override
+  protected String getTargetImage(String jdk) {
+    throw new UnsupportedOperationException("App servers tests should use getTargetImagePrefix")
+  }
+
+  @Override
+  protected String getTargetImage(String jdk, String serverVersion, boolean windows) {
+    String platformSuffix = windows ? "-windows" : ""
+    String extraTag = "20210428.792292726"
+    String fullSuffix = "-${serverVersion}-jdk$jdk$platformSuffix-$extraTag"
+    return getTargetImagePrefix() + fullSuffix
+  }
+
+  protected abstract String getTargetImagePrefix()
 
   def cleanupSpec() {
     stopTarget()
@@ -51,10 +74,10 @@ abstract class AppServerTest extends SmokeTest {
 
   //TODO add assert that server spans were created by servers, not by servlets
   @Unroll
-  def "#appServer smoke test on JDK #jdk"(String appServer, String jdk) {
+  def "#appServer smoke test on JDK #jdk"(String appServer, String jdk, boolean isWindows) {
     assumeTrue(testSmoke())
 
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/greeting"
+    String url = "http://localhost:${containerManager.getTargetMappedPort(8080)}/app/greeting"
     def request = new Request.Builder().url(url).get().build()
     def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name.IMPLEMENTATION_VERSION)
 
@@ -89,22 +112,19 @@ abstract class AppServerTest extends SmokeTest {
     and: "Number of spans tagged with current otel library version"
     traces.countFilteredResourceAttributes("telemetry.auto.version", currentAgentVersion) == 3
 
-    and:
-    traces.findResourceAttribute("os.type")
-      .map { it.stringValue }
-      .findAny()
-      .isPresent()
+    and: "Number of spans tagged with expected OS type"
+    traces.countFilteredResourceAttributes(OS_TYPE.key, isWindows ? WINDOWS : LINUX) == 3
 
     cleanup:
     response?.close()
 
     where:
-    [appServer, jdk] << getTestParams()
+    [appServer, jdk, isWindows] << getTestParams()
   }
 
   @Unroll
-  def "#appServer test static file found on JDK #jdk"(String appServer, String jdk) {
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/hello.txt"
+  def "#appServer test static file found on JDK #jdk"(String appServer, String jdk, boolean isWindows) {
+    String url = "http://localhost:${containerManager.getTargetMappedPort(8080)}/app/hello.txt"
     def request = new Request.Builder().url(url).get().build()
     def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name.IMPLEMENTATION_VERSION)
 
@@ -132,22 +152,19 @@ abstract class AppServerTest extends SmokeTest {
     and: "Number of spans tagged with current otel library version"
     traces.countFilteredResourceAttributes("telemetry.auto.version", currentAgentVersion) == 1
 
-    and:
-    traces.findResourceAttribute("os.type")
-      .map { it.stringValue }
-      .findAny()
-      .isPresent()
+    and: "Number of spans tagged with expected OS type"
+    traces.countFilteredResourceAttributes(OS_TYPE.key, isWindows ? WINDOWS : LINUX) == 1
 
     cleanup:
     response?.close()
 
     where:
-    [appServer, jdk] << getTestParams()
+    [appServer, jdk, isWindows] << getTestParams()
   }
 
   @Unroll
-  def "#appServer test static file not found on JDK #jdk"(String appServer, String jdk) {
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/file-that-does-not-exist"
+  def "#appServer test static file not found on JDK #jdk"(String appServer, String jdk, boolean isWindows) {
+    String url = "http://localhost:${containerManager.getTargetMappedPort(8080)}/app/file-that-does-not-exist"
     def request = new Request.Builder().url(url).get().build()
     def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name.IMPLEMENTATION_VERSION)
 
@@ -174,24 +191,21 @@ abstract class AppServerTest extends SmokeTest {
     and: "Number of spans tagged with current otel library version"
     traces.countFilteredResourceAttributes("telemetry.auto.version", currentAgentVersion) == traces.countSpans()
 
-    and:
-    traces.findResourceAttribute("os.type")
-      .map { it.stringValue }
-      .findAny()
-      .isPresent()
+    and: "Number of spans tagged with expected OS type"
+    traces.countFilteredResourceAttributes(OS_TYPE.key, isWindows ? WINDOWS : LINUX) == traces.countSpans()
 
     cleanup:
     response?.close()
 
     where:
-    [appServer, jdk] << getTestParams()
+    [appServer, jdk, isWindows] << getTestParams()
   }
 
   @Unroll
-  def "#appServer test request for WEB-INF/web.xml on JDK #jdk"(String appServer, String jdk) {
+  def "#appServer test request for WEB-INF/web.xml on JDK #jdk"(String appServer, String jdk, boolean isWindows) {
     assumeTrue(testRequestWebInfWebXml())
 
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/WEB-INF/web.xml"
+    String url = "http://localhost:${containerManager.getTargetMappedPort(8080)}/app/WEB-INF/web.xml"
     def request = new Request.Builder().url(url).get().build()
     def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name.IMPLEMENTATION_VERSION)
 
@@ -221,24 +235,21 @@ abstract class AppServerTest extends SmokeTest {
     and: "Number of spans tagged with current otel library version"
     traces.countFilteredResourceAttributes("telemetry.auto.version", currentAgentVersion) == traces.countSpans()
 
-    and:
-    traces.findResourceAttribute("os.type")
-      .map { it.stringValue }
-      .findAny()
-      .isPresent()
+    and: "Number of spans tagged with expected OS type"
+    traces.countFilteredResourceAttributes(OS_TYPE.key, isWindows ? WINDOWS : LINUX) == traces.countSpans()
 
     cleanup:
     response?.close()
 
     where:
-    [appServer, jdk] << getTestParams()
+    [appServer, jdk, isWindows] << getTestParams()
   }
 
   @Unroll
-  def "#appServer test request with error JDK #jdk"(String appServer, String jdk) {
+  def "#appServer test request with error JDK #jdk"(String appServer, String jdk, boolean isWindows) {
     assumeTrue(testException())
 
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/exception"
+    String url = "http://localhost:${containerManager.getTargetMappedPort(8080)}/app/exception"
     def request = new Request.Builder().url(url).get().build()
     def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name.IMPLEMENTATION_VERSION)
 
@@ -268,22 +279,19 @@ abstract class AppServerTest extends SmokeTest {
     and: "Number of spans tagged with current otel library version"
     traces.countFilteredResourceAttributes("telemetry.auto.version", currentAgentVersion) == 1
 
-    and:
-    traces.findResourceAttribute("os.type")
-      .map { it.stringValue }
-      .findAny()
-      .isPresent()
+    and: "Number of spans tagged with expected OS type"
+    traces.countFilteredResourceAttributes(OS_TYPE.key, isWindows ? WINDOWS : LINUX) == 1
 
     cleanup:
     response?.close()
 
     where:
-    [appServer, jdk] << getTestParams()
+    [appServer, jdk, isWindows] << getTestParams()
   }
 
   @Unroll
-  def "#appServer test request outside deployed application JDK #jdk"(String appServer, String jdk) {
-    String url = "http://localhost:${target.getMappedPort(8080)}/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless"
+  def "#appServer test request outside deployed application JDK #jdk"(String appServer, String jdk, boolean isWindows) {
+    String url = "http://localhost:${containerManager.getTargetMappedPort(8080)}/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless"
     def request = new Request.Builder().url(url).get().build()
     def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name.IMPLEMENTATION_VERSION)
 
@@ -313,24 +321,21 @@ abstract class AppServerTest extends SmokeTest {
     and: "Number of spans tagged with current otel library version"
     traces.countFilteredResourceAttributes("telemetry.auto.version", currentAgentVersion) == traces.countSpans()
 
-    and:
-    traces.findResourceAttribute("os.type")
-      .map { it.stringValue }
-      .findAny()
-      .isPresent()
+    and: "Number of spans tagged with expected OS type"
+    traces.countFilteredResourceAttributes(OS_TYPE.key, isWindows ? WINDOWS : LINUX) == traces.countSpans()
 
     cleanup:
     response?.close()
 
     where:
-    [appServer, jdk] << getTestParams()
+    [appServer, jdk, isWindows] << getTestParams()
   }
 
   @Unroll
-  def "#appServer async smoke test on JDK #jdk"(String appServer, String jdk) {
+  def "#appServer async smoke test on JDK #jdk"(String appServer, String jdk, boolean isWindows) {
     assumeTrue(testAsyncSmoke())
 
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/asyncgreeting"
+    String url = "http://localhost:${containerManager.getTargetMappedPort(8080)}/app/asyncgreeting"
     def request = new Request.Builder().url(url).get().build()
     def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name.IMPLEMENTATION_VERSION)
 
@@ -365,17 +370,14 @@ abstract class AppServerTest extends SmokeTest {
     and: "Number of spans tagged with current otel library version"
     traces.countFilteredResourceAttributes("telemetry.auto.version", currentAgentVersion) == 3
 
-    and:
-    traces.findResourceAttribute("os.type")
-      .map { it.stringValue }
-      .findAny()
-      .isPresent()
+    and: "Number of spans tagged with expected OS type"
+    traces.countFilteredResourceAttributes(OS_TYPE.key, isWindows ? WINDOWS : LINUX) == 3
 
     cleanup:
     response?.close()
 
     where:
-    [appServer, jdk] << getTestParams()
+    [appServer, jdk, isWindows] << getTestParams()
   }
 
   protected String getSpanName(String path) {
@@ -394,7 +396,7 @@ abstract class AppServerTest extends SmokeTest {
 
   protected List<List<Object>> getTestParams() {
     return [
-      [serverVersion, jdk]
+      [serverVersion, jdk, isWindows]
     ]
   }
 }

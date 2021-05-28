@@ -5,6 +5,8 @@
 
 package io.opentelemetry.javaagent.tooling;
 
+import java.util.Locale;
+
 class LoggingConfigurer {
 
   private static final String SIMPLE_LOGGER_SHOW_DATE_TIME_PROPERTY =
@@ -12,7 +14,7 @@ class LoggingConfigurer {
   private static final String SIMPLE_LOGGER_DATE_TIME_FORMAT_PROPERTY =
       "io.opentelemetry.javaagent.slf4j.simpleLogger.dateTimeFormat";
   private static final String SIMPLE_LOGGER_DATE_TIME_FORMAT_DEFAULT =
-      "'[opentelemetry.auto.trace 'yyyy-MM-dd HH:mm:ss:SSS Z']'";
+      "'[otel.javaagent 'yyyy-MM-dd HH:mm:ss:SSS Z']'";
   private static final String SIMPLE_LOGGER_DEFAULT_LOG_LEVEL_PROPERTY =
       "io.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel";
   private static final String SIMPLE_LOGGER_PREFIX =
@@ -29,6 +31,9 @@ class LoggingConfigurer {
       setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "io.perfmark.PerfMark", "INFO");
       setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "io.grpc.Context", "INFO");
       setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "io.grpc.internal.ServerImplBuilder", "INFO");
+      setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "io.grpc.ManagedChannelRegistry", "INFO");
+      setSystemPropertyDefault(
+          SIMPLE_LOGGER_PREFIX + "io.netty.util.internal.NativeLibraryLoader", "INFO");
       setSystemPropertyDefault(
           SIMPLE_LOGGER_PREFIX + "io.grpc.internal.ManagedChannelImplBuilder", "INFO");
     } else {
@@ -57,7 +62,7 @@ class LoggingConfigurer {
     }
 
     String tracerDebugLevelEnv =
-        System.getenv(tracerDebugLevelSysprop.replace('.', '_').toUpperCase());
+        System.getenv(tracerDebugLevelSysprop.replace('.', '_').toUpperCase(Locale.ROOT));
 
     if (tracerDebugLevelEnv != null) {
       return Boolean.parseBoolean(tracerDebugLevelEnv);

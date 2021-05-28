@@ -22,7 +22,7 @@ class SparkJavaBasedTest extends AgentInstrumentationSpecification {
   OkHttpClient client = OkHttpUtils.client()
 
   def setupSpec() {
-    port = PortUtils.randomOpenPort()
+    port = PortUtils.findOpenPort()
     TestSparkJavaApplication.initSpark(port)
   }
 
@@ -48,7 +48,6 @@ class SparkJavaBasedTest extends AgentInstrumentationSpecification {
         span(0) {
           name "/param/:param"
           kind SERVER
-          errored false
           hasNoParent()
           attributes {
             "${SemanticAttributes.NET_PEER_IP.key}" "127.0.0.1"

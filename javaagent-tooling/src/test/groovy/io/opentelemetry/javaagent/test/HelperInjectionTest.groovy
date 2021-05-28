@@ -7,7 +7,7 @@ package io.opentelemetry.javaagent.test
 
 import static io.opentelemetry.instrumentation.test.utils.ClasspathUtils.isClassLoaded
 import static io.opentelemetry.instrumentation.test.utils.GcUtils.awaitGc
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.BOOTSTRAP_CLASSLOADER
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.BOOTSTRAP_CLASSLOADER
 
 import io.opentelemetry.javaagent.tooling.AgentInstaller
 import io.opentelemetry.javaagent.tooling.HelperInjector
@@ -19,15 +19,13 @@ import net.bytebuddy.description.type.TypeDescription
 import net.bytebuddy.dynamic.ClassFileLocator
 import net.bytebuddy.dynamic.loading.ClassInjector
 import spock.lang.Specification
-import spock.lang.Timeout
 
 class HelperInjectionTest extends Specification {
 
-  @Timeout(10)
   def "helpers injected to non-delegating classloader"() {
     setup:
     String helperClassName = HelperInjectionTest.getPackage().getName() + '.HelperClass'
-    HelperInjector injector = new HelperInjector("test", [helperClassName], [])
+    HelperInjector injector = new HelperInjector("test", [helperClassName], [], this.class.classLoader)
     AtomicReference<URLClassLoader> emptyLoader = new AtomicReference<>(new URLClassLoader(new URL[0], (ClassLoader) null))
 
     when:
@@ -59,7 +57,7 @@ class HelperInjectionTest extends Specification {
     ByteBuddyAgent.install()
     AgentInstaller.installBytebuddyAgent(ByteBuddyAgent.getInstrumentation(), (URL) null)
     String helperClassName = HelperInjectionTest.getPackage().getName() + '.HelperClass'
-    HelperInjector injector = new HelperInjector("test", [helperClassName], [])
+    HelperInjector injector = new HelperInjector("test", [helperClassName], [], this.class.classLoader)
     URLClassLoader bootstrapChild = new URLClassLoader(new URL[0], (ClassLoader) null)
 
     when:

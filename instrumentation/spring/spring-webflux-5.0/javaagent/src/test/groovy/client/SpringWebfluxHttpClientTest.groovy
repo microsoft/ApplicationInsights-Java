@@ -5,41 +5,76 @@
 
 package client
 
+import io.netty.channel.ChannelOption
 import io.opentelemetry.instrumentation.test.AgentTestTrait
+import io.opentelemetry.instrumentation.test.asserts.SpanAssert
 import io.opentelemetry.instrumentation.test.base.HttpClientTest
 import org.springframework.http.HttpMethod
-import org.springframework.web.reactive.function.client.ClientResponse
+import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.WebClient
-import spock.lang.Timeout
 
-@Timeout(5)
-class SpringWebfluxHttpClientTest extends HttpClientTest implements AgentTestTrait {
+class SpringWebfluxHttpClientTest extends HttpClientTest<WebClient.RequestBodySpec> implements AgentTestTrait {
 
   @Override
-  int doRequest(String method, URI uri, Map<String, String> headers, Closure callback) {
-    ClientResponse response = WebClient.builder().build().method(HttpMethod.resolve(method))
+  WebClient.RequestBodySpec buildRequest(String method, URI uri, Map<String, String> headers) {
+    def connector
+    if (isOldVersion()) {
+      connector = new ReactorClientHttpConnector({ clientOptions ->
+        clientOptions.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MS)
+      })
+    } else {
+      def httpClient = reactor.netty.http.client.HttpClient.create().tcpConfiguration({ tcpClient ->
+        tcpClient.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MS)
+      })
+      connector = new ReactorClientHttpConnector(httpClient)
+    }
+    return WebClient.builder().clientConnector(connector).build().method(HttpMethod.resolve(method))
       .uri(uri)
       .headers { h -> headers.forEach({ key, value -> h.add(key, value) }) }
-      .exchange()
-      .doAfterSuccessOrError { res, ex ->
-        callback?.call()
+  }
+
+  private static boolean isOldVersion() {
+    try {
+      Class.forName("reactor.netty.http.client.HttpClient")
+      return false
+    } catch (ClassNotFoundException exception) {
+      return true
+    }
+  }
+
+  @Override
+  int sendRequest(WebClient.RequestBodySpec request, String method, URI uri, Map<String, String> headers) {
+    return request.exchange().block().statusCode().value()
+  }
+
+  @Override
+  void sendRequestWithCallback(WebClient.RequestBodySpec request, String method, URI uri, Map<String, String> headers, RequestResult requestResult) {
+    request.exchange().subscribe({
+      requestResult.complete(it.statusCode().value())
+    }, {
+      requestResult.complete(it)
+    })
+  }
+
+  @Override
+  void assertClientSpanErrorEvent(SpanAssert spanAssert, URI uri, Throwable exception) {
+    if (!exception.getClass().getName().endsWith("WebClientRequestException")) {
+      switch (uri.toString()) {
+        case "http://localhost:61/": // unopened port
+          if (!exception.getClass().getName().endsWith("AnnotatedConnectException")) {
+            exception = exception.getCause()
+          }
+          break
+        case "http://www.google.com:81/": // dropped request
+        case "https://192.0.2.1/": // non routable address
+          exception = exception.getCause()
       }
-      .block()
-
-    response.statusCode().value()
+    }
+    super.assertClientSpanErrorEvent(spanAssert, uri, exception)
   }
 
+  @Override
   boolean testRedirects() {
-    false
-  }
-
-  boolean testConnectionFailure() {
-    false
-  }
-
-
-  boolean testRemoteConnection() {
-    // FIXME: figure out how to configure timeouts.
     false
   }
 }

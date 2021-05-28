@@ -5,23 +5,18 @@
 
 package io.opentelemetry.javaagent.instrumentation.methods;
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static net.bytebuddy.matcher.ElementMatchers.named;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.tooling.config.MethodsConfigurationParser;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.bytebuddy.description.method.MethodDescription;
-import net.bytebuddy.description.type.TypeDescription;
-import net.bytebuddy.matcher.ElementMatcher;
 
 /**
  * TraceConfig Instrumentation does not extend Default.
@@ -48,55 +43,21 @@ public class MethodInstrumentationModule extends InstrumentationModule {
     typeInstrumentations =
         classMethodsToTrace.entrySet().stream()
             .filter(e -> !e.getValue().isEmpty())
-            .map(e -> new TracerClassInstrumentation(e.getKey(), e.getValue()))
+            .map(e -> new MethodInstrumentation(e.getKey(), e.getValue()))
             .collect(Collectors.toList());
   }
 
   // the default configuration has empty "otel.instrumentation.methods.include", and so doesn't
   // generate any TypeInstrumentation for muzzle to analyze
   @Override
-  protected String[] additionalHelperClassNames() {
+  public List<String> getMuzzleHelperClassNames() {
     return typeInstrumentations.isEmpty()
-        ? new String[0]
-        : new String[] {"io.opentelemetry.javaagent.instrumentation.methods.MethodTracer"};
+        ? emptyList()
+        : singletonList("io.opentelemetry.javaagent.instrumentation.methods.MethodTracer");
   }
 
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return typeInstrumentations;
-  }
-
-  public static class TracerClassInstrumentation implements TypeInstrumentation {
-    private final String className;
-    private final Set<String> methodNames;
-
-    public TracerClassInstrumentation(String className, Set<String> methodNames) {
-      this.className = className;
-      this.methodNames = methodNames;
-    }
-
-    @Override
-    public ElementMatcher<ClassLoader> classLoaderOptimization() {
-      return hasClassesNamed(className);
-    }
-
-    @Override
-    public ElementMatcher<TypeDescription> typeMatcher() {
-      return safeHasSuperType(named(className));
-    }
-
-    @Override
-    public Map<ElementMatcher<? super MethodDescription>, String> transformers() {
-      ElementMatcher.Junction<MethodDescription> methodMatchers = null;
-      for (String methodName : methodNames) {
-        if (methodMatchers == null) {
-          methodMatchers = named(methodName);
-        } else {
-          methodMatchers = methodMatchers.or(named(methodName));
-        }
-      }
-
-      return Collections.singletonMap(methodMatchers, MethodAdvice.class.getName());
-    }
   }
 }

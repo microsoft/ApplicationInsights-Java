@@ -25,6 +25,8 @@ import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTra
 @Unroll
 abstract class AbstractRocketMqClientTest extends InstrumentationSpecification {
 
+  private static final int CONSUME_TIMEOUT = 30_000
+
   @Shared
   DefaultMQProducer producer
 
@@ -32,7 +34,7 @@ abstract class AbstractRocketMqClientTest extends InstrumentationSpecification {
   DefaultMQPushConsumer consumer
 
   @Shared
-  DefaultMQPushConsumer batchConsumer
+  RMQOrderListener messageListener
 
   @Shared
   def sharedTopic
@@ -48,14 +50,30 @@ abstract class AbstractRocketMqClientTest extends InstrumentationSpecification {
   abstract void configureMQPushConsumer(DefaultMQPushConsumer consumer)
 
   def setupSpec() {
+    sharedTopic = BaseConf.initTopic()
+    msg = new Message(sharedTopic, "TagA", ("Hello RocketMQ").getBytes(RemotingHelper.DEFAULT_CHARSET))
+    Message msg1 = new Message(sharedTopic, "TagA", ("hello world a").getBytes())
+    Message msg2 = new Message(sharedTopic, "TagB", ("hello world b").getBytes())
+    msgs.add(msg1)
+    msgs.add(msg2)
     producer = BaseConf.getProducer(BaseConf.nsAddr)
     configureMQProducer(producer)
+    messageListener = new RMQOrderListener()
+    consumer = BaseConf.getConsumer(BaseConf.nsAddr, sharedTopic, "*", messageListener)
+    configureMQPushConsumer(consumer)
+  }
+
+  def cleanupSpec() {
+    producer?.shutdown()
+    consumer?.shutdown()
+    BaseConf.deleteTempDir()
+  }
+
+  def setup() {
+    messageListener.clearMsg()
   }
 
   def "test rocketmq produce callback"() {
-    setup:
-    sharedTopic = BaseConf.initTopic()
-    msg = new Message(sharedTopic, "TagA", ("Hello RocketMQ").getBytes(RemotingHelper.DEFAULT_CHARSET))
     when:
     producer.send(msg, new SendCallback() {
       @Override
@@ -66,9 +84,10 @@ abstract class AbstractRocketMqClientTest extends InstrumentationSpecification {
       void onException(Throwable throwable) {
       }
     })
+    messageListener.waitForMessageConsume(1, CONSUME_TIMEOUT)
     then:
     assertTraces(1) {
-      trace(0, 1) {
+      trace(0, 2) {
         span(0) {
           name sharedTopic + " send"
           kind PRODUCER
@@ -82,20 +101,32 @@ abstract class AbstractRocketMqClientTest extends InstrumentationSpecification {
             "messaging.rocketmq.send_result" "SEND_OK"
           }
         }
+        span(1) {
+          name sharedTopic + " process"
+          kind CONSUMER
+          attributes {
+            "${SemanticAttributes.MESSAGING_SYSTEM.key}" "rocketmq"
+            "${SemanticAttributes.MESSAGING_DESTINATION.key}" sharedTopic
+            "${SemanticAttributes.MESSAGING_DESTINATION_KIND.key}" "topic"
+            "${SemanticAttributes.MESSAGING_OPERATION.key}" "process"
+            "${SemanticAttributes.MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES.key}" Long
+            "${SemanticAttributes.MESSAGING_MESSAGE_ID.key}" String
+            "messaging.rocketmq.tags" "TagA"
+            "messaging.rocketmq.broker_address" String
+            "messaging.rocketmq.queue_id" Long
+            "messaging.rocketmq.queue_offset" Long
+          }
+        }
       }
     }
   }
 
   def "test rocketmq produce and consume"() {
-    setup:
-    sharedTopic = BaseConf.initTopic()
-    msg = new Message(sharedTopic, "TagA", ("Hello RocketMQ").getBytes(RemotingHelper.DEFAULT_CHARSET))
-    consumer = BaseConf.getConsumer(BaseConf.nsAddr, sharedTopic, "*", new RMQOrderListener())
-    configureMQPushConsumer(consumer)
     when:
     runUnderTrace("parent") {
       producer.send(msg)
     }
+    messageListener.waitForMessageConsume(1, CONSUME_TIMEOUT)
     then:
     assertTraces(1) {
       trace(0, 3) {
@@ -135,18 +166,12 @@ abstract class AbstractRocketMqClientTest extends InstrumentationSpecification {
 
   def "test rocketmq produce and batch consume"() {
     setup:
-    sharedTopic = BaseConf.initTopic()
-    Message msg1 = new Message(sharedTopic, "TagA", ("hello world a").getBytes())
-    Message msg2 = new Message(sharedTopic, "TagB", ("hello world b").getBytes())
-    msgs.add(msg1)
-    msgs.add(msg2)
-    batchConsumer = BaseConf.getConsumer(BaseConf.nsAddr, sharedTopic, "*", new RMQOrderListener())
-    batchConsumer.setConsumeMessageBatchMaxSize(2)
-    configureMQPushConsumer(batchConsumer)
+    consumer.setConsumeMessageBatchMaxSize(2)
     when:
     runUnderTrace("parent") {
       producer.send(msgs)
     }
+    messageListener.waitForMessageConsume(msgs.size(), CONSUME_TIMEOUT)
     then:
     assertTraces(2) {
       def itemStepSpan = null

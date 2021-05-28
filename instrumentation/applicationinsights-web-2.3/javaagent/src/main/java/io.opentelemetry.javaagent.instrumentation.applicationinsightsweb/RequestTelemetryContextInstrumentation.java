@@ -18,47 +18,44 @@ import com.microsoft.applicationinsights.web.internal.correlation.tracecontext.T
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
 public class RequestTelemetryContextInstrumentation implements TypeInstrumentation {
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return named("com.microsoft.applicationinsights.web.internal.RequestTelemetryContext");
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-    transformers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
             .and(named("getHttpRequestTelemetry"))
             .and(takesNoArguments()),
         RequestTelemetryContextInstrumentation.class.getName() + "$GetRequestTelemetryAdvice");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
             .and(named("getTracestate"))
             .and(takesNoArguments()),
         RequestTelemetryContextInstrumentation.class.getName() + "$GetTracestateAdvice");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
             .and(named("getTraceflag"))
             .and(takesNoArguments()),
         RequestTelemetryContextInstrumentation.class.getName() + "$GetTraceflagAdvice");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
@@ -66,7 +63,6 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
             .and(not(named("getTracestate")))
             .and(not(named("getTraceflag"))),
         RequestTelemetryContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
-    return transformers;
   }
 
   public static class GetRequestTelemetryAdvice {

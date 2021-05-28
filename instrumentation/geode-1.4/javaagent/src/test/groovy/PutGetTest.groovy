@@ -112,12 +112,10 @@ class PutGetTest extends AgentInstrumentationSpecification {
         span(0) {
           name "someTrace"
           kind INTERNAL
-          errored false
         }
         span(1) {
-          name "clear"
+          name "clear test-region"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "geode"
             "$SemanticAttributes.DB_NAME.key" "test-region"
@@ -125,9 +123,8 @@ class PutGetTest extends AgentInstrumentationSpecification {
           }
         }
         span(2) {
-          name "put"
+          name "put test-region"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "geode"
             "$SemanticAttributes.DB_NAME.key" "test-region"
@@ -135,9 +132,8 @@ class PutGetTest extends AgentInstrumentationSpecification {
           }
         }
         span(3) {
-          name verb
+          name "$verb test-region"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "geode"
             "$SemanticAttributes.DB_NAME.key" "test-region"
@@ -169,9 +165,8 @@ class PutGetTest extends AgentInstrumentationSpecification {
     assertTraces(1) {
       trace(0, 1) {
         span(0) {
-          name "query"
+          name "query test-region"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "geode"
             "$SemanticAttributes.DB_NAME.key" "test-region"

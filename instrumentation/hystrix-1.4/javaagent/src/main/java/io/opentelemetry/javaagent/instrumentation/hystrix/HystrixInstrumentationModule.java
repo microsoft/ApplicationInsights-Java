@@ -6,10 +6,10 @@
 package io.opentelemetry.javaagent.instrumentation.hystrix;
 
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.extendsClass;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.NameMatchers.namedOneOf;
 import static io.opentelemetry.javaagent.instrumentation.hystrix.HystrixTracer.tracer;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.NameMatchers.namedOneOf;
 import static java.util.Collections.singletonList;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
@@ -18,13 +18,11 @@ import com.google.auto.service.AutoService;
 import com.netflix.hystrix.HystrixInvokableInfo;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.rxjava.TracedOnSubscribe;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.HashMap;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import rx.Observable;
@@ -39,10 +37,8 @@ public class HystrixInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  protected String[] additionalHelperClassNames() {
-    return new String[] {
-      "rx.__OpenTelemetryTracingUtil",
-    };
+  public boolean isHelperClass(String className) {
+    return className.equals("rx.__OpenTelemetryTracingUtil");
   }
 
   @Override
@@ -66,15 +62,13 @@ public class HystrixInstrumentationModule extends InstrumentationModule {
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher.Junction<MethodDescription>, String> transformers = new HashMap<>();
-      transformers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           named("getExecutionObservable").and(returns(named("rx.Observable"))),
           HystrixInstrumentationModule.class.getName() + "$ExecuteAdvice");
-      transformers.put(
+      transformer.applyAdviceToMethod(
           named("getFallbackObservable").and(returns(named("rx.Observable"))),
           HystrixInstrumentationModule.class.getName() + "$FallbackAdvice");
-      return transformers;
     }
   }
 

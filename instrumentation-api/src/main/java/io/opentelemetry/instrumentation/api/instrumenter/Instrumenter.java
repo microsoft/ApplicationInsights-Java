@@ -12,11 +12,14 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.InstrumentationVersion;
 import io.opentelemetry.instrumentation.api.internal.SupportabilityMetrics;
 import io.opentelemetry.instrumentation.api.tracer.ClientSpan;
 import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
+import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -55,23 +58,23 @@ public class Instrumenter<REQUEST, RESPONSE> {
   private final SpanKindExtractor<? super REQUEST> spanKindExtractor;
   private final SpanStatusExtractor<? super REQUEST, ? super RESPONSE> spanStatusExtractor;
   private final List<? extends AttributesExtractor<? super REQUEST, ? super RESPONSE>> extractors;
+  private final List<? extends RequestListener> requestListeners;
   private final ErrorCauseExtractor errorCauseExtractor;
+  private final StartTimeExtractor<REQUEST> startTimeExtractor;
+  private final EndTimeExtractor<RESPONSE> endTimeExtractor;
 
-  Instrumenter(
-      String instrumentationName,
-      Tracer tracer,
-      SpanNameExtractor<? super REQUEST> spanNameExtractor,
-      SpanKindExtractor<? super REQUEST> spanKindExtractor,
-      SpanStatusExtractor<? super REQUEST, ? super RESPONSE> spanStatusExtractor,
-      List<? extends AttributesExtractor<? super REQUEST, ? super RESPONSE>> extractors,
-      ErrorCauseExtractor errorCauseExtractor) {
-    this.instrumentationName = instrumentationName;
-    this.tracer = tracer;
-    this.spanNameExtractor = spanNameExtractor;
-    this.spanKindExtractor = spanKindExtractor;
-    this.spanStatusExtractor = spanStatusExtractor;
-    this.extractors = extractors;
-    this.errorCauseExtractor = errorCauseExtractor;
+  Instrumenter(InstrumenterBuilder<REQUEST, RESPONSE> builder) {
+    this.instrumentationName = builder.instrumentationName;
+    this.tracer =
+        builder.openTelemetry.getTracer(instrumentationName, InstrumentationVersion.VERSION);
+    this.spanNameExtractor = builder.spanNameExtractor;
+    this.spanKindExtractor = builder.spanKindExtractor;
+    this.spanStatusExtractor = builder.spanStatusExtractor;
+    this.extractors = new ArrayList<>(builder.attributesExtractors);
+    this.requestListeners = new ArrayList<>(builder.requestListeners);
+    this.errorCauseExtractor = builder.errorCauseExtractor;
+    this.startTimeExtractor = builder.startTimeExtractor;
+    this.endTimeExtractor = builder.endTimeExtractor;
   }
 
   /**
@@ -114,14 +117,25 @@ public class Instrumenter<REQUEST, RESPONSE> {
             .setSpanKind(spanKind)
             .setParent(parentContext);
 
-    AttributesBuilder attributes = Attributes.builder();
-    for (AttributesExtractor<? super REQUEST, ? super RESPONSE> extractor : extractors) {
-      extractor.onStart(attributes, request);
+    if (startTimeExtractor != null) {
+      spanBuilder.setStartTimestamp(startTimeExtractor.extract(request));
     }
-    attributes.build().forEach((key, value) -> spanBuilder.setAttribute((AttributeKey) key, value));
 
+    AttributesBuilder attributesBuilder = Attributes.builder();
+    for (AttributesExtractor<? super REQUEST, ? super RESPONSE> extractor : extractors) {
+      extractor.onStart(attributesBuilder, request);
+    }
+    Attributes attributes = attributesBuilder.build();
+
+    Context context = parentContext;
+
+    for (RequestListener requestListener : requestListeners) {
+      context = requestListener.start(context, attributes);
+    }
+
+    attributes.forEach((key, value) -> spanBuilder.setAttribute((AttributeKey) key, value));
     Span span = spanBuilder.startSpan();
-    Context context = parentContext.with(span);
+    context = context.with(span);
     switch (spanKind) {
       case SERVER:
         return ServerSpan.with(context, span);
@@ -141,19 +155,32 @@ public class Instrumenter<REQUEST, RESPONSE> {
   public void end(Context context, REQUEST request, RESPONSE response, @Nullable Throwable error) {
     Span span = Span.fromContext(context);
 
-    AttributesBuilder attributes = Attributes.builder();
+    AttributesBuilder attributesBuilder = Attributes.builder();
     for (AttributesExtractor<? super REQUEST, ? super RESPONSE> extractor : extractors) {
-      extractor.onEnd(attributes, request, response);
+      extractor.onEnd(attributesBuilder, request, response);
     }
-    attributes.build().forEach((key, value) -> span.setAttribute((AttributeKey) key, value));
+    Attributes attributes = attributesBuilder.build();
+
+    for (RequestListener requestListener : requestListeners) {
+      requestListener.end(context, attributes);
+    }
+
+    attributes.forEach((key, value) -> span.setAttribute((AttributeKey) key, value));
 
     if (error != null) {
       error = errorCauseExtractor.extractCause(error);
       span.recordException(error);
     }
 
-    span.setStatus(spanStatusExtractor.extract(request, response, error));
+    StatusCode statusCode = spanStatusExtractor.extract(request, response, error);
+    if (statusCode != StatusCode.UNSET) {
+      span.setStatus(statusCode);
+    }
 
-    span.end();
+    if (endTimeExtractor != null) {
+      span.end(endTimeExtractor.extract(response));
+    } else {
+      span.end();
+    }
   }
 }

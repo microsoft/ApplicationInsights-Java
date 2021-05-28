@@ -5,28 +5,35 @@
 
 package io.opentelemetry.javaagent.tooling.muzzle.matcher;
 
-import io.opentelemetry.javaagent.tooling.muzzle.Reference;
+import io.opentelemetry.javaagent.extension.muzzle.ClassRef;
+import io.opentelemetry.javaagent.extension.muzzle.FieldRef;
+import io.opentelemetry.javaagent.extension.muzzle.Flag;
+import io.opentelemetry.javaagent.extension.muzzle.MethodRef;
+import io.opentelemetry.javaagent.extension.muzzle.Source;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collection;
+import java.util.Collections;
+import net.bytebuddy.jar.asm.Type;
 
 /**
- * A mismatch between a {@link Reference} and a runtime class.
+ * A mismatch between a {@link ClassRef} and a runtime class.
  *
  * <p>This class' {@link #toString()} returns a human-readable description of the mismatch along
  * with the first source code location of the reference which caused the mismatch.
  */
 public abstract class Mismatch {
   /** Instrumentation sources which caused the mismatch. */
-  private final Reference.Source[] mismatchSources;
+  private final Collection<Source> mismatchSources;
 
-  Mismatch(Reference.Source[] mismatchSources) {
+  private Mismatch(Collection<Source> mismatchSources) {
     this.mismatchSources = mismatchSources;
   }
 
   @Override
   public String toString() {
-    if (mismatchSources.length > 0) {
-      return mismatchSources[0].toString() + " " + getMismatchDetails();
+    if (mismatchSources.size() > 0) {
+      return mismatchSources.iterator().next().toString() + " " + getMismatchDetails();
     } else {
       return "<no-source> " + getMismatchDetails();
     }
@@ -38,8 +45,13 @@ public abstract class Mismatch {
   public static class MissingClass extends Mismatch {
     private final String className;
 
-    public MissingClass(Reference.Source[] sources, String className) {
-      super(sources);
+    public MissingClass(ClassRef classRef) {
+      super(classRef.getSources());
+      this.className = classRef.getClassName();
+    }
+
+    public MissingClass(ClassRef classRef, String className) {
+      super(classRef.getSources());
       this.className = className;
     }
 
@@ -50,14 +62,14 @@ public abstract class Mismatch {
   }
 
   public static class MissingFlag extends Mismatch {
-    private final Reference.Flag expectedFlag;
+    private final Flag expectedFlag;
     private final String classMethodOrFieldDesc;
     private final int foundAccess;
 
     public MissingFlag(
-        Reference.Source[] sources,
+        Collection<Source> sources,
         String classMethodOrFieldDesc,
-        Reference.Flag expectedFlag,
+        Flag expectedFlag,
         int foundAccess) {
       super(sources);
       this.classMethodOrFieldDesc = classMethodOrFieldDesc;
@@ -74,19 +86,30 @@ public abstract class Mismatch {
   public static class MissingField extends Mismatch {
     private final String className;
     private final String fieldName;
-    private final String fieldDesc;
+    private final String fieldDescriptor;
 
-    public MissingField(
-        Reference.Source[] sources, String className, String fieldName, String fieldDesc) {
-      super(sources);
-      this.className = className;
-      this.fieldName = fieldName;
-      this.fieldDesc = fieldDesc;
+    MissingField(ClassRef classRef, FieldRef fieldRef) {
+      super(fieldRef.getSources());
+      this.className = classRef.getClassName();
+      this.fieldName = fieldRef.getName();
+      this.fieldDescriptor = fieldRef.getDescriptor();
+    }
+
+    MissingField(ClassRef classRef, HelperReferenceWrapper.Field field) {
+      super(classRef.getSources());
+      this.className = classRef.getClassName();
+      this.fieldName = field.getName();
+      this.fieldDescriptor = field.getDescriptor();
     }
 
     @Override
     String getMismatchDetails() {
-      return "Missing field " + className + "#" + fieldName + fieldDesc;
+      return "Missing field "
+          + Type.getType(fieldDescriptor).getClassName()
+          + " "
+          + fieldName
+          + " in class "
+          + className;
     }
   }
 
@@ -95,12 +118,18 @@ public abstract class Mismatch {
     private final String methodName;
     private final String methodDescriptor;
 
-    public MissingMethod(
-        Reference.Source[] sources, String className, String methodName, String methodDescriptor) {
-      super(sources);
-      this.className = className;
-      this.methodName = methodName;
-      this.methodDescriptor = methodDescriptor;
+    public MissingMethod(ClassRef classRef, MethodRef methodRef) {
+      super(methodRef.getSources());
+      this.className = classRef.getClassName();
+      this.methodName = methodRef.getName();
+      this.methodDescriptor = methodRef.getDescriptor();
+    }
+
+    public MissingMethod(ClassRef classRef, HelperReferenceWrapper.Method method) {
+      super(classRef.getSources());
+      this.className = method.getDeclaringClass();
+      this.methodName = method.getName();
+      this.methodDescriptor = method.getDescriptor();
     }
 
     @Override
@@ -112,12 +141,12 @@ public abstract class Mismatch {
   /** Fallback mismatch in case an unexpected exception occurs during reference checking. */
   public static class ReferenceCheckError extends Mismatch {
     private final Exception referenceCheckException;
-    private final Reference referenceBeingChecked;
+    private final ClassRef referenceBeingChecked;
     private final ClassLoader classLoaderBeingChecked;
 
     public ReferenceCheckError(
-        Exception e, Reference referenceBeingChecked, ClassLoader classLoaderBeingChecked) {
-      super(new Reference.Source[0]);
+        Exception e, ClassRef referenceBeingChecked, ClassLoader classLoaderBeingChecked) {
+      super(Collections.emptyList());
       referenceCheckException = e;
       this.referenceBeingChecked = referenceBeingChecked;
       this.classLoaderBeingChecked = classLoaderBeingChecked;

@@ -15,8 +15,8 @@ import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import io.opentelemetry.instrumentation.test.utils.PortUtils
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import java.util.function.Consumer
+import org.testcontainers.containers.FixedHostPortGenericContainer
 import reactor.core.scheduler.Schedulers
-import redis.embedded.RedisServer
 import spock.lang.Shared
 import spock.util.concurrent.AsyncConditions
 
@@ -27,11 +27,11 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
   // Disable autoreconnect so we do not get stray traces popping up on server shutdown
   public static final ClientOptions CLIENT_OPTIONS = ClientOptions.builder().autoReconnect(false).build()
 
+  private static FixedHostPortGenericContainer redisServer = new FixedHostPortGenericContainer<>("redis:6.2.3-alpine")
+
   @Shared
   String embeddedDbUri
 
-  @Shared
-  RedisServer redisServer
 
   RedisClient redisClient
   StatefulConnection connection
@@ -39,22 +39,16 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
   RedisCommands<String, ?> syncCommands
 
   def setupSpec() {
-    int port = PortUtils.randomOpenPort()
+    int port = PortUtils.findOpenPort()
     String dbAddr = PEER_HOST + ":" + port + "/" + DB_INDEX
     embeddedDbUri = "redis://" + dbAddr
 
-    redisServer = RedisServer.builder()
-    // bind to localhost to avoid firewall popup
-      .setting("bind " + PEER_HOST)
-    // set max memory to avoid problems in CI
-      .setting("maxmemory 128M")
-      .port(port).build()
+    redisServer = redisServer.withFixedExposedPort(port, 6379)
   }
 
   def setup() {
     redisClient = RedisClient.create(embeddedDbUri)
 
-    println "Using redis: $redisServer.args"
     redisServer.start()
     redisClient.setOptions(CLIENT_OPTIONS)
 
@@ -96,7 +90,6 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "SET"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
             "$SemanticAttributes.DB_STATEMENT.key" "SET TESTSETKEY ?"
@@ -120,7 +113,6 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "GET"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
             "$SemanticAttributes.DB_STATEMENT.key" "GET TESTKEY"
@@ -152,7 +144,6 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "GET"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
             "$SemanticAttributes.DB_STATEMENT.key" "GET NON_EXISTENT_KEY"
@@ -182,7 +173,6 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "RANDOMKEY"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
             "$SemanticAttributes.DB_STATEMENT.key" "RANDOMKEY"
@@ -202,11 +192,10 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "COMMAND"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
             "$SemanticAttributes.DB_STATEMENT.key" "COMMAND"
-            "lettuce.command.results.count" 157
+            "lettuce.command.results.count" { it > 100 }
           }
         }
       }
@@ -223,7 +212,6 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "COMMAND"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
             "$SemanticAttributes.DB_STATEMENT.key" "COMMAND"
@@ -254,7 +242,6 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "DEBUG"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
             "$SemanticAttributes.DB_STATEMENT.key" "DEBUG SEGFAULT"
@@ -274,7 +261,6 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
         span(0) {
           name "SHUTDOWN"
           kind CLIENT
-          errored false
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
             "$SemanticAttributes.DB_STATEMENT.key" "SHUTDOWN NOSAVE"
@@ -297,14 +283,12 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
       trace(0, 3) {
         span(0) {
           name "test-parent"
-          errored false
           attributes {
           }
         }
         span(1) {
           name "SET"
           kind CLIENT
-          errored false
           childOf span(0)
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
@@ -314,7 +298,6 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
         span(2) {
           name "GET"
           kind CLIENT
-          errored false
           childOf span(0)
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
@@ -338,14 +321,12 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
       trace(0, 3) {
         span(0) {
           name "test-parent"
-          errored false
           attributes {
           }
         }
         span(1) {
           name "SET"
           kind CLIENT
-          errored false
           childOf span(0)
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
@@ -355,7 +336,6 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
         span(2) {
           name "GET"
           kind CLIENT
-          errored false
           childOf span(0)
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
@@ -380,14 +360,12 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
       trace(0, 3) {
         span(0) {
           name "test-parent"
-          errored false
           attributes {
           }
         }
         span(1) {
           name "SET"
           kind CLIENT
-          errored false
           childOf span(0)
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"
@@ -397,7 +375,6 @@ class LettuceReactiveClientTest extends AgentInstrumentationSpecification {
         span(2) {
           name "GET"
           kind CLIENT
-          errored false
           childOf span(0)
           attributes {
             "$SemanticAttributes.DB_SYSTEM.key" "redis"

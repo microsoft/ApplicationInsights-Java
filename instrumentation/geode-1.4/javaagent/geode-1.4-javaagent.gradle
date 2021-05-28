@@ -9,5 +9,8 @@ muzzle {
 }
 
 dependencies {
-  library group: 'org.apache.geode', name: 'geode-core', version: '1.4.0'
+  library "org.apache.geode:geode-core:1.4.0"
+
+  compileOnly deps.autoValueAnnotations
+  annotationProcessor deps.autoValue
 }

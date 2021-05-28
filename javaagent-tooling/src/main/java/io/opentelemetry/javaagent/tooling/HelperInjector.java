@@ -5,11 +5,10 @@
 
 package io.opentelemetry.javaagent.tooling;
 
-import static io.opentelemetry.javaagent.instrumentation.api.WeakMap.Provider.newWeakMap;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.BOOTSTRAP_CLASSLOADER;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.BOOTSTRAP_CLASSLOADER;
 
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import io.opentelemetry.javaagent.bootstrap.HelperResources;
-import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -48,15 +47,18 @@ public class HelperInjector implements Transformer {
         }
       };
 
-  private static final WeakMap<Class<?>, Boolean> injectedClasses = newWeakMap();
+  private static final Cache<Class<?>, Boolean> injectedClasses =
+      Cache.newBuilder().setWeakKeys().build();
 
   private final String requestingName;
 
   private final Set<String> helperClassNames;
   private final Set<String> helperResourceNames;
+  private final ClassLoader helpersSource;
   private final Map<String, byte[]> dynamicTypeMap = new LinkedHashMap<>();
 
-  private final WeakMap<ClassLoader, Boolean> injectedClassLoaders = newWeakMap();
+  private final Cache<ClassLoader, Boolean> injectedClassLoaders =
+      Cache.newBuilder().setWeakKeys().build();
 
   private final List<WeakReference<Object>> helperModules = new CopyOnWriteArrayList<>();
 
@@ -72,20 +74,25 @@ public class HelperInjector implements Transformer {
    *     'io.opentelemetry.javaagent.shaded.instrumentation'
    */
   public HelperInjector(
-      String requestingName, List<String> helperClassNames, List<String> helperResourceNames) {
+      String requestingName,
+      List<String> helperClassNames,
+      List<String> helperResourceNames,
+      ClassLoader helpersSource) {
     this.requestingName = requestingName;
 
     this.helperClassNames = new LinkedHashSet<>(helperClassNames);
     this.helperResourceNames = new LinkedHashSet<>(helperResourceNames);
+    this.helpersSource = helpersSource;
   }
 
   public HelperInjector(String requestingName, Map<String, byte[]> helperMap) {
     this.requestingName = requestingName;
 
-    helperClassNames = helperMap.keySet();
-    dynamicTypeMap.putAll(helperMap);
+    this.helperClassNames = helperMap.keySet();
+    this.dynamicTypeMap.putAll(helperMap);
 
-    helperResourceNames = Collections.emptySet();
+    this.helperResourceNames = Collections.emptySet();
+    this.helpersSource = null;
   }
 
   public static HelperInjector forDynamicTypes(
@@ -101,7 +108,7 @@ public class HelperInjector implements Transformer {
     if (dynamicTypeMap.isEmpty()) {
       Map<String, byte[]> classnameToBytes = new LinkedHashMap<>();
 
-      ClassFileLocator locator = ClassFileLocator.ForClassLoader.of(Utils.getAgentClassLoader());
+      ClassFileLocator locator = ClassFileLocator.ForClassLoader.of(helpersSource);
 
       for (String helperClassName : helperClassNames) {
         byte[] classBytes = locator.locate(helperClassName).resolve();
@@ -125,48 +132,49 @@ public class HelperInjector implements Transformer {
         classLoader = BOOTSTRAP_CLASSLOADER_PLACEHOLDER;
       }
 
-      if (!injectedClassLoaders.containsKey(classLoader)) {
-        try {
-          log.debug("Injecting classes onto classloader {} -> {}", classLoader, helperClassNames);
+      injectedClassLoaders.computeIfAbsent(
+          classLoader,
+          cl -> {
+            try {
+              log.debug("Injecting classes onto classloader {} -> {}", cl, helperClassNames);
 
-          Map<String, byte[]> classnameToBytes = getHelperMap();
-          Map<String, Class<?>> classes;
-          if (classLoader == BOOTSTRAP_CLASSLOADER_PLACEHOLDER) {
-            classes = injectBootstrapClassLoader(classnameToBytes);
-          } else {
-            classes = injectClassLoader(classLoader, classnameToBytes);
-          }
+              Map<String, byte[]> classnameToBytes = getHelperMap();
+              Map<String, Class<?>> classes;
+              if (cl == BOOTSTRAP_CLASSLOADER_PLACEHOLDER) {
+                classes = injectBootstrapClassLoader(classnameToBytes);
+              } else {
+                classes = injectClassLoader(cl, classnameToBytes);
+              }
 
-          classes.values().forEach(c -> injectedClasses.put(c, Boolean.TRUE));
+              classes.values().forEach(c -> injectedClasses.put(c, Boolean.TRUE));
 
-          // All agent helper classes are in the unnamed module
-          // And there's exactly one unnamed module per classloader
-          // Use the module of the first class for convenience
-          if (JavaModule.isSupported()) {
-            JavaModule javaModule = JavaModule.ofType(classes.values().iterator().next());
-            helperModules.add(new WeakReference<>(javaModule.unwrap()));
-          }
-        } catch (Exception e) {
-          if (log.isErrorEnabled()) {
-            log.error(
-                "Error preparing helpers while processing {} for {}. Failed to inject helper classes into instance {}",
-                typeDescription,
-                requestingName,
-                classLoader,
-                e);
-          }
-          throw new RuntimeException(e);
-        }
-
-        injectedClassLoaders.put(classLoader, true);
-      }
+              // All agent helper classes are in the unnamed module
+              // And there's exactly one unnamed module per classloader
+              // Use the module of the first class for convenience
+              if (JavaModule.isSupported()) {
+                JavaModule javaModule = JavaModule.ofType(classes.values().iterator().next());
+                helperModules.add(new WeakReference<>(javaModule.unwrap()));
+              }
+            } catch (Exception e) {
+              if (log.isErrorEnabled()) {
+                log.error(
+                    "Error preparing helpers while processing {} for {}. Failed to inject helper classes into instance {}",
+                    typeDescription,
+                    requestingName,
+                    cl,
+                    e);
+              }
+              throw new RuntimeException(e);
+            }
+            return true;
+          });
 
       ensureModuleCanReadHelperModules(module);
     }
 
     if (!helperResourceNames.isEmpty()) {
       for (String resourceName : helperResourceNames) {
-        URL resource = Utils.getAgentClassLoader().getResource(resourceName);
+        URL resource = helpersSource.getResource(resourceName);
         if (resource == null) {
           log.debug("Helper resource {} requested but not found.", resourceName);
           continue;
@@ -217,10 +225,10 @@ public class HelperInjector implements Transformer {
             target.modify(
                 AgentInstaller.getInstrumentation(),
                 Collections.singleton(helperModule),
-                Collections.<String, Set<JavaModule>>emptyMap(),
-                Collections.<String, Set<JavaModule>>emptyMap(),
-                Collections.<Class<?>>emptySet(),
-                Collections.<Class<?>, List<Class<?>>>emptyMap());
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                Collections.emptySet(),
+                Collections.emptyMap());
           }
         }
       }
@@ -242,6 +250,6 @@ public class HelperInjector implements Transformer {
   }
 
   public static boolean isInjectedClass(Class<?> c) {
-    return injectedClasses.containsKey(c);
+    return Boolean.TRUE.equals(injectedClasses.get(c));
   }
 }

@@ -8,15 +8,18 @@ package io.opentelemetry.smoketest
 import static java.util.stream.Collectors.toSet
 
 import io.grpc.ManagedChannelBuilder
+import io.opentelemetry.api.trace.TraceId
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc
 import java.util.jar.Attributes
 import java.util.jar.JarFile
+import spock.lang.IgnoreIf
 import spock.lang.Unroll
 
+@IgnoreIf({ os.windows })
 class GrpcSmokeTest extends SmokeTest {
 
-  protected String getTargetImage(String jdk, String serverVersion) {
+  protected String getTargetImage(String jdk) {
     "ghcr.io/open-telemetry/java-test-containers:smoke-grpc-jdk$jdk-20210225.598590600"
   }
 
@@ -25,7 +28,7 @@ class GrpcSmokeTest extends SmokeTest {
     setup:
     def output = startTarget(jdk)
 
-    def channel = ManagedChannelBuilder.forAddress("localhost", target.getMappedPort(8080))
+    def channel = ManagedChannelBuilder.forAddress("localhost", containerManager.getTargetMappedPort(8080))
       .usePlaintext()
       .build()
     def stub = TraceServiceGrpc.newBlockingStub(channel)
@@ -47,7 +50,7 @@ class GrpcSmokeTest extends SmokeTest {
     then: "correct traceIds are logged via MDC instrumentation"
     def loggedTraceIds = getLoggedTraceIds(output)
     def spanTraceIds = getSpanStream(traces)
-      .map({ bytesToHex(it.getTraceId().toByteArray()) })
+      .map({ TraceId.fromBytes(it.getTraceId().toByteArray()) })
       .collect(toSet())
     loggedTraceIds == spanTraceIds
 

@@ -16,46 +16,43 @@ import com.microsoft.applicationinsights.telemetry.BaseTelemetry;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.HashMap;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
 public class BaseTelemetryInstrumentation implements TypeInstrumentation {
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return named("com.microsoft.applicationinsights.telemetry.BaseTelemetry");
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-    transformers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
             .and(named("getProperties"))
             .and(takesNoArguments()),
         BaseTelemetryInstrumentation.class.getName() + "$GetPropertiesAdvice");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
             .and(named("getContext"))
             .and(takesNoArguments()),
         BaseTelemetryInstrumentation.class.getName() + "$GetContextAdvice");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(not(isStatic()))
             .and(not(named("getProperties")))
             .and(not(named("getContext"))),
         BaseTelemetryInstrumentation.class.getName() + "$OtherMethodsAdvice");
-    return transformers;
   }
 
   public static class GetPropertiesAdvice {

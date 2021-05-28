@@ -5,8 +5,11 @@ muzzle {
     group = 'org.springframework'
     module = 'spring-webmvc'
     versions = "[3.1.0.RELEASE,]"
-    skipVersions += ['1.2.1', '1.2.2', '1.2.3', '1.2.4'] // broken releases... missing dependencies
-    skipVersions += '3.2.1.RELEASE' // missing a required class.  (bad release?)
+    // these versions depend on org.springframework:spring-web which has a bad dependency on
+    // javax.faces:jsf-api:1.1 which was released as pom only
+    skip('1.2.1', '1.2.2', '1.2.3', '1.2.4')
+    // 3.2.1.RELEASE has transitive dependencies like spring-web as "provided" instead of "compile"
+    skip('3.2.1.RELEASE')
     extraDependency "javax.servlet:javax.servlet-api:3.0.1"
     assertInverse = true
   }
@@ -16,16 +19,18 @@ muzzle {
     group = 'org.springframework'
     module = 'spring-web'
     versions = "[,]"
-    skipVersions += ['1.2.1', '1.2.2', '1.2.3', '1.2.4'] // broken releases... missing dependencies
+    // these versions depend on org.springframework:spring-web which has a bad dependency on
+    // javax.faces:jsf-api:1.1 which was released as pom only
+    skip('1.2.1', '1.2.2', '1.2.3', '1.2.4')
     extraDependency "javax.servlet:javax.servlet-api:3.0.1"
   }
 }
 
 dependencies {
-  compileOnly group: 'org.springframework', name: 'spring-webmvc', version: '3.1.0.RELEASE'
-  compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
-//  compileOnly group: 'org.springframework', name: 'spring-webmvc', version: '2.5.6'
-//  compileOnly group: 'javax.servlet', name: 'servlet-api', version: '2.4'
+  compileOnly "org.springframework:spring-webmvc:3.1.0.RELEASE"
+  compileOnly "javax.servlet:javax.servlet-api:3.1.0"
+//  compileOnly "org.springframework:spring-webmvc:2.5.6"
+//  compileOnly "javax.servlet:servlet-api:2.4"
 
   testImplementation(project(':testing-common')) {
     exclude(module: 'jetty-server') // incompatible servlet api
@@ -33,26 +38,26 @@ dependencies {
 
   // Include servlet instrumentation for verifying the tomcat requests
   testInstrumentation project(':instrumentation:servlet:servlet-3.0:javaagent')
-  testInstrumentation project(':instrumentation:servlet:servlet-common:javaagent')
-  testInstrumentation project(':instrumentation:tomcat-7.0:javaagent')
+  testInstrumentation project(':instrumentation:servlet:servlet-javax-common:javaagent')
+  testInstrumentation project(':instrumentation:tomcat:tomcat-7.0:javaagent')
 
-  testImplementation group: 'javax.validation', name: 'validation-api', version: '1.1.0.Final'
-  testImplementation group: 'org.hibernate', name: 'hibernate-validator', version: '5.4.2.Final'
+  testImplementation "javax.validation:validation-api:1.1.0.Final"
+  testImplementation "org.hibernate:hibernate-validator:5.4.2.Final"
 
-  testImplementation group: 'org.spockframework', name: 'spock-spring', version: "$versions.spock"
+  testImplementation "org.spockframework:spock-spring:$versions.spock"
 
-  testLibrary group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '1.5.17.RELEASE'
-  testLibrary group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.17.RELEASE'
-  testLibrary group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '1.5.17.RELEASE'
+  testLibrary "org.springframework.boot:spring-boot-starter-test:1.5.17.RELEASE"
+  testLibrary "org.springframework.boot:spring-boot-starter-web:1.5.17.RELEASE"
+  testLibrary "org.springframework.boot:spring-boot-starter-security:1.5.17.RELEASE"
 
-  testImplementation group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.0.16.RELEASE'
+  testImplementation "org.springframework.security.oauth:spring-security-oauth2:2.0.16.RELEASE"
 
   // For spring security
   testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
   testImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
 }
 
-tasks.withType(Test) {
+tasks.withType(Test).configureEach {
   // TODO run tests both with and without experimental span attributes
   jvmArgs '-Dotel.instrumentation.spring-webmvc.experimental-span-attributes=true'
 }

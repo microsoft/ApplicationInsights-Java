@@ -5,12 +5,12 @@
 
 package io.opentelemetry.javaagent.instrumentation.javaconcurrent;
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
 import static net.bytebuddy.matcher.ElementMatchers.any;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,9 +31,7 @@ public abstract class AbstractExecutorInstrumentation implements TypeInstrumenta
   private static final String EXECUTORS_INCLUDE_ALL_PROPERTY_NAME =
       "otel.instrumentation.executors.include-all";
 
-  // hopefully these configuration properties can be static after
-  // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1345
-  private final boolean includeAll =
+  private static final boolean INCLUDE_ALL =
       Config.get().getBooleanProperty(EXECUTORS_INCLUDE_ALL_PROPERTY_NAME, false);
 
   /**
@@ -50,7 +48,7 @@ public abstract class AbstractExecutorInstrumentation implements TypeInstrumenta
   private final Collection<String> includePrefixes;
 
   protected AbstractExecutorInstrumentation() {
-    if (includeAll) {
+    if (INCLUDE_ALL) {
       includeExecutors = Collections.emptyList();
       includePrefixes = Collections.emptyList();
     } else {
@@ -111,7 +109,7 @@ public abstract class AbstractExecutorInstrumentation implements TypeInstrumenta
     ElementMatcher.Junction<TypeDescription> matcher = any();
     final ElementMatcher.Junction<TypeDescription> hasExecutorInterfaceMatcher =
         implementsInterface(named(Executor.class.getName()));
-    if (!includeAll) {
+    if (!INCLUDE_ALL) {
       matcher =
           matcher.and(
               new ElementMatcher<TypeDescription>() {

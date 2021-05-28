@@ -1,0 +1,5 @@
+apply from: "$rootDir/gradle/instrumentation-library.gradle"
+
+dependencies {
+  compileOnly "org.elasticsearch:elasticsearch:2.0.0"
+}

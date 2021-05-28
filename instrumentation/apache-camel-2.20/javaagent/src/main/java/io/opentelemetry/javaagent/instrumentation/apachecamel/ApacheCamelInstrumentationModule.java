@@ -5,23 +5,19 @@
 
 package io.opentelemetry.javaagent.instrumentation.apachecamel;
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static java.util.Collections.singletonList;
-import static net.bytebuddy.matcher.ElementMatchers.isAbstract;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Collections;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.camel.CamelContext;
@@ -39,8 +35,8 @@ public class ApacheCamelInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public String[] additionalHelperClassNames() {
-    return new String[] {"io.opentelemetry.extension.aws.AwsXrayPropagator"};
+  public boolean isHelperClass(String className) {
+    return className.startsWith("io.opentelemetry.extension.aws.");
   }
 
   public static class CamelContextInstrumentation implements TypeInstrumentation {
@@ -51,12 +47,12 @@ public class ApacheCamelInstrumentationModule extends InstrumentationModule {
 
     @Override
     public ElementMatcher<TypeDescription> typeMatcher() {
-      return not(isAbstract()).and(implementsInterface(named("org.apache.camel.CamelContext")));
+      return implementsInterface(named("org.apache.camel.CamelContext"));
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      return Collections.singletonMap(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           named("start").and(isPublic()).and(takesArguments(0)),
           ApacheCamelInstrumentationModule.class.getName() + "$ContextAdvice");
     }

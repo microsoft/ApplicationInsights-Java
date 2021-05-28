@@ -14,31 +14,27 @@ import static net.bytebuddy.matcher.ElementMatchers.takesNoArguments;
 
 import com.microsoft.applicationinsights.extensibility.context.OperationContext;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.HashMap;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
 public class OperationContextInstrumentation implements TypeInstrumentation {
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return named("com.microsoft.applicationinsights.extensibility.context.OperationContext");
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-    transformers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod().and(isPublic()).and(not(isStatic())).and(named("getId")).and(takesNoArguments()),
         OperationContextInstrumentation.class.getName() + "$GetIdAdvice");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod().and(isPublic()).and(not(isStatic())).and(not(named("getId"))),
         OperationContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
-    return transformers;
   }
 
   public static class GetIdAdvice {

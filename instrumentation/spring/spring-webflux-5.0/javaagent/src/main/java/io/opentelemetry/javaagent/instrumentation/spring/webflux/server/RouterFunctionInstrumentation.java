@@ -5,9 +5,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.spring.webflux.server;
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static java.util.Collections.singletonMap;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.extendsClass;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static net.bytebuddy.matcher.ElementMatchers.isAbstract;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
@@ -16,11 +15,15 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Map;
-import net.bytebuddy.description.method.MethodDescription;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.springframework.web.reactive.function.server.HandlerFunction;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import reactor.core.publisher.Mono;
 
 public class RouterFunctionInstrumentation implements TypeInstrumentation {
 
@@ -40,8 +43,8 @@ public class RouterFunctionInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return singletonMap(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(isPublic())
             .and(named("route"))
@@ -49,6 +52,26 @@ public class RouterFunctionInstrumentation implements TypeInstrumentation {
                 takesArgument(
                     0, named("org.springframework.web.reactive.function.server.ServerRequest")))
             .and(takesArguments(1)),
-        RouterFunctionAdvice.class.getName());
+        this.getClass().getName() + "$RouteAdvice");
+  }
+
+  /**
+   * This advice is responsible for setting additional span parameters for routes implemented with
+   * functional interface.
+   */
+  public static class RouteAdvice {
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
+    public static void methodExit(
+        @Advice.This RouterFunction thiz,
+        @Advice.Argument(0) ServerRequest serverRequest,
+        @Advice.Return(readOnly = false) Mono<HandlerFunction<?>> result,
+        @Advice.Thrown Throwable throwable) {
+      if (throwable == null) {
+        result = result.doOnSuccessOrError(new RouteOnSuccessOrError(thiz, serverRequest));
+      } else {
+        AdviceUtils.finishSpanIfPresent(serverRequest, throwable);
+      }
+    }
   }
 }

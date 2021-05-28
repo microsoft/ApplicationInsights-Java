@@ -6,7 +6,7 @@
 package io.opentelemetry.javaagent.testing.exporter;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.instrumentation.api.aisdk.MicrometerUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -35,8 +35,8 @@ public class AgentTestingSdkCustomizer implements SdkTracerProviderConfigurer {
     IntervalMetricReader.builder()
         .setExportIntervalMillis(100)
         .setMetricExporter(AgentTestingExporterFactory.metricExporter)
-        .setMetricProducers(Collections.singleton((SdkMeterProvider) GlobalMetricsProvider.get()))
-        .build();
+        .setMetricProducers(Collections.singleton((SdkMeterProvider) GlobalMeterProvider.get()))
+        .buildAndStart();
     MicrometerUtil.setDelegate(AgentTestingMicrometerDelegate.instance);
   }
 }

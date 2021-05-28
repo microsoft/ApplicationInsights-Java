@@ -5,24 +5,22 @@
 
 package io.opentelemetry.javaagent.instrumentation.vertx.reactive;
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static java.util.Collections.singletonList;
 import static net.bytebuddy.matcher.ElementMatchers.isConstructor;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -48,21 +46,19 @@ public class VertxRxInstrumentationModule extends InstrumentationModule {
     }
 
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return named("io.vertx.reactivex.core.impl.AsyncResultSingle")
           .or(named("io.vertx.reactivex.impl.AsyncResultSingle"));
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> result = new HashMap<>();
-      result.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           isConstructor().and(takesArgument(0, named("io.vertx.core.Handler"))),
           VertxRxInstrumentationModule.class.getName() + "$AsyncResultSingleHandlerAdvice");
-      result.put(
-          isConstructor().and(takesArgument(0, named("java.util.function.Consumer"))),
+      transformer.applyAdviceToMethod(
+          isConstructor().and(takesArgument(0, Consumer.class)),
           VertxRxInstrumentationModule.class.getName() + "$AsyncResultSingleConsumerAdvice");
-      return result;
     }
   }
 

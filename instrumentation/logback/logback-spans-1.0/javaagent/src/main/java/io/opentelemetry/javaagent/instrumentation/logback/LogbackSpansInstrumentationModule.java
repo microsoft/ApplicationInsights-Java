@@ -14,15 +14,13 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.logger.LoggerDepth;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -30,7 +28,7 @@ import net.bytebuddy.matcher.ElementMatcher;
 public class LogbackSpansInstrumentationModule extends InstrumentationModule {
   public LogbackSpansInstrumentationModule() {
     // this name is important currently because it's used to disable this instrumentation
-    super("logback");
+    super("logback-spans");
   }
 
   @Override
@@ -41,21 +39,19 @@ public class LogbackSpansInstrumentationModule extends InstrumentationModule {
   private static class LogbackSpansInstrumentation implements TypeInstrumentation {
 
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return named("ch.qos.logback.classic.Logger");
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-      transformers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(isPublic())
               .and(named("callAppenders"))
               .and(takesArguments(1))
               .and(takesArgument(0, named("ch.qos.logback.classic.spi.ILoggingEvent"))),
           LogbackSpansInstrumentationModule.class.getName() + "$CallAppendersAdvice");
-      return transformers;
     }
   }
 

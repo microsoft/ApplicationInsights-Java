@@ -5,27 +5,29 @@
 
 import static io.opentelemetry.api.trace.SpanKind.CLIENT
 import static io.opentelemetry.api.trace.SpanKind.SERVER
-import static io.opentelemetry.instrumentation.test.utils.TraceUtils.basicSpan
 import static io.opentelemetry.instrumentation.test.utils.TraceUtils.runUnderTrace
+import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP
 
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.base.HttpClientTest
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 import spock.lang.Requires
-import spock.lang.Timeout
 import spock.lang.Unroll
 import sun.net.www.protocol.https.HttpsURLConnectionImpl
 
-@Timeout(5)
-class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
+class HttpUrlConnectionTest extends HttpClientTest<HttpURLConnection> implements AgentTestTrait {
 
   static final RESPONSE = "Hello."
   static final STATUS = 200
 
   @Override
-  int doRequest(String method, URI uri, Map<String, String> headers, Closure callback) {
-    HttpURLConnection connection = uri.toURL().openConnection()
+  HttpURLConnection buildRequest(String method, URI uri, Map<String, String> headers) {
+    return uri.toURL().openConnection() as HttpURLConnection
+  }
+
+  @Override
+  int sendRequest(HttpURLConnection connection, String method, URI uri, Map<String, String> headers) {
     try {
       connection.setRequestMethod(method)
       headers.each { connection.setRequestProperty(it.key, it.value) }
@@ -37,7 +39,6 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
       assert Span.current() == parentSpan
       stream.readLines()
       stream.close()
-      callback?.call()
       return connection.getResponseCode()
     } finally {
       connection.disconnect()
@@ -50,8 +51,19 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
   }
 
   @Override
-  Integer statusOnRedirectError() {
+  Integer responseCodeOnRedirectError() {
     return 302
+  }
+
+  @Override
+  boolean testReusedRequest() {
+    // HttpURLConnection can't be reused
+    return false
+  }
+
+  @Override
+  boolean testCallback() {
+    return false
   }
 
   @Unroll
@@ -87,7 +99,6 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
         span(0) {
           name "someTrace"
           hasNoParent()
-          errored false
           attributes {
           }
         }
@@ -95,9 +106,8 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
           name expectedOperationName("GET")
           kind CLIENT
           childOf span(0)
-          errored false
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
             "${SemanticAttributes.HTTP_URL.key}" "$url"
@@ -111,7 +121,6 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
           name "test-http-server"
           kind SERVER
           childOf span(1)
-          errored false
           attributes {
           }
         }
@@ -119,9 +128,8 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
           name expectedOperationName("GET")
           kind CLIENT
           childOf span(0)
-          errored false
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
             "${SemanticAttributes.HTTP_URL.key}" "$url"
@@ -135,7 +143,6 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
           name "test-http-server"
           kind SERVER
           childOf span(3)
-          errored false
           attributes {
           }
         }
@@ -180,7 +187,6 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
         span(0) {
           name "someTrace"
           hasNoParent()
-          errored false
           attributes {
           }
         }
@@ -188,9 +194,8 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
           name expectedOperationName("GET")
           kind CLIENT
           childOf span(0)
-          errored false
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
             "${SemanticAttributes.HTTP_URL.key}" "$url"
@@ -204,9 +209,8 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
           name expectedOperationName("GET")
           kind CLIENT
           childOf span(0)
-          errored false
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
             "${SemanticAttributes.HTTP_URL.key}" "$url"
@@ -241,7 +245,6 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
         span(0) {
           name "someTrace"
           hasNoParent()
-          errored false
           attributes {
           }
         }
@@ -249,11 +252,10 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
           name expectedOperationName("GET")
           kind CLIENT
           childOf span(0)
-          errored false
           attributes {
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.HTTP_URL.key}" "$url"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" STATUS
@@ -301,7 +303,6 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
         span(0) {
           name "someTrace"
           hasNoParent()
-          errored false
           attributes {
           }
         }
@@ -309,9 +310,8 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
           name expectedOperationName("POST")
           kind CLIENT
           childOf span(0)
-          errored false
           attributes {
-            "${SemanticAttributes.NET_TRANSPORT.key}" "IP.TCP"
+            "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
             "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
             "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
             "${SemanticAttributes.HTTP_URL.key}" "$url"
@@ -325,35 +325,11 @@ class HttpUrlConnectionTest extends HttpClientTest implements AgentTestTrait {
           name "test-http-server"
           kind SERVER
           childOf span(1)
-          errored false
           attributes {
           }
         }
       }
     }
-  }
-
-  def "error span"() {
-    def uri = server.address.resolve("/error")
-    when:
-    def url = uri.toURL()
-    runUnderTrace("parent") {
-      doRequest(method, uri)
-    }
-
-    then:
-    def expectedException = new IOException("Server returned HTTP response code: 500 for URL: $url")
-    thrown(IOException)
-    assertTraces(1) {
-      trace(0, 3 + extraClientSpans()) {
-        basicSpan(it, 0, "parent", null, expectedException)
-        clientSpan(it, 1, span(0), method, uri, 500, expectedException)
-        serverSpan(it, 2 + extraClientSpans(), span(1 + extraClientSpans()))
-      }
-    }
-
-    where:
-    method = "GET"
   }
 
   // This test makes no sense on IBM JVM because there is no HttpsURLConnectionImpl class there

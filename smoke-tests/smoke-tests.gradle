@@ -4,7 +4,7 @@ ext {
   // we only need to run the Spock test itself under a single Java version, and the Spock test in
   // turn is parameterized and runs the test using different docker containers that run different
   // Java versions
-  minJavaVersionForTests = JavaVersion.VERSION_11
+  minJavaVersionSupported = JavaVersion.VERSION_11
   maxJavaVersionForTests = JavaVersion.VERSION_11
 }
 
@@ -12,6 +12,7 @@ apply from: "$rootDir/gradle/java.gradle"
 
 description = 'smoke-tests'
 
+def dockerJavaVersion = "3.2.5"
 dependencies {
   api deps.spock
   api project(':testing-common')
@@ -26,19 +27,52 @@ dependencies {
   implementation 'io.grpc:grpc-netty-shaded'
   implementation 'io.grpc:grpc-protobuf'
   implementation 'io.grpc:grpc-stub'
+
+  testImplementation("com.github.docker-java:docker-java-core:$dockerJavaVersion")
+  testImplementation("com.github.docker-java:docker-java-transport-httpclient5:$dockerJavaVersion")
+
 }
 
 test {
   inputs.files(tasks.findByPath(':javaagent:shadowJar').outputs.files)
   maxParallelForks = 2
 
-  timeout.set(Duration.ofMinutes(60))
+  testLogging.showStandardStreams = true
+
+  // TODO investigate why smoke tests occasionally hang forever
+  //  this needs to be long enough so that smoke tests that are just running slow don't time out
+  timeout.set(Duration.ofMinutes(45))
 
   //We enable/disable smoke tests based on the java version requests
   //In addition to that we disable them by default on local machines
   enabled = enabled && (System.getenv("CI") != null || findProperty('runSmokeTests'))
 
+  def suites = [
+    "glassfish": ["**/GlassFishSmokeTest.*"],
+    "jetty"    : ["**/JettySmokeTest.*"],
+    "liberty"  : ["**/LibertySmokeTest.*", "**/LibertyServletOnlySmokeTest.*"],
+    "tomcat"   : ["**/TomcatSmokeTest.*"],
+    "tomee"    : ["**/TomeeSmokeTest.*"],
+    "wildfly"  : ["**/WildflySmokeTest.*"]
+  ]
+
+  def suite = findProperty('smokeTestSuite')
+  if (suite != null) {
+    if ('other' == suite) {
+      suites.values().each {
+        exclude it
+      }
+    } else if (suites.containsKey(suite)) {
+      include suites.get(suite)
+    } else {
+      throw new GradleException('Unknown smoke test suite: ' + suite)
+    }
+  }
+
+  def shadowTask = project(":javaagent").tasks.named("shadowJar").get()
+  inputs.files(layout.files(shadowTask))
+
   doFirst {
-    jvmArgs "-Dio.opentelemetry.smoketest.agent.shadowJar.path=${project(':javaagent').tasks.shadowJar.archivePath}"
+    jvmArgs "-Dio.opentelemetry.smoketest.agent.shadowJar.path=${shadowTask.archiveFile.get()}"
   }
 }

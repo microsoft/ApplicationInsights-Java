@@ -5,22 +5,22 @@
 
 package io.opentelemetry.javaagent.tooling.muzzle.collector;
 
+import com.google.common.collect.EvictingQueue;
+import io.opentelemetry.javaagent.extension.muzzle.ClassRef;
+import io.opentelemetry.javaagent.extension.muzzle.Flag;
+import io.opentelemetry.javaagent.extension.muzzle.Flag.ManifestationFlag;
+import io.opentelemetry.javaagent.extension.muzzle.Flag.MinimumVisibilityFlag;
+import io.opentelemetry.javaagent.extension.muzzle.Flag.OwnershipFlag;
+import io.opentelemetry.javaagent.extension.muzzle.Flag.VisibilityFlag;
+import io.opentelemetry.javaagent.extension.muzzle.Source;
 import io.opentelemetry.javaagent.tooling.Utils;
 import io.opentelemetry.javaagent.tooling.muzzle.InstrumentationClassPredicate;
-import io.opentelemetry.javaagent.tooling.muzzle.Reference;
-import io.opentelemetry.javaagent.tooling.muzzle.Reference.Flag;
-import io.opentelemetry.javaagent.tooling.muzzle.Reference.Flag.ManifestationFlag;
-import io.opentelemetry.javaagent.tooling.muzzle.Reference.Flag.MinimumVisibilityFlag;
-import io.opentelemetry.javaagent.tooling.muzzle.Reference.Flag.OwnershipFlag;
-import io.opentelemetry.javaagent.tooling.muzzle.Reference.Flag.VisibilityFlag;
-import io.opentelemetry.javaagent.tooling.muzzle.Reference.Source;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.jar.asm.ClassVisitor;
 import net.bytebuddy.jar.asm.FieldVisitor;
 import net.bytebuddy.jar.asm.Handle;
@@ -110,11 +110,12 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
   private final InstrumentationClassPredicate instrumentationClassPredicate;
   private final boolean isAdviceClass;
 
-  private final Map<String, Reference> references = new LinkedHashMap<>();
+  private final Map<String, ClassRef> references = new LinkedHashMap<>();
   private final Set<String> helperClasses = new HashSet<>();
   // helper super classes which are themselves also helpers
   // this is needed for injecting the helper classes into the class loader in the correct order
   private final Set<String> helperSuperClasses = new HashSet<>();
+  private final Map<String, String> contextStoreClasses = new LinkedHashMap<>();
   private String refSourceClassName;
   private Type refSourceType;
 
@@ -125,7 +126,7 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
     this.isAdviceClass = isAdviceClass;
   }
 
-  Map<String, Reference> getReferences() {
+  Map<String, ClassRef> getReferences() {
     return references;
   }
 
@@ -137,16 +138,20 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
     return helperSuperClasses;
   }
 
-  private void addExtendsReference(Reference ref) {
+  Map<String, String> getContextStoreClasses() {
+    return contextStoreClasses;
+  }
+
+  private void addExtendsReference(ClassRef ref) {
     addReference(ref);
     if (instrumentationClassPredicate.isInstrumentationClass(ref.getClassName())) {
       helperSuperClasses.add(ref.getClassName());
     }
   }
 
-  private void addReference(Reference ref) {
+  private void addReference(ClassRef ref) {
     if (!ref.getClassName().startsWith("java.")) {
-      Reference reference = references.get(ref.getClassName());
+      ClassRef reference = references.get(ref.getClassName());
       if (null == reference) {
         references.put(ref.getClassName(), ref);
       } else {
@@ -174,7 +179,7 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
       String fixedSuperClassName = Utils.getClassName(superName);
 
       addExtendsReference(
-          new Reference.Builder(fixedSuperClassName).withSource(refSourceClassName).build());
+          ClassRef.newBuilder(fixedSuperClassName).addSource(refSourceClassName).build());
 
       List<String> fixedInterfaceNames = new ArrayList<>(interfaces.length);
       for (String interfaceName : interfaces) {
@@ -182,15 +187,15 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
         fixedInterfaceNames.add(fixedInterfaceName);
 
         addExtendsReference(
-            new Reference.Builder(fixedInterfaceName).withSource(refSourceClassName).build());
+            ClassRef.newBuilder(fixedInterfaceName).addSource(refSourceClassName).build());
       }
 
       addReference(
-          new Reference.Builder(refSourceClassName)
-              .withSource(refSourceClassName)
-              .withSuperName(fixedSuperClassName)
-              .withInterfaces(fixedInterfaceNames)
-              .withFlag(computeTypeManifestationFlag(access))
+          ClassRef.newBuilder(refSourceClassName)
+              .addSource(refSourceClassName)
+              .setSuperClassName(fixedSuperClassName)
+              .addInterfaceNames(fixedInterfaceNames)
+              .addFlag(computeTypeManifestationFlag(access))
               .build());
     }
 
@@ -203,8 +208,15 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
     // Additional references we could check
     // - annotations on field
 
-    // intentionally not creating refs to fields here.
-    // Will create refs in method instructions to include line numbers.
+    Type fieldType = Type.getType(descriptor);
+
+    // remember that this field was declared in the currently visited helper class
+    addReference(
+        ClassRef.newBuilder(refSourceClassName)
+            .addSource(refSourceClassName)
+            .addField(new Source[0], new Flag[0], name, fieldType, true)
+            .build());
+
     return super.visitField(access, name, descriptor, signature, value);
   }
 
@@ -220,27 +232,23 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
       Flag ownershipFlag = computeOwnershipFlag(access);
       Flag manifestationFlag = computeTypeManifestationFlag(access);
 
-      // as an optimization skip constructors, private and static methods
-      if (!(visibilityFlag == VisibilityFlag.PRIVATE
-          || ownershipFlag == OwnershipFlag.STATIC
-          || MethodDescription.CONSTRUCTOR_INTERNAL_NAME.equals(name))) {
-        addReference(
-            new Reference.Builder(refSourceClassName)
-                .withSource(refSourceClassName)
-                .withMethod(
-                    new Source[0],
-                    new Flag[] {visibilityFlag, ownershipFlag, manifestationFlag},
-                    name,
-                    methodType.getReturnType(),
-                    methodType.getArgumentTypes())
-                .build());
-      }
+      addReference(
+          ClassRef.newBuilder(refSourceClassName)
+              .addSource(refSourceClassName)
+              .addMethod(
+                  new Source[0],
+                  new Flag[] {visibilityFlag, ownershipFlag, manifestationFlag},
+                  name,
+                  methodType.getReturnType(),
+                  methodType.getArgumentTypes())
+              .build());
     }
 
     // Additional references we could check
     // - Classes in signature (return type, params) and visible from this package
     return new AdviceReferenceMethodVisitor(
-        super.visitMethod(access, name, descriptor, signature, exceptions));
+        new InstrumentationContextMethodVisitor(
+            super.visitMethod(access, name, descriptor, signature, exceptions)));
   }
 
   private static VisibilityFlag computeVisibilityFlag(int access) {
@@ -312,26 +320,26 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
               : OwnershipFlag.NON_STATIC);
 
       addReference(
-          new Reference.Builder(ownerType.getInternalName())
-              .withSource(refSourceClassName, currentLineNumber)
-              .withFlag(computeMinimumClassAccess(refSourceType, ownerType))
-              .withField(
-                  new Reference.Source[] {
-                    new Reference.Source(refSourceClassName, currentLineNumber)
-                  },
-                  fieldFlags.toArray(new Reference.Flag[0]),
+          ClassRef.newBuilder(ownerType.getClassName())
+              .addSource(refSourceClassName, currentLineNumber)
+              .addFlag(computeMinimumClassAccess(refSourceType, ownerType))
+              .addField(
+                  new Source[] {new Source(refSourceClassName, currentLineNumber)},
+                  fieldFlags.toArray(new Flag[0]),
                   name,
-                  fieldType)
+                  fieldType,
+                  false)
               .build());
 
-      Type underlyingFieldType = underlyingType(fieldType);
+      Type underlyingFieldType = underlyingType(Type.getType(descriptor));
       if (underlyingFieldType.getSort() == Type.OBJECT) {
         addReference(
-            new Reference.Builder(underlyingFieldType.getInternalName())
-                .withSource(refSourceClassName, currentLineNumber)
-                .withFlag(computeMinimumClassAccess(refSourceType, underlyingFieldType))
+            ClassRef.newBuilder(underlyingFieldType.getClassName())
+                .addSource(refSourceClassName, currentLineNumber)
+                .addFlag(computeMinimumClassAccess(refSourceType, underlyingFieldType))
                 .build());
       }
+
       super.visitFieldInsn(opcode, owner, name, descriptor);
     }
 
@@ -349,13 +357,18 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
       //   * return type
       Type methodType = Type.getMethodType(descriptor);
 
+      Type ownerType =
+          owner.startsWith("[")
+              ? underlyingType(Type.getType(owner))
+              : Type.getType("L" + owner + ";");
+
       { // ref for method return type
         Type returnType = underlyingType(methodType.getReturnType());
         if (returnType.getSort() == Type.OBJECT) {
           addReference(
-              new Reference.Builder(returnType.getInternalName())
-                  .withSource(refSourceClassName, currentLineNumber)
-                  .withFlag(computeMinimumClassAccess(refSourceType, returnType))
+              ClassRef.newBuilder(returnType.getClassName())
+                  .addSource(refSourceClassName, currentLineNumber)
+                  .addFlag(computeMinimumClassAccess(refSourceType, returnType))
                   .build());
         }
       }
@@ -364,37 +377,31 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
         paramType = underlyingType(paramType);
         if (paramType.getSort() == Type.OBJECT) {
           addReference(
-              new Reference.Builder(paramType.getInternalName())
-                  .withSource(refSourceClassName, currentLineNumber)
-                  .withFlag(computeMinimumClassAccess(refSourceType, paramType))
+              ClassRef.newBuilder(paramType.getClassName())
+                  .addSource(refSourceClassName, currentLineNumber)
+                  .addFlag(computeMinimumClassAccess(refSourceType, paramType))
                   .build());
         }
       }
 
-      Type ownerType =
-          owner.startsWith("[")
-              ? underlyingType(Type.getType(owner))
-              : Type.getType("L" + owner + ";");
-
-      List<Reference.Flag> methodFlags = new ArrayList<>();
+      List<Flag> methodFlags = new ArrayList<>();
       methodFlags.add(
           opcode == Opcodes.INVOKESTATIC ? OwnershipFlag.STATIC : OwnershipFlag.NON_STATIC);
       methodFlags.add(computeMinimumMethodAccess(refSourceType, ownerType, methodType));
 
       addReference(
-          new Reference.Builder(ownerType.getInternalName())
-              .withSource(refSourceClassName, currentLineNumber)
-              .withFlag(isInterface ? ManifestationFlag.INTERFACE : ManifestationFlag.NON_INTERFACE)
-              .withFlag(computeMinimumClassAccess(refSourceType, ownerType))
-              .withMethod(
-                  new Reference.Source[] {
-                    new Reference.Source(refSourceClassName, currentLineNumber)
-                  },
-                  methodFlags.toArray(new Reference.Flag[0]),
+          ClassRef.newBuilder(ownerType.getClassName())
+              .addSource(refSourceClassName, currentLineNumber)
+              .addFlag(isInterface ? ManifestationFlag.INTERFACE : ManifestationFlag.NON_INTERFACE)
+              .addFlag(computeMinimumClassAccess(refSourceType, ownerType))
+              .addMethod(
+                  new Source[] {new Source(refSourceClassName, currentLineNumber)},
+                  methodFlags.toArray(new Flag[0]),
                   name,
                   methodType.getReturnType(),
                   methodType.getArgumentTypes())
               .build());
+
       super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
     }
 
@@ -403,11 +410,12 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
       Type typeObj = underlyingType(Type.getObjectType(type));
       if (typeObj.getSort() == Type.OBJECT) {
         addReference(
-            new Reference.Builder(typeObj.getInternalName())
-                .withSource(refSourceClassName, currentLineNumber)
-                .withFlag(computeMinimumClassAccess(refSourceType, typeObj))
+            ClassRef.newBuilder(typeObj.getClassName())
+                .addSource(refSourceClassName, currentLineNumber)
+                .addFlag(computeMinimumClassAccess(refSourceType, typeObj))
                 .build());
       }
+
       super.visitTypeInsn(opcode, type);
     }
 
@@ -419,9 +427,9 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
         Object... bootstrapMethodArguments) {
       // This part might be unnecessary...
       addReference(
-          new Reference.Builder(bootstrapMethodHandle.getOwner())
-              .withSource(refSourceClassName, currentLineNumber)
-              .withFlag(
+          ClassRef.newBuilder(Utils.getClassName(bootstrapMethodHandle.getOwner()))
+              .addSource(refSourceClassName, currentLineNumber)
+              .addFlag(
                   computeMinimumClassAccess(
                       refSourceType, Type.getObjectType(bootstrapMethodHandle.getOwner())))
               .build());
@@ -429,9 +437,9 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
         if (arg instanceof Handle) {
           Handle handle = (Handle) arg;
           addReference(
-              new Reference.Builder(handle.getOwner())
-                  .withSource(refSourceClassName, currentLineNumber)
-                  .withFlag(
+              ClassRef.newBuilder(Utils.getClassName(handle.getOwner()))
+                  .addSource(refSourceClassName, currentLineNumber)
+                  .addFlag(
                       computeMinimumClassAccess(
                           refSourceType, Type.getObjectType(handle.getOwner())))
                   .build());
@@ -447,13 +455,115 @@ class ReferenceCollectingClassVisitor extends ClassVisitor {
         Type type = underlyingType((Type) value);
         if (type.getSort() == Type.OBJECT) {
           addReference(
-              new Reference.Builder(type.getInternalName())
-                  .withSource(refSourceClassName, currentLineNumber)
-                  .withFlag(computeMinimumClassAccess(refSourceType, type))
+              ClassRef.newBuilder(type.getClassName())
+                  .addSource(refSourceClassName, currentLineNumber)
+                  .addFlag(computeMinimumClassAccess(refSourceType, type))
                   .build());
         }
       }
       super.visitLdcInsn(value);
+    }
+  }
+
+  private class InstrumentationContextMethodVisitor extends MethodVisitor {
+    // this data structure will remember last two LDC <class> instructions before
+    // InstrumentationContext.get() call
+    private final EvictingQueue<String> lastTwoClassConstants = EvictingQueue.create(2);
+
+    InstrumentationContextMethodVisitor(MethodVisitor methodVisitor) {
+      super(Opcodes.ASM7, methodVisitor);
+    }
+
+    @Override
+    public void visitInsn(int opcode) {
+      registerOpcode(opcode, null);
+      super.visitInsn(opcode);
+    }
+
+    @Override
+    public void visitIntInsn(int opcode, int operand) {
+      registerOpcode(opcode, null);
+      super.visitIntInsn(opcode, operand);
+    }
+
+    @Override
+    public void visitVarInsn(int opcode, int var) {
+      registerOpcode(opcode, null);
+      super.visitVarInsn(opcode, var);
+    }
+
+    @Override
+    public void visitTypeInsn(int opcode, String type) {
+      registerOpcode(opcode, null);
+      super.visitTypeInsn(opcode, type);
+    }
+
+    @Override
+    public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
+      registerOpcode(opcode, null);
+      super.visitFieldInsn(opcode, owner, name, descriptor);
+    }
+
+    @Override
+    public void visitMethodInsn(
+        int opcode, String owner, String name, String descriptor, boolean isInterface) {
+
+      Type methodType = Type.getMethodType(descriptor);
+      Type ownerType = Type.getType("L" + owner + ";");
+
+      // remember used context classes if this is an InstrumentationContext.get() call
+      if ("io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext"
+              .equals(ownerType.getClassName())
+          && "get".equals(name)
+          && methodType.getArgumentTypes().length == 2) {
+        // in case of invalid scenario (not using .class ref directly) don't store anything and
+        // clear the last LDC <class> stack
+        // note that FieldBackedProvider also check for an invalid context call in the runtime
+        if (lastTwoClassConstants.remainingCapacity() == 0) {
+          String className = lastTwoClassConstants.poll();
+          String contextClassName = lastTwoClassConstants.poll();
+          contextStoreClasses.put(className, contextClassName);
+        } else {
+          throw new MuzzleCompilationException(
+              "Invalid InstrumentationContext#get(Class, Class) usage: you cannot pass variables,"
+                  + " method parameters, compute classes; class references need to be passed"
+                  + " directly to the get() method");
+        }
+      }
+
+      registerOpcode(opcode, null);
+      super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+    }
+
+    @Override
+    public void visitJumpInsn(int opcode, Label label) {
+      registerOpcode(opcode, null);
+      super.visitJumpInsn(opcode, label);
+    }
+
+    @Override
+    public void visitLdcInsn(Object value) {
+      registerOpcode(Opcodes.LDC, value);
+      super.visitLdcInsn(value);
+    }
+
+    private void registerOpcode(int opcode, Object value) {
+      // check if this is an LDC <class> instruction; if so, remember the class that was used
+      // we need to remember last two LDC <class> instructions that were executed before
+      // InstrumentationContext.get() call
+      if (opcode == Opcodes.LDC) {
+        if (value instanceof Type) {
+          Type type = (Type) value;
+          if (type.getSort() == Type.OBJECT) {
+            lastTwoClassConstants.add(type.getClassName());
+            return;
+          }
+        }
+      }
+
+      // instruction other than LDC <class> visited; pop the first element if present - this will
+      // prevent adding wrong context key pairs in case of an invalid scenario
+      lastTwoClassConstants.poll();
     }
   }
 }
