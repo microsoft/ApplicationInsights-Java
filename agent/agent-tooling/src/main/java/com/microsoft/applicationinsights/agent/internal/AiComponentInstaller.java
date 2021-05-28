@@ -86,6 +86,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
         instrumentation.addTransformer(new ApplicationInsightsAppenderClassFileTransformer());
         instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
+        instrumentation.addTransformer(new RequestNameHandlerClassFileTransformer());
         instrumentation.addTransformer(new DuplicateAgentClassFileTransformer());
     }
 
