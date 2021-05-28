@@ -35,7 +35,7 @@
     </TelemetryInitializers>
 
     <Channel>
-        <EndpointAddress>http://non-existent-host/v2.1/track</EndpointAddress>
+        <EndpointAddress>http://non-existent-host/v2/track</EndpointAddress>
         <DeveloperMode>true</DeveloperMode>
         <FlushIntervalInSeconds>1</FlushIntervalInSeconds>
     </Channel>

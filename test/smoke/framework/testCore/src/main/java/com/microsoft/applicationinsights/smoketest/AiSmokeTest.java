@@ -483,7 +483,7 @@ public abstract class AiSmokeTest {
     protected static void checkMockedIngestionHealth() throws Exception {
         String ok = HttpHelper.get("http://localhost:"+mockedIngestion.getPort()+"/");
         assertEquals(MockedAppInsightsIngestionServlet.ENDPOINT_HEALTH_CHECK_RESPONSE, ok);
-        String postResponse = HttpHelper.post("http://localhost:6060/v2.1/track", MockedAppInsightsIngestionServlet.PING);
+        String postResponse = HttpHelper.post("http://localhost:6060/v2/track", MockedAppInsightsIngestionServlet.PING);
         assertEquals(MockedAppInsightsIngestionServlet.PONG, postResponse);
     }
 

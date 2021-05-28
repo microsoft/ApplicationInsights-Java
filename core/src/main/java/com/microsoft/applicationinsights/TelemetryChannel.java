@@ -8,6 +8,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
+import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,21 +37,24 @@ class TelemetryChannel {
 
     private final HttpPipeline pipeline;
     private final URL endpoint;
+    private final HttpPipelinePolicy authenticationPolicy;
 
     TelemetryChannel(URL endpoint) {
         List<HttpPipelinePolicy> policies = new ArrayList<>();
         HttpClient client = HttpClient.createDefault();
-        HttpPipelineBuilder pipeline = new HttpPipelineBuilder()
+        HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder()
                 .httpClient(client);
+        // Add Azure monitor redirect policy to be able to handle v2.1/track redirects
+        policies.add(new AzureMonitorRedirectPolicy());
         // Retry policy for failed requests
         policies.add(new RetryPolicy());
         // TODO handle authentication exceptions
-        HttpPipelinePolicy authenticationPolicy = AadAuthentication.getInstance().getAuthenticationPolicy();
-        if (authenticationPolicy != null) {
-            policies.add(authenticationPolicy);
+        this.authenticationPolicy = AadAuthentication.getInstance().getAuthenticationPolicy();
+        if (this.authenticationPolicy != null) {
+            policies.add(this.authenticationPolicy);
         }
-        pipeline.policies(policies.toArray(new HttpPipelinePolicy[0]));
-        this.pipeline = pipeline.build();
+        pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
+        this.pipeline = pipelineBuilder.build();
         this.endpoint = endpoint;
     }
 
@@ -93,7 +97,10 @@ class TelemetryChannel {
     }
 
     private CompletableResultCode internalSend(List<ByteBuffer> byteBuffers) {
-        HttpRequest request = new HttpRequest(HttpMethod.POST, endpoint + "v2.1/track");
+        // This is a temporary workaround until Breeze fixes the sporadic internal 500 error messages
+        HttpRequest request = (this.authenticationPolicy != null) ?
+                new HttpRequest(HttpMethod.POST, endpoint + "v2.1/track") :
+                new HttpRequest(HttpMethod.POST, endpoint + "v2/track");
 
         request.setBody(Flux.fromIterable(byteBuffers));
 
