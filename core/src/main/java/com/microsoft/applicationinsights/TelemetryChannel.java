@@ -97,10 +97,7 @@ class TelemetryChannel {
     }
 
     private CompletableResultCode internalSend(List<ByteBuffer> byteBuffers) {
-        // This is a temporary workaround until Breeze fixes the sporadic internal 500 error messages
-        HttpRequest request = (this.authenticationPolicy != null) ?
-                new HttpRequest(HttpMethod.POST, endpoint + "v2.1/track") :
-                new HttpRequest(HttpMethod.POST, endpoint + "v2/track");
+        HttpRequest request = new HttpRequest(HttpMethod.POST, endpoint + "v2.1/track");
 
         request.setBody(Flux.fromIterable(byteBuffers));
 
