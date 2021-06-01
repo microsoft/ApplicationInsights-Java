@@ -27,15 +27,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.HeartBeatModuleClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.RequestTelemetryClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.*;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
@@ -62,6 +54,7 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
+import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -90,7 +83,7 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     @Override
-    public void beforeByteBuddyAgent() {
+    public void beforeByteBuddyAgent(Config config) {
         start(instrumentation);
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
@@ -101,11 +94,12 @@ public class AiComponentInstaller implements ComponentInstaller {
         instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
         instrumentation.addTransformer(new ApplicationInsightsAppenderClassFileTransformer());
         instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
+        instrumentation.addTransformer(new RequestNameHandlerClassFileTransformer());
         instrumentation.addTransformer(new DuplicateAgentClassFileTransformer());
     }
 
     @Override
-    public void afterByteBuddyAgent() {
+    public void afterByteBuddyAgent(Config config) {
         // only safe now to resolve app id because SSL initialization
         // triggers loading of java.util.logging (starting with Java 8u231)
         // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized

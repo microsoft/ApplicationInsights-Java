@@ -1,7 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:1.0.0+ai.patch.1-alpha
-io.opentelemetry:opentelemetry-api-metrics:1.0.1-alpha
-io.opentelemetry:opentelemetry-api:1.0.1
-io.opentelemetry:opentelemetry-context:1.0.1
+io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:1.2.0+ai.patch.1-alpha
+io.opentelemetry:opentelemetry-api-metrics:1.2.0-alpha
+io.opentelemetry:opentelemetry-api:1.2.0
+io.opentelemetry:opentelemetry-context:1.2.0

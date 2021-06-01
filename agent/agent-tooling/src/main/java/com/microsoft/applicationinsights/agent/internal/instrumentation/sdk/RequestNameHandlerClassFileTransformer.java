@@ -20,27 +20,24 @@
  */
 package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import net.bytebuddy.jar.asm.ClassReader;
 import net.bytebuddy.jar.asm.ClassVisitor;
 import net.bytebuddy.jar.asm.ClassWriter;
 import net.bytebuddy.jar.asm.MethodVisitor;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 
-import static net.bytebuddy.jar.asm.Opcodes.ALOAD;
-import static net.bytebuddy.jar.asm.Opcodes.ASM7;
-import static net.bytebuddy.jar.asm.Opcodes.INVOKEINTERFACE;
-import static net.bytebuddy.jar.asm.Opcodes.RETURN;
+import static net.bytebuddy.jar.asm.Opcodes.*;
 
-public class WebRequestTrackingFilterClassFileTransformer implements ClassFileTransformer {
+public class RequestNameHandlerClassFileTransformer implements ClassFileTransformer {
 
-    private static final Logger logger = LoggerFactory.getLogger(WebRequestTrackingFilterClassFileTransformer.class);
+    private static final Logger logger = LoggerFactory.getLogger(RequestNameHandlerClassFileTransformer.class);
 
-    private final String unshadedClassName = UnshadedSdkPackageName.get() + "/web/internal/WebRequestTrackingFilter";
+    private final String unshadedClassName = UnshadedSdkPackageName.get() + "/web/spring/RequestNameHandlerInterceptorAdapter";
 
     @Override
     public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
@@ -53,7 +50,7 @@ public class WebRequestTrackingFilterClassFileTransformer implements ClassFileTr
 
         try {
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-            ClassVisitor cv = new WebRequestTrackingFilterClassVisitor(cw);
+            ClassVisitor cv = new RequestNameHandlerClassVisitor(cw);
             ClassReader cr = new ClassReader(classfileBuffer);
             cr.accept(cv, 0);
             return cw.toByteArray();
@@ -63,11 +60,11 @@ public class WebRequestTrackingFilterClassFileTransformer implements ClassFileTr
         }
     }
 
-    private static class WebRequestTrackingFilterClassVisitor extends ClassVisitor {
+    private static class RequestNameHandlerClassVisitor extends ClassVisitor {
 
         private final ClassWriter cw;
 
-        private WebRequestTrackingFilterClassVisitor(ClassWriter cw) {
+        private RequestNameHandlerClassVisitor(ClassWriter cw) {
             super(ASM7, cw);
             this.cw = cw;
         }
@@ -76,15 +73,13 @@ public class WebRequestTrackingFilterClassFileTransformer implements ClassFileTr
         public MethodVisitor visitMethod(int access, String name, String descriptor, @Nullable String signature,
                                          String /*@Nullable*/[] exceptions) {
             MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
-            if (name.equals("doFilter") && descriptor.equals("(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;)V")) {
-                // no-op the doFilter() method
+            if (name.equals("preHandle")
+                    && descriptor.equals("(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;Ljava/lang/Object;)Z")) {
+                // no-op the preHandle() method
                 mv.visitCode();
-                mv.visitVarInsn(ALOAD, 3);
-                mv.visitVarInsn(ALOAD, 1);
-                mv.visitVarInsn(ALOAD, 2);
-                mv.visitMethodInsn(INVOKEINTERFACE, "javax/servlet/FilterChain", "doFilter", "(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;)V", true);
-                mv.visitInsn(RETURN);
-                mv.visitMaxs(3, 4);
+                mv.visitInsn(ICONST_1);
+                mv.visitInsn(IRETURN);
+                mv.visitMaxs(1, 4);
                 mv.visitEnd();
                 return null;
             } else {

@@ -50,8 +50,6 @@ class ConfigOverride {
             properties.put("otel.instrumentation.azure-core.enabled", "false");
         }
         if (!config.preview.instrumentation.javaHttpClient.enabled) {
-            properties.put("otel.instrumentation.httpclient.enabled", "false");
-            // this is going to be the future name shortly
             properties.put("otel.instrumentation.java-http-client.enabled", "false");
         }
         if (!config.preview.instrumentation.rabbitmq.enabled) {
