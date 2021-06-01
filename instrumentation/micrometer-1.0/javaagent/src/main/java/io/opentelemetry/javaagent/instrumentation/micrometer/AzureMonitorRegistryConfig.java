@@ -19,7 +19,7 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
     if (stepStr != null && !stepStr.isEmpty()) {
       step = Duration.ofMillis(Integer.parseInt(stepStr));
     } else {
-      step = Duration.ofMillis(60000);
+      step = Duration.ofSeconds(60);
     }
   }
 

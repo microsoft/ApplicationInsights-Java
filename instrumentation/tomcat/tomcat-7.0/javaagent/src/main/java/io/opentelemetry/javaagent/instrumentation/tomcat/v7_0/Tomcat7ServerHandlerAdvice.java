@@ -36,6 +36,12 @@ public class Tomcat7ServerHandlerAdvice {
     context = tracer().startServerSpan(request, response);
 
     scope = context.makeCurrent();
+
+    TomcatServerHandlerAdviceHelper.attachResponseToRequest(
+        Tomcat7ServletEntityProvider.INSTANCE,
+        Servlet3HttpServerTracer.tracer(),
+        request,
+        response);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
@@ -47,6 +53,13 @@ public class Tomcat7ServerHandlerAdvice {
       @Advice.Local("otelScope") Scope scope) {
 
     TomcatServerHandlerAdviceHelper.stopSpan(
-        tracer(), Servlet3HttpServerTracer.tracer(), request, response, throwable, context, scope);
+        tracer(),
+        Tomcat7ServletEntityProvider.INSTANCE,
+        Servlet3HttpServerTracer.tracer(),
+        request,
+        response,
+        throwable,
+        context,
+        scope);
   }
 }

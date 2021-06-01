@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public abstract class JavaxServletHttpServerTracer<RESPONSE>
     extends ServletHttpServerTracer<HttpServletRequest, RESPONSE> {
-  public JavaxServletHttpServerTracer(JavaxServletAccessor<RESPONSE> accessor) {
+  protected JavaxServletHttpServerTracer(JavaxServletAccessor<RESPONSE> accessor) {
     super(accessor);
   }
 

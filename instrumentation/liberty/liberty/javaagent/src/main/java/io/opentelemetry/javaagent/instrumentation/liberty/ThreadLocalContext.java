@@ -14,15 +14,15 @@ public class ThreadLocalContext {
 
   private static final ThreadLocal<ThreadLocalContext> local = new ThreadLocal<>();
 
-  private final HttpServletRequest req;
-  private final HttpServletResponse res;
+  private final HttpServletRequest request;
+  private final HttpServletResponse response;
   private Context context;
   private Scope scope;
   private boolean started;
 
-  private ThreadLocalContext(HttpServletRequest req, HttpServletResponse res) {
-    this.req = req;
-    this.res = res;
+  private ThreadLocalContext(HttpServletRequest request, HttpServletResponse response) {
+    this.request = request;
+    this.response = response;
   }
 
   public Context getContext() {
@@ -42,11 +42,11 @@ public class ThreadLocalContext {
   }
 
   public HttpServletRequest getRequest() {
-    return req;
+    return request;
   }
 
   public HttpServletResponse getResponse() {
-    return res;
+    return response;
   }
 
   /**
@@ -60,8 +60,8 @@ public class ThreadLocalContext {
     return !b;
   }
 
-  public static void startRequest(HttpServletRequest req, HttpServletResponse res) {
-    ThreadLocalContext ctx = new ThreadLocalContext(req, res);
+  public static void startRequest(HttpServletRequest request, HttpServletResponse response) {
+    ThreadLocalContext ctx = new ThreadLocalContext(request, response);
     local.set(ctx);
   }
 

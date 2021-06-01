@@ -12,6 +12,7 @@ import org.apache.commons.httpclient.HttpMethod;
 final class ApacheHttpClientAppIdAttributeExtractor
     extends AppIdResponseHeaderExtractor<HttpMethod, HttpMethod> {
 
+  @Override
   protected String header(HttpMethod response, String name) {
     Header header = response.getResponseHeader(name);
     return header == null ? null : header.getValue();

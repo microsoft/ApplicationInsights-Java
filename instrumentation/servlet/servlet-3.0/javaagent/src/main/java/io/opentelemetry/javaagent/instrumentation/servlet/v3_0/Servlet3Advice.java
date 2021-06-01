@@ -82,6 +82,8 @@ public class Servlet3Advice {
 
     context = tracer().startSpan(httpServletRequest, httpServletResponse, mappingResolver, servlet);
     scope = context.makeCurrent();
+
+    tracer().setAsyncListenerResponse(httpServletRequest, (HttpServletResponse) response);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
