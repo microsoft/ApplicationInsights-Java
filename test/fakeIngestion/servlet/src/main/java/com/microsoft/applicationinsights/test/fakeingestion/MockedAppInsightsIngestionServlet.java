@@ -201,7 +201,6 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
                             }
                         }
                     }
-                    resp.setStatus(200);
                     return;
                 }
                 catch (Exception e) {
@@ -232,17 +231,16 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        System.out.println("caught: GET "+req.getPathInfo());
+        logit("caught: GET "+req.getPathInfo());
+        if (req.getPathInfo().startsWith("/api/profiles/") && req.getPathInfo().endsWith("/appId")) {
+            // any fake appId should do
+            resp.getWriter().append("12341234-1234-1234-1234-123412341234");
+            return;
+        }
         switch (req.getPathInfo()) {
             case "/":
                 resp.getWriter().append(ENDPOINT_HEALTH_CHECK_RESPONSE);
-                resp.setStatus(200);
                 return;
-            case "/api/profiles":
-                resp.getWriter().append(this.appid);
-                resp.setStatus(200);
-                return;
-                // TODO create endpoint to retrieve telemetry data
             default:
                 resp.sendError(404, "Unknown URI");
         }
