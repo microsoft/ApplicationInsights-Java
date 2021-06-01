@@ -323,7 +323,9 @@ public class Exporter implements SpanExporter {
             return;
         }
 
-        String target = getTargetFromPeerAttributes(attributes, -1);
+        // passing max value because we don't know what the default port would be in this case,
+        // so we always want the port included
+        String target = getTargetFromPeerAttributes(attributes, Integer.MAX_VALUE);
         if (target != null) {
             remoteDependencyData.setTarget(target);
             return;
