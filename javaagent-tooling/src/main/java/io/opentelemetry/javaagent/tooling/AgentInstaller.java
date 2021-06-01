@@ -27,6 +27,7 @@ import io.opentelemetry.javaagent.tooling.context.FieldBackedProvider;
 import io.opentelemetry.javaagent.tooling.matcher.GlobalClassloaderIgnoresMatcher;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Proxy;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -50,7 +51,7 @@ import org.slf4j.LoggerFactory;
 
 public class AgentInstaller {
 
-  private static final Logger log;
+  private static Logger log;
 
   private static final String JAVAAGENT_ENABLED_CONFIG = "otel.javaagent.enabled";
   private static final String EXCLUDED_CLASSES_CONFIG = "otel.javaagent.exclude-classes";
@@ -75,8 +76,24 @@ public class AgentInstaller {
     return INSTRUMENTATION;
   }
 
-  static {
-    LoggingConfigurer.configureLogger();
+  public static void installBytebuddyAgent(Instrumentation inst, URL bootstrapUrl) {
+    installBytebuddyAgent(inst, null, true);
+  }
+
+  // this exists for vendors who wish to completely override config and logging
+  public static void installBytebuddyAgent(
+      Instrumentation inst, Config config, boolean setUpLogging) {
+
+    // two most important things to set up are config and then logging
+    if (config != null) {
+      Config.internalInitializeConfig(config);
+    } else {
+      ConfigInitializer.initialize();
+    }
+    if (setUpLogging) {
+      LoggingConfigurer.configureLogger();
+    }
+
     log = LoggerFactory.getLogger(AgentInstaller.class);
 
     addByteBuddyRawSetting();
@@ -90,12 +107,9 @@ public class AgentInstaller {
     // loading java.lang.reflect.Proxy early here still allows it to be retransformed by the
     // internal-proxy instrumentation module after the bytebuddy transformer is set up
     Proxy.class.getName();
-  }
 
-  public static void installBytebuddyAgent(Instrumentation inst) {
     logVersionInfo();
-    Config config = Config.get();
-    if (config.getBooleanProperty(JAVAAGENT_ENABLED_CONFIG, true)) {
+    if (Config.get().getBooleanProperty(JAVAAGENT_ENABLED_CONFIG, true)) {
       Iterable<ComponentInstaller> componentInstallers = loadComponentProviders();
       installBytebuddyAgent(inst, componentInstallers);
     } else {
@@ -110,7 +124,7 @@ public class AgentInstaller {
    * @param inst Java Instrumentation used to install bytebuddy
    * @return the agent's class transformer
    */
-  public static ResettableClassFileTransformer installBytebuddyAgent(
+  private static ResettableClassFileTransformer installBytebuddyAgent(
       Instrumentation inst, Iterable<ComponentInstaller> componentInstallers) {
 
     Config config = Config.get();
