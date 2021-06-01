@@ -13,6 +13,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 final class ApacheHttpClientAppIdAttributeExtractor
     extends AppIdResponseHeaderExtractor<HttpUriRequest, HttpResponse> {
 
+  @Override
   protected String header(HttpResponse response, String name) {
     Header header = response.getFirstHeader(name);
     return header == null ? null : header.getValue();

@@ -13,7 +13,7 @@ dependencies {
 
   testImplementation project(':instrumentation:opentelemetry-annotations-1.0:javaagent')
 
-  testImplementation deps.opentelemetryExtAnnotations
+  testImplementation "io.opentelemetry:opentelemetry-extension-annotations"
 
   testImplementation 'javax.servlet:javax.servlet-api:3.0.1'
 }
