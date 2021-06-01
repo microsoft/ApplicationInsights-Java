@@ -280,6 +280,22 @@ public class Exporter implements SpanExporter {
             applyServiceBusSpan(attributes, remoteDependencyData);
             return;
         }
+
+        // passing max value because we don't know what the default port would be in this case,
+        // so we always want the port included
+        String target = getTargetFromPeerAttributes(attributes, Integer.MAX_VALUE);
+        if (target != null) {
+            remoteDependencyData.setTarget(target);
+            return;
+        }
+
+        // with no target, the App Map falls back to creating a node based on the telemetry name,
+        // which is very confusing, e.g. when multiple unrelated nodes all point to a single node
+        // because they had dependencies with the same telemetry name
+        //
+        // so we mark these as InProc, even though they aren't INTERNAL spans,
+        // in order to prevent App Map from considering them
+        remoteDependencyData.setType("InProc");
     }
 
     private void exportLogSpan(SpanData span) {
