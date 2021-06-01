@@ -37,7 +37,6 @@ class TelemetryChannel {
 
     private final HttpPipeline pipeline;
     private final URL endpoint;
-    private final HttpPipelinePolicy authenticationPolicy;
 
     TelemetryChannel(URL endpoint) {
         List<HttpPipelinePolicy> policies = new ArrayList<>();
@@ -49,9 +48,9 @@ class TelemetryChannel {
         // Retry policy for failed requests
         policies.add(new RetryPolicy());
         // TODO handle authentication exceptions
-        this.authenticationPolicy = AadAuthentication.getInstance().getAuthenticationPolicy();
-        if (this.authenticationPolicy != null) {
-            policies.add(this.authenticationPolicy);
+        HttpPipelinePolicy authenticationPolicy = AadAuthentication.getInstance().getAuthenticationPolicy();
+        if (authenticationPolicy != null) {
+            policies.add(authenticationPolicy);
         }
         pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
         this.pipeline = pipelineBuilder.build();
