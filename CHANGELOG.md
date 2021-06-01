@@ -1,4 +1,7 @@
 # CHANGELOG
+# Version 3.1.1-BETA.4
+* Reduce agent jar file size back to normal [#1716](https://github.com/microsoft/ApplicationInsights-Java/pull/1716).
+
 # Version 3.1.1-BETA.3
 * Fix memory leak caused by not removing Netty listeners [upstream #2705](https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/2705)
 * Improve Azure Service Bus support [#1710](https://github.com/microsoft/ApplicationInsights-Java/pull/1710).
