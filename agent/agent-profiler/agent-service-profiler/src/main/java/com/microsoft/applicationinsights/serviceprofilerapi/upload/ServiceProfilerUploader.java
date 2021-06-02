@@ -245,9 +245,7 @@ public class ServiceProfilerUploader {
         metadata.put(BlobMetadataConstants.OS_PLATFORM_META_NAME, OsPlatformProvider.getOSPlatformDescription());
         metadata.put(BlobMetadataConstants.TRACE_FILE_FORMAT_META_NAME, "jfr");
 
-        if (roleName == null) {
-            metadata.put(BlobMetadataConstants.ROLE_NAME_META_NAME, "");
-        } else {
+        if (roleName != null && !roleName.isEmpty()) {
             metadata.put(BlobMetadataConstants.ROLE_NAME_META_NAME, roleName);
         }
 

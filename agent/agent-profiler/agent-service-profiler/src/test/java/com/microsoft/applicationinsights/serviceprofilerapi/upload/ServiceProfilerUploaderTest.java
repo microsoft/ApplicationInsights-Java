@@ -121,8 +121,8 @@ public class ServiceProfilerUploaderTest {
                 new UploadContext("a-machine-name", UUID.randomUUID(), 1, tmpFile, UUID.randomUUID())
         );
 
-        // Null role name translates to empty string in the metadata
-        Assert.assertEquals("", blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
+        // Null role name tag is not added
+        Assert.assertNull(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
 
     }
 
