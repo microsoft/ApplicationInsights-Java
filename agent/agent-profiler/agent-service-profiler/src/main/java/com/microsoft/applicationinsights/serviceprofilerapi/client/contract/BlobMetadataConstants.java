@@ -34,4 +34,5 @@ public class BlobMetadataConstants {
   public static final String PROGRAMMING_LANGUAGE_META_NAME = "spProgrammingLanguage";
   public static final String OS_PLATFORM_META_NAME = "spOSPlatform";
   public static final String TRACE_FILE_FORMAT_META_NAME = "spTraceFileFormat";
+  public static final String ROLE_NAME_META_NAME = "RoleName";
 }

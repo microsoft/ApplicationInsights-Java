@@ -20,23 +20,6 @@
  */
 package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Base64;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.UUID;
-import java.util.function.Supplier;
-import java.util.zip.GZIPOutputStream;
-
 import com.azure.core.http.rest.Response;
 import com.azure.storage.blob.BlobAsyncClient;
 import com.azure.storage.blob.BlobContainerAsyncClient;
@@ -61,6 +44,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Base64;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Random;
+import java.util.UUID;
+import java.util.function.Supplier;
+import java.util.zip.GZIPOutputStream;
+
 /**
  * Uploads profiles to the service profiler endpoint
  */
@@ -73,16 +73,19 @@ public class ServiceProfilerUploader {
     private final String machineName;
     private final Supplier<String> appIdSupplier;
     private final String processId;
+    private final String roleName;
 
     public ServiceProfilerUploader(
             ServiceProfilerClientV2 serviceProfilerClient,
             String machineName,
             String processId,
-            Supplier<String> appIdSupplier) {
+            Supplier<String> appIdSupplier,
+            String roleName) {
         this.appIdSupplier = appIdSupplier;
         this.machineName = machineName;
         this.serviceProfilerClient = serviceProfilerClient;
         this.processId = processId;
+        this.roleName = roleName;
     }
 
     /**
@@ -232,7 +235,7 @@ public class ServiceProfilerUploader {
         }
     }
 
-    private BlobUploadFromFileOptions createBlockBlobOptions(File file, UploadContext uploadContext) {
+    BlobUploadFromFileOptions createBlockBlobOptions(File file, UploadContext uploadContext) {
         HashMap<String, String> metadata = new HashMap<>();
 
         metadata.put(BlobMetadataConstants.DATA_CUBE_META_NAME, uploadContext.getDataCube().toString().toLowerCase());
@@ -240,7 +243,13 @@ public class ServiceProfilerUploader {
         metadata.put(BlobMetadataConstants.START_TIME_META_NAME, TimestampContract.timestampToString(uploadContext.getSessionId()));
         metadata.put(BlobMetadataConstants.PROGRAMMING_LANGUAGE_META_NAME, "Java");
         metadata.put(BlobMetadataConstants.OS_PLATFORM_META_NAME, OsPlatformProvider.getOSPlatformDescription());
-        metadata.put(BlobMetadataConstants.TRACE_FILE_FORMAT_META_NAME, "Netperf");
+        metadata.put(BlobMetadataConstants.TRACE_FILE_FORMAT_META_NAME, "jfr");
+
+        if (roleName == null) {
+            metadata.put(BlobMetadataConstants.ROLE_NAME_META_NAME, "");
+        } else {
+            metadata.put(BlobMetadataConstants.ROLE_NAME_META_NAME, roleName);
+        }
 
         String fullFilePath = file
                 .getAbsoluteFile()
