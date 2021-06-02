@@ -162,6 +162,7 @@ public class AiComponentInstaller implements ComponentInstaller {
                 SystemInformation.INSTANCE.getProcessId(),
                 formServiceProfilerConfig(config.preview.profiler),
                 config.role.instance,
+                config.role.name,
                 telemetryClient,
                 formApplicationInsightsUserAgent(),
                 formGcEventMonitorConfiguration(config.preview.gcEvents)
@@ -196,7 +197,7 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     private static ServiceProfilerServiceConfig formServiceProfilerConfig(ProfilerConfiguration configuration) {
-        URI serviceProfilerFrontEndPoint = TelemetryConfiguration.getActive().getEndpointProvider().getProfilerEndpoint();
+        URI serviceProfilerFrontEndPoint = TelemetryClient.getActive().getEndpointProvider().getProfilerEndpoint();
         return new ServiceProfilerServiceConfig(
                 configuration.configPollPeriodSeconds,
                 configuration.periodicRecordingDurationSeconds,

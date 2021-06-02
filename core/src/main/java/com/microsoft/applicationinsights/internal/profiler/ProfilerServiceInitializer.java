@@ -66,6 +66,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
+                                               String roleName,
                                                TelemetryClient telemetryClient,
                                                String userAgent,
                                                GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
@@ -74,6 +75,7 @@ public class ProfilerServiceInitializer {
                 processId,
                 config,
                 machineName,
+                roleName,
                 telemetryClient,
                 LazyHttpClient.getInstance(),
                 userAgent,
@@ -85,6 +87,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
+                                               String roleName,
                                                TelemetryClient telemetryClient,
                                                CloseableHttpClient httpClient,
                                                String userAgent,
@@ -124,7 +127,8 @@ public class ProfilerServiceInitializer {
                     telemetryClient.getInstrumentationKey(),
                     httpClient,
                     serviceProfilerExecutorService,
-                    userAgent
+                    userAgent,
+                    roleName
             );
 
             serviceProfilerExecutorService.submit(() -> {

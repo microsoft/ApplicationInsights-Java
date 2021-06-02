@@ -258,7 +258,8 @@ public class ProfilerServiceTest {
                 clientV2,
                 machineName,
                 processId,
-                appIdSupplier
+                appIdSupplier,
+                "a-role-name"
         ) {
             @Override
             protected Mono<UploadFinishArgs> performUpload(UploadContext uploadContext, BlobAccessPass uploadPass, File file) {
