@@ -1,6 +1,26 @@
 {
   "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.docker.internal:6060/",
   "preview": {
-    "metricIntervalSeconds": 5
+    "metricIntervalSeconds": 5,
+    "processors" : [
+      {
+        "type": "metric_filter",
+        "exclude": {
+          "matchType": "strict",
+          "metricNames": [
+            "test_counter_exclude_me"
+          ]
+        }
+      },
+      {
+        "type": "metric_filter",
+        "exclude": {
+          "matchType": "regexp",
+          "metricNames": [
+            "exclude_me_.*"
+          ]
+        }
+      }
+    ]
   }
 }

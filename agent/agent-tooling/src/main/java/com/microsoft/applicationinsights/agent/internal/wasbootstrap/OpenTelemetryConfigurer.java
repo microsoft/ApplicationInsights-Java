@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
@@ -43,7 +44,9 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
             // and the default for DelegatingSampler is to not sample anything)
         }
 
-        List<ProcessorConfig> processors = new ArrayList<>(config.preview.processors);
+        List<ProcessorConfig> processors = config.preview.processors.stream()
+                .filter(processor -> processor.type != Configuration.ProcessorType.metric_filter)
+                .collect(Collectors.toCollection(ArrayList::new));
         // Reversing the order of processors before passing it to SpanProcessor
         Collections.reverse(processors);
 

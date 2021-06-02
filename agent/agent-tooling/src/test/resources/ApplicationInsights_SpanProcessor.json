@@ -122,6 +122,17 @@
             }
           ],
           "id": "attributes/extract"
+        },
+        {
+          "type": "metric_filter",
+          "exclude": {
+            "matchType": "strict",
+            "metricNames": [
+              "a_test_metric",
+              "another_test_metric"
+            ]
+          },
+          "id": "metric_filter/exclude_two_metrics"
         }
       ]
     }

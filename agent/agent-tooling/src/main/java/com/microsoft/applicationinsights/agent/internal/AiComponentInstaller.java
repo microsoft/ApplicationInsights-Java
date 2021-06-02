@@ -66,6 +66,7 @@ import java.lang.instrument.Instrumentation;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -154,6 +155,10 @@ public class AiComponentInstaller implements ComponentInstaller {
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
+        configuration.setMetricFilters(config.preview.processors.stream()
+                .filter(processor -> processor.type == Configuration.ProcessorType.metric_filter)
+                .map(Configuration.ProcessorConfig::toMetricFilter)
+                .collect(Collectors.toList()));
 
         try {
             ConnectionString.updateStatsbeatConnectionString(config.internal.statsbeat.instrumentationKey, config.internal.statsbeat.endpoint, configuration);

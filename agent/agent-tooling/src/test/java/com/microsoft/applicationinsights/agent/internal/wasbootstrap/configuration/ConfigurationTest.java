@@ -135,7 +135,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration("ApplicationInsights_SpanProcessor.json");
         PreviewConfiguration preview = configuration.preview;
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals(8, preview.processors.size());
+        assertEquals(9, preview.processors.size());
         // insert config test
         ProcessorConfig insertConfig = preview.processors.get(0);
         assertEquals("attributes/insert", insertConfig.id);
@@ -207,6 +207,14 @@ public class ConfigurationTest {
         assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute.pattern);
         assertEquals(4,attributesExtractConfig.actions.get(0).extractAttribute.groupNames.size());
         assertEquals("httpProtocol",attributesExtractConfig.actions.get(0).extractAttribute.groupNames.get(0));
+        // metric_filter
+        ProcessorConfig metricFilterConfig = preview.processors.get(8);
+        assertEquals(ProcessorType.metric_filter, metricFilterConfig.type);
+        assertEquals("metric_filter/exclude_two_metrics", metricFilterConfig.id);
+        assertEquals(MatchType.strict, metricFilterConfig.exclude.matchType);
+        assertEquals(2, metricFilterConfig.exclude.metricNames.size());
+        assertEquals("a_test_metric", metricFilterConfig.exclude.metricNames.get(0));
+        assertEquals("another_test_metric", metricFilterConfig.exclude.metricNames.get(1));
     }
 
     @Test
