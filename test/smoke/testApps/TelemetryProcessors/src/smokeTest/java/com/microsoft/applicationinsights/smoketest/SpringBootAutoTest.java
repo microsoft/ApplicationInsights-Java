@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -26,6 +27,13 @@ public class SpringBootAutoTest extends AiSmokeTest {
         assertEquals("/TelemetryProcessors/test", rd.getProperties().get("httpPath"));
         assertEquals(4, rd.getProperties().size());
         assertTrue(rd.getSuccess());
+
+        List<MessageData> logs = mockedIngestion.getAllMessageData();
+        for(MessageData log:logs) {
+            if(log.getMessage().equals("This is log from SpringBootApp.")) {
+                assertEquals("testLogAttributeValue", log.getProperties().get("newLogAttribute"));
+            }
+        }
     }
 
     @Test

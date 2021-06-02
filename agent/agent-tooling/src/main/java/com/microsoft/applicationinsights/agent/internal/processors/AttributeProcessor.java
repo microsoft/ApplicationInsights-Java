@@ -1,7 +1,25 @@
-package com.microsoft.applicationinsights.agent.internal.processors;
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
-import java.util.List;
-import java.util.regex.Matcher;
+package com.microsoft.applicationinsights.agent.internal.processors;
 
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorAction;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
@@ -11,6 +29,9 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.List;
+import java.util.regex.Matcher;
 
 // structure which only allows valid data
 // normalization has to occur before construction
@@ -31,6 +52,19 @@ public class AttributeProcessor extends AgentProcessor {
         IncludeExclude normalizedInclude = config.include != null ? getNormalizedIncludeExclude(config.include) : null;
         IncludeExclude normalizedExclude = config.exclude != null ? getNormalizedIncludeExclude(config.exclude) : null;
         return new AttributeProcessor(config.actions, normalizedInclude, normalizedExclude);
+    }
+
+    // this won't be needed once we update to 0.13.0
+    // see https://github.com/open-telemetry/opentelemetry-java/pull/2284
+    public static String getAttribute(Attributes attributes, AttributeKey<String> key) {
+        Object existingValueObj = attributes.get(key);
+        // checking the return type won't be needed once we update to 0.13.0
+        // see https://github.com/open-telemetry/opentelemetry-java/pull/2284
+        if (existingValueObj instanceof String) {
+            return (String) existingValueObj;
+        } else {
+            return null;
+        }
     }
 
     // Function to process actions
@@ -147,19 +181,6 @@ public class AttributeProcessor extends AgentProcessor {
             builder.put(groupName, matcher.group(groupName));
         }
         return new MySpanData(span, builder.build());
-    }
-
-    // this won't be needed once we update to 0.13.0
-    // see https://github.com/open-telemetry/opentelemetry-java/pull/2284
-    public static String getAttribute(Attributes attributes, AttributeKey<String> key) {
-        Object existingValueObj = attributes.get(key);
-        // checking the return type won't be needed once we update to 0.13.0
-        // see https://github.com/open-telemetry/opentelemetry-java/pull/2284
-        if (existingValueObj instanceof String) {
-            return (String) existingValueObj;
-        } else {
-            return null;
-        }
     }
 
     @SuppressWarnings("unchecked")

@@ -1,4 +1,32 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.agent.internal.processors;
+
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorAttribute;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,13 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
-
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorAttribute;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public abstract class AgentProcessor {
     private final @Nullable IncludeExclude include;
@@ -40,7 +61,6 @@ public abstract class AgentProcessor {
     public static abstract class IncludeExclude {
         // Function to compare span with user provided span names or span patterns
         public abstract boolean isMatch(SpanData span, boolean isLog);
-
     }
 
     // ok to have this class cover both spanNames and logNames
@@ -68,29 +88,25 @@ public abstract class AgentProcessor {
             if (logNames == null) {
                 logNames = new ArrayList<>();
             }
-
             return new StrictIncludeExclude(attributes, spanNames, logNames);
         }
 
         // Function to compare span with user provided span names and log names
         public boolean isMatch(SpanData span, boolean isLog) {
 
-            if(spanNames.isEmpty() && logNames.isEmpty()) {
+            if (spanNames.isEmpty() && logNames.isEmpty()) {
                 // check attributes for both spans and logs
                 return this.checkAttributes(span);
             }
-            if(isLog) {
-               if(logNames.isEmpty()) return false;
-               if(!logNames.isEmpty() && !logNames.contains(span.getName())) return false;
+            if (isLog) {
+                if (logNames.isEmpty()) return false;
+                if (!logNames.isEmpty() && !logNames.contains(span.getName())) return false;
             } else {
-                if(spanNames.isEmpty()) return false;
-                if(!spanNames.isEmpty() && !spanNames.contains(span.getName())) return false;
+                if (spanNames.isEmpty()) return false;
+                if (!spanNames.isEmpty() && !spanNames.contains(span.getName())) return false;
             }
-
             return this.checkAttributes(span);
         }
-
-
 
         // Function to compare span with user provided attributes list
         private boolean checkAttributes(SpanData span) {
@@ -150,7 +166,6 @@ public abstract class AgentProcessor {
                     logPatterns.add(Pattern.compile(regex));
                 }
             }
-
             return new RegexpIncludeExclude(spanPatterns, logPatterns, attributeKeyValuePatterns);
         }
 
@@ -173,19 +188,18 @@ public abstract class AgentProcessor {
         // Function to compare span with user provided span patterns
         public boolean isMatch(SpanData span, boolean isLog) {
 
-            if(spanPatterns.isEmpty() && logPatterns.isEmpty()) {
+            if (spanPatterns.isEmpty() && logPatterns.isEmpty()) {
                 // check attributes for both spans and logs
                 return checkAttributes(span);
             }
 
-            if(isLog) {
-                if(logPatterns.isEmpty()) return false;
-                if(!logPatterns.isEmpty() && !isPatternFound(span, logPatterns)) return false;
+            if (isLog) {
+                if (logPatterns.isEmpty()) return false;
+                if (!logPatterns.isEmpty() && !isPatternFound(span, logPatterns)) return false;
             } else {
-                if(spanPatterns.isEmpty()) return false;
-                if(!spanPatterns.isEmpty() && !isPatternFound(span, spanPatterns)) return false;
+                if (spanPatterns.isEmpty()) return false;
+                if (!spanPatterns.isEmpty() && !isPatternFound(span, spanPatterns)) return false;
             }
-
             return checkAttributes(span);
         }
 

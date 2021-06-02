@@ -77,6 +77,23 @@
             }
           ],
           "id": "attributes/extract"
+        },
+        {
+          "type": "attribute",
+          "include":{
+            "matchType":"strict",
+            "logNames":[
+              "This is log from SpringBootApp."
+            ]
+          },
+          "actions": [
+            {
+              "key": "newLogAttribute",
+              "value": "testLogAttributeValue",
+              "action": "insert"
+            }
+          ],
+          "id": "log/insert"
         }
       ]
     }

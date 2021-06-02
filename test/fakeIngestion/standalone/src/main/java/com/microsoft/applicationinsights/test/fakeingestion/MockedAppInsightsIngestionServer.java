@@ -93,6 +93,19 @@ public class MockedAppInsightsIngestionServer {
         return dataItems;
     }
 
+    public <T extends Domain> List<T> getAllMessageData() {
+        List<Envelope> items = getItemsEnvelopeDataType("MessageData");
+        List<T> dataItems = new ArrayList<>();
+        for (Envelope e : items) {
+            String message = ((MessageData) ((Data<?>) e.getData()).getBaseData()).getMessage();
+            if (!ignoreMessageData(message)) {
+                Data<T> dt = (Data<T>) e.getData();
+                dataItems.add(dt.getBaseData());
+            }
+        }
+        return dataItems;
+    }
+
     private <T extends Domain> List<T> getTelemetryDataByType(String type, boolean inRequestOnly) {
         Preconditions.checkNotNull(type, "type");
         List<Envelope> items = getItemsEnvelopeDataType(type);
