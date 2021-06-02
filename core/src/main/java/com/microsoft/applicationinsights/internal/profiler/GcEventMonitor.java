@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.management.MemoryUsage;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -23,6 +24,11 @@ import java.util.concurrent.ExecutorService;
  */
 public class GcEventMonitor {
     private static final Logger LOGGER = LoggerFactory.getLogger(GcEventMonitor.class);
+
+    // a unique jvm_instance_id is needed for every restart as the gc starts again from scratch every time
+    // the JVM is restarted, and we need to analyze single JVM execution
+    //TODO if/when Application Insights adds a unique ID that represents a single JVM, pull that ID here
+    private static final String JVM_INSTANCE_UID = UUID.randomUUID().toString();
 
     public static class GcEventMonitorConfiguration {
         public final GcReportingLevel reportingLevel;
@@ -106,6 +112,7 @@ public class GcEventMonitor {
         gcEvent.getProperties().put("collector", event.getCollector().getName());
         gcEvent.getProperties().put("type", event.getGcCause());
         gcEvent.getProperties().put("action", event.getGcAction());
+        gcEvent.getProperties().put("jvm_instance_id", JVM_INSTANCE_UID);
         gcEvent.getMetrics().put("id", (double) event.getId());
         gcEvent.getMetrics().put("duration_ms", (double) event.getDuration());
         gcEvent.getMetrics().put("end_time_ms", (double) event.getEndTime());
