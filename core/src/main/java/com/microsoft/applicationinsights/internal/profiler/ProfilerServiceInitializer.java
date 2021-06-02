@@ -64,6 +64,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
+                                               String roleName,
                                                String instrumentationKey,
                                                TelemetryClient client,
                                                String userAgent,
@@ -73,6 +74,7 @@ public class ProfilerServiceInitializer {
                 processId,
                 config,
                 machineName,
+                roleName,
                 instrumentationKey,
                 client,
                 LazyHttpClient.getInstance(),
@@ -85,6 +87,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
+                                               String roleName,
                                                String instrumentationKey,
                                                TelemetryClient client,
                                                CloseableHttpClient httpClient,
@@ -125,7 +128,8 @@ public class ProfilerServiceInitializer {
                     instrumentationKey,
                     httpClient,
                     serviceProfilerExecutorService,
-                    userAgent
+                    userAgent,
+                    roleName
             );
 
             serviceProfilerExecutorService.submit(() -> {
