@@ -90,7 +90,7 @@ public class SpanProcessor extends AgentProcessor {
     //fromAttributes represents the attribute keys to pull the values from to generate the new span name.
     public SpanData processFromAttributes(SpanData span) {
         if (spanHasAllFromAttributeKeys(span)) {
-            StringBuffer updatedSpanBuffer = new StringBuffer();
+            StringBuilder updatedSpanBuffer = new StringBuilder();
             Attributes existingSpanAttributes = span.getAttributes();
             for (AttributeKey<?> attributeKey : fromAttributes) {
                 updatedSpanBuffer.append(existingSpanAttributes.get(attributeKey));
@@ -100,7 +100,7 @@ public class SpanProcessor extends AgentProcessor {
             if (separator.length() > 0) {
                 updatedSpanBuffer.setLength(updatedSpanBuffer.length() - separator.length());
             }
-            return new MySpanData(span, span.getAttributes(), new String(updatedSpanBuffer));
+            return new MySpanData(span, span.getAttributes(), updatedSpanBuffer.toString());
         }
         return span;
     }
