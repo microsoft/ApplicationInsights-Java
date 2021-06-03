@@ -27,7 +27,7 @@ public class SpringBootAutoTest extends AiSmokeTest {
         assertEquals("/TelemetryProcessors/test", rd.getProperties().get("httpPath"));
         assertEquals(4, rd.getProperties().size());
         assertTrue(rd.getSuccess());
-
+        // Log processor test
         List<MessageData> logs = mockedIngestion.getAllMessageData();
         for(MessageData log:logs) {
             if(log.getMessage().equals("This is log from SpringBootApp.")) {

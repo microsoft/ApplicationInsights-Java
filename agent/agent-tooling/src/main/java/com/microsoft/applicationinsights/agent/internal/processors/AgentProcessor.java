@@ -59,7 +59,7 @@ public abstract class AgentProcessor {
 
 
     public static abstract class IncludeExclude {
-        // Function to compare span with user provided span names or span patterns
+        // Function to compare span with user provided span names/log names or span patterns/log patterns
         public abstract boolean isMatch(SpanData span, boolean isLog);
     }
 
@@ -91,7 +91,7 @@ public abstract class AgentProcessor {
             return new StrictIncludeExclude(attributes, spanNames, logNames);
         }
 
-        // Function to compare span with user provided span names and log names
+        // Function to compare span/log with user provided span names and log names
         public boolean isMatch(SpanData span, boolean isLog) {
 
             if (spanNames.isEmpty() && logNames.isEmpty()) {
@@ -185,7 +185,7 @@ public abstract class AgentProcessor {
             return false;
         }
 
-        // Function to compare span with user provided span patterns
+        // Function to compare span/log with user provided span patterns/log patterns
         public boolean isMatch(SpanData span, boolean isLog) {
 
             if (spanPatterns.isEmpty() && logPatterns.isEmpty()) {

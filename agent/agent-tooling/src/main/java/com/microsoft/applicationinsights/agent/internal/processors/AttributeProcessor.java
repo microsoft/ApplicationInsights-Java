@@ -62,9 +62,8 @@ public class AttributeProcessor extends AgentProcessor {
         // see https://github.com/open-telemetry/opentelemetry-java/pull/2284
         if (existingValueObj instanceof String) {
             return (String) existingValueObj;
-        } else {
-            return null;
         }
+        return null;
     }
 
     // Function to process actions
