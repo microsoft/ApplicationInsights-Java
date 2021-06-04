@@ -362,11 +362,12 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         }
 
         private void writeAgentTrackEventTelemetryMethod() {
-            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackEventTelemetry",
-                    "(L" + unshadedPrefix + "/telemetry/EventTelemetry;)V", null, null);
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackEventTelemetry", "(L" + unshadedPrefix + "/telemetry/EventTelemetry;)V", null, null);
             mv.visitCode();
             Label label0 = new Label();
             mv.visitLabel(label0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getTimestamp", "()Ljava/util/Date;", false);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/EventTelemetry", "getName", "()Ljava/lang/String;", false);
             mv.visitVarInsn(ALOAD, 1);
@@ -383,22 +384,23 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
             Label label2 = new Label();
             mv.visitLabel(label2);
-            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackEvent", "(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackEvent", "(Ljava/util/Date;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
             Label label3 = new Label();
             mv.visitLabel(label3);
             mv.visitInsn(RETURN);
             Label label4 = new Label();
             mv.visitLabel(label4);
-            mv.visitMaxs(5, 2);
+            mv.visitMaxs(6, 2);
             mv.visitEnd();
         }
 
         private void writeAgentTrackMetricTelemetryMethod() {
-            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackMetricTelemetry",
-                    "(L" + unshadedPrefix + "/telemetry/MetricTelemetry;)V", null, null);
+            MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "agent$trackMetricTelemetry", "(L" + unshadedPrefix + "/telemetry/MetricTelemetry;)V", null, null);
             mv.visitCode();
             Label label0 = new Label();
             mv.visitLabel(label0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getTimestamp", "()Ljava/util/Date;", false);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/MetricTelemetry", "getName", "()Ljava/lang/String;", false);
             mv.visitVarInsn(ALOAD, 1);
@@ -425,13 +427,13 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
             Label label3 = new Label();
             mv.visitLabel(label3);
-            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackMetric", "(Ljava/lang/String;DLjava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackMetric", "(Ljava/util/Date;Ljava/lang/String;DLjava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
             Label label4 = new Label();
             mv.visitLabel(label4);
             mv.visitInsn(RETURN);
             Label label5 = new Label();
             mv.visitLabel(label5);
-            mv.visitMaxs(10, 2);
+            mv.visitMaxs(11, 2);
             mv.visitEnd();
         }
 
@@ -440,6 +442,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitCode();
             Label label0 = new Label();
             mv.visitLabel(label0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getTimestamp", "()Ljava/util/Date;", false);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/RemoteDependencyTelemetry", "getName", "()Ljava/lang/String;", false);
             mv.visitVarInsn(ALOAD, 1);
@@ -474,13 +478,13 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
             Label label3 = new Label();
             mv.visitLabel(label3);
-            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackDependency", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackDependency", "(Ljava/util/Date;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
             Label label4 = new Label();
             mv.visitLabel(label4);
             mv.visitInsn(RETURN);
             Label label5 = new Label();
             mv.visitLabel(label5);
-            mv.visitMaxs(12, 2);
+            mv.visitMaxs(13, 2);
             mv.visitEnd();
         }
 
@@ -489,6 +493,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitCode();
             Label label0 = new Label();
             mv.visitLabel(label0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getTimestamp", "()Ljava/util/Date;", false);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/PageViewTelemetry", "getName", "()Ljava/lang/String;", false);
             mv.visitVarInsn(ALOAD, 1);
@@ -509,13 +515,13 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
             Label label2 = new Label();
             mv.visitLabel(label2);
-            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackPageView", "(Ljava/lang/String;Ljava/net/URI;JLjava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackPageView", "(Ljava/util/Date;Ljava/lang/String;Ljava/net/URI;JLjava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
             Label label3 = new Label();
             mv.visitLabel(label3);
             mv.visitInsn(RETURN);
             Label label4 = new Label();
             mv.visitLabel(label4);
-            mv.visitMaxs(8, 2);
+            mv.visitMaxs(9, 2);
             mv.visitEnd();
         }
 
@@ -545,6 +551,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             Label label4 = new Label();
             mv.visitLabel(label4);
             mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TraceTelemetry", "getTimestamp", "()Ljava/util/Date;", false);
+            mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TraceTelemetry", "getMessage", "()Ljava/lang/String;", false);
             mv.visitVarInsn(ILOAD, 3);
             mv.visitVarInsn(ALOAD, 1);
@@ -559,13 +567,13 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
             Label label6 = new Label();
             mv.visitLabel(label6);
-            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackTrace", "(Ljava/lang/String;ILjava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackTrace", "(Ljava/util/Date;Ljava/lang/String;ILjava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
             Label label7 = new Label();
             mv.visitLabel(label7);
             mv.visitInsn(RETURN);
             Label label8 = new Label();
             mv.visitLabel(label8);
-            mv.visitMaxs(5, 4);
+            mv.visitMaxs(6, 4);
             mv.visitEnd();
         }
 
@@ -637,6 +645,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             Label label0 = new Label();
             mv.visitLabel(label0);
             mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getTimestamp", "()Ljava/util/Date;", false);
+            mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getException", "()Ljava/lang/Exception;", false);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/ExceptionTelemetry", "getProperties", "()Ljava/util/Map;", false);
@@ -652,13 +662,13 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitMethodInsn(INVOKEVIRTUAL, unshadedPrefix + "/telemetry/TelemetryContext", "getInstrumentationKey", "()Ljava/lang/String;", false);
             Label label2 = new Label();
             mv.visitLabel(label2);
-            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackException", "(Ljava/lang/Exception;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "trackException", "(Ljava/util/Date;Ljava/lang/Exception;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V", false);
             Label label3 = new Label();
             mv.visitLabel(label3);
             mv.visitInsn(RETURN);
             Label label4 = new Label();
             mv.visitLabel(label4);
-            mv.visitMaxs(5, 2);
+            mv.visitMaxs(6, 2);
             mv.visitEnd();
         }
 
@@ -695,7 +705,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
     // this is used during development for generating above bytecode
     //
     // to run this, uncomment the ASMifier line below, and add this dependency to agent-tooling.gradle:
-    //   compile group: 'org.ow2.asm', name: 'asm-util', version: '9.1'
+    //   implementation group: 'org.ow2.asm', name: 'asm-util', version: '9.1'
     //
     public static void main(String[] args) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -793,31 +803,31 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         }
 
         private void agent$trackEventTelemetry(EventTelemetry t) {
-            BytecodeUtil.trackEvent(t.getName(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
+            BytecodeUtil.trackEvent(t.getTimestamp(), t.getName(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
                     t.getContext().getInstrumentationKey());
         }
 
         private void agent$trackMetricTelemetry(MetricTelemetry t) {
-            BytecodeUtil.trackMetric(t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
+            BytecodeUtil.trackMetric(t.getTimestamp(), t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
                     t.getStandardDeviation(), t.getProperties(), t.getContext().getTags(),
                     t.getContext().getInstrumentationKey());
         }
 
         private void agent$trackRemoteDependencyTelemetry(RemoteDependencyTelemetry t) {
-            BytecodeUtil.trackDependency(t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
+            BytecodeUtil.trackDependency(t.getTimestamp(), t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
                     t.getSuccess(), t.getCommandName(), t.getType(), t.getTarget(), t.getProperties(),
                     t.getContext().getTags(), t.getMetrics(), t.getContext().getInstrumentationKey());
         }
 
         private void agent$trackPageViewTelemetry(PageViewTelemetry t) {
-            BytecodeUtil.trackPageView(t.getName(), t.getUri(), t.getDuration(), t.getProperties(),
+            BytecodeUtil.trackPageView(t.getTimestamp(), t.getName(), t.getUri(), t.getDuration(), t.getProperties(),
                     t.getContext().getTags(), t.getMetrics(), t.getContext().getInstrumentationKey());
         }
 
         private void agent$trackTraceTelemetry(TraceTelemetry t) {
             SeverityLevel level = t.getSeverityLevel();
             int severityLevel = level != null ? level.getValue() : -1;
-            BytecodeUtil.trackTrace(t.getMessage(), severityLevel, t.getProperties(), t.getContext().getTags(),
+            BytecodeUtil.trackTrace(t.getTimestamp(), t.getMessage(), severityLevel, t.getProperties(), t.getContext().getTags(),
                     t.getContext().getInstrumentationKey());
         }
 
@@ -832,7 +842,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
         }
 
         private void agent$trackExceptionTelemetry(ExceptionTelemetry t) {
-            BytecodeUtil.trackException(t.getException(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
+            BytecodeUtil.trackException(t.getTimestamp(), t.getException(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
                     t.getContext().getInstrumentationKey());
         }
 

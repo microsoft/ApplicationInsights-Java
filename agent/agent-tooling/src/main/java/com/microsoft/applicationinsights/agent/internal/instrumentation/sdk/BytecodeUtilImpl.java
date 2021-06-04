@@ -59,13 +59,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
 
     @Override
-    public void trackEvent(String name, Map<String, String> properties, Map<String, String> tags,
+    public void trackEvent(Date timestamp, String name, Map<String, String> properties, Map<String, String> tags,
                            Map<String, Double> metrics, String instrumentationKey) {
 
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
         EventTelemetry telemetry = new EventTelemetry(name);
+        telemetry.setTimestamp(timestamp);
         telemetry.getProperties().putAll(properties);
         telemetry.getContext().getTags().putAll(tags);
         telemetry.getMetrics().putAll(metrics);
@@ -76,13 +77,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     // TODO do not track if perf counter (?)
     @Override
-    public void trackMetric(String name, double value, Integer count, Double min, Double max, Double stdDev,
+    public void trackMetric(Date timestamp, String name, double value, Integer count, Double min, Double max, Double stdDev,
                             Map<String, String> properties, Map<String, String> tags, String instrumentationKey) {
 
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
         MetricTelemetry telemetry = new MetricTelemetry();
+        telemetry.setTimestamp(timestamp);
         telemetry.setName(name);
         telemetry.setValue(value);
         telemetry.setCount(count);
@@ -97,7 +99,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     @Override
-    public void trackDependency(String name, String id, String resultCode, @Nullable Long totalMillis,
+    public void trackDependency(Date timestamp, String name, String id, String resultCode, @Nullable Long totalMillis,
                                 boolean success, String commandName, String type, String target,
                                 Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
                                 String instrumentationKey) {
@@ -106,6 +108,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             return;
         }
         RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
+        telemetry.setTimestamp(timestamp);
         telemetry.setName(name);
         telemetry.setId(id);
         telemetry.setResultCode(resultCode);
@@ -125,13 +128,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     @Override
-    public void trackPageView(String name, URI uri, long totalMillis, Map<String, String> properties,
+    public void trackPageView(Date timestamp, String name, URI uri, long totalMillis, Map<String, String> properties,
                               Map<String, String> tags, Map<String, Double> metrics, String instrumentationKey) {
 
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
         PageViewTelemetry telemetry = new PageViewTelemetry();
+        telemetry.setTimestamp(timestamp);
         telemetry.setName(name);
         telemetry.setUrl(uri);
         telemetry.setDuration(totalMillis);
@@ -144,13 +148,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     @Override
-    public void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags,
+    public void trackTrace(Date timestamp, String message, int severityLevel, Map<String, String> properties, Map<String, String> tags,
                            String instrumentationKey) {
         if (Strings.isNullOrEmpty(message)) {
             return;
         }
 
         TraceTelemetry telemetry = new TraceTelemetry();
+        telemetry.setTimestamp(timestamp);
         telemetry.setMessage(message);
         if (severityLevel != -1) {
             telemetry.setSeverityLevel(getSeverityLevel(severityLevel));
@@ -192,13 +197,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     @Override
-    public void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags,
+    public void trackException(Date timestamp, Exception exception, Map<String, String> properties, Map<String, String> tags,
                                Map<String, Double> metrics, String instrumentationKey) {
         if (exception == null) {
             return;
         }
 
         ExceptionTelemetry telemetry = new ExceptionTelemetry();
+        telemetry.setTimestamp(timestamp);
         telemetry.setException(exception);
         telemetry.setSeverityLevel(SeverityLevel.Error);
         telemetry.getProperties().putAll(properties);
