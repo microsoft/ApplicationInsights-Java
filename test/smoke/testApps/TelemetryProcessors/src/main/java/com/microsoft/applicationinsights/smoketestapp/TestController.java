@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class TestController {
-    private static final Logger logger = LogManager.getLogger("smoketestapp");
+    private static final Logger logger = LogManager.getLogger("smoketestappcontroller");
 
     @GetMapping("/")
     public String root() {

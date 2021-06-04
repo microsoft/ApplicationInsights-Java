@@ -170,9 +170,6 @@ public class ConfigurationTest {
         ProcessorConfig logUpdateNameConfig = preview.processors.get(3);
         assertEquals(ProcessorType.log, logUpdateNameConfig.type);
         assertEquals("log/updateName", logUpdateNameConfig.id);
-        assertEquals(MatchType.regexp, logUpdateNameConfig.include.matchType);
-        assertEquals(1, logUpdateNameConfig.include.logNames.size());
-        assertEquals(".*password.*", logUpdateNameConfig.include.logNames.get(0));
         assertEquals(1, logUpdateNameConfig.name.fromAttributes.size());
         assertEquals("loggerName", logUpdateNameConfig.name.fromAttributes.get(0));
         assertEquals("::", logUpdateNameConfig.name.separator);

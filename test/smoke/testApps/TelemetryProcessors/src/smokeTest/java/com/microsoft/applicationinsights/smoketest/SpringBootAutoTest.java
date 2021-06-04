@@ -28,10 +28,11 @@ public class SpringBootAutoTest extends AiSmokeTest {
         assertEquals(4, rd.getProperties().size());
         assertTrue(rd.getSuccess());
         // Log processor test
-        List<MessageData> logs = mockedIngestion.getAllMessageData();
+        List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
         for(MessageData log:logs) {
-            if(log.getMessage().equals("This is log from SpringBootApp.")) {
-                assertEquals("testLogAttributeValue", log.getProperties().get("newLogAttribute"));
+            if(log.getProperties().get("LoggerName") != null && log.getProperties().get("LoggerName").equals("smoketestappcontroller")) {
+                System.out.println(log.getMessage());
+                assertEquals("smoketestappcontroller::INFO",log.getMessage());
             }
         }
     }

@@ -1,6 +1,15 @@
 {
     "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.docker.internal:6060/",
     "preview": {
+      "selfDiagnostics": {
+        "destination": "file+console",
+        "level": "DEBUG",
+        "file": {
+          "path": "applicationinsights.log",
+          "maxSizeMb": 5,
+          "maxHistory": 1
+        }
+      },
       "processors" : [
         {
           "type": "attribute",
@@ -79,21 +88,14 @@
           "id": "attributes/extract"
         },
         {
-          "type": "attribute",
-          "include":{
-            "matchType":"strict",
-            "logNames":[
-              "This is log from SpringBootApp."
-            ]
+          "type": "log",
+          "name": {
+            "fromAttributes": [
+              "applicationinsights.internal.logger_name","applicationinsights.internal.log_level"
+            ],
+            "separator": "::"
           },
-          "actions": [
-            {
-              "key": "newLogAttribute",
-              "value": "testLogAttributeValue",
-              "action": "insert"
-            }
-          ],
-          "id": "log/insert"
+          "id": "log/fromAttribute"
         }
       ]
     }

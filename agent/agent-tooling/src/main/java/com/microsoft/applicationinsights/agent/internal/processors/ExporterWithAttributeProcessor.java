@@ -58,11 +58,12 @@ public class ExporterWithAttributeProcessor implements SpanExporter {
         IncludeExclude include = attributeProcessor.getInclude();
         boolean isLog = ProcessorUtil.isSpanOfTypeLog(span);
         if (include != null && !include.isMatch(span, isLog)) {
-            //If Not included we can skip further processing
+            //If not included we can skip further processing
             return span;
         }
         IncludeExclude exclude = attributeProcessor.getExclude();
         if (exclude != null && exclude.isMatch(span, isLog)) {
+            //If excluded we can skip further processing
             return span;
         }
         return attributeProcessor.processActions(span);

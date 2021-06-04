@@ -418,7 +418,6 @@ public class Configuration {
     public static class ProcessorIncludeExclude {
         public MatchType matchType;
         public List<String> spanNames = new ArrayList<>();
-        public List<String> logNames = new ArrayList<>();
         public List<ProcessorAttribute> attributes = new ArrayList<>();
 
         public void validate(ProcessorType processorType, IncludeExclude includeExclude) throws FriendlyException {
@@ -443,8 +442,6 @@ public class Configuration {
                     validAttributeProcessorIncludeExclude(includeExclude);
                     break;
                 case log:
-                    validateLogProcessorIncludeExclude(includeExclude);
-                    break;
                 case span:
                     validateSpanProcessorIncludeExclude(includeExclude);
                     break;
@@ -454,27 +451,14 @@ public class Configuration {
         }
 
         private void validAttributeProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
-            if (attributes.isEmpty() && spanNames.isEmpty() && logNames.isEmpty()) {
-                throw new FriendlyException("An attribute processor configuration has an " + includeExclude + " section with no \"spanNames\", \"logNames\" and no \"attributes\".",
+            if (attributes.isEmpty() && spanNames.isEmpty()) {
+                throw new FriendlyException("An attribute processor configuration has an " + includeExclude + " section with no \"spanNames\" and no \"attributes\".",
                         "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the attribute processor configuration. " +
                                 "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             if (matchType == MatchType.regexp) {
                 for (String spanName : spanNames) {
                     ProcessorConfig.isValidRegex(spanName, ProcessorType.attribute);
-                }
-            }
-        }
-
-        private void validateLogProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
-            if (logNames.isEmpty() && attributes.isEmpty()) {
-                throw new FriendlyException("A log processor configuration has an " + includeExclude + " section with no \"logNames\" and no \"attributes\".",
-                        "Please provide at least one of \"logNames\" or \"attributes\" under the " + includeExclude + " section of the log processor configuration. " +
-                                "Learn more about log processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
-            }
-            if (matchType == MatchType.regexp) {
-                for (String logName : logNames) {
-                    ProcessorConfig.isValidRegex(logName, ProcessorType.log);
                 }
             }
         }
