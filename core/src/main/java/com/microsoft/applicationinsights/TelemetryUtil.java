@@ -276,13 +276,11 @@ public class TelemetryUtil {
     }
 
     public static String getFormattedNow() {
-        return Instant.ofEpochMilli(System.currentTimeMillis())
-                .atOffset(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ISO_DATE_TIME);
+        return getFormattedTime(System.currentTimeMillis());
     }
 
-    public static String getFormattedTime(long epochNanos) {
-        return Instant.ofEpochMilli(NANOSECONDS.toMillis(epochNanos))
+    public static String getFormattedTime(long epochMillis) {
+        return Instant.ofEpochMilli(epochMillis)
                 .atOffset(ZoneOffset.UTC)
                 .format(DateTimeFormatter.ISO_DATE_TIME);
     }
