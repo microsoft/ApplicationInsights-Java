@@ -170,15 +170,15 @@ public class ConfigurationTest {
         ProcessorConfig logUpdateNameConfig = preview.processors.get(3);
         assertEquals(ProcessorType.log, logUpdateNameConfig.type);
         assertEquals("log/updateName", logUpdateNameConfig.id);
-        assertEquals(1, logUpdateNameConfig.name.fromAttributes.size());
-        assertEquals("loggerName", logUpdateNameConfig.name.fromAttributes.get(0));
-        assertEquals("::", logUpdateNameConfig.name.separator);
+        assertEquals(1, logUpdateNameConfig.body.fromAttributes.size());
+        assertEquals("loggerName", logUpdateNameConfig.body.fromAttributes.get(0));
+        assertEquals("::", logUpdateNameConfig.body.separator);
         // log/extractAttributes
         ProcessorConfig logExtractAttributesConfig = preview.processors.get(4);
         assertEquals(ProcessorType.log, logExtractAttributesConfig.type);
         assertEquals("log/extractAttributes", logExtractAttributesConfig.id);
-        assertEquals(1, logExtractAttributesConfig.name.toAttributes.rules.size());
-        assertEquals("^/api/v1/document/(?<documentId>.*)/update$", logExtractAttributesConfig.name.toAttributes.rules.get(0));
+        assertEquals(1, logExtractAttributesConfig.body.toAttributes.rules.size());
+        assertEquals("^/api/v1/document/(?<documentId>.*)/update$", logExtractAttributesConfig.body.toAttributes.rules.get(0));
         // span/update name test
         ProcessorConfig spanUpdateNameConfig = preview.processors.get(5);
         assertEquals(ProcessorType.span, spanUpdateNameConfig.type);

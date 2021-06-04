@@ -21,10 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.NameConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ToAttributeConfig;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
@@ -50,11 +48,11 @@ public class ExporterWithLogProcessorTest {
     private final Tracer tracer = OpenTelemetrySdk.builder().build().getTracer("test");
 
     @Test(expected = FriendlyException.class)
-    public void noNameObjectTest() {
+    public void noBodyObjectTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.log;
-        config.id = "noNameObjectTest";
+        config.id = "noBodyObjectTest";
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
 
         Span span = tracer.spanBuilder("my trace")
@@ -76,7 +74,7 @@ public class ExporterWithLogProcessorTest {
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.log;
         config.id = "inValidConfigTestWithToAttributesNoRules";
-        config.name = new NameConfig();
+        config.body = new NameConfig();
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
 
         Span span = tracer.spanBuilder("logA")
@@ -98,8 +96,8 @@ public class ExporterWithLogProcessorTest {
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.log;
         config.id = "inValidConfigTestWithToAttributesNoRules";
-        config.name = new NameConfig();
-        config.name.toAttributes = new ToAttributeConfig();
+        config.body = new NameConfig();
+        config.body.toAttributes = new ToAttributeConfig();
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
 
         Span span = tracer.spanBuilder("svcA")
@@ -121,8 +119,8 @@ public class ExporterWithLogProcessorTest {
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.log;
         config.id = "SimpleRenameLogMessage";
-        config.name = new NameConfig();
-        config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
+        config.body = new NameConfig();
+        config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
 
         Span span = tracer.spanBuilder("logA")
@@ -153,9 +151,9 @@ public class ExporterWithLogProcessorTest {
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.log;
         config.id = "SimpleRenameLogWithSeparator";
-        config.name = new NameConfig();
-        config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
-        config.name.separator = "::";
+        config.body = new NameConfig();
+        config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
+        config.body.separator = "::";
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
 
         Span span = tracer.spanBuilder("svcA")
@@ -186,9 +184,9 @@ public class ExporterWithLogProcessorTest {
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.log;
         config.id = "SimpleRenameLogWithMissingKeys";
-        config.name = new NameConfig();
-        config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
-        config.name.separator = "::";
+        config.body = new NameConfig();
+        config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
+        config.body.separator = "::";
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
 
         Span span = tracer.spanBuilder("svcA")
@@ -218,11 +216,11 @@ public class ExporterWithLogProcessorTest {
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.log;
         config.id = "InvalidRegexInRules";
-        config.name = new NameConfig();
+        config.body = new NameConfig();
         ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
         toAttributeConfig.rules = new ArrayList<>();
         toAttributeConfig.rules.add("***");
-        config.name.toAttributes = toAttributeConfig;
+        config.body.toAttributes = toAttributeConfig;
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
 
         Span span = tracer.spanBuilder("/api/v1/document/12345678/update")
@@ -254,11 +252,11 @@ public class ExporterWithLogProcessorTest {
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.log;
         config.id = "SimpleToAttributes";
-        config.name = new NameConfig();
+        config.body = new NameConfig();
         ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
         toAttributeConfig.rules = new ArrayList<>();
         toAttributeConfig.rules.add("^/api/v1/document/(?<documentId>.*)/update$");
-        config.name.toAttributes = toAttributeConfig;
+        config.body.toAttributes = toAttributeConfig;
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
 
         Span span = tracer.spanBuilder("/api/v1/document/12345678/update")
@@ -290,12 +288,12 @@ public class ExporterWithLogProcessorTest {
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.log;
         config.id = "MultiRuleToAttributes";
-        config.name = new NameConfig();
+        config.body = new NameConfig();
         ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
         toAttributeConfig.rules = new ArrayList<>();
         toAttributeConfig.rules.add("Password=(?<password1>[^ ]+)");
         toAttributeConfig.rules.add("Pass=(?<password2>[^ ]+)");
-        config.name.toAttributes = toAttributeConfig;
+        config.body.toAttributes = toAttributeConfig;
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
 
         Span spanA = tracer.spanBuilder("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
@@ -344,8 +342,8 @@ public class ExporterWithLogProcessorTest {
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.log;
         config.id = "SimpleRenameSpan";
-        config.name = new NameConfig();
-        config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
+        config.body = new NameConfig();
+        config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
 
         Span span = tracer.spanBuilder("svcA")

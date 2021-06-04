@@ -35,12 +35,12 @@ import java.util.List;
 public class ExporterWithLogProcessor implements SpanExporter {
 
     private final SpanExporter delegate;
-    private final SpanProcessor logProcessor;
+    private final LogProcessor logProcessor;
 
     // caller should check config.isValid before creating
     public ExporterWithLogProcessor(ProcessorConfig config, SpanExporter delegate) throws FriendlyException {
         config.validate();
-        logProcessor = SpanProcessor.create(config);
+        logProcessor = LogProcessor.create(config);
         this.delegate = delegate;
     }
 

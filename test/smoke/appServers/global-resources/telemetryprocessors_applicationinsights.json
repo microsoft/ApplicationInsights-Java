@@ -1,15 +1,6 @@
 {
     "connectionString": "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.docker.internal:6060/",
     "preview": {
-      "selfDiagnostics": {
-        "destination": "file+console",
-        "level": "DEBUG",
-        "file": {
-          "path": "applicationinsights.log",
-          "maxSizeMb": 5,
-          "maxHistory": 1
-        }
-      },
       "processors" : [
         {
           "type": "attribute",
@@ -89,7 +80,7 @@
         },
         {
           "type": "log",
-          "name": {
+          "body": {
             "fromAttributes": [
               "applicationinsights.internal.logger_name","applicationinsights.internal.log_level"
             ],

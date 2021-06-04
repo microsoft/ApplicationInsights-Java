@@ -57,6 +57,10 @@ public class Configuration {
     // this is just here to detect if using old format in order to give a helpful error message
     public Map<String, Object> instrumentationSettings;
 
+    private static boolean isEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+
     public enum MatchType {
         // Moshi JSON builder do not allow case insensitive mapping
         strict, regexp
@@ -77,6 +81,15 @@ public class Configuration {
 
         ProcessorType(String anX) {
             this.anX = anX;
+        }
+    }
+
+    private enum IncludeExclude {
+        INCLUDE,
+        EXCLUDE;
+
+        public String toString() {
+            return name().toLowerCase(Locale.ROOT);
         }
     }
 
@@ -280,6 +293,16 @@ public class Configuration {
         public String value;
         public MatchType matchType;
 
+        private static void validateRegex(String value) throws FriendlyException {
+            try {
+                Pattern.compile(value);
+            } catch (PatternSyntaxException exception) {
+                // TODO add doc and go link, similar to telemetry processors
+                throw new FriendlyException("A telemetry filter configuration has an invalid regex:" + value,
+                        "Please provide a valid regex in the telemetry filter configuration.");
+            }
+        }
+
         private void validate() {
             if (isEmpty(key)) {
                 // TODO add doc and go link, similar to telemetry processors
@@ -299,16 +322,6 @@ public class Configuration {
                 validateRegex(value);
             }
         }
-
-        private static void validateRegex(String value) throws FriendlyException {
-            try {
-                Pattern.compile(value);
-            } catch (PatternSyntaxException exception) {
-                // TODO add doc and go link, similar to telemetry processors
-                throw new FriendlyException("A telemetry filter configuration has an invalid regex:" + value,
-                        "Please provide a valid regex in the telemetry filter configuration.");
-            }
-        }
     }
 
     public static class ProcessorConfig {
@@ -316,7 +329,8 @@ public class Configuration {
         public ProcessorIncludeExclude include;
         public ProcessorIncludeExclude exclude;
         public List<ProcessorAction> actions = new ArrayList<>(); // specific for processor type "attributes"
-        public NameConfig name; // specific for processor types "log" and "span"
+        public NameConfig name; // specific for processor type "span"
+        public NameConfig body; // specific for processor types "log"
         public String id; // optional, used for debugging purposes only
 
         private static void isValidRegex(String value, ProcessorType processorType) throws FriendlyException {
@@ -361,14 +375,21 @@ public class Configuration {
         }
 
         public void validateLogOrSpanProcessorConfig() throws FriendlyException {
-            if (type == ProcessorType.log || type == ProcessorType.span) {
+            if (type == ProcessorType.span) {
                 if (name == null) {
-                    throw new FriendlyException(type.anX +  " processor configuration is missing a \"name\" section.",
+                    throw new FriendlyException(type.anX + " processor configuration is missing a \"name\" section.",
                             "Please provide a \"name\" section in the " + type + " processor configuration. " +
                                     "Learn more about " + type + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
                 // TODO validate actions.isEmpty()?
                 name.validate(type);
+            } else if (type == ProcessorType.log) {
+                if (body == null) {
+                    throw new FriendlyException(type.anX + " processor configuration is missing a \"body\" section.",
+                            "Please provide a \"body\" section in the " + type + " processor configuration. " +
+                                    "Learn more about " + type + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                }
+                body.validate(type);
             }
         }
     }
@@ -406,15 +427,6 @@ public class Configuration {
         }
     }
 
-    private enum IncludeExclude {
-        INCLUDE,
-        EXCLUDE;
-
-        public String toString() {
-            return name().toLowerCase(Locale.ROOT);
-        }
-    }
-
     public static class ProcessorIncludeExclude {
         public MatchType matchType;
         public List<String> spanNames = new ArrayList<>();
@@ -442,6 +454,8 @@ public class Configuration {
                     validAttributeProcessorIncludeExclude(includeExclude);
                     break;
                 case log:
+                    validLogProcessorIncludeExclude(includeExclude);
+                    break;
                 case span:
                     validateSpanProcessorIncludeExclude(includeExclude);
                     break;
@@ -460,6 +474,14 @@ public class Configuration {
                 for (String spanName : spanNames) {
                     ProcessorConfig.isValidRegex(spanName, ProcessorType.attribute);
                 }
+            }
+        }
+
+        private void validLogProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
+            if (attributes.isEmpty()) {
+                throw new FriendlyException("A log processor configuration has an " + includeExclude + " section with no \"attributes\".",
+                        "Please provide \"attributes\" under the " + includeExclude + " section of the log processor configuration. " +
+                                "Learn more about log processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
         }
 
@@ -578,9 +600,5 @@ public class Configuration {
 
     public static class GcEventConfiguration {
         public GcReportingLevel reportingLevel = GcReportingLevel.TENURED_ONLY;
-    }
-
-    private static boolean isEmpty(String str) {
-        return str == null || str.trim().isEmpty();
     }
 }

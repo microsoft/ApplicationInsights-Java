@@ -472,7 +472,7 @@ public class ExporterWithSpanProcessorTest {
     public void SimpleRenameSpanTestWithLogProcessor() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
-        config.type = ProcessorType.log;
+        config.type = ProcessorType.span;
         config.id = "SimpleRenameSpan";
         config.name = new NameConfig();
         config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
