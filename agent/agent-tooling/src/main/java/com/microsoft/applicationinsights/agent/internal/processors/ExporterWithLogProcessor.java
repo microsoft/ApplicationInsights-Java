@@ -32,15 +32,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ExporterWithAttributeProcessor implements SpanExporter {
+public class ExporterWithLogProcessor implements SpanExporter {
 
     private final SpanExporter delegate;
-    private final AttributeProcessor attributeProcessor;
+    private final LogProcessor logProcessor;
 
     // caller should check config.isValid before creating
-    public ExporterWithAttributeProcessor(ProcessorConfig config, SpanExporter delegate) throws FriendlyException {
+    public ExporterWithLogProcessor(ProcessorConfig config, SpanExporter delegate) throws FriendlyException {
         config.validate();
-        attributeProcessor = AttributeProcessor.create(config);
+        logProcessor = LogProcessor.create(config);
         this.delegate = delegate;
     }
 
@@ -55,18 +55,21 @@ public class ExporterWithAttributeProcessor implements SpanExporter {
     }
 
     private SpanData process(SpanData span) {
-        IncludeExclude include = attributeProcessor.getInclude();
-        boolean isLog = ProcessorUtil.isSpanOfTypeLog(span);
-        if (include != null && !include.isMatch(span, isLog)) {
-            //If not included we can skip further processing
+        if (!ProcessorUtil.isSpanOfTypeLog(span)) {
             return span;
         }
-        IncludeExclude exclude = attributeProcessor.getExclude();
-        if (exclude != null && exclude.isMatch(span, isLog)) {
-            //If excluded we can skip further processing
+        IncludeExclude include = logProcessor.getInclude();
+        if (include != null && !include.isMatch(span, true)) {
+            //If Not included we can skip further processing
             return span;
         }
-        return attributeProcessor.processActions(span);
+        IncludeExclude exclude = logProcessor.getExclude();
+        if (exclude != null && exclude.isMatch(span, true)) {
+            return span;
+        }
+
+        SpanData updatedSpan = logProcessor.processFromAttributes(span);
+        return logProcessor.processToAttributes(updatedSpan);
     }
 
     @Override

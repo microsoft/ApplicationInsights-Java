@@ -1,3 +1,24 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
 import java.io.IOException;
@@ -149,18 +170,15 @@ public class ConfigurationTest {
         ProcessorConfig logUpdateNameConfig = preview.processors.get(3);
         assertEquals(ProcessorType.log, logUpdateNameConfig.type);
         assertEquals("log/updateName", logUpdateNameConfig.id);
-        assertEquals(MatchType.regexp, logUpdateNameConfig.include.matchType);
-        assertEquals(1, logUpdateNameConfig.include.logNames.size());
-        assertEquals(".*password.*", logUpdateNameConfig.include.logNames.get(0));
-        assertEquals(1, logUpdateNameConfig.name.fromAttributes.size());
-        assertEquals("loggerName", logUpdateNameConfig.name.fromAttributes.get(0));
-        assertEquals("::", logUpdateNameConfig.name.separator);
+        assertEquals(1, logUpdateNameConfig.body.fromAttributes.size());
+        assertEquals("loggerName", logUpdateNameConfig.body.fromAttributes.get(0));
+        assertEquals("::", logUpdateNameConfig.body.separator);
         // log/extractAttributes
         ProcessorConfig logExtractAttributesConfig = preview.processors.get(4);
         assertEquals(ProcessorType.log, logExtractAttributesConfig.type);
         assertEquals("log/extractAttributes", logExtractAttributesConfig.id);
-        assertEquals(1, logExtractAttributesConfig.name.toAttributes.rules.size());
-        assertEquals("^/api/v1/document/(?<documentId>.*)/update$", logExtractAttributesConfig.name.toAttributes.rules.get(0));
+        assertEquals(1, logExtractAttributesConfig.body.toAttributes.rules.size());
+        assertEquals("^/api/v1/document/(?<documentId>.*)/update$", logExtractAttributesConfig.body.toAttributes.rules.get(0));
         // span/update name test
         ProcessorConfig spanUpdateNameConfig = preview.processors.get(5);
         assertEquals(ProcessorType.span, spanUpdateNameConfig.type);
