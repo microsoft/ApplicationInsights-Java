@@ -21,66 +21,71 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ProcessorActionAdaptor;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.*;
+public class ProcessorUtil {
+    private static final AttributeKey<Boolean> AI_LOG_KEY = AttributeKey.booleanKey("applicationinsights.internal.log");
 
-
-public class SpanProcessor extends AgentProcessor {
-    private final List<AttributeKey<?>> fromAttributes;
-    private final List<Pattern> toAttributeRulePatterns;
-    private final List<List<String>> groupNames;
-    private final String separator;
-
-    public SpanProcessor(@Nullable IncludeExclude include,
-                         @Nullable IncludeExclude exclude,
-                         List<AttributeKey<?>> fromAttributes,
-                         List<Pattern> toAttributeRulePatterns,
-                         List<List<String>> groupNames,
-                         String separator) {
-        super(include, exclude);
-        this.fromAttributes = fromAttributes;
-        this.toAttributeRulePatterns = toAttributeRulePatterns;
-        this.groupNames = groupNames;
-        this.separator = separator;
+    public static boolean isSpanOfTypeLog(SpanData span) {
+        Boolean isLog = span.getAttributes().get(AI_LOG_KEY);
+        return isLog != null && isLog;
     }
 
-    public static SpanProcessor create(ProcessorConfig config) {
-        IncludeExclude normalizedInclude = config.include != null ? getNormalizedIncludeExclude(config.include) : null;
-        IncludeExclude normalizedExclude = config.exclude != null ? getNormalizedIncludeExclude(config.exclude) : null;
-        List<AttributeKey<?>> fromAttributes = new ArrayList<>();
-        if (config.name.fromAttributes != null) {
-            for (String attribute : config.name.fromAttributes) {
-                fromAttributes.add(AttributeKey.stringKey(attribute));
+    public static String applyRule(List<String> groupNamesList, Pattern pattern,
+                             String spanName, AttributesBuilder builder) {
+        if (groupNamesList.isEmpty()) return spanName;
+        Matcher matcher = pattern.matcher(spanName);
+        StringBuilder sb = new StringBuilder();
+        int lastEnd = 0;
+        // As of now we are considering only first match.
+        if (matcher.find()) {
+            sb.append(spanName, lastEnd, matcher.start());
+            int innerLastEnd = matcher.start();
+            for (int i = 1; i <= groupNamesList.size(); i++) {
+                sb.append(spanName, innerLastEnd, matcher.start(i));
+                sb.append("{");
+                sb.append(groupNamesList.get(i - 1));
+                // add attribute key=groupNames.get(i-1), value=matcher.group(i)
+                builder.put(groupNamesList.get(i - 1), matcher.group(i));
+                sb.append("}");
+                innerLastEnd = matcher.end(i);
             }
+            sb.append(spanName, innerLastEnd, matcher.end());
+            lastEnd = matcher.end();
         }
-        List<String> toAttributeRules = new ArrayList<>();
-        if (config.name.toAttributes != null) {
-            toAttributeRules.addAll(config.name.toAttributes.rules);
+        sb.append(spanName, lastEnd, spanName.length());
+
+        return sb.toString();
+    }
+
+    public static List<List<String>> getGroupNamesList(List<String> toAttributeRules) {
+        List<List<String>> groupNamesList = new ArrayList<>();
+        for (String rule : toAttributeRules) {
+            groupNamesList.add(ProcessorActionAdaptor.getGroupNames(rule));
         }
-        List<Pattern> toAttributeRulePatterns = new ArrayList<>();
-        if (config.name.toAttributes != null) {
-            for (String rule : config.name.toAttributes.rules) {
-                toAttributeRulePatterns.add(Pattern.compile(rule));
-            }
+        return groupNamesList;
+    }
+
+    public static boolean spanHasAllFromAttributeKeys(SpanData span, List<AttributeKey<?>> fromAttributes) {
+        if (fromAttributes.isEmpty()) return false;
+        Attributes existingSpanAttributes = span.getAttributes();
+        for (AttributeKey<?> attributeKey : fromAttributes) {
+            if (existingSpanAttributes.get(attributeKey) == null) return false;
         }
-        List<List<String>> groupNames = getGroupNamesList(toAttributeRules);
-        String separator = config.name.separator != null ? config.name.separator : "";
-        return new SpanProcessor(normalizedInclude, normalizedExclude,
-                fromAttributes, toAttributeRulePatterns, groupNames, separator);
+        return true;
     }
 
     //fromAttributes represents the attribute keys to pull the values from to generate the new span name.
-    public SpanData processFromAttributes(SpanData span) {
+    public static SpanData processFromAttributes(SpanData span, List<AttributeKey<?>> fromAttributes, String separator ) {
         if (spanHasAllFromAttributeKeys(span, fromAttributes)) {
             StringBuilder updatedSpanBuffer = new StringBuilder();
             Attributes existingSpanAttributes = span.getAttributes();
@@ -98,10 +103,11 @@ public class SpanProcessor extends AgentProcessor {
     }
 
     //The following function extracts attributes from span name and replaces extracted parts with attribute names
-    public SpanData processToAttributes(SpanData span) {
+    public static SpanData processToAttributes(SpanData span, List<Pattern> toAttributeRulePatterns, List<List<String>> groupNames) {
         if (toAttributeRulePatterns.isEmpty()) {
             return span;
         }
+
         String spanName = span.getName();
         // copy existing attributes.
         // According to Collector docs, The matched portion
@@ -115,4 +121,3 @@ public class SpanProcessor extends AgentProcessor {
 
     }
 }
-

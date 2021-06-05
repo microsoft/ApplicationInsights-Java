@@ -67,6 +67,6 @@ public class FriendlyException extends RuntimeException {
             messageBuilder.append("Note:").append(System.lineSeparator());
             messageBuilder.append(note).append(System.lineSeparator());
         }
-        return new String(messageBuilder);
+        return messageBuilder.toString();
     }
 }

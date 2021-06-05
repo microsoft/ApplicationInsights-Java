@@ -66,13 +66,7 @@
         },
         {
           "type": "log",
-          "include":{
-            "matchType":"regexp",
-            "logNames":[
-              ".*password.*"
-            ]
-          },
-          "name": {
+          "body": {
             "fromAttributes": [
               "loggerName"
             ],
@@ -82,7 +76,7 @@
         },
         {
           "type": "log",
-          "name": {
+          "body": {
             "toAttributes": {
               "rules": [
                 "^/api/v1/document/(?<documentId>.*)/update$"
