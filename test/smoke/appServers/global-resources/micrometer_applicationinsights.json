@@ -4,7 +4,7 @@
     "metricIntervalSeconds": 5,
     "processors" : [
       {
-        "type": "metric_filter",
+        "type": "metric-filter",
         "exclude": {
           "matchType": "strict",
           "metricNames": [
@@ -13,7 +13,7 @@
         }
       },
       {
-        "type": "metric_filter",
+        "type": "metric-filter",
         "exclude": {
           "matchType": "regexp",
           "metricNames": [

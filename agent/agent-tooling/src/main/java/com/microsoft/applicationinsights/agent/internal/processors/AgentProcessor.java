@@ -46,7 +46,7 @@ public abstract class AgentProcessor {
     }
 
     protected static AttributeProcessor.IncludeExclude getNormalizedIncludeExclude(ProcessorIncludeExclude includeExclude) {
-        return includeExclude.matchType == MatchType.strict ? AgentProcessor.StrictIncludeExclude.create(includeExclude) : AgentProcessor.RegexpIncludeExclude.create(includeExclude);
+        return includeExclude.matchType == MatchType.STRICT ? AgentProcessor.StrictIncludeExclude.create(includeExclude) : AgentProcessor.RegexpIncludeExclude.create(includeExclude);
     }
 
     public @Nullable IncludeExclude getInclude() {

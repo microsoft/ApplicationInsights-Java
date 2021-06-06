@@ -77,15 +77,15 @@ public class AttributeProcessor extends AgentProcessor {
 
     private SpanData processAction(SpanData span, ProcessorAction actionObj) {
         switch (actionObj.action) {
-            case insert:
+            case INSERT:
                 return processInsertAction(span, actionObj);
-            case update:
+            case UPDATE:
                 return processUpdateAction(span, actionObj);
-            case delete:
+            case DELETE:
                 return processDeleteAction(span, actionObj);
-            case hash:
+            case HASH:
                 return procesHashAction(span, actionObj);
-            case extract:
+            case EXTRACT:
                 return processExtractAction(span, actionObj);
             default:
                 return span;

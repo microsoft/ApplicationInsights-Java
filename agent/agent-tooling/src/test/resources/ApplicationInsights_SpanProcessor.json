@@ -124,7 +124,7 @@
           "id": "attributes/extract"
         },
         {
-          "type": "metric_filter",
+          "type": "metric-filter",
           "exclude": {
             "matchType": "strict",
             "metricNames": [
@@ -132,7 +132,7 @@
               "another_test_metric"
             ]
           },
-          "id": "metric_filter/exclude_two_metrics"
+          "id": "metric-filter/exclude-two-metrics"
         }
       ]
     }

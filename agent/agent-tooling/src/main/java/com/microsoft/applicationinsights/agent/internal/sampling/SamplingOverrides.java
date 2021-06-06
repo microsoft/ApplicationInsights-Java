@@ -144,9 +144,9 @@ class SamplingOverrides {
         }
 
         private static Predicate<Attributes> toPredicate(SamplingOverrideAttribute attribute) {
-            if (attribute.matchType == MatchType.strict) {
+            if (attribute.matchType == MatchType.STRICT) {
                 return new StrictMatcher(attribute.key, attribute.value);
-            } else if (attribute.matchType == MatchType.regexp) {
+            } else if (attribute.matchType == MatchType.REGEXP) {
                 return new RegexpMatcher(attribute.key, attribute.value);
             } else {
                 throw new IllegalStateException("Unexpected match type: " + attribute.matchType);

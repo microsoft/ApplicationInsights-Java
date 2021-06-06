@@ -156,7 +156,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
         configuration.setMetricFilters(config.preview.processors.stream()
-                .filter(processor -> processor.type == Configuration.ProcessorType.metric_filter)
+                .filter(processor -> processor.type == Configuration.ProcessorType.METRIC_FILTER)
                 .map(Configuration.ProcessorConfig::toMetricFilter)
                 .collect(Collectors.toList()));
 

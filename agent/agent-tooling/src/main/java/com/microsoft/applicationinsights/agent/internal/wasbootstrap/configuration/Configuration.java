@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.Stat
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.profiler.GcReportingLevel;
+import com.squareup.moshi.Json;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,13 +64,14 @@ public class Configuration {
     }
 
     public enum MatchType {
-        // Moshi JSON builder do not allow case insensitive mapping
-        strict {
+        @Json(name = "strict")
+        STRICT {
             MetricFilter.MatchType toCore() {
                 return MetricFilter.MatchType.STRICT;
             }
         },
-        regexp {
+        @Json(name = "regexp")
+        REGEXP {
             MetricFilter.MatchType toCore() {
                 return MetricFilter.MatchType.REGEXP;
             }
@@ -81,16 +83,27 @@ public class Configuration {
     }
 
     public enum ProcessorActionType {
-        // Moshi JSON builder do not allow case insensitive mapping
-        insert, update, delete, hash, extract
+        @Json(name = "insert")
+        INSERT,
+        @Json(name = "update")
+        UPDATE,
+        @Json(name = "delete")
+        DELETE,
+        @Json(name = "hash")
+        HASH,
+        @Json(name = "extract")
+        EXTRACT
     }
 
     public enum ProcessorType {
-        // Moshi JSON builder do not allow case insensitive mapping
-        attribute("an attribute"),
-        log("a log"),
-        span("a span"),
-        metric_filter("a metric_filter");
+        @Json(name = "attribute")
+        ATTRIBUTE("an attribute"),
+        @Json(name = "log")
+        LOG("a log"),
+        @Json(name = "span")
+        SPAN("a span"),
+        @Json(name = "metric-filter")
+        METRIC_FILTER("a metric-filter");
 
         private final String anX;
 
@@ -318,7 +331,7 @@ public class Configuration {
                 throw new FriendlyException("A telemetry filter configuration has an attribute section that is missing a \"matchType\".",
                         "Please provide a \"matchType\" under the attribute section of the telemetry filter configuration.");
             }
-            if (matchType == MatchType.regexp) {
+            if (matchType == MatchType.REGEXP) {
                 if (isEmpty(value)) {
                     // TODO add doc and go link, similar to telemetry processors
                     throw new FriendlyException("A telemetry filter configuration has an attribute with matchType regexp that is missing a \"value\".",
@@ -361,16 +374,16 @@ public class Configuration {
                 exclude.validate(type, IncludeExclude.EXCLUDE);
             }
             switch (type) {
-                case attribute:
+                case ATTRIBUTE:
                     validateAttributeProcessorConfig();
                     break;
-                case span:
+                case SPAN:
                     validateSpanProcessorConfig();
                     break;
-                case log:
+                case LOG:
                     validateLogProcessorConfig();
                     break;
-                case metric_filter:
+                case METRIC_FILTER:
                     validateMetricFilterProcessorConfig();
                     break;
                 default:
@@ -418,9 +431,9 @@ public class Configuration {
 
         public void validateMetricFilterProcessorConfig() throws FriendlyException {
             if (exclude == null) {
-                throw new FriendlyException("a metric_filter processor configuration is missing an \"exclude\" section.",
-                        "Please provide a \"exclude\" section in the metric_filter processor configuration. " +
-                                "Learn more about metric_filter processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                throw new FriendlyException("a metric-filter processor configuration is missing an \"exclude\" section.",
+                        "Please provide a \"exclude\" section in the metric-filter processor configuration. " +
+                                "Learn more about metric-filter processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
 
             validateActionsIsEmpty();
@@ -504,22 +517,22 @@ public class Configuration {
                             "Please provide a \"key\" under the " + includeExclude + " section of the " + processorType + " processor configuration. " +
                                     "Learn more about " + processorType + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
                 }
-                if (matchType == MatchType.regexp && attribute.value != null) {
+                if (matchType == MatchType.REGEXP && attribute.value != null) {
                     validateRegex(attribute.value, processorType);
                 }
             }
 
             switch (processorType) {
-                case attribute:
+                case ATTRIBUTE:
                     validAttributeProcessorIncludeExclude(includeExclude);
                     break;
-                case log:
+                case LOG:
                     validateLogProcessorIncludeExclude(includeExclude);
                     break;
-                case span:
+                case SPAN:
                     validateSpanProcessorIncludeExclude(includeExclude);
                     break;
-                case metric_filter:
+                case METRIC_FILTER:
                     validateMetricFilterProcessorExclude(includeExclude);
                     break;
                 default:
@@ -533,13 +546,13 @@ public class Configuration {
                         "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the attribute processor configuration. " +
                                 "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
-            if (matchType == MatchType.regexp) {
+            if (matchType == MatchType.REGEXP) {
                 for (String spanName : spanNames) {
-                    validateRegex(spanName, ProcessorType.attribute);
+                    validateRegex(spanName, ProcessorType.ATTRIBUTE);
                 }
             }
 
-            validateSectionIsEmpty(metricNames, ProcessorType.attribute, includeExclude, "metricNames");
+            validateSectionIsEmpty(metricNames, ProcessorType.ATTRIBUTE, includeExclude, "metricNames");
         }
 
         private void validateLogProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
@@ -549,8 +562,8 @@ public class Configuration {
                                 "Learn more about log processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
 
-            validateSectionIsEmpty(spanNames, ProcessorType.log, includeExclude, "spanNames");
-            validateSectionIsEmpty(metricNames, ProcessorType.log, includeExclude, "metricNames");
+            validateSectionIsEmpty(spanNames, ProcessorType.LOG, includeExclude, "spanNames");
+            validateSectionIsEmpty(metricNames, ProcessorType.LOG, includeExclude, "metricNames");
         }
 
         private void validateSpanProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
@@ -559,33 +572,33 @@ public class Configuration {
                         "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the span processor configuration. " +
                                 "Learn more about span processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
-            if (matchType == MatchType.regexp) {
+            if (matchType == MatchType.REGEXP) {
                 for (String spanName : spanNames) {
-                    validateRegex(spanName, ProcessorType.span);
+                    validateRegex(spanName, ProcessorType.SPAN);
                 }
             }
 
-            validateSectionIsEmpty(metricNames, ProcessorType.span, includeExclude, "metricNames");
+            validateSectionIsEmpty(metricNames, ProcessorType.SPAN, includeExclude, "metricNames");
         }
 
         private void validateMetricFilterProcessorExclude(IncludeExclude includeExclude) throws FriendlyException {
             if (includeExclude == IncludeExclude.INCLUDE) {
-                throw new FriendlyException("A metric_filter processor configuration has an include section.",
-                        "Please do not provide an \"include\" section in the metric_filter processor configuration. " +
+                throw new FriendlyException("A metric-filter processor configuration has an include section.",
+                        "Please do not provide an \"include\" section in the metric-filter processor configuration. " +
                                 "Learn more about span processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
             if (metricNames.isEmpty()) {
-                throw new FriendlyException("A metric_filter processor configuration has an exclude section with no \"metricNames\".",
-                        "Please provide a \"metricNames\" section under the exclude section of the metric_filter processor configuration. " +
+                throw new FriendlyException("A metric-filter processor configuration has an exclude section with no \"metricNames\".",
+                        "Please provide a \"metricNames\" section under the exclude section of the metric-filter processor configuration. " +
                                 "Learn more about span processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
-            if (matchType == MatchType.regexp) {
+            if (matchType == MatchType.REGEXP) {
                 for (String metricName : metricNames) {
-                    validateRegex(metricName, ProcessorType.metric_filter);
+                    validateRegex(metricName, ProcessorType.METRIC_FILTER);
                 }
             }
 
-            validateSectionIsEmpty(spanNames, ProcessorType.metric_filter, IncludeExclude.EXCLUDE, "spanNames");
+            validateSectionIsEmpty(spanNames, ProcessorType.METRIC_FILTER, IncludeExclude.EXCLUDE, "spanNames");
         }
 
         private static void validateSectionIsEmpty(List<?> list, ProcessorType type, IncludeExclude includeExclude, String sectionName) {
@@ -661,7 +674,7 @@ public class Configuration {
                         "Please provide an \"action\" under the action section of the attribute processor configuration. " +
                                 "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
             }
-            if (action == ProcessorActionType.insert || action == ProcessorActionType.update) {
+            if (action == ProcessorActionType.INSERT || action == ProcessorActionType.UPDATE) {
                 if (isEmpty(value) && isEmpty(fromAttribute)) {
                     throw new FriendlyException("An attribute processor configuration has an " + action + " action that is missing a \"value\" or a \"fromAttribute\".",
                             "Please provide exactly one of \"value\" or \"fromAttributes\" under the " + action + " action. " +
@@ -679,7 +692,7 @@ public class Configuration {
                 }
             }
 
-            if (action == ProcessorActionType.extract) {
+            if (action == ProcessorActionType.EXTRACT) {
                 if (extractAttribute == null) {
                     throw new FriendlyException("An attribute processor configuration has an extract action that is missing an \"extractAttributes\" section.",
                             "Please provide an \"extractAttributes\" section under the extract action. " +
