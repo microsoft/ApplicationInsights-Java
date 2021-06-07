@@ -6,7 +6,8 @@ import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
-import com.azure.core.util.logging.ClientLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.net.HttpURLConnection;
@@ -16,8 +17,8 @@ public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
     private static final int PERMANENT_REDIRECT_STATUS_CODE = 308;
     // Based on Stamp specific redirects design doc
     private static final int MAX_REDIRECT_RETRIES = 10;
-    private final ClientLogger logger = new ClientLogger(AzureMonitorRedirectPolicy.class);
-    private String redirectedEndpointUrl;
+    private static final Logger logger = LoggerFactory.getLogger(AzureMonitorRedirectPolicy.class);
+    private volatile String redirectedEndpointUrl;
 
     @Override
     public Mono<HttpResponse> process(HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
@@ -60,7 +61,7 @@ public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
      */
     private boolean shouldRetryWithRedirect(int statusCode, int tryCount) {
         if (tryCount >= MAX_REDIRECT_RETRIES) {
-            logger.verbose("Max redirect retries limit reached:%d.", MAX_REDIRECT_RETRIES);
+            logger.warn("Max redirect retries limit reached:%d.", MAX_REDIRECT_RETRIES);
             return false;
         }
         return statusCode == HttpURLConnection.HTTP_MOVED_TEMP

@@ -20,7 +20,7 @@ public class TestController {
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
-                Thread.sleep(500);
+                Thread.sleep(10000);
             } catch (InterruptedException ignored) {
             }
             completableFuture.complete("hello");
@@ -38,7 +38,7 @@ public class TestController {
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
-                Thread.sleep(500);
+                Thread.sleep(10000);
             } catch (InterruptedException ignored) {
             }
             completableFuture.completeExceptionally(new RuntimeException("oops!"));
