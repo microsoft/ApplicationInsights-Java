@@ -25,10 +25,10 @@ import java.io.IOException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ExportResult;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
@@ -67,17 +66,6 @@ import reactor.core.publisher.Mono;
 import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.UnsupportedCharsetException;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
@@ -94,7 +82,7 @@ public class ProfilerServiceTest {
     public static void setUp() {
         // FIXME (trask) inject TelemetryClient in tests instead of using global
         TelemetryClient.resetForTesting();
-        TelemetryClient.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
+        TelemetryClient.initActive(new HashMap<>(), new ArrayList<>(), new ApplicationInsightsXmlConfiguration());
     }
 
     @Test

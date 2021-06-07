@@ -38,12 +38,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.util.Collections.singletonList;
+
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.microsoft.applicationinsights.internal.perfcounter.Constants;
+
+import static java.util.Arrays.asList;
 
 public class TelemetryClient {
 
@@ -52,6 +57,14 @@ public class TelemetryClient {
     // Synchronization for instance initialization
     private static final Object s_lock = new Object();
     private static volatile TelemetryClient active;
+
+    private static final Set<String> BUILT_IN_METRIC_NAMES =
+            new HashSet<>(asList(
+                    Constants.TOTAL_CPU_PC_METRIC_NAME,
+                    Constants.PROCESS_CPU_PC_METRIC_NAME,
+                    Constants.PROCESS_MEM_PC_METRICS_NAME,
+                    Constants.TOTAL_MEMORY_PC_METRIC_NAME,
+                    Constants.PROCESS_IO_PC_METRIC_NAME));
 
     private volatile String instrumentationKey;
     private volatile String connectionString;
@@ -78,6 +91,8 @@ public class TelemetryClient {
     // contains customDimensions from json configuration
     private final Map<String, String> globalProperties;
 
+    private final List<MetricFilter> metricFilters;
+
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
     private final Object channelInitLock = new Object();
@@ -85,10 +100,10 @@ public class TelemetryClient {
 
     // only used by tests
     public TelemetryClient() {
-        this(new HashMap<>());
+        this(new HashMap<>(), new ArrayList<>());
     }
 
-    public TelemetryClient(Map<String, String> customDimensions) {
+    public TelemetryClient(Map<String, String> customDimensions, List<MetricFilter> metricFilters) {
         StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
         Map<String, String> globalProperties = new HashMap<>();
         Map<String, String> globalTags = new HashMap<>();
@@ -105,6 +120,7 @@ public class TelemetryClient {
 
         this.globalProperties = globalProperties;
         this.globalTags = globalTags;
+        this.metricFilters = metricFilters;
     }
 
     /**
@@ -128,14 +144,14 @@ public class TelemetryClient {
      * scenario in SpringBoot.
      * @return {@link TelemetryClient}
      */
-    public static TelemetryClient initActive(Map<String, String> customDimensions, ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
+    public static TelemetryClient initActive(Map<String, String> customDimensions, List<MetricFilter> metricFilters, ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
         if (active != null) {
             throw new IllegalStateException("Already initialized");
         }
         if (active == null) {
             synchronized (s_lock) {
                 if (active == null) {
-                    TelemetryClient active = new TelemetryClient(customDimensions);
+                    TelemetryClient active = new TelemetryClient(customDimensions, metricFilters);
                     TelemetryClientInitializer.INSTANCE.initialize(active, applicationInsightsConfig);
                     TelemetryClient.active = active;
                 }
@@ -151,6 +167,29 @@ public class TelemetryClient {
     }
 
     public void trackAsync(TelemetryItem telemetry) {
+
+        MonitorDomain data = telemetry.getData().getBaseData();
+        if (data instanceof MetricsData) {
+            MetricsData metricsData = (MetricsData) data;
+            List<MetricDataPoint> filteredPoints = metricsData.getMetrics().stream().filter(point -> {
+                String metricName = point.getName();
+                if (BUILT_IN_METRIC_NAMES.contains(metricName)) {
+                    return true;
+                }
+                for (MetricFilter metricFilter : metricFilters) {
+                    if (!metricFilter.matches(metricName)) {
+                        return false;
+                    }
+                }
+                return true;
+            }).collect(Collectors.toList());
+
+            if (filteredPoints.isEmpty()) {
+                return;
+            }
+            metricsData.setMetrics(filteredPoints);
+        }
+
         if (telemetry.getSampleRate() == null) {
             // FIXME (trask) is this required?
             telemetry.setSampleRate(100f);
@@ -256,6 +295,15 @@ public class TelemetryClient {
             throw new IllegalArgumentException("Invalid connection string", e);
         }
         this.connectionString = connectionString;
+    }
+
+    public List<MetricFilter> getMetricFilters() {
+        return metricFilters;
+    }
+
+    public void setMetricFilters(List<MetricFilter> metricFilters) {
+        this.metricFilters.clear();
+        this.metricFilters.addAll(metricFilters);
     }
 
     public EndpointProvider getEndpointProvider() {

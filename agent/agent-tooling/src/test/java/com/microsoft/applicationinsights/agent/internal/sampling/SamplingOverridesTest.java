@@ -159,7 +159,7 @@ public class SamplingOverridesTest {
         SamplingOverrideAttribute attribute = new SamplingOverrideAttribute();
         attribute.key = key;
         attribute.value = value;
-        attribute.matchType = MatchType.strict;
+        attribute.matchType = MatchType.STRICT;
         return attribute;
     }
 
@@ -167,7 +167,7 @@ public class SamplingOverridesTest {
         SamplingOverrideAttribute attribute = new SamplingOverrideAttribute();
         attribute.key = key;
         attribute.value = value;
-        attribute.matchType = MatchType.regexp;
+        attribute.matchType = MatchType.REGEXP;
         return attribute;
     }
 }

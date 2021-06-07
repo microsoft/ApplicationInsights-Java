@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal;
 
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.MetricFilter;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
@@ -58,7 +59,9 @@ import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -156,7 +159,12 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
 
-        TelemetryClient telemetryClient = TelemetryClient.initActive(config.customDimensions, buildXmlConfiguration(config));
+        List<MetricFilter> metricFilters = config.preview.processors.stream()
+                .filter(processor -> processor.type == Configuration.ProcessorType.METRIC_FILTER)
+                .map(ProcessorConfig::toMetricFilter)
+                .collect(Collectors.toList());
+
+        TelemetryClient telemetryClient = TelemetryClient.initActive(config.customDimensions, metricFilters, buildXmlConfiguration(config));
 
         Global.setSamplingPercentage(config.sampling.percentage);
         Global.setTelemetryClient(telemetryClient);

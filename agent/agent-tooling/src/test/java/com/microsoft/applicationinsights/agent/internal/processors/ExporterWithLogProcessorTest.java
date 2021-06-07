@@ -51,7 +51,7 @@ public class ExporterWithLogProcessorTest {
     public void noBodyObjectTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
-        config.type = ProcessorType.log;
+        config.type = ProcessorType.LOG;
         config.id = "noBodyObjectTest";
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
 
@@ -72,7 +72,7 @@ public class ExporterWithLogProcessorTest {
     public void inValidConfigTestWithNoFromOrToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
-        config.type = ProcessorType.log;
+        config.type = ProcessorType.LOG;
         config.id = "inValidConfigTestWithToAttributesNoRules";
         config.body = new NameConfig();
         SpanExporter exampleExporter = new ExporterWithLogProcessor(config, mockExporter);
@@ -94,7 +94,7 @@ public class ExporterWithLogProcessorTest {
     public void inValidConfigTestWithToAttributesNoRulesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
-        config.type = ProcessorType.log;
+        config.type = ProcessorType.LOG;
         config.id = "inValidConfigTestWithToAttributesNoRules";
         config.body = new NameConfig();
         config.body.toAttributes = new ToAttributeConfig();
@@ -117,7 +117,7 @@ public class ExporterWithLogProcessorTest {
     public void SimpleRenameLogMessageTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
-        config.type = ProcessorType.log;
+        config.type = ProcessorType.LOG;
         config.id = "SimpleRenameLogMessage";
         config.body = new NameConfig();
         config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
@@ -149,7 +149,7 @@ public class ExporterWithLogProcessorTest {
     public void SimpleRenameLogWithSeparatorTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
-        config.type = ProcessorType.log;
+        config.type = ProcessorType.LOG;
         config.id = "SimpleRenameLogWithSeparator";
         config.body = new NameConfig();
         config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
@@ -182,7 +182,7 @@ public class ExporterWithLogProcessorTest {
     public void SimpleRenameLogWithMissingKeysTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
-        config.type = ProcessorType.log;
+        config.type = ProcessorType.LOG;
         config.id = "SimpleRenameLogWithMissingKeys";
         config.body = new NameConfig();
         config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
@@ -214,7 +214,7 @@ public class ExporterWithLogProcessorTest {
     public void InvalidRegexInRulesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
-        config.type = ProcessorType.log;
+        config.type = ProcessorType.LOG;
         config.id = "InvalidRegexInRules";
         config.body = new NameConfig();
         ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
@@ -250,7 +250,7 @@ public class ExporterWithLogProcessorTest {
     public void SimpleToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
-        config.type = ProcessorType.log;
+        config.type = ProcessorType.LOG;
         config.id = "SimpleToAttributes";
         config.body = new NameConfig();
         ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
@@ -286,7 +286,7 @@ public class ExporterWithLogProcessorTest {
     public void MultiRuleToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
-        config.type = ProcessorType.log;
+        config.type = ProcessorType.LOG;
         config.id = "MultiRuleToAttributes";
         config.body = new NameConfig();
         ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
@@ -340,7 +340,7 @@ public class ExporterWithLogProcessorTest {
     public void SimpleRenameLogTestWithSpanProcessor() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
-        config.type = ProcessorType.log;
+        config.type = ProcessorType.LOG;
         config.id = "SimpleRenameSpan";
         config.body = new NameConfig();
         config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
