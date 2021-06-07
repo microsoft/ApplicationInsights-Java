@@ -135,55 +135,55 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration("ApplicationInsights_SpanProcessor.json");
         PreviewConfiguration preview = configuration.preview;
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals(8, preview.processors.size());
+        assertEquals(9, preview.processors.size());
         // insert config test
         ProcessorConfig insertConfig = preview.processors.get(0);
         assertEquals("attributes/insert", insertConfig.id);
-        assertEquals(ProcessorType.attribute, insertConfig.type);
-        assertEquals(ProcessorActionType.insert, insertConfig.actions.get(0).action);
+        assertEquals(ProcessorType.ATTRIBUTE, insertConfig.type);
+        assertEquals(ProcessorActionType.INSERT, insertConfig.actions.get(0).action);
         assertEquals("123", insertConfig.actions.get(0).value);
         assertEquals("attribute1", insertConfig.actions.get(0).key);
         assertEquals("anotherKey", insertConfig.actions.get(1).fromAttribute);
         //update config test
         ProcessorConfig updateConfig = preview.processors.get(1);
         assertEquals("attributes/update", updateConfig.id);
-        assertEquals(ProcessorType.attribute, updateConfig.type);
-        assertEquals(ProcessorActionType.update, updateConfig.actions.get(0).action);
+        assertEquals(ProcessorType.ATTRIBUTE, updateConfig.type);
+        assertEquals(ProcessorActionType.UPDATE, updateConfig.actions.get(0).action);
         assertEquals("boo", updateConfig.actions.get(0).key);
         assertEquals("foo", updateConfig.actions.get(0).fromAttribute);
         assertEquals("db.secret", updateConfig.actions.get(1).key);
         // selective processing test
         ProcessorConfig selectiveConfig = preview.processors.get(2);
-        assertEquals(ProcessorType.attribute, selectiveConfig.type);
+        assertEquals(ProcessorType.ATTRIBUTE, selectiveConfig.type);
         assertEquals("attributes/selectiveProcessing", selectiveConfig.id);
-        assertEquals(MatchType.strict, selectiveConfig.include.matchType);
+        assertEquals(MatchType.STRICT, selectiveConfig.include.matchType);
         assertEquals(2, selectiveConfig.include.spanNames.size());
         assertEquals("svcA", selectiveConfig.include.spanNames.get(0));
-        assertEquals(MatchType.strict, selectiveConfig.exclude.matchType);
+        assertEquals(MatchType.STRICT, selectiveConfig.exclude.matchType);
         assertEquals(1, selectiveConfig.exclude.attributes.size());
         assertEquals("redact_trace", selectiveConfig.exclude.attributes.get(0).key);
         assertEquals("false", selectiveConfig.exclude.attributes.get(0).value);
         assertEquals(2, selectiveConfig.actions.size());
         assertEquals("credit_card", selectiveConfig.actions.get(0).key);
-        assertEquals(ProcessorActionType.delete, selectiveConfig.actions.get(0).action);
+        assertEquals(ProcessorActionType.DELETE, selectiveConfig.actions.get(0).action);
         // log/update name test
         ProcessorConfig logUpdateNameConfig = preview.processors.get(3);
-        assertEquals(ProcessorType.log, logUpdateNameConfig.type);
+        assertEquals(ProcessorType.LOG, logUpdateNameConfig.type);
         assertEquals("log/updateName", logUpdateNameConfig.id);
         assertEquals(1, logUpdateNameConfig.body.fromAttributes.size());
         assertEquals("loggerName", logUpdateNameConfig.body.fromAttributes.get(0));
         assertEquals("::", logUpdateNameConfig.body.separator);
         // log/extractAttributes
         ProcessorConfig logExtractAttributesConfig = preview.processors.get(4);
-        assertEquals(ProcessorType.log, logExtractAttributesConfig.type);
+        assertEquals(ProcessorType.LOG, logExtractAttributesConfig.type);
         assertEquals("log/extractAttributes", logExtractAttributesConfig.id);
         assertEquals(1, logExtractAttributesConfig.body.toAttributes.rules.size());
         assertEquals("^/api/v1/document/(?<documentId>.*)/update$", logExtractAttributesConfig.body.toAttributes.rules.get(0));
         // span/update name test
         ProcessorConfig spanUpdateNameConfig = preview.processors.get(5);
-        assertEquals(ProcessorType.span, spanUpdateNameConfig.type);
+        assertEquals(ProcessorType.SPAN, spanUpdateNameConfig.type);
         assertEquals("span/updateName", spanUpdateNameConfig.id);
-        assertEquals(MatchType.regexp, spanUpdateNameConfig.include.matchType);
+        assertEquals(MatchType.REGEXP, spanUpdateNameConfig.include.matchType);
         assertEquals(1, spanUpdateNameConfig.include.spanNames.size());
         assertEquals(".*password.*", spanUpdateNameConfig.include.spanNames.get(0));
         assertEquals(1, spanUpdateNameConfig.name.fromAttributes.size());
@@ -191,22 +191,30 @@ public class ConfigurationTest {
         assertEquals("::", spanUpdateNameConfig.name.separator);
         // span/extractAttributes
         ProcessorConfig spanExtractAttributesConfig = preview.processors.get(6);
-        assertEquals(ProcessorType.span, spanExtractAttributesConfig.type);
+        assertEquals(ProcessorType.SPAN, spanExtractAttributesConfig.type);
         assertEquals("span/extractAttributes", spanExtractAttributesConfig.id);
         assertEquals(1, spanExtractAttributesConfig.name.toAttributes.rules.size());
         assertEquals("^/api/v1/document/(?<documentId>.*)/update$", spanExtractAttributesConfig.name.toAttributes.rules.get(0));
         // attribute/extract
         ProcessorConfig attributesExtractConfig = preview.processors.get(7);
-        assertEquals(ProcessorType.attribute, attributesExtractConfig.type);
+        assertEquals(ProcessorType.ATTRIBUTE, attributesExtractConfig.type);
         assertEquals("attributes/extract", attributesExtractConfig.id);
         assertEquals(1, attributesExtractConfig.actions.size());
-        assertEquals(ProcessorActionType.extract,attributesExtractConfig.actions.get(0).action);
+        assertEquals(ProcessorActionType.EXTRACT,attributesExtractConfig.actions.get(0).action);
         assertEquals("http.url",attributesExtractConfig.actions.get(0).key);
         assertEquals(1,attributesExtractConfig.actions.size());
         assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute);
         assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute.pattern);
         assertEquals(4,attributesExtractConfig.actions.get(0).extractAttribute.groupNames.size());
         assertEquals("httpProtocol",attributesExtractConfig.actions.get(0).extractAttribute.groupNames.get(0));
+        // metric-filter
+        ProcessorConfig metricFilterConfig = preview.processors.get(8);
+        assertEquals(ProcessorType.METRIC_FILTER, metricFilterConfig.type);
+        assertEquals("metric-filter/exclude-two-metrics", metricFilterConfig.id);
+        assertEquals(MatchType.STRICT, metricFilterConfig.exclude.matchType);
+        assertEquals(2, metricFilterConfig.exclude.metricNames.size());
+        assertEquals("a_test_metric", metricFilterConfig.exclude.metricNames.get(0));
+        assertEquals("another_test_metric", metricFilterConfig.exclude.metricNames.get(1));
     }
 
     @Test

@@ -99,7 +99,14 @@
     </Match>
     <Match>
         <Bug pattern="NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD" />
-        <Class name="com.microsoft.applicationinsights.agent.internal.processors.SpanProcessor" />
-        <Method name="create" />
+        <Or>
+            <And>
+                <Class name="com.microsoft.applicationinsights.agent.internal.processors.SpanProcessor" />
+                <Method name="create" />
+            </And>
+            <And>
+                <Class name="com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration$ProcessorIncludeExclude" />
+            </And>
+        </Or>
     </Match>
 </FindBugsFilter>
