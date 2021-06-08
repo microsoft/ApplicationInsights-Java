@@ -1,4 +1,18 @@
 # CHANGELOG
+# Version 3.1.1-BETA.4
+* Reduce agent jar file size back to normal [#1716](https://github.com/microsoft/ApplicationInsights-Java/pull/1716).
+
+# Version 3.1.1-BETA.3
+* Fix memory leak caused by not removing Netty listeners [upstream #2705](https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/2705)
+* Improve Azure Service Bus support [#1710](https://github.com/microsoft/ApplicationInsights-Java/pull/1710).
+* Updated to support OpenTelemetry API 1.2.0
+
+# Version 3.1.1-BETA.2
+* Support explicit operation id and parent id from 2.x SDK [#1708](https://github.com/microsoft/ApplicationInsights-Java/pull/1708).
+* Fix exceptions with deep stack trace exceeding 64 KB rejected by Application Insights backend [#1702](https://github.com/microsoft/ApplicationInsights-Java/pull/1702).
+* Use shorter telemetry names for all telemetry types to reduce payload [#1700](https://github.com/microsoft/ApplicationInsights-Java/pull/1700).
+* Improve Azure SDK support [#1698](https://github.com/microsoft/ApplicationInsights-Java/pull/1698).
+
 # Version 3.1.1-BETA
 * Fix NullPointerExceptions for App Services [#1681](https://github.com/microsoft/ApplicationInsights-Java/pull/1681#issuecomment-840169103).
 * Add Application Insights stats.

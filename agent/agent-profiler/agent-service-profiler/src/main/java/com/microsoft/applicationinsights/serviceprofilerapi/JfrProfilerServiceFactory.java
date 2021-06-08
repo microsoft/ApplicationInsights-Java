@@ -34,7 +34,8 @@ public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
             String instrumentationKey,
             CloseableHttpClient httpClient,
             ScheduledExecutorService serviceProfilerExecutorService,
-            String userAgent) {
+            String userAgent,
+            String roleName) {
         if (INSTANCE == null) {
             ServiceProfilerClientV2 serviceProfilerClient = new ProfilerFrontendClientV2(config.getServiceProfilerFrontEndPoint(), instrumentationKey, httpClient, userAgent);
 
@@ -42,7 +43,8 @@ public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
                     serviceProfilerClient,
                     machineName,
                     processId,
-                    appIdSupplier);
+                    appIdSupplier,
+                    roleName);
 
             INSTANCE = new JfrProfilerService(
                     appIdSupplier,

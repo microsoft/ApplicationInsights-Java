@@ -112,6 +112,11 @@ public class Exporter implements SpanExporter {
     private static final AttributeKey<String> AI_LOGGER_NAME_KEY = AttributeKey.stringKey("applicationinsights.internal.logger_name");
     private static final AttributeKey<String> AI_LOG_ERROR_STACK_KEY = AttributeKey.stringKey("applicationinsights.internal.log_error_stack");
 
+    // note: this gets filtered out of user dimensions automatically since it shares official "peer." prefix
+    // (even though it's not an official semantic convention attribute)
+    private static final AttributeKey<String> AZURE_SDK_PEER_ADDRESS = AttributeKey.stringKey("peer.address");
+    private static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION = AttributeKey.stringKey("message_bus.destination");
+
     private final TelemetryClient telemetryClient;
 
     public Exporter(TelemetryClient telemetryClient) {
@@ -168,7 +173,11 @@ public class Exporter implements SpanExporter {
             }
         } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
             exportRemoteDependency(span, false);
-        } else if (kind == SpanKind.CONSUMER && !span.getParentSpanContext().isRemote()) {
+        } else if (kind == SpanKind.CONSUMER && !span.getParentSpanContext().isRemote()
+                && !span.getName().equals("EventHubs.process") && !span.getName().equals("ServiceBus.process")) {
+            // earlier versions of the azure sdk opentelemetry shim did not set remote parent
+            // see https://github.com/Azure/azure-sdk-for-java/pull/21667
+
             // TODO need spec clarification, but it seems polling for messages can be CONSUMER also
             //  in which case the span will not have a remote parent and should be treated as a dependency instead of a request
             exportRemoteDependency(span, false);
@@ -203,12 +212,10 @@ public class Exporter implements SpanExporter {
         addLinks(data, span.getLinks());
         data.setName(getTelemetryName(span));
 
-        Attributes attributes = span.getAttributes();
-
         if (inProc) {
             data.setType("InProc");
         } else {
-            applySemanticConventions(attributes, data, span.getKind());
+            applySemanticConventions(span, data);
         }
 
         data.setId(span.getSpanId());
@@ -223,7 +230,7 @@ public class Exporter implements SpanExporter {
 
         data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
-        setExtraAttributes(telemetry, data, attributes);
+        setExtraAttributes(telemetry, data, span.getAttributes());
 
         float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         telemetry.setSampleRate(samplingPercentage);
@@ -235,7 +242,8 @@ public class Exporter implements SpanExporter {
         return TelemetryUtil.getSamplingPercentage(traceState, 100, true);
     }
 
-    private void applySemanticConventions(Attributes attributes, RemoteDependencyData remoteDependencyData, SpanKind spanKind) {
+    private void applySemanticConventions(SpanData span, RemoteDependencyData remoteDependencyData) {
+        Attributes attributes = span.getAttributes();
         String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
         if (httpMethod != null) {
             applyHttpClientSpan(attributes, remoteDependencyData);
@@ -251,11 +259,43 @@ public class Exporter implements SpanExporter {
             applyDatabaseClientSpan(attributes, remoteDependencyData, dbSystem);
             return;
         }
+
         String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
         if (messagingSystem != null) {
-            applyMessagingClientSpan(attributes, remoteDependencyData, messagingSystem, spanKind);
+            applyMessagingClientSpan(attributes, remoteDependencyData, messagingSystem, span.getKind());
             return;
         }
+        // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
+        //  but no rush as messaging semantic conventions may still change
+        //  https://github.com/Azure/azure-sdk-for-java/issues/21684
+        String name = span.getName();
+        if (name.equals("EventHubs.send") || name.equals("EventHubs.message")) {
+            applyEventHubsSpan(attributes, remoteDependencyData);
+            return;
+        }
+        // TODO (trask) ideally ServiceBus SDK should conform and fit the above path used for other messaging systems
+        //  but no rush as messaging semantic conventions may still change
+        //  https://github.com/Azure/azure-sdk-for-java/issues/21686
+        if (name.equals("ServiceBus.message") || name.equals("ServiceBus.process")) {
+            applyServiceBusSpan(attributes, remoteDependencyData);
+            return;
+        }
+
+        // passing max value because we don't know what the default port would be in this case,
+        // so we always want the port included
+        String target = getTargetFromPeerAttributes(attributes, Integer.MAX_VALUE);
+        if (target != null) {
+            remoteDependencyData.setTarget(target);
+            return;
+        }
+
+        // with no target, the App Map falls back to creating a node based on the telemetry name,
+        // which is very confusing, e.g. when multiple unrelated nodes all point to a single node
+        // because they had dependencies with the same telemetry name
+        //
+        // so we mark these as InProc, even though they aren't INTERNAL spans,
+        // in order to prevent App Map from considering them
+        remoteDependencyData.setType("InProc");
     }
 
     private void exportLogSpan(SpanData span) {
@@ -465,6 +505,26 @@ public class Exporter implements SpanExporter {
         } else {
             telemetry.setTarget(messagingSystem);
         }
+    }
+
+    // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
+    //  but no rush as messaging semantic conventions may still change
+    //  https://github.com/Azure/azure-sdk-for-java/issues/21684
+    private void applyEventHubsSpan(Attributes attributes, RemoteDependencyData telemetry) {
+        telemetry.setType("Microsoft.EventHub");
+        String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
+        String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
+        telemetry.setTarget(peerAddress + "/" + destination);
+    }
+
+    // TODO (trask) ideally ServiceBus SDK should conform and fit the above path used for other messaging systems
+    //  but no rush as messaging semantic conventions may still change
+    //  https://github.com/Azure/azure-sdk-for-java/issues/21686
+    private void applyServiceBusSpan(Attributes attributes, RemoteDependencyData telemetry) {
+        telemetry.setType("AZURE SERVICE BUS");
+        String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
+        String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
+        telemetry.setTarget(peerAddress + "/" + destination);
     }
 
     private static int getDefaultPortForDbSystem(String dbSystem) {
@@ -756,6 +816,12 @@ public class Exporter implements SpanExporter {
             if (stringKey.startsWith("applicationinsights.internal.")) {
                 return;
             }
+            // TODO use az.namespace for something?
+            if (stringKey.equals(AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
+                    || stringKey.equals("az.namespace")) {
+                // these are from azure SDK
+                return;
+            }
             // special case mappings
             if (key.equals(SemanticAttributes.ENDUSER_ID) && value instanceof String) {
                 telemetry.getTags().put(ContextTagKeys.AI_USER_ID.toString(), (String) value);
@@ -818,7 +884,7 @@ public class Exporter implements SpanExporter {
                 return SeverityLevel.VERBOSE;
             default:
                 // TODO (trask) is this good fallback?
-                logger.error("Unexpected level {}, using VERBOSE level as default", level);
+                logger.debug("Unexpected level {}, using VERBOSE level as default", level);
                 return SeverityLevel.VERBOSE;
         }
     }

@@ -48,7 +48,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
 
     @Override
-    public void trackEvent(String name, Map<String, String> properties, Map<String, String> tags,
+    public void trackEvent(Date timestamp, String name, Map<String, String> properties, Map<String, String> tags,
                            Map<String, Double> metrics, String instrumentationKey) {
 
         if (Strings.isNullOrEmpty(name)) {
@@ -71,7 +71,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
-        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        if (timestamp != null) {
+            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+        } else {
+            telemetry.setTime(TelemetryUtil.getFormattedNow());
+        }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -82,7 +86,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
     // TODO do not track if perf counter (?)
     @Override
-    public void trackMetric(String name, double value, Integer count, Double min, Double max, Double stdDev,
+    public void trackMetric(Date timestamp, String name, double value, Integer count, Double min, Double max, Double stdDev,
                             Map<String, String> properties, Map<String, String> tags, String instrumentationKey) {
 
         if (Strings.isNullOrEmpty(name)) {
@@ -114,7 +118,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
-        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        if (timestamp != null) {
+            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+        } else {
+            telemetry.setTime(TelemetryUtil.getFormattedNow());
+        }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -124,7 +132,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     @Override
-    public void trackDependency(String name, String id, String resultCode, @Nullable Long totalMillis,
+    public void trackDependency(Date timestamp, String name, String id, String resultCode, @Nullable Long totalMillis,
                                 boolean success, String commandName, String type, String target,
                                 Map<String, String> properties, Map<String, String> tags, Map<String, Double> metrics,
                                 String instrumentationKey) {
@@ -157,7 +165,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
-        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        if (timestamp != null) {
+            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+        } else {
+            telemetry.setTime(TelemetryUtil.getFormattedNow());
+        }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -167,7 +179,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     @Override
-    public void trackPageView(String name, URI uri, long totalMillis, Map<String, String> properties,
+    public void trackPageView(Date timestamp, String name, URI uri, long totalMillis, Map<String, String> properties,
                               Map<String, String> tags, Map<String, Double> metrics, String instrumentationKey) {
 
         if (Strings.isNullOrEmpty(name)) {
@@ -193,7 +205,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
-        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        if (timestamp != null) {
+            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+        } else {
+            telemetry.setTime(TelemetryUtil.getFormattedNow());
+        }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -203,7 +219,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     @Override
-    public void trackTrace(String message, int severityLevel, Map<String, String> properties, Map<String, String> tags,
+    public void trackTrace(Date timestamp, String message, int severityLevel, Map<String, String> properties, Map<String, String> tags,
                            String instrumentationKey) {
         if (Strings.isNullOrEmpty(message)) {
             return;
@@ -226,7 +242,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
-        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        if (timestamp != null) {
+            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+        } else {
+            telemetry.setTime(TelemetryUtil.getFormattedNow());
+        }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -282,7 +302,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     @Override
-    public void trackException(Exception exception, Map<String, String> properties, Map<String, String> tags,
+    public void trackException(Date timestamp, Exception exception, Map<String, String> properties, Map<String, String> tags,
                                Map<String, Double> metrics, String instrumentationKey) {
         if (exception == null) {
             return;
@@ -304,7 +324,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             }
         }
 
-        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        if (timestamp != null) {
+            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+        } else {
+            telemetry.setTime(TelemetryUtil.getFormattedNow());
+        }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
             telemetry.setInstrumentationKey(instrumentationKey);
@@ -352,8 +376,12 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
                 // sampled out
                 return;
             }
-            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), context.getTraceId());
-            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), context.getSpanId());
+            if (!telemetry.getTags().containsKey(ContextTagKeys.AI_OPERATION_ID.toString())) {
+                telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), context.getTraceId());
+            }
+            if (!telemetry.getTags().containsKey(ContextTagKeys.AI_OPERATION_PARENT_ID.toString())) {
+                telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), context.getSpanId());
+            }
             samplingPercentage =
                     TelemetryUtil.getSamplingPercentage(context.getTraceState(), Global.getSamplingPercentage(), false);
         } else {

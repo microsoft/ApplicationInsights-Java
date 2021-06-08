@@ -1,3 +1,24 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.agent.internal.processors;
 
 import java.util.ArrayList;
@@ -362,17 +383,30 @@ public class ExporterWithAttributeProcessorTest {
                 .setAttribute("TESTKEY", "testValue2")
                 .startSpan();
 
+        Span log = tracer.spanBuilder("my log")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("TESTKEY", "testValue2")
+                .setAttribute("applicationinsights.internal.log", true)
+                .startSpan();
+
         SpanData spanData = ((ReadableSpan) span).toSpanData();
+        SpanData logData = ((ReadableSpan) log).toSpanData();
 
         List<SpanData> spans = new ArrayList<>();
         spans.add(spanData);
+        spans.add(logData);
         exampleExporter.export(spans);
 
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
+        SpanData resultLog = result.get(1);
         assertEquals("redacted", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("redacted", Objects.requireNonNull(resultLog.getAttributes().get(AttributeKey.stringKey("testKey"))));
     }
+
 
     @Test
     public void actionUpdateFromAttributeUpdateTest() {
@@ -504,6 +538,77 @@ public class ExporterWithAttributeProcessorTest {
         assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
         assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
         assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
+    }
+
+    @Test
+    public void simpleIncludeWithSpanNamesTest() {
+        MockExporter mockExporter = new MockExporter();
+        ProcessorConfig config = new ProcessorConfig();
+        config.type = ProcessorType.attribute;
+        config.id = "simpleIncludeWithSpanNames";
+        config.include = new ProcessorIncludeExclude();
+        config.include.matchType = MatchType.strict;
+        config.include.spanNames = Arrays.asList("svcA", "svcB");
+        ProcessorAction action = new ProcessorAction();
+        action.key = "testKey";
+        action.action = ProcessorActionType.update;
+        action.value = "redacted";
+        List<ProcessorAction> actions = new ArrayList<>();
+        actions.add(action);
+        config.actions = actions;
+        SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
+
+        Span spanA = tracer.spanBuilder("svcA")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        Span spanB = tracer.spanBuilder("svcB")
+                .setAttribute("one", "1")
+                .setAttribute("testKey", "testValue")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        Span spanC = tracer.spanBuilder("svcC")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        Span spanD = tracer.spanBuilder("svcD")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("testKey2", "testValue2")
+                .startSpan();
+        Span logA = tracer.spanBuilder("svcA")
+                .setAttribute("one", "1")
+                .setAttribute("two", 2L)
+                .setAttribute("testKey", "testValue")
+                .setAttribute("testKey2", "testValue2")
+                .setAttribute("applicationinsights.internal.log", true)
+                .startSpan();
+
+        List<SpanData> spans = new ArrayList<>();
+        spans.add(((ReadableSpan) spanA).toSpanData());
+        spans.add(((ReadableSpan) spanB).toSpanData());
+        spans.add(((ReadableSpan) spanC).toSpanData());
+        spans.add(((ReadableSpan) spanD).toSpanData());
+        spans.add(((ReadableSpan) logA).toSpanData());
+
+        exampleExporter.export(spans);
+
+        // verify that resulting spans are filtered in the way we want
+        List<SpanData> result = mockExporter.getSpans();
+        SpanData resultSpanA = result.get(0);
+        SpanData resultSpanB = result.get(1);
+        SpanData resultSpanC = result.get(2);
+        SpanData resultLogA = result.get(2);
+        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
+        // Make sure log is not updated, since we have spanNames in include criteria
+        assertEquals("testValue", Objects.requireNonNull(resultLogA.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
     }
 
     @Test

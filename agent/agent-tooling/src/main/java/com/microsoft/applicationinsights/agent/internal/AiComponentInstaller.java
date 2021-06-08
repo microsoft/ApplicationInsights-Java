@@ -46,6 +46,7 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
+import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.apache.http.HttpHost;
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
@@ -74,7 +76,7 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     @Override
-    public void beforeByteBuddyAgent() {
+    public void beforeByteBuddyAgent(Config config) {
         start(instrumentation);
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
@@ -85,11 +87,12 @@ public class AiComponentInstaller implements ComponentInstaller {
         instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
         instrumentation.addTransformer(new ApplicationInsightsAppenderClassFileTransformer());
         instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
+        instrumentation.addTransformer(new RequestNameHandlerClassFileTransformer());
         instrumentation.addTransformer(new DuplicateAgentClassFileTransformer());
     }
 
     @Override
-    public void afterByteBuddyAgent() {
+    public void afterByteBuddyAgent(Config config) {
         // only safe now to resolve app id because SSL initialization
         // triggers loading of java.util.logging (starting with Java 8u231)
         // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
@@ -159,6 +162,7 @@ public class AiComponentInstaller implements ComponentInstaller {
                 SystemInformation.INSTANCE.getProcessId(),
                 formServiceProfilerConfig(config.preview.profiler),
                 config.role.instance,
+                config.role.name,
                 telemetryClient,
                 formApplicationInsightsUserAgent(),
                 formGcEventMonitorConfiguration(config.preview.gcEvents)
@@ -193,11 +197,12 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     private static ServiceProfilerServiceConfig formServiceProfilerConfig(ProfilerConfiguration configuration) {
+        URI serviceProfilerFrontEndPoint = TelemetryClient.getActive().getEndpointProvider().getProfilerEndpoint();
         return new ServiceProfilerServiceConfig(
                 configuration.configPollPeriodSeconds,
                 configuration.periodicRecordingDurationSeconds,
                 configuration.periodicRecordingIntervalSeconds,
-                configuration.serviceProfilerFrontEndPoint,
+                serviceProfilerFrontEndPoint,
                 configuration.enabled,
                 configuration.memoryTriggeredSettings,
                 configuration.cpuTriggeredSettings

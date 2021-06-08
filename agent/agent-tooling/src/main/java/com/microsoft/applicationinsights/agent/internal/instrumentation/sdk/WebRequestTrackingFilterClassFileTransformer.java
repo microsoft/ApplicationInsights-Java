@@ -40,14 +40,14 @@ public class WebRequestTrackingFilterClassFileTransformer implements ClassFileTr
 
     private static final Logger logger = LoggerFactory.getLogger(WebRequestTrackingFilterClassFileTransformer.class);
 
-    private final String unshadedClassNameLogback = UnshadedSdkPackageName.get() + "/web/internal/WebRequestTrackingFilter";
+    private final String unshadedClassName = UnshadedSdkPackageName.get() + "/web/internal/WebRequestTrackingFilter";
 
     @Override
     public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
                                           @Nullable Class<?> classBeingRedefined,
                                           @Nullable ProtectionDomain protectionDomain,
                                           byte[] classfileBuffer) {
-        if (!unshadedClassNameLogback.equals(className)) {
+        if (!unshadedClassName.equals(className)) {
             return null;
         }
 
