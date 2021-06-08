@@ -4,7 +4,7 @@
 * Fix 2.x interop of timestamps [#1726](https://github.com/microsoft/ApplicationInsights-Java/pull/1726).
 * Add metric filtering to telemetry processor [#1728](https://github.com/microsoft/ApplicationInsights-Java/pull/1728).
 * Add log processor to telemetry processor [#1713](https://github.com/microsoft/ApplicationInsights-Java/pull/1713).
-* Fix app id retrieval 404 for Linux Consumption Plan.
+* Fix app id retrieval 404 for Linux Consumption Plan [#1730](https://github.com/microsoft/ApplicationInsights-Java/pull/1730).
 
 # Version 3.1.1-BETA.4
 * Reduce agent jar file size back to normal [#1716](https://github.com/microsoft/ApplicationInsights-Java/pull/1716).
