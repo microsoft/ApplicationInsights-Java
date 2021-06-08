@@ -98,8 +98,12 @@ public class AiComponentInstaller implements ComponentInstaller {
     public void afterByteBuddyAgent(Config config) {
         // only safe now to resolve app id because SSL initialization
         // triggers loading of java.util.logging (starting with Java 8u231)
-        // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
-        AppIdSupplier.registerAndStartAppIdRetrieval();
+        // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized.
+        // Delay registering and starting AppId retrieval to later when the connection string becomes available
+        // for Linux Consumption Plan.
+        if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+            AppIdSupplier.registerAndStartAppIdRetrieval();
+        }
     }
 
     private static void start(Instrumentation instrumentation) {
