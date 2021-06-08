@@ -106,7 +106,7 @@ public class AiComponentInstaller implements ComponentInstaller {
         // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized.
         // Delay registering and starting AppId retrieval to later when the connection string becomes available
         // for Linux Consumption Plan.
-        if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
+        if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
             AppIdSupplier.registerAndStartAppIdRetrieval();
         }
     }
