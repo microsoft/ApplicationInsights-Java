@@ -27,6 +27,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsDat
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +76,12 @@ abstract class BaseStatsbeat {
         @Override
         public void run() {
             try {
+                // For Linux Consumption Plan, connection string is lazily set.
+                // There is no need to send statsbeat when cikey is empty.
+                String customerIkey = telemetryClient.getInstrumentationKey();
+                if (customerIkey == null || customerIkey.isEmpty()) {
+                    return;
+                }
                 send();
             }
             catch (RuntimeException e) {
