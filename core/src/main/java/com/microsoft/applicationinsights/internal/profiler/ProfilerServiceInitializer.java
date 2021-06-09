@@ -28,6 +28,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
@@ -65,6 +66,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
+                                               String roleName,
                                                TelemetryClient telemetryClient,
                                                String userAgent,
                                                GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
@@ -73,6 +75,7 @@ public class ProfilerServiceInitializer {
                 processId,
                 config,
                 machineName,
+                roleName,
                 telemetryClient,
                 LazyHttpClient.getInstance(),
                 userAgent,
@@ -84,6 +87,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
+                                               String roleName,
                                                TelemetryClient telemetryClient,
                                                CloseableHttpClient httpClient,
                                                String userAgent,
@@ -123,7 +127,8 @@ public class ProfilerServiceInitializer {
                     telemetryClient.getInstrumentationKey(),
                     httpClient,
                     serviceProfilerExecutorService,
-                    userAgent
+                    userAgent,
+                    roleName
             );
 
             serviceProfilerExecutorService.submit(() -> {
@@ -168,6 +173,9 @@ public class ProfilerServiceInitializer {
             telemetry.setTime(TelemetryUtil.getFormattedNow());
 
             telemetryClient.trackAsync(telemetry);
+
+            // This is an event that the backend specifically looks for to track when a profile is complete
+            sendMessageTelemetry(telemetryClient, "StopProfiler succeeded.");
         };
     }
 
@@ -175,15 +183,26 @@ public class ProfilerServiceInitializer {
             ScheduledExecutorService alertServiceExecutorService,
             TelemetryClient telemetryClient,
             GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
-        return AlertingServiceFactory.create(alertAction(), TelemetryObservers.INSTANCE, telemetryClient, alertServiceExecutorService, gcEventMonitorConfiguration);
+        return AlertingServiceFactory.create(alertAction(telemetryClient), TelemetryObservers.INSTANCE, telemetryClient, alertServiceExecutorService, gcEventMonitorConfiguration);
     }
 
-    private static Consumer<AlertBreach> alertAction() {
+    private static Consumer<AlertBreach> alertAction(TelemetryClient telemetryClient) {
         return alert -> {
             if (profilerService != null) {
+                // This is an event that the backend specifically looks for to track when a profile is started
+                sendMessageTelemetry(telemetryClient, "StartProfiler triggered.");
+
                 profilerService.getProfiler().accept(alert);
             }
         };
     }
 
+    private static void sendMessageTelemetry(TelemetryClient telemetryClient, String message) {
+        TelemetryItem telemetry = new TelemetryItem();
+        MessageData data = new MessageData();
+        TelemetryClient.getActive().initMessageTelemetry(telemetry, data);
+        data.setMessage(message);
+        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        telemetryClient.trackAsync(telemetry);
+    }
 }

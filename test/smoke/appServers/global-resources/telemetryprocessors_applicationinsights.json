@@ -77,6 +77,16 @@
             }
           ],
           "id": "attributes/extract"
+        },
+        {
+          "type": "log",
+          "body": {
+            "fromAttributes": [
+              "applicationinsights.internal.logger_name","applicationinsights.internal.log_level"
+            ],
+            "separator": "::"
+          },
+          "id": "log/fromAttribute"
         }
       ]
     }

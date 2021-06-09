@@ -18,9 +18,8 @@ import java.lang.management.MemoryUsage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-
-import static java.util.Collections.singletonList;
 
 /**
  * Monitors GC events.  Forwards relevant metrics to the alerting subsystem.
@@ -29,6 +28,11 @@ import static java.util.Collections.singletonList;
  */
 public class GcEventMonitor {
     private static final Logger LOGGER = LoggerFactory.getLogger(GcEventMonitor.class);
+
+    // a unique jvm_instance_id is needed for every restart as the gc starts again from scratch every time
+    // the JVM is restarted, and we need to analyze single JVM execution
+    //TODO if/when Application Insights adds a unique ID that represents a single JVM, pull that ID here
+    private static final String JVM_INSTANCE_UID = UUID.randomUUID().toString();
 
     public static class GcEventMonitorConfiguration {
         public final GcReportingLevel reportingLevel;
@@ -117,6 +121,7 @@ public class GcEventMonitor {
         properties.put("collector", event.getCollector().getName());
         properties.put("type", event.getGcCause());
         properties.put("action", event.getGcAction());
+        properties.put("jvm_instance_id", JVM_INSTANCE_UID);
         data.setProperties(properties);
 
         Map<String, Double> measurements = new HashMap<>();

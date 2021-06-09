@@ -78,7 +78,6 @@ public class ConfigurationBuilder {
     private static final String WEBSITE_INSTANCE_ID = "WEBSITE_INSTANCE_ID";
 
     private static final String APPLICATIONINSIGHTS_PROFILER_ENABLED = "APPLICATIONINSIGHTS_PROFILER_ENABLED";
-    private static final String APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT = "APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT";
 
     private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS = "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
 
@@ -112,8 +111,6 @@ public class ConfigurationBuilder {
     private static void overlayProfilerConfiguration(Configuration config) {
         config.preview.profiler.enabled = Boolean
                 .parseBoolean(overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_ENABLED, Boolean.toString(config.preview.profiler.enabled)));
-        config.preview.profiler.serviceProfilerFrontEndPoint =
-                overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_FRONTEND_POINT, config.preview.profiler.serviceProfilerFrontEndPoint);
     }
 
     private static void loadLogCaptureEnvVar(Configuration config) {

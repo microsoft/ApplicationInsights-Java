@@ -24,6 +24,8 @@ package com.microsoft.applicationinsights.profiler.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+
 /**
  * Configuration of the service profiler subsystem
  */
@@ -43,7 +45,7 @@ public class ServiceProfilerServiceConfig {
     // default interval of periodic profiles
     private final int periodicRecordingInterval;
 
-    private final String serviceProfilerFrontEndPoint;
+    private final URI serviceProfilerFrontEndPoint;
 
     // Enable entire service profiler subsystem
     private final boolean enabled;
@@ -58,7 +60,7 @@ public class ServiceProfilerServiceConfig {
             int configPollPeriod,
             int periodicRecordingDuration,
             int periodicRecordingInterval,
-            String serviceProfilerFrontEndPoint,
+            URI serviceProfilerFrontEndPoint,
             boolean enabled,
             String memoryTriggeredSettings,
             String cpuTriggeredSettings
@@ -84,8 +86,8 @@ public class ServiceProfilerServiceConfig {
         return periodicRecordingInterval != -1 ? periodicRecordingInterval : DEFAULT_PERIODIC_RECORDING_INTERVAL_IN_S;
     }
 
-    public String getServiceProfilerFrontEndPoint() {
-        return serviceProfilerFrontEndPoint != null ? serviceProfilerFrontEndPoint : FrontendEndpoints.PRODUCT_GLOBAL;
+    public URI getServiceProfilerFrontEndPoint() {
+        return serviceProfilerFrontEndPoint;
     }
 
     public boolean enabled() {

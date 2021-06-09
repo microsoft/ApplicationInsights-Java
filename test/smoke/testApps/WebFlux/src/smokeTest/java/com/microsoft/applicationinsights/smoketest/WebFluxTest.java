@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.smoketest;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.List;

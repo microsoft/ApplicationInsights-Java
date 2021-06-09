@@ -20,6 +20,19 @@
  */
 package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
+import com.azure.storage.blob.options.BlobUploadFromFileOptions;
+import com.microsoft.applicationinsights.profileUploader.ServiceProfilerIndex;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobMetadataConstants;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
+import org.junit.Assert;
+import org.junit.Test;
+import reactor.core.publisher.Mono;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,16 +41,6 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.microsoft.applicationinsights.profileUploader.ServiceProfilerIndex;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
-import org.junit.*;
-import reactor.core.publisher.Mono;
 
 public class ServiceProfilerUploaderTest {
     @Test
@@ -52,7 +55,8 @@ public class ServiceProfilerUploaderTest {
                 serviceProfilerClient,
                 "a-machine-name",
                 "a-process-id",
-                appId::toString
+                appId::toString,
+                "a-role-name"
         ) {
             @Override
             protected Mono<UploadFinishArgs> performUpload(UploadContext uploadContext, BlobAccessPass uploadPass, File file) {
@@ -80,10 +84,47 @@ public class ServiceProfilerUploaderTest {
 
                             Assert.assertEquals(appId.toString(),
                                     result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_DATACUBE_PROPERTY_NAME));
-
                         });
     }
 
+    @Test
+    public void roleNameIsCorrectlyAddedToMetaData() throws IOException {
+
+        ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
+
+        File tmpFile = createFakeJfrFile();
+        UUID appId = UUID.randomUUID();
+
+        BlobUploadFromFileOptions blobOptions = new ServiceProfilerUploader(
+                serviceProfilerClient,
+                "a-machine-name",
+                "a-process-id",
+                appId::toString,
+                "a-role-name"
+        ).createBlockBlobOptions(
+                tmpFile,
+                new UploadContext("a-machine-name", UUID.randomUUID(), 1, tmpFile, UUID.randomUUID())
+        );
+
+        // Role name is set correctly
+        Assert.assertEquals("a-role-name", blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
+
+
+        blobOptions = new ServiceProfilerUploader(
+                serviceProfilerClient,
+                "a-machine-name",
+                "a-process-id",
+                appId::toString,
+                null
+        ).createBlockBlobOptions(
+                tmpFile,
+                new UploadContext("a-machine-name", UUID.randomUUID(), 1, tmpFile, UUID.randomUUID())
+        );
+
+        // Null role name tag is not added
+        Assert.assertNull(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
+
+    }
 
     @Test
     public void uploadWithoutAFileThrows() {
@@ -92,7 +133,7 @@ public class ServiceProfilerUploaderTest {
 
         UUID appId = UUID.randomUUID();
 
-        ServiceProfilerUploader serviceProfilerUploader = new ServiceProfilerUploader(serviceProfilerClient, "a-machine-name", "a-process-id", appId::toString);
+        ServiceProfilerUploader serviceProfilerUploader = new ServiceProfilerUploader(serviceProfilerClient, "a-machine-name", "a-process-id", appId::toString, "a-role-name");
 
         AtomicBoolean threw = new AtomicBoolean(false);
         serviceProfilerUploader
@@ -121,15 +162,18 @@ public class ServiceProfilerUploaderTest {
     public static ServiceProfilerClientV2 stubServiceProfilerClient() {
         return new ServiceProfilerClientV2() {
 
-            @Override public BlobAccessPass getUploadAccess(UUID profileId) {
+            @Override
+            public BlobAccessPass getUploadAccess(UUID profileId) {
                 return new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token");
             }
 
-            @Override public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws URISyntaxException, UnsupportedCharsetException, ClientClosedException {
+            @Override
+            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws URISyntaxException, UnsupportedCharsetException, ClientClosedException {
                 return null;
             }
 
-            @Override public String getSettings(Date oldTimeStamp) {
+            @Override
+            public String getSettings(Date oldTimeStamp) {
                 return null;
             }
         };
