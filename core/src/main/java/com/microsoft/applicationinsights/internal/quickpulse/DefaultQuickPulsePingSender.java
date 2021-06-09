@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -98,7 +99,13 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
         final Date currentDate = new Date();
         final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-        final HttpPost request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
+        String pingUrl = getQuickPulsePingUri(endpointPrefix);
+        if (Strings.isNullOrEmpty(pingUrl)) {
+            // Quick Pulse Ping uri will be null when the instrumentation key is null. When that happens, turn off quick pulse.
+            return new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF);
+        }
+
+        final HttpPost request = networkHelper.buildPingRequest(currentDate, pingUrl, quickPulseId, machineName, roleName, instanceName);
 
         final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
         request.setEntity(pingEntity);
@@ -135,6 +142,12 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     @VisibleForTesting
     String getQuickPulsePingUri(String endpointPrefix) {
+        String instrumentationKey = getInstrumentationKey();
+        if (Strings.isNullOrEmpty(instrumentationKey)) {
+            logger.warn("Instrumentation Key is null.");
+            return null;
+        }
+
         return endpointPrefix + "/ping?ikey=" + getInstrumentationKey();
     }
 
