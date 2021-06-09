@@ -120,7 +120,6 @@ public class ActiveTransmissionLoaderTest {
                 } catch (Error e) {
                     ++i;
                     if (i == 7) {
-                        e.printStackTrace();
                         assertFalse(true);
                     }
                     Thread.sleep(1000);

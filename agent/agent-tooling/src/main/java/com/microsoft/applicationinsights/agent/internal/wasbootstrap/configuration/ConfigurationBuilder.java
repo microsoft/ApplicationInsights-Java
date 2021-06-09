@@ -95,10 +95,6 @@ public class ConfigurationBuilder {
                             " (and note that metricIntervalSeconds applies to all auto-collected metrics," +
                             " not only micrometer)"));
         }
-        if (config.preview.httpMethodInOperationName) {
-            configurationWarnMessages.add(new ConfigurationWarnMessage(
-                    "\"httpMethodInOperationName\" preview setting is now the (one and only) default behavior"));
-        }
         overlayEnvVars(config);
         applySamplingPercentageRounding(config);
         // rp configuration should always be last (so it takes precedence)

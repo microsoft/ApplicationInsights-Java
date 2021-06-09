@@ -72,9 +72,6 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
 
     protected TelemetriesTransmitter<T> telemetriesTransmitter;
     protected TelemetryBuffer<T> telemetryBuffer;
-    protected TelemetriesTransmitter<T> statsbeatTransmitter;
-    protected TelemetryBuffer<T> statsbeatBuffer;
-
 
     private boolean developerMode = false;
 
@@ -138,10 +135,8 @@ public abstract class TelemetryChannelBase<T> implements TelemetryChannel {
         makeSureEndpointAddressIsValid(endpointAddress);
 
         final ConfiguredTransmitterFactory<T> transmitterFactory = getTransmitterFactory();
-        telemetriesTransmitter = transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry, false);
+        telemetriesTransmitter = transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry);
         telemetryBuffer = new TelemetryBuffer<>(telemetriesTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
-        statsbeatTransmitter = transmitterFactory.create(configuration, maxTransmissionStorageCapacity, throttling, maxInstantRetry, true);
-        statsbeatBuffer = new TelemetryBuffer<>(statsbeatTransmitter, maxTelemetryBufferCapacityEnforcer, sendIntervalInSeconds);
 
         setDeveloperMode(developerMode);
         isInitailized = true;

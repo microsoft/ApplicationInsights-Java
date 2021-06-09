@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.profiler.GcReportingLevel;
 
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 // an assumption is made throughout this file that user will not explicitly use `null` value in json file
@@ -52,7 +50,6 @@ public class Configuration {
     public Proxy proxy = new Proxy();
     public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
     public PreviewConfiguration preview = new PreviewConfiguration();
-    public InternalConfiguration internal = new InternalConfiguration();
 
     // this is just here to detect if using old format in order to give a helpful error message
     public Map<String, Object> instrumentationSettings;
@@ -146,7 +143,6 @@ public class Configuration {
     public static class MicrometerInstrumentation {
         public boolean enabled = true;
         // this is just here to detect if using this old undocumented setting in order to give a helpful error message
-        @Deprecated
         public int reportingIntervalSeconds = 60;
     }
 
@@ -163,14 +159,8 @@ public class Configuration {
     }
 
     public static class Heartbeat {
-        public long intervalSeconds = MINUTES.toSeconds(15);
-    }
 
-    public static class Statsbeat {
-        public String instrumentationKey = "c4a29126-a7cb-47e5-b348-11414998b11e"; //workspace-aistatsbeat
-        public String endpoint = ConnectionString.Defaults.INGESTION_ENDPOINT; // this supports the government cloud
-        public long intervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
-        public long featureIntervalSeconds = DAYS.toSeconds(1); // default to daily
+        public long intervalSeconds = MINUTES.toSeconds(15);
     }
 
     public static class Proxy {
@@ -193,18 +183,12 @@ public class Configuration {
         // ignoreRemoteParentNotSampled is currently needed
         // because .NET SDK always propagates trace flags "00" (not sampled)
         public boolean ignoreRemoteParentNotSampled = true;
-        // this is just here to detect if using this old setting in order to give a helpful message
-        @Deprecated
+        // TODO consider turning this on by default in 3.1.0
         public boolean httpMethodInOperationName;
         public LiveMetrics liveMetrics = new LiveMetrics();
 
         public ProfilerConfiguration profiler = new ProfilerConfiguration();
         public GcEventConfiguration gcEvents = new GcEventConfiguration();
-    }
-
-    public static class InternalConfiguration {
-        // This is used for collecting internal stats
-        public Statsbeat statsbeat = new Statsbeat();
     }
 
     public static class PreviewInstrumentation {

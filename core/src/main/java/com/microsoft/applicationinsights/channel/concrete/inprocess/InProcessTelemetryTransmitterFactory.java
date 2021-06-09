@@ -47,14 +47,14 @@ import com.microsoft.applicationinsights.internal.channel.common.TransmitterImpl
 final class InProcessTelemetryTransmitterFactory implements ConfiguredTransmitterFactory {
 
     @Override
-    public TelemetriesTransmitter create(TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries, boolean isStatsbeat) {
+    public TelemetriesTransmitter create(TelemetryConfiguration configuration, String maxTransmissionStorageCapacity, boolean throttlingIsEnabled, int maxInstantRetries) {
         final TransmissionPolicyManager transmissionPolicyManager = new TransmissionPolicyManager(throttlingIsEnabled);
         transmissionPolicyManager.addTransmissionHandler(new ErrorHandler(transmissionPolicyManager));
         transmissionPolicyManager.addTransmissionHandler(new PartialSuccessHandler());
         transmissionPolicyManager.addTransmissionHandler(new ThrottlingHandler(transmissionPolicyManager));
         transmissionPolicyManager.setMaxInstantRetries(maxInstantRetries);
         // An active object with the network sender
-        TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(configuration, transmissionPolicyManager, isStatsbeat);
+        TransmissionNetworkOutput actualNetworkSender = TransmissionNetworkOutput.create(configuration, transmissionPolicyManager);
 
         return finishTransmitterConstruction(maxTransmissionStorageCapacity, transmissionPolicyManager, actualNetworkSender);
     }

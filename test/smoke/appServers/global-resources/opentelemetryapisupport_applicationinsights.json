@@ -5,6 +5,7 @@
     "instance": "testroleinstance"
   },
   "preview": {
+    "httpMethodInOperationName": true,
     "openTelemetryApiSupport": true
   }
 }
