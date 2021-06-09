@@ -126,15 +126,17 @@ public class ConfigurationBuilder {
                     .omitEmptyStrings()
                     .withKeyValueSeparator("=")
                     .split(aadAuthString);
-            if(keyValueMap.containsKey("Authorization") && keyValueMap.get("Authorization").equals("AAD")) {
+            String authorization = keyValueMap.get("Authorization");
+            if(authorization != null && authorization.equals("AAD")) {
                 // Override any configuration from json
                 config.preview.authentication = new Configuration.AadAuthentication();
                 config.preview.authentication.enabled = true;
                 config.preview.authentication.type = AuthenticationType.SAMI;
-                if(keyValueMap.containsKey("AppId") && !keyValueMap.get("AppId").isEmpty()) {
+                String clientId = keyValueMap.get("ClientId");
+                if(clientId != null && !clientId.isEmpty()) {
                     // Override type to User Assigned Managed Identity
                     config.preview.authentication.type = AuthenticationType.UAMI;
-                    config.preview.authentication.clientId = keyValueMap.get("AppId");
+                    config.preview.authentication.clientId = clientId;
                 }
             }
         }
