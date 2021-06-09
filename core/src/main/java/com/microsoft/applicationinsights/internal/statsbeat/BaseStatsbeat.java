@@ -67,7 +67,7 @@ abstract class BaseStatsbeat {
             try {
                 // For Linux Consumption Plan, connection string is lazily set.
                 // There is no need to send statsbeat when cikey is empty.
-                if (!Strings.isNullOrEmpty(CustomDimensions.get().getCustomerIkey())) {
+                if (Strings.isNullOrEmpty(CustomDimensions.get().getCustomerIkey())) {
                     return;
                 }
                 send();
