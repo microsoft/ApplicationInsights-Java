@@ -27,7 +27,7 @@ import java.util.Locale;
 
 import static org.slf4j.Logger.ROOT_LOGGER_NAME;
 
-class LoggingConfigurator {
+public class LoggingConfigurator {
 
     private final LoggerContext loggerContext;
 
@@ -228,23 +228,51 @@ class LoggingConfigurator {
     }
 
     private void configureLoggingLevels() {
-        // never want to log apache http at trace or debug, it's just way to verbose
-        Level atLeastInfoLevel = getMaxLevel(level, Level.INFO);
-
-        Level otherLibsLevel = level == Level.INFO ? Level.WARN : level;
-
-        // TODO need something more reliable, currently will log too much WARN if "muzzleMatcher" logger name changes
-        // muzzleMatcher logs at WARN level in order to make them visible, but really should only be enabled when debugging
-        Level muzzleMatcherLevel = level.toInt() <= Level.DEBUG.toInt() ? level : getMaxLevel(level, Level.ERROR);
-
-        // never want to log apache http at trace or debug, it's just way to verbose
+        Level atLeastInfoLevel = getAtLeaseInfoLevel(level);
+        // never want to log apache http at trace or debug, it's just way too verbose
         loggerContext.getLogger("org.apache.http").setLevel(atLeastInfoLevel);
         // never want to log io.grpc.Context at trace or debug, as it logs confusing stack trace that looks like error but isn't
         loggerContext.getLogger("io.grpc.Context").setLevel(atLeastInfoLevel);
+
         // muzzleMatcher logs at WARN level, so by default this is OFF, but enabled when DEBUG logging is enabled
-        loggerContext.getLogger("muzzleMatcher").setLevel(muzzleMatcherLevel);
+        loggerContext.getLogger("muzzleMatcher").setLevel(getMuzzleMatcherLevel(level));
         loggerContext.getLogger("com.microsoft.applicationinsights").setLevel(level);
-        loggerContext.getLogger(ROOT_LOGGER_NAME).setLevel(otherLibsLevel);
+        loggerContext.getLogger(ROOT_LOGGER_NAME).setLevel(getOtherLibLevel(level));
+    }
+
+    // this is used by LazyConfigurationAccessor for the Linux Consumption Plan
+    // when the logging levels in configureLoggingLevels method is updated, this method needs to be updated at the same time.
+    public static void configureSelfDiagnosticLoggingLevelAtRuntime(Logger logger, Level level) {
+        switch (logger.getName()) {
+            case "org.apache.http":
+            case "io.grpc.Context":
+                logger.setLevel(getAtLeaseInfoLevel(level));
+                break;
+            case "muzzleMatcher":
+                logger.setLevel(getMuzzleMatcherLevel(level));
+                break;
+            case ROOT_LOGGER_NAME:
+                logger.setLevel(getOtherLibLevel(level));
+                break;
+            default:
+                logger.setLevel(level);
+                break;
+        }
+    }
+
+    // never want to log apache http at trace or debug, it's just way to verbose
+    private static Level getAtLeaseInfoLevel(Level level) {
+        return getMaxLevel(level, Level.INFO);
+    }
+
+    private static Level getOtherLibLevel(Level level) {
+        return level == Level.INFO ? Level.WARN : level;
+    }
+
+    // TODO need something more reliable, currently will log too much WARN if "muzzleMatcher" logger name changes
+    // muzzleMatcher logs at WARN level in order to make them visible, but really should only be enabled when debugging
+    private static Level getMuzzleMatcherLevel(Level level) {
+        return level.toInt() <= Level.DEBUG.toInt() ? level : getMaxLevel(level, Level.ERROR);
     }
 
     private Encoder<ILoggingEvent> createEncoder() {
