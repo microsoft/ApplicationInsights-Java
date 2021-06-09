@@ -1,0 +1,10 @@
+{
+  "instanceUrl"        :  "https://msazure.visualstudio.com",
+  "areaPath"           :  "One\\TelReachSDKTeam",
+  "projectName"        :  "One",
+  "iterationPath"      :  "One",
+  "notificationAliases":  [
+    "appinsightsjavahelp@microsoft.com"
+  ],
+  "ignoreBranchName"   : true
+}

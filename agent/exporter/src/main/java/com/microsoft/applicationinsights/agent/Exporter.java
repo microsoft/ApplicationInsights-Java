@@ -34,6 +34,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
 import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
@@ -128,11 +129,8 @@ public class Exporter implements SpanExporter {
 
     private final TelemetryClient telemetryClient;
 
-    private final boolean httpMethodInOperationName;
-
-    public Exporter(TelemetryClient telemetryClient, boolean httpMethodInOperationName) {
+    public Exporter(TelemetryClient telemetryClient) {
         this.telemetryClient = telemetryClient;
-        this.httpMethodInOperationName = httpMethodInOperationName;
     }
 
     /**
@@ -176,6 +174,7 @@ public class Exporter implements SpanExporter {
     private void export(SpanData span) {
         SpanKind kind = span.getKind();
         String instrumentationName = span.getInstrumentationLibraryInfo().getName();
+        StatsbeatModule.get().getNetworkStatsbeat().addInstrumentation(instrumentationName);
         Matcher matcher = COMPONENT_PATTERN.matcher(instrumentationName);
         String stdComponent = matcher.matches() ? matcher.group(1) : null;
         if (kind == SpanKind.INTERNAL) {
@@ -623,7 +622,7 @@ public class Exporter implements SpanExporter {
 
     private String getTelemetryName(SpanData span) {
         String name = span.getName();
-        if (!httpMethodInOperationName || !name.startsWith("/")) {
+        if (!name.startsWith("/")) {
             return name;
         }
         String httpMethod = span.getAttributes().get(SemanticAttributes.HTTP_METHOD);

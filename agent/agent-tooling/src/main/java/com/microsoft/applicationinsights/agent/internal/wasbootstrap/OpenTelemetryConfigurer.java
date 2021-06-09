@@ -54,8 +54,8 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
                 if (currExporter == null) {
                     currExporter = processorConfig.type == ProcessorType.attribute ?
-                            new ExporterWithAttributeProcessor(processorConfig, new Exporter(telemetryClient, config.preview.httpMethodInOperationName)) :
-                            new ExporterWithSpanProcessor(processorConfig, new Exporter(telemetryClient, config.preview.httpMethodInOperationName));
+                            new ExporterWithAttributeProcessor(processorConfig, new Exporter(telemetryClient)) :
+                            new ExporterWithSpanProcessor(processorConfig, new Exporter(telemetryClient));
 
                 } else {
                     currExporter = processorConfig.type == ProcessorType.attribute ?
@@ -67,7 +67,7 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
             tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(currExporter));
 
         } else {
-            tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(new Exporter(telemetryClient, config.preview.httpMethodInOperationName)));
+            tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(new Exporter(telemetryClient)));
         }
     }
 }
