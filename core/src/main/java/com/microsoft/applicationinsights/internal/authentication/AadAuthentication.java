@@ -4,6 +4,8 @@ import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.policy.BearerTokenAuthenticationPolicy;
+import com.azure.core.http.policy.HttpLogOptions;
+import com.azure.core.http.policy.HttpLoggingPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.http.policy.RetryPolicy;
 import com.azure.identity.ClientSecretCredentialBuilder;
@@ -121,6 +123,8 @@ public class AadAuthentication {
         if(authenticationPolicy != null) {
             policies.add(authenticationPolicy);
         }
+        // Add Logging Policy
+        policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
         pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
         return pipelineBuilder.build();
     }
