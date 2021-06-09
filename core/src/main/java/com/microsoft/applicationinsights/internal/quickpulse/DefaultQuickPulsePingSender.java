@@ -51,8 +51,8 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private final TelemetryConfiguration configuration;
     private final HttpClient httpClient;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-    private final String pingPrefix;
-    private final String roleName;
+    private String pingPrefix;
+    private String roleName;
     private final String instanceName;
     private final String machineName;
     private final String quickPulseId;
@@ -71,16 +71,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
             roleName = "\"" + roleName + "\"";
         }
 
-        pingPrefix = "{" +
-                "\"Documents\": null," +
-                "\"Instance\":\"" + instanceName + "\"," +
-                "\"InstrumentationKey\": null," +
-                "\"InvariantVersion\": " + QuickPulse.QP_INVARIANT_VERSION + "," +
-                "\"MachineName\":\"" + machineName + "\"," +
-                "\"RoleName\":" + roleName + "," +
-                "\"Metrics\": null," +
-                "\"StreamId\": \"" + quickPulseId + "\"," +
-                "\"Timestamp\": \"\\/Date(";
+        updatePingPrefix();
 
         if (logger.isTraceEnabled()) {
             logger.trace("{} using endpoint {}", DefaultQuickPulsePingSender.class.getSimpleName(), getQuickPulseEndpoint());
@@ -105,6 +96,11 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
             return new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF);
         }
 
+        // Linux Consumption Plan role name is lazily set. Need to update pingPrefix accordingly.
+        if (Strings.isNullOrEmpty(roleName)) {
+            roleName = TelemetryConfiguration.getActive().getRoleName();
+            updatePingPrefix();
+        }
         final HttpPost request = networkHelper.buildPingRequest(currentDate, pingUrl, quickPulseId, machineName, roleName, instanceName);
 
         final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
@@ -140,11 +136,23 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         return onPingError(sendTime);
     }
 
+    private void updatePingPrefix() {
+        pingPrefix = "{" +
+                "\"Documents\": null," +
+                "\"Instance\":\"" + instanceName + "\"," +
+                "\"InstrumentationKey\": null," +
+                "\"InvariantVersion\": " + QuickPulse.QP_INVARIANT_VERSION + "," +
+                "\"MachineName\":\"" + machineName + "\"," +
+                "\"RoleName\":" + roleName + "," +
+                "\"Metrics\": null," +
+                "\"StreamId\": \"" + quickPulseId + "\"," +
+                "\"Timestamp\": \"\\/Date(";
+    }
+
     @VisibleForTesting
     String getQuickPulsePingUri(String endpointPrefix) {
         String instrumentationKey = getInstrumentationKey();
         if (Strings.isNullOrEmpty(instrumentationKey)) {
-            logger.warn("Instrumentation Key is null.");
             return null;
         }
 
@@ -155,6 +163,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         TelemetryConfiguration config = this.configuration == null ? TelemetryConfiguration.getActive() : configuration;
         return config.getInstrumentationKey();
     }
+
     @VisibleForTesting
     String getQuickPulseEndpoint() {
         if (configuration != null) {
