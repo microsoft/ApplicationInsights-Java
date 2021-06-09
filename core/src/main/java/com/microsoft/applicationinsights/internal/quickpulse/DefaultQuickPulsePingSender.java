@@ -51,27 +51,20 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private final TelemetryConfiguration configuration;
     private final HttpClient httpClient;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
-    private String pingPrefix;
-    private String roleName;
+    private volatile String pingPrefix; // cached for performance
     private final String instanceName;
     private final String machineName;
     private final String quickPulseId;
     private long lastValidTransmission = 0;
     private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
+    // TODO (trask) roleName is ignored, clean this up after merging to AAD branch
     public DefaultQuickPulsePingSender(HttpClient httpClient, TelemetryConfiguration configuration, String machineName, String instanceName, String roleName, String quickPulseId) {
         this.configuration = configuration;
         this.httpClient = httpClient;
-        this.roleName = roleName;
         this.instanceName = instanceName;
         this.machineName = machineName;
         this.quickPulseId = quickPulseId;
-
-        if (!LocalStringsUtils.isNullOrEmpty(roleName)) {
-            roleName = "\"" + roleName + "\"";
-        }
-
-        updatePingPrefix();
 
         if (logger.isTraceEnabled()) {
             logger.trace("{} using endpoint {}", DefaultQuickPulsePingSender.class.getSimpleName(), getQuickPulseEndpoint());
@@ -88,20 +81,15 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     @Override
     public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
-        final Date currentDate = new Date();
-        final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-        String pingUrl = getQuickPulsePingUri(endpointPrefix);
-        if (Strings.isNullOrEmpty(pingUrl)) {
+        String instrumentationKey = getInstrumentationKey();
+        if (Strings.isNullOrEmpty(instrumentationKey)) {
             // Quick Pulse Ping uri will be null when the instrumentation key is null. When that happens, turn off quick pulse.
             return new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF);
         }
 
-        // Linux Consumption Plan role name is lazily set. Need to update pingPrefix accordingly.
-        if (Strings.isNullOrEmpty(roleName)) {
-            roleName = TelemetryConfiguration.getActive().getRoleName();
-            updatePingPrefix();
-        }
-        final HttpPost request = networkHelper.buildPingRequest(currentDate, pingUrl, quickPulseId, machineName, roleName, instanceName);
+        final Date currentDate = new Date();
+        final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
+        final HttpPost request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
 
         final ByteArrayEntity pingEntity = buildPingEntity(currentDate.getTime());
         request.setEntity(pingEntity);
@@ -136,26 +124,31 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         return onPingError(sendTime);
     }
 
-    private void updatePingPrefix() {
-        pingPrefix = "{" +
-                "\"Documents\": null," +
-                "\"Instance\":\"" + instanceName + "\"," +
-                "\"InstrumentationKey\": null," +
-                "\"InvariantVersion\": " + QuickPulse.QP_INVARIANT_VERSION + "," +
-                "\"MachineName\":\"" + machineName + "\"," +
-                "\"RoleName\":" + roleName + "," +
-                "\"Metrics\": null," +
-                "\"StreamId\": \"" + quickPulseId + "\"," +
-                "\"Timestamp\": \"\\/Date(";
+    // Linux Consumption Plan role name is lazily set
+    private String getPingPrefix() {
+        if (pingPrefix == null) {
+            String roleName = TelemetryConfiguration.getActive().getRoleName();
+
+            if (!LocalStringsUtils.isNullOrEmpty(roleName)) {
+                roleName = "\"" + roleName + "\"";
+            }
+
+            pingPrefix = "{" +
+                    "\"Documents\": null," +
+                    "\"Instance\":\"" + instanceName + "\"," +
+                    "\"InstrumentationKey\": null," +
+                    "\"InvariantVersion\": " + QuickPulse.QP_INVARIANT_VERSION + "," +
+                    "\"MachineName\":\"" + machineName + "\"," +
+                    "\"RoleName\":" + roleName + "," +
+                    "\"Metrics\": null," +
+                    "\"StreamId\": \"" + quickPulseId + "\"," +
+                    "\"Timestamp\": \"\\/Date(";
+        }
+        return pingPrefix;
     }
 
     @VisibleForTesting
     String getQuickPulsePingUri(String endpointPrefix) {
-        String instrumentationKey = getInstrumentationKey();
-        if (Strings.isNullOrEmpty(instrumentationKey)) {
-            return null;
-        }
-
         return endpointPrefix + "/ping?ikey=" + getInstrumentationKey();
     }
 
@@ -174,7 +167,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     }
 
     private ByteArrayEntity buildPingEntity(long timeInMillis) {
-        String sb = pingPrefix + timeInMillis +
+        String sb = getPingPrefix() + timeInMillis +
                 ")\\/\"," +
                 "\"Version\":\"2.2.0-738\"" +
                 "}";
