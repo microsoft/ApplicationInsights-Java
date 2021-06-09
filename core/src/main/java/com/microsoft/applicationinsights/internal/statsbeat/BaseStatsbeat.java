@@ -21,12 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import jdk.internal.joptsimple.internal.Strings;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
