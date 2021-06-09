@@ -240,8 +240,10 @@ public class LoggingConfigurator {
         loggerContext.getLogger(ROOT_LOGGER_NAME).setLevel(getOtherLibLevel(level));
     }
 
-    // this is used by LazyConfigurationAccessor for the Linux Consumption Plan
-    // when the logging levels in configureLoggingLevels method is updated, this method needs to be updated at the same time.
+    /**
+     * this is used by LazyConfigurationAccessor for the Linux Consumption Plan
+     * when {@link #configureLoggingLevels()} method is updated, {@link #configureSelfDiagnosticLoggingLevelAtRuntime(Logger, Level)} needs to be updated at the same time.
+     */
     public static void configureSelfDiagnosticLoggingLevelAtRuntime(Logger logger, Level level) {
         switch (logger.getName()) {
             case "org.apache.http":
