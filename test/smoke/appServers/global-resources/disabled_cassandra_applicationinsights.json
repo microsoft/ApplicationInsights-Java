@@ -4,5 +4,8 @@
     "cassandra": {
       "enabled": false
     }
+  },
+  "preview": {
+    "httpMethodInOperationName": true
   }
 }

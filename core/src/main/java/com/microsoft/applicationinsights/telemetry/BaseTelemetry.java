@@ -42,7 +42,6 @@ import org.apache.commons.lang3.StringUtils;
 public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     private TelemetryContext context;
     private Date timestamp;
-    private String telemetryName;
 
     // this is temporary until we are convinced that telemetry are never re-used by codeless agent
     private volatile boolean used;
@@ -65,14 +64,6 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
      */
     protected void initialize(ConcurrentMap<String, String> properties) {
         this.context = new TelemetryContext(properties, new ContextTagsMap());
-    }
-
-    public void setTelemetryName(String telemetryName) {
-        this.telemetryName = telemetryName;
-    }
-
-    public String getTelemetryName() {
-        return telemetryName;
     }
 
     /**
@@ -124,9 +115,7 @@ public abstract class BaseTelemetry<T extends Domain> implements Telemetry {
     @Override
     public void serialize(JsonTelemetryDataSerializer writer) throws IOException {
 
-        if (telemetryName == null || telemetryName.isEmpty()) {
-            telemetryName = getTelemetryName(context.getNormalizedInstrumentationKey(), this.getEnvelopName());
-        }
+        String telemetryName = getTelemetryName(context.getNormalizedInstrumentationKey(), this.getEnvelopName());
 
         Envelope envelope = new Envelope();
         envelope.setName(telemetryName);

@@ -50,7 +50,6 @@ public final class TelemetryConfiguration {
     private String connectionString;
     private String roleName;
     private String roleInstance;
-    private String statsbeatInstrumentationKey;
 
     private final EndpointProvider endpointProvider = new EndpointProvider();
 
@@ -167,20 +166,13 @@ public final class TelemetryConfiguration {
      * @throws IllegalArgumentException when the new value is null or empty
      */
     public void setInstrumentationKey(String key) {
+
         // A non null, non empty instrumentation key is a must
         if (Strings.isNullOrEmpty(key)) {
             throw new IllegalArgumentException("key");
         }
 
         instrumentationKey = key;
-    }
-
-    public String getStatsbeatInstrumentationKey() {
-        return statsbeatInstrumentationKey;
-    }
-
-    public void setStatsbeatInstrumentationKey(String key) {
-        statsbeatInstrumentationKey = key;
     }
 
     public String getRoleName() {

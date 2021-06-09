@@ -45,9 +45,6 @@ jar {
     manifest {
         attributes(
                 "Premain-Class": "com.microsoft.applicationinsights.agent.Agent",
-                // Agent-Class is provided only for dynamic attach in the first line of main
-                // there are many problematic edge cases around dynamic attach any later than that
-                "Agent-Class": "com.microsoft.applicationinsights.agent.Agent",
                 "Can-Redefine-Classes": true,
                 "Can-Retransform-Classes": true,
         )

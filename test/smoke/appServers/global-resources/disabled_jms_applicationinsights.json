@@ -4,5 +4,8 @@
     "jms": {
       "enabled": false
     }
+  },
+  "preview": {
+    "httpMethodInOperationName": true
   }
 }

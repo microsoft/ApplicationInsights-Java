@@ -4,5 +4,8 @@
     "jdbc": {
       "enabled": false
     }
+  },
+  "preview": {
+    "httpMethodInOperationName": true
   }
 }
