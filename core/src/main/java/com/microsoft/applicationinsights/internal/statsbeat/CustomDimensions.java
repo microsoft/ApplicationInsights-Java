@@ -87,6 +87,8 @@ class CustomDimensions {
         return operatingSystem;
     }
 
+    public String getCustomerIkey() { return customerIkey; }
+
     public void setResourceProvider(ResourceProvider resourceProvider) {
         this.resourceProvider = resourceProvider;
     }
