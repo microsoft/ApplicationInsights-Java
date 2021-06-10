@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.internal.propagator.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.LoggingConfigurator;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.LoggingLevelConfigurator;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.instrumentation.api.config.Config;
 import org.slf4j.Logger;
@@ -101,15 +102,21 @@ public class LazyConfigurationAccessor implements AiLazyConfiguration.Accessor {
     }
 
     static void setSelfDiagnosticsLevel(String loggingLevel) {
-        if (loggingLevel != null && !loggingLevel.isEmpty()) {
-            LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
-            List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
-            logger.info("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
-            loggerList.stream().forEach(tmpLogger ->  LoggingConfigurator.configureSelfDiagnosticLoggingLevelAtRuntime(tmpLogger, Level.toLevel(loggingLevel)));
-            if (Level.toLevel(loggingLevel) == Level.DEBUG) {
-                logger.debug("This should get logged after the logging level update.");
-            }
+        if (loggingLevel == null || !loggingLevel.isEmpty()) {
+            return;
         }
+        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
+        logger.info("setting APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL to {}", loggingLevel);
+        LoggingLevelConfigurator configurator;
+        try {
+            configurator = new LoggingLevelConfigurator(loggingLevel);
+        } catch (IllegalArgumentException exception) {
+            logger.warn("unexpected self-diagnostic level: {}", loggingLevel);
+            return;
+        }
+        loggerList.forEach(configurator::updateLoggerLevel);
+        logger.debug("self-diagnostics logging level has been updated.");
     }
 
     static boolean shouldSetConnectionString(boolean lazySetOptIn, String enableAgent) {

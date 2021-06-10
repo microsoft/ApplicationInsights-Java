@@ -23,7 +23,6 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.Locale;
 
 import static org.slf4j.Logger.ROOT_LOGGER_NAME;
 
@@ -31,21 +30,23 @@ public class LoggingConfigurator {
 
     private final LoggerContext loggerContext;
 
-    private final Level level;
     private final String destination;
 
     private final Path filePath;
     private final int fileMaxSizeMb;
     private final int fileMaxHistory;
 
+    private final LoggingLevelConfigurator loggingLevelConfigurator;
+
     LoggingConfigurator(Configuration.SelfDiagnostics selfDiagnostics, Path agentPath) {
         loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 
-        level = getLevel(selfDiagnostics.level);
         destination = selfDiagnostics.destination;
         filePath = agentPath.resolveSibling(selfDiagnostics.file.path);
         fileMaxSizeMb = selfDiagnostics.file.maxSizeMb;
         fileMaxHistory = selfDiagnostics.file.maxHistory;
+
+        loggingLevelConfigurator = new LoggingLevelConfigurator(selfDiagnostics.level);
     }
 
     void configure() {
@@ -228,51 +229,11 @@ public class LoggingConfigurator {
     }
 
     private void configureLoggingLevels() {
-        Level atLeastInfoLevel = getAtLeaseInfoLevel(level);
-        // never want to log apache http at trace or debug, it's just way too verbose
-        loggerContext.getLogger("org.apache.http").setLevel(atLeastInfoLevel);
-        // never want to log io.grpc.Context at trace or debug, as it logs confusing stack trace that looks like error but isn't
-        loggerContext.getLogger("io.grpc.Context").setLevel(atLeastInfoLevel);
-
-        // muzzleMatcher logs at WARN level, so by default this is OFF, but enabled when DEBUG logging is enabled
-        loggerContext.getLogger("muzzleMatcher").setLevel(getMuzzleMatcherLevel(level));
-        loggerContext.getLogger("com.microsoft.applicationinsights").setLevel(level);
-        loggerContext.getLogger(ROOT_LOGGER_NAME).setLevel(getOtherLibLevel(level));
-    }
-
-    /**
-     * this is used by LazyConfigurationAccessor for the Linux Consumption Plan
-     * when {@link #configureLoggingLevels()} method is updated, {@link #configureSelfDiagnosticLoggingLevelAtRuntime(Logger, Level)} needs to be updated at the same time.
-     */
-    public static void configureSelfDiagnosticLoggingLevelAtRuntime(Logger logger, Level level) {
-        String loggerName = logger.getName();
-        Level targetLevel = Level.OFF;
-        if (loggerName.startsWith("org.apache.http") || loggerName.startsWith("io.grpc.Context")) {
-            targetLevel = getAtLeaseInfoLevel(level);
-        } else if (loggerName.startsWith("muzzleMatcher")) {
-            targetLevel = getMuzzleMatcherLevel(level);
-        } else if (loggerName.startsWith(ROOT_LOGGER_NAME)) {
-            targetLevel = getOtherLibLevel(level);
-        } else {
-            targetLevel = level;
-        }
-
-        logger.setLevel(targetLevel);
-    }
-
-    // never want to log apache http at trace or debug, it's just way to verbose
-    private static Level getAtLeaseInfoLevel(Level level) {
-        return getMaxLevel(level, Level.INFO);
-    }
-
-    private static Level getOtherLibLevel(Level level) {
-        return level == Level.INFO ? Level.WARN : level;
-    }
-
-    // TODO need something more reliable, currently will log too much WARN if "muzzleMatcher" logger name changes
-    // muzzleMatcher logs at WARN level in order to make them visible, but really should only be enabled when debugging
-    private static Level getMuzzleMatcherLevel(Level level) {
-        return level.toInt() <= Level.DEBUG.toInt() ? level : getMaxLevel(level, Level.ERROR);
+        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("org.apache.http"));
+        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
+        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
+        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("com.microsoft.applicationinsights"));
+        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger(ROOT_LOGGER_NAME));
     }
 
     private Encoder<ILoggingEvent> createEncoder() {
@@ -281,17 +242,5 @@ public class LoggingConfigurator {
         encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss.SSSX} %-5level %logger{36} - %msg%n");
         encoder.start();
         return encoder;
-    }
-
-    private static Level getMaxLevel(Level level1, Level level2) {
-        return level1.toInt() >= level2.toInt() ? level1 : level2;
-    }
-
-    private static Level getLevel(String levelStr) {
-        try {
-            return Level.valueOf(levelStr.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Unexpected self-diagnostic level: " + levelStr);
-        }
     }
 }
