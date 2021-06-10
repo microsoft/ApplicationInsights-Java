@@ -953,6 +953,10 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
         }
         if (capturesAiTargetAppId && !exception && uri.port != UNUSABLE_PORT && uri.host != "192.0.2.1" && uri.host != "www.google.com") {
           "applicationinsights.internal.target_app_id" "1234"
+        } else {
+          // some tests, in particular apache-httpasyncclient circular redirect,
+          // throw exception AND capture app id
+          "applicationinsights.internal.target_app_id" { it == null || it == "1234" }
         }
       }
     }
