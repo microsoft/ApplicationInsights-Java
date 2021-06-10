@@ -45,6 +45,11 @@ class AttachStatsbeat extends BaseStatsbeat {
 
     @Override
     protected void send() {
+        // WEBSITE_HOSTNAME is lazily set in Linux Consumption Plan.
+        if (resourceProviderId == null || resourceProviderId.isEmpty()) {
+            resourceProviderId = initResourceProviderId(CustomDimensions.get().getResourceProvider(), null);
+        }
+
         TelemetryItem statsbeatTelemetry = createStatsbeatTelemetry(ATTACH_METRIC_NAME, 0);
         TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
                 .put("rpId", resourceProviderId);
@@ -71,9 +76,10 @@ class AttachStatsbeat extends BaseStatsbeat {
     static String initResourceProviderId(ResourceProvider resourceProvider, MetadataInstanceResponse response) {
         switch (resourceProvider) {
             case RP_APPSVC:
+                // FIXME (heya) Need to test these env vars on App Services Linux & Windows
                 return System.getenv(WEBSITE_SITE_NAME) + "/" + System.getenv(WEBSITE_HOME_STAMPNAME) + "/" + System.getenv(WEBSITE_HOSTNAME);
             case RP_FUNCTIONS:
-                return System.getenv(WEBSITE_HOSTNAME);
+                return System.getenv("WEBSITE_HOSTNAME");
             case RP_VM:
                 if (response != null) {
                     return response.getVmId() + "/" + response.getSubscriptionId();

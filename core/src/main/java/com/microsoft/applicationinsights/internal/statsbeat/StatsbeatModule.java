@@ -41,8 +41,15 @@ public class StatsbeatModule {
             }
             instance = new StatsbeatModule(telemetryClient, interval, featureInterval);
         }
-        // will only reach here the first time, after instance has been instantiated
-        new AzureMetadataService(instance.attachStatsbeat, CustomDimensions.get()).scheduleAtFixedRate(interval);
+
+        CustomDimensions customDimensions = CustomDimensions.get();
+        ResourceProvider rp = customDimensions.getResourceProvider();
+        // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
+        // FIXME (heya) Need to figure out why AzureMetadataService is not reachable from a function app and it's not necessary to make this call.
+        if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
+            // will only reach here the first time, after instance has been instantiated
+            new AzureMetadataService(instance.attachStatsbeat, customDimensions).scheduleWithFixedDelay(interval);
+        }
     }
 
     public static StatsbeatModule get() {

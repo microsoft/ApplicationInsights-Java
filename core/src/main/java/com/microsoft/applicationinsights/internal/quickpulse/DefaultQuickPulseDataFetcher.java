@@ -44,11 +44,14 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private final String sdkVersion;
 
     public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpRequest> sendQueue, TelemetryClient telemetryClient, String machineName,
-                                        String instanceName, String roleName, String quickPulseId) {
+                                        String instanceName, String quickPulseId) {
         this.sendQueue = sendQueue;
         this.telemetryClient = telemetryClient;
         sdkVersion = getCurrentSdkVersion();
         StringBuilder sb = new StringBuilder();
+
+        // FIXME (trask) what about azure functions consumption plan where role name not available yet?
+        String roleName = telemetryClient.getRoleName();
 
         if (!LocalStringsUtils.isNullOrEmpty(roleName)) {
             roleName = "\"" + roleName + "\"";
