@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
@@ -35,10 +36,10 @@ class CustomDimensions {
     private volatile OperatingSystem operatingSystem;
 
     private final String attachType;
-    private final String customerIkey;
     private final String runtimeVersion;
     private final String language;
     private final String sdkVersion;
+    private String customerIkey;
 
     static CustomDimensions get() {
         return instance;
@@ -101,6 +102,10 @@ class CustomDimensions {
         properties.put("rp", resourceProvider.getValue());
         properties.put("os", operatingSystem.getValue());
         properties.put("attach", attachType);
+        // For Linux Consumption Plan, customer iKey needs to be updated here since it's lazily set.
+        if (Strings.isNullOrEmpty(customerIkey)) {
+            customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
+        }
         properties.put("cikey", customerIkey);
         properties.put("runtimeVersion", runtimeVersion);
         properties.put("language", language);
