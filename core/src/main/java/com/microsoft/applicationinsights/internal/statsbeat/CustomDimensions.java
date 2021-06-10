@@ -21,10 +21,10 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import jdk.internal.joptsimple.internal.Strings;
 
 import java.util.Map;
 
