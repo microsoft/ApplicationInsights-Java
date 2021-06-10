@@ -30,9 +30,9 @@ class AttachStatsbeat extends BaseStatsbeat {
 
     private static final String UNKNOWN_RP_ID = "unknown";
 
-    private static final String WEBSITE_SITE_NAME = "appSrv_SiteName";
-    private static final String WEBSITE_HOSTNAME = "appSrv_wsHost";
-    private static final String WEBSITE_HOME_STAMPNAME = "appSrv_wsStamp";
+    private static final String WEBSITE_SITE_NAME = "WEBSITE_SITE_NAME";
+    private static final String WEBSITE_HOSTNAME = "WEBSITE_HOSTNAME";
+    private static final String WEBSITE_HOME_STAMPNAME = "WEBSITE_HOME_STAMPNAME";
 
     private volatile String resourceProviderId;
     private volatile MetadataInstanceResponse metadataInstanceResponse;
@@ -69,7 +69,9 @@ class AttachStatsbeat extends BaseStatsbeat {
     static String initResourceProviderId(ResourceProvider resourceProvider, MetadataInstanceResponse response) {
         switch (resourceProvider) {
             case RP_APPSVC:
-                return System.getenv(WEBSITE_SITE_NAME) + "/" + System.getenv(WEBSITE_HOME_STAMPNAME) + "/" + System.getenv(WEBSITE_HOSTNAME);
+                // Linux App Services doesn't have WEBSITE_HOME_STAMPNAME yet.
+                // TODO (heya) make a feature request for Linux App Services Team to support this.
+                return System.getenv(WEBSITE_SITE_NAME) + "/" + System.getenv(WEBSITE_HOME_STAMPNAME);
             case RP_FUNCTIONS:
                 return System.getenv(WEBSITE_HOSTNAME);
             case RP_VM:
