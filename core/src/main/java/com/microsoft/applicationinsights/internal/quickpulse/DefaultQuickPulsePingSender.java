@@ -84,7 +84,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     @Override
     public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
         String instrumentationKey = getInstrumentationKey();
-        if (Strings.isNullOrEmpty(instrumentationKey)) {
+        if (Strings.isNullOrEmpty(instrumentationKey) && "java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
             // Quick Pulse Ping uri will be null when the instrumentation key is null. When that happens, turn off quick pulse.
             return new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF);
         }
