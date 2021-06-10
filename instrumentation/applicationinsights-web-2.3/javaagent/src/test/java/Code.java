@@ -12,12 +12,12 @@ import io.opentelemetry.extension.annotations.WithSpan;
 public class Code {
 
   @WithSpan(kind = SpanKind.SERVER)
-  public void setProperty() {
+  public static void setProperty() {
     internalSetProperty();
   }
 
   @WithSpan
-  private void internalSetProperty() {
+  private static void internalSetProperty() {
     ThreadContext.getRequestTelemetryContext()
         .getHttpRequestTelemetry()
         .getProperties()
@@ -25,12 +25,12 @@ public class Code {
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public void setUser() {
+  public static void setUser() {
     internalSetUser();
   }
 
   @WithSpan
-  private void internalSetUser() {
+  private static void internalSetUser() {
     ThreadContext.getRequestTelemetryContext()
         .getHttpRequestTelemetry()
         .getContext()
@@ -39,42 +39,42 @@ public class Code {
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public void setName() {
+  public static void setName() {
     internalSetName();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public void setSource() {
+  public static void setSource() {
     internalSetSource();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public String getId() {
+  public static String getId() {
     return internalGetId();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public String getOperationId() {
+  public static String getOperationId() {
     return internalGetOperationId();
   }
 
   @WithSpan
-  private void internalSetName() {
+  private static void internalSetName() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setName("new name");
   }
 
   @WithSpan
-  private void internalSetSource() {
+  private static void internalSetSource() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSource("the source");
   }
 
   @WithSpan
-  private String internalGetId() {
+  private static String internalGetId() {
     return ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getId();
   }
 
   @WithSpan
-  private String internalGetOperationId() {
+  private static String internalGetOperationId() {
     return ThreadContext.getRequestTelemetryContext()
         .getHttpRequestTelemetry()
         .getContext()
@@ -83,27 +83,27 @@ public class Code {
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public void otherRequestTelemetryContextMethods() {
+  public static void otherRequestTelemetryContextMethods() {
     ThreadContext.getRequestTelemetryContext().getCorrelationContext();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public void otherRequestTelemetryMethods() {
+  public static void otherRequestTelemetryMethods() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getName();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public void otherBaseTelemetryMethods() {
+  public static void otherBaseTelemetryMethods() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getTimestamp();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public void otherTelemetryContextMethods() {
+  public static void otherTelemetryContextMethods() {
     ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getSession();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public void otherUserContextMethods() {
+  public static void otherUserContextMethods() {
     ThreadContext.getRequestTelemetryContext()
         .getHttpRequestTelemetry()
         .getContext()
@@ -112,7 +112,7 @@ public class Code {
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public void otherOperationContextMethods() {
+  public static void otherOperationContextMethods() {
     ThreadContext.getRequestTelemetryContext()
         .getHttpRequestTelemetry()
         .getContext()
@@ -121,17 +121,17 @@ public class Code {
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public Tracestate getTracestate() {
+  public static Tracestate getTracestate() {
     return ThreadContext.getRequestTelemetryContext().getTracestate();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public int getTraceflag() {
+  public static int getTraceflag() {
     return ThreadContext.getRequestTelemetryContext().getTraceflag();
   }
 
   @WithSpan(kind = SpanKind.SERVER)
-  public String retriveTracestate() {
+  public static String retriveTracestate() {
     return TraceContextCorrelation.retriveTracestate();
   }
 }
