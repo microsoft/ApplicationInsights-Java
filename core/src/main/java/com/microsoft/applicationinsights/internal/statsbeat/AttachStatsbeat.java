@@ -47,7 +47,7 @@ class AttachStatsbeat extends BaseStatsbeat {
     protected void send() {
         // WEBSITE_HOSTNAME is lazily set in Linux Consumption Plan.
         if (Strings.isNullOrEmpty(resourceProviderId)) {
-            resourceProviderId = System.getenv("WEBSITE_HOSTNAME");
+            resourceProviderId = initResourceProviderId(CustomDimensions.get().getResourceProvider(), null);
         }
 
         MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH_METRIC_NAME, 0);
