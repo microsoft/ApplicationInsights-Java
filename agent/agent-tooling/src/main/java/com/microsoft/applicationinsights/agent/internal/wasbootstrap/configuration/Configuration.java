@@ -106,7 +106,7 @@ public class Configuration {
        2. attributes - allowing several attributes per objectName, where any number of attributes can be specified,
        the displayed name will be generated
         */
-        public String attribute;
+        public String attribute = "";
         public List<String> attributes = new ArrayList<>();
     }
 

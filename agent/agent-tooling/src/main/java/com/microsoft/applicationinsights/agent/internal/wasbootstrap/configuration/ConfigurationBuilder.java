@@ -156,6 +156,7 @@ public class ConfigurationBuilder {
     }
 
     private static boolean jmxMetricExisted(List<Configuration.JmxMetric> jmxMetrics, String objectName, String attribute) {
+        System.out.println("List: " + jmxMetrics + " objectName " + objectName + " attribute " + attribute);
         for (JmxMetric metric : jmxMetrics) {
             if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
                 return true;
