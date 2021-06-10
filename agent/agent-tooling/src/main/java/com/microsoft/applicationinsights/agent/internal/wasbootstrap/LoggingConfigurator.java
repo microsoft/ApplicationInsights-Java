@@ -245,21 +245,19 @@ public class LoggingConfigurator {
      * when {@link #configureLoggingLevels()} method is updated, {@link #configureSelfDiagnosticLoggingLevelAtRuntime(Logger, Level)} needs to be updated at the same time.
      */
     public static void configureSelfDiagnosticLoggingLevelAtRuntime(Logger logger, Level level) {
-        switch (logger.getName()) {
-            case "org.apache.http":
-            case "io.grpc.Context":
-                logger.setLevel(getAtLeaseInfoLevel(level));
-                break;
-            case "muzzleMatcher":
-                logger.setLevel(getMuzzleMatcherLevel(level));
-                break;
-            case ROOT_LOGGER_NAME:
-                logger.setLevel(getOtherLibLevel(level));
-                break;
-            default:
-                logger.setLevel(level);
-                break;
+        String loggerName = logger.getName();
+        Level targetLevel = Level.OFF;
+        if (loggerName.startsWith("org.apache.http") || loggerName.startsWith("io.grpc.Context")) {
+            targetLevel = getAtLeaseInfoLevel(level);
+        } else if (loggerName.startsWith("muzzleMatcher")) {
+            targetLevel = getMuzzleMatcherLevel(level);
+        } else if (loggerName.startsWith(ROOT_LOGGER_NAME)) {
+            targetLevel = getOtherLibLevel(level);
+        } else {
+            targetLevel = level;
         }
+
+        logger.setLevel(targetLevel);
     }
 
     // never want to log apache http at trace or debug, it's just way to verbose
