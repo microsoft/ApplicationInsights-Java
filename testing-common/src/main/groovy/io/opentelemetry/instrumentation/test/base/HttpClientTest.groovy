@@ -951,7 +951,7 @@ abstract class HttpClientTest<REQUEST> extends InstrumentationSpecification {
         if (responseCode) {
           "${SemanticAttributes.HTTP_STATUS_CODE.key}" responseCode
         }
-        if (capturesAiTargetAppId && !exception && uri.host != "www.google.com") {
+        if (capturesAiTargetAppId && uri.port != UNUSABLE_PORT && uri.host != "192.0.2.1" && uri.host != "www.google.com") {
           "applicationinsights.internal.target_app_id" "1234"
         }
       }
