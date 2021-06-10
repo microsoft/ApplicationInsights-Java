@@ -56,6 +56,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     private final String machineName;
     private final String quickPulseId;
     private long lastValidTransmission = 0;
+    private String roleName;
     private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
     // TODO (trask) roleName is ignored, clean this up after merging to AAD branch
@@ -63,6 +64,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         this.configuration = configuration;
         this.httpClient = httpClient;
         this.instanceName = instanceName;
+        this.roleName = roleName;
         this.machineName = machineName;
         this.quickPulseId = quickPulseId;
 
@@ -127,7 +129,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     // Linux Consumption Plan role name is lazily set
     private String getPingPrefix() {
         if (pingPrefix == null) {
-            String roleName = TelemetryConfiguration.getActive().getRoleName();
+            roleName = TelemetryConfiguration.getActive().getRoleName();
 
             if (!LocalStringsUtils.isNullOrEmpty(roleName)) {
                 roleName = "\"" + roleName + "\"";
