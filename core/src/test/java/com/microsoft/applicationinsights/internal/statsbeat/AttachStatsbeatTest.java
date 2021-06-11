@@ -52,11 +52,10 @@ public class AttachStatsbeatTest {
 
     @Test
     public void testAppSvcResourceProviderId() {
-        envVars.set("appSrv_SiteName", "test_site_name");
-        envVars.set("appSrv_wsStamp", "test_stamp_name");
-        envVars.set("appSrv_wsHost", "test_hostname");
+        envVars.set("WEBSITE_SITE_NAME", "test_site_name");
+        envVars.set("WEBSITE_HOME_STAMPNAME", "test_stamp_name");
 
-        assertEquals("test_site_name/test_stamp_name/test_hostname", AttachStatsbeat.initResourceProviderId(ResourceProvider.RP_APPSVC, null));
+        assertEquals("test_site_name/test_stamp_name", AttachStatsbeat.initResourceProviderId(ResourceProvider.RP_APPSVC, null));
     }
 
     @Test
