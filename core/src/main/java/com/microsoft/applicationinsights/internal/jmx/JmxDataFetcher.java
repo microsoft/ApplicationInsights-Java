@@ -67,6 +67,7 @@ public class JmxDataFetcher {
         for (JmxAttributeData attribute : attributes) {
             try {
                 Collection<Object> resultForAttribute = fetch(server, objects, attribute.attribute);
+                System.out.println("Attribute " + attribute + " result for attribute " + resultForAttribute.toArray().toString() + " metric name " + attribute.metricName);
                 result.put(attribute.metricName, resultForAttribute);
             } catch (Exception e) {
                 if(warningShown.add(attribute)) {
