@@ -9,11 +9,13 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.appid.AppIdAttributeExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
 import io.opentelemetry.javaagent.instrumentation.api.instrumenter.PeerServiceAttributesExtractor;
 import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpResponse;
 
 public final class ApacheHttpClientSingletons {
@@ -39,7 +41,12 @@ public final class ApacheHttpClientSingletons {
             .addAttributesExtractor(httpAttributesExtractor)
             .addAttributesExtractor(netAttributesExtractor)
             .addAttributesExtractor(PeerServiceAttributesExtractor.create(netAttributesExtractor))
-            .addAttributesExtractor(new ApacheHttpClientAppIdAttributeExtractor())
+            .addAttributesExtractor(
+                new AppIdAttributeExtractor<>(
+                    (response, headerName) -> {
+                      Header responseHeader = response.getFirstHeader(headerName);
+                      return responseHeader == null ? null : responseHeader.getValue();
+                    }))
             .newClientInstrumenter(new HttpHeaderSetter());
   }
 
