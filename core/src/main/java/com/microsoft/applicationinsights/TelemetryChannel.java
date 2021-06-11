@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 // TODO performance testing
 class TelemetryChannel {
@@ -28,7 +29,7 @@ class TelemetryChannel {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private static final ByteBufferPool byteBufferPool = new ByteBufferPool();
+    private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
 
     static {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -72,18 +73,18 @@ class TelemetryChannel {
 
     List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
         ByteBufferOutputStream out = new ByteBufferOutputStream(byteBufferPool);
-        try {
+
+        try (GZIPOutputStream gzipOut = new GZIPOutputStream(out)) {
             for (Iterator<TelemetryItem> i = telemetryItems.iterator(); i.hasNext(); ) {
-                mapper.writeValue(out, i.next());
+                mapper.writeValue(gzipOut, i.next());
                 if (i.hasNext()) {
-                    out.write('\n');
+                    gzipOut.write('\n');
                 }
             }
         } catch (IOException e) {
             byteBufferPool.offer(out.getByteBuffers());
             throw e;
         }
-        out.close(); // closing ByteBufferOutputStream is a no-op, but this line makes LGTM happy
 
         List<ByteBuffer> byteBuffers = out.getByteBuffers();
         for (ByteBuffer byteBuffer : byteBuffers) {
