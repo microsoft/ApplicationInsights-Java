@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 
@@ -44,6 +45,11 @@ class AttachStatsbeat extends BaseStatsbeat {
 
     @Override
     protected void send() {
+        // WEBSITE_HOSTNAME is lazily set in Linux Consumption Plan.
+        if (Strings.isNullOrEmpty(resourceProviderId)) {
+            resourceProviderId = initResourceProviderId(CustomDimensions.get().getResourceProvider(), null);
+        }
+
         MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH_METRIC_NAME, 0);
         statsbeatTelemetry.getProperties().put("rpId", resourceProviderId);
         telemetryClient.track(statsbeatTelemetry);

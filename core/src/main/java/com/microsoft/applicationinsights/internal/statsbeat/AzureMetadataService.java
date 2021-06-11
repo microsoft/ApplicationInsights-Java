@@ -37,11 +37,11 @@ class AzureMetadataService implements Runnable {
         this.customDimensions = customDimensions;
     }
 
-    void scheduleAtFixedRate(long interval) {
+    void scheduleWithFixedDelay(long interval) {
         // Querying Azure Metadata Service is required for every 15 mins since VM id will get updated frequently.
         // Starting and restarting a VM will generate a new VM id each time.
         // TODO (heya) need to confirm if restarting VM will also restart the Java Agent
-        scheduledExecutor.scheduleAtFixedRate(this, interval, interval, TimeUnit.SECONDS);
+        scheduledExecutor.scheduleWithFixedDelay(this, interval, interval, TimeUnit.SECONDS);
     }
 
     // visible for testing

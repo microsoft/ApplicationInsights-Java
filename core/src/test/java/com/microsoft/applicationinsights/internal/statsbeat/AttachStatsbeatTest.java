@@ -60,9 +60,8 @@ public class AttachStatsbeatTest {
 
     @Test
     public void testFunctionsResourceProviderId() {
-        envVars.set("WEBSITE_HOSTNAME", "test_hostname");
-
-        assertEquals("test_hostname", AttachStatsbeat.initResourceProviderId(ResourceProvider.RP_FUNCTIONS, null));
+        envVars.set("WEBSITE_HOSTNAME", "test_function_name");
+        assertEquals("test_function_name", AttachStatsbeat.initResourceProviderId(ResourceProvider.RP_FUNCTIONS, null));
     }
 
     @Test
