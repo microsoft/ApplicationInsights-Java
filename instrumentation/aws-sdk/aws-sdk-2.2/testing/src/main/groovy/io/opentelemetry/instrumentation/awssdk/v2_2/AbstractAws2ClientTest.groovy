@@ -174,7 +174,6 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             "aws.dynamodb.global_secondary_indexes" "[{\"IndexName\":\"globalIndex\",\"KeySchema\":[{\"AttributeName\":\"attribute\"}],\"ProvisionedThroughput\":{\"ReadCapacityUnits\":10,\"WriteCapacityUnits\":12}},{\"IndexName\":\"globalIndexSecondary\",\"KeySchema\":[{\"AttributeName\":\"attributeSecondary\"}],\"ProvisionedThroughput\":{\"ReadCapacityUnits\":7,\"WriteCapacityUnits\":8}}]"
             "aws.dynamodb.provisioned_throughput.read_capacity_units" "1"
             "aws.dynamodb.provisioned_throughput.write_capacity_units" "1"
-            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
@@ -210,7 +209,6 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             "${SemanticAttributes.DB_OPERATION.key}" "Query"
             "aws.dynamodb.limit" "10"
             "aws.dynamodb.select" "ALL_ATTRIBUTES"
-            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
@@ -244,7 +242,6 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             "${SemanticAttributes.DB_SYSTEM.key}" "dynamodb"
             "${SemanticAttributes.DB_NAME.key}" "sometable"
             "${SemanticAttributes.DB_OPERATION.key}" "${operation}"
-            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
@@ -363,7 +360,6 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             } else if (service == "Kinesis") {
               "aws.stream.name" "somestream"
             }
-            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
@@ -453,7 +449,6 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             } else if (service == "Kinesis") {
               "aws.stream.name" "somestream"
             }
-            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
