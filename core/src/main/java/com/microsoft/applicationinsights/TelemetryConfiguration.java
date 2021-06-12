@@ -57,6 +57,8 @@ public final class TelemetryConfiguration {
     private final List<ContextInitializer> contextInitializers = new CopyOnWriteArrayList<>();
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
+    private final List<MetricFilter> metricFilters = new CopyOnWriteArrayList<>();
+
     private TelemetryChannel channel;
 
     /**
@@ -210,6 +212,15 @@ public final class TelemetryConfiguration {
             throw new IllegalArgumentException("Invalid connection string", e);
         }
         this.connectionString = connectionString;
+    }
+
+    public List<MetricFilter> getMetricFilters() {
+        return metricFilters;
+    }
+
+    public void setMetricFilters(List<MetricFilter> metricFilters) {
+        this.metricFilters.clear();
+        this.metricFilters.addAll(metricFilters);
     }
 
     public EndpointProvider getEndpointProvider() {

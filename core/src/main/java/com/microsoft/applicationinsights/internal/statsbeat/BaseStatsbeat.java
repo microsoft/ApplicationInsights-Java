@@ -21,11 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ abstract class BaseStatsbeat {
 
     BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
         this.telemetryClient = telemetryClient;
-        scheduledExecutor.scheduleAtFixedRate(new StatsbeatSender(), interval, interval, TimeUnit.SECONDS);
+        scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(), interval, interval, TimeUnit.SECONDS);
     }
 
     protected abstract void send();
@@ -64,6 +65,11 @@ abstract class BaseStatsbeat {
         @Override
         public void run() {
             try {
+                // For Linux Consumption Plan, connection string is lazily set.
+                // There is no need to send statsbeat when cikey is empty.
+                if (Strings.isNullOrEmpty(TelemetryConfiguration.getActive().getInstrumentationKey())) {
+                    return;
+                }
                 send();
             }
             catch (Exception e) {

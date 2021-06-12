@@ -27,15 +27,7 @@ import com.microsoft.applicationinsights.TelemetryConfiguration;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.ApplicationInsightsAppenderClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.DependencyTelemetryClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.HeartBeatModuleClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.PerformanceCounterModuleClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.QuickPulseClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.RequestTelemetryClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.TelemetryClientClassFileTransformer;
-import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.WebRequestTrackingFilterClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.*;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
@@ -62,6 +54,7 @@ import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
+import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -71,8 +64,10 @@ import org.slf4j.LoggerFactory;
 import javax.management.ObjectName;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.util.*;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -90,7 +85,7 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     @Override
-    public void beforeByteBuddyAgent() {
+    public void beforeByteBuddyAgent(Config config) {
         start(instrumentation);
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
@@ -101,15 +96,20 @@ public class AiComponentInstaller implements ComponentInstaller {
         instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
         instrumentation.addTransformer(new ApplicationInsightsAppenderClassFileTransformer());
         instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
+        instrumentation.addTransformer(new RequestNameHandlerClassFileTransformer());
         instrumentation.addTransformer(new DuplicateAgentClassFileTransformer());
     }
 
     @Override
-    public void afterByteBuddyAgent() {
+    public void afterByteBuddyAgent(Config config) {
         // only safe now to resolve app id because SSL initialization
         // triggers loading of java.util.logging (starting with Java 8u231)
-        // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
-        AppIdSupplier.registerAndStartAppIdRetrieval();
+        // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized.
+        // Delay registering and starting AppId retrieval to later when the connection string becomes available
+        // for Linux Consumption Plan.
+        if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+            AppIdSupplier.registerAndStartAppIdRetrieval();
+        }
     }
 
     private static void start(Instrumentation instrumentation) {
@@ -160,6 +160,10 @@ public class AiComponentInstaller implements ComponentInstaller {
         TelemetryConfigurationFactory.INSTANCE.initialize(configuration, buildXmlConfiguration(config));
         configuration.getContextInitializers().add(new SdkVersionContextInitializer());
         configuration.getContextInitializers().add(new ResourceAttributesContextInitializer(config.customDimensions));
+        configuration.setMetricFilters(config.preview.processors.stream()
+                .filter(processor -> processor.type == Configuration.ProcessorType.METRIC_FILTER)
+                .map(Configuration.ProcessorConfig::toMetricFilter)
+                .collect(Collectors.toList()));
 
         try {
             ConnectionString.updateStatsbeatConnectionString(config.internal.statsbeat.instrumentationKey, config.internal.statsbeat.endpoint, configuration);
@@ -176,6 +180,7 @@ public class AiComponentInstaller implements ComponentInstaller {
                 SystemInformation.INSTANCE.getProcessId(),
                 formServiceProfilerConfig(config.preview.profiler),
                 configuration.getRoleInstance(),
+                configuration.getRoleName(),
                 // TODO this will not work with Azure Spring Cloud updating connection string at runtime
                 configuration.getInstrumentationKey(),
                 telemetryClient,
@@ -229,11 +234,12 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     private static ServiceProfilerServiceConfig formServiceProfilerConfig(ProfilerConfiguration configuration) {
+        URI serviceProfilerFrontEndPoint = TelemetryConfiguration.getActive().getEndpointProvider().getProfilerEndpoint();
         return new ServiceProfilerServiceConfig(
                 configuration.configPollPeriodSeconds,
                 configuration.periodicRecordingDurationSeconds,
                 configuration.periodicRecordingIntervalSeconds,
-                configuration.serviceProfilerFrontEndPoint,
+                serviceProfilerFrontEndPoint,
                 configuration.enabled,
                 configuration.memoryTriggeredSettings,
                 configuration.cpuTriggeredSettings

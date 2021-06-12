@@ -21,7 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import java.util.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +33,7 @@ import java.util.Set;
 // because instrumentations may be more dynamic than features
 class Instrumentations {
 
+    private static final Logger logger = LoggerFactory.getLogger(Instrumentations.class);
     private static final Map<String, Integer> INSTRUMENTATION_MAP;
 
     static {
@@ -95,14 +98,23 @@ class Instrumentations {
         INSTRUMENTATION_MAP.put("io.opentelemetry.javaagent.tomcat-7.0", 57);
     }
 
-    // encode BitSet to a base64 encoded string
-    static String encode(Set<String> instrumentations) {
+    // encode BitSet to a long
+    static long encode(Set<String> instrumentations) {
         BitSet bitSet = new BitSet(64);
         for (String instrumentation : instrumentations) {
-            int index = INSTRUMENTATION_MAP.get(instrumentation);
-            bitSet.set(index);
+            Integer index = INSTRUMENTATION_MAP.get(instrumentation);
+            if (index != null) {
+                bitSet.set(index);
+            } else {
+                logger.debug("{} is not part of INSTRUMENTATION_MAP.", instrumentation);
+            }
         }
 
-        return Base64.getEncoder().withoutPadding().encodeToString(bitSet.toByteArray());
+        long[] longArray = bitSet.toLongArray();
+        if (longArray.length > 0) {
+            return longArray[0];
+        }
+
+        return 0L;
     }
 }

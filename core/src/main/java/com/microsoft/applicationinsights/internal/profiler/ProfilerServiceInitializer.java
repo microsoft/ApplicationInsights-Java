@@ -33,6 +33,7 @@ import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.applicationinsights.telemetry.EventTelemetry;
+import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
+                                               String roleName,
                                                String instrumentationKey,
                                                TelemetryClient client,
                                                String userAgent,
@@ -72,6 +74,7 @@ public class ProfilerServiceInitializer {
                 processId,
                 config,
                 machineName,
+                roleName,
                 instrumentationKey,
                 client,
                 LazyHttpClient.getInstance(),
@@ -84,6 +87,7 @@ public class ProfilerServiceInitializer {
                                                String processId,
                                                ServiceProfilerServiceConfig config,
                                                String machineName,
+                                               String roleName,
                                                String instrumentationKey,
                                                TelemetryClient client,
                                                CloseableHttpClient httpClient,
@@ -124,7 +128,8 @@ public class ProfilerServiceInitializer {
                     instrumentationKey,
                     httpClient,
                     serviceProfilerExecutorService,
-                    userAgent
+                    userAgent,
+                    roleName
             );
 
             serviceProfilerExecutorService.submit(() -> {
@@ -162,6 +167,8 @@ public class ProfilerServiceInitializer {
             event.getProperties().putAll(done.getServiceProfilerIndex().getProperties());
             event.getMetrics().putAll(done.getServiceProfilerIndex().getMetrics());
             telemetryClient.track(event);
+            // This is an event that the backend specifically looks for to track when a profile is complete
+            telemetryClient.track(new TraceTelemetry("StopProfiler succeeded."));
         };
     }
 
@@ -169,12 +176,14 @@ public class ProfilerServiceInitializer {
             ScheduledExecutorService alertServiceExecutorService,
             TelemetryClient telemetryClient,
             GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
-        return AlertingServiceFactory.create(alertAction(), TelemetryObservers.INSTANCE, telemetryClient, alertServiceExecutorService, gcEventMonitorConfiguration);
+        return AlertingServiceFactory.create(alertAction(telemetryClient), TelemetryObservers.INSTANCE, telemetryClient, alertServiceExecutorService, gcEventMonitorConfiguration);
     }
 
-    private static Consumer<AlertBreach> alertAction() {
+    private static Consumer<AlertBreach> alertAction(TelemetryClient telemetryClient) {
         return alert -> {
             if (profilerService != null) {
+                // This is an event that the backend specifically looks for to track when a profile is started
+                telemetryClient.track(new TraceTelemetry("StartProfiler triggered."));
                 profilerService.getProfiler().accept(alert);
             }
         };

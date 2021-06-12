@@ -1,4 +1,32 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.agent.internal.processors;
+
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorAttribute;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,13 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
-
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorAttribute;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorIncludeExclude;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public abstract class AgentProcessor {
     private final @Nullable IncludeExclude include;
@@ -25,7 +46,7 @@ public abstract class AgentProcessor {
     }
 
     protected static AttributeProcessor.IncludeExclude getNormalizedIncludeExclude(ProcessorIncludeExclude includeExclude) {
-        return includeExclude.matchType == MatchType.strict ? AgentProcessor.StrictIncludeExclude.create(includeExclude) : AgentProcessor.RegexpIncludeExclude.create(includeExclude);
+        return includeExclude.matchType == MatchType.STRICT ? AgentProcessor.StrictIncludeExclude.create(includeExclude) : AgentProcessor.RegexpIncludeExclude.create(includeExclude);
     }
 
     public @Nullable IncludeExclude getInclude() {
@@ -36,13 +57,12 @@ public abstract class AgentProcessor {
         return exclude;
     }
 
+
     public static abstract class IncludeExclude {
         // Function to compare span with user provided span names or span patterns
-        public abstract boolean isMatch(SpanData span);
-
+        public abstract boolean isMatch(SpanData span, boolean isLog);
     }
 
-    // ok to have this class cover both spanNames and logNames
     public static class StrictIncludeExclude extends IncludeExclude {
         private final List<ProcessorAttribute> attributes;
         private final List<String> spanNames;
@@ -65,10 +85,12 @@ public abstract class AgentProcessor {
         }
 
         // Function to compare span with user provided span names
-        public boolean isMatch(SpanData span) {
-            if (!spanNames.isEmpty() && !spanNames.contains(span.getName())) {
-                // span name doesn't match
-                return false;
+        public boolean isMatch(SpanData span, boolean isLog) {
+            if (isLog) {
+                // If user provided spanNames , then donot include log in the include/exclude criteria
+                if(!spanNames.isEmpty()) return false;
+            } else {
+                if (!spanNames.isEmpty() && !spanNames.contains(span.getName())) return false;
             }
             return this.checkAttributes(span);
         }
@@ -115,13 +137,13 @@ public abstract class AgentProcessor {
                     }
                 }
             }
+
             List<Pattern> spanPatterns = new ArrayList<>();
             if (includeExclude.spanNames != null) {
                 for (String regex : includeExclude.spanNames) {
                     spanPatterns.add(Pattern.compile(regex));
                 }
             }
-
             return new RegexpIncludeExclude(spanPatterns, attributeKeyValuePatterns);
         }
 
@@ -130,8 +152,8 @@ public abstract class AgentProcessor {
             return valuePattern.matcher(attributeValue).find();
         }
 
-        private boolean isPatternFound(SpanData span) {
-            for (Pattern pattern : spanPatterns) {
+        private static boolean isPatternFound(SpanData span, List<Pattern> patterns) {
+            for (Pattern pattern : patterns) {
                 if (pattern.matcher(span.getName()).find()) {
                     // pattern matches the span!!!
                     return true;
@@ -141,10 +163,13 @@ public abstract class AgentProcessor {
             return false;
         }
 
-        // Function to compare span with user provided span patterns
-        public boolean isMatch(SpanData span) {
-            if (!spanPatterns.isEmpty() && !isPatternFound(span)) {
-                return false;
+        // Function to compare span/log with user provided span patterns/log patterns
+        public boolean isMatch(SpanData span, boolean isLog) {
+            if (isLog) {
+                // If user provided spanNames, then do not include log in the include/exclude criteria
+                if (!spanPatterns.isEmpty()) return false;
+            } else {
+                if (!spanPatterns.isEmpty() && !isPatternFound(span, spanPatterns)) return false;
             }
             return checkAttributes(span);
         }

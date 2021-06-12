@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
+import com.microsoft.applicationinsights.internal.schemav2.MessageData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -26,6 +27,10 @@ public class SpringBootAutoTest extends AiSmokeTest {
         assertEquals("/TelemetryProcessors/test", rd.getProperties().get("httpPath"));
         assertEquals(4, rd.getProperties().size());
         assertTrue(rd.getSuccess());
+        // Log processor test
+        List<MessageData> logs = mockedIngestion.getMessageDataInRequest();
+        MessageData md1 = logs.get(0);
+        assertEquals("smoketestappcontroller::INFO",md1.getMessage());
     }
 
     @Test

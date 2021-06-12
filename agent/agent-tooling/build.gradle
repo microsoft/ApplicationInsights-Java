@@ -50,9 +50,9 @@ dependencies {
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-otlp-metrics'
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-prometheus'
         exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-zipkin'
-        exclude group: 'io.grpc', module: 'grpc-netty'
+        exclude group: 'io.grpc', module: 'grpc-netty-shaded'
     }
-    implementation group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-spi', version: versions.opentelemetryInstrumentationAlpha
+    implementation group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-extension-api', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'net.bytebuddy', name: 'byte-buddy', version: versions.bytebuddy
 
     implementation group: 'commons-codec', name: 'commons-codec', version: versions.commonsCodec

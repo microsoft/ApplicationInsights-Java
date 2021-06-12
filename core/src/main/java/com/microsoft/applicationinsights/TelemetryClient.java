@@ -22,7 +22,9 @@
 package com.microsoft.applicationinsights;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -30,16 +32,19 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.channel.TelemetryChannel;
 import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.extensibility.ContextInitializer;
-import com.microsoft.applicationinsights.extensibility.context.ContextTagKeys;
 import com.microsoft.applicationinsights.extensibility.context.InternalContext;
 import com.microsoft.applicationinsights.extensibility.initializer.TelemetryObservers;
+import com.microsoft.applicationinsights.internal.perfcounter.Constants;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.Arrays.asList;
 
 // Created by gupele
 /**
@@ -49,6 +54,14 @@ import org.slf4j.LoggerFactory;
 public class TelemetryClient {
 
     private static final Logger logger = LoggerFactory.getLogger(TelemetryClient.class);
+
+    private static final Set<String> BUILT_IN_METRIC_NAMES =
+            new HashSet<>(asList(
+                    Constants.TOTAL_CPU_PC_METRIC_NAME,
+                    Constants.PROCESS_CPU_PC_METRIC_NAME,
+                    Constants.PROCESS_MEM_PC_METRICS_NAME,
+                    Constants.TOTAL_MEMORY_PC_METRIC_NAME,
+                    Constants.PROCESS_IO_PC_METRIC_NAME));
 
     private final TelemetryConfiguration configuration;
     private volatile TelemetryContext context;
@@ -82,10 +95,10 @@ public class TelemetryClient {
      * application session.
      */
     public TelemetryContext getContext() {
-        if (context == null || (context.getInstrumentationKey() != null &&  !context.getInstrumentationKey().equals(configuration.getInstrumentationKey()))) {
+        if (context == null || (configuration.getInstrumentationKey() != null &&  !configuration.getInstrumentationKey().equals(context.getInstrumentationKey()))) {
             // lock and recheck there is still no initialized context. If so, create one.
             synchronized (TELEMETRY_CONTEXT_LOCK) {
-                if (context==null || (context.getInstrumentationKey() != null && !context.getInstrumentationKey().equals(configuration.getInstrumentationKey()))) {
+                if (context==null || (configuration.getInstrumentationKey() != null && !configuration.getInstrumentationKey().equals(context.getInstrumentationKey()))) {
                     context = createInitializedContext();
                 }
             }
@@ -107,6 +120,17 @@ public class TelemetryClient {
      * @param telemetry The {@link com.microsoft.applicationinsights.telemetry.Telemetry} instance.
      */
     public void track(Telemetry telemetry) {
+
+        if (telemetry instanceof MetricTelemetry) {
+            String metricName = ((MetricTelemetry) telemetry).getName();
+            if (!BUILT_IN_METRIC_NAMES.contains(metricName)) {
+                for (MetricFilter metricFilter : configuration.getMetricFilters()) {
+                    if (!metricFilter.matches(metricName)) {
+                        return;
+                    }
+                }
+            }
+        }
 
         if (generateCounter.incrementAndGet() % 10000 == 0) {
             logger.debug("Total events generated till now {}", generateCounter.get());

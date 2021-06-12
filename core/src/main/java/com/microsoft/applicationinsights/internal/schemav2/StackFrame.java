@@ -60,6 +60,18 @@ public class StackFrame
      */
     private int line;
 
+    public String getMethod() {
+        return method;
+    }
+
+    public String getAssembly() {
+        return assembly;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
     /**
      * Initializes a new instance of the StackFrame class.
      */

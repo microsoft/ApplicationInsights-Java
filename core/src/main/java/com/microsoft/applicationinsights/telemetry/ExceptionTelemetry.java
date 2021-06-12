@@ -25,6 +25,8 @@ import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.internal.schemav2.StackFrame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,9 @@ import java.util.concurrent.ConcurrentMap;
  * Telemetry type used to track exceptions sent to Azure Application Insights.
  */
 public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<ExceptionData> {
+
+    private static final int MAX_PARSED_STACK_LENGTH = 32768; // Breeze will reject parsedStack exceeding 65536 bytes. Each char is 2 bytes long.
+    private static final Logger logger = LoggerFactory.getLogger(ExceptionTelemetry.class);
     private Double samplingPercentage;
     private final ExceptionData data;
     private Throwable throwable;
@@ -171,12 +176,12 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
         }
 
         StackTraceElement[] trace = exception.getStackTrace();
-
+        exceptionDetails.setHasFullStack(true);
         if (trace != null && trace.length > 0) {
             List<StackFrame> stack = exceptionDetails.getParsedStack();
 
             // We need to present the stack trace in reverse order.
-
+            int stackLength = 0;
             for (int idx = 0; idx < trace.length; idx++) {
                 StackTraceElement elem = trace[idx];
 
@@ -198,10 +203,15 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
                     frame.setMethod(elem.getMethodName());
                 }
 
+                stackLength += getStackFrameLength(frame);
+                if (stackLength > MAX_PARSED_STACK_LENGTH) {
+                    exceptionDetails.setHasFullStack(false);
+                    logger.debug("parsedStack is exceeding 65536 bytes capacity. It is truncated from full {} frames to partial {} frames.", trace.length, stack.size());
+                    break;
+                }
+
                 stack.add(frame);
             }
-
-            exceptionDetails.setHasFullStack(true); // TODO: sanitize and trim exception stack trace.
         }
 
         return exceptionDetails;
@@ -214,5 +224,18 @@ public final class ExceptionTelemetry extends BaseSampleSourceTelemetry<Exceptio
     @Override
     public String getBaseTypeName() {
         return BASE_TYPE;
+    }
+
+    /***
+     * @param stackFrame
+     * @return the stack frame length for only the strings in the stack frame.
+     */
+     // this is the same logic used to limit length on the Breeze side
+    private static int getStackFrameLength(StackFrame stackFrame)
+    {
+        int stackFrameLength = (stackFrame.getMethod() == null ? 0 : stackFrame.getMethod().length())
+                + (stackFrame.getAssembly() == null ? 0 : stackFrame.getAssembly().length())
+                + (stackFrame.getFileName() == null ? 0 : stackFrame.getFileName().length());
+        return stackFrameLength;
     }
 }

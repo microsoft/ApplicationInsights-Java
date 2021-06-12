@@ -20,6 +20,7 @@ public interface ProfilerServiceFactory {
             String instrumentationKey,
             CloseableHttpClient httpClient,
             ScheduledExecutorService serviceProfilerExecutorService,
-            String userAgent
+            String userAgent,
+            String roleName
     );
 }

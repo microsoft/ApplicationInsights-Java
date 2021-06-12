@@ -1,6 +1,9 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -28,6 +31,8 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
         pvt2.getContext().getCloud().setRole("role-goes-here");
         pvt2.getContext().getCloud().setRoleInstance("role-instance-goes-here");
         pvt2.getContext().getOperation().setName("operation-name-goes-here");
+        pvt2.getContext().getOperation().setId("operation-id-goes-here");
+        pvt2.getContext().getOperation().setParentId("operation-parent-id-goes-here");
         pvt2.getContext().getUser().setId("user-id-goes-here");
         pvt2.getContext().getUser().setAccountId("account-id-goes-here");
         pvt2.getContext().getUser().setUserAgent("user-agent-goes-here");
@@ -39,6 +44,11 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
         pvt2.getContext().getProperties().put("a-prop", "a-value");
         pvt2.getContext().getProperties().put("another-prop", "another-value");
         pvt2.getProperties().put("key", "value");
+        try {
+            pvt2.setTimestamp(new SimpleDateFormat("dd/MM/yyyy").parse("10/10/2010"));
+        } catch (ParseException e) {
+            throw new AssertionError(e);
+        }
         pvt2.setDuration(123456);
         client.trackPageView(pvt2);
 
@@ -49,6 +59,8 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
         otherClient.getContext().getCloud().setRole("role-goes-here");
         otherClient.getContext().getCloud().setRoleInstance("role-instance-goes-here");
         otherClient.getContext().getOperation().setName("operation-name-goes-here");
+        otherClient.getContext().getOperation().setId("operation-id-goes-here");
+        otherClient.getContext().getOperation().setParentId("operation-parent-id-goes-here");
         otherClient.getContext().getUser().setId("user-id-goes-here");
         otherClient.getContext().getUser().setAccountId("account-id-goes-here");
         otherClient.getContext().getUser().setUserAgent("user-agent-goes-here");
@@ -61,6 +73,11 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
         otherClient.getContext().getProperties().put("another-prop", "another-value");
         PageViewTelemetry pvt3 = new PageViewTelemetry("test-page-3");
         pvt3.getProperties().put("key", "value");
+        try {
+            pvt3.setTimestamp(new SimpleDateFormat("dd/MM/yyyy").parse("10/10/2010"));
+        } catch (ParseException e) {
+            throw new AssertionError(e);
+        }
         pvt3.setDuration(123456);
         otherClient.trackPageView(pvt3);
 

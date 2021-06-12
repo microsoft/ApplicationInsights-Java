@@ -52,6 +52,13 @@ public final class OperationContext {
     }
 
     /**
+     * Get the Operation Parent id
+     */
+    public String getParentId() {
+        return MapUtil.getValueOrNull(tags, ContextTagKeys.getKeys().getOperationParentId());
+    }
+
+    /**
      * Set the Operation Parent id
      * @param parentId
      */
