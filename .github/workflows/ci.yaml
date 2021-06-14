@@ -34,9 +34,7 @@ jobs:
       - name: Build otel-fork
         run: |
           cd otel
-          # TODO why does this error only happen in GHA, without "-x signMavenPublication"?
-          #   "Cannot perform signing task ':instrumentation-api:signMavenPublication' because it has no configured signatory"
-          ./gradlew publishToMavenLocal -x signMavenPublication
+          ./gradlew publishToMavenLocal
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew check -PincludeProfiler=${{ matrix.includeProfiler }} --stacktrace
@@ -84,9 +82,7 @@ jobs:
       - name: Build otel-fork
         run: |
           cd otel
-          # TODO why does this error only happen in GHA, without "-x signMavenPublication"?
-          #   "Cannot perform signing task ':instrumentation-api:signMavenPublication' because it has no configured signatory"
-          ./gradlew publishToMavenLocal -x signMavenPublication
+          ./gradlew publishToMavenLocal
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
         run: ./gradlew ${{ matrix.module }}:smokeTest
