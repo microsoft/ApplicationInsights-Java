@@ -35,6 +35,7 @@ public final class AgentInitializer {
         agentInstallerClass =
             agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstallerOverride");
       } catch (ClassNotFoundException ignored) {
+        // Ignore
       }
 
       boolean override = agentInstallerClass != null;
@@ -47,8 +48,8 @@ public final class AgentInitializer {
       Method agentInstallerMethod;
       if (override) {
         agentInstallerMethod =
-            agentInstallerClass
-                .getMethod("installBytebuddyAgent", Instrumentation.class, File.class);
+            agentInstallerClass.getMethod(
+                "installBytebuddyAgent", Instrumentation.class, File.class);
       } else {
         agentInstallerMethod =
             agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
