@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
 
     private static final int PERMANENT_REDIRECT_STATUS_CODE = 308;
+    private static final int TEMP_REDIRECT_STATUS_CODE = 307;
     // Based on Stamp specific redirects design doc
     private static final int MAX_REDIRECT_RETRIES = 10;
     private static final Logger logger = LoggerFactory.getLogger(AzureMonitorRedirectPolicy.class);
@@ -66,7 +67,8 @@ public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
         }
         return statusCode == HttpURLConnection.HTTP_MOVED_TEMP
                 || statusCode == HttpURLConnection.HTTP_MOVED_PERM
-                || statusCode == PERMANENT_REDIRECT_STATUS_CODE;
+                || statusCode == PERMANENT_REDIRECT_STATUS_CODE
+                || statusCode == TEMP_REDIRECT_STATUS_CODE;
     }
 
 }
