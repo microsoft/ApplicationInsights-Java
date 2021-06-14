@@ -1,8 +1,6 @@
 package com.microsoft.applicationinsights;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class MetricFilter {
@@ -24,18 +22,18 @@ public class MetricFilter {
 
     public static class IncludeExclude {
         public final MatchType matchType;
-        public final List<String> metricNames;
+        public final Set<String> metricNames;
         public final List<Pattern> metricNamePatterns;
 
         public IncludeExclude(MatchType matchType, List<String> metricNames) {
             this.matchType = matchType;
             switch (matchType) {
                 case STRICT:
-                    this.metricNames = metricNames;
+                    this.metricNames = new HashSet<>(metricNames);
                     this.metricNamePatterns = Collections.emptyList();
                     break;
                 case REGEXP:
-                    this.metricNames = Collections.emptyList();
+                    this.metricNames = Collections.emptySet();
                     this.metricNamePatterns = new ArrayList<>();
                     for (String metricName : metricNames) {
                         // these patterns have already been validated in Configuration.MetricFilterConfig.validate()
