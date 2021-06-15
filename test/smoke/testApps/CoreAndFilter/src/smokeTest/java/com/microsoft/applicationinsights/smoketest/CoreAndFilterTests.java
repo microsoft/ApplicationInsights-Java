@@ -291,7 +291,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         assertNotNull(pv2);
         assertEquals(new Duration(123456), pv2.getDuration());
-        assertEquals("2010-10-10T00:00:00.000+0000", pvdEnvelope2.getTime());
+        assertEquals("2010-10-10T00:00:00Z", pvdEnvelope2.getTime());
         assertEquals("value", pv2.getProperties().get("key"));
         assertEquals("a-value", pv2.getProperties().get("a-prop"));
         assertEquals("another-value", pv2.getProperties().get("another-prop"));
@@ -312,7 +312,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         assertNotNull(pv3);
         assertEquals(new Duration(123456), pv3.getDuration());
-        assertEquals("2010-10-10T00:00:00.000+0000", pvdEnvelope3.getTime());
+        assertEquals("2010-10-10T00:00:00Z", pvdEnvelope3.getTime());
         assertEquals("value", pv3.getProperties().get("key"));
         assertEquals("a-value", pv3.getProperties().get("a-prop"));
         assertEquals("another-value", pv3.getProperties().get("another-prop"));

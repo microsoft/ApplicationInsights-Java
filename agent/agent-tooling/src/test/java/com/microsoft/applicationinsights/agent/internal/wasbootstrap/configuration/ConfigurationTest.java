@@ -522,6 +522,29 @@ public class ConfigurationTest {
     }
 
     @Test
+    public void shouldOverrideAadAuthenticationConfig() throws IOException {
+        envVars.set("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=12345678");
+
+        Configuration configuration = loadConfiguration("applicationinsights_aadauthenv.json");
+        ConfigurationBuilder.overlayEnvVars(configuration);
+
+        assertTrue(configuration.preview.authentication.enabled);
+        assertEquals(AuthenticationType.UAMI, configuration.preview.authentication.type);
+        assertEquals("12345678", configuration.preview.authentication.clientId);
+        assertNull(configuration.preview.authentication.clientSecret);
+
+        envVars.set("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=");
+
+        Configuration configuration2 = loadConfiguration("applicationinsights_aadauthenv.json");
+        ConfigurationBuilder.overlayEnvVars(configuration2);
+
+        assertTrue(configuration2.preview.authentication.enabled);
+        assertEquals(AuthenticationType.SAMI, configuration2.preview.authentication.type);
+        assertNull(configuration2.preview.authentication.clientId);
+        assertNull(configuration2.preview.authentication.clientSecret);
+    }
+
+    @Test
     public void shouldUseRpConfigRole() {
         Configuration configuration = new Configuration();
         RpConfiguration rpConfiguration = new RpConfiguration();

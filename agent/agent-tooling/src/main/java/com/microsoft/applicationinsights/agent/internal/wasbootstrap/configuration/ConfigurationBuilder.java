@@ -28,12 +28,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.google.common.base.Splitter;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.authentication.AuthenticationType;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonEncodingException;
@@ -81,6 +84,8 @@ public class ConfigurationBuilder {
 
     private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS = "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
 
+    private static final String APPLICATIONINSIGHTS_AUTHENTICATION_STRING = "APPLICATIONINSIGHTS_AUTHENTICATION_STRING";
+
     // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
     private static final List<ConfigurationWarnMessage> configurationWarnMessages = new CopyOnWriteArrayList<>();
 
@@ -111,6 +116,31 @@ public class ConfigurationBuilder {
     private static void overlayProfilerConfiguration(Configuration config) {
         config.preview.profiler.enabled = Boolean
                 .parseBoolean(overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_ENABLED, Boolean.toString(config.preview.profiler.enabled)));
+    }
+
+    private static void overlayAadConfiguration(Configuration config) {
+        String aadAuthString = getEnvVar(APPLICATIONINSIGHTS_AUTHENTICATION_STRING);
+        if(aadAuthString != null) {
+            Map<String, String> keyValueMap = Splitter.on(";")
+                    .trimResults()
+                    .omitEmptyStrings()
+                    .withKeyValueSeparator("=")
+                    .split(aadAuthString);
+            String authorization = keyValueMap.get("Authorization");
+            if(authorization != null && authorization.equals("AAD")) {
+                // Override any configuration from json
+                config.preview.authentication = new Configuration.AadAuthentication();
+                config.preview.authentication.enabled = true;
+                config.preview.authentication.type = AuthenticationType.SAMI;
+                String clientId = keyValueMap.get("ClientId");
+                if(clientId != null && !clientId.isEmpty()) {
+                    // Override type to User Assigned Managed Identity
+                    config.preview.authentication.type = AuthenticationType.UAMI;
+                    config.preview.authentication.clientId = clientId;
+                }
+            }
+        }
+
     }
 
     private static void loadLogCaptureEnvVar(Configuration config) {
@@ -270,7 +300,7 @@ public class ConfigurationBuilder {
 
         addDefaultJmxMetricsIfNotPresent(config);
         overlayProfilerConfiguration(config);
-
+        overlayAadConfiguration(config);
         loadInstrumentationEnabledEnvVars(config);
     }
 
