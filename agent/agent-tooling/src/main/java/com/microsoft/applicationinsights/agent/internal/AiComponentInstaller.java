@@ -128,7 +128,8 @@ public class AiComponentInstaller implements ComponentInstaller {
             AadAuthentication.init(authentication.type, authentication.clientId, authentication.keePassDatabasePath,
                     authentication.tenantId, authentication.clientSecret, authentication.authorityHost);
         } else {
-            AadAuthentication.init(null, null,null,null,null,null);
+            // TODO revisit this, not ideal to initialize when authentication is disabled
+            AadAuthentication.init(null, null, null, null, null, null);
         }
         // FIXME do something with config
 
