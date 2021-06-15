@@ -83,7 +83,7 @@ public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
      */
     private boolean shouldRetryWithRedirect(int statusCode, int tryCount) {
         if (tryCount >= MAX_REDIRECT_RETRIES) {
-            logger.warn("Max redirect retries limit reached:%d.", MAX_REDIRECT_RETRIES);
+            logger.warn("Max redirect retries limit reached:{}.", MAX_REDIRECT_RETRIES);
             return false;
         }
         return statusCode == HttpURLConnection.HTTP_MOVED_TEMP

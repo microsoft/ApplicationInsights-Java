@@ -125,7 +125,7 @@ class TelemetryChannel {
                 .subscribe(response -> {
                     // TODO parse response, looking for throttling, partial successes, etc
                     if(response.getStatusCode() == HttpStatus.SC_UNAUTHORIZED || response.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
-                        logger.warn("Failed to send telemetry with status code: "+ response.getStatusCode() +", please check your credentials", response);
+                        logger.warn("Failed to send telemetry with status code:{} ,please check your credentials", response.getStatusCode());
                     }
                 }, error -> {
                     byteBufferPool.offer(byteBuffers);
