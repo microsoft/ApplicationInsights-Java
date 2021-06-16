@@ -123,10 +123,14 @@ public class AiComponentInstaller implements ComponentInstaller {
         validateProcessorConfiguration(config);
         config.preview.authentication.validate();
         //Inject authentication configuration
-        Configuration.AadAuthentication authentication = config.preview.authentication;
-        AadAuthentication.init(authentication.type, authentication.clientId, authentication.keePassDatabasePath,
-                authentication.tenantId, authentication.clientSecret, authentication.authorityHost);
-
+        if(config.preview.authentication.enabled) {
+            Configuration.AadAuthentication authentication = config.preview.authentication;
+            AadAuthentication.init(authentication.type, authentication.clientId, authentication.keePassDatabasePath,
+                    authentication.tenantId, authentication.clientSecret, authentication.authorityHost);
+        } else {
+            // TODO revisit this, not ideal to initialize when authentication is disabled
+            AadAuthentication.init(null, null, null, null, null, null);
+        }
         // FIXME do something with config
 
         // FIXME set doNotWeavePrefixes = "com.microsoft.applicationinsights.agent."
