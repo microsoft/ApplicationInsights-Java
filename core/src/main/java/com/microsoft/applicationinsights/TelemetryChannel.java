@@ -56,7 +56,8 @@ class TelemetryChannel {
         if (authenticationPolicy != null) {
             policies.add(authenticationPolicy);
         }
-        // Add Logging Policy
+        // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
+        // TODO set the logging level based on self diagnostic log level set by user
         policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
         pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
         this.pipeline = pipelineBuilder.build();
