@@ -1,6 +1,8 @@
 package com.microsoft.applicationinsights;
 
 import com.azure.core.http.*;
+import com.azure.core.http.policy.HttpLogOptions;
+import com.azure.core.http.policy.HttpLoggingPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.http.policy.RetryPolicy;
 import com.azure.core.util.tracing.Tracer;
@@ -8,7 +10,10 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
+import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
+import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -40,9 +45,11 @@ class TelemetryChannel {
 
     TelemetryChannel(URL endpoint) {
         List<HttpPipelinePolicy> policies = new ArrayList<>();
-        HttpClient client = HttpClient.createDefault();
-        HttpPipelineBuilder pipeline = new HttpPipelineBuilder()
+        HttpClient client = LazyAzureHttpClient.getInstance();
+        HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder()
                 .httpClient(client);
+        // Add Azure monitor redirect policy to be able to handle v2.1/track redirects
+        policies.add(new AzureMonitorRedirectPolicy());
         // Retry policy for failed requests
         policies.add(new RetryPolicy());
         // TODO handle authentication exceptions
@@ -50,8 +57,11 @@ class TelemetryChannel {
         if (authenticationPolicy != null) {
             policies.add(authenticationPolicy);
         }
-        pipeline.policies(policies.toArray(new HttpPipelinePolicy[0]));
-        this.pipeline = pipeline.build();
+        // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
+        // TODO set the logging level based on self diagnostic log level set by user
+        policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
+        pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
+        this.pipeline = pipelineBuilder.build();
         this.endpoint = endpoint;
     }
 
@@ -116,13 +126,13 @@ class TelemetryChannel {
                 .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
                 .subscribe(response -> {
                     // TODO parse response, looking for throttling, partial successes, etc
-                    // System.out.println("on response: " + response);
+                    if(response.getStatusCode() == HttpStatus.SC_UNAUTHORIZED || response.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
+                        logger.warn("Failed to send telemetry with status code:{} ,please check your credentials", response.getStatusCode());
+                    }
                 }, error -> {
-                    // System.out.println("on error...");
                     byteBufferPool.offer(byteBuffers);
                     result.fail();
                 }, () -> {
-                    // System.out.println("on complete...");
                     byteBufferPool.offer(byteBuffers);
                     result.succeed();
                 });
