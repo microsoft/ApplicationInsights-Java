@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
 import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
-import com.microsoft.applicationinsights.internal.persistence.AppInsightsFileWriter;
+import com.microsoft.applicationinsights.internal.persistence.LocalFileWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
@@ -130,7 +130,7 @@ class TelemetryChannel {
                 .subscribe(response -> {
                     parseResponseCode(response.getStatusCode());
                 }, error -> {
-                    AppInsightsFileWriter writer = new AppInsightsFileWriter();
+                    LocalFileWriter writer = new LocalFileWriter();
                     if (!writer.writeToDisk(byteBuffers)) {
                         logger.warn("Fail to write to offline disk.");
                     }

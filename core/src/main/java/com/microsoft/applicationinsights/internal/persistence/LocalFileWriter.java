@@ -14,19 +14,19 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.microsoft.applicationinsights.internal.persistence.AppInsightsFileLoader.DEFAULT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.LocalFileLoader.DEFAULT_FOlDER;
 
 /**
  * This class manages writing a list of {@link ByteBuffer} to the file system.
  */
-public final class AppInsightsFileWriter {
+public final class LocalFileWriter {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppInsightsFileWriter.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocalFileWriter.class);
 
     // track the size of the file
     private final AtomicLong size = new AtomicLong();
 
-    public AppInsightsFileWriter() {
+    public LocalFileWriter() {
         if (!DEFAULT_FOlDER.exists()) {
             DEFAULT_FOlDER.mkdir();
         }
@@ -99,7 +99,7 @@ public final class AppInsightsFileWriter {
         try {
             FileUtils.moveFile(tempFile, file);
             size.addAndGet(tempFile.length());
-            AppInsightsFileLoader.get().addPersistedFilenameToMap(file.getName());
+            LocalFileLoader.get().addPersistedFilenameToMap(file.getName());
             return true;
         } catch (IOException ex) {
             // TODO (heya) track renaming failure via Statsbeat

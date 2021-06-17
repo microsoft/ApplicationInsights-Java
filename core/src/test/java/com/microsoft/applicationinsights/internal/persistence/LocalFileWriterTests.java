@@ -18,15 +18,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
-import static com.microsoft.applicationinsights.internal.persistence.AppInsightsFileLoader.DEFAULT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.LocalFileLoader.DEFAULT_FOlDER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class AppInsightsFileWriterTests {
+public class LocalFileWriterTests {
 
     @After
     public void cleanup() {
-        Queue<String> queue = AppInsightsFileLoader.get().getPersistedFilesQueue();
+        Queue<String> queue = LocalFileLoader.get().getPersistedFilesQueue();
         for (String filename : queue) {
             File tempFile = new File(DEFAULT_FOlDER, filename);
             assertTrue(tempFile.exists());
@@ -57,8 +57,8 @@ public class AppInsightsFileWriterTests {
 
         assertEquals(10, byteBuffers.size());
 
-        AppInsightsFileWriter writer = new AppInsightsFileWriter();
+        LocalFileWriter writer = new LocalFileWriter();
         assertTrue(writer.writeToDisk(byteBuffers));
-        assertEquals(1, AppInsightsFileLoader.get().getPersistedFilesQueue().size());
+        assertEquals(1, LocalFileLoader.get().getPersistedFilesQueue().size());
     }
 }

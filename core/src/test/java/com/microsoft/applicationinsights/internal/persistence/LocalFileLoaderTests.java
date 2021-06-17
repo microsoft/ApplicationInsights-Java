@@ -3,7 +3,6 @@ package com.microsoft.applicationinsights.internal.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
-import com.microsoft.applicationinsights.internal.persistence.AppInsightsFileLoader;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Test;
@@ -11,10 +10,10 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 
-import static com.microsoft.applicationinsights.internal.persistence.AppInsightsFileLoader.DEFAULT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.LocalFileLoader.DEFAULT_FOlDER;
 import static org.junit.Assert.*;
 
-public class AppInsightsFileLoaderTests {
+public class LocalFileLoaderTests {
 
     private static final String BYTE_BUFFERS_TEST_FILE = "bytebuffers.txt";
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -39,8 +38,8 @@ public class AppInsightsFileLoaderTests {
         }
         assertTrue(PERSISTED_FILE.exists());
 
-        AppInsightsFileLoader.get().addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
-        byte[] bytes = AppInsightsFileLoader.get().loadFileFromDisk();
+        LocalFileLoader.get().addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
+        byte[] bytes = LocalFileLoader.get().loadFileFromDisk();
         assertNotNull(bytes);
 
         String bytesString = new String(bytes);

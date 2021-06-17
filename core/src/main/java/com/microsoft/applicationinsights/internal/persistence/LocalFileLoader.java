@@ -17,15 +17,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * This class manages loading a list of {@link ByteBuffer} from the file system.
  */
-public class AppInsightsFileLoader {
+public class LocalFileLoader {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppInsightsFileLoader.class);
-    private static final AppInsightsFileLoader INSTANCE = new AppInsightsFileLoader();
+    private static final Logger logger = LoggerFactory.getLogger(LocalFileLoader.class);
+    private static final LocalFileLoader INSTANCE = new LocalFileLoader();
 
     // Track the actual count of the active files persisted on disk.
     private static final AtomicInteger activeFilesCount = new AtomicInteger();
 
-    // Default folder is located at C:\Users\{USER_NAME}\AppData\Local\Temp\applicationinsights
+    // Windows: C:\Users\{USER_NAME}\AppData\Local\Temp\applicationinsights
+    // Linux: /var/temp/applicationinsights
     static final File DEFAULT_FOlDER = new File(LocalFileSystemUtils.getTempDir(), "applicationinsights");
 
     /**
@@ -34,7 +35,7 @@ public class AppInsightsFileLoader {
      */
     private static final Queue<String> PERSISTED_FILES_QUEUE = new ConcurrentLinkedDeque<>();
 
-    public static AppInsightsFileLoader get() {
+    public static LocalFileLoader get() {
         return INSTANCE;
     }
 
@@ -82,7 +83,7 @@ public class AppInsightsFileLoader {
         return result;
     }
 
-    private AppInsightsFileLoader() {
+    private LocalFileLoader() {
     }
 
     private File renameToTemporaryName(File file) {
