@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
 import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
+import com.microsoft.applicationinsights.internal.persistence.AppInsightsFileWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
@@ -20,7 +21,6 @@ import reactor.core.publisher.Flux;
 import reactor.util.context.Context;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -97,6 +97,8 @@ class TelemetryChannel {
             throw e;
         }
 
+        out.close();
+
         List<ByteBuffer> byteBuffers = out.getByteBuffers();
         for (ByteBuffer byteBuffer : byteBuffers) {
             byteBuffer.flip();
@@ -128,6 +130,11 @@ class TelemetryChannel {
                 .subscribe(response -> {
                     parseResponseCode(response.getStatusCode());
                 }, error -> {
+                    AppInsightsFileWriter writer = new AppInsightsFileWriter();
+                    if (!writer.writeToDisk(byteBuffers)) {
+                        logger.warn("Fail to write to offline disk.");
+                    }
+
                     byteBufferPool.offer(byteBuffers);
                     result.fail();
                 }, () -> {
