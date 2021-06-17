@@ -23,7 +23,7 @@ public final class AgentInitializer {
 
   // Accessed via reflection from tests.
   // fields must be managed under class lock
-  @Nullable public static ClassLoader agentClassLoader = null;
+  @Nullable private static ClassLoader agentClassLoader = null;
 
   // called via reflection in the OpenTelemetryAgent class
   public static void initialize(Instrumentation inst, File javaagentFile) throws Exception {

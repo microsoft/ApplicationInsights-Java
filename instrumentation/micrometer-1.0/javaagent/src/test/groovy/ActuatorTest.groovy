@@ -28,12 +28,10 @@ class ActuatorTest extends AgentInstrumentationSpecification {
     !list.contains("com.microsoft.azure.spring.autoconfigure.metrics.AzureMonitorMetricsExportAutoConfiguration")
   }
 
-  // TODO cannot test this currently since AGENT_CLASSLOADER is not set in AgentTestRunner
-  @Ignore
   def "should read class bytes"() {
     setup:
     def resource =
-      new ClassPathResource("io/opentelemetry/auto/instrumentation/micrometer/AzureMonitorAutoConfiguration.class")
+      new ClassPathResource("io/opentelemetry/javaagent/instrumentation/micrometer/AzureMonitorAutoConfiguration.class")
 
     when:
     def input = resource.getInputStream()
