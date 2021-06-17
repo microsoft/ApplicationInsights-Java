@@ -1,11 +1,9 @@
 import java.time.Duration
-import nebula.plugin.release.git.opinion.Strategies
 
 plugins {
   id 'idea'
 
   id "io.github.gradle-nexus.publish-plugin"
-  id "nebula.release"
 
   id 'org.gradle.test-retry' apply false
 
@@ -15,10 +13,6 @@ plugins {
   id "com.diffplug.spotless"
   id "net.ltgt.errorprone" apply false
   id "net.ltgt.nullaway" apply false
-}
-
-release {
-  defaultVersionStrategy = Strategies.SNAPSHOT
 }
 
 allprojects {
