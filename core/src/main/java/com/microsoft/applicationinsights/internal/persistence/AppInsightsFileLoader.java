@@ -6,13 +6,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
-import java.util.List;
+import java.nio.file.Files;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,10 +17,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * This class manages loading a list of {@link ByteBuffer} from the file system.
  */
-public class FileLoader {
+public class AppInsightsFileLoader {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileLoader.class);
-    private static final FileLoader INSTANCE = new FileLoader();
+    private static final Logger logger = LoggerFactory.getLogger(AppInsightsFileLoader.class);
+    private static final AppInsightsFileLoader INSTANCE = new AppInsightsFileLoader();
 
     // Track the actual count of the active files persisted on disk.
     private static final AtomicInteger activeFilesCount = new AtomicInteger();
@@ -37,7 +34,7 @@ public class FileLoader {
      */
     private static final Queue<String> PERSISTED_FILES_QUEUE = new ConcurrentLinkedDeque<>();
 
-    public static FileLoader get() {
+    public static AppInsightsFileLoader get() {
         return INSTANCE;
     }
 
@@ -48,7 +45,7 @@ public class FileLoader {
     }
 
     // Load List<ByteBuffer> from persisted files on disk in FIFO order.
-    public List<byte[]> loadFile() {
+    public byte[] loadFileFromDisk() {
         String filenameToBeLoaded = PERSISTED_FILES_QUEUE.poll();
         if (filenameToBeLoaded == null) {
             logger.warn("PERSISTED_FILES_QUEUE is empty.");
@@ -68,14 +65,14 @@ public class FileLoader {
         return PERSISTED_FILES_QUEUE;
     }
 
-    private List<byte[]> read(File file) {
-        List<byte[]> result = null;
-        try (ObjectInputStream input = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-            result = (List<byte[]>)input.readObject();
-            
+    private byte[] read(File file) {
+        byte[] result = null;
+        try {
+            result = Files.readAllBytes(file.toPath());
+
             // TODO (heya) backoff and retry delete when it fails?
             file.delete();
-        } catch (IOException | ClassNotFoundException ex) {
+        } catch (IOException ex) {
             // TODO (heya) track deserialization failure via Statsbeat
             logger.error("Fail to deserialize objects from  {}", file.getName(), ex);
         } catch(SecurityException ex) {
@@ -85,7 +82,7 @@ public class FileLoader {
         return result;
     }
 
-    private FileLoader() {
+    private AppInsightsFileLoader() {
     }
 
     private File renameToTemporaryName(File file) {

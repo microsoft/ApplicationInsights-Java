@@ -9,27 +9,24 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
-import static com.microsoft.applicationinsights.internal.persistence.FileLoader.DEFAULT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.AppInsightsFileLoader.DEFAULT_FOlDER;
 
 /**
  * This class manages writing a list of {@link ByteBuffer} to the file system.
  */
-final class FileWriter {
+public final class AppInsightsFileWriter {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileWriter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AppInsightsFileWriter.class);
 
     // track the size of the file
     private final AtomicLong size = new AtomicLong();
 
-    public FileWriter() {
+    public AppInsightsFileWriter() {
         if (!DEFAULT_FOlDER.exists()) {
             DEFAULT_FOlDER.mkdir();
         }
@@ -39,7 +36,7 @@ final class FileWriter {
         }
     }
 
-    boolean write(List<ByteBuffer> byteBuffers) {
+    public boolean writeToDisk(List<ByteBuffer> byteBuffers) {
         AtomicReference<File> file = createTemporaryFile();
         if (file == null) {
             return false;
@@ -72,9 +69,11 @@ final class FileWriter {
     }
 
     private boolean saveByteBuffers(File file, List<ByteBuffer> byteBuffers) {
-        List<byte[]> byteArray = byteBuffers.stream().map(ByteBuffer::array).collect(Collectors.toList());
-        try (ObjectOutput out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
-            out.writeObject(byteArray);
+        try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
+            for (ByteBuffer byteBuffer : byteBuffers) {
+                byteBuffer.position(0);
+                out.write(byteBuffer.array());
+            }
         } catch (IOException ex) {
             // TODO (heya) track IO write failure via Statsbeat
             logger.error("Fail to write to file.", ex);
@@ -82,6 +81,17 @@ final class FileWriter {
         }
 
         return true;
+
+//        List<byte[]> byteArray = byteBuffers.stream().map(ByteBuffer::array).collect(Collectors.toList());
+//        try (ObjectOutput out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
+//            out.writeObject(byteArray);
+//        } catch (IOException ex) {
+//            // TODO (heya) track IO write failure via Statsbeat
+//            logger.error("Fail to write to file.", ex);
+//            return false;
+//        }
+//
+//        return true;
     }
 
     private boolean renameToPermanentName(File tempFile) {
@@ -89,7 +99,7 @@ final class FileWriter {
         try {
             FileUtils.moveFile(tempFile, file);
             size.addAndGet(tempFile.length());
-            FileLoader.get().addPersistedFilenameToMap(file.getName());
+            AppInsightsFileLoader.get().addPersistedFilenameToMap(file.getName());
             return true;
         } catch (IOException ex) {
             // TODO (heya) track renaming failure via Statsbeat
