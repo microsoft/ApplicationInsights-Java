@@ -3,22 +3,22 @@ package com.microsoft.applicationinsights.internal.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import com.microsoft.applicationinsights.internal.persistence.AppInsightsFileLoader;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
-import static com.microsoft.applicationinsights.internal.persistence.FileLoader.DEFAULT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.AppInsightsFileLoader.DEFAULT_FOlDER;
 import static org.junit.Assert.*;
 
-public class FileLoaderTests {
+public class AppInsightsFileLoaderTests {
 
-    private static final String TEST_FILE_NAME = "bytebuffers-1623731284786-11229676378194009365.trn";
+    private static final String BYTE_BUFFERS_TEST_FILE = "bytebuffers.txt";
     private static final ObjectMapper MAPPER = new ObjectMapper();
-    private static final File PERSISTED_FILE = new File(DEFAULT_FOlDER, TEST_FILE_NAME);
+    private static final File PERSISTED_FILE = new File(DEFAULT_FOlDER, BYTE_BUFFERS_TEST_FILE);
 
     @After
     public void cleanup() {
@@ -29,7 +29,7 @@ public class FileLoaderTests {
 
     @Test
     public void testLoadFile() throws IOException {
-        File sourceFile = new File(Resources.getResource(TEST_FILE_NAME).getPath());
+        File sourceFile = new File(Resources.getResource(BYTE_BUFFERS_TEST_FILE).getPath());
 
         /**
          * move this file to {@link DEFAULT_FOlDER} if it doesn't exist yet.
@@ -39,13 +39,16 @@ public class FileLoaderTests {
         }
         assertTrue(PERSISTED_FILE.exists());
 
-        FileLoader.get().addPersistedFilenameToMap(TEST_FILE_NAME);
-        List<byte[]> byteArrayList = FileLoader.get().loadFile();
-        assertNotNull(byteArrayList);
-        assertTrue(byteArrayList.size() == 10);
+        AppInsightsFileLoader.get().addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
+        byte[] bytes = AppInsightsFileLoader.get().loadFileFromDisk();
+        assertNotNull(bytes);
 
-        for (int i = 0; i < 10; i++) {
-            JsonNode jsonNode = MAPPER.readTree(byteArrayList.get(i));
+        String bytesString = new String(bytes);
+        String[] stringArray = bytesString.split("\n");
+        assertEquals(10, stringArray.length);
+
+        for (int i = 0; i < stringArray.length; i++) {
+            JsonNode jsonNode = MAPPER.readTree(stringArray[i]);
 
             // verify common properties
             assertTrue(jsonNode.size() == 7);

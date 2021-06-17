@@ -7,26 +7,26 @@ import okio.Okio;
 import org.junit.After;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
-import static com.microsoft.applicationinsights.internal.persistence.FileLoader.DEFAULT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.AppInsightsFileLoader.DEFAULT_FOlDER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class FileWriterTests {
+public class AppInsightsFileWriterTests {
 
     @After
     public void cleanup() {
-        Queue<String> queue = FileLoader.get().getPersistedFilesQueue();
+        Queue<String> queue = AppInsightsFileLoader.get().getPersistedFilesQueue();
         for (String filename : queue) {
             File tempFile = new File(DEFAULT_FOlDER, filename);
             assertTrue(tempFile.exists());
@@ -39,19 +39,26 @@ public class FileWriterTests {
         Path path = new File(Resources.getResource("bytebuffers.txt").getPath()).toPath();
         InputStream in = Files.newInputStream(path);
         BufferedSource source = Okio.buffer(Okio.source(in));
+        String bytesToString = new String(source.readByteArray());
+
         List<ByteBuffer> byteBuffers = new ArrayList<>();
-        while(true) {
-            String line = source.readUtf8Line();
-            if (line == null) {
-                break;
+        String[] telemetries = bytesToString.split("\n");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        for (int i = 0; i < telemetries.length; i++) {
+            baos.write(telemetries[i].getBytes());
+            if (i < telemetries.length - 1) {
+                baos.write('\r');
             }
 
-            byteBuffers.add(ByteBuffer.wrap(line.getBytes(StandardCharsets.UTF_8)));
+            byteBuffers.add(ByteBuffer.wrap(baos.toByteArray()));
+            baos.reset();
         }
+        baos.close();
 
-        FileWriter writer = new FileWriter();
         assertEquals(10, byteBuffers.size());
-        assertTrue(writer.write(byteBuffers));
-        assertEquals(1, FileLoader.get().getPersistedFilesQueue().size());
+
+        AppInsightsFileWriter writer = new AppInsightsFileWriter();
+        assertTrue(writer.writeToDisk(byteBuffers));
+        assertEquals(1, AppInsightsFileLoader.get().getPersistedFilesQueue().size());
     }
 }
