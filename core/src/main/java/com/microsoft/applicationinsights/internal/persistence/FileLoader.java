@@ -7,11 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -57,7 +55,7 @@ public class FileLoader {
             return null;
         }
 
-        File tempFile = renameToTemporaryName(new File(DEFAULT_FOlDER, filenameToBeLoaded););
+        File tempFile = renameToTemporaryName(new File(DEFAULT_FOlDER, filenameToBeLoaded));
         if (!tempFile.exists()) {
             return null;
         }
@@ -74,10 +72,14 @@ public class FileLoader {
         List<byte[]> result = null;
         try (ObjectInputStream input = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
             result = (List<byte[]>)input.readObject();
-            // delete the file once read is completed.
+            
+            // TODO (heya) backoff and retry delete when it fails?
+            file.delete();
         } catch (IOException | ClassNotFoundException ex) {
             // TODO (heya) track deserialization failure via Statsbeat
             logger.error("Fail to deserialize objects from  {}", file.getName(), ex);
+        } catch(SecurityException ex) {
+            logger.error("Unable to delete {}. Access is denied.", file.getName(), ex);
         }
 
         return result;

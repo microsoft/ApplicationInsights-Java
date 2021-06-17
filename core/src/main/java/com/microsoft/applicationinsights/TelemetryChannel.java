@@ -20,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.util.context.Context;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -125,10 +126,7 @@ class TelemetryChannel {
         pipeline.send(request)
                 .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
                 .subscribe(response -> {
-                    // TODO parse response, looking for throttling, partial successes, etc
-                    if(response.getStatusCode() == HttpStatus.SC_UNAUTHORIZED || response.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
-                        logger.warn("Failed to send telemetry with status code:{} ,please check your credentials", response.getStatusCode());
-                    }
+                    parseResponseCode(response.getStatusCode());
                 }, error -> {
                     byteBufferPool.offer(byteBuffers);
                     result.fail();
@@ -137,5 +135,30 @@ class TelemetryChannel {
                     result.succeed();
                 });
         return result;
+    }
+
+    private void parseResponseCode(int statusCode) {
+        switch(statusCode) {
+            case HttpStatus.SC_UNAUTHORIZED:
+            case HttpStatus.SC_FORBIDDEN: {
+                logger.warn("Failed to send telemetry with status code:{}, please check your credentials", statusCode);
+                break;
+            }
+            case HttpStatus.SC_REQUEST_TIMEOUT:
+            case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+            case HttpStatus.SC_SERVICE_UNAVAILABLE:
+            case BreezeStatusCode.CLIENT_SIDE_EXCEPTION:
+                // TODO backoff and retry
+                // TODO (heya) track failure count via Statsbeat
+                break;
+            case BreezeStatusCode.THROTTLED_OVER_EXTENDED_TIME:
+            case BreezeStatusCode.THROTTLED:
+                // TODO handle throttling
+                // TODO (heya) track throttling count via Statsbeat
+                break;
+            case BreezeStatusCode.PARTIAL_SUCCESS:
+                // TODO handle partial success
+                break;
+        }
     }
 }

@@ -6,14 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -65,7 +63,6 @@ final class FileWriter {
         try {
             String prefix = "bytebuffers" + "-" + System.currentTimeMillis() + "-";
             file.set(File.createTempFile(prefix, null, DEFAULT_FOlDER));
-            logger.debug("###### {} has been created.", file.get().getName());
         } catch (IOException ex) {
             // TODO (heya) track number of failures to create a temp file via Statsbeat
             logger.error("Fail to create a temporary file for disk persistence. {}", ex.getCause());
