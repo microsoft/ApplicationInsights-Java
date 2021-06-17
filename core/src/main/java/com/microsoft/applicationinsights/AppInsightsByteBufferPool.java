@@ -15,6 +15,7 @@ class AppInsightsByteBufferPool {
     ByteBuffer remove() {
         ByteBuffer byteBuffer = queue.poll();
         if (byteBuffer != null) {
+            byteBuffer.clear();
             return byteBuffer;
         }
         return ByteBuffer.allocate(BYTE_BUFFER_SIZE);
