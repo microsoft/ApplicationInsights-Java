@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
 import org.springframework.boot.autoconfigure.AutoConfigurationImportSelector
 import org.springframework.core.annotation.AnnotationAttributes
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.type.AnnotationMetadata
-import spock.lang.Ignore
 
 class ActuatorTest extends AgentInstrumentationSpecification {
 
