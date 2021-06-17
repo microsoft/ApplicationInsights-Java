@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 
-import static com.microsoft.applicationinsights.internal.persistence.LocalFileLoader.DEFAULT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOlDER;
 import static org.junit.Assert.*;
 
 public class LocalFileLoaderTests {

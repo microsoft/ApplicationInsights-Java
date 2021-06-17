@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
-import static com.microsoft.applicationinsights.internal.persistence.LocalFileLoader.DEFAULT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOlDER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
