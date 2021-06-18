@@ -5,6 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.jul;
 
+import application.java.util.logging.Logger;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -14,7 +15,6 @@ import java.io.StringWriter;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JavaUtilLoggingSpans {

@@ -5,11 +5,11 @@
 
 package io.opentelemetry.javaagent.bootstrap;
 
+import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Agent start up logic.
@@ -19,38 +19,49 @@ import java.net.URL;
  * <p>The intention is for this class to be loaded by bootstrap classloader to make sure we have
  * unimpeded access to the rest of agent parts.
  */
-public class AgentInitializer {
+public final class AgentInitializer {
 
   // Accessed via reflection from tests.
   // fields must be managed under class lock
-  public static ClassLoader AGENT_CLASSLOADER = null;
+  @Nullable private static ClassLoader agentClassLoader = null;
 
   // called via reflection in the OpenTelemetryAgent class
-  public static void initialize(Instrumentation inst, URL bootstrapUrl) throws Exception {
-    startAgent(inst, bootstrapUrl);
-  }
+  public static void initialize(Instrumentation inst, File javaagentFile) throws Exception {
+    if (agentClassLoader == null) {
+      agentClassLoader = createAgentClassLoader("inst", javaagentFile);
 
-  private static synchronized void startAgent(Instrumentation inst, URL bootstrapUrl)
-      throws Exception {
-    if (AGENT_CLASSLOADER == null) {
-      ClassLoader agentClassLoader = createAgentClassLoader("inst", bootstrapUrl);
-      AGENT_CLASSLOADER = agentClassLoader;
-
-      Class<?> agentInstallerClass;
+      Class<?> agentInstallerClass = null;
       try {
         agentInstallerClass =
             agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstallerOverride");
-      } catch (ClassNotFoundException e) {
+      } catch (ClassNotFoundException ignored) {
+        // Ignore
+      }
+
+      boolean override = agentInstallerClass != null;
+
+      if (agentInstallerClass == null) {
         agentInstallerClass =
             agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentInstaller");
       }
 
-      Method agentInstallerMethod =
-          agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class, URL.class);
+      Method agentInstallerMethod;
+      if (override) {
+        agentInstallerMethod =
+            agentInstallerClass.getMethod(
+                "installBytebuddyAgent", Instrumentation.class, File.class);
+      } else {
+        agentInstallerMethod =
+            agentInstallerClass.getMethod("installBytebuddyAgent", Instrumentation.class);
+      }
       ClassLoader savedContextClassLoader = Thread.currentThread().getContextClassLoader();
       try {
         Thread.currentThread().setContextClassLoader(agentClassLoader);
-        agentInstallerMethod.invoke(null, inst, bootstrapUrl);
+        if (override) {
+          agentInstallerMethod.invoke(null, inst, javaagentFile);
+        } else {
+          agentInstallerMethod.invoke(null, inst);
+        }
       } finally {
         Thread.currentThread().setContextClassLoader(savedContextClassLoader);
       }
@@ -58,8 +69,8 @@ public class AgentInitializer {
   }
 
   // TODO misleading name
-  public static synchronized ClassLoader getAgentClassloader() {
-    return AGENT_CLASSLOADER;
+  public static synchronized ClassLoader getAgentClassLoader() {
+    return agentClassLoader;
   }
 
   /**
@@ -70,8 +81,7 @@ public class AgentInitializer {
    *     classloader
    * @return Agent Classloader
    */
-  @SuppressWarnings("unchecked")
-  private static ClassLoader createAgentClassLoader(String innerJarFilename, URL bootstrapUrl)
+  private static ClassLoader createAgentClassLoader(String innerJarFilename, File javaagentFile)
       throws Exception {
     ClassLoader agentParent;
     if (isJavaBefore9()) {
@@ -81,21 +91,15 @@ public class AgentInitializer {
       agentParent = getPlatformClassLoader();
     }
 
-    Class<?> loaderClass =
-        ClassLoader.getSystemClassLoader()
-            .loadClass("io.opentelemetry.javaagent.bootstrap.AgentClassLoader");
-    Constructor<ClassLoader> constructor =
-        (Constructor<ClassLoader>)
-            loaderClass.getDeclaredConstructor(URL.class, String.class, ClassLoader.class);
     ClassLoader agentClassLoader =
-        constructor.newInstance(bootstrapUrl, innerJarFilename, agentParent);
+        new AgentClassLoader(javaagentFile, innerJarFilename, agentParent);
 
     Class<?> extensionClassLoaderClass =
         agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.ExtensionClassLoader");
     return (ClassLoader)
         extensionClassLoaderClass
-            .getDeclaredMethod("getInstance", ClassLoader.class)
-            .invoke(null, agentClassLoader);
+            .getDeclaredMethod("getInstance", ClassLoader.class, File.class)
+            .invoke(null, agentClassLoader, javaagentFile);
   }
 
   private static ClassLoader getPlatformClassLoader()
@@ -111,4 +115,6 @@ public class AgentInitializer {
   public static boolean isJavaBefore9() {
     return System.getProperty("java.version").startsWith("1.");
   }
+
+  private AgentInitializer() {}
 }

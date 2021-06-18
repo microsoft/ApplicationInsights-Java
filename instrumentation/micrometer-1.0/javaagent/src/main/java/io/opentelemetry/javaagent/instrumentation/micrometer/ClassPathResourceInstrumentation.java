@@ -19,7 +19,6 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.springframework.core.io.ClassPathResource;
 
 // TODO consider applying this instrumentation more generally on ClassLoaders
-// TODO cannot test this currently since AGENT_CLASSLOADER is not set in AgentTestRunner
 public final class ClassPathResourceInstrumentation implements TypeInstrumentation {
 
   @Override
@@ -39,8 +38,9 @@ public final class ClassPathResourceInstrumentation implements TypeInstrumentati
     public static InputStream onEnter(@Advice.This final ClassPathResource resource) {
       if ("io/opentelemetry/javaagent/instrumentation/micrometer/AzureMonitorAutoConfiguration.class"
           .equals(resource.getPath())) {
-        if (AgentInitializer.AGENT_CLASSLOADER != null) {
-          return AgentInitializer.AGENT_CLASSLOADER.getResourceAsStream(
+        ClassLoader agentClassLoader = AgentInitializer.getAgentClassLoader();
+        if (agentClassLoader != null) {
+          return agentClassLoader.getResourceAsStream(
               "io/opentelemetry/javaagent/instrumentation/micrometer/AzureMonitorAutoConfiguration.class");
         }
       }

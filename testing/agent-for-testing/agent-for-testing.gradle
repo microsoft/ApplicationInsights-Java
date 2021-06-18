@@ -1,12 +1,12 @@
 plugins {
-  id "com.github.johnrengelman.shadow"
+  id "otel.shadow-conventions"
 }
 
 description = 'OpenTelemetry Javaagent for testing'
 group = 'io.opentelemetry.javaagent'
 
-apply from: "$rootDir/gradle/java.gradle"
-apply from: "$rootDir/gradle/publish.gradle"
+apply plugin: "otel.java-conventions"
+apply plugin: "otel.publish-conventions"
 
 jar {
   manifest {
@@ -52,26 +52,6 @@ shadowJar {
   manifest {
     inheritFrom project.tasks.jar.manifest
   }
-
-  mergeServiceFiles()
-
-  exclude '**/module-info.class'
-
-  // Prevents conflict with other SLF4J instances. Important for premain.
-  relocate 'org.slf4j', 'io.opentelemetry.javaagent.slf4j'
-  // rewrite dependencies calling Logger.getLogger
-  relocate 'java.util.logging.Logger', 'io.opentelemetry.javaagent.bootstrap.PatchLogger'
-
-  // prevents conflict with library instrumentation
-  relocate 'io.opentelemetry.instrumentation.api', 'io.opentelemetry.javaagent.shaded.instrumentation.api'
-
-  // relocate OpenTelemetry API
-  relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
-  relocate "io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv"
-  relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
-
-  // this is for instrumentation on opentelemetry-api itself
-  relocate "application.io.opentelemetry", "io.opentelemetry"
 }
 
 jar {
@@ -88,6 +68,8 @@ dependencies {
 
 afterEvaluate {
   tasks.withType(Test).configureEach {
+    inputs.file(shadowJar.archiveFile)
+
     jvmArgs "-Dotel.javaagent.debug=true"
     jvmArgs "-javaagent:${shadowJar.archiveFile.get().asFile.absolutePath}"
 

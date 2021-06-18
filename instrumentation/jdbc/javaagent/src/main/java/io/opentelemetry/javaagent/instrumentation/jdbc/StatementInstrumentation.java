@@ -8,7 +8,7 @@ package io.opentelemetry.javaagent.instrumentation.jdbc;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
 import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge.currentContext;
-import static io.opentelemetry.javaagent.instrumentation.jdbc.JdbcInstrumenters.instrumenter;
+import static io.opentelemetry.javaagent.instrumentation.jdbc.JdbcSingletons.instrumenter;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -43,6 +43,7 @@ public class StatementInstrumentation implements TypeInstrumentation {
         StatementInstrumentation.class.getName() + "$StatementAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class StatementAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)

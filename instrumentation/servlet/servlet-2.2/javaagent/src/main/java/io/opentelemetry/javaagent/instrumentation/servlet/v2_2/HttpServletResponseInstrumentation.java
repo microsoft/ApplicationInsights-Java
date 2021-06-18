@@ -7,8 +7,8 @@ package io.opentelemetry.javaagent.instrumentation.servlet.v2_2;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
 import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static io.opentelemetry.javaagent.extension.matcher.NameMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -54,14 +54,18 @@ public class HttpServletResponseInstrumentation implements TypeInstrumentation {
         HttpServletResponseInstrumentation.class.getName() + "$Servlet2ResponseRedirectAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class Servlet2ResponseRedirectAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void onEnter(@Advice.This HttpServletResponse response) {
       InstrumentationContext.get(ServletResponse.class, Integer.class).put(response, 302);
     }
   }
 
+  @SuppressWarnings("unused")
   public static class Servlet2ResponseStatusAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void onEnter(
         @Advice.This HttpServletResponse response, @Advice.Argument(0) Integer status) {

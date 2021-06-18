@@ -5,11 +5,10 @@
 
 package io.opentelemetry.javaagent.instrumentation.spring.webflux.server;
 
-import static io.opentelemetry.javaagent.instrumentation.spring.webflux.server.SpringWebfluxHttpServerTracer.tracer;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.api.tracer.ClassNames;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -26,17 +25,14 @@ public class AdviceUtils {
 
   public static final String CONTEXT_ATTRIBUTE = AdviceUtils.class.getName() + ".Context";
 
-  public static String parseOperationName(Object handler) {
-    String className = tracer().spanNameForClass(handler.getClass());
-    String operationName;
+  public static String spanNameForHandler(Object handler) {
+    String className = ClassNames.simpleName(handler.getClass());
     int lambdaIdx = className.indexOf("$$Lambda$");
 
     if (lambdaIdx > -1) {
-      operationName = className.substring(0, lambdaIdx) + ".lambda";
-    } else {
-      operationName = className + ".handle";
+      return className.substring(0, lambdaIdx) + ".lambda";
     }
-    return operationName;
+    return className + ".handle";
   }
 
   public static <T> Mono<T> setPublisherSpan(
@@ -103,14 +99,14 @@ public class AdviceUtils {
     @Override
     public void onSubscribe(Subscription subscription) {
       this.subscription = subscription;
-      try (Scope scope = otelContext.makeCurrent()) {
+      try (Scope ignored = otelContext.makeCurrent()) {
         subscriber.onSubscribe(this);
       }
     }
 
     @Override
     public void onNext(T t) {
-      try (Scope scope = otelContext.makeCurrent()) {
+      try (Scope ignored = otelContext.makeCurrent()) {
         subscriber.onNext(t);
       }
     }

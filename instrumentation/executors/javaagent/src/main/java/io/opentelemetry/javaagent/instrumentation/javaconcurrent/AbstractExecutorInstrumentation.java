@@ -91,6 +91,7 @@ public abstract class AbstractExecutorInstrumentation implements TypeInstrumenta
         "org.eclipse.jetty.util.thread.ReservedThreadExecutor",
         "org.glassfish.grizzly.threadpool.GrizzlyExecutorService",
         "play.api.libs.streams.Execution$trampoline$",
+        "play.shaded.ahc.io.netty.util.concurrent.ThreadPerTaskExecutor",
         "scala.concurrent.forkjoin.ForkJoinPool",
         "scala.concurrent.Future$InternalCallbackExecutor$",
         "scala.concurrent.impl.ExecutionContextImpl",
@@ -107,7 +108,7 @@ public abstract class AbstractExecutorInstrumentation implements TypeInstrumenta
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
     ElementMatcher.Junction<TypeDescription> matcher = any();
-    final ElementMatcher.Junction<TypeDescription> hasExecutorInterfaceMatcher =
+    ElementMatcher.Junction<TypeDescription> hasExecutorInterfaceMatcher =
         implementsInterface(named(Executor.class.getName()));
     if (!INCLUDE_ALL) {
       matcher =

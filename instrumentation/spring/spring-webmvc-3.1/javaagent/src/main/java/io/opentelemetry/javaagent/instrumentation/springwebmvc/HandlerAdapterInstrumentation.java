@@ -7,7 +7,7 @@ package io.opentelemetry.javaagent.instrumentation.springwebmvc;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
 import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static io.opentelemetry.javaagent.instrumentation.springwebmvc.SpringWebMvcInstrumenters.handlerInstrumenter;
+import static io.opentelemetry.javaagent.instrumentation.springwebmvc.SpringWebMvcSingletons.handlerInstrumenter;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
@@ -50,7 +50,9 @@ public class HandlerAdapterInstrumentation implements TypeInstrumentation {
         HandlerAdapterInstrumentation.class.getName() + "$ControllerAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class ControllerAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void nameResourceAndStartSpan(
         @Advice.Argument(0) HttpServletRequest request,

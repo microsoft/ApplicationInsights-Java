@@ -14,9 +14,8 @@ import static io.opentelemetry.instrumentation.test.base.HttpServerTest.ServerEn
 import io.opentelemetry.instrumentation.test.AgentTestTrait
 import io.opentelemetry.instrumentation.test.asserts.TraceAssert
 import io.opentelemetry.instrumentation.test.base.HttpServerTest
+import io.opentelemetry.testing.internal.armeria.common.AggregatedHttpRequest
 import jakarta.servlet.Servlet
-import okhttp3.Request
-import okhttp3.RequestBody
 
 abstract class AbstractServlet5Test<SERVER, CONTEXT> extends HttpServerTest<SERVER> implements AgentTestTrait {
   @Override
@@ -49,14 +48,14 @@ abstract class AbstractServlet5Test<SERVER, CONTEXT> extends HttpServerTest<SERV
   protected ServerEndpoint lastRequest
 
   @Override
-  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
-    true
+  AggregatedHttpRequest request(ServerEndpoint uri, String method) {
+    lastRequest = uri
+    super.request(uri, method)
   }
 
   @Override
-  Request.Builder request(ServerEndpoint uri, String method, RequestBody body) {
-    lastRequest = uri
-    super.request(uri, method, body)
+  boolean sendsBackAiTargetAppId(ServerEndpoint endpoint) {
+    true
   }
 
   boolean errorEndpointUsesSendError() {

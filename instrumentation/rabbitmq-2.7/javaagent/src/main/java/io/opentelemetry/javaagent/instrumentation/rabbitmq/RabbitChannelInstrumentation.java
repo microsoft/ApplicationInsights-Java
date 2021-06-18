@@ -7,7 +7,6 @@ package io.opentelemetry.javaagent.instrumentation.rabbitmq;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
 import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static io.opentelemetry.javaagent.extension.matcher.NameMatchers.namedOneOf;
 import static io.opentelemetry.javaagent.instrumentation.rabbitmq.RabbitCommandInstrumentation.SpanHolder.CURRENT_RABBIT_CONTEXT;
 import static io.opentelemetry.javaagent.instrumentation.rabbitmq.RabbitTracer.tracer;
 import static net.bytebuddy.matcher.ElementMatchers.canThrow;
@@ -17,6 +16,7 @@ import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.isSetter;
 import static net.bytebuddy.matcher.ElementMatchers.nameEndsWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
@@ -83,7 +83,9 @@ public class RabbitChannelInstrumentation implements TypeInstrumentation {
   }
 
   // TODO Why do we start span here and not in ChannelPublishAdvice below?
+  @SuppressWarnings("unused")
   public static class ChannelMethodAdvice {
+
     @Advice.OnMethodEnter
     public static void onEnter(
         @Advice.This Channel channel,
@@ -120,7 +122,9 @@ public class RabbitChannelInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class ChannelPublishAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void setSpanNameAddHeaders(
         @Advice.Argument(0) String exchange,
@@ -141,10 +145,7 @@ public class RabbitChannelInstrumentation implements TypeInstrumentation {
         if (props == null) {
           props = MessageProperties.MINIMAL_BASIC;
         }
-        Integer deliveryMode = props.getDeliveryMode();
-        if (deliveryMode != null) {
-          span.setAttribute("rabbitmq.delivery_mode", deliveryMode);
-        }
+        tracer().onProps(span, props);
 
         // We need to copy the BasicProperties and provide a header map we can modify
         Map<String, Object> headers = props.getHeaders();
@@ -172,7 +173,9 @@ public class RabbitChannelInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class ChannelGetAdvice {
+
     @Advice.OnMethodEnter
     public static long takeTimestamp(@Advice.Local("callDepth") int callDepth) {
 
@@ -204,7 +207,9 @@ public class RabbitChannelInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class ChannelConsumeAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void wrapConsumer(
         @Advice.Argument(0) String queue,

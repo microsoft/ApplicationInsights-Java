@@ -30,35 +30,36 @@ val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.12.3",
   "com.google.guava:guava-bom:30.1.1-jre",
   "org.codehaus.groovy:groovy-bom:${groovyVersion}",
-  "io.opentelemetry:opentelemetry-bom:1.2.0",
-  "io.opentelemetry:opentelemetry-bom-alpha:1.2.0-alpha",
-  "org.junit:junit-bom:5.7.1"
+  "io.opentelemetry:opentelemetry-bom:1.3.0",
+  "io.opentelemetry:opentelemetry-bom-alpha:1.3.0-alpha",
+  "org.junit:junit-bom:5.7.2"
 )
 
 val DEPENDENCY_SETS = listOf(
   DependencySet(
     "com.google.auto.value",
-    "1.7.5",
+    "1.8.1",
     listOf("auto-value", "auto-value-annotations")
   ),
   DependencySet(
     "com.google.errorprone",
-    "2.4.0",
+    "2.7.1",
     listOf("error_prone_annotations", "error_prone_core")
   ),
   DependencySet(
     "io.prometheus",
-    "0.9.0",
+    "0.11.0",
     listOf("simpleclient", "simpleclient_common", "simpleclient_httpserver")
   ),
   DependencySet(
     "net.bytebuddy",
-    "1.10.18",
+    // When updating, also update buildSrc/build.gradle.kts
+    "1.11.2",
     listOf("byte-buddy", "byte-buddy-agent")
   ),
   DependencySet(
     "org.mockito",
-    "3.8.0",
+    "3.11.1",
     listOf("mockito-core", "mockito-junit-jupiter")
   ),
   DependencySet(
@@ -77,16 +78,27 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.3",
   "com.blogspot.mydailyjava:weak-lock-free:0.18",
   "com.github.ben-manes.caffeine:caffeine:2.9.0",
-  "com.github.stefanbirkner:system-lambda:1.1.0",
+  "com.github.stefanbirkner:system-lambda:1.2.0",
   "com.github.stefanbirkner:system-rules:1.19.0",
   "com.google.auto.service:auto-service:1.0",
   "com.uber.nullaway:nullaway:0.9.1",
+  "commons-beanutils:commons-beanutils:1.9.4",
+  "commons-cli:commons-cli:1.4",
+  "commons-codec:commons-codec:1.15",
+  "commons-collections:commons-collections:3.2.2",
+  "commons-digester:commons-digester:2.1",
+  "commons-fileupload:commons-fileupload:1.4",
+  "commons-io:commons-io:2.10.0",
+  "commons-lang:commons-lang:2.6",
+  "commons-logging:commons-logging:1.2",
+  "commons-validator:commons-validator:1.7",
   "info.solidsoft.spock:spock-global-unroll:0.5.1",
+  "io.netty:netty:3.10.6.Final",
   "org.assertj:assertj-core:3.19.0",
-  "org.awaitility:awaitility:4.0.3",
-  "org.checkerframework:checker-qual:3.6.1",
+  "org.awaitility:awaitility:4.1.0",
+  "org.checkerframework:checker-qual:3.14.0",
   "org.codehaus.groovy:groovy-all:${groovyVersion}",
-  "org.objenesis:objenesis:3.1",
+  "org.objenesis:objenesis:3.2",
   "org.spockframework:spock-core:1.3-groovy-2.5",
   "org.scala-lang:scala-library:2.11.12",
   "org.springframework.boot:spring-boot-dependencies:2.3.1.RELEASE"

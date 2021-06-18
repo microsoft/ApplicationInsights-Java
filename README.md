@@ -54,6 +54,11 @@ You can also configure the agent and exporter via command line arguments
 or environment variables. The net result is the ability to gather telemetry
 data from a Java application without code changes.
 
+This repository also publishes standalone instrumentation for several libraries (and growing)
+that can be used if you prefer that over using the Java agent.
+Please see [standalone library instrumentation](docs/standalone-library-instrumentation.md)
+if you are looking for documentation on using those.
+
 ## Getting Started
 
 Download the [latest version](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent-all.jar).
@@ -97,7 +102,7 @@ behavior you find.*
 
 ## Supported libraries, frameworks, and application servers
 
-We support an impressively huge number of [libraries and frameworks](docs/supported-libraries.md#libraries---frameworks) and
+We support an impressively huge number of [libraries and frameworks](docs/supported-libraries.md#libraries--frameworks) and
 a majority of the most popular [application servers](docs/supported-libraries.md#application-servers)...right out of the box!
 [Click here to see the full list](docs/supported-libraries.md) and to learn more about
 [disabled instrumentation](docs/supported-libraries.md#disabled-instrumentations)

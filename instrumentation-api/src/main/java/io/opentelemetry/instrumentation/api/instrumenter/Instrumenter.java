@@ -16,6 +16,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.InstrumentationVersion;
 import io.opentelemetry.instrumentation.api.internal.SupportabilityMetrics;
 import io.opentelemetry.instrumentation.api.tracer.ClientSpan;
+import io.opentelemetry.instrumentation.api.tracer.ConsumerSpan;
 import io.opentelemetry.instrumentation.api.tracer.ServerSpan;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,11 +56,13 @@ public class Instrumenter<REQUEST, RESPONSE> {
   private final SpanNameExtractor<? super REQUEST> spanNameExtractor;
   private final SpanKindExtractor<? super REQUEST> spanKindExtractor;
   private final SpanStatusExtractor<? super REQUEST, ? super RESPONSE> spanStatusExtractor;
-  private final List<? extends AttributesExtractor<? super REQUEST, ? super RESPONSE>> extractors;
+  private final List<? extends AttributesExtractor<? super REQUEST, ? super RESPONSE>>
+      attributesExtractors;
+  private final List<? extends SpanLinkExtractor<? super REQUEST>> spanLinkExtractors;
   private final List<? extends RequestListener> requestListeners;
   private final ErrorCauseExtractor errorCauseExtractor;
-  private final StartTimeExtractor<REQUEST> startTimeExtractor;
-  private final EndTimeExtractor<RESPONSE> endTimeExtractor;
+  @Nullable private final StartTimeExtractor<REQUEST> startTimeExtractor;
+  @Nullable private final EndTimeExtractor<RESPONSE> endTimeExtractor;
 
   Instrumenter(InstrumenterBuilder<REQUEST, RESPONSE> builder) {
     this.instrumentationName = builder.instrumentationName;
@@ -68,7 +71,8 @@ public class Instrumenter<REQUEST, RESPONSE> {
     this.spanNameExtractor = builder.spanNameExtractor;
     this.spanKindExtractor = builder.spanKindExtractor;
     this.spanStatusExtractor = builder.spanStatusExtractor;
-    this.extractors = new ArrayList<>(builder.attributesExtractors);
+    this.attributesExtractors = new ArrayList<>(builder.attributesExtractors);
+    this.spanLinkExtractors = new ArrayList<>(builder.spanLinkExtractors);
     this.requestListeners = new ArrayList<>(builder.requestListeners);
     this.errorCauseExtractor = builder.errorCauseExtractor;
     this.startTimeExtractor = builder.startTimeExtractor;
@@ -86,10 +90,11 @@ public class Instrumenter<REQUEST, RESPONSE> {
     SpanKind spanKind = spanKindExtractor.extract(request);
     switch (spanKind) {
       case SERVER:
-        suppressed = ServerSpan.fromContextOrNull(parentContext) != null;
+      case CONSUMER:
+        suppressed = ServerSpan.exists(parentContext) || ConsumerSpan.exists(parentContext);
         break;
       case CLIENT:
-        suppressed = ClientSpan.fromContextOrNull(parentContext) != null;
+        suppressed = ClientSpan.exists(parentContext);
         break;
       default:
         break;
@@ -119,8 +124,12 @@ public class Instrumenter<REQUEST, RESPONSE> {
       spanBuilder.setStartTimestamp(startTimeExtractor.extract(request));
     }
 
+    for (SpanLinkExtractor<? super REQUEST> extractor : spanLinkExtractors) {
+      spanBuilder.addLink(extractor.extract(parentContext, request));
+    }
+
     UnsafeAttributes attributesBuilder = new UnsafeAttributes();
-    for (AttributesExtractor<? super REQUEST, ? super RESPONSE> extractor : extractors) {
+    for (AttributesExtractor<? super REQUEST, ? super RESPONSE> extractor : attributesExtractors) {
       extractor.onStart(attributesBuilder, request);
     }
     Attributes attributes = attributesBuilder;
@@ -139,6 +148,8 @@ public class Instrumenter<REQUEST, RESPONSE> {
         return ServerSpan.with(context, span);
       case CLIENT:
         return ClientSpan.with(context, span);
+      case CONSUMER:
+        return ConsumerSpan.with(context, span);
       default:
         return context;
     }
@@ -154,7 +165,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
     Span span = Span.fromContext(context);
 
     UnsafeAttributes attributesBuilder = new UnsafeAttributes();
-    for (AttributesExtractor<? super REQUEST, ? super RESPONSE> extractor : extractors) {
+    for (AttributesExtractor<? super REQUEST, ? super RESPONSE> extractor : attributesExtractors) {
       extractor.onEnd(attributesBuilder, request, response);
     }
     Attributes attributes = attributesBuilder;

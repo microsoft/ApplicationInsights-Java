@@ -54,7 +54,9 @@ public class CouchbaseNetworkInstrumentation implements TypeInstrumentation {
         CouchbaseNetworkInstrumentation.class.getName() + "$CouchbaseNetworkAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class CouchbaseNetworkAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void addNetworkTagsToSpan(
         @Advice.FieldValue("remoteHostname") String remoteHostname,

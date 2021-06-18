@@ -26,8 +26,9 @@ public class InstrumentationContext {
    * @param <C> context class
    * @return The instance of context store for given arguments.
    */
-  public static <K, C> ContextStore<K, C> get(Class<K> keyClass, Class<C> contextClass) {
-    throw new RuntimeException(
+  public static <Q extends K, K, C> ContextStore<Q, C> get(
+      Class<K> keyClass, Class<C> contextClass) {
+    throw new IllegalStateException(
         "Calls to this method will be rewritten by Instrumentation Context Provider (e.g. FieldBackedProvider)");
   }
 }

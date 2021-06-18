@@ -5,10 +5,10 @@
 
 package io.opentelemetry.javaagent.instrumentation.couchbase.v2_0;
 
-import static io.opentelemetry.javaagent.extension.matcher.NameMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 
@@ -41,6 +41,7 @@ public class CouchbaseBucketInstrumentation implements TypeInstrumentation {
         CouchbaseBucketInstrumentation.class.getName() + "$CouchbaseClientQueryAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class CouchbaseClientAdvice {
 
     @Advice.OnMethodEnter
@@ -62,6 +63,7 @@ public class CouchbaseBucketInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class CouchbaseClientQueryAdvice {
 
     @Advice.OnMethodEnter

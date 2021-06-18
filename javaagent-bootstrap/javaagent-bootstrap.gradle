@@ -1,11 +1,7 @@
 group = 'io.opentelemetry.javaagent'
 
-apply from: "$rootDir/gradle/java.gradle"
-apply from: "$rootDir/gradle/publish.gradle"
-
-// FIXME: Improve test coverage.
-minimumBranchCoverage = 0.0
-minimumInstructionCoverage = 0.0
+apply plugin: "otel.java-conventions"
+apply plugin: "otel.publish-conventions"
 
 // patch inner class from Caffeine to avoid ForkJoinTask from being loaded too early
 sourceSets {
@@ -33,7 +29,7 @@ dependencies {
   api "io.opentelemetry:opentelemetry-api-metrics"
   compileOnly "io.opentelemetry:opentelemetry-sdk"
   implementation "org.slf4j:slf4j-api"
-  implementation "org.slf4j:slf4j-simple:${versions["org.slf4j"]}"
+  implementation "org.slf4j:slf4j-simple"
   // ^ Generally a bad idea for libraries, but we're shadowing.
 
   implementation project(':javaagent-api')

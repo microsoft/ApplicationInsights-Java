@@ -8,20 +8,24 @@ package io.opentelemetry.instrumentation.awssdk.v2_2
 import static com.google.common.collect.ImmutableMap.of
 import static io.opentelemetry.api.trace.SpanKind.CLIENT
 import static io.opentelemetry.api.trace.StatusCode.ERROR
-import static io.opentelemetry.instrumentation.test.server.http.TestHttpServer.httpServer
 import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP
 
 import io.opentelemetry.instrumentation.test.InstrumentationSpecification
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
+import io.opentelemetry.testing.internal.armeria.common.HttpResponse
+import io.opentelemetry.testing.internal.armeria.common.HttpStatus
+import io.opentelemetry.testing.internal.armeria.common.MediaType
+import io.opentelemetry.testing.internal.armeria.testing.junit5.server.mock.MockWebServerExtension
 import java.time.Duration
 import java.util.concurrent.Future
-import java.util.concurrent.atomic.AtomicReference
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.core.async.AsyncResponseTransformer
 import software.amazon.awssdk.core.client.builder.SdkClientBuilder
+import software.amazon.awssdk.core.client.config.SdkClientOption
 import software.amazon.awssdk.core.exception.SdkClientException
+import software.amazon.awssdk.core.retry.RetryPolicy
 import software.amazon.awssdk.http.apache.ApacheHttpClient
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
@@ -52,7 +56,6 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.SqsClient
 import software.amazon.awssdk.services.sqs.model.CreateQueueRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
-import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Unroll
 
@@ -63,23 +66,18 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
     .create(AwsBasicCredentials.create("my-access-key", "my-secret-key"))
 
   @Shared
-  def responseBody = new AtomicReference<String>()
+  def server = new MockWebServerExtension()
 
-  @AutoCleanup
-  @Shared
-  def server
+  def setupSpec() {
+    server.start()
+  }
+
+  def cleanupSpec() {
+    server.stop()
+  }
 
   def setup() {
-    // Lazy-load server to allow traits to initialize first.
-    if (server == null) {
-      server = httpServer {
-        handlers {
-          all {
-            response.status(200).send(responseBody.get())
-          }
-        }
-      }
-    }
+    server.beforeTestExecution(null)
   }
 
   abstract void configureSdkClient(SdkClientBuilder builder)
@@ -88,11 +86,11 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
     setup:
     configureSdkClient(builder)
     def client = builder
-      .endpointOverride(server.address)
+      .endpointOverride(server.httpUri())
       .region(Region.AP_NORTHEAST_1)
       .credentialsProvider(CREDENTIALS_PROVIDER)
       .build()
-    responseBody.set("")
+    server.enqueue(HttpResponse.of(HttpStatus.OK, MediaType.PLAIN_TEXT_UTF_8, ""))
     def response = call.call(client)
 
     if (response instanceof Future) {
@@ -121,11 +119,11 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
     setup:
     configureSdkClient(builder)
     def client = builder
-      .endpointOverride(server.address)
+      .endpointOverride(server.httpUri())
       .region(Region.AP_NORTHEAST_1)
       .credentialsProvider(CREDENTIALS_PROVIDER)
       .build()
-    responseBody.set("")
+    server.enqueue(HttpResponse.of(HttpStatus.OK, MediaType.PLAIN_TEXT_UTF_8, ""))
     def response = call.call(client)
 
     if (response instanceof Future) {
@@ -158,9 +156,9 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
           hasNoParent()
           attributes {
             "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
-            "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
-            "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.address}${path}") }
+            "${SemanticAttributes.NET_PEER_NAME.key}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_PORT.key}" server.httpPort()
+            "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.httpUri()}${path}") }
             "${SemanticAttributes.HTTP_METHOD.key}" "$method"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_USER_AGENT.key}" { it.startsWith("aws-sdk-java/") }
@@ -176,13 +174,13 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             "aws.dynamodb.global_secondary_indexes" "[{\"IndexName\":\"globalIndex\",\"KeySchema\":[{\"AttributeName\":\"attribute\"}],\"ProvisionedThroughput\":{\"ReadCapacityUnits\":10,\"WriteCapacityUnits\":12}},{\"IndexName\":\"globalIndexSecondary\",\"KeySchema\":[{\"AttributeName\":\"attributeSecondary\"}],\"ProvisionedThroughput\":{\"ReadCapacityUnits\":7,\"WriteCapacityUnits\":8}}]"
             "aws.dynamodb.provisioned_throughput.read_capacity_units" "1"
             "aws.dynamodb.provisioned_throughput.write_capacity_units" "1"
-            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
     }
-    server.lastRequest.headers.get("X-Amzn-Trace-Id") != null
-    server.lastRequest.headers.get("traceparent") == null
+    def request = server.takeRequest()
+    request.request().headers().get("X-Amzn-Trace-Id") != null
+    request.request().headers().get("traceparent") == null
   }
 
   def assertQueryRequest(path, method, requestId) {
@@ -194,9 +192,9 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
           hasNoParent()
           attributes {
             "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
-            "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
-            "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.address}${path}") }
+            "${SemanticAttributes.NET_PEER_NAME.key}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_PORT.key}" server.httpPort()
+            "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.httpUri()}${path}") }
             "${SemanticAttributes.HTTP_METHOD.key}" "$method"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_USER_AGENT.key}" { it.startsWith("aws-sdk-java/") }
@@ -211,13 +209,13 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             "${SemanticAttributes.DB_OPERATION.key}" "Query"
             "aws.dynamodb.limit" "10"
             "aws.dynamodb.select" "ALL_ATTRIBUTES"
-            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
     }
-    server.lastRequest.headers.get("X-Amzn-Trace-Id") != null
-    server.lastRequest.headers.get("traceparent") == null
+    def request = server.takeRequest()
+    request.request().headers().get("X-Amzn-Trace-Id") != null
+    request.request().headers().get("traceparent") == null
   }
 
   def assertDynamoDbRequest(service, operation, path, method, requestId) {
@@ -229,9 +227,9 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
           hasNoParent()
           attributes {
             "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
-            "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
-            "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.address}${path}") }
+            "${SemanticAttributes.NET_PEER_NAME.key}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_PORT.key}" server.httpPort()
+            "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.httpUri()}${path}") }
             "${SemanticAttributes.HTTP_METHOD.key}" "$method"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
             "${SemanticAttributes.HTTP_USER_AGENT.key}" { it.startsWith("aws-sdk-java/") }
@@ -244,13 +242,13 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             "${SemanticAttributes.DB_SYSTEM.key}" "dynamodb"
             "${SemanticAttributes.DB_NAME.key}" "sometable"
             "${SemanticAttributes.DB_OPERATION.key}" "${operation}"
-            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
     }
-    server.lastRequest.headers.get("X-Amzn-Trace-Id") != null
-    server.lastRequest.headers.get("traceparent") == null
+    def request = server.takeRequest()
+    request.request().headers().get("X-Amzn-Trace-Id") != null
+    request.request().headers().get("traceparent") == null
   }
 
   static dynamoDbRequestDataTable(client) {
@@ -319,11 +317,11 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
     setup:
     configureSdkClient(builder)
     def client = builder
-      .endpointOverride(server.address)
+      .endpointOverride(server.httpUri())
       .region(Region.AP_NORTHEAST_1)
       .credentialsProvider(CREDENTIALS_PROVIDER)
       .build()
-    responseBody.set(body)
+    server.enqueue(HttpResponse.of(HttpStatus.OK, MediaType.PLAIN_TEXT_UTF_8, body))
     def response = call.call(client)
 
     if (response instanceof Future) {
@@ -342,9 +340,9 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
           hasNoParent()
           attributes {
             "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
-            "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
-            "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.address}${path}") }
+            "${SemanticAttributes.NET_PEER_NAME.key}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_PORT.key}" server.httpPort()
+            "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.httpUri()}${path}") }
             "${SemanticAttributes.HTTP_METHOD.key}" "$method"
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
@@ -362,13 +360,13 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             } else if (service == "Kinesis") {
               "aws.stream.name" "somestream"
             }
-            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
     }
-    server.lastRequest.headers.get("X-Amzn-Trace-Id") != null
-    server.lastRequest.headers.get("traceparent") == null
+    def request = server.takeRequest()
+    request.request().headers().get("X-Amzn-Trace-Id") != null
+    request.request().headers().get("traceparent") == null
 
     where:
     service   | operation           | method | path                  | requestId                              | builder                 | call                                                                                             | body
@@ -409,11 +407,11 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
     setup:
     configureSdkClient(builder)
     def client = builder
-      .endpointOverride(server.address)
+      .endpointOverride(server.httpUri())
       .region(Region.AP_NORTHEAST_1)
       .credentialsProvider(CREDENTIALS_PROVIDER)
       .build()
-    responseBody.set(body)
+    server.enqueue(HttpResponse.of(HttpStatus.OK, MediaType.PLAIN_TEXT_UTF_8, body))
     def response = call.call(client)
 
     if (response instanceof Future) {
@@ -431,9 +429,9 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
           hasNoParent()
           attributes {
             "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
-            "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
-            "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.address}${path}") }
+            "${SemanticAttributes.NET_PEER_NAME.key}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_PORT.key}" server.httpPort()
+            "${SemanticAttributes.HTTP_URL.key}" { it.startsWith("${server.httpUri()}${path}") }
             "${SemanticAttributes.HTTP_METHOD.key}" "$method"
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "${SemanticAttributes.HTTP_STATUS_CODE.key}" 200
@@ -451,13 +449,13 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
             } else if (service == "Kinesis") {
               "aws.stream.name" "somestream"
             }
-            "applicationinsights.internal.target_app_id" "1234"
           }
         }
       }
     }
-    server.lastRequest.headers.get("X-Amzn-Trace-Id") != null
-    server.lastRequest.headers.get("traceparent") == null
+    def request = server.takeRequest()
+    request.request().headers().get("X-Amzn-Trace-Id") != null
+    request.request().headers().get("traceparent") == null
 
     where:
     service | operation           | method | path                  | requestId                              | builder                  | call                                                                                                                             | body
@@ -500,18 +498,17 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
   // the instrumentation to add Events for retries instead.
   def "timeout and retry errors not captured"() {
     setup:
-    def server = httpServer {
-      handlers {
-        all {
-          Thread.sleep(500)
-          response.status(200).send()
-        }
-      }
-    }
+    def response = HttpResponse.delayed(HttpResponse.of(HttpStatus.OK), Duration.ofMillis(500))
+    // One retry so two requests.
+    server.enqueue(response)
+    server.enqueue(response)
     def builder = S3Client.builder()
     configureSdkClient(builder)
+    // Because the client builder does not merge overrides, the simplest way to set retry policy
+    // is to access the private field for now.
+    builder.clientConfiguration.option(SdkClientOption.RETRY_POLICY, RetryPolicy.builder().numRetries(1).build())
     def client = builder
-      .endpointOverride(server.address)
+      .endpointOverride(server.httpUri())
       .region(Region.AP_NORTHEAST_1)
       .credentialsProvider(CREDENTIALS_PROVIDER)
       .httpClientBuilder(ApacheHttpClient.builder().socketTimeout(Duration.ofMillis(50)))
@@ -533,9 +530,9 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
           hasNoParent()
           attributes {
             "${SemanticAttributes.NET_TRANSPORT.key}" IP_TCP
-            "${SemanticAttributes.NET_PEER_NAME.key}" "localhost"
-            "${SemanticAttributes.NET_PEER_PORT.key}" server.address.port
-            "${SemanticAttributes.HTTP_URL.key}" "$server.address/somebucket/somekey"
+            "${SemanticAttributes.NET_PEER_NAME.key}" "127.0.0.1"
+            "${SemanticAttributes.NET_PEER_PORT.key}" server.httpPort()
+            "${SemanticAttributes.HTTP_URL.key}" "${server.httpUri()}/somebucket/somekey"
             "${SemanticAttributes.HTTP_METHOD.key}" "GET"
             "${SemanticAttributes.HTTP_FLAVOR.key}" "1.1"
             "aws.service" "S3"
@@ -546,12 +543,5 @@ abstract class AbstractAws2ClientTest extends InstrumentationSpecification {
         }
       }
     }
-
-    cleanup:
-    server.close()
-  }
-
-  String expectedOperationName(String method) {
-    return method != null ? "HTTP $method" : "HTTP request"
   }
 }

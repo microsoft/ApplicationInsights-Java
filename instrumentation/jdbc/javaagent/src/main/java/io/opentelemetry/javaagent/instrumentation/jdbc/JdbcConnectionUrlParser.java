@@ -144,7 +144,6 @@ public enum JdbcConnectionUrlParser {
 
     @Override
     DbInfo.Builder doParse(String jdbcUrl, DbInfo.Builder builder) {
-      String type;
       String serverName = "";
       Integer port = null;
       String name = null;
@@ -155,7 +154,7 @@ public enum JdbcConnectionUrlParser {
         return builder;
       }
 
-      type = jdbcUrl.substring(0, hostIndex);
+      String type = jdbcUrl.substring(0, hostIndex);
 
       String[] split;
       if (type.equals("db2") || type.equals("as400")) {
@@ -780,9 +779,8 @@ public enum JdbcConnectionUrlParser {
         }
       } else {
         builder.subtype("directory").host(null).port(null);
-        String urlInstance = details;
-        if (!urlInstance.isEmpty()) {
-          instance = urlInstance;
+        if (!details.isEmpty()) {
+          instance = details;
         }
       }
 
@@ -845,7 +843,7 @@ public enum JdbcConnectionUrlParser {
         return withUrl(typeParsers.get(type).doParse(jdbcUrl, parsedProps), type);
       }
       return withUrl(GENERIC_URL_LIKE.doParse(jdbcUrl, parsedProps), type);
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       log.debug("Error parsing URL", e);
       return parsedProps.build();
     }
@@ -899,8 +897,7 @@ public enum JdbcConnectionUrlParser {
     return queryPairs;
   }
 
-  private static void populateStandardProperties(
-      DbInfo.Builder builder, Map<? extends Object, ? extends Object> props) {
+  private static void populateStandardProperties(DbInfo.Builder builder, Map<?, ?> props) {
     if (props != null && !props.isEmpty()) {
       if (props.containsKey("user")) {
         builder.user((String) props.get("user"));

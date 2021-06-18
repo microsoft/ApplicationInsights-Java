@@ -10,7 +10,7 @@ import io.opentelemetry.instrumentation.api.internal.ContextPropagationDebug;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 
 /** Utils for concurrent instrumentations. */
-public class ExecutorInstrumentationUtils {
+public final class ExecutorInstrumentationUtils {
   private static final String AGENT_CLASSLOADER_NAME =
       "io.opentelemetry.javaagent.bootstrap.AgentClassLoader";
 
@@ -92,6 +92,14 @@ public class ExecutorInstrumentationUtils {
             if (enclosingClass
                 .getName()
                 .equals("org.hornetq.utils.OrderedExecutorFactory$OrderedExecutor")) {
+              return false;
+            }
+
+            // Avoid instrumenting internal rabbit consumer task
+            if (enclosingClass
+                .getName()
+                .equals(
+                    "org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer")) {
               return false;
             }
           }
@@ -177,4 +185,6 @@ public class ExecutorInstrumentationUtils {
       state.clearParentContext();
     }
   }
+
+  private ExecutorInstrumentationUtils() {}
 }

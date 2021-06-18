@@ -19,13 +19,13 @@ public class Jetty8HttpServerTracer extends Servlet3HttpServerTracer {
   }
 
   public Context startServerSpan(HttpServletRequest request, HttpServletResponse response) {
-    return startSpan(request, response, "HTTP " + request.getMethod(), false);
+    return startSpan(request, response, "HTTP " + request.getMethod(), /* servlet= */ false);
   }
 
   @Override
   protected Context customizeContext(Context context, HttpServletRequest request) {
     context = super.customizeContext(context, request);
-    return AppServerBridge.init(context, false);
+    return AppServerBridge.init(context, /* shouldRecordException= */ false);
   }
 
   @Override
