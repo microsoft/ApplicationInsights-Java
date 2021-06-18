@@ -109,6 +109,7 @@ include ':instrumentation:aws-sdk:aws-sdk-2.2:testing'
 include ':instrumentation:azure-functions:javaagent'
 include ':instrumentation:cassandra:cassandra-3.0:javaagent'
 include ':instrumentation:cassandra:cassandra-4.0:javaagent'
+include ':instrumentation:azure-core-1.14:javaagent' // out of order to avoid merge conflict with azure-functions instrumentation
 include ':instrumentation:cdi-testing'
 include ':instrumentation:internal:internal-class-loader:javaagent'
 include ':instrumentation:internal:internal-class-loader:javaagent-integration-tests'

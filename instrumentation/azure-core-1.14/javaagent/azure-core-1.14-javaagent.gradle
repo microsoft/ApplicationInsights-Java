@@ -1,0 +1,25 @@
+apply from: "$rootDir/gradle/instrumentation.gradle"
+
+muzzle {
+  pass {
+    group = "com.azure"
+    module = "azure-core"
+    versions = "[1.14.0,)"
+    assertInverse = true
+  }
+}
+
+configurations {
+  testRuntime.exclude group: "com.azure", module: "azure-core-tracing-opentelemetry"
+}
+
+dependencies {
+  // to check for (potentially incompatible) differences in new versions of the injected artifact:
+  // git diff azure-core-tracing-opentelemetry_1.0.0-beta.8 azure-core-tracing-opentelemetry_1.0.0-beta.11
+  //          -- sdk/core/azure-core-tracing-opentelemetry
+  implementation(group: "com.azure", name: "azure-core-tracing-opentelemetry", version: "1.0.0-beta.11") {
+    exclude(group: "com.azure", module: "azure-core")
+  }
+
+  library group: "com.azure", name: "azure-core", version: "1.14.0"
+}
