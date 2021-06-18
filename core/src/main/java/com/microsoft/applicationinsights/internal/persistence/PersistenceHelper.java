@@ -57,20 +57,6 @@ final class PersistenceHelper {
         return tempFile;
     }
 
-    static long getTotalSizeOfPersistedFiles() {
-        if (!DEFAULT_FOlDER.exists()) {
-            return 0;
-        }
-
-        long sum = 0;
-        Collection<File> files = FileUtils.listFiles(DEFAULT_FOlDER, new String[]{PERMANENT_FILE_EXTENSION}, false);
-        for (File file : files) {
-           sum += file.length();
-        }
-
-        return sum;
-    }
-
     /**
      * Before a list of {@link ByteBuffer} can be persisted to disk, need to make sure capacity has not been reached yet.
      */
@@ -82,6 +68,20 @@ final class PersistenceHelper {
         }
 
         return true;
+    }
+
+    private static long getTotalSizeOfPersistedFiles() {
+        if (!DEFAULT_FOlDER.exists()) {
+            return 0;
+        }
+
+        long sum = 0;
+        Collection<File> files = FileUtils.listFiles(DEFAULT_FOlDER, new String[]{PERMANENT_FILE_EXTENSION}, false);
+        for (File file : files) {
+            sum += file.length();
+        }
+
+        return sum;
     }
 
 
