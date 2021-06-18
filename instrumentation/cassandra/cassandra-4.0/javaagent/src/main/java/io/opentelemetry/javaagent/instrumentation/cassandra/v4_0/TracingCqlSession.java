@@ -5,7 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.cassandra.v4_0;
 
-import static io.opentelemetry.javaagent.instrumentation.cassandra.v4_0.CassandraInstrumenters.instrumenter;
+import static io.opentelemetry.javaagent.instrumentation.cassandra.v4_0.CassandraSingletons.instrumenter;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -192,10 +192,9 @@ public class TracingCqlSession implements CqlSession {
     try (Scope ignored = context.makeCurrent()) {
       CompletionStage<AsyncResultSet> stage = session.executeAsync(statement);
       return stage.whenComplete(
-          (asyncResultSet, throwable) -> {
-            instrumenter()
-                .end(context, request, getExecutionInfo(asyncResultSet, throwable), throwable);
-          });
+          (asyncResultSet, throwable) ->
+              instrumenter()
+                  .end(context, request, getExecutionInfo(asyncResultSet, throwable), throwable));
     }
   }
 
@@ -206,10 +205,9 @@ public class TracingCqlSession implements CqlSession {
     try (Scope ignored = context.makeCurrent()) {
       CompletionStage<AsyncResultSet> stage = session.executeAsync(query);
       return stage.whenComplete(
-          (asyncResultSet, throwable) -> {
-            instrumenter()
-                .end(context, request, getExecutionInfo(asyncResultSet, throwable), throwable);
-          });
+          (asyncResultSet, throwable) ->
+              instrumenter()
+                  .end(context, request, getExecutionInfo(asyncResultSet, throwable), throwable));
     }
   }
 

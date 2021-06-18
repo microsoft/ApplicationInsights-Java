@@ -24,7 +24,11 @@ public abstract class Config {
 
   // lazy initialized, so that javaagent can set it, and library instrumentation can fall back and
   // read system properties
-  private static volatile Config INSTANCE = null;
+  @Nullable private static volatile Config instance = null;
+
+  public static Config create(Map<String, String> allProperties) {
+    return new AutoValue_Config(allProperties);
+  }
 
   /**
    * Sets the agent configuration singleton. This method is only supposed to be called once, from
@@ -32,24 +36,20 @@ public abstract class Config {
    * Config#get()} is used for the first time).
    */
   public static void internalInitializeConfig(Config config) {
-    if (INSTANCE != null) {
+    if (instance != null) {
       return;
     }
-    INSTANCE = requireNonNull(config);
+    instance = requireNonNull(config);
   }
 
   public static Config get() {
-    if (INSTANCE == null) {
+    if (instance == null) {
       // this should only happen in library instrumentation
       //
       // no need to synchronize because worst case is creating INSTANCE more than once
-      INSTANCE = new ConfigBuilder().readEnvironmentVariables().readSystemProperties().build();
+      instance = new ConfigBuilder().readEnvironmentVariables().readSystemProperties().build();
     }
-    return INSTANCE;
-  }
-
-  public static Config create(Map<String, String> allProperties) {
-    return new AutoValue_Config(allProperties);
+    return instance;
   }
 
   abstract Map<String, String> getAllProperties();

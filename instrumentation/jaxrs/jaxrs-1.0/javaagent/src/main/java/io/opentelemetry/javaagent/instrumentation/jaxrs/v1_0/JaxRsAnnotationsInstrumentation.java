@@ -8,12 +8,12 @@ package io.opentelemetry.javaagent.instrumentation.jaxrs.v1_0;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperMethod;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
 import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static io.opentelemetry.javaagent.extension.matcher.NameMatchers.namedOneOf;
 import static io.opentelemetry.javaagent.instrumentation.jaxrs.v1_0.JaxRsAnnotationsTracer.tracer;
 import static net.bytebuddy.matcher.ElementMatchers.declaresMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -58,6 +58,7 @@ public class JaxRsAnnotationsInstrumentation implements TypeInstrumentation {
         JaxRsAnnotationsInstrumentation.class.getName() + "$JaxRsAnnotationsAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class JaxRsAnnotationsAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)

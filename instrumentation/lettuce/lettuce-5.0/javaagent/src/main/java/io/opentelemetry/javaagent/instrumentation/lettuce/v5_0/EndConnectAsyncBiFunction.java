@@ -5,7 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.lettuce.v5_0;
 
-import static io.opentelemetry.javaagent.instrumentation.lettuce.v5_0.LettuceInstrumenters.connectInstrumenter;
+import static io.opentelemetry.javaagent.instrumentation.lettuce.v5_0.LettuceSingletons.connectInstrumenter;
 
 import io.lettuce.core.RedisURI;
 import io.opentelemetry.api.trace.Span;
@@ -31,11 +31,11 @@ public class EndConnectAsyncBiFunction<T, U extends Throwable, R>
           .getBooleanProperty("otel.instrumentation.lettuce.experimental-span-attributes", false);
 
   private final Context context;
-  private final RedisURI request;
+  private final RedisURI redisUri;
 
-  public EndConnectAsyncBiFunction(Context context, RedisURI request) {
+  public EndConnectAsyncBiFunction(Context context, RedisURI redisUri) {
     this.context = context;
-    this.request = request;
+    this.redisUri = redisUri;
   }
 
   @Override
@@ -47,7 +47,7 @@ public class EndConnectAsyncBiFunction<T, U extends Throwable, R>
       // and don't report this as an error
       throwable = null;
     }
-    connectInstrumenter().end(context, request, null, throwable);
+    connectInstrumenter().end(context, redisUri, null, throwable);
     return null;
   }
 }

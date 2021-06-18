@@ -172,17 +172,6 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
           int readerFlags) {
         return new ClassVisitor(Opcodes.ASM7, classVisitor) {
           @Override
-          public void visit(
-              int version,
-              int access,
-              String name,
-              String signature,
-              String superName,
-              String[] interfaces) {
-            super.visit(version, access, name, signature, superName, interfaces);
-          }
-
-          @Override
           public MethodVisitor visitMethod(
               int access, String name, String descriptor, String signature, String[] exceptions) {
             MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
@@ -241,7 +230,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
                         contextStoreImplementationClass.getInternalName(),
                         GET_CONTEXT_STORE_METHOD.getName(),
                         Type.getMethodDescriptor(GET_CONTEXT_STORE_METHOD),
-                        false);
+                        /* isInterface= */ false);
                     return;
                   }
                   throw new IllegalStateException(
@@ -323,7 +312,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
 
   /** Get transformer that forces helper injection onto bootstrap classloader. */
   private AgentBuilder.Transformer bootstrapHelperInjector(
-      final Collection<DynamicType.Unloaded<?>> helpers) {
+      Collection<DynamicType.Unloaded<?>> helpers) {
     // TODO: Better to pass through the context of the Instrumenter
     return new AgentBuilder.Transformer() {
       final HelperInjector injector =
@@ -433,8 +422,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
     };
   }
 
-  private AsmVisitorWrapper getFieldInjectionVisitor(
-      final String keyClassName, final String contextClassName) {
+  private AsmVisitorWrapper getFieldInjectionVisitor(String keyClassName, String contextClassName) {
     return new AsmVisitorWrapper() {
 
       @Override
@@ -449,7 +437,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
 
       @Override
       public ClassVisitor wrap(
-          final TypeDescription instrumentedType,
+          TypeDescription instrumentedType,
           ClassVisitor classVisitor,
           Implementation.Context implementationContext,
           TypePool typePool,
@@ -627,7 +615,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
    * @return visitor that adds implementation for methods that need to be generated
    */
   private AsmVisitorWrapper getContextStoreImplementationVisitor(
-      final String keyClassName, final String contextClassName) {
+      String keyClassName, String contextClassName) {
     return new AsmVisitorWrapper() {
 
       @Override
@@ -642,9 +630,9 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
 
       @Override
       public ClassVisitor wrap(
-          final TypeDescription instrumentedType,
+          TypeDescription instrumentedType,
           ClassVisitor classVisitor,
-          final Implementation.Context implementationContext,
+          Implementation.Context implementationContext,
           TypePool typePool,
           FieldList<FieldDescription.InDefinedShape> fields,
           MethodList<?> methods,
@@ -710,7 +698,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
                 accessorInterfaceInternalName,
                 getterName,
                 Utils.getMethodDefinition(accessorInterface, getterName).getDescriptor(),
-                true);
+                /* isInterface= */ true);
             mv.visitInsn(Opcodes.ARETURN);
             mv.visitLabel(elseLabel);
             if (frames) {
@@ -723,7 +711,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
                 instrumentedTypeInternalName,
                 "mapGet",
                 Utils.getMethodDefinition(instrumentedType, "mapGet").getDescriptor(),
-                false);
+                /* isInterface= */ false);
             mv.visitInsn(Opcodes.ARETURN);
             mv.visitMaxs(0, 0);
             mv.visitEnd();
@@ -765,7 +753,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
                 accessorInterfaceInternalName,
                 setterName,
                 Utils.getMethodDefinition(accessorInterface, setterName).getDescriptor(),
-                true);
+                /* isInterface= */ true);
             mv.visitJumpInsn(Opcodes.GOTO, endLabel);
             mv.visitLabel(elseLabel);
             if (frames) {
@@ -779,7 +767,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
                 instrumentedTypeInternalName,
                 "mapPut",
                 Utils.getMethodDefinition(instrumentedType, "mapPut").getDescriptor(),
-                false);
+                /* isInterface= */ false);
             mv.visitLabel(endLabel);
             if (frames) {
               mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
@@ -830,7 +818,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
                 "mapSynchronizeInstance",
                 Utils.getMethodDefinition(instrumentedType, "mapSynchronizeInstance")
                     .getDescriptor(),
-                false);
+                /* isInterface= */ false);
             mv.visitInsn(Opcodes.ARETURN);
             mv.visitMaxs(0, 0);
             mv.visitEnd();
@@ -854,7 +842,7 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
    * instance's own injected field or global hash map if field is not available.
    */
   // Called from generated code
-  @SuppressWarnings({"UnusedMethod", "UnusedVariable"})
+  @SuppressWarnings({"UnusedMethod", "UnusedVariable", "MethodCanBeStatic"})
   private static final class ContextStoreImplementationTemplate
       implements ContextStore<Object, Object> {
     private static final ContextStoreImplementationTemplate INSTANCE =
@@ -991,17 +979,8 @@ public class FieldBackedProvider implements InstrumentationContextProvider {
         .make();
   }
 
-  private AgentBuilder.Transformer getTransformerForAsmVisitor(final AsmVisitorWrapper visitor) {
-    return new AgentBuilder.Transformer() {
-      @Override
-      public DynamicType.Builder<?> transform(
-          DynamicType.Builder<?> builder,
-          TypeDescription typeDescription,
-          ClassLoader classLoader,
-          JavaModule module) {
-        return builder.visit(visitor);
-      }
-    };
+  private static AgentBuilder.Transformer getTransformerForAsmVisitor(AsmVisitorWrapper visitor) {
+    return (builder, typeDescription, classLoader, module) -> builder.visit(visitor);
   }
 
   private String getContextStoreImplementationClassName(

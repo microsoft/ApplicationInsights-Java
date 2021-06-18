@@ -56,7 +56,7 @@ class LoggingFailSafeMatcher<T> extends ElementMatcher.Junction.AbstractBase<T> 
         log.debug(description, e);
       }
       return fallback;
-    } catch (Exception e) {
+    } catch (Throwable e) {
       log.debug(description, e);
       return fallback;
     }

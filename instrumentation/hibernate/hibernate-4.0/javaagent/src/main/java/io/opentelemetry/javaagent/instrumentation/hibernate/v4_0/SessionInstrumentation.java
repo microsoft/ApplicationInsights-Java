@@ -7,11 +7,11 @@ package io.opentelemetry.javaagent.instrumentation.hibernate.v4_0;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
 import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static io.opentelemetry.javaagent.extension.matcher.NameMatchers.namedOneOf;
 import static io.opentelemetry.javaagent.instrumentation.hibernate.HibernateTracer.tracer;
 import static io.opentelemetry.javaagent.instrumentation.hibernate.SessionMethodUtils.SCOPE_ONLY_METHODS;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
@@ -92,6 +92,7 @@ public class SessionInstrumentation implements TypeInstrumentation {
         SessionInstrumentation.class.getName() + "$GetCriteriaAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class SessionCloseAdvice {
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
@@ -112,6 +113,7 @@ public class SessionInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class SessionMethodAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -157,6 +159,7 @@ public class SessionInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class GetQueryAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
@@ -173,6 +176,7 @@ public class SessionInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class GetTransactionAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
@@ -189,6 +193,7 @@ public class SessionInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class GetCriteriaAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)

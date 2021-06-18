@@ -5,7 +5,10 @@
 
 package io.opentelemetry.javaagent.testing.bytebuddy;
 
-import io.opentelemetry.javaagent.tooling.matcher.AdditionalLibraryIgnoresMatcher;
+import io.opentelemetry.javaagent.tooling.ignore.AdditionalLibraryIgnoredTypesConfigurer;
+import io.opentelemetry.javaagent.tooling.ignore.IgnoreAllow;
+import io.opentelemetry.javaagent.tooling.ignore.IgnoredTypesBuilderImpl;
+import io.opentelemetry.javaagent.tooling.ignore.trie.Trie;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +20,6 @@ import java.util.function.Function;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
-import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.utility.JavaModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +28,16 @@ public class TestAgentListener implements AgentBuilder.Listener {
 
   private static final Logger logger = LoggerFactory.getLogger(TestAgentListener.class);
 
-  private static final ElementMatcher.Junction<TypeDescription> GLOBAL_LIBRARIES_IGNORES_MATCHER =
-      AdditionalLibraryIgnoresMatcher.additionalLibraryIgnoresMatcher();
+  private static final Trie<IgnoreAllow> ADDITIONAL_LIBRARIES_TRIE;
+
+  static {
+    IgnoredTypesBuilderImpl builder = new IgnoredTypesBuilderImpl();
+    new AdditionalLibraryIgnoredTypesConfigurer().configure(builder);
+    ADDITIONAL_LIBRARIES_TRIE = builder.buildIgnoredTypesTrie();
+  }
 
   public static void reset() {
     INSTANCE.transformedClassesNames.clear();
-    INSTANCE.transformedClassesTypes.clear();
     INSTANCE.instrumentationErrorCount.set(0);
     INSTANCE.skipTransformationConditions.clear();
     INSTANCE.skipErrorConditions.clear();
@@ -43,9 +49,9 @@ public class TestAgentListener implements AgentBuilder.Listener {
 
   public static List<String> getIgnoredButTransformedClassNames() {
     List<String> names = new ArrayList<>();
-    for (TypeDescription type : INSTANCE.transformedClassesTypes) {
-      if (GLOBAL_LIBRARIES_IGNORES_MATCHER.matches(type)) {
-        names.add(type.getActualName());
+    for (String name : INSTANCE.transformedClassesNames) {
+      if (ADDITIONAL_LIBRARIES_TRIE.getOrNull(name) == IgnoreAllow.IGNORE) {
+        names.add(name);
       }
     }
     return names;
@@ -62,8 +68,6 @@ public class TestAgentListener implements AgentBuilder.Listener {
   static final TestAgentListener INSTANCE = new TestAgentListener();
 
   private final Set<String> transformedClassesNames =
-      Collections.newSetFromMap(new ConcurrentHashMap<>());
-  private final Set<TypeDescription> transformedClassesTypes =
       Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final AtomicInteger instrumentationErrorCount = new AtomicInteger(0);
   private final Set<Function<String, Boolean>> skipTransformationConditions =
@@ -90,7 +94,6 @@ public class TestAgentListener implements AgentBuilder.Listener {
       boolean loaded,
       DynamicType dynamicType) {
     transformedClassesNames.add(typeDescription.getActualName());
-    transformedClassesTypes.add(typeDescription);
   }
 
   @Override

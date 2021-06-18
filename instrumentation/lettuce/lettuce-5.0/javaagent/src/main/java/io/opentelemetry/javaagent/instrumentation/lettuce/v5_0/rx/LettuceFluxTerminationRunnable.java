@@ -5,7 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.lettuce.v5_0.rx;
 
-import static io.opentelemetry.javaagent.instrumentation.lettuce.v5_0.LettuceInstrumenters.instrumenter;
+import static io.opentelemetry.javaagent.instrumentation.lettuce.v5_0.LettuceSingletons.instrumenter;
 
 import io.lettuce.core.protocol.RedisCommand;
 import io.opentelemetry.api.trace.Span;
@@ -58,7 +58,7 @@ public class LettuceFluxTerminationRunnable implements Consumer<Signal<?>>, Runn
   public void accept(Signal signal) {
     if (SignalType.ON_COMPLETE.equals(signal.getType())
         || SignalType.ON_ERROR.equals(signal.getType())) {
-      finishSpan(false, signal.getThrowable());
+      finishSpan(/* isCommandCancelled= */ false, signal.getThrowable());
     } else if (SignalType.ON_NEXT.equals(signal.getType())) {
       ++numResults;
     }
@@ -66,7 +66,7 @@ public class LettuceFluxTerminationRunnable implements Consumer<Signal<?>>, Runn
 
   @Override
   public void run() {
-    finishSpan(true, null);
+    finishSpan(/* isCommandCancelled= */ true, null);
   }
 
   public static class FluxOnSubscribeConsumer implements Consumer<Subscription> {

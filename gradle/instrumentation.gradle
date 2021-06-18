@@ -2,7 +2,7 @@
 import io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator
 
 apply plugin: 'net.bytebuddy.byte-buddy'
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'otel.shadow-conventions'
 
 ext {
   mavenGroupId = 'io.opentelemetry.javaagent.instrumentation'
@@ -10,12 +10,12 @@ ext {
   noShadowPublish = true
 }
 
-apply from: "$rootDir/gradle/java.gradle"
+apply plugin: "otel.java-conventions"
 if (project.ext.find("skipPublish") != true) {
-  apply from: "$rootDir/gradle/publish.gradle"
+  apply plugin: "otel.publish-conventions"
 }
 
-apply from: "$rootDir/gradle/instrumentation-common.gradle"
+apply plugin: "otel.instrumentation-conventions"
 
 if (projectDir.name == 'javaagent') {
   apply plugin: 'muzzle'
@@ -85,35 +85,8 @@ configurations {
 
 tasks.named('shadowJar').configure {
   configurations = [project.configurations.runtimeClasspath, project.configurations.testInstrumentation]
-  mergeServiceFiles()
 
   archiveFileName = 'agent-testing.jar'
-
-  // rewrite library instrumentation dependencies
-  relocate "io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation"
-
-  // Prevents conflict with other SLF4J instances. Important for premain.
-  relocate 'org.slf4j', 'io.opentelemetry.javaagent.slf4j'
-
-  // NOTE instrumentation shouldn't call java.util.logging directly, so no need to shade it
-  // (and by not shading it, can instrument java.util.logging itself)
-
-  // prevents conflict with library instrumentation
-  relocate 'io.opentelemetry.instrumentation.api', 'io.opentelemetry.javaagent.shaded.instrumentation.api'
-
-  // relocate OpenTelemetry API usage
-  relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
-  relocate "io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv"
-  relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
-
-  // relocate the OpenTelemetry extensions that are used by instrumentation modules
-  // these extensions live in the AgentClassLoader, and are injected into the user's class loader
-  // by the instrumentation modules that use them
-  relocate "io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws"
-  relocate "io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin"
-
-  // this is for instrumentation on opentelemetry-api itself
-  relocate "application.io.opentelemetry", "io.opentelemetry"
 }
 
 evaluationDependsOn(":testing:agent-for-testing")
@@ -127,7 +100,8 @@ afterEvaluate {
     jvmArgs "-javaagent:${project(":testing:agent-for-testing").tasks.shadowJar.archiveFile.get().asFile.absolutePath}"
     jvmArgs "-Dotel.javaagent.experimental.initializer.jar=${shadowJar.archiveFile.get().asFile.absolutePath}"
     jvmArgs "-Dotel.javaagent.testing.additional-library-ignores.enabled=false"
-    jvmArgs "-Dotel.javaagent.testing.fail-on-context-leak=true"
+    def failOnContextLeak = findProperty('failOnContextLeak')
+    jvmArgs "-Dotel.javaagent.testing.fail-on-context-leak=${failOnContextLeak == null || failOnContextLeak}"
     // prevent sporadic gradle deadlocks, see SafeLogger for more details
     jvmArgs "-Dotel.javaagent.testing.transform-safe-logging.enabled=true"
     jvmArgs "-Dai.internal.testing.appId=1234"

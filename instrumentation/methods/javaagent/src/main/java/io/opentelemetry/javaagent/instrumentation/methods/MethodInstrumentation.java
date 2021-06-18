@@ -8,8 +8,9 @@ package io.opentelemetry.javaagent.instrumentation.methods;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
 import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge.currentContext;
-import static io.opentelemetry.javaagent.instrumentation.methods.MethodInstrumenters.instrumenter;
+import static io.opentelemetry.javaagent.instrumentation.methods.MethodSingletons.instrumenter;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -18,7 +19,6 @@ import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.lang.reflect.Method;
 import java.util.Set;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -43,19 +43,12 @@ public class MethodInstrumentation implements TypeInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {
-    ElementMatcher.Junction<MethodDescription> methodMatchers = null;
-    for (String methodName : methodNames) {
-      if (methodMatchers == null) {
-        methodMatchers = named(methodName);
-      } else {
-        methodMatchers = methodMatchers.or(named(methodName));
-      }
-    }
-
     transformer.applyAdviceToMethod(
-        methodMatchers, MethodInstrumentation.class.getName() + "$MethodAdvice");
+        namedOneOf(methodNames.toArray(new String[0])),
+        MethodInstrumentation.class.getName() + "$MethodAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class MethodAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)

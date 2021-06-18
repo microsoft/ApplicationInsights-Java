@@ -32,7 +32,7 @@ public class AgentTestingMicrometerDelegateAccess {
               "getMeasurements",
               MethodType.methodType(Object[][].class));
     } catch (Exception e) {
-      throw new Error("Error accessing fields with reflection.", e);
+      throw new AssertionError("Error accessing fields with reflection.", e);
     }
   }
 
@@ -40,7 +40,7 @@ public class AgentTestingMicrometerDelegateAccess {
     try {
       reset.invokeExact();
     } catch (Throwable t) {
-      throw new Error("Could not invoke reset", t);
+      throw new AssertionError("Could not invoke reset", t);
     }
   }
 
@@ -49,7 +49,7 @@ public class AgentTestingMicrometerDelegateAccess {
     try {
       data = (Object[][]) getMeasurements.invokeExact();
     } catch (Throwable t) {
-      throw new Error("Could not invoke getMeasurements", t);
+      throw new AssertionError("Could not invoke getMeasurements", t);
     }
     List<Measurement> measurements = new ArrayList<>();
     for (Object[] d : data) {

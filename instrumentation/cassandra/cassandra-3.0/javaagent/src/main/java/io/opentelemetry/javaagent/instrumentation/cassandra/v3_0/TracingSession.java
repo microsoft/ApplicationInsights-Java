@@ -5,7 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.cassandra.v3_0;
 
-import static io.opentelemetry.javaagent.instrumentation.cassandra.v3_0.CassandraInstrumenters.instrumenter;
+import static io.opentelemetry.javaagent.instrumentation.cassandra.v3_0.CassandraSingletons.instrumenter;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.CloseFuture;
@@ -208,7 +208,7 @@ public class TracingSession implements Session {
     return query == null ? "" : query;
   }
 
-  private void addCallbackToEndSpan(
+  private static void addCallbackToEndSpan(
       ResultSetFuture future, Context context, CassandraRequest request) {
     Futures.addCallback(
         future,

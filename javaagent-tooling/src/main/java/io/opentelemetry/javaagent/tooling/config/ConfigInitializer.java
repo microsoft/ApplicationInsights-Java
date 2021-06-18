@@ -8,6 +8,7 @@ package io.opentelemetry.javaagent.tooling.config;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.instrumentation.api.config.ConfigBuilder;
 import io.opentelemetry.javaagent.spi.config.PropertySource;
+import io.opentelemetry.javaagent.tooling.SafeServiceLoader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,13 +16,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
-import java.util.ServiceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ConfigInitializer {
-
-  // NOTE it's important not to use slf4j in this class, because this class is used before slf4j is
-  // configured, and so using slf4j here would initialize slf4j-simple before we have a chance to
-  // configure the logging levels
+  private static final Logger log = LoggerFactory.getLogger(ConfigInitializer.class);
 
   private static final String CONFIGURATION_FILE_PROPERTY = "otel.javaagent.configuration-file";
   private static final String CONFIGURATION_FILE_ENV_VAR = "OTEL_JAVAAGENT_CONFIGURATION_FILE";
@@ -43,7 +42,7 @@ public final class ConfigInitializer {
   /** Retrieves all default configuration overloads using SPI and initializes Config. */
   private static Properties loadSpiConfiguration() {
     Properties propertiesFromSpi = new Properties();
-    for (PropertySource propertySource : ServiceLoader.load(PropertySource.class)) {
+    for (PropertySource propertySource : SafeServiceLoader.load(PropertySource.class)) {
       propertiesFromSpi.putAll(propertySource.getProperties());
     }
     return propertiesFromSpi;
@@ -74,21 +73,18 @@ public final class ConfigInitializer {
     // Configuration properties file is optional
     File configurationFile = new File(configurationFilePath);
     if (!configurationFile.exists()) {
-      throw new IllegalStateException(
-          "Configuration file '" + configurationFilePath + "' not found.");
+      log.error("Configuration file '{}' not found.", configurationFilePath);
+      return properties;
     }
 
     try (InputStreamReader reader =
         new InputStreamReader(new FileInputStream(configurationFile), StandardCharsets.UTF_8)) {
       properties.load(reader);
     } catch (FileNotFoundException fnf) {
-      throw new IllegalStateException(
-          "Configuration file '" + configurationFilePath + "' not found.");
+      log.error("Configuration file '{}' not found.", configurationFilePath);
     } catch (IOException ioe) {
-      throw new IllegalStateException(
-          "Configuration file '"
-              + configurationFilePath
-              + "' cannot be accessed or correctly parsed.");
+      log.error(
+          "Configuration file '{}' cannot be accessed or correctly parsed.", configurationFilePath);
     }
 
     return properties;

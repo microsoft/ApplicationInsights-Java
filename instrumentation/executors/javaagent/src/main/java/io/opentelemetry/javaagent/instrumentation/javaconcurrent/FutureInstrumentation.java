@@ -73,7 +73,7 @@ public class FutureInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    final ElementMatcher.Junction<TypeDescription> hasFutureInterfaceMatcher =
+    ElementMatcher.Junction<TypeDescription> hasFutureInterfaceMatcher =
         implementsInterface(named(Future.class.getName()));
     return new ElementMatcher.Junction.AbstractBase<TypeDescription>() {
       @Override
@@ -94,13 +94,15 @@ public class FutureInstrumentation implements TypeInstrumentation {
         FutureInstrumentation.class.getName() + "$CanceledFutureAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class CanceledFutureAdvice {
+
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(@Advice.This Future<?> future) {
       // Try to clear parent span even if future was not cancelled:
       // the expectation is that parent span should be cleared after 'cancel'
       // is called, one way or another
-      ContextStore<Future, State> contextStore =
+      ContextStore<Future<?>, State> contextStore =
           InstrumentationContext.get(Future.class, State.class);
       State state = contextStore.get(future);
       if (state != null) {
