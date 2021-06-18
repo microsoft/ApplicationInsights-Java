@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 // TODO performance testing
-class TelemetryChannel {
+public class TelemetryChannel {
 
     private static final Logger logger = LoggerFactory.getLogger(TelemetryChannel.class);
 
@@ -44,7 +44,7 @@ class TelemetryChannel {
     private final HttpPipeline pipeline;
     private final URL endpoint;
 
-    TelemetryChannel(URL endpoint) {
+    public static TelemetryChannel create(URL endpoint) {
         List<HttpPipelinePolicy> policies = new ArrayList<>();
         HttpClient client = LazyAzureHttpClient.getInstance();
         HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder()
@@ -62,7 +62,16 @@ class TelemetryChannel {
         // TODO set the logging level based on self diagnostic log level set by user
         policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
         pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
-        this.pipeline = pipelineBuilder.build();
+        return new TelemetryChannel(pipelineBuilder.build(), endpoint);
+    }
+
+    public CompletableResultCode sendRawBytes(byte[] rawBytes) {
+        return internalSend(rawBytes);
+    }
+
+    // used by tests only
+    TelemetryChannel(HttpPipeline pipeline, URL endpoint) {
+        this.pipeline = pipeline;
         this.endpoint = endpoint;
     }
 
@@ -106,12 +115,26 @@ class TelemetryChannel {
         return byteBuffers;
     }
 
-    private CompletableResultCode internalSend(List<ByteBuffer> byteBuffers) {
+    /**
+     * Object can be a list of {@link ByteBuffer} or a raw byte array.
+     * Regular telemetries will be sent as List<ByteBuffer>.
+     * Persisted telemetries will be sent as byte[]
+     */
+    private CompletableResultCode internalSend(final Object object) {
         HttpRequest request = new HttpRequest(HttpMethod.POST, endpoint + "v2.1/track");
 
-        request.setBody(Flux.fromIterable(byteBuffers));
+        List<ByteBuffer> byteBuffers = null;
+        int contentLength = 0;
+        if (object instanceof List<?>) {
+            byteBuffers = (List<ByteBuffer>)object;
+            request.setBody(Flux.fromIterable(byteBuffers));
+            contentLength = byteBuffers.stream().mapToInt(ByteBuffer::limit).sum();
+        } else if (object instanceof byte[]) {
+            byte[] rawBytes = (byte[]) object;
+            request.setBody(rawBytes);
+            contentLength = rawBytes.length;
+        }
 
-        int contentLength = byteBuffers.stream().mapToInt(ByteBuffer::limit).sum();
         request.setHeader("Content-Length", Integer.toString(contentLength));
 
         // need to suppress the default User-Agent "ReactorNetty/dev", otherwise Breeze ingestion service will put that
@@ -125,20 +148,26 @@ class TelemetryChannel {
         //  * retry on first failure (may not need to worry about this if retry policy in pipeline already, see above)
         //  * write to disk on second failure
         CompletableResultCode result = new CompletableResultCode();
+        List<ByteBuffer> finalByteBuffers = byteBuffers;
         pipeline.send(request)
                 .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
                 .subscribe(response -> {
                     parseResponseCode(response.getStatusCode());
                 }, error -> {
                     LocalFileWriter writer = new LocalFileWriter();
-                    if (!writer.writeToDisk(byteBuffers)) {
-                        logger.warn("Fail to write to offline disk.");
+                    if (!writer.writeToDisk(object)) {
+                        logger.warn("Fail to write {} to disk.", (finalByteBuffers != null ? "List<ByteBuffers>" : "byte[]"));
+                        // TODO (heya) track # of write failure via Statsbeat
                     }
 
-                    byteBufferPool.offer(byteBuffers);
+                    if (finalByteBuffers != null) {
+                        byteBufferPool.offer(finalByteBuffers);
+                    }
                     result.fail();
                 }, () -> {
-                    byteBufferPool.offer(byteBuffers);
+                    if (finalByteBuffers != null) {
+                        byteBufferPool.offer(finalByteBuffers);
+                    }
                     result.succeed();
                 });
         return result;
@@ -155,7 +184,7 @@ class TelemetryChannel {
             case HttpStatus.SC_INTERNAL_SERVER_ERROR:
             case HttpStatus.SC_SERVICE_UNAVAILABLE:
             case BreezeStatusCode.CLIENT_SIDE_EXCEPTION:
-                // TODO backoff and retry
+                // TODO exponential backoff and retry to a limit
                 // TODO (heya) track failure count via Statsbeat
                 break;
             case BreezeStatusCode.THROTTLED_OVER_EXTENDED_TIME:

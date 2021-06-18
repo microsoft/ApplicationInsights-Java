@@ -181,7 +181,7 @@ public class TelemetryClient {
                 if (channelBatcher == null) {
                     TelemetryChannel channel;
                     try {
-                        channel = new TelemetryChannel(endpointProvider.getIngestionEndpoint().toURL());
+                        channel = TelemetryChannel.create(endpointProvider.getIngestionEndpoint().toURL());
                     } catch (MalformedURLException e) {
                         // this shouldn't happen
                         logger.error(e.getMessage(), e);
