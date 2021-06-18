@@ -41,7 +41,7 @@ public class LocalFileLoader {
     }
 
     // Track the newly persisted filename to the concurrent hashmap.
-    public void addPersistedFilenameToMap(String filename) {
+    void addPersistedFilenameToMap(String filename) {
         PERSISTED_FILES_QUEUE.add(filename);
     }
 

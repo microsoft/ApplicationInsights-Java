@@ -69,6 +69,7 @@ public final class LocalFileWriter {
         } else if (object instanceof byte[]) {
             rawBytes = (byte[]) object;
         }
+
         try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
             if (byteBuffers != null) {
                 for (ByteBuffer byteBuffer : byteBuffers) {
