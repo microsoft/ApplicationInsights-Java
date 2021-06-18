@@ -85,7 +85,7 @@ public class RpConfigurationPolling implements Runnable {
                 if (!newRpConfiguration.connectionString.equals(telemetryClient.getConnectionString())) {
                     logger.debug("Connection string from the JSON config file is overriding the previously configured connection string.");
                     telemetryClient.setConnectionString(newRpConfiguration.connectionString);
-                    AppIdSupplier.startAppIdRetrieval();
+                    AppIdSupplier.INSTANCE.startAppIdRetrieval();
                 }
 
                 if (newRpConfiguration.sampling.percentage != rpConfiguration.sampling.percentage) {

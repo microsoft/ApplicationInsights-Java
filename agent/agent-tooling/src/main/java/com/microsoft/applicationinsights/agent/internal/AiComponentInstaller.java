@@ -102,7 +102,7 @@ public class AiComponentInstaller implements AgentListener {
         // Delay registering and starting AppId retrieval to later when the connection string becomes available
         // for Linux Consumption Plan.
         if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-            AppIdSupplier.registerAndStartAppIdRetrieval();
+            AppIdSupplier.INSTANCE.registerAndStartAppIdRetrieval();
         }
     }
 
@@ -186,7 +186,7 @@ public class AiComponentInstaller implements AgentListener {
 
         // this is for Azure Function Linux consumption plan support.
         if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-            AiLazyConfiguration.setAccessor(new LazyConfigurationAccessor());
+            AiLazyConfiguration.setAccessor(new LazyConfigurationAccessor(telemetryClient, appIdSupplier));
         }
 
         // this is currently used by Micrometer instrumentation in addition to 2.x SDK
@@ -208,8 +208,7 @@ public class AiComponentInstaller implements AgentListener {
         String javaVersion = System.getProperty("java.version");
         String osName = System.getProperty("os.name");
         String arch = System.getProperty("os.arch");
-        String userName = "Microsoft-ApplicationInsights-Java-Profiler/" + aiVersion + "  (Java/" + javaVersion + "; " + osName + "; " + arch + ")";
-        return userName;
+        return "Microsoft-ApplicationInsights-Java-Profiler/" + aiVersion + "  (Java/" + javaVersion + "; " + osName + "; " + arch + ")";
     }
 
     private static ServiceProfilerServiceConfig formServiceProfilerConfig(ProfilerConfiguration configuration) {

@@ -38,21 +38,12 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+// note: app id is used by distributed trace headers and (soon) jfr profiling
 public class AppIdSupplier implements AiAppId.Supplier {
 
     private static final Logger logger = LoggerFactory.getLogger(AppIdSupplier.class);
 
     public static final AppIdSupplier INSTANCE = new AppIdSupplier();
-
-    // note: app id is used by distributed trace headers and (soon) jfr profiling
-    public static void registerAndStartAppIdRetrieval() {
-        AiAppId.setSupplier(INSTANCE);
-        startAppIdRetrieval();
-    }
-
-    public static void startAppIdRetrieval() {
-        INSTANCE.internalStartAppIdRetrieval();
-    }
 
     private final ScheduledExecutorService scheduledExecutor =
             Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(AppIdSupplier.class));
@@ -65,7 +56,12 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
     private volatile String appId;
 
-    private void internalStartAppIdRetrieval() {
+    public void registerAndStartAppIdRetrieval() {
+        AiAppId.setSupplier(this);
+        startAppIdRetrieval();
+    }
+
+    public void startAppIdRetrieval() {
         TelemetryClient telemetryClient = TelemetryClient.getActive();
         String instrumentationKey = telemetryClient.getInstrumentationKey();
         GetAppIdTask newTask = new GetAppIdTask(telemetryClient.getEndpointProvider().getAppIdEndpointURL(instrumentationKey));
