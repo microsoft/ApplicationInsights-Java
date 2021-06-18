@@ -17,6 +17,7 @@ final class PersistenceHelper {
     private static final Logger logger = LoggerFactory.getLogger(PersistenceHelper.class);
 
     private static final long MAX_FILE_SIZE_IN_BYTES = 52428800; // 50MB
+    private static final String PREFIX = "transmission";
     static final String PERMANENT_FILE_EXTENSION = ".trn";
     static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
@@ -29,7 +30,7 @@ final class PersistenceHelper {
     static File createTempFileWithUniqueName() {
         File file = null;
         try {
-            String prefix = "bytebuffers" + "-" + System.currentTimeMillis() + "-" + UUID.randomUUID();
+            String prefix = PREFIX + "-" + System.currentTimeMillis() + "-" + UUID.randomUUID();
             file = File.createTempFile(prefix, null, DEFAULT_FOlDER);
         } catch (IOException ex) {
             logger.error("Fail to create a temp file.", ex);

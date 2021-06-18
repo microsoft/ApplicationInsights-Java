@@ -30,36 +30,52 @@ public final class LocalFileWriter {
         }
     }
 
-    public boolean writeToDisk(List<ByteBuffer> byteBuffers) {
+    public boolean writeToDisk(Object object) {
+        return internalWrite(object);
+    }
+
+    private boolean internalWrite(Object object) {
         if (!PersistenceHelper.maxFileSizeExceeded()) {
             return false;
         }
 
-        File file = PersistenceHelper.createTempFileWithUniqueName();
-        if (file == null) {
+        File tempFile = PersistenceHelper.createTempFileWithUniqueName();
+        if (tempFile == null) {
             return false;
         }
 
-        if (!saveByteBuffers(file, byteBuffers)) {
+        if (!write(tempFile, object)) {
             return false;
         }
 
-        if (PersistenceHelper.renameFileExtension(file.getName(), PERMANENT_FILE_EXTENSION) == null) {
+        File permanentFile = PersistenceHelper.renameFileExtension(tempFile.getName(), PERMANENT_FILE_EXTENSION);
+        if (permanentFile == null) {
             return false;
         }
 
-        LocalFileLoader.get().addPersistedFilenameToMap(file.getName());
+        LocalFileLoader.get().addPersistedFilenameToMap(permanentFile.getName());
 
         logger.info("List<ByteBuffers> has been persisted to file and will be sent when the network becomes available.");
         // TODO (heya) track data persistence success via Statsbeat
         return true;
     }
 
-    private boolean saveByteBuffers(File file, List<ByteBuffer> byteBuffers) {
+    private boolean write(File file, Object object) {
+        List<ByteBuffer> byteBuffers = null;
+        byte[] rawBytes = null;
+        if (object instanceof List<?>) {
+            byteBuffers = (List<ByteBuffer>) object;
+        } else if (object instanceof byte[]) {
+            rawBytes = (byte[]) object;
+        }
         try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
-            for (ByteBuffer byteBuffer : byteBuffers) {
-                byteBuffer.position(0);
-                out.write(byteBuffer.array());
+            if (byteBuffers != null) {
+                for (ByteBuffer byteBuffer : byteBuffers) {
+                    byteBuffer.position(0);
+                    out.write(byteBuffer.array());
+                }
+            } else if (rawBytes != null) {
+                out.write(rawBytes);
             }
         } catch (IOException ex) {
             // TODO (heya) track IO write failure via Statsbeat
