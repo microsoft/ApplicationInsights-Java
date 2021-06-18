@@ -44,12 +44,7 @@ dependencies {
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-jms-1.1', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-kafka-clients-0.11', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-kafka-streams-0.11', version: versions.opentelemetryInstrumentationAlpha
-    implementation (group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-kotlinx-coroutines', version: versions.opentelemetryInstrumentationAlpha) {
-        // TODO fix this upstream
-        exclude group: 'org.jetbrains.kotlin'
-        exclude group: 'org.jetbrains.kotlinx'
-        exclude group: 'org.jetbrains', module: 'annotations'
-    }
+    implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-kotlinx-coroutines', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-4.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-5.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-lettuce-5.1', version: versions.opentelemetryInstrumentationAlpha
@@ -78,11 +73,6 @@ dependencies {
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-spring-webflux-5.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-spring-webmvc-3.1', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-tomcat-7.0', version: versions.opentelemetryInstrumentationAlpha
-
-    // also: jaxrs, spring, struts
-
-    // also: azure functions
-
 }
 
 // need to perform shading in two steps in order to avoid shading java.util.logging.Logger
@@ -172,8 +162,11 @@ shadowJar {
     relocate "io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws"
     relocate "io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin"
 
+    // TODO (trask) is this needed?
     // this is for instrumentation on opentelemetry-api itself
     relocate "application.io.opentelemetry", "io.opentelemetry"
+
+    relocate "application.java.util.logging.Logger", "java.util.logging.Logger"
 }
 
 artifacts {
