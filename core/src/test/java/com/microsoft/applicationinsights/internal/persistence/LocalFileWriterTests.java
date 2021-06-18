@@ -19,6 +19,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOlDER;
 import static org.junit.Assert.assertEquals;
@@ -45,7 +48,7 @@ public class LocalFileWriterTests {
 
     @After
     public void cleanup() {
-        Queue<String> queue = LocalFileLoader.get().getPersistedFilesQueue();
+        Queue<String> queue = LocalFileLoader.get().getPersistedFilesCache();
         String filename = null;
         while((filename = queue.poll()) != null) {
             File tempFile = new File(DEFAULT_FOlDER, filename);
@@ -76,13 +79,37 @@ public class LocalFileWriterTests {
 
         LocalFileWriter writer = new LocalFileWriter();
         assertTrue(writer.writeToDisk(byteBuffers));
-        assertEquals(1, LocalFileLoader.get().getPersistedFilesQueue().size());
+        assertEquals(1, LocalFileLoader.get().getPersistedFilesCache().size());
     }
 
     @Test
     public void testWriteRawByteArray() {
         LocalFileWriter writer = new LocalFileWriter();
         assertTrue(writer.writeToDisk(rawBytes));
-        assertEquals(1, LocalFileLoader.get().getPersistedFilesQueue().size());
+        assertEquals(1, LocalFileLoader.get().getPersistedFilesCache().size());
+    }
+
+    @Test
+    public void testWriteUnderMultipleThreadsEnvironment() throws InterruptedException {
+        String telemetry = "{\"ver\":1,\"name\":\"Metric\",\"time\":\"2021-06-14T17:24:28.983-0700\",\"sampleRate\":100,\"iKey\":\"00000000-0000-0000-0000-0FEEDDADBEEF\",\"tags\":{\"ai.internal.sdkVersion\":\"java:3.1.1\",\"ai.internal.nodeName\":\"test-role-name\",\"ai.cloud.roleInstance\":\"test-role-instance\"},\"data\":{\"baseType\":\"MetricData\",\"baseData\":{\"ver\":2,\"metrics\":[{\"name\":\"jvm_threads_states\",\"kind\":0,\"value\":3}],\"properties\":{\"state\":\"blocked\"}}}}";
+
+        System.out.println(telemetry.getBytes().length);
+
+        final ExecutorService executorService = Executors.newFixedThreadPool(100);
+        for (int i = 0; i < 100; i++) {
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    for (int j = 0; j < 10; j++) {
+                        LocalFileWriter writer = new LocalFileWriter();
+                        writer.writeToDisk(telemetry.getBytes());
+                    }
+                }
+            });
+        }
+
+        executorService.shutdown();
+        executorService.awaitTermination(10, TimeUnit.MINUTES);
+        assertEquals(1000, LocalFileLoader.get().getPersistedFilesCache().size());
     }
 }

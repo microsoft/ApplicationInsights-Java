@@ -11,8 +11,14 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
 import static org.junit.Assert.*;
 
 public class LocalFileLoaderTests {
@@ -33,6 +39,25 @@ public class LocalFileLoaderTests {
     public void cleanup() {
         if(PERSISTED_FILE.exists()) {
             assertTrue(PERSISTED_FILE.delete());
+        }
+    }
+
+    @Test
+    public void testSortPersistedFiles() throws InterruptedException {
+        List<File> sourceList = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            String filename = System.currentTimeMillis() + "-" + UUID.randomUUID().toString().replaceAll("-", "") + PERMANENT_FILE_EXTENSION;
+            sourceList.add(new File(DEFAULT_FOlDER, filename));
+            Thread.sleep(10);
+        }
+
+        List<File> copiedSourceList = new ArrayList<>();
+        copiedSourceList.addAll(sourceList);
+        Collections.shuffle(copiedSourceList);
+
+        List<File> sortedFiles = LocalFileLoader.get().sortPersistedFiles((Collection<File>) copiedSourceList);
+        for (int i = 0; i < 10; i++) {
+            assertEquals(sourceList.get(i), sortedFiles.get(i));
         }
     }
 
