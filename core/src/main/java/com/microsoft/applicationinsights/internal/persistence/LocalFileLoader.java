@@ -3,6 +3,7 @@ package com.microsoft.applicationinsights.internal.persistence;
 import com.microsoft.applicationinsights.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,12 +12,19 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.TEMPORARY_FILE_EXTENSION;
 
 /**
@@ -34,7 +42,7 @@ public class LocalFileLoader {
      * Track a list of active filenames persisted on disk.
      * FIFO (First-In-First-Out) read will avoid an additional sorting at every read.
      */
-    private static final Queue<String> PERSISTED_FILES_QUEUE = new ConcurrentLinkedDeque<>();
+    private static final Queue<String> PERSISTED_FILES_CACHE = new ConcurrentLinkedDeque<>();
 
     public static LocalFileLoader get() {
         return INSTANCE;
@@ -42,14 +50,13 @@ public class LocalFileLoader {
 
     // Track the newly persisted filename to the concurrent hashmap.
     void addPersistedFilenameToMap(String filename) {
-        PERSISTED_FILES_QUEUE.add(filename);
+        PERSISTED_FILES_CACHE.add(filename);
     }
 
     // Load List<ByteBuffer> from persisted files on disk in FIFO order.
     byte[] loadTelemetriesFromDisk() {
-        String filenameToBeLoaded = PERSISTED_FILES_QUEUE.poll();
+        String filenameToBeLoaded = loadOldestFromCache();
         if (filenameToBeLoaded == null) {
-            logger.warn("PERSISTED_FILES_QUEUE is empty.");
             return null;
         }
 
@@ -58,13 +65,58 @@ public class LocalFileLoader {
             return null;
         }
 
-
         return read(tempFile);
     }
 
+    private String loadOldestFromCache() {
+        if (PERSISTED_FILES_CACHE.isEmpty()) { // if the cache is empty because of app crashes, reload everything from disk
+            Collection<File> filesFromDisk = FileUtils.listFiles(DEFAULT_FOlDER, new String[]{PERMANENT_FILE_EXTENSION}, false);
+            if (filesFromDisk.isEmpty()) {
+                return null;
+            }
+
+            List<File> files = sortPersistedFiles(filesFromDisk);
+            if (files == null || files.isEmpty()) {
+                return null;
+            }
+
+            PERSISTED_FILES_CACHE.addAll(files.stream().map(File::getName).collect(Collectors.toList()));
+        }
+
+        String fileToBeLoaded = PERSISTED_FILES_CACHE.poll();
+
+        return fileToBeLoaded != null ? fileToBeLoaded : null;
+
+    }
+
+    List<File> sortPersistedFiles(Collection<File> files) {
+        List<File> result = (List<File>) files;
+        Collections.sort(result, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                return getMillisecondsFromFilename(o1).compareTo(getMillisecondsFromFilename(o2));
+            }
+        });
+
+        return result;
+    }
+
+    private Long getMillisecondsFromFilename(File file) {
+        String filename = file.getName();
+        String milliSeconds = filename.substring(0, filename.lastIndexOf('-'));
+        logger.debug("####### miliseonds: {}", milliSeconds);
+        try {
+            return Long.parseLong(milliSeconds);
+        } catch (NumberFormatException ex) {
+            logger.error("Fail to convert milliseconds in string to long", ex);
+        }
+
+        return null;
+    }
+
     // Used by tests only
-    Queue<String> getPersistedFilesQueue() {
-        return PERSISTED_FILES_QUEUE;
+    Queue<String> getPersistedFilesCache() {
+        return PERSISTED_FILES_CACHE;
     }
 
     private byte[] read(File file) {
