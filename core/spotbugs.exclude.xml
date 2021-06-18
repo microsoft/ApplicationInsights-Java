@@ -96,6 +96,9 @@
             <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" />
             <Bug pattern="PATH_TRAVERSAL_IN" />
         </Or>
-        <Class name="com.microsoft.applicationinsights.internal.persistence.PersistenceHelper" />
+        <Or>
+            <Class name="com.microsoft.applicationinsights.internal.persistence.PersistenceHelper" />
+            <Class name="com.microsoft.applicationinsights.internal.persistence.LocalFileWriter" />
+        </Or>
     </Match>
 </FindBugsFilter>

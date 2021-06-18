@@ -21,12 +21,11 @@ public final class LocalFileWriter {
     private static final Logger logger = LoggerFactory.getLogger(LocalFileWriter.class);
 
     public LocalFileWriter() {
-        boolean created = false;
         if (!DEFAULT_FOlDER.exists()) {
-            created = DEFAULT_FOlDER.mkdir();
+            DEFAULT_FOlDER.mkdir();
         }
 
-        if (!created || !DEFAULT_FOlDER.exists() || !DEFAULT_FOlDER.canRead() || !DEFAULT_FOlDER.canWrite()) {
+        if (!DEFAULT_FOlDER.exists() || !DEFAULT_FOlDER.canRead() || !DEFAULT_FOlDER.canWrite()) {
             throw new IllegalArgumentException(DEFAULT_FOlDER + " must exist and have read and write permissions.");
         }
     }
