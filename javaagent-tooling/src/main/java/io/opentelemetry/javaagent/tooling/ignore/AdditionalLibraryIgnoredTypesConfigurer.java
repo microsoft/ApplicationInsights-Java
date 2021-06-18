@@ -108,7 +108,9 @@ public class AdditionalLibraryIgnoredTypesConfigurer implements IgnoredTypesConf
         .allowClass("org.springframework.boot.web.embedded.tomcat.TomcatEmbeddedWebappClassLoader")
         .allowClass("org.springframework.boot.web.servlet.DelegatingFilterProxyRegistrationBean$")
         .allowClass("org.springframework.boot.StartupInfoLogger$")
-        .allowClass("org.springframework.boot.SpringApplicationShutdownHook");
+        .allowClass("org.springframework.boot.SpringApplicationShutdownHook")
+        // Spring boot actuator / micrometer instrumentation
+        .allowClass("org.springframework.boot.autoconfigure.AutoConfigurationImportSelector");
 
     builder
         .ignoreClass("org.springframework.cglib.")
@@ -132,7 +134,9 @@ public class AdditionalLibraryIgnoredTypesConfigurer implements IgnoredTypesConf
         .allowClass("org.springframework.core.task.")
         .allowClass("org.springframework.core.DecoratingClassLoader")
         .allowClass("org.springframework.core.OverridingClassLoader")
-        .allowClass("org.springframework.core.ReactiveAdapterRegistry$EmptyCompletableFuture");
+        .allowClass("org.springframework.core.ReactiveAdapterRegistry$EmptyCompletableFuture")
+        // Spring boot actuator / micrometer instrumentation
+        .allowClass("org.springframework.core.io.ClassPathResource");
 
     builder
         .ignoreClass("org.springframework.instrument.")
