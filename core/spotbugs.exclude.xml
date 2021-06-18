@@ -91,4 +91,11 @@
         </Or>
         <Class name="com.microsoft.applicationinsights.BatchSpanProcessor$Worker" />
     </Match>
+    <Match>
+        <Or>
+            <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" />
+            <Bug pattern="PATH_TRAVERSAL_IN" />
+        </Or>
+        <Class name="com.microsoft.applicationinsights.internal.persistence.PersistenceHelper" />
+    </Match>
 </FindBugsFilter>

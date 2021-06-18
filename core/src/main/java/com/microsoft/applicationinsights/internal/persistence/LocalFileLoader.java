@@ -73,7 +73,7 @@ public class LocalFileLoader {
             result = Files.readAllBytes(file.toPath());
 
             // TODO (heya) backoff and retry delete when it fails. 
-            file.delete();
+            Files.delete(file.toPath());
         } catch (IOException ex) {
             // TODO (heya) track deserialization failure via Statsbeat
             logger.error("Fail to deserialize objects from  {}", file.getName(), ex);
