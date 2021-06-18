@@ -1,10 +1,12 @@
 package com.microsoft.applicationinsights.internal.persistence;
 
 import com.google.common.io.Resources;
+import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.squareup.moshi.JsonDataException;
 import okio.BufferedSource;
 import okio.Okio;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -24,10 +26,28 @@ import static org.junit.Assert.assertTrue;
 
 public class LocalFileWriterTests {
 
+    private byte[] rawBytes;
+
+    @Before
+    public void setup() {
+        /**
+         * AadAuthentication is used by TelemetryChannel, which is used to initialize {@link LocalFileLoader}
+         */
+        AadAuthentication.init(null, null, null, null, null, null);
+
+        Path path = new File(Resources.getResource("write-transmission.txt").getPath()).toPath();
+        try {
+            InputStream in = Files.newInputStream(path);
+            BufferedSource source = Okio.buffer(Okio.source(in));
+            rawBytes = source.readByteArray();
+        } catch (IOException ignore) {}
+    }
+
     @After
     public void cleanup() {
         Queue<String> queue = LocalFileLoader.get().getPersistedFilesQueue();
-        for (String filename : queue) {
+        String filename = null;
+        while((filename = queue.poll()) != null) {
             File tempFile = new File(DEFAULT_FOlDER, filename);
             assertTrue(tempFile.exists());
             assertTrue(tempFile.delete());
@@ -35,11 +55,8 @@ public class LocalFileWriterTests {
     }
 
     @Test
-    public void testWrite() throws IOException, JsonDataException {
-        Path path = new File(Resources.getResource("bytebuffers.txt").getPath()).toPath();
-        InputStream in = Files.newInputStream(path);
-        BufferedSource source = Okio.buffer(Okio.source(in));
-        String bytesToString = new String(source.readByteArray());
+    public void testWriteByteBuffersList() throws IOException, JsonDataException {
+        String bytesToString = new String(rawBytes);
 
         List<ByteBuffer> byteBuffers = new ArrayList<>();
         String[] telemetries = bytesToString.split("\n");
@@ -59,6 +76,13 @@ public class LocalFileWriterTests {
 
         LocalFileWriter writer = new LocalFileWriter();
         assertTrue(writer.writeToDisk(byteBuffers));
+        assertEquals(1, LocalFileLoader.get().getPersistedFilesQueue().size());
+    }
+
+    @Test
+    public void testWriteRawByteArray() {
+        LocalFileWriter writer = new LocalFileWriter();
+        assertTrue(writer.writeToDisk(rawBytes));
         assertEquals(1, LocalFileLoader.get().getPersistedFilesQueue().size());
     }
 }

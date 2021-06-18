@@ -3,8 +3,10 @@ package com.microsoft.applicationinsights.internal.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -15,9 +17,17 @@ import static org.junit.Assert.*;
 
 public class LocalFileLoaderTests {
 
-    private static final String BYTE_BUFFERS_TEST_FILE = "bytebuffers.txt";
+    private static final String BYTE_BUFFERS_TEST_FILE = "read-transmission.txt";
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final File PERSISTED_FILE = new File(DEFAULT_FOlDER, BYTE_BUFFERS_TEST_FILE);
+
+    @Before
+    public void setup() {
+        /**
+         * AadAuthentication is used by TelemetryChannel, which is used to initialize {@link LocalFileLoader}
+         */
+        AadAuthentication.init(null, null, null, null, null, null);
+    }
 
     @After
     public void cleanup() {
@@ -39,7 +49,7 @@ public class LocalFileLoaderTests {
         assertTrue(PERSISTED_FILE.exists());
 
         LocalFileLoader.get().addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
-        byte[] bytes = LocalFileLoader.get().loadFileFromDisk();
+        byte[] bytes = LocalFileLoader.get().loadTelemetriesFromDisk();
         assertNotNull(bytes);
 
         String bytesString = new String(bytes);
