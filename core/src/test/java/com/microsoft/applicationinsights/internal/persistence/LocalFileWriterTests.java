@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.getDefaultSubdirectory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -47,13 +48,17 @@ public class LocalFileWriterTests {
 
     @After
     public void cleanup() {
-//        Queue<String> queue = LocalFileLoader.get().getPersistedFilesCache();
-//        String filename = null;
-//        while((filename = queue.poll()) != null) {
-//            File tempFile = new File(PersistenceHelper.getDefaultSubdirectory(), filename);
-//            assertTrue(tempFile.exists());
-//            assertTrue(tempFile.delete());
-//        }
+        Queue<String> queue = LocalFileLoader.get().getPersistedFilesCache();
+        String filename = null;
+        File subdirectory = getDefaultSubdirectory();
+        assertTrue(subdirectory.exists());
+        while((filename = queue.poll()) != null) {
+            File tempFile = new File(subdirectory, filename);
+            assertTrue(tempFile.exists());
+            assertTrue(tempFile.delete());
+        }
+
+        assertTrue(subdirectory.delete());
     }
 
     @Test

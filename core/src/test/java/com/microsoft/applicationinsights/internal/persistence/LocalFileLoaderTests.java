@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.getDefaultSubdirectory;
 import static org.junit.Assert.*;
 
 public class LocalFileLoaderTests {
@@ -39,6 +40,10 @@ public class LocalFileLoaderTests {
         if(PERSISTED_FILE.exists()) {
             assertTrue(PERSISTED_FILE.delete());
         }
+
+        File subdirectory = getDefaultSubdirectory();
+        assertTrue(subdirectory.exists());
+        assertTrue(subdirectory.delete());
     }
 
     @Test
