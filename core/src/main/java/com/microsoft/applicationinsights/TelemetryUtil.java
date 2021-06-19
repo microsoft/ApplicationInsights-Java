@@ -216,9 +216,6 @@ public class TelemetryUtil {
         }
     }
 
-
-    // FIXME (trask) share this remaining code with the exporter
-
     public static final String SAMPLING_PERCENTAGE_TRACE_STATE = "ai-internal-sp";
 
     private static final Cache<String, OptionalFloat> parsedSamplingPercentageCache =
