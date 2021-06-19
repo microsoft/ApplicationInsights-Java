@@ -42,7 +42,7 @@ public class LocalFileLoader {
      * Track a list of active filenames persisted on disk.
      * FIFO (First-In-First-Out) read will avoid an additional sorting at every read.
      */
-    private static final Queue<String> PERSISTED_FILES_CACHE = new ConcurrentLinkedDeque<>();
+    private static final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
 
     public static LocalFileLoader get() {
         return INSTANCE;
@@ -50,7 +50,7 @@ public class LocalFileLoader {
 
     // Track the newly persisted filename to the concurrent hashmap.
     void addPersistedFilenameToMap(String filename) {
-        PERSISTED_FILES_CACHE.add(filename);
+        persistedFilesCache.add(filename);
     }
 
     // Load List<ByteBuffer> from persisted files on disk in FIFO order.
@@ -69,7 +69,7 @@ public class LocalFileLoader {
     }
 
     private String loadOldestFromCache() {
-        if (PERSISTED_FILES_CACHE.isEmpty()) { // if the cache is empty because of app crashes, reload everything from disk
+        if (persistedFilesCache.isEmpty()) { // if the cache is empty because of app crashes, reload everything from disk
             Collection<File> filesFromDisk = FileUtils.listFiles(DEFAULT_ROOT_FOlDER, new String[]{PERMANENT_FILE_EXTENSION}, false);
             if (filesFromDisk.isEmpty()) {
                 return null;
@@ -80,10 +80,10 @@ public class LocalFileLoader {
                 return null;
             }
 
-            PERSISTED_FILES_CACHE.addAll(files.stream().map(File::getName).collect(Collectors.toList()));
+            persistedFilesCache.addAll(files.stream().map(File::getName).collect(Collectors.toList()));
         }
 
-        String fileToBeLoaded = PERSISTED_FILES_CACHE.poll();
+        String fileToBeLoaded = persistedFilesCache.poll();
 
         return fileToBeLoaded != null ? fileToBeLoaded : null;
 
@@ -116,7 +116,7 @@ public class LocalFileLoader {
 
     // Used by tests only
     Queue<String> getPersistedFilesCache() {
-        return PERSISTED_FILES_CACHE;
+        return persistedFilesCache;
     }
 
     private byte[] read(File file) {
