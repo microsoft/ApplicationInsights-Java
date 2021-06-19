@@ -118,7 +118,6 @@ public class ProfilerServiceTest {
 
         Object monitor = new Object();
 
-        // FIXME (trask) revisit this, why is subclassing TelemetryClient needed?
         TelemetryClient client = new TelemetryClient() {
             @Override
             public void trackAsync(TelemetryItem telemetry) {
