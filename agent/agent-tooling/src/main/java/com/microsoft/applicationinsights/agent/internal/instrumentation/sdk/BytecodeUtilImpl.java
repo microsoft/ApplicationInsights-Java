@@ -63,7 +63,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         data.setName(name);
         data.setMeasurements(metrics);
 
-        // FIXME (trask) add properties to MonitorDomain, then this code can be shared
+        // FIXME (trask) azure sdk exporter: add properties to MonitorDomain, then this code can be shared
         if (!properties.isEmpty()) {
             Map<String, String> existingProperties = data.getProperties();
             if (existingProperties == null) {
