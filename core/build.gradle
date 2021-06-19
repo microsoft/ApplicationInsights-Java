@@ -39,11 +39,6 @@ configurations {
     forTheDLL { transitive = false }
 }
 
-repositories {
-    // needed for local azure-monitor-opentelemetry-exporter SNAPSHOT
-    mavenLocal()
-}
-
 dependencies {
     implementation project(":agent:agent-profiler:agent-profiler-api")
     implementation project(":agent:agent-profiler:agent-alerting-api")
@@ -60,9 +55,14 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
     implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.4'
+    implementation(group: 'com.azure', name: 'azure-identity', version: '1.2.4') {
+        // TODO (kryalama) is this ok to exclude?
+        //  "This dependency can be excluded if IntelliJ Credential is not being used for authentication
+        //   via `IntelliJCredential` or `DefaultAzureCredential`"
+        // exclude group: 'org.linguafranca.pwdb', module: 'KeePassJava2'
+    }
+    implementation group: 'com.azure', name: 'azure-core', version: '1.17.0'
 
-    implementation group: 'com.azure', name: 'azure-core', version: '1.15.0'
-    implementation group: 'com.azure', name: 'azure-identity', version: '1.2.4'
     implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: versions.opentelemetry
     implementation group: 'org.jctools', name: 'jctools-core', version: '3.3.0'
 

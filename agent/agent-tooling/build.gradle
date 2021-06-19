@@ -26,7 +26,7 @@ plugins {
 apply from: "$buildScriptsDir/common-java.gradle"
 
 repositories {
-    // this is needed as long as we are using OpenTelemetry SNAPSHOT
+    // maven local is needed for locally built otel fork
     mavenLocal()
 }
 
@@ -43,15 +43,7 @@ dependencies {
 
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
 
-    implementation(group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-tooling', version: versions.opentelemetryInstrumentationAlpha) {
-        exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-jaeger'
-        exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-logging'
-        exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-otlp'
-        exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-otlp-metrics'
-        exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-prometheus'
-        exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-zipkin'
-        exclude group: 'io.grpc', module: 'grpc-netty-shaded'
-    }
+    implementation group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-tooling', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-extension-api', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'net.bytebuddy', name: 'byte-buddy', version: versions.bytebuddy
 
@@ -74,8 +66,9 @@ dependencies {
     implementation project(":agent:agent-profiler:agent-profiler-api")
 
     implementation project(':agent:exporter')
+
     implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.4'
-    implementation group: 'com.azure', name: 'azure-core', version: '1.15.0'
+    implementation group: 'com.azure', name: 'azure-core', version: '1.17.0'
 
     implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-tracing-incubator', version: versions.opentelemetryAlpha
     implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-autoconfigure', version: versions.opentelemetryAlpha

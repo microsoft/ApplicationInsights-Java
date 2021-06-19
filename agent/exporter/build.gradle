@@ -5,6 +5,7 @@ plugins {
 apply from: "$buildScriptsDir/common-java.gradle"
 
 repositories {
+    // maven local is needed for locally built otel fork
     mavenLocal()
 }
 
@@ -17,8 +18,9 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
     implementation project(path: ':core')
+
     implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.4'
-    implementation group: 'com.azure', name: 'azure-core', version: '1.15.0'
+    implementation group: 'com.azure', name: 'azure-core', version: '1.17.0'
 
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
 

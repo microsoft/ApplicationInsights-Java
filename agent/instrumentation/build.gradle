@@ -5,11 +5,45 @@ plugins {
 apply from: "$buildScriptsDir/common-java.gradle"
 
 repositories {
+    // maven local is needed for locally built otel fork
     mavenLocal()
 }
 
+configurations {
+    // exclude bootstrap dependencies from shadowJar
+    implementation.exclude group: 'org.slf4j'
+    implementation.exclude group: 'io.opentelemetry', module: 'opentelemetry-api'
+    implementation.exclude group: 'io.opentelemetry', module: 'opentelemetry-api-metrics'
+    implementation.exclude group: 'io.opentelemetry', module: 'opentelemetry-context'
+    implementation.exclude group: 'io.opentelemetry', module: 'opentelemetry-context-prop'
+    implementation.exclude group: 'io.opentelemetry', module: 'opentelemetry-semconv'
+
+    implementation.exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api'
+    implementation.exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-instrumentation-api-caching'
+
+    // TODO (trask) why is this included in azure-core?
+    implementation.exclude group: 'io.netty', module: 'netty-tcnative-boringssl-static'
+
+    implementation.exclude group: 'com.fasterxml.jackson.dataformat', module: 'jackson-dataformat-xml'
+
+    // this is pulled in via azure-core-http-netty ==> reactor-netty
+    implementation.exclude group: 'io.projectreactor.netty', module: 'reactor-netty-http-brave'
+}
+
 dependencies {
-    implementation project(':agent:agent-tooling')
+    implementation(project(':agent:agent-tooling')) {
+        // exclude bootstrap dependencies from shadowJar
+
+        exclude group: "io.opentelemetry.javaagent", module: "opentelemetry-javaagent-bootstrap"
+        exclude group: "io.opentelemetry.javaagent", module: "opentelemetry-javaagent-api"
+
+        exclude group: "io.opentelemetry", module: "opentelemetry-context"
+        exclude group: "io.opentelemetry", module: "opentelemetry-context-prop"
+
+        exclude group: "ch.qos.logback", module: "logback-classic"
+        exclude group: "ch.qos.logback", module: "logback-core"
+    }
+
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpasyncclient-4.1', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-2.0', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent.instrumentation', name: 'opentelemetry-javaagent-apache-httpclient-4.0', version: versions.opentelemetryInstrumentationAlpha
@@ -96,17 +130,6 @@ task shadowJarStep1(type: com.github.jengelman.gradle.plugins.shadow.tasks.Shado
     dependencies {
         exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-java-util-logging-spans'))
         exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-logback-spans-1.0'))
-
-        // exclude bootstrap dependencies from shadowJar
-        exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-bootstrap'))
-        exclude(dependency('io.opentelemetry:opentelemetry-api'))
-        exclude(dependency('io.opentelemetry:opentelemetry-context'))
-        exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
-        exclude(dependency('io.opentelemetry:opentelemetry-semconv'))
-        exclude(dependency('io.grpc:grpc-context'))
-        exclude(dependency('org.slf4j:slf4j-api'))
-        exclude(dependency('ch.qos.logback:logback-classic'))
-        exclude(dependency('ch.qos.logback:logback-core'))
     }
 
     // rewrite dependencies calling Logger.getLogger
@@ -124,21 +147,6 @@ shadowJar {
 
     from {
         zipTree(shadowJarStep1.archiveFile)
-    }
-
-    dependencies {
-        //These classes are added to bootstrap classloader by javaagent module
-        // exclude bootstrap dependencies from shadowJar
-        exclude(dependency('io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-bootstrap'))
-        exclude(dependency('io.opentelemetry:opentelemetry-api'))
-        exclude(dependency('io.opentelemetry:opentelemetry-context'))
-        exclude(dependency('io.opentelemetry:opentelemetry-context-prop'))
-        exclude(dependency('io.opentelemetry:opentelemetry-semconv'))
-        // TODO (trask) are these exclusions still needed?
-        exclude(dependency('io.grpc:grpc-context'))
-        exclude(dependency('org.slf4j:slf4j-api'))
-        exclude(dependency('ch.qos.logback:logback-classic'))
-        exclude(dependency('ch.qos.logback:logback-core'))
     }
 
     mergeServiceFiles()

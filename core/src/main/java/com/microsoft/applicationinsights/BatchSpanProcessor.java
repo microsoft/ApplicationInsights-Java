@@ -6,9 +6,9 @@
 package com.microsoft.applicationinsights;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueue;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import org.jctools.queues.MpscArrayQueue;
 
 import java.util.ArrayList;
 import java.util.Collections;

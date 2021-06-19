@@ -14,7 +14,7 @@ ext {
             checker                          : "3.12.0",
 
             // TODO consolidate to just one json library
-            moshi                            : "1.9.3",
+            moshi                            : "1.11.0", // 1.12.0 and above use okio 2.x which pulls in kotlin libs
             gson                             : "2.8.2",
 
             apacheHttpClient                 : "4.5.13",
