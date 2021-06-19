@@ -298,10 +298,6 @@ public class AiComponentInstaller implements AgentListener {
 
         xmlConfiguration.getQuickPulse().setEnabled(config.preview.liveMetrics.enabled);
 
-        if (config.preview.developerMode) {
-            // FIXME (trask)
-            // xmlConfiguration.getChannel().setDeveloperMode(true);
-        }
         return xmlConfiguration;
     }
 

@@ -208,7 +208,6 @@ public class Configuration {
 
     public static class PreviewConfiguration {
 
-        public boolean developerMode;
         public SamplingPreview sampling = new SamplingPreview();
         public List<ProcessorConfig> processors = new ArrayList<>();
         public boolean openTelemetryApiSupport;
