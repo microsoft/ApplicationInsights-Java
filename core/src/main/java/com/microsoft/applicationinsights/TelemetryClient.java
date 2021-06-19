@@ -184,11 +184,6 @@ public class TelemetryClient {
             metricsData.setMetrics(filteredPoints);
         }
 
-        if (telemetry.getSampleRate() == null) {
-            // FIXME (trask) is this required?
-            telemetry.setSampleRate(100f);
-        }
-
         if (telemetry.getTime() == null) {
             // TODO (trask) remove this after confident no code paths hit this
             throw new IllegalArgumentException("telemetry item is missing time");
