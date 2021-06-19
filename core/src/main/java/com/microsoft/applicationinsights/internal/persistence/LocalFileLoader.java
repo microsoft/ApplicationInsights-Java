@@ -104,7 +104,6 @@ public class LocalFileLoader {
     private Long getMillisecondsFromFilename(File file) {
         String filename = file.getName();
         String milliSeconds = filename.substring(0, filename.lastIndexOf('-'));
-        logger.debug("####### miliseonds: {}", milliSeconds);
         try {
             return Long.parseLong(milliSeconds);
         } catch (NumberFormatException ex) {
