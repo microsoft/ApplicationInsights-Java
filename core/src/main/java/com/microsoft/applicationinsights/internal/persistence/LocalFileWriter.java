@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_ROOT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_ROOT_FOLDER;
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
 
 /**
@@ -21,12 +21,12 @@ public final class LocalFileWriter {
     private static final Logger logger = LoggerFactory.getLogger(LocalFileWriter.class);
 
     public LocalFileWriter() {
-        if (!DEFAULT_ROOT_FOlDER.exists()) {
-            DEFAULT_ROOT_FOlDER.mkdir();
+        if (!DEFAULT_ROOT_FOLDER.exists()) {
+            DEFAULT_ROOT_FOLDER.mkdir();
         }
 
-        if (!DEFAULT_ROOT_FOlDER.exists() || !DEFAULT_ROOT_FOlDER.canRead() || !DEFAULT_ROOT_FOlDER.canWrite()) {
-            throw new IllegalArgumentException(DEFAULT_ROOT_FOlDER + " must exist and have read and write permissions.");
+        if (!DEFAULT_ROOT_FOLDER.exists() || !DEFAULT_ROOT_FOLDER.canRead() || !DEFAULT_ROOT_FOLDER.canWrite()) {
+            throw new IllegalArgumentException(DEFAULT_ROOT_FOLDER + " must exist and have read and write permissions.");
         }
     }
 

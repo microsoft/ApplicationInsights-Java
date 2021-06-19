@@ -26,7 +26,7 @@ final class PersistenceHelper {
      * Windows: C:\Users\{USER_NAME}\AppData\Local\Temp\applicationinsights
      * Linux: /var/temp/applicationinsights
      */
-    static final File DEFAULT_ROOT_FOlDER = new File(LocalFileSystemUtils.getTempDir(), "applicationinsights");
+    static final File DEFAULT_ROOT_FOLDER = new File(LocalFileSystemUtils.getTempDir(), "applicationinsights");
 
     static File createTempFileWithUniqueName() {
         File file = null;
@@ -73,7 +73,7 @@ final class PersistenceHelper {
 
     static File getDefaultSubdirectory() {
         String subdirectoryHash = getCurrentProcessSubdirectoryHash();
-        File subdirectory = new File(DEFAULT_ROOT_FOlDER, subdirectoryHash);
+        File subdirectory = new File(DEFAULT_ROOT_FOLDER, subdirectoryHash);
         if (!subdirectory.exists()) {
             subdirectory.mkdir();
         }
@@ -98,7 +98,7 @@ final class PersistenceHelper {
     }
 
     private static long getTotalSizeOfPersistedFiles() {
-        if (!DEFAULT_ROOT_FOlDER.exists()) {
+        if (!DEFAULT_ROOT_FOLDER.exists()) {
             return 0;
         }
 
