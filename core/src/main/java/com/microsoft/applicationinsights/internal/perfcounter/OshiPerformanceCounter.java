@@ -108,7 +108,7 @@ public class OshiPerformanceCounter implements PerformanceCounter {
     }
 
     private void send(TelemetryClient telemetryClient, double value, String metricName) {
-        TelemetryItem telemetry = createMetricsTelemetry(metricName, value);
+        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, metricName, value);
         telemetryClient.trackAsync(telemetry);
     }
 }

@@ -22,11 +22,11 @@ import static java.util.concurrent.TimeUnit.*;
 // * TelemetryItem telemetry
 public class TelemetryUtil {
 
-    public static TelemetryItem createMetricsTelemetry(String name, double value) {
+    public static TelemetryItem createMetricsTelemetry(TelemetryClient telemetryClient, String name, double value) {
         TelemetryItem telemetry = new TelemetryItem();
         MetricsData data = new MetricsData();
         MetricDataPoint point = new MetricDataPoint();
-        TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
+        telemetryClient.initMetricTelemetry(telemetry, data, point);
 
         point.setName(name);
         point.setValue(value);

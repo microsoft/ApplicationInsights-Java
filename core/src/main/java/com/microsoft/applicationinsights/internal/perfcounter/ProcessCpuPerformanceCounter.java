@@ -74,7 +74,7 @@ final class ProcessCpuPerformanceCounter extends AbstractPerformanceCounter {
         }
 
         logger.trace("Performance Counter: {}: {}", PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
-        TelemetryItem telemetry = createMetricsTelemetry(PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
+        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, PROCESS_CPU_PC_METRIC_NAME, processCpuUsage);
         telemetryClient.trackAsync(telemetry);
     }
 }

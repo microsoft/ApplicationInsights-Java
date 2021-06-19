@@ -160,12 +160,6 @@ public class TelemetryClient {
         return active;
     }
 
-    // FIXME (trask) inject TelemetryClient in tests instead of using global
-    @Deprecated
-    public static void resetForTesting() {
-        active = null;
-    }
-
     public void trackAsync(TelemetryItem telemetry) {
 
         MonitorDomain data = telemetry.getData().getBaseData();

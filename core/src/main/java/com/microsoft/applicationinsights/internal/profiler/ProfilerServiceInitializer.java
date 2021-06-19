@@ -164,7 +164,7 @@ public class ProfilerServiceInitializer {
         return done -> {
             TelemetryItem telemetry = new TelemetryItem();
             TelemetryEventData data = new TelemetryEventData();
-            TelemetryClient.getActive().initEventTelemetry(telemetry, data);
+            telemetryClient.initEventTelemetry(telemetry, data);
 
             data.setName("ServiceProfilerIndex");
             data.setProperties(done.getServiceProfilerIndex().getProperties());
@@ -200,7 +200,7 @@ public class ProfilerServiceInitializer {
     private static void sendMessageTelemetry(TelemetryClient telemetryClient, String message) {
         TelemetryItem telemetry = new TelemetryItem();
         MessageData data = new MessageData();
-        TelemetryClient.getActive().initMessageTelemetry(telemetry, data);
+        telemetryClient.initMessageTelemetry(telemetry, data);
         data.setMessage(message);
         telemetry.setTime(TelemetryUtil.getFormattedNow());
         telemetryClient.trackAsync(telemetry);

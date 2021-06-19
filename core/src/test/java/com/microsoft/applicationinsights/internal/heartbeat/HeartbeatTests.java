@@ -24,13 +24,6 @@ import org.mockito.stubbing.Answer;
 
 public class HeartbeatTests {
 
-  @BeforeClass
-  public static void setUp() {
-    // FIXME (trask) inject TelemetryClient in tests instead of using global
-    TelemetryClient.resetForTesting();
-    TelemetryClient.initActive(new HashMap<>(), new ArrayList<>(), new ApplicationInsightsXmlConfiguration());
-  }
-
   @Test
   public void initializeHeartBeatModuleDoesNotThrow() {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());
@@ -163,13 +156,13 @@ public class HeartbeatTests {
     Assert.assertEquals(0, props.size());
   }
 
-  // FIXME (trask) sporadic CI failures
-  @Ignore
   @Test
   public void heartBeatPayloadContainsDataByDefault() {
+    // given
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(new TelemetryClient());
 
+    // then
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
     Assert.assertNotNull(t);
     Assert.assertTrue(t.getProperties().size() > 0);
@@ -177,7 +170,11 @@ public class HeartbeatTests {
 
   @Test
   public void heartBeatPayloadContainsSpecificProperties() {
+    // given
     HeartBeatProvider provider = new HeartBeatProvider();
+    provider.initialize(new TelemetryClient());
+
+    // then
     Assert.assertTrue(provider.addHeartBeatProperty("test", "testVal", true));
 
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
@@ -186,7 +183,11 @@ public class HeartbeatTests {
 
   @Test
   public void heartbeatMetricIsNonZeroWhenFailureConditionPresent() {
+    // given
     HeartBeatProvider provider = new HeartBeatProvider();
+    provider.initialize(new TelemetryClient());
+
+    // then
     Assert.assertTrue(provider.addHeartBeatProperty("test", "testVal", false));
 
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
@@ -195,7 +196,11 @@ public class HeartbeatTests {
 
   @Test
   public void heartbeatMetricCountsForAllFailures() {
+    // given
     HeartBeatProvider provider = new HeartBeatProvider();
+    provider.initialize(new TelemetryClient());
+
+    // then
     Assert.assertTrue(provider.addHeartBeatProperty("test", "testVal", false));
     Assert.assertTrue(provider.addHeartBeatProperty("test1", "testVal1", false));
 
@@ -230,8 +235,11 @@ public class HeartbeatTests {
 
   @Test
   public void heartBeatProviderDoesNotAllowDuplicateProperties() {
+    // given
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(new TelemetryClient());
+
+    // then
     provider.addHeartBeatProperty("test01", "test val", true);
     Assert.assertFalse(provider.addHeartBeatProperty("test01", "test val 2", true));
   }
@@ -245,7 +253,10 @@ public class HeartbeatTests {
     field.setAccessible(true);
     Set<String> defaultFields = (Set<String>)field.get(base);
     defaultFields.add(testKey);
+
     HeartBeatProvider provider = new HeartBeatProvider();
+    provider.initialize(new TelemetryClient());
+
     base.setDefaultPayload(new ArrayList<>(), provider).call();
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
     Assert.assertFalse(t.getProperties().containsKey("testKey"));

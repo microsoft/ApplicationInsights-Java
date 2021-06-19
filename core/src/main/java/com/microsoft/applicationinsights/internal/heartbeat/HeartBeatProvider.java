@@ -201,7 +201,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
     TelemetryItem telemetry = new TelemetryItem();
     MetricsData data = new MetricsData();
     MetricDataPoint point = new MetricDataPoint();
-    TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
+    telemetryClient.initMetricTelemetry(telemetry, data, point);
 
     point.setName(HEARTBEAT_SYNTHETIC_METRIC_NAME);
     point.setValue(numHealthy);

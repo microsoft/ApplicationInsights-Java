@@ -63,7 +63,7 @@ final class FreeMemoryPerformanceCounter extends AbstractPerformanceCounter {
         }
 
         logger.trace("Performance Counter: {}: {}", TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
-        TelemetryItem telemetry = createMetricsTelemetry(TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
+        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, TOTAL_MEMORY_PC_METRIC_NAME, freePhysicalMemorySize);
         telemetryClient.trackAsync(telemetry);
     }
 

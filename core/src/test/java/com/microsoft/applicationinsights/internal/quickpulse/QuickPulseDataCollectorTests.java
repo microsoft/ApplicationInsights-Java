@@ -22,13 +22,6 @@ public class QuickPulseDataCollectorTests {
 
     private static final String FAKE_INSTRUMENTATION_KEY = "fake-instrumentation-key";
 
-    @BeforeClass
-    public static void setUp() {
-        // FIXME (trask) inject TelemetryClient in tests instead of using global
-        TelemetryClient.resetForTesting();
-        TelemetryClient.initActive(new HashMap<>(), new ArrayList<>(), new ApplicationInsightsXmlConfiguration());
-    }
-
     @Before
     public void setup() {
         QuickPulseDataCollector.INSTANCE.disable();
@@ -178,7 +171,7 @@ public class QuickPulseDataCollectorTests {
     private static TelemetryItem createRequestTelemetry(String name, Date timestamp, long duration, String responseCode, boolean success) {
         TelemetryItem telemetry = new TelemetryItem();
         RequestData data = new RequestData();
-        TelemetryClient.getActive().initRequestTelemetry(telemetry, data);
+        new TelemetryClient().initRequestTelemetry(telemetry, data);
 
         data.setName(name);
         data.setDuration(getFormattedDuration(duration));
@@ -192,7 +185,7 @@ public class QuickPulseDataCollectorTests {
     private static TelemetryItem createRemoteDependencyTelemetry(String name, String command, long durationMillis, boolean success) {
         TelemetryItem telemetry = new TelemetryItem();
         RemoteDependencyData data = new RemoteDependencyData();
-        TelemetryClient.getActive().initRemoteDependencyTelemetry(telemetry, data);
+        new TelemetryClient().initRemoteDependencyTelemetry(telemetry, data);
 
         data.setName(name);
         data.setData(command);
@@ -205,7 +198,7 @@ public class QuickPulseDataCollectorTests {
     private static TelemetryItem createExceptionTelemetry(Exception exception) {
         TelemetryItem telemetry = new TelemetryItem();
         TelemetryExceptionData data = new TelemetryExceptionData();
-        TelemetryClient.getActive().initExceptionTelemetry(telemetry, data);
+        new TelemetryClient().initExceptionTelemetry(telemetry, data);
 
         data.setExceptions(getExceptions(exception));
 

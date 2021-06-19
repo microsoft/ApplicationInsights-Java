@@ -46,7 +46,7 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
     protected void send(TelemetryClient telemetryClient, String displayName, double value) {
         logger.trace("Metric JMX: {}, {}", displayName, value);
 
-        TelemetryItem telemetry = createMetricsTelemetry(displayName, value);
+        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, displayName, value);
         telemetryClient.trackAsync(telemetry);
     }
 }

@@ -78,18 +78,11 @@ public class ProfilerServiceTest {
     final String stampId = "a-stamp-id";
     final String jfrExtension = "jfr";
 
-    @BeforeClass
-    public static void setUp() {
-        // FIXME (trask) inject TelemetryClient in tests instead of using global
-        TelemetryClient.resetForTesting();
-        TelemetryClient.initActive(new HashMap<>(), new ArrayList<>(), new ApplicationInsightsXmlConfiguration());
-    }
-
     @Test
     public void endToEndAlertTriggerCpu() throws Exception {
         endToEndAlertTriggerCycle(
                 false,
-                createMetricsTelemetry(TOTAL_CPU_PC_METRIC_NAME, 100.0),
+                createMetricsTelemetry(new TelemetryClient(), TOTAL_CPU_PC_METRIC_NAME, 100.0),
                 telemetry -> {
                     Assert.assertEquals("JFR-CPU", telemetry.getProperties().get("Source"));
                     Assert.assertEquals(100.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
@@ -101,7 +94,7 @@ public class ProfilerServiceTest {
     public void endToEndAlertTriggerManual() throws Exception {
         endToEndAlertTriggerCycle(
                 true,
-                createMetricsTelemetry(HEAP_MEM_USED_PERCENTAGE, 0.0),
+                createMetricsTelemetry(new TelemetryClient(), HEAP_MEM_USED_PERCENTAGE, 0.0),
                 telemetry -> {
                     Assert.assertEquals("JFR-MANUAL", telemetry.getProperties().get("Source"));
                     Assert.assertEquals(0.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
