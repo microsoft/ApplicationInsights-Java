@@ -47,13 +47,13 @@ public class LocalFileWriterTests {
 
     @After
     public void cleanup() {
-        Queue<String> queue = LocalFileLoader.get().getPersistedFilesCache();
-        String filename = null;
-        while((filename = queue.poll()) != null) {
-            File tempFile = new File(PersistenceHelper.getDefaultSubdirectory(), filename);
-            assertTrue(tempFile.exists());
-            assertTrue(tempFile.delete());
-        }
+//        Queue<String> queue = LocalFileLoader.get().getPersistedFilesCache();
+//        String filename = null;
+//        while((filename = queue.poll()) != null) {
+//            File tempFile = new File(PersistenceHelper.getDefaultSubdirectory(), filename);
+//            assertTrue(tempFile.exists());
+//            assertTrue(tempFile.delete());
+//        }
     }
 
     @Test

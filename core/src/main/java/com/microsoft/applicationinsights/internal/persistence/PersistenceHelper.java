@@ -31,7 +31,7 @@ final class PersistenceHelper {
     static File createTempFileWithUniqueName() {
         File file = null;
         try {
-            String prefix = System.currentTimeMillis() + "-" + UUID.randomUUID().toString().replaceAll("-", "");
+            String prefix = System.currentTimeMillis() + "-";
             file = File.createTempFile(prefix, null, getDefaultSubdirectory());
         } catch (IOException ex) {
             logger.error("Fail to create a temp file.", ex);
