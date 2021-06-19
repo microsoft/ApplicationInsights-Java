@@ -244,7 +244,6 @@ class LoggingConfigurator {
         // muzzleMatcher logs at WARN level, so by default this is OFF, but enabled when DEBUG logging is enabled
         loggerContext.getLogger("muzzleMatcher").setLevel(muzzleMatcherLevel);
         loggerContext.getLogger("com.microsoft.applicationinsights").setLevel(level);
-        // FIXME (trask) revisit
         loggerContext.getLogger("com.azure.monitor.opentelemetry.exporter").setLevel(level);
         loggerContext.getLogger(ROOT_LOGGER_NAME).setLevel(otherLibsLevel);
     }
