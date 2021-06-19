@@ -40,7 +40,6 @@ subprojects {
     }
 
     // This task addresses the issue of dependency containers not existing when the app runs and the test fails due to timeout.
-    // FIXME a temporary measure until we can get the list of containers from the test classes themselves.
     task pullDependencyContainers() {
         group 'Smoke Test'
         description 'Pulls dependency containers from docker hub'
