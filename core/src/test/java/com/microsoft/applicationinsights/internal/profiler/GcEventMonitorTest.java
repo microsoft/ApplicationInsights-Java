@@ -36,13 +36,6 @@ public class GcEventMonitorTest {
         CompletableFuture<AlertBreach> alertFuture = new CompletableFuture<>();
         AlertingSubsystem alertingSubsystem = getAlertingSubsystem(alertFuture);
 
-        // FIXME (trask) revisit this, why is subclassing TelemetryClient needed?
-        TelemetryClient client = new TelemetryClient() {
-            @Override
-            public void trackAsync(TelemetryItem telemetry) {
-            }
-        };
-
         GcMonitorFactory factory = new GcMonitorFactory() {
             @Override
             public MemoryManagement monitorSelf(ExecutorService executorService, GCEventConsumer consumer) {
@@ -58,7 +51,7 @@ public class GcEventMonitorTest {
 
         GcEventMonitor.init(
                 alertingSubsystem,
-                client,
+                new TelemetryClient(),
                 Executors.newSingleThreadExecutor(),
                 new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.NONE),
                 factory);
