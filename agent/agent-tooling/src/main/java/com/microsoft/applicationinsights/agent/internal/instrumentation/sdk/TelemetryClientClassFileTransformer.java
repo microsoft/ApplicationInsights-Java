@@ -75,10 +75,11 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
                                           @Nullable Class<?> classBeingRedefined,
                                           @Nullable ProtectionDomain protectionDomain, byte[] classfileBuffer) {
 
+        // NOTE: this is never called for the internal TelemetryClient because the internal TelemetryClient
+        // is initialized before this class file transformer is registered
         if (!unshadedClassName.equals(className)) {
             return null;
         }
-        // FIXME why isn't this being called for internal TelemetryClient (which is good, but why)?
 
         StatusFile.putValueAndWrite("SDKPresent", true);
         try {
