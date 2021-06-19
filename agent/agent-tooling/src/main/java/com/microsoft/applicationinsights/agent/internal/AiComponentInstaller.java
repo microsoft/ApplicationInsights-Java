@@ -138,12 +138,6 @@ public class AiComponentInstaller implements AgentListener {
             // TODO revisit this, not ideal to initialize when authentication is disabled
             AadAuthentication.init(null, null, null, null, null, null);
         }
-        // FIXME do something with config
-
-        // FIXME set doNotWeavePrefixes = "com.microsoft.applicationinsights.agent."
-
-        // FIXME set tryToLoadInBootstrapClassLoader = "com.microsoft.applicationinsights.agent."
-        // (maybe not though, this is only needed for classes in :agent:agent-bootstrap)
 
         String jbossHome = System.getenv("JBOSS_HOME");
         if (!Strings.isNullOrEmpty(jbossHome)) {
