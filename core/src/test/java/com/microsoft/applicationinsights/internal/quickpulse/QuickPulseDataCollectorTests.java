@@ -215,7 +215,6 @@ public class QuickPulseDataCollectorTests {
         assertEquals(0.0, counters.requestsDuration, Math.ulp(0.0));
         assertEquals(0, counters.unsuccessfulRequests);
 
-        // FIXME exceptions is stored as a double but counted as an int; is that correct?
-        assertEquals(0, (int) counters.exceptions);
+        assertEquals(0, counters.exceptions);
     }
 }

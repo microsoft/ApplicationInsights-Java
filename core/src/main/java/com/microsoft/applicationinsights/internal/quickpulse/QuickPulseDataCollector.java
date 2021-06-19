@@ -44,13 +44,13 @@ public enum QuickPulseDataCollector {
     private TelemetryClient telemetryClient;
 
     static class FinalCounters {
-        public final double exceptions;
+        public final int exceptions;
         public final long requests;
         public final double requestsDuration;
-        public final long unsuccessfulRequests;
+        public final int unsuccessfulRequests;
         public final long rdds;
         public final double rddsDuration;
-        public final long unsuccessfulRdds;
+        public final int unsuccessfulRdds;
         public final long memoryCommitted;
         public final double cpuUsage;
 
