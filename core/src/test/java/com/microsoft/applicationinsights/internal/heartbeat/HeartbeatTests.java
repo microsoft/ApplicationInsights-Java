@@ -28,7 +28,7 @@ public class HeartbeatTests {
   public static void setUp() {
     // FIXME (trask) inject TelemetryClient in tests instead of using global
     TelemetryClient.resetForTesting();
-    TelemetryClient.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
+    TelemetryClient.initActive(new HashMap<>(), new ArrayList<>(), new ApplicationInsightsXmlConfiguration());
   }
 
   @Test

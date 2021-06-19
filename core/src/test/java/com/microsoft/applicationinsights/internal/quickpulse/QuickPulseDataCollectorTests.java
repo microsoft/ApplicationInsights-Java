@@ -11,6 +11,7 @@ import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataColle
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.FinalCounters;
 import org.junit.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -25,7 +26,7 @@ public class QuickPulseDataCollectorTests {
     public static void setUp() {
         // FIXME (trask) inject TelemetryClient in tests instead of using global
         TelemetryClient.resetForTesting();
-        TelemetryClient.initActive(new HashMap<>(), new ApplicationInsightsXmlConfiguration());
+        TelemetryClient.initActive(new HashMap<>(), new ArrayList<>(), new ApplicationInsightsXmlConfiguration());
     }
 
     @Before

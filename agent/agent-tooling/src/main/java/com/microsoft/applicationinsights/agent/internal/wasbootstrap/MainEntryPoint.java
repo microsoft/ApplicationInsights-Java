@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.instrument.Instrumentation;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -64,7 +63,7 @@ public class MainEntryPoint {
     }
 
     // TODO turn this into an interceptor
-    public static void start(Instrumentation instrumentation, URL bootstrapURL) {
+    public static void start(Instrumentation instrumentation, File javaagentFile) {
         boolean success = false;
         Logger startupLogger = null;
         String version = "(unknown)";
@@ -75,7 +74,7 @@ public class MainEntryPoint {
                 instrumentation.retransformClasses(Class.forName("java.util.jar.JarVerifier"));
                 instrumentation.removeTransformer(transformer);
             }
-            Path agentPath = new File(bootstrapURL.toURI()).toPath();
+            Path agentPath = javaagentFile.toPath();
             version = SdkVersionFinder.initVersion(agentPath);
             DiagnosticsHelper.setAgentJarFile(agentPath);
             // configuration is only read this early in order to extract logging configuration
@@ -98,9 +97,9 @@ public class MainEntryPoint {
             FriendlyException friendlyException = getFriendlyException(t);
             String banner = "ApplicationInsights Java Agent " + version + " failed to start";
             if (friendlyException != null) {
-                logErrorMessage(startupLogger, friendlyException.getMessageWithBanner(banner), true, t, bootstrapURL);
+                logErrorMessage(startupLogger, friendlyException.getMessageWithBanner(banner), true, t, javaagentFile);
             } else {
-                logErrorMessage(startupLogger, banner, false, t, bootstrapURL);
+                logErrorMessage(startupLogger, banner, false, t, javaagentFile);
             }
 
         } finally {
@@ -129,7 +128,7 @@ public class MainEntryPoint {
         return getFriendlyException(cause);
     }
 
-    private static void logErrorMessage(Logger startupLogger, String message, boolean isFriendlyException, Throwable t, URL bootstrapURL) {
+    private static void logErrorMessage(Logger startupLogger, String message, boolean isFriendlyException, Throwable t, File javaagentFile) {
 
         if (startupLogger != null) {
             if (isFriendlyException) {
@@ -140,7 +139,7 @@ public class MainEntryPoint {
         } else {
             try {
                 // IF the startupLogger failed to be initialized due to configuration syntax error, try initializing it here
-                Path agentPath = new File(bootstrapURL.toURI()).toPath();
+                Path agentPath = javaagentFile.toPath();
                 SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
                 selfDiagnostics.file.path = ConfigurationBuilder.overlayWithEnvVar(
                         ConfigurationBuilder.APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, selfDiagnostics.file.path);

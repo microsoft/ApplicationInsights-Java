@@ -786,56 +786,32 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             }
         }
 
-<<<<<<< HEAD
         private void agent$trackEventTelemetry(com.microsoft.applicationinsights.telemetry.EventTelemetry t) {
-            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackEvent(t.getName(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackEvent(t.getTimestamp(), t.getName(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
                     t.getContext().getInstrumentationKey());
         }
 
         private void agent$trackMetricTelemetry(com.microsoft.applicationinsights.telemetry.MetricTelemetry t) {
-            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackMetric(t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
-=======
-        private void agent$trackEventTelemetry(EventTelemetry t) {
-            BytecodeUtil.trackEvent(t.getTimestamp(), t.getName(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
-                    t.getContext().getInstrumentationKey());
-        }
-
-        private void agent$trackMetricTelemetry(MetricTelemetry t) {
-            BytecodeUtil.trackMetric(t.getTimestamp(), t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
->>>>>>> 76e97c816c (Fix 2.x interop of timestamps (#1726))
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackMetric(t.getTimestamp(), t.getName(), t.getValue(), t.getCount(), t.getMin(), t.getMax(),
                     t.getStandardDeviation(), t.getProperties(), t.getContext().getTags(),
                     t.getContext().getInstrumentationKey());
         }
 
-<<<<<<< HEAD
         private void agent$trackRemoteDependencyTelemetry(com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry t) {
-            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackDependency(t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
-=======
-        private void agent$trackRemoteDependencyTelemetry(RemoteDependencyTelemetry t) {
-            BytecodeUtil.trackDependency(t.getTimestamp(), t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
->>>>>>> 76e97c816c (Fix 2.x interop of timestamps (#1726))
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackDependency(t.getTimestamp(), t.getName(), t.getId(), t.getResultCode(), agent$toMillis(t.getDuration()),
                     t.getSuccess(), t.getCommandName(), t.getType(), t.getTarget(), t.getProperties(),
                     t.getContext().getTags(), t.getMetrics(), t.getContext().getInstrumentationKey());
         }
 
-<<<<<<< HEAD
         private void agent$trackPageViewTelemetry(com.microsoft.applicationinsights.telemetry.PageViewTelemetry t) {
-            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackPageView(t.getName(), t.getUri(), t.getDuration(), t.getProperties(),
-=======
-        private void agent$trackPageViewTelemetry(PageViewTelemetry t) {
-            BytecodeUtil.trackPageView(t.getTimestamp(), t.getName(), t.getUri(), t.getDuration(), t.getProperties(),
->>>>>>> 76e97c816c (Fix 2.x interop of timestamps (#1726))
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackPageView(t.getTimestamp(), t.getName(), t.getUri(), t.getDuration(), t.getProperties(),
                     t.getContext().getTags(), t.getMetrics(), t.getContext().getInstrumentationKey());
         }
 
         private void agent$trackTraceTelemetry(com.microsoft.applicationinsights.telemetry.TraceTelemetry t) {
             com.microsoft.applicationinsights.telemetry.SeverityLevel level = t.getSeverityLevel();
             int severityLevel = level != null ? level.getValue() : -1;
-<<<<<<< HEAD
-            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackTrace(t.getMessage(), severityLevel, t.getProperties(), t.getContext().getTags(),
-=======
-            BytecodeUtil.trackTrace(t.getTimestamp(), t.getMessage(), severityLevel, t.getProperties(), t.getContext().getTags(),
->>>>>>> 76e97c816c (Fix 2.x interop of timestamps (#1726))
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackTrace(t.getTimestamp(), t.getMessage(), severityLevel, t.getProperties(), t.getContext().getTags(),
                     t.getContext().getInstrumentationKey());
         }
 
@@ -849,13 +825,8 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             }
         }
 
-<<<<<<< HEAD
         private void agent$trackExceptionTelemetry(com.microsoft.applicationinsights.telemetry.ExceptionTelemetry t) {
-            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackException(t.getException(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
-=======
-        private void agent$trackExceptionTelemetry(ExceptionTelemetry t) {
-            BytecodeUtil.trackException(t.getTimestamp(), t.getException(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
->>>>>>> 76e97c816c (Fix 2.x interop of timestamps (#1726))
+            com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.trackException(t.getTimestamp(), t.getException(), t.getProperties(), t.getContext().getTags(), t.getMetrics(),
                     t.getContext().getInstrumentationKey());
         }
 
