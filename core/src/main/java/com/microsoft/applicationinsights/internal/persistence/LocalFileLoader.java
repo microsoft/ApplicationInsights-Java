@@ -23,7 +23,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOlDER;
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_ROOT_FOlDER;
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.TEMPORARY_FILE_EXTENSION;
 
@@ -70,7 +70,7 @@ public class LocalFileLoader {
 
     private String loadOldestFromCache() {
         if (PERSISTED_FILES_CACHE.isEmpty()) { // if the cache is empty because of app crashes, reload everything from disk
-            Collection<File> filesFromDisk = FileUtils.listFiles(DEFAULT_FOlDER, new String[]{PERMANENT_FILE_EXTENSION}, false);
+            Collection<File> filesFromDisk = FileUtils.listFiles(DEFAULT_ROOT_FOlDER, new String[]{PERMANENT_FILE_EXTENSION}, false);
             if (filesFromDisk.isEmpty()) {
                 return null;
             }

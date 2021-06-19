@@ -51,7 +51,7 @@ public class LocalFileWriterTests {
         Queue<String> queue = LocalFileLoader.get().getPersistedFilesCache();
         String filename = null;
         while((filename = queue.poll()) != null) {
-            File tempFile = new File(DEFAULT_FOlDER, filename);
+            File tempFile = new File(PersistenceHelper.getDefaultSubdirectory(), filename);
             assertTrue(tempFile.exists());
             assertTrue(tempFile.delete());
         }

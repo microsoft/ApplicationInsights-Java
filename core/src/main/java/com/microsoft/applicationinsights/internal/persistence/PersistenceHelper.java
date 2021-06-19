@@ -1,6 +1,8 @@
 package com.microsoft.applicationinsights.internal.persistence;
 
+import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -24,13 +26,13 @@ final class PersistenceHelper {
      * Windows: C:\Users\{USER_NAME}\AppData\Local\Temp\applicationinsights
      * Linux: /var/temp/applicationinsights
      */
-    static final File DEFAULT_FOlDER = new File(LocalFileSystemUtils.getTempDir(), "applicationinsights");
+    static final File DEFAULT_ROOT_FOlDER = new File(LocalFileSystemUtils.getTempDir(), "applicationinsights");
 
     static File createTempFileWithUniqueName() {
         File file = null;
         try {
             String prefix = System.currentTimeMillis() + "-" + UUID.randomUUID().toString().replaceAll("-", "");
-            file = File.createTempFile(prefix, null, DEFAULT_FOlDER);
+            file = File.createTempFile(prefix, null, getDefaultSubdirectory());
         } catch (IOException ex) {
             logger.error("Fail to create a temp file.", ex);
             // TODO (heya) track number of failures to create a temp file via Statsbeat
@@ -43,8 +45,8 @@ final class PersistenceHelper {
      * Rename the given file's file extension.
      */
     static File renameFileExtension(String filename, String fileExtension) {
-        File sourceFile = new File(DEFAULT_FOlDER, filename);
-        File tempFile = new File(DEFAULT_FOlDER, FilenameUtils.getBaseName(filename) + fileExtension);
+        File sourceFile = new File(getDefaultSubdirectory(), filename);
+        File tempFile = new File(getDefaultSubdirectory(), FilenameUtils.getBaseName(filename) + fileExtension);
         try {
             FileUtils.moveFile(sourceFile, tempFile);
         } catch (IOException ex) {
@@ -69,20 +71,45 @@ final class PersistenceHelper {
         return true;
     }
 
+    static File getDefaultSubdirectory() {
+        String subdirectoryHash = getCurrentProcessSubdirectoryHash();
+        File subdirectory = new File(DEFAULT_ROOT_FOlDER, subdirectoryHash);
+        if (!subdirectory.exists()) {
+            subdirectory.mkdir();
+        }
+
+        if (!subdirectory.exists() || !subdirectory.canRead() || !subdirectory.canWrite()) {
+            throw new IllegalArgumentException("subdirectory must exist and have read and write permissions.");
+        }
+
+        return subdirectory;
+    }
+
+    private static String getCurrentProcessSubdirectoryHash() {
+        String appIdentifier = System.getProperty("user.name") + "@" + SystemInformation.INSTANCE.getProcessId();
+        String hash = null;
+        try {
+            hash = DigestUtils.sha256Hex(appIdentifier);
+        } catch (Exception ex) {
+            logger.error("Fail to generate a sha 256 hash for the current process id.", ex);
+        }
+
+        return hash;
+    }
+
     private static long getTotalSizeOfPersistedFiles() {
-        if (!DEFAULT_FOlDER.exists()) {
+        if (!DEFAULT_ROOT_FOlDER.exists()) {
             return 0;
         }
 
         long sum = 0;
-        Collection<File> files = FileUtils.listFiles(DEFAULT_FOlDER, new String[]{PERMANENT_FILE_EXTENSION}, false);
+        Collection<File> files = FileUtils.listFiles(getDefaultSubdirectory(), new String[]{PERMANENT_FILE_EXTENSION}, false);
         for (File file : files) {
             sum += file.length();
         }
 
         return sum;
     }
-
 
     private PersistenceHelper() {}
 }
