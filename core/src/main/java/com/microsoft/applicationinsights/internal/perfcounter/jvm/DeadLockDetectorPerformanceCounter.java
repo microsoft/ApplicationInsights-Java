@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import static java.lang.Math.min;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.slf4j.Logger;
@@ -110,14 +110,14 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
                 messageData.setMessage(String.format("%s%s", "Suspected deadlocked threads: ", sb));
 
-                messageTelemetry.setTime(TelemetryUtil.getFormattedNow());
+                messageTelemetry.setTime(FormattedTime.fromNow());
                 messageTelemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
 
                 telemetryClient.trackAsync(messageTelemetry);
             }
         }
 
-        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        telemetry.setTime(FormattedTime.fromNow());
 
         telemetryClient.trackAsync(telemetry);
     }

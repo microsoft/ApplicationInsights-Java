@@ -4,16 +4,15 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDepe
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.FormattedDuration;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.FinalCounters;
 import org.junit.*;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 
 import static com.microsoft.applicationinsights.TelemetryUtil.*;
 import static org.junit.Assert.*;
@@ -168,17 +167,17 @@ public class QuickPulseDataCollectorTests {
         assertEquals(duration, inputs.duration);
     }
 
-    private static TelemetryItem createRequestTelemetry(String name, Date timestamp, long duration, String responseCode, boolean success) {
+    private static TelemetryItem createRequestTelemetry(String name, Date timestamp, long durationMillis, String responseCode, boolean success) {
         TelemetryItem telemetry = new TelemetryItem();
         RequestData data = new RequestData();
         new TelemetryClient().initRequestTelemetry(telemetry, data);
 
         data.setName(name);
-        data.setDuration(getFormattedDuration(duration));
+        data.setDuration(FormattedDuration.fromMillis(durationMillis));
         data.setResponseCode(responseCode);
         data.setSuccess(success);
 
-        telemetry.setTime(getFormattedTime(timestamp.getTime()));
+        telemetry.setTime(FormattedTime.fromDate(timestamp));
         return telemetry;
     }
 
@@ -189,7 +188,7 @@ public class QuickPulseDataCollectorTests {
 
         data.setName(name);
         data.setData(command);
-        data.setDuration(getFormattedDuration(durationMillis));
+        data.setDuration(FormattedDuration.fromMillis(durationMillis));
         data.setSuccess(success);
 
         return telemetry;

@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -170,7 +171,7 @@ public class ProfilerServiceInitializer {
             data.setProperties(done.getServiceProfilerIndex().getProperties());
             data.setMeasurements(done.getServiceProfilerIndex().getMetrics());
 
-            telemetry.setTime(TelemetryUtil.getFormattedNow());
+            telemetry.setTime(FormattedTime.fromNow());
 
             telemetryClient.trackAsync(telemetry);
 
@@ -202,7 +203,7 @@ public class ProfilerServiceInitializer {
         MessageData data = new MessageData();
         telemetryClient.initMessageTelemetry(telemetry, data);
         data.setMessage(message);
-        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        telemetry.setTime(FormattedTime.fromNow());
         telemetryClient.trackAsync(telemetry);
     }
 }

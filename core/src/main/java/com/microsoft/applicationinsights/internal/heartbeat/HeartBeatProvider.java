@@ -1,8 +1,8 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -209,7 +209,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
 
     data.setProperties(properties);
 
-    telemetry.setTime(TelemetryUtil.getFormattedNow());
+    telemetry.setTime(FormattedTime.fromNow());
 
     return telemetry;
   }

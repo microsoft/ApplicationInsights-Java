@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.FormattedDuration;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
@@ -72,9 +74,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         if (timestamp != null) {
-            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
         } else {
-            telemetry.setTime(TelemetryUtil.getFormattedNow());
+            telemetry.setTime(FormattedTime.fromNow());
         }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
@@ -119,9 +121,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         if (timestamp != null) {
-            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
         } else {
-            telemetry.setTime(TelemetryUtil.getFormattedNow());
+            telemetry.setTime(FormattedTime.fromNow());
         }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
@@ -148,7 +150,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         data.setId(id);
         data.setResultCode(resultCode);
         if (totalMillis != null) {
-            data.setDuration(TelemetryUtil.getFormattedDuration(totalMillis));
+            data.setDuration(FormattedDuration.fromMillis(totalMillis));
         }
         data.setSuccess(success);
         data.setData(commandName);
@@ -166,9 +168,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         if (timestamp != null) {
-            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
         } else {
-            telemetry.setTime(TelemetryUtil.getFormattedNow());
+            telemetry.setTime(FormattedTime.fromNow());
         }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
@@ -193,7 +195,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (uri != null) {
             data.setUrl(uri.toString());
         }
-        data.setDuration(TelemetryUtil.getFormattedDuration(totalMillis));
+        data.setDuration(FormattedDuration.fromMillis(totalMillis));
         data.setMeasurements(metrics);
 
         if (!properties.isEmpty()) {
@@ -206,9 +208,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         if (timestamp != null) {
-            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
         } else {
-            telemetry.setTime(TelemetryUtil.getFormattedNow());
+            telemetry.setTime(FormattedTime.fromNow());
         }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
@@ -243,9 +245,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         if (timestamp != null) {
-            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
         } else {
-            telemetry.setTime(TelemetryUtil.getFormattedNow());
+            telemetry.setTime(FormattedTime.fromNow());
         }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
@@ -272,7 +274,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
             data.setUrl(url.toString());
         }
         if (duration != null) {
-            data.setDuration(TelemetryUtil.getFormattedDuration(duration));
+            data.setDuration(FormattedDuration.fromMillis(duration));
         }
         data.setResponseCode(responseCode);
         data.setSuccess(success);
@@ -289,9 +291,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         if (timestamp != null) {
-            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
         } else {
-            telemetry.setTime(TelemetryUtil.getFormattedNow());
+            telemetry.setTime(FormattedTime.fromNow());
         }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {
@@ -325,9 +327,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
 
         if (timestamp != null) {
-            telemetry.setTime(TelemetryUtil.getFormattedTime(timestamp.getTime()));
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
         } else {
-            telemetry.setTime(TelemetryUtil.getFormattedNow());
+            telemetry.setTime(FormattedTime.fromNow());
         }
         selectivelySetTags(telemetry, tags);
         if (instrumentationKey != null) {

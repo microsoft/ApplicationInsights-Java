@@ -8,14 +8,9 @@ import io.opentelemetry.api.trace.TraceState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static java.util.concurrent.TimeUnit.*;
 
 // naming convention:
 // * MonitorDomain data
@@ -32,7 +27,7 @@ public class TelemetryUtil {
         point.setValue(value);
         point.setDataPointType(DataPointType.MEASUREMENT);
 
-        telemetry.setTime(getFormattedNow());
+        telemetry.setTime(FormattedTime.fromNow());
 
         return telemetry;
     }
@@ -221,69 +216,6 @@ public class TelemetryUtil {
         }
     }
 
-    // FIXME (trask) share below functions with exporter
-
-    private static final long MILLISECONDS_PER_DAY = DAYS.toMillis(1);
-    private static final long MILLISECONDS_PER_HOUR = HOURS.toMillis(1);
-    private static final long MILLISECONDS_PER_MINUTE = MINUTES.toMillis(1);
-    private static final long MILLISECONDS_PER_SECOND = SECONDS.toMillis(1);
-
-    public static String getFormattedDuration(long durationMillis) {
-        long remainingMillis = durationMillis;
-
-        long days = remainingMillis / MILLISECONDS_PER_DAY;
-        remainingMillis = remainingMillis % MILLISECONDS_PER_DAY;
-
-        long hours = remainingMillis / MILLISECONDS_PER_HOUR;
-        remainingMillis = remainingMillis % MILLISECONDS_PER_HOUR;
-
-        long minutes = remainingMillis / MILLISECONDS_PER_MINUTE;
-        remainingMillis = remainingMillis % MILLISECONDS_PER_MINUTE;
-
-        long seconds = remainingMillis / MILLISECONDS_PER_SECOND;
-        remainingMillis = remainingMillis % MILLISECONDS_PER_SECOND;
-
-        StringBuilder sb = new StringBuilder();
-        appendMinTwoDigits(sb, days);
-        sb.append('.');
-        appendMinTwoDigits(sb, hours);
-        sb.append(':');
-        appendMinTwoDigits(sb, minutes);
-        sb.append(':');
-        appendMinTwoDigits(sb, seconds);
-        sb.append('.');
-        appendMinThreeDigits(sb, remainingMillis);
-        sb.append("000");
-
-        return sb.toString();
-    }
-
-    private static void appendMinTwoDigits(StringBuilder sb, long value) {
-        if (value < 10) {
-            sb.append("0");
-        }
-        sb.append(value);
-    }
-
-    private static void appendMinThreeDigits(StringBuilder sb, long value) {
-        if (value < 100) {
-            sb.append("0");
-        }
-        if (value < 10) {
-            sb.append("0");
-        }
-        sb.append(value);
-    }
-
-    public static String getFormattedNow() {
-        return getFormattedTime(System.currentTimeMillis());
-    }
-
-    public static String getFormattedTime(long epochMillis) {
-        return Instant.ofEpochMilli(epochMillis)
-                .atOffset(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ISO_DATE_TIME);
-    }
 
     // FIXME (trask) share this remaining code with the exporter
 

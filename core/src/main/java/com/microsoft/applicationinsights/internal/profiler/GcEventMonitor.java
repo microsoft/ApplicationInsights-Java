@@ -2,6 +2,7 @@ package com.microsoft.applicationinsights.internal.profiler;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -145,7 +146,7 @@ public class GcEventMonitor {
         }
         data.setMeasurements(measurements);
 
-        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        telemetry.setTime(FormattedTime.fromNow());
 
         telemetryClient.trackAsync(telemetry);
     }
