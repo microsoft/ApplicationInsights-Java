@@ -3,10 +3,9 @@ name: PR build
 on:
   pull_request:
 
-# breaking ci on aad branch
-# concurrency:
-#   group: ci-${{ github.event.pull_request.number }}
-#   cancel-in-progress: true
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   build:
