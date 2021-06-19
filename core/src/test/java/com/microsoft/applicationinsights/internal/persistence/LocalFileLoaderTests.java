@@ -138,6 +138,16 @@ public class LocalFileLoaderTests {
         }
     }
 
+    @Test
+    public void testWriteAndReadRandomText() {
+        String text = "hello world";
+        LocalFileWriter writer = new LocalFileWriter();
+        writer.writeToDisk(text.getBytes());
+
+        byte[] rawBytesFromDisk = LocalFileLoader.get().loadTelemetriesFromDisk();
+        assertEquals(text, new String(rawBytesFromDisk));
+    }
+
     private void verifyTelemetryName(int index, String actualName) {
         String expectedName = null;
         if (index < 6) {
