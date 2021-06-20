@@ -3,7 +3,6 @@ plugins {
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
-apply from: "$buildScriptsDir/publishing.gradle"
 
 repositories {
     // maven local is needed for locally built otel fork

@@ -108,22 +108,7 @@ jacocoTestReport {
     }
 }
 
-sourceSets {
-    integrationTest {
-        java.srcDir file("src/integTest/java")
-        resources.srcDir file("src/integTest/resources")
-        compileClasspath = sourceSets.main.output + sourceSets.test.output + configurations.testRuntime
-        runtimeClasspath = output + compileClasspath
-    }
-}
-
-task integrationTest(type: Test, dependsOn: jar) {
-    group "Verification"
-    description "Runs the integration tests."
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
-}
-
+// TODO (trask) is this needed?
 repositories {
     mavenCentral()
 }
