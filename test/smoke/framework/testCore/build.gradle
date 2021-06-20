@@ -7,7 +7,6 @@ repositories {
 
 dependencies {
     implementation "com.google.guava:guava:${versions.guava}"
-    implementation "junit:junit:${versions.junit}"
     implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
     implementation project(":test:smoke:framework:utils")
     implementation project(":test:fakeIngestion:standalone")
