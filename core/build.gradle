@@ -75,7 +75,8 @@ dependencies {
     // to use the cache from opentelemetry javaagent
     implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:${versions.opentelemetryInstrumentationAlpha}"
 
-    testImplementation "junit:junit:${versions.junit}"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${versions.junit5}"
+    testImplementation "org.junit.vintage:junit-vintage-engine:${versions.junit5}"
     testImplementation "org.hamcrest:hamcrest-core:${versions.hamcrest}"
     testImplementation "org.hamcrest:hamcrest-library:${versions.hamcrest}"
     testImplementation "org.mockito:mockito-core:${versions.mockito}"
