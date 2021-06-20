@@ -1,10 +1,11 @@
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.util.Date;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by yonisha on 5/26/2015.
@@ -16,7 +17,7 @@ public class DateTimeUtilsTests {
         final String dateStr = "2015-05-26T07:00:14+01:00";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
-        Assert.assertEquals("2015-05-26T07", reversedDateStr);
+        assertEquals("2015-05-26T07", reversedDateStr);
     }
 
     @Test
@@ -24,7 +25,7 @@ public class DateTimeUtilsTests {
         final String dateStr = "2015-05-26T07:00:14.123145152";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
-        Assert.assertEquals("2015-05-26T07", reversedDateStr);
+        assertEquals("2015-05-26T07", reversedDateStr);
     }
 
     @Test
@@ -32,7 +33,7 @@ public class DateTimeUtilsTests {
         final String dateStr = "2015-05-26T07:00:14.123145152Z";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
-        Assert.assertEquals("2015-05-26T07", reversedDateStr);
+        assertEquals("2015-05-26T07", reversedDateStr);
     }
 
     @Test
@@ -40,7 +41,7 @@ public class DateTimeUtilsTests {
         final String dateStr = "2015-05-26T07";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
-        Assert.assertEquals(dateStr, reversedDateStr);
+        assertEquals(dateStr, reversedDateStr);
     }
 
     @Test
@@ -49,7 +50,7 @@ public class DateTimeUtilsTests {
         Date date = DateTimeUtils.parseRoundTripDateString(dateStr);
         String reversedDateStr = DateTimeUtils.formatAsRoundTripDate(date);
 
-        Assert.assertEquals(dateStr, reversedDateStr);
+        assertEquals(dateStr, reversedDateStr);
     }
 
     private String parseRoundTripDateString(String str) throws ParseException {

@@ -21,11 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Assert;
-import org.junit.Test;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LocalStringsUtilsTest {
 
@@ -40,6 +38,6 @@ public class LocalStringsUtilsTest {
 
         int dashIndex = idWithoutDashes.indexOf("-");
 
-        Assert.assertEquals(-1, dashIndex);
+        assertEquals(-1, dashIndex);
     }
 }

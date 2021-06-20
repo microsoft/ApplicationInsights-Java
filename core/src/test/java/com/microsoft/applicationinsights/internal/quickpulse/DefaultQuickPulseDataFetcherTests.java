@@ -3,9 +3,7 @@ package com.microsoft.applicationinsights.internal.quickpulse;
 import com.azure.core.http.*;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.MockHttpResponse;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -13,22 +11,21 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(JUnit4.class)
-public class DefaultQuickPulseDataFetcherTests {
+class DefaultQuickPulseDataFetcherTests {
 
     @Test
-    public void testGetCurrentSdkVersion() {
+    void testGetCurrentSdkVersion() {
         DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, null, null,
                 null, null,null);
         String sdkVersion = dataFetcher.getCurrentSdkVersion();
         assertNotNull(sdkVersion);
-        Assert.assertNotEquals("java:unknown", sdkVersion);
+        assertNotEquals("java:unknown", sdkVersion);
     }
 
     @Test
-    public void endpointIsFormattedCorrectlyWhenUsingConfig() {
+    void endpointIsFormattedCorrectlyWhenUsingConfig() {
         final TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setConnectionString("InstrumentationKey=testing-123");
         DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, telemetryClient, null, null,null,null);
@@ -44,7 +41,7 @@ public class DefaultQuickPulseDataFetcherTests {
     }
 
     @Test
-    public void endpointIsFormattedCorrectlyWhenConfigIsNull() {
+    void endpointIsFormattedCorrectlyWhenConfigIsNull() {
         DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, null,
                 null,null, null,null);
         final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
@@ -59,7 +56,7 @@ public class DefaultQuickPulseDataFetcherTests {
     }
 
     @Test
-    public void endpointChangesWithRedirectHeaderAndGetNewPingInterval() {
+    void endpointChangesWithRedirectHeaderAndGetNewPingInterval() {
         Map<String, String> headers = new HashMap<>();
         headers.put("x-ms-qps-service-polling-interval-hint", "1000");
         headers.put("x-ms-qps-service-endpoint-redirect", "https://new.endpoint.com");
@@ -72,8 +69,8 @@ public class DefaultQuickPulseDataFetcherTests {
                 "instance1", "role1", "qpid123");
 
         QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
-        Assert.assertEquals(quickPulseHeaderInfo.getQuickPulseStatus(), QuickPulseStatus.QP_IS_ON);
-        Assert.assertEquals(quickPulseHeaderInfo.getQpsServicePollingInterval(), 1000);
-        Assert.assertEquals(quickPulseHeaderInfo.getQpsServiceEndpointRedirect(), "https://new.endpoint.com");
+        assertEquals(quickPulseHeaderInfo.getQuickPulseStatus(), QuickPulseStatus.QP_IS_ON);
+        assertEquals(quickPulseHeaderInfo.getQpsServicePollingInterval(), 1000);
+        assertEquals(quickPulseHeaderInfo.getQpsServiceEndpointRedirect(), "https://new.endpoint.com");
     }
 }

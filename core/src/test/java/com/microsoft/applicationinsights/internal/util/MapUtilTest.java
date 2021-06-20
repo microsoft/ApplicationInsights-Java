@@ -1,13 +1,16 @@
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.*;
+import org.junit.Rule;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class MapUtilTest {
@@ -17,8 +20,8 @@ public class MapUtilTest {
 
     @Test
     public void targetCannotBeNullInCopy() {
-        expected.expect(IllegalArgumentException.class);
-        MapUtil.copy(new HashMap<String, String>(), null);
+        assertThatThrownBy(() -> MapUtil.copy(new HashMap<String, String>(), null))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

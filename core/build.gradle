@@ -44,6 +44,11 @@ configurations {
     forTheDLL { transitive = false }
 }
 
+test {
+    // FIXME (trask) move to common location
+    useJUnitPlatform()
+}
+
 dependencies {
     implementation project(":agent:agent-profiler:agent-profiler-api")
     implementation project(":agent:agent-profiler:agent-alerting-api")
@@ -75,10 +80,9 @@ dependencies {
     // to use the cache from opentelemetry javaagent
     implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:${versions.opentelemetryInstrumentationAlpha}"
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${versions.junit5}"
-    testImplementation "org.junit.vintage:junit-vintage-engine:${versions.junit5}"
-    testImplementation "org.hamcrest:hamcrest-core:${versions.hamcrest}"
-    testImplementation "org.hamcrest:hamcrest-library:${versions.hamcrest}"
+    testImplementation(platform("org.junit:junit-bom:${versions.junit5}"))
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.assertj:assertj-core:${versions.assertj}"
     testImplementation "org.mockito:mockito-core:${versions.mockito}"
     testImplementation "com.github.stefanbirkner:system-rules:${versions.systemRules}"
     testImplementation "com.google.code.gson:gson:${versions.gson}"

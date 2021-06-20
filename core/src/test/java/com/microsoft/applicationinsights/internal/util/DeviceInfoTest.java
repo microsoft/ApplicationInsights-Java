@@ -21,12 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.Locale;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by amnonsh on 2/10/2015.
@@ -57,8 +56,7 @@ public class DeviceInfoTest {
         assertEquals(isJava6() ? "badlocale" : "und", tag);
     }
 
-    private boolean isJava6()
-    {
+    private boolean isJava6() {
         try {
             Locale.class.getMethod("toLanguageTag");
         } catch (NoSuchMethodException e) {

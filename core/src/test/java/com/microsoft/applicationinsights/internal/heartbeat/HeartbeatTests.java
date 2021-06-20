@@ -17,71 +17,72 @@ import java.util.concurrent.ConcurrentMap;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
-import org.junit.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-public class HeartbeatTests {
+class HeartbeatTests {
 
   @Test
-  public void initializeHeartBeatModuleDoesNotThrow() {
+  void initializeHeartBeatModuleDoesNotThrow() {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.initialize(null);
   }
 
   @Test
-  public void initializeHeartBeatTwiceDoesNotFail() {
+  void initializeHeartBeatTwiceDoesNotFail() {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.initialize(null);
     module.initialize(null);
   }
 
   @Test
-  public void initializeHeartBeatDefaultsAreSetCorrectly() {
+  void initializeHeartBeatDefaultsAreSetCorrectly() {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.initialize(null);
 
-    Assert.assertTrue(module.getExcludedHeartBeatProperties() == null ||
+    Assertions.assertTrue(module.getExcludedHeartBeatProperties() == null ||
     module.getExcludedHeartBeatProperties().size() == 0);
-    Assert.assertEquals(HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL, module.getHeartBeatInterval());
+    Assertions.assertEquals(HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL, module.getHeartBeatInterval());
   }
 
   @Test
-  public void initializeHeartBeatWithNonDefaultIntervalSetsCorrectly() {
+  void initializeHeartBeatWithNonDefaultIntervalSetsCorrectly() {
     Map<String, String> dummyPropertiesMap = new HashMap<>();
     long heartBeatInterval = 45;
     dummyPropertiesMap.put("HeartBeatInterval", String.valueOf(heartBeatInterval));
     HeartBeatModule module = new HeartBeatModule(dummyPropertiesMap);
     module.initialize(null);
-    Assert.assertEquals(heartBeatInterval, module.getHeartBeatInterval());
+    Assertions.assertEquals(heartBeatInterval, module.getHeartBeatInterval());
   }
 
   @Test
-  public void initializeHeatBeatWithValueLessThanMinimumSetsToMinimum() {
+  void initializeHeatBeatWithValueLessThanMinimumSetsToMinimum() {
     Map<String, String> dummyPropertiesMap = new HashMap<>();
     long heartBeatInterval = 0;
     dummyPropertiesMap.put("HeartBeatInterval", String.valueOf(heartBeatInterval));
     HeartBeatModule module = new HeartBeatModule(dummyPropertiesMap);
     module.initialize(null);
-    Assert.assertNotEquals(heartBeatInterval, module.getHeartBeatInterval());
-    Assert.assertEquals(HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL, module.getHeartBeatInterval());
+    Assertions.assertNotEquals(heartBeatInterval, module.getHeartBeatInterval());
+    Assertions.assertEquals(HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL, module.getHeartBeatInterval());
   }
 
   @Test
-  public void canExtendHeartBeatPayload() throws Exception {
+  void canExtendHeartBeatPayload() throws Exception {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.initialize(new TelemetryClient());
 
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
     HeartBeatProviderInterface hbi = (HeartBeatProviderInterface)field.get(module);
-    Assert.assertTrue(hbi.addHeartBeatProperty("test01",
+    Assertions.assertTrue(hbi.addHeartBeatProperty("test01",
         "This is value", true));
   }
 
   @Test
-  public void heartBeatIsEnabledByDefault() {
+  void heartBeatIsEnabledByDefault() {
     TelemetryClient telemetryClient = new TelemetryClient();
     TelemetryClientInitializer.INSTANCE.initialize(telemetryClient, new ApplicationInsightsXmlConfiguration());
     List<TelemetryModule> modules = telemetryClient.getTelemetryModules();
@@ -94,30 +95,30 @@ public class HeartbeatTests {
         break;
       }
     }
-    Assert.assertTrue(hasHeartBeatModule);
-    Assert.assertNotNull(hbm);
-    Assert.assertTrue(hbm.isHeartBeatEnabled());
+    Assertions.assertTrue(hasHeartBeatModule);
+    Assertions.assertNotNull(hbm);
+    Assertions.assertTrue(hbm.isHeartBeatEnabled());
   }
 
   @Test
-  public void canDisableHeartBeatPriorToInitialize() throws Exception {
+  void canDisableHeartBeatPriorToInitialize() throws Exception {
     Map<String, String> dummyPropertyMap = new HashMap<>();
     dummyPropertyMap.put("isHeartBeatEnabled", "false");
     HeartBeatModule module = new HeartBeatModule(dummyPropertyMap);
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.getTelemetryModules().add(module);
     module.initialize(telemetryClient);
-    Assert.assertFalse(module.isHeartBeatEnabled());
+    Assertions.assertFalse(module.isHeartBeatEnabled());
 
 
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
     HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
-    Assert.assertFalse(hbi.isHeartBeatEnabled());
+    Assertions.assertFalse(hbi.isHeartBeatEnabled());
   }
 
   @Test
-  public void canDisableHeartBeatPropertyProviderPriorToInitialize() throws  Exception {
+  void canDisableHeartBeatPropertyProviderPriorToInitialize() throws  Exception {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.setExcludedHeartBeatPropertiesProvider(Arrays.asList("Base", "webapps"));
 
@@ -125,26 +126,23 @@ public class HeartbeatTests {
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
     HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
-    Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("Base"));
-    Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps"));
+    Assertions.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("Base"));
+    Assertions.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps"));
     module.initialize(new TelemetryClient());
 
-    Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("Base"));
-    Assert.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps"));
+    Assertions.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("Base"));
+    Assertions.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps"));
   }
 
   @Test
-  public void defaultHeartbeatPropertyProviderSendsNoFieldWhenDisabled() throws Exception {
+  void defaultHeartbeatPropertyProviderSendsNoFieldWhenDisabled() throws Exception {
     HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
     final ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
     Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
-        .then(new Answer<Boolean>() {
-              @Override
-              public Boolean answer(InvocationOnMock invocation) {
-                        props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
-                        return true;
-                      }
-            });
+        .then((Answer<Boolean>) invocation -> {
+                  props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
+                  return true;
+                });
 
     List<String> disabledProviders = new ArrayList<>();
     disabledProviders.add("Default");
@@ -153,74 +151,71 @@ public class HeartbeatTests {
         disabledProviders, mockProvider);
 
     callable.call();
-    Assert.assertEquals(0, props.size());
+    Assertions.assertEquals(0, props.size());
   }
 
   // FIXME (trask) sporadic failures
-  @Ignore
+  @Disabled
   @Test
-  public void heartBeatPayloadContainsDataByDefault() {
+  void heartBeatPayloadContainsDataByDefault() {
     // given
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(new TelemetryClient());
 
     // then
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
-    Assert.assertNotNull(t);
-    Assert.assertTrue(t.getProperties().size() > 0);
+    Assertions.assertNotNull(t);
+    Assertions.assertTrue(t.getProperties().size() > 0);
   }
 
   @Test
-  public void heartBeatPayloadContainsSpecificProperties() {
+  void heartBeatPayloadContainsSpecificProperties() {
     // given
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(new TelemetryClient());
 
     // then
-    Assert.assertTrue(provider.addHeartBeatProperty("test", "testVal", true));
+    Assertions.assertTrue(provider.addHeartBeatProperty("test", "testVal", true));
 
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
-    Assert.assertEquals("testVal", t.getProperties().get("test"));
+    Assertions.assertEquals("testVal", t.getProperties().get("test"));
   }
 
   @Test
-  public void heartbeatMetricIsNonZeroWhenFailureConditionPresent() {
+  void heartbeatMetricIsNonZeroWhenFailureConditionPresent() {
     // given
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(new TelemetryClient());
 
     // then
-    Assert.assertTrue(provider.addHeartBeatProperty("test", "testVal", false));
+    Assertions.assertTrue(provider.addHeartBeatProperty("test", "testVal", false));
 
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
-    Assert.assertEquals(1, t.getMetrics().get(0).getValue(), 0.0);
+    Assertions.assertEquals(1, t.getMetrics().get(0).getValue(), 0.0);
   }
 
   @Test
-  public void heartbeatMetricCountsForAllFailures() {
+  void heartbeatMetricCountsForAllFailures() {
     // given
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(new TelemetryClient());
 
     // then
-    Assert.assertTrue(provider.addHeartBeatProperty("test", "testVal", false));
-    Assert.assertTrue(provider.addHeartBeatProperty("test1", "testVal1", false));
+    Assertions.assertTrue(provider.addHeartBeatProperty("test", "testVal", false));
+    Assertions.assertTrue(provider.addHeartBeatProperty("test1", "testVal1", false));
 
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
-    Assert.assertEquals(2, t.getMetrics().get(0).getValue(), 0.0);
+    Assertions.assertEquals(2, t.getMetrics().get(0).getValue(), 0.0);
   }
 
   @Test
-  public void sentHeartbeatContainsExpectedDefaultFields() throws Exception {
+  void sentHeartbeatContainsExpectedDefaultFields() throws Exception {
     HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
     final ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
     Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
-        .then(new Answer<Boolean>() {
-          @Override
-          public Boolean answer(InvocationOnMock invocation) {
-            props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
-            return true;
-          }
+        .then((Answer<Boolean>) invocation -> {
+          props.put(invocation.getArgumentAt(0, String.class), invocation.getArgumentAt(1, String.class));
+          return true;
         });
     DefaultHeartBeatPropertyProvider defaultProvider = new DefaultHeartBeatPropertyProvider();
 
@@ -228,32 +223,32 @@ public class HeartbeatTests {
         mockProvider).call();
     Field field = defaultProvider.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
-    Set<String> defaultFields = (Set<String>)field.get(defaultProvider);
+    Set<String> defaultFields = (Set<String>) field.get(defaultProvider);
     for (String fieldName : defaultFields) {
-      Assert.assertTrue(props.containsKey(fieldName));
-      Assert.assertTrue(props.get(fieldName).length() > 0);
+      Assertions.assertTrue(props.containsKey(fieldName));
+      Assertions.assertTrue(props.get(fieldName).length() > 0);
     }
   }
 
   @Test
-  public void heartBeatProviderDoesNotAllowDuplicateProperties() {
+  void heartBeatProviderDoesNotAllowDuplicateProperties() {
     // given
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(new TelemetryClient());
 
     // then
     provider.addHeartBeatProperty("test01", "test val", true);
-    Assert.assertFalse(provider.addHeartBeatProperty("test01", "test val 2", true));
+    Assertions.assertFalse(provider.addHeartBeatProperty("test01", "test val 2", true));
   }
 
   @Test
-  public void cannotAddUnknownDefaultProperty() throws Exception {
+  void cannotAddUnknownDefaultProperty() throws Exception {
     DefaultHeartBeatPropertyProvider base = new DefaultHeartBeatPropertyProvider();
     String testKey = "testKey";
 
     Field field = base.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
-    Set<String> defaultFields = (Set<String>)field.get(base);
+    Set<String> defaultFields = (Set<String>) field.get(base);
     defaultFields.add(testKey);
 
     HeartBeatProvider provider = new HeartBeatProvider();
@@ -261,18 +256,18 @@ public class HeartbeatTests {
 
     base.setDefaultPayload(new ArrayList<>(), provider).call();
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
-    Assert.assertFalse(t.getProperties().containsKey("testKey"));
+    Assertions.assertFalse(t.getProperties().containsKey("testKey"));
   }
 
   @Test
-  public void configurationParsingWorksAsExpectedWhenMultipleParamsArePassed()
+  void configurationParsingWorksAsExpectedWhenMultipleParamsArePassed()
       throws InterruptedException {
     Map<String, String> dummyPropertiesMap = new HashMap<>();
     dummyPropertiesMap.put("ExcludedHeartBeatPropertiesProvider", "Base;webapps");
     HeartBeatModule module = new HeartBeatModule(dummyPropertiesMap);
     module.initialize(null);
     Thread.sleep(100);
-    Assert.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("Base"));
-    Assert.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("webapps"));
+    Assertions.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("Base"));
+    Assertions.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("webapps"));
   }
 }

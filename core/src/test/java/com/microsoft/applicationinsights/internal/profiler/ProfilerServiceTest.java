@@ -56,8 +56,8 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.Uplo
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.jfr.Recording;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
@@ -66,7 +66,7 @@ import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelem
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
 
-public class ProfilerServiceTest {
+class ProfilerServiceTest {
 
     final String timeStamp = "a-timestamp";
     final String machineName = "a-machine-name";
@@ -75,30 +75,30 @@ public class ProfilerServiceTest {
     final String jfrExtension = "jfr";
 
     @Test
-    public void endToEndAlertTriggerCpu() throws Exception {
+    void endToEndAlertTriggerCpu() throws Exception {
         endToEndAlertTriggerCycle(
                 false,
                 createMetricsTelemetry(new TelemetryClient(), TOTAL_CPU_PC_METRIC_NAME, 100.0),
                 telemetry -> {
-                    Assert.assertEquals("JFR-CPU", telemetry.getProperties().get("Source"));
-                    Assert.assertEquals(100.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
-                    Assert.assertEquals(0.0, telemetry.getMeasurements().get("AverageMemoryUsage"), 0.01);
+                    Assertions.assertEquals("JFR-CPU", telemetry.getProperties().get("Source"));
+                    Assertions.assertEquals(100.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
+                    Assertions.assertEquals(0.0, telemetry.getMeasurements().get("AverageMemoryUsage"), 0.01);
                 });
     }
 
     @Test
-    public void endToEndAlertTriggerManual() throws Exception {
+    void endToEndAlertTriggerManual() throws Exception {
         endToEndAlertTriggerCycle(
                 true,
                 createMetricsTelemetry(new TelemetryClient(), HEAP_MEM_USED_PERCENTAGE, 0.0),
                 telemetry -> {
-                    Assert.assertEquals("JFR-MANUAL", telemetry.getProperties().get("Source"));
-                    Assert.assertEquals(0.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
-                    Assert.assertEquals(0.0, telemetry.getMeasurements().get("AverageMemoryUsage"), 0.01);
+                    Assertions.assertEquals("JFR-MANUAL", telemetry.getProperties().get("Source"));
+                    Assertions.assertEquals(0.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
+                    Assertions.assertEquals(0.0, telemetry.getMeasurements().get("AverageMemoryUsage"), 0.01);
                 });
     }
 
-    public void endToEndAlertTriggerCycle(boolean triggerNow, TelemetryItem metricTelemetry, Consumer<TelemetryEventData> assertTelemetry) throws Exception {
+    void endToEndAlertTriggerCycle(boolean triggerNow, TelemetryItem metricTelemetry, Consumer<TelemetryEventData> assertTelemetry) throws Exception {
         AtomicBoolean profileInvoked = new AtomicBoolean(false);
         AtomicReference<TelemetryEventData> serviceProfilerIndex = new AtomicReference<>();
 
@@ -181,16 +181,16 @@ public class ProfilerServiceTest {
             }
         }
 
-        Assert.assertTrue(profileInvoked.get());
+        Assertions.assertTrue(profileInvoked.get());
 
-        Assert.assertNotNull(serviceProfilerIndex.get());
-        Assert.assertEquals("Profile", serviceProfilerIndex.get().getProperties().get("ArtifactKind"));
-        Assert.assertEquals(timeStamp, serviceProfilerIndex.get().getProperties().get("EtlFileSessionId"));
-        Assert.assertEquals(appId, serviceProfilerIndex.get().getProperties().get("DataCube"));
-        Assert.assertEquals(jfrExtension, serviceProfilerIndex.get().getProperties().get("Extension"));
-        Assert.assertEquals(machineName, serviceProfilerIndex.get().getProperties().get("MachineName"));
-        Assert.assertEquals(processId, serviceProfilerIndex.get().getProperties().get("ProcessId"));
-        Assert.assertEquals(stampId, serviceProfilerIndex.get().getProperties().get("StampId"));
+        Assertions.assertNotNull(serviceProfilerIndex.get());
+        Assertions.assertEquals("Profile", serviceProfilerIndex.get().getProperties().get("ArtifactKind"));
+        Assertions.assertEquals(timeStamp, serviceProfilerIndex.get().getProperties().get("EtlFileSessionId"));
+        Assertions.assertEquals(appId, serviceProfilerIndex.get().getProperties().get("DataCube"));
+        Assertions.assertEquals(jfrExtension, serviceProfilerIndex.get().getProperties().get("Extension"));
+        Assertions.assertEquals(machineName, serviceProfilerIndex.get().getProperties().get("MachineName"));
+        Assertions.assertEquals(processId, serviceProfilerIndex.get().getProperties().get("ProcessId"));
+        Assertions.assertEquals(stampId, serviceProfilerIndex.get().getProperties().get("StampId"));
         assertTelemetry.accept(serviceProfilerIndex.get());
     }
 

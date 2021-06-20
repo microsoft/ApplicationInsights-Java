@@ -1,41 +1,47 @@
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public final class LimitsEnforcerTest {
     private final static String MOCK_PROPERTY_NAME = "MockProperty";
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testCreateDefaultOnErrorMinBiggerThanMax() {
-        LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 9, 10, 10);
+        assertThatThrownBy(() ->
+                LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 9, 10, 10))
+                .isInstanceOf(IllegalStateException.class);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testCreateDefaultOnErrorDefaultNotBetweenMinAndMax() {
-        LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 900, -10, 10);
+        assertThatThrownBy(() ->
+                LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 900, -10, 10))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     public void testCreateDefaultOnErrorCurrentValueLowerThanMin() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 900, 100, -10);
-        assertEquals(100, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(100);
     }
 
     @Test
     public void testCreateDefaultOnErrorCurrentValueHigherThanMax() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 1000);
-        assertEquals(100, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(100);
     }
 
     @Test
     public void testCreateDefaultOnErrorCurrentValueIsNull() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 900, 100, null);
-        assertEquals(100, enforcer.getCurrentValue());
-        assertEquals(10, enforcer.getMinimum());
-        assertEquals(900, enforcer.getMaximum());
-        assertEquals(100, enforcer.getDefaultValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(100);
+        assertThat(enforcer.getMinimum()).isEqualTo(10);
+        assertThat(enforcer.getMaximum()).isEqualTo(900);
+        assertThat(enforcer.getDefaultValue()).isEqualTo(100);
     }
 
     @Test
@@ -72,15 +78,18 @@ public final class LimitsEnforcerTest {
         assertEquals(100, enforcer.getCurrentValue());
     }
 
-    //
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testCreateClosestOnErrorMinBiggerThanMax() {
-        LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 9, 10, 10);
+        assertThatThrownBy(() ->
+                LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 9, 10, 10))
+                .isInstanceOf(IllegalStateException.class);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testCreateClosestOnErrorDefaultNotBetweenMinAndMax() {
-        LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, -10, 10);
+        assertThatThrownBy(() ->
+                LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, -10, 10))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test

@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.reflect;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public final class ClassDataUtilsTest {
     private final static String PUBLIC_EXISTING_METHOD = "endsWith";
@@ -35,27 +35,27 @@ public final class ClassDataUtilsTest {
     public void testMethodExistingPublicMethod() {
         ClassDataUtils.INSTANCE.initialize();
         boolean found = ClassDataUtils.INSTANCE.verifyMethodExists(String.class, PUBLIC_EXISTING_METHOD, String.class);
-        assertTrue("Method not found", found);
+        assertTrue(found, "Method not found");
     }
 
     @Test
     public void testMethodNotExistingPublicMethod() {
         ClassDataUtils.INSTANCE.initialize();
         boolean found = ClassDataUtils.INSTANCE.verifyMethodExists(String.class, PUBLIC_NOT_EXISTING_METHOD);
-        assertFalse("Method found", found);
+        assertFalse(found, "Method found");
     }
 
     @Test
     public void testClassExists() {
         ClassDataUtils.INSTANCE.initialize();
         boolean found = ClassDataUtils.INSTANCE.verifyClassExists(EXISTING_CLASS);
-        assertTrue("Class not found", found);
+        assertTrue(found, "Class not found");
     }
 
     @Test
     public void testClassDoesNotExist() {
         ClassDataUtils.INSTANCE.initialize();
         boolean found = ClassDataUtils.INSTANCE.verifyClassExists(NOT_EXISTING_CLASS);
-        assertFalse("Class found", found);
+        assertFalse(found, "Class found");
     }
 }

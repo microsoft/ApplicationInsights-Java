@@ -4,33 +4,18 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.EndpointPrefixes;
 import org.apache.commons.lang3.StringUtils;
-import org.hamcrest.Matchers;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConnectionStringParsingTests {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
-    private TelemetryClient telemetryClient = null;
-
-    @Before
-    public void setup() {
-        telemetryClient = new TelemetryClient();
-    }
-
-    @After
-    public void teardown() {
-        telemetryClient = null;
-    }
+    private final TelemetryClient telemetryClient = new TelemetryClient();
 
     @Test
     public void minimalString() throws Exception {
@@ -234,24 +219,27 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void endpointWithNoSchemeIsInvalid() throws Exception {
-        exception.expect(InvalidConnectionStringException.class);
-        exception.expectMessage(containsString("IngestionEndpoint"));
-        ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com", telemetryClient);
+    public void endpointWithNoSchemeIsInvalid() {
+        assertThatThrownBy(() ->
+                ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com", telemetryClient))
+                .isInstanceOf(InvalidConnectionStringException.class)
+                .hasMessageContaining("IngestionEndpoint");
     }
 
     @Test
     public void endpointWithPathMissingSchemeIsInvalid() throws Exception {
-        exception.expect(InvalidConnectionStringException.class);
-        exception.expectMessage(containsString("IngestionEndpoint"));
-        ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com/path/prefix", telemetryClient);
+        assertThatThrownBy(() ->
+                ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com/path/prefix", telemetryClient))
+                .isInstanceOf(InvalidConnectionStringException.class)
+                .hasMessageContaining("IngestionEndpoint");
     }
 
     @Test
     public void endpointWithPortMissingSchemeIsInvalid() throws Exception {
-        exception.expect(InvalidConnectionStringException.class);
-        exception.expectMessage(containsString("IngestionEndpoint"));
-        ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com:9999", telemetryClient);
+        assertThatThrownBy(() ->
+                ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com:9999", telemetryClient))
+                .isInstanceOf(InvalidConnectionStringException.class)
+                .hasMessageContaining("IngestionEndpoint");
     }
 
     @Test
@@ -261,53 +249,49 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void emptyIkeyValueIsInvalid() throws Exception {
-        exception.expect(InvalidConnectionStringException.class);
-        final String cs = "InstrumentationKey=;IngestionEndpoint=https://ingestion.example.com;EndpointSuffix=ai.example.com";
-        ConnectionString.parseInto(cs, telemetryClient);
+    public void emptyIkeyValueIsInvalid() {
+        assertThatThrownBy(() ->
+                ConnectionString.parseInto("InstrumentationKey=;IngestionEndpoint=https://ingestion.example.com;EndpointSuffix=ai.example.com", telemetryClient))
+                .isInstanceOf(InvalidConnectionStringException.class);
     }
 
     @Test
-    public void emptyStringIsInvalid() throws Exception {
-        exception.expect(InvalidConnectionStringException.class);
-        ConnectionString.parseInto("", telemetryClient);
+    public void emptyStringIsInvalid() {
+        assertThatThrownBy(() ->
+                ConnectionString.parseInto("", telemetryClient))
+                .isInstanceOf(InvalidConnectionStringException.class);
     }
 
     @Test
-    public void nonKeyValueStringIsInvalid() throws Exception {
-        exception.expect(InvalidConnectionStringException.class);
-        ConnectionString.parseInto(UUID.randomUUID().toString(), telemetryClient);
+    public void nonKeyValueStringIsInvalid() {
+        assertThatThrownBy(() ->
+                ConnectionString.parseInto(UUID.randomUUID().toString(), telemetryClient))
+                .isInstanceOf(InvalidConnectionStringException.class);
     }
 
     @Test // when more Authorization values are available, create a copy of this test. For example, given "Authorization=Xyz", this would fail because the 'Xyz' key/value pair is missing.
     public void missingInstrumentationKeyIsInvalid() throws Exception {
-        exception.expect(InvalidConnectionStringException.class);
-        ConnectionString.parseInto("LiveEndpoint=https://live.example.com", telemetryClient);
+        assertThatThrownBy(() ->
+                ConnectionString.parseInto("LiveEndpoint=https://live.example.com", telemetryClient))
+                .isInstanceOf(InvalidConnectionStringException.class);
     }
 
     @Test
     public void invalidUrlIsInvalidConnectionString() throws Exception {
-        exception.expect(InvalidConnectionStringException.class);
-        exception.expectCause(Matchers.<Throwable>instanceOf(MalformedURLException.class));
-        exception.expectMessage(containsString("LiveEndpoint"));
-        parseInto_printExceptionAndRethrow("InstrumentationKey=fake-ikey;LiveEndpoint=httpx://host");
+        assertThatThrownBy(() ->
+                ConnectionString.parseInto("InstrumentationKey=fake-ikey;LiveEndpoint=httpx://host", telemetryClient))
+                .isInstanceOf(InvalidConnectionStringException.class)
+                .hasCauseInstanceOf(MalformedURLException.class)
+                .hasMessageContaining("LiveEndpoint");
     }
 
     @Test
-    public void giantValuesAreNotAllowed() throws Exception {
-        exception.expect(InvalidConnectionStringException.class);
-        exception.expectMessage(containsString(""+ConnectionString.CONNECTION_STRING_MAX_LENGTH)); // message should state max length
+    public void giantValuesAreNotAllowed() {
         String bigIkey = StringUtils.repeat('0', ConnectionString.CONNECTION_STRING_MAX_LENGTH * 2);
-        parseInto_printExceptionAndRethrow("InstrumentationKey="+bigIkey);
-    }
 
-    private void parseInto_printExceptionAndRethrow(String connectionString) throws Exception {
-        try {
-            ConnectionString.parseInto(connectionString, telemetryClient);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+        assertThatThrownBy(() ->
+                ConnectionString.parseInto("InstrumentationKey=" + bigIkey, telemetryClient))
+                .isInstanceOf(InvalidConnectionStringException.class)
+                .hasMessageContaining(Integer.toString(ConnectionString.CONNECTION_STRING_MAX_LENGTH));
     }
-
 }

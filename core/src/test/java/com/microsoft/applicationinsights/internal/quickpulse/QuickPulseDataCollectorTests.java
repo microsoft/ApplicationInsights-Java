@@ -10,34 +10,34 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.FinalCounters;
-import org.junit.*;
+import org.junit.jupiter.api.*;
 
 import java.util.Date;
 
 import static com.microsoft.applicationinsights.TelemetryUtil.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class QuickPulseDataCollectorTests {
+class QuickPulseDataCollectorTests {
 
     private static final String FAKE_INSTRUMENTATION_KEY = "fake-instrumentation-key";
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         QuickPulseDataCollector.INSTANCE.disable();
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         QuickPulseDataCollector.INSTANCE.disable();
     }
 
     @Test
-    public void initialStateIsDisabled() {
+    void initialStateIsDisabled() {
         assertNull(QuickPulseDataCollector.INSTANCE.peek());
     }
 
     @Test
-    public void emptyCountsAndDurationsAfterEnable() {
+    void emptyCountsAndDurationsAfterEnable() {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
@@ -46,7 +46,7 @@ public class QuickPulseDataCollectorTests {
     }
 
     @Test
-    public void nullCountersAfterDisable() {
+    void nullCountersAfterDisable() {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
@@ -55,7 +55,7 @@ public class QuickPulseDataCollectorTests {
     }
 
     @Test
-    public void requestTelemetryIsCounted_DurationIsSum() {
+    void requestTelemetryIsCounted_DurationIsSum() {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
@@ -96,7 +96,7 @@ public class QuickPulseDataCollectorTests {
     }
 
     @Test
-    public void dependencyTelemetryIsCounted_DurationIsSum() {
+    void dependencyTelemetryIsCounted_DurationIsSum() {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
@@ -137,7 +137,7 @@ public class QuickPulseDataCollectorTests {
     }
 
     @Test
-    public void exceptionTelemetryIsCounted() {
+    void exceptionTelemetryIsCounted() {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
@@ -158,7 +158,7 @@ public class QuickPulseDataCollectorTests {
     }
 
     @Test
-    public void encodeDecodeIsIdentity() {
+    void encodeDecodeIsIdentity() {
         final long count = 456L;
         final long duration = 112233L;
         final long encoded = Counters.encodeCountAndDuration(count, duration);

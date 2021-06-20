@@ -21,10 +21,11 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LocalFileSystemUtilsTest {
     /*
@@ -38,7 +39,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, "unknown");
 
         final File expected = new File(input);
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -48,7 +49,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
         final File expected = new File(input);
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -58,7 +59,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, null);
 
         final File expected = new File(input);
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -68,7 +69,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
         final File expected = new File(input, "olivida").getAbsoluteFile();
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -78,7 +79,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
         final File expected = new File(input);
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -88,7 +89,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
         final File expected = new File(input);
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 }
 

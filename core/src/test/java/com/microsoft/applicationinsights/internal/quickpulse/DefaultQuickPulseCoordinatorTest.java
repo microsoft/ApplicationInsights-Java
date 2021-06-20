@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.notNull;

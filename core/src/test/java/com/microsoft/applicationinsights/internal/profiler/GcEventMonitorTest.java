@@ -1,7 +1,5 @@
 package com.microsoft.applicationinsights.internal.profiler;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ExportResult;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
@@ -13,10 +11,8 @@ import com.microsoft.gcmonitor.GcMonitorFactory;
 import com.microsoft.gcmonitor.MemoryManagement;
 import com.microsoft.gcmonitor.garbagecollectors.GarbageCollector;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import reactor.core.publisher.Mono;
 
 import javax.management.MBeanServerConnection;
 import java.lang.management.MemoryUsage;
@@ -28,10 +24,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class GcEventMonitorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class GcEventMonitorTest {
 
     @Test
-    public void endToEndAlertIsTriggered() throws ExecutionException, InterruptedException, TimeoutException {
+    void endToEndAlertIsTriggered() throws ExecutionException, InterruptedException, TimeoutException {
 
         CompletableFuture<AlertBreach> alertFuture = new CompletableFuture<>();
         AlertingSubsystem alertingSubsystem = getAlertingSubsystem(alertFuture);
@@ -58,7 +56,7 @@ public class GcEventMonitorTest {
 
         AlertBreach alert = alertFuture.get(10, TimeUnit.SECONDS);
 
-        Assert.assertEquals(90.0, alert.getAlertValue(), 0.01);
+        assertEquals(90.0, alert.getAlertValue(), 0.01);
     }
 
     private AlertingSubsystem getAlertingSubsystem(CompletableFuture<AlertBreach> alertFuture) {
