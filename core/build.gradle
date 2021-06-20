@@ -80,11 +80,10 @@ dependencies {
     // to use the cache from opentelemetry javaagent
     implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:${versions.opentelemetryInstrumentationAlpha}"
 
-    testImplementation(platform("org.junit:junit-bom:${versions.junit5}"))
+    testImplementation(platform("org.junit:junit-bom:${versions.junit}"))
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:${versions.assertj}"
     testImplementation "org.mockito:mockito-core:${versions.mockito}"
-    testImplementation "com.github.stefanbirkner:system-rules:${versions.systemRules}"
     testImplementation "com.google.code.gson:gson:${versions.gson}"
     testImplementation "io.github.hakky54:logcaptor:${versions.logcaptor}"
 

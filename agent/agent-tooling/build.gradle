@@ -77,7 +77,7 @@ dependencies {
 
     testImplementation "com.google.guava:guava:${versions.guava}"
 
-    testImplementation(platform("org.junit:junit-bom:${versions.junit5}"))
+    testImplementation(platform("org.junit:junit-bom:${versions.junit}"))
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:${versions.assertj}"
     testImplementation "org.mockito:mockito-core:${versions.mockito}"
