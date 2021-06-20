@@ -5,9 +5,10 @@ import java.io.StringWriter;
 import java.util.List;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExceptionsTest {
 
@@ -40,7 +41,7 @@ public class ExceptionsTest {
 
         TelemetryExceptionDetails details = list.get(0);
         assertEquals(IllegalStateException.class.getName(), details.getTypeName());
-        assertNull(details.getMessage());
+        assertThat(details.getMessage()).isNull();
     }
 
     @Test
