@@ -31,11 +31,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.azure.core.http.*;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ProfilerFrontendClientV2Test {
     @Test
@@ -91,7 +91,7 @@ public class ProfilerFrontendClientV2Test {
     }
 
     @Test
-    public void uploadFinishedHitsCorrectUrl() throws ClientClosedException, IOException, URISyntaxException {
+    public void uploadFinishedHitsCorrectUrl() throws ClientClosedException, IOException {
 
         AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 

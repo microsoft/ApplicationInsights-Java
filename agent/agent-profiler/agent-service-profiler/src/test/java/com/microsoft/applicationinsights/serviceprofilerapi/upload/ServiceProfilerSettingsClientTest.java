@@ -27,9 +27,11 @@ import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerSettingsClient;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ServiceProfilerSettingsClientTest {
 
@@ -42,12 +44,6 @@ public class ServiceProfilerSettingsClientTest {
         ServiceProfilerSettingsClient settingsClient = new ServiceProfilerSettingsClient(serviceProfilerClient);
         Mono<ProfilerConfiguration> result = settingsClient.pullSettings();
 
-        try {
-            result.block();
-        } catch (Exception e) {
-            //expected
-            return;
-        }
-        Assert.fail("Exception not thrown");
+        assertThatThrownBy(result::block).isInstanceOf(Exception.class);
     }
 }

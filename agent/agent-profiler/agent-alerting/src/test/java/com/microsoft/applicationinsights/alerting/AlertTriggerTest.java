@@ -27,7 +27,9 @@ import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.analysis.AlertPipelineTrigger;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AlertTriggerTest {
 
@@ -40,7 +42,7 @@ public class AlertTriggerTest {
             trigger.accept(0.4);
         }
 
-        Assert.assertFalse(called.get());
+        assertFalse(called.get());
     }
 
     @Test
@@ -54,7 +56,7 @@ public class AlertTriggerTest {
             trigger.accept(0.51);
         }
 
-        Assert.assertTrue(called.get());
+        assertTrue(called.get());
     }
 
 
@@ -67,7 +69,7 @@ public class AlertTriggerTest {
         for (int i = 0; i < 100; i++) {
             trigger.accept(0.51);
         }
-        Assert.assertTrue(called.get());
+        assertTrue(called.get());
         called.set(false);
 
         for (int i = 0; i < 100; i++) {
@@ -78,7 +80,7 @@ public class AlertTriggerTest {
             trigger.accept(0.51);
         }
 
-        Assert.assertFalse(called.get());
+        assertFalse(called.get());
     }
 
 
@@ -91,7 +93,7 @@ public class AlertTriggerTest {
         for (int i = 0; i < 100; i++) {
             trigger.accept(0.51);
         }
-        Assert.assertTrue(called.get());
+        assertTrue(called.get());
         called.set(false);
 
         Thread.sleep(2000);
@@ -104,13 +106,13 @@ public class AlertTriggerTest {
             trigger.accept(0.51);
         }
 
-        Assert.assertTrue(called.get());
+        assertTrue(called.get());
     }
 
     private AlertPipelineTrigger getAlertTrigger(AlertConfiguration config, AtomicBoolean called) {
         Consumer<AlertBreach> consumer = alert -> {
-            Assert.assertEquals(AlertMetricType.CPU, alert.getType());
-            Assert.assertEquals(config, alert.getAlertConfiguration());
+            assertEquals(AlertMetricType.CPU, alert.getType());
+            assertEquals(config, alert.getAlertConfiguration());
             called.set(true);
         };
 

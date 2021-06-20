@@ -33,9 +33,12 @@ import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ServiceProfilerConfigMonitorServiceTest {
 
@@ -56,18 +59,17 @@ public class ServiceProfilerConfigMonitorServiceTest {
         AtomicReference<ProfilerConfiguration> config = new AtomicReference<>();
         serviceMonitor.initialize(Collections.singletonList(config::set));
 
-        Assert.assertNotNull(job.get());
+        assertNotNull(job.get());
 
         job.get().run();
 
         Mockito.verify(serviceProfilerClient, Mockito.times(1)).getSettings(Matchers.any(Date.class));
-        Assert.assertNotNull(config.get());
+        assertNotNull(config.get());
 
-        Assert.assertEquals("--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker", config.get().getCollectionPlan());
-        Assert.assertEquals("--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400", config.get().getCpuTriggerConfiguration());
-        Assert.assertEquals("--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120", config.get().getDefaultConfiguration());
-        Assert.assertEquals("--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400", config.get().getMemoryTriggerConfiguration());
-
+        assertEquals("--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker", config.get().getCollectionPlan());
+        assertEquals("--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400", config.get().getCpuTriggerConfiguration());
+        assertEquals("--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120", config.get().getDefaultConfiguration());
+        assertEquals("--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400", config.get().getMemoryTriggerConfiguration());
     }
 
     private ScheduledExecutorService mockScheduledExecutorService(Consumer<Runnable> job) {

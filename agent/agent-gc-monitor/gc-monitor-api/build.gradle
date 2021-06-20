@@ -1,8 +1,5 @@
-group = "io.opentelemetry.javaagent"
-
 apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
     implementation "org.slf4j:slf4j-api:${versions.slf4j}"
-    testImplementation "junit:junit:${versions.junit}"
 }

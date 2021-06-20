@@ -63,11 +63,16 @@ dependencies {
         logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
     }
 
-    testImplementation "junit:junit:${versions.junit}"
-    testImplementation "org.hamcrest:hamcrest-core:${versions.hamcrest}"
-    testImplementation "org.hamcrest:hamcrest-library:${versions.hamcrest}"
+    testImplementation(platform("org.junit:junit-bom:${versions.junit5}"))
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.assertj:assertj-core:${versions.assertj}"
     testImplementation "org.mockito:mockito-core:${versions.mockito}"
     testImplementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
+}
+
+test {
+    // FIXME (trask) move to common location
+    useJUnitPlatform()
 }
 
 // To rebuild naitive code with new headers, first run `gradlew :etw:java:classes -Pai.etw.native.generateHeaders` to generate new header, then update the method implementations.

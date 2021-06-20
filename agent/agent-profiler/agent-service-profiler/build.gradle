@@ -1,12 +1,6 @@
-group = "io.opentelemetry.javaagent"
-
 apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
-
-    testImplementation "junit:junit:${versions.junit}"
-    testImplementation "org.mockito:mockito-core:${versions.mockito}"
-
     implementation project(":agent:agent-profiler:agent-alerting-api")
     implementation project(":agent:agent-profiler:agent-profiler-api")
     implementation "com.microsoft.jfr:jfr-streaming:${versions.microsoftJfrStreaming}"
@@ -14,4 +8,14 @@ dependencies {
     implementation "com.squareup.moshi:moshi:${versions.moshi}"
     implementation "com.squareup.moshi:moshi-adapters:${versions.moshi}"
     implementation "com.azure:azure-storage-blob:${versions.azureStorageBlob}"
+
+    testImplementation(platform("org.junit:junit-bom:${versions.junit5}"))
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.assertj:assertj-core:${versions.assertj}"
+    testImplementation "org.mockito:mockito-core:${versions.mockito}"
+}
+
+test {
+    // FIXME (trask) move to common location
+    useJUnitPlatform()
 }

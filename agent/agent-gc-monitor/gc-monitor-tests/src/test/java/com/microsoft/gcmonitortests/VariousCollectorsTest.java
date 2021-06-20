@@ -3,9 +3,7 @@ package com.microsoft.gcmonitortests;
 import com.microsoft.gcmonitor.GCCollectionEvent;
 import com.microsoft.gcmonitor.UnableToMonitorMemoryException;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
-import com.sun.tools.attach.AttachNotSupportedException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,10 +12,12 @@ import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class VariousCollectorsTest {
 
     @Test
-    public void testCms() throws IOException, AttachNotSupportedException, UnableToMonitorMemoryException, InterruptedException {
+    public void testCms() throws IOException, UnableToMonitorMemoryException, InterruptedException {
         try {
             List<GCCollectionEvent> events = new GcProcessRunner("-XX:+UseConcMarkSweepGC", 50)
                     .getGcCollectionEvents();
@@ -29,13 +29,13 @@ public class VariousCollectorsTest {
     }
 
     private void assetGcsArePresent(List<GCCollectionEvent> events) {
-        Assert.assertTrue("YG not found", youngGcIsPresent(events));
-        Assert.assertTrue("OG not found", tenuredGcIsPresent(events));
-        Assert.assertTrue("System GC not found", systemGcIsPresent(events));
+        assertTrue(youngGcIsPresent(events), "YG not found");
+        assertTrue(tenuredGcIsPresent(events), "OG not found");
+        assertTrue(systemGcIsPresent(events), "System GC not found");
     }
 
     @Test
-    public void testParallel() throws IOException, AttachNotSupportedException, UnableToMonitorMemoryException, InterruptedException, GCNotPresentException {
+    public void testParallel() throws IOException, UnableToMonitorMemoryException, InterruptedException, GCNotPresentException {
         List<GCCollectionEvent> events = new GcProcessRunner("-XX:+UseParallelGC", 70)
                 .getGcCollectionEvents();
 
@@ -45,11 +45,10 @@ public class VariousCollectorsTest {
         print(events);
 
         assetGcsArePresent(events);
-
     }
 
     @Test
-    public void testG1() throws IOException, AttachNotSupportedException, UnableToMonitorMemoryException, InterruptedException, GCNotPresentException {
+    public void testG1() throws IOException, UnableToMonitorMemoryException, InterruptedException, GCNotPresentException {
         List<GCCollectionEvent> events = new GcProcessRunner("-XX:+UseG1GC", 50)
                 .getGcCollectionEvents();
 
@@ -57,7 +56,7 @@ public class VariousCollectorsTest {
     }
 
     @Test
-    public void testSerial() throws IOException, AttachNotSupportedException, UnableToMonitorMemoryException, InterruptedException {
+    public void testSerial() throws IOException, UnableToMonitorMemoryException, InterruptedException {
         try {
             List<GCCollectionEvent> events = new GcProcessRunner("-XX:+UseSerialGC", 50)
                     .getGcCollectionEvents();
@@ -132,8 +131,7 @@ public class VariousCollectorsTest {
                                 .add(event.getCollector().toString())
                                 .add(event.getGcAction())
                                 .add(Long.toString(event.getMemoryUsageBeforeGc(tenuredPool.get()).getUsed()))
-                                .add(Long.toString(event.getMemoryUsageAfterGc(tenuredPool.get()).getUsed()))
-                                .toString());
+                                .add(Long.toString(event.getMemoryUsageAfterGc(tenuredPool.get()).getUsed())));
             }
         });
     }

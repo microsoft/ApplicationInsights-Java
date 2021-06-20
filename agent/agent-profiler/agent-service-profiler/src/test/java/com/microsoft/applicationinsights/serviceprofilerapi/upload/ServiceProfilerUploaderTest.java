@@ -29,8 +29,7 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.Blob
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobMetadataConstants;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
 import java.io.File;
@@ -41,6 +40,8 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceProfilerUploaderTest {
     @Test
@@ -73,16 +74,16 @@ public class ServiceProfilerUploaderTest {
                         0.0)
                 .subscribe(
                         result -> {
-                            Assert.assertEquals("a-stamp-id",
+                            assertEquals("a-stamp-id",
                                     result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_STAMPID_PROPERTY_NAME));
 
-                            Assert.assertEquals("a-machine-name",
+                            assertEquals("a-machine-name",
                                     result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_MACHINENAME_PROPERTY_NAME));
 
-                            Assert.assertEquals("a-timestamp",
+                            assertEquals("a-timestamp",
                                     result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_ETLFILESESSIONID_PROPERTY_NAME));
 
-                            Assert.assertEquals(appId.toString(),
+                            assertEquals(appId.toString(),
                                     result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_DATACUBE_PROPERTY_NAME));
                         });
     }
@@ -107,7 +108,7 @@ public class ServiceProfilerUploaderTest {
         );
 
         // Role name is set correctly
-        Assert.assertEquals("a-role-name", blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
+        assertEquals("a-role-name", blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
 
 
         blobOptions = new ServiceProfilerUploader(
@@ -122,7 +123,7 @@ public class ServiceProfilerUploaderTest {
         );
 
         // Null role name tag is not added
-        Assert.assertNull(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
+        assertNull(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
 
     }
 
@@ -147,7 +148,7 @@ public class ServiceProfilerUploaderTest {
                 .subscribe(result -> {
                 }, e -> threw.set(true));
 
-        Assert.assertTrue("Did not throw", threw.get());
+        assertTrue(threw.get());
     }
 
     private File createFakeJfrFile() throws IOException {
@@ -168,7 +169,7 @@ public class ServiceProfilerUploaderTest {
             }
 
             @Override
-            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws URISyntaxException, UnsupportedCharsetException, ClientClosedException {
+            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws UnsupportedCharsetException {
                 return null;
             }
 

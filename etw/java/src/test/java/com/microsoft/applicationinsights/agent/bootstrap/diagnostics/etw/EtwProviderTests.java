@@ -23,9 +23,6 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.*;
-
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.UUID;
@@ -37,12 +34,19 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.IpaWarn;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventBase;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events.model.IpaEtwEventErrorBase;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class EtwProviderTests {
     private static final String FOLDER_NAME = "EtwProviderTests";
     private static final File dllTempFolder = DllFileUtils.buildDllLocalPath(FOLDER_NAME);
 
-    @BeforeClass
+    @BeforeAll
     public static void cleanTempFolder() {
         if (dllTempFolder.exists()) {
             System.out.println("Cleaning temp folder: "+dllTempFolder.getAbsolutePath());
@@ -122,10 +126,10 @@ public class EtwProviderTests {
         event.setMessageArgs(messageArgs);
     }
 
-    @Before
+    @BeforeEach
     public void checkOs() {
-        Assume.assumeTrue("Ignoring etw test. Not on windows", SystemUtils.IS_OS_WINDOWS);
-        Assume.assumeFalse("Ignoring etw test. skipWinNative=true", Boolean.parseBoolean(System.getProperty("skipWinNative")));
+        assumeTrue(SystemUtils.IS_OS_WINDOWS, "Ignoring etw test. Not on windows");
+        assumeFalse(Boolean.parseBoolean(System.getProperty("skipWinNative")), "Ignoring etw test. skipWinNative=true");
     }
 
     @Test
@@ -134,7 +138,7 @@ public class EtwProviderTests {
         String filename = EtwProvider.getDllFilenameForArch();
         final File dllPath = new File(dllTempFolder, filename);
         System.out.println("Checking for DLL: "+dllPath.getAbsolutePath());
-        assertTrue("Dll does not exist: "+dllPath.getAbsolutePath(), dllPath.exists());
+        assertTrue(dllPath.exists());
 
         IpaVerbose everbose = createVerbose("test.verbose.logger", "testDllExtracted", "verbose test message %s", "hello, world!");
         IpaInfo einfo = createInfo("test.info.logger", "testDllExtracted", "test message %s", "hello!");
@@ -154,10 +158,10 @@ public class EtwProviderTests {
     }
 
     private void longTestCheck() {
-        Assume.assumeFalse("Long tests disabled", "true".equalsIgnoreCase(System.getProperty("ai.etw.tests.long.disabled")));
-        Assume.assumeTrue("Verbose output enabled. Skipping long tests.",
-            "release".equalsIgnoreCase(System.getProperty("ai.etw.native.build")) ||
-            !"true".equalsIgnoreCase(System.getProperty("ai.etw.native.verbose")));
+        assumeFalse("true".equalsIgnoreCase(System.getProperty("ai.etw.tests.long.disabled")), "Long tests disabled");
+        assumeTrue("release".equalsIgnoreCase(System.getProperty("ai.etw.native.build")) ||
+            !"true".equalsIgnoreCase(System.getProperty("ai.etw.native.verbose")),
+                "Verbose output enabled. Skipping long tests.");
     }
 
     @Test
@@ -215,8 +219,8 @@ public class EtwProviderTests {
         EventCounts totalEvents = new EventCounts();
         long printTimer = 0;
         EventCounts accumulator = new EventCounts();
-        System.out.println("START: totalEvents: "+totalEvents.sum()+totalEvents.toString());
-        System.out.println("       accumulator: "+accumulator.sum()+accumulator.toString());
+        System.out.println("START: totalEvents: "+totalEvents.sum()+ totalEvents);
+        System.out.println("       accumulator: "+accumulator.sum()+ accumulator);
         for (int i = 0; i < iterations; i++) {
             long start = System.currentTimeMillis();
             ep.writeEvent(createInfo("test.info", "testEventsOnLoop", "i=%d", i));
@@ -253,13 +257,13 @@ public class EtwProviderTests {
             printTimer += elapsedTime;
             if (printTimer >= EVENT_STATS_TIMER_PERIOD_MILLISECONDS) {
                 totalEvents.plus(accumulator);
-                System.out.println("Wrote " + accumulator.sum() + " events (" + totalEvents.sum() + ") "+accumulator.toString()+" in " + printTimer + "ms "+String.format("(avg=%.3fms)", ((double)printTimer/(double)accumulator.sum())));
+                System.out.println("Wrote " + accumulator.sum() + " events (" + totalEvents.sum() + ") "+ accumulator +" in " + printTimer + "ms "+String.format("(avg=%.3fms)", ((double)printTimer/(double)accumulator.sum())));
                 printTimer = 0;
                 accumulator.reset();
             }
         }
         totalEvents.plus(accumulator);
         long totalElapsedTime = System.currentTimeMillis()-methodStart;
-        System.out.println("FINAL STATS: wrote "+totalEvents.sum()+" events "+totalEvents.toString()+" in "+totalElapsedTime+"ms "+String.format("(avg=%.3fms)", ((double)totalElapsedTime/(double)totalEvents.sum())));
+        System.out.println("FINAL STATS: wrote "+totalEvents.sum()+" events "+ totalEvents +" in "+totalElapsedTime+"ms "+String.format("(avg=%.3fms)", ((double)totalElapsedTime/(double)totalEvents.sum())));
     }
 }
