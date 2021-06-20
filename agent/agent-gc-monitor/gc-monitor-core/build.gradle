@@ -3,7 +3,7 @@ group = "io.opentelemetry.javaagent"
 apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
-    compile project(":agent:agent-gc-monitor:gc-monitor-api")
-    compile "org.slf4j:slf4j-api:1.7.26"
-    testCompile "junit:junit:4.12"
+    implementation project(":agent:agent-gc-monitor:gc-monitor-api")
+    implementation "org.slf4j:slf4j-api:1.7.26"
+    testImplementation "junit:junit:4.12"
 }

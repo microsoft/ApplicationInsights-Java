@@ -1,7 +1,7 @@
 
 dependencies {
-    compile project(":agent:agent-gc-monitor:gc-monitor-core")
-    testCompile "junit:junit:4.12"
+    implementation project(":agent:agent-gc-monitor:gc-monitor-core")
+    testImplementation "junit:junit:4.12"
 }
 
 sourceCompatibility = 11
