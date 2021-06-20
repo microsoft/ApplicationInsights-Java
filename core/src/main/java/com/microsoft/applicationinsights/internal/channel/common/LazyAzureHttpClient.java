@@ -18,21 +18,24 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class LazyAzureHttpClient implements HttpClient {
-    private static final Logger logger = LoggerFactory.getLogger(LazyAzureHttpClient.class);
+
     private static final HttpClient INSTANCE = new LazyAzureHttpClient();
     private static final int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
 
     public static volatile CountDownLatch safeToInitLatch;
     public static volatile String proxyHost;
     public static volatile Integer proxyPortNumber;
+
     public static HttpClient getInstance() {
         return INSTANCE;
     }
+
     private final Object lock = new Object();
     @GuardedBy("lock")
     private RuntimeException initException;
     @GuardedBy("lock")
     private HttpClient delegate;
+
     private HttpClient getDelegate() {
         synchronized (lock) {
             if (delegate != null) {

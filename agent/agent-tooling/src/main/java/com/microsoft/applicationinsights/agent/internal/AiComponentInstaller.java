@@ -49,14 +49,13 @@ import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.javaagent.extension.AgentListener;
-import org.apache.http.HttpHost;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -144,14 +143,12 @@ public class AiComponentInstaller implements AgentListener {
             // java.util.logging (starting with Java 8u231)
             // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
             LazyAzureHttpClient.safeToInitLatch = new CountDownLatch(1);
-            LazyHttpClient.safeToInitLatch = new CountDownLatch(1);
             instrumentation.addTransformer(new JulListeningClassFileTransformer(LazyAzureHttpClient.safeToInitLatch));
         }
 
         if (config.proxy.host != null) {
             LazyAzureHttpClient.proxyHost= config.proxy.host;
             LazyAzureHttpClient.proxyPortNumber = config.proxy.port;
-            LazyHttpClient.proxy = new HttpHost(config.proxy.host, config.proxy.port);
         }
 
         AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
@@ -205,7 +202,7 @@ public class AiComponentInstaller implements AgentListener {
     }
 
     private static ServiceProfilerServiceConfig formServiceProfilerConfig(ProfilerConfiguration configuration) {
-        URI serviceProfilerFrontEndPoint = TelemetryClient.getActive().getEndpointProvider().getProfilerEndpoint();
+        URL serviceProfilerFrontEndPoint = TelemetryClient.getActive().getEndpointProvider().getProfilerEndpoint();
         return new ServiceProfilerServiceConfig(
                 configuration.configPollPeriodSeconds,
                 configuration.periodicRecordingDurationSeconds,

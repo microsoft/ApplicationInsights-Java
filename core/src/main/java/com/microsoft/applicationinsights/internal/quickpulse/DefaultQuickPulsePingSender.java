@@ -127,7 +127,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     @VisibleForTesting
     String getQuickPulseEndpoint() {
-        return telemetryClient.getEndpointProvider().getLiveEndpointURL().toString();
+        return telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString();
     }
 
     private String buildPingEntity(long timeInMillis) {

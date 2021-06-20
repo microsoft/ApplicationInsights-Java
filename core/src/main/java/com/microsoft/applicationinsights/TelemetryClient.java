@@ -52,8 +52,6 @@ import static java.util.Arrays.asList;
 
 public class TelemetryClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(TelemetryClient.class);
-
     // Synchronization for instance initialization
     private static final Object s_lock = new Object();
     private static volatile TelemetryClient active;
@@ -207,14 +205,7 @@ public class TelemetryClient {
         if (channelBatcher == null) {
             synchronized (channelInitLock) {
                 if (channelBatcher == null) {
-                    TelemetryChannel channel;
-                    try {
-                        channel = new TelemetryChannel(endpointProvider.getIngestionEndpoint().toURL());
-                    } catch (MalformedURLException e) {
-                        // this shouldn't happen
-                        logger.error(e.getMessage(), e);
-                        throw new IllegalStateException(e);
-                    }
+                    TelemetryChannel channel = new TelemetryChannel(endpointProvider.getIngestionEndpoint());
                     channelBatcher = BatchSpanProcessor.builder(channel).build();
                 }
             }

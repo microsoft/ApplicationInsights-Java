@@ -125,7 +125,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
 
     @VisibleForTesting
     String getQuickPulseEndpoint() {
-         return telemetryClient == null ? QP_BASE_URI : telemetryClient.getEndpointProvider().getLiveEndpointURL().toString();
+         return telemetryClient == null ? QP_BASE_URI : telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString();
     }
 
     private String getInstrumentationKey() {

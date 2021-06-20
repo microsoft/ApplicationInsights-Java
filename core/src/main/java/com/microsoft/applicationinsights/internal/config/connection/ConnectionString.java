@@ -8,8 +8,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -58,7 +58,7 @@ public class ConnectionString {
                 telemetryClient.getEndpointProvider().setLiveEndpoint(constructSecureEndpoint(EndpointPrefixes.LIVE_ENDPOINT_PREFIX, suffix));
                 telemetryClient.getEndpointProvider().setProfilerEndpoint(constructSecureEndpoint(EndpointPrefixes.PROFILER_ENDPOINT_PREFIX, suffix));
                 telemetryClient.getEndpointProvider().setSnapshotEndpoint(constructSecureEndpoint(EndpointPrefixes.SNAPSHOT_ENDPOINT_PREFIX, suffix));
-            } catch (URISyntaxException e) {
+            } catch (MalformedURLException e) {
                 throw new InvalidConnectionStringException(Keywords.ENDPOINT_SUFFIX + " is invalid: " + suffix, e);
             }
         }
@@ -66,42 +66,42 @@ public class ConnectionString {
         // set explicit endpoints
         String liveEndpoint = kvps.get(Keywords.LIVE_ENDPOINT);
         if (!Strings.isNullOrEmpty(liveEndpoint)) {
-            telemetryClient.getEndpointProvider().setLiveEndpoint(toUriOrThrow(liveEndpoint, Keywords.LIVE_ENDPOINT));
+            telemetryClient.getEndpointProvider().setLiveEndpoint(toUrlOrThrow(liveEndpoint, Keywords.LIVE_ENDPOINT));
         }
 
         String ingestionEndpoint = kvps.get(Keywords.INGESTION_ENDPOINT);
         if (!Strings.isNullOrEmpty(ingestionEndpoint)) {
-            telemetryClient.getEndpointProvider().setIngestionEndpoint(toUriOrThrow(ingestionEndpoint, Keywords.INGESTION_ENDPOINT));
+            telemetryClient.getEndpointProvider().setIngestionEndpoint(toUrlOrThrow(ingestionEndpoint, Keywords.INGESTION_ENDPOINT));
         }
 
         String profilerEndpoint = kvps.get(Keywords.PROFILER_ENDPOINT);
         if (!Strings.isNullOrEmpty(profilerEndpoint)) {
-            telemetryClient.getEndpointProvider().setProfilerEndpoint(toUriOrThrow(profilerEndpoint, Keywords.PROFILER_ENDPOINT));
+            telemetryClient.getEndpointProvider().setProfilerEndpoint(toUrlOrThrow(profilerEndpoint, Keywords.PROFILER_ENDPOINT));
         }
 
         String snapshotEndpoint = kvps.get(Keywords.SNAPSHOT_ENDPOINT);
         if (!Strings.isNullOrEmpty(snapshotEndpoint)) {
-            telemetryClient.getEndpointProvider().setSnapshotEndpoint(toUriOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
+            telemetryClient.getEndpointProvider().setSnapshotEndpoint(toUrlOrThrow(snapshotEndpoint, Keywords.SNAPSHOT_ENDPOINT));
         }
     }
 
 
-    private static URI toUriOrThrow(String uri, String field) throws InvalidConnectionStringException {
+    private static URL toUrlOrThrow(String url, String field) throws InvalidConnectionStringException {
         try {
-            URI result = new URI(uri);
-            final String scheme = result.getScheme();
+            URL result = new URL(url);
+            String scheme = result.getProtocol();
             if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
-                throw new InvalidConnectionStringException(field+" must specify supported protocol, either 'http' or 'https': \""+uri+"\"");
+                throw new InvalidConnectionStringException(field+" must specify supported protocol, either 'http' or 'https': \""+url+"\"");
             }
             return result;
-        } catch (URISyntaxException e) {
-            throw new InvalidConnectionStringException(field + " is invalid: \"" + uri + "\"", e);
+        } catch (MalformedURLException e) {
+            throw new InvalidConnectionStringException(field + " is invalid: \"" + url + "\"", e);
         }
     }
 
     @VisibleForTesting
-    static URI constructSecureEndpoint(String prefix, String suffix) throws URISyntaxException {
-        return new URI("https://" + StringUtils.strip(prefix, ".") + "." + StringUtils.strip(suffix, "."));
+    static URL constructSecureEndpoint(String prefix, String suffix) throws MalformedURLException {
+        return new URL("https://" + StringUtils.strip(prefix, ".") + "." + StringUtils.strip(suffix, "."));
     }
 
     /**

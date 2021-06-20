@@ -22,12 +22,12 @@ package com.microsoft.applicationinsights.internal.profiler;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.UnsupportedCharsetException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,7 +43,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.TelemetryObservers;
-import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
@@ -58,14 +57,11 @@ import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.jfr.Recording;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
 import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
@@ -155,7 +151,7 @@ public class ProfilerServiceTest {
                         1,
                         2,
                         3,
-                        new URI("http://localhost"),
+                        new URL("http://localhost"),
                         true,
                         null,
                         null
@@ -210,12 +206,12 @@ public class ProfilerServiceTest {
         return service.get();
     }
 
-    private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws URISyntaxException {
+    private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
         return new JfrProfiler(new ServiceProfilerServiceConfig(
                 1,
                 2,
                 3,
-                new URI("http://localhost"),
+                new URL("http://localhost"),
                 false,
                 null,
                 null)) {
