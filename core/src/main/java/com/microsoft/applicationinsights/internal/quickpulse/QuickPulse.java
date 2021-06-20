@@ -28,7 +28,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.azure.core.http.HttpPipeline;
-import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -57,7 +56,6 @@ public enum QuickPulse {
     }
 
     public void initialize(final TelemetryClient telemetryClient) {
-        Preconditions.checkNotNull(telemetryClient);
         final CountDownLatch latch = new CountDownLatch(1);
         Executors.newSingleThreadExecutor(ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class)).execute(new Runnable() {
             @Override

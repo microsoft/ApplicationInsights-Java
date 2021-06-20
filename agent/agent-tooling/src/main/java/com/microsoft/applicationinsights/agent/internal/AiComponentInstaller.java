@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.MetricFilter;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
@@ -36,6 +35,7 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
+import com.microsoft.applicationinsights.common.Strings;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;

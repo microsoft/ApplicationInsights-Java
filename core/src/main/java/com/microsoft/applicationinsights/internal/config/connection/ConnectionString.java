@@ -1,15 +1,14 @@
 package com.microsoft.applicationinsights.internal.config.connection;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.common.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -17,7 +16,7 @@ public class ConnectionString {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectionString.class);
 
-    @VisibleForTesting
+    // visible for testing
     static final int CONNECTION_STRING_MAX_LENGTH = 4096;
 
     private ConnectionString(){}
@@ -30,12 +29,26 @@ public class ConnectionString {
         final Map<String, String> kvps;
         try {
             kvps = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-            kvps.putAll(Splitter.on(';').trimResults().omitEmptyStrings().withKeyValueSeparator('=').split(connectionString));
+            kvps.putAll(splitToMap(connectionString));
         } catch (IllegalArgumentException e) {
             throw new InvalidConnectionStringException("Could not parse connection string.");
         }
 
         mapToConnectionConfiguration(kvps, targetConfig);
+    }
+
+    public static Map<String, String> splitToMap(String str) {
+        Map<String, String> map = new HashMap<>();
+        for (String part : str.split(";")) {
+            int index = part.indexOf('=');
+            if (index == -1) {
+                throw new IllegalArgumentException();
+            }
+            String key = part.substring(0, index);
+            String value = part.substring(index + 1);
+            map.put(key, value);
+        }
+        return map;
     }
 
     private static void mapToConnectionConfiguration(Map<String, String> kvps, TelemetryClient telemetryClient) throws InvalidConnectionStringException {
@@ -99,7 +112,7 @@ public class ConnectionString {
         }
     }
 
-    @VisibleForTesting
+    // visible for testing
     static URL constructSecureEndpoint(String prefix, String suffix) throws MalformedURLException {
         return new URL("https://" + StringUtils.strip(prefix, ".") + "." + StringUtils.strip(suffix, "."));
     }
@@ -119,7 +132,7 @@ public class ConnectionString {
         public static final String SNAPSHOT_ENDPOINT = "SnapshotEndpoint";
     }
 
-    @VisibleForTesting
+    // visible for testing
     static class EndpointPrefixes {
         private EndpointPrefixes(){}
 

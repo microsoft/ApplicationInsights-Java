@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
-import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -116,7 +115,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         return onPingError(sendTime);
     }
 
-    @VisibleForTesting
+    // visible for testing
     String getQuickPulsePingUri(String endpointPrefix) {
         return endpointPrefix + "/ping?ikey=" + getInstrumentationKey();
     }
@@ -125,7 +124,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         return telemetryClient.getInstrumentationKey();
     }
 
-    @VisibleForTesting
+    // visible for testing
     String getQuickPulseEndpoint() {
         return telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString();
     }

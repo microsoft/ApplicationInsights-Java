@@ -21,12 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
+import com.microsoft.applicationinsights.common.Strings;
+
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.google.common.base.Strings;
 
 /**
  * Methods that would have been great to have on maps.

@@ -35,6 +35,11 @@ import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
 archivesBaseName = 'applicationinsights-core'
 
+repositories {
+    // maven local is needed for locally built otel fork
+    mavenLocal()
+}
+
 configurations {
     forTheDLL { transitive = false }
 }
@@ -49,7 +54,6 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-text', version: versions.commonsText
     implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
     implementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
-    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
     implementation group: 'com.github.oshi', name:'oshi-core', version: versions.oshi
     implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 
@@ -64,6 +68,11 @@ dependencies {
 
     implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: versions.opentelemetry
     implementation group: 'org.jctools', name: 'jctools-core', version: '3.3.0'
+
+    implementation "org.checkerframework:checker-qual:3.14.0"
+
+    // to use the cache from opentelemetry javaagent
+    implementation group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api-caching', version: versions.opentelemetryInstrumentationAlpha
 
     testImplementation group: 'junit', name: 'junit', version: versions.junit
     testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest

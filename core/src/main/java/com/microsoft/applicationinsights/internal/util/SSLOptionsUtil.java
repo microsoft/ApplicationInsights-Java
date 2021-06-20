@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.internal.util;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,14 +22,14 @@ public class SSLOptionsUtil {
     private static final String[] DEFAULT_PROTOCOLS = new String[] {"TLSv1.3", "TLSv1.2"};
 
     static {
-        DEFAULT_SUPPORTED_PROTOCOLS = filterSupportedProtocols(Arrays.asList(DEFAULT_PROTOCOLS), false);
+        DEFAULT_SUPPORTED_PROTOCOLS = filterSupportedProtocols(DEFAULT_PROTOCOLS, false);
         if (DEFAULT_SUPPORTED_PROTOCOLS.length == 0 && logger.isErrorEnabled()) {
             logger.error("Default protocols are not supported in this JVM: {}. System property '{}' can be used to configure supported SSL protocols.",
                     Arrays.toString(DEFAULT_PROTOCOLS), APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY);
         }
     }
 
-    private static String[] filterSupportedProtocols(Iterable<String> defaultValue, boolean reportErrors) {
+    private static String[] filterSupportedProtocols(String[] defaultValue, boolean reportErrors) {
         List<String> supported = new ArrayList<>();
         for (String protocol : defaultValue) {
             try {
@@ -67,7 +66,7 @@ public class SSLOptionsUtil {
             return defaultSupportedProtocols();
         }
 
-        String[] customProtocols = filterSupportedProtocols(Splitter.on(',').trimResults().omitEmptyStrings().split(rawProp), true);
+        String[] customProtocols = filterSupportedProtocols(rawProp.split(","), true);
         if (customProtocols.length == 0) {
             if (logger.isErrorEnabled()) {
                 logger.error("{} contained no supported protocols: '{}'; using default: {}", APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY, rawProp, Arrays.toString(DEFAULT_SUPPORTED_PROTOCOLS));

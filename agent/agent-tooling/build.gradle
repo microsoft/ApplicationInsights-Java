@@ -41,8 +41,6 @@ dependencies {
     // only complaint so far about moshi is that it doesn't give line numbers when there are json formatting errors
     implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
 
-    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
-
     implementation group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-tooling', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-extension-api', version: versions.opentelemetryInstrumentationAlpha
     implementation group: 'net.bytebuddy', name: 'byte-buddy', version: versions.bytebuddy
@@ -79,6 +77,8 @@ dependencies {
 
     testImplementation project(':agent:agent-bootstrap')
     testImplementation group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
+
+    testImplementation group: 'com.google.guava', name: 'guava', version: versions.guava
 
     testImplementation group: 'junit', name: 'junit', version: versions.junit
     testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest

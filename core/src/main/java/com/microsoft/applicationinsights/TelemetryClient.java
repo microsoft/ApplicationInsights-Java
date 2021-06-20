@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.common.Strings;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
@@ -34,10 +34,7 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -275,15 +272,6 @@ public class TelemetryClient {
             throw new IllegalArgumentException("Invalid connection string", e);
         }
         this.connectionString = connectionString;
-    }
-
-    public List<MetricFilter> getMetricFilters() {
-        return metricFilters;
-    }
-
-    public void setMetricFilters(List<MetricFilter> metricFilters) {
-        this.metricFilters.clear();
-        this.metricFilters.addAll(metricFilters);
     }
 
     public EndpointProvider getEndpointProvider() {

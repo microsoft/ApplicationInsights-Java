@@ -22,7 +22,5 @@ dependencies {
     implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.4'
     implementation group: 'com.azure', name: 'azure-core', version: versions.azureCore
 
-    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
-
     testImplementation group: 'junit', name: 'junit', version: versions.junit
 }

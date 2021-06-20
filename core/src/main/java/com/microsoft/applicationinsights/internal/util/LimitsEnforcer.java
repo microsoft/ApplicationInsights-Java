@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.util;
 
-import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,8 +81,12 @@ public final class LimitsEnforcer {
     }
 
     private LimitsEnforcer(Type type, int minimum, int maximum, int defaultValue, Integer currentValue, String propertyName) {
-        Preconditions.checkState(maximum >= minimum, "maximum must be >= than minimum");
-        Preconditions.checkState(defaultValue >= minimum && defaultValue <= maximum, "defaultValue must be: 'defaultValue >= minimum && defaultValue <= maximum");
+        if (maximum < minimum) {
+            throw new IllegalStateException("maximum must be >= than minimum");
+        }
+        if (defaultValue < minimum || defaultValue > maximum) {
+            throw new IllegalStateException("defaultValue must be: 'defaultValue >= minimum && defaultValue <= maximum");
+        }
 
         this.propertyName = propertyName;
 

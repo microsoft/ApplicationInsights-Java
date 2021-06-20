@@ -1,16 +1,19 @@
 package com.microsoft.applicationinsights.internal.config.connection;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
 public class EndpointProvider {
-    @VisibleForTesting static final String INGESTION_URL_PATH = "v2.1/track";
-    @VisibleForTesting static final String LIVE_URL_PATH = "QuickPulseService.svc";
-    @VisibleForTesting static final String API_PROFILES_APP_ID_URL_PREFIX = "api/profiles/"; // <base uri, with host>/api/profiles/<ikey>/appid
-    @VisibleForTesting static final String API_PROFILES_APP_ID_URL_SUFFIX = "/appId";
+    // visible for testing
+    static final String INGESTION_URL_PATH = "v2.1/track";
+    // visible for testing
+    static final String LIVE_URL_PATH = "QuickPulseService.svc";
+    // visible for testing
+    static final String API_PROFILES_APP_ID_URL_PREFIX = "api/profiles/"; // <base uri, with host>/api/profiles/<ikey>/appid
+    // visible for testing
+    static final String API_PROFILES_APP_ID_URL_SUFFIX = "/appId";
 
     private volatile URL ingestionEndpoint;
     private volatile URL ingestionEndpointUrl;

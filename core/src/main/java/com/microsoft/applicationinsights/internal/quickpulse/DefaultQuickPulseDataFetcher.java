@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import com.azure.core.http.HttpRequest;
-import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
@@ -118,12 +117,12 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         }
     }
 
-    @VisibleForTesting
+    // visible for testing
     String getEndpointUrl(String endpointPrefix) {
         return endpointPrefix + "/post?ikey=" + getInstrumentationKey();
     }
 
-    @VisibleForTesting
+    // visible for testing
     String getQuickPulseEndpoint() {
          return telemetryClient == null ? QP_BASE_URI : telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString();
     }

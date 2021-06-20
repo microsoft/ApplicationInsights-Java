@@ -1,10 +1,9 @@
 package com.microsoft.applicationinsights;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
-import com.google.common.base.Strings;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.microsoft.applicationinsights.common.Strings;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -192,6 +191,7 @@ public class TelemetryUtil {
         }
     }
 
+    // FIXME (trask) why is this unused?
     private static String getBaseType(MonitorDomain data) {
         if (data instanceof AvailabilityData) {
             return "AvailabilityData"; // TODO (trask) is this right?
@@ -219,8 +219,8 @@ public class TelemetryUtil {
     public static final String SAMPLING_PERCENTAGE_TRACE_STATE = "ai-internal-sp";
 
     private static final Cache<String, OptionalFloat> parsedSamplingPercentageCache =
-            CacheBuilder.newBuilder()
-                    .maximumSize(100)
+            Cache.newBuilder()
+                    .setMaximumSize(100)
                     .build();
 
     private static final AtomicBoolean alreadyLoggedSamplingPercentageMissing = new AtomicBoolean();
@@ -247,12 +247,12 @@ public class TelemetryUtil {
     }
 
     private static OptionalFloat parseSamplingPercentage(String samplingPercentageStr) throws ExecutionException {
-        return parsedSamplingPercentageCache.get(samplingPercentageStr, () -> {
+        return parsedSamplingPercentageCache.computeIfAbsent(samplingPercentageStr, str -> {
             try {
-                return OptionalFloat.of(Float.parseFloat(samplingPercentageStr));
+                return OptionalFloat.of(Float.parseFloat(str));
             } catch (NumberFormatException e) {
                 if (!alreadyLoggedSamplingPercentageParseError.getAndSet(true)) {
-                    logger.warn("error parsing sampling percentage trace state: {}", samplingPercentageStr, e);
+                    logger.warn("error parsing sampling percentage trace state: {}", str, e);
                 }
                 return OptionalFloat.empty();
             }

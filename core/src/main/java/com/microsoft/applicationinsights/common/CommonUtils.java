@@ -31,10 +31,6 @@ public class CommonUtils {
 
   private static final Logger logger = LoggerFactory.getLogger(CommonUtils.class);
 
-  public static boolean isNullOrEmpty(String string) {
-    return string == null || string.length() == 0;
-  }
-
   /**
    * Returns the hostname using {@link InetAddress#getHostName()} on {@link InetAddress#getLocalHost()}.
    * If an error is encountered, the error is logged and it returns null.

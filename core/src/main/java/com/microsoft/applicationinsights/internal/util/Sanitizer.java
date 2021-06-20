@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import java.net.URI;
+import com.microsoft.applicationinsights.common.Strings;
 
-import com.google.common.base.Strings;
+import java.net.URI;
 
 /**
  * Created by gupele on 1/7/2015.

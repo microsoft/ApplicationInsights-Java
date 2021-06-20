@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import com.microsoft.applicationinsights.common.Strings;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,7 +39,6 @@ import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCoun
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import org.slf4j.Logger;

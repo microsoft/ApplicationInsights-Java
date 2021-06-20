@@ -30,9 +30,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.microsoft.applicationinsights.FormattedDuration;
 import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryUtil;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.common.Strings;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -93,8 +92,6 @@ public class Exporter implements SpanExporter {
 
         STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
     }
-
-    private static final Joiner JOINER = Joiner.on(", ");
 
     private static final AttributeKey<Boolean> AI_LOG_KEY = AttributeKey.booleanKey("applicationinsights.internal.log");
 
@@ -747,7 +744,14 @@ public class Exporter implements SpanExporter {
             case BOOLEAN_ARRAY:
             case LONG_ARRAY:
             case DOUBLE_ARRAY:
-                return JOINER.join((List<?>) value);
+                StringBuilder sb = new StringBuilder();
+                for (Object val : (List<?>) value) {
+                    if (sb.length() > 0) {
+                        sb.append(", ");
+                    }
+                    sb.append(val);
+                }
+                return sb.toString();
             default:
                 logger.warn("unexpected attribute type: {}", attributeKey.getType());
                 return null;

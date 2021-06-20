@@ -7,12 +7,10 @@ import com.azure.core.http.ProxyOptions;
 import com.azure.core.http.netty.NettyAsyncHttpClientBuilder;
 import com.azure.core.util.Context;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.checkerframework.checker.lock.qual.GuardedBy;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.ConnectionProvider;
 
-import javax.annotation.concurrent.GuardedBy;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
