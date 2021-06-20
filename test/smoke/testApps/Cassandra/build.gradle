@@ -1,22 +1,21 @@
-apply plugin: 'war'
+apply plugin: "war"
 
 dependencies {
-    implementation group: 'com.datastax.cassandra', name: 'cassandra-driver-core', version: '3.8.0'
-    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
+    implementation "com.datastax.cassandra:cassandra-driver-core:3.8.0"
 
-    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
 }
 
 war {
     // this is done to remove the version from the archive file name
     // to make span name verification simpler
-    archiveFileName = project.name + '.war'
+    archiveFileName = project.name + ".war"
 }
 
 ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = project.name + '.war'
+ext.testAppArtifactFilename = project.name + ".war"
 
-ext.dependencyContainers = ['cassandra:3']
+ext.dependencyContainers = ["cassandra:3"]
 
 tasks.withType(JavaCompile) {
     options.release.set(8)

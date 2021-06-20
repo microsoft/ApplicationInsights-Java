@@ -1,18 +1,18 @@
-apply plugin: 'war'
+apply plugin: "war"
 
 dependencies {
     implementation aiCoreJar
-    implementation 'com.google.guava:guava:20.0'
+    implementation "com.google.guava:guava:20.0"
 
-    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
 
-    providedRuntime 'mysql:mysql-connector-java:5.1.44'
+    providedRuntime "mysql:mysql-connector-java:5.1.44"
 
-    smokeTestImplementation 'com.google.guava:guava:23.0'
+    smokeTestImplementation "com.google.guava:guava:23.0"
 
-    testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
+    testImplementation "com.google.guava:guava:23.0" // VSCODE intellisense bug workaround
 
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
+    implementation "org.apache.httpcomponents:httpclient:4.5.7"
 }
 
 tasks.withType(JavaCompile) {
@@ -22,8 +22,8 @@ tasks.withType(JavaCompile) {
 war {
     // this is done to remove the version from the archive file name
     // to make span name verification simpler
-    archiveFileName = project.name + '.war'
+    archiveFileName = project.name + ".war"
 }
 
 ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = project.name + '.war'
+ext.testAppArtifactFilename = project.name + ".war"

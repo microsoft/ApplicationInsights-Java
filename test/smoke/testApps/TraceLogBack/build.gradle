@@ -1,31 +1,31 @@
-apply plugin: 'war'
+apply plugin: "war"
 
 dependencies {
     implementation aiWebJar
-    implementation(group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: versions.aiLegacySdk) {
+    implementation("com.microsoft.azure:applicationinsights-logging-logback:${versions.aiLegacySdk}") {
         // applicationinsights-core is embedded in applicationinsights-web
         // and duplicate class files produces lots of warning messages on jetty
-        exclude group: 'com.microsoft.azure', module: 'applicationinsights-core'
+        exclude group: "com.microsoft.azure", module: "applicationinsights-core"
     }
-    implementation 'com.google.guava:guava:20.0'
+    implementation "com.google.guava:guava:20.0"
 
-    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
 
-    smokeTestImplementation 'com.google.guava:guava:23.0'
+    smokeTestImplementation "com.google.guava:guava:23.0"
 
-    testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
+    testImplementation "com.google.guava:guava:23.0" // VSCODE intellisense bug workaround
 
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation "ch.qos.logback:logback-classic:1.2.3"
 }
 
 war {
     // this is done to remove the version from the archive file name
     // to make span name verification simpler
-    archiveFileName = project.name + '.war'
+    archiveFileName = project.name + ".war"
 }
 
 ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = project.name + '.war'
+ext.testAppArtifactFilename = project.name + ".war"
 
 tasks.withType(JavaCompile) {
     options.release.set(8)

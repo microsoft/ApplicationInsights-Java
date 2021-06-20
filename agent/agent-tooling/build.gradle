@@ -51,7 +51,7 @@ dependencies {
     implementation(project(":core")) {
         // excluding commons-logging and replacing it with jcl-over-slf4j (below)
         // in order to pick up logging from apache http client
-        exclude "commons-logging", module: "commons-logging"
+        exclude group: "commons-logging", module: "commons-logging"
     }
     implementation "org.slf4j:jcl-over-slf4j:${versions.slf4j}"
     implementation "ch.qos.logback:logback-classic:${versions.logback}"

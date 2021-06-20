@@ -1,25 +1,25 @@
-apply plugin: 'war'
+apply plugin: "war"
 
 dependencies {
     implementation aiWebJar
-    implementation 'com.google.guava:guava:20.0'
-    implementation 'redis.clients:jedis:2+'
+    implementation "com.google.guava:guava:20.0"
+    implementation "redis.clients:jedis:2+"
 
-    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
 
-    smokeTestImplementation 'com.google.guava:guava:23.0'
+    smokeTestImplementation "com.google.guava:guava:23.0"
 }
 
 war {
     // this is done to remove the version from the archive file name
     // to make span name verification simpler
-    archiveFileName = project.name + '.war'
+    archiveFileName = project.name + ".war"
 }
 
 ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = project.name + '.war'
+ext.testAppArtifactFilename = project.name + ".war"
 
-ext.dependencyContainers = ['redis']
+ext.dependencyContainers = ["redis"]
 
 tasks.withType(JavaCompile) {
     options.release.set(8)

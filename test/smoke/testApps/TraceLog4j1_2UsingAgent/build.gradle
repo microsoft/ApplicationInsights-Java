@@ -1,16 +1,16 @@
-apply plugin: 'war'
+apply plugin: "war"
 
 dependencies {
     implementation aiWebAutoJar
-    implementation 'com.google.guava:guava:20.0'
+    implementation "com.google.guava:guava:20.0"
 
-    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
 
-    smokeTestImplementation 'com.google.guava:guava:23.0'
+    smokeTestImplementation "com.google.guava:guava:23.0"
 
-    testImplementation 'com.google.guava:guava:23.0' // VSCODE intellisense bug workaround
+    testImplementation "com.google.guava:guava:23.0" // VSCODE intellisense bug workaround
 
-    implementation group: 'log4j', name: 'log4j', version: '1.2.17'
+    implementation "log4j:log4j:1.2.17"
 }
 
 tasks.withType(JavaCompile) {
@@ -20,8 +20,8 @@ tasks.withType(JavaCompile) {
 war {
     // this is done to remove the version from the archive file name
     // to make span name verification simpler
-    archiveFileName = project.name + '.war'
+    archiveFileName = project.name + ".war"
 }
 
 ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = project.name + '.war'
+ext.testAppArtifactFilename = project.name + ".war"

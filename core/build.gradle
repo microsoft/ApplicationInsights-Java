@@ -54,11 +54,11 @@ dependencies {
     implementation "org.apache.commons:commons-text:${versions.commonsText}"
     implementation "com.squareup.moshi:moshi:${versions.moshi}"
     implementation "com.google.code.gson:gson:${versions.gson}"
-    implementation "com.github.oshi", name:"oshi-core:${versions.oshi}"
+    implementation "com.github.oshi:oshi-core:${versions.oshi}"
     implementation "org.slf4j:slf4j-api:${versions.slf4j}"
 
-    implementation "com.azure:azure-monitor-opentelemetry-exporter", version: "1.0.0-beta.4"
-    implementation("com.azure:azure-identity", version: "1.2.4") {
+    implementation "com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4"
+    implementation("com.azure:azure-identity:1.2.4") {
         // TODO (kryalama) is this ok to exclude?
         //  "This dependency can be excluded if IntelliJ Credential is not being used for authentication
         //   via `IntelliJCredential` or `DefaultAzureCredential`"
