@@ -77,9 +77,14 @@ dependencies {
 
     testImplementation "com.google.guava:guava:${versions.guava}"
 
-    testImplementation "junit:junit:${versions.junit}"
-    testImplementation "org.hamcrest:hamcrest-core:${versions.hamcrest}"
-    testImplementation "org.hamcrest:hamcrest-library:${versions.hamcrest}"
+    testImplementation(platform("org.junit:junit-bom:${versions.junit5}"))
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.assertj:assertj-core:${versions.assertj}"
     testImplementation "org.mockito:mockito-core:${versions.mockito}"
-    testImplementation "com.github.stefanbirkner:system-rules:${versions.systemRules}"
+    testImplementation "uk.org.webcompere:system-stubs-jupiter:1.1.0"
+}
+
+test {
+    // FIXME (trask) move to common location
+    useJUnitPlatform()
 }

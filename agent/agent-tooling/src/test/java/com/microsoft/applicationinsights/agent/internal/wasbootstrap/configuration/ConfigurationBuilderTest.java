@@ -26,15 +26,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import org.junit.*;
-import org.junit.contrib.java.lang.system.*;
+import org.junit.jupiter.api.Test;
 
 import static com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.trimAndEmptyToNull;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfigurationBuilderTest {
-    @Rule
-    public EnvironmentVariables envVars = new EnvironmentVariables();
 
     public Path getConfigFilePath(String resourceName) {
         ClassLoader classLoader = getClass().getClassLoader();
@@ -44,12 +42,12 @@ public class ConfigurationBuilderTest {
 
     @Test
     public void testEmptyToNull() {
-        assertEquals(null, trimAndEmptyToNull("   "));
-        assertEquals(null, trimAndEmptyToNull(""));
-        assertEquals(null, trimAndEmptyToNull(null));
+        assertNull(trimAndEmptyToNull("   "));
+        assertNull(trimAndEmptyToNull(""));
+        assertNull(trimAndEmptyToNull(null));
         assertEquals("a", trimAndEmptyToNull("a"));
         assertEquals("a", trimAndEmptyToNull("  a  "));
-        assertEquals(null, trimAndEmptyToNull("\t"));
+        assertNull(trimAndEmptyToNull("\t"));
     }
 
     @Test
@@ -76,30 +74,23 @@ public class ConfigurationBuilderTest {
         assertEquals("Something Good", configuration.role.name);
     }
 
-    @Test(expected = FriendlyException.class)
-    public void testMalformedJson() throws IOException {
+    @Test
+    public void testMalformedJson() {
         Path path = getConfigFilePath("applicationinsights_malformed.json");
-        try {
-            Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path, true);
-            assertNull(configuration);
-        } catch (FriendlyException ex) {
-            assertTrue(ex.getMessage().contains("has a malformed JSON at path $.role."));
-            throw ex;
-        }
+
+        assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
+                .isInstanceOf(FriendlyException.class)
+                .hasMessageContaining("has a malformed JSON at path $.role.");
     }
 
-    @Test(expected = FriendlyException.class)
-    public void testMalformedFaultyJson() throws IOException {
+    @Test
+    public void testMalformedFaultyJson() {
         Path path = getConfigFilePath("applicationinsights_malformed_faulty.json");
-        try {
-            Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path, true);
-            assertNull(configuration);
-        } catch (FriendlyException ex) {
-            System.out.println(ex.getMessage());
-            assertTrue(ex.getMessage().contains("has a malformed JSON"));
-            assertTrue(!ex.getMessage().contains("has a malformed JSON at path $.null."));
-            throw ex;
-        }
+
+        assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
+                .isInstanceOf(FriendlyException.class)
+                .hasMessageContaining("has a malformed JSON")
+                .hasMessageNotContaining("has a malformed JSON at path $.null.");
     }
 
     @Test

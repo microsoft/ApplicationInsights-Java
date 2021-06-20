@@ -35,22 +35,22 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorType;
-import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.ConfigurationException;
 import com.microsoft.applicationinsights.internal.authentication.AuthenticationType;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.JsonDataException;
-import com.squareup.moshi.JsonReader;
-import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Types;
+import com.squareup.moshi.*;
 import okio.Buffer;
-import org.junit.*;
-import org.junit.contrib.java.lang.system.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(SystemStubsExtension.class)
 public class ConfigurationTest {
 
-    @Rule
+    @SystemStub
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
     private static Configuration loadConfiguration() throws IOException {
@@ -121,13 +121,14 @@ public class ConfigurationTest {
         assertEquals(configuration.jmxMetrics.get(2).name, "Current Thread Count");
     }
 
-    @Test(expected = ConfigurationException.class)
-    public void shouldThrowFromEnvVarIfEmbeddedConnectionString() throws IOException {
+    @Test
+    public void shouldThrowFromEnvVarIfEmbeddedConnectionString() {
         String contentJson = "{\"connectionString\":\"InstrumentationKey=55555555-5555-5555-5555-555555555555\"," +
                 "\"role\":{\"name\":\"testrole\"}}";
         envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
 
-        ConfigurationBuilder.create(Paths.get("."), null);
+        assertThatThrownBy(() -> ConfigurationBuilder.create(Paths.get("."), null))
+                .isInstanceOf(ConfigurationBuilder.ConfigurationException.class);
     }
 
     @Test
@@ -224,7 +225,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration("applicationinsights_aadauth.json");
         PreviewConfiguration preview = configuration.preview;
         assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals(true, preview.authentication.enabled);
+        assertTrue(preview.authentication.enabled);
         assertEquals(AuthenticationType.SAMI, preview.authentication.type);
         assertEquals("123xyz", preview.authentication.clientId);
         assertEquals("tenant123", preview.authentication.tenantId);
@@ -578,9 +579,10 @@ public class ConfigurationTest {
         assertEquals("role-instance", configuration.role.instance);
     }
 
-    @Test(expected = JsonDataException.class)
-    public void shouldNotParseFaultyJson() throws IOException {
-        loadConfiguration("applicationinsights_faulty.json");
+    @Test
+    public void shouldNotParseFaultyJson() {
+        assertThatThrownBy(() -> loadConfiguration("applicationinsights_faulty.json"))
+                .isInstanceOf(JsonDataException.class);
     }
 
     private List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {

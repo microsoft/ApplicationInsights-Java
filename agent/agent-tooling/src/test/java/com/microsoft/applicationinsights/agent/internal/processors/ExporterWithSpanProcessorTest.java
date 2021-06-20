@@ -40,56 +40,40 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.api.trace.Span;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ExporterWithSpanProcessorTest {
 
     private final Tracer tracer = OpenTelemetrySdk.builder().build().getTracer("test");
 
-    @Test(expected = FriendlyException.class)
+    @Test
     public void noNameObjectTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.SPAN;
         config.id = "noNameObjectTest";
-        SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = tracer.spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .startSpan();
-
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+        assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockExporter))
+                .isInstanceOf(FriendlyException.class);
     }
 
-    @Test(expected = FriendlyException.class)
+    @Test
     public void inValidConfigTestWithNoFromOrToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.SPAN;
         config.id = "inValidConfigTestWithToAttributesNoRules";
         config.name = new NameConfig();
-        SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = tracer.spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .startSpan();
-
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+        assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockExporter))
+                .isInstanceOf(FriendlyException.class);
     }
 
-    @Test(expected = FriendlyException.class)
+    @Test
     public void inValidConfigTestWithToAttributesNoRulesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
@@ -97,18 +81,9 @@ public class ExporterWithSpanProcessorTest {
         config.id = "inValidConfigTestWithToAttributesNoRules";
         config.name = new NameConfig();
         config.name.toAttributes = new ToAttributeConfig();
-        SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = tracer.spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .startSpan();
-
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+        assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockExporter))
+                .isInstanceOf(FriendlyException.class);
     }
 
     @Test
@@ -139,7 +114,6 @@ public class ExporterWithSpanProcessorTest {
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
         assertEquals("locationget1234", resultSpan.getName());
-
     }
 
     @Test
@@ -171,7 +145,6 @@ public class ExporterWithSpanProcessorTest {
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
         assertEquals("location::get::1234", resultSpan.getName());
-
     }
 
     @Test
@@ -271,8 +244,7 @@ public class ExporterWithSpanProcessorTest {
 
     }
 
-
-    @Test(expected = FriendlyException.class)
+    @Test
     public void InvalidRegexInRulesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
@@ -283,28 +255,9 @@ public class ExporterWithSpanProcessorTest {
         toAttributeConfig.rules = new ArrayList<>();
         toAttributeConfig.rules.add("***");
         config.name.toAttributes = toAttributeConfig;
-        SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockExporter);
 
-        Span span = tracer.spanBuilder("/api/v1/document/12345678/update")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .startSpan();
-
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
-
-        // verify that resulting spans are filtered in the way we want
-        List<SpanData> result = mockExporter.getSpans();
-        SpanData resultSpan = result.get(0);
-        assertNotNull(Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))));
-        assertEquals("12345678", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))));
-        assertEquals("/api/v1/document/{documentId}/update", resultSpan.getName());
+        assertThatThrownBy(() -> new ExporterWithSpanProcessor(config, mockExporter))
+                .isInstanceOf(FriendlyException.class);
     }
 
     @Test

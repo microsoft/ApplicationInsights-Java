@@ -39,23 +39,29 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
-import org.junit.*;
-import org.junit.contrib.java.lang.system.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(SystemStubsExtension.class)
 public class RpConfigurationPollingTest {
 
-    @Rule
+    @SystemStub
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
-    @Before
+    @BeforeEach
     public void beforeEach() {
         // default sampler at startup is "Sampler.alwaysOff()", and this test relies on real sampler
         DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(100, new Configuration()));
     }
 
-    @After
+    @AfterEach
     public void afterEach() {
         // need to reset trace config back to default (with default sampler)
         // otherwise tests run after this can fail

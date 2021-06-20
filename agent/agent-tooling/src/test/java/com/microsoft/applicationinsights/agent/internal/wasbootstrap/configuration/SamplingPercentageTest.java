@@ -21,10 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
 import static com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.roundToNearest;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SamplingPercentageTest {
 

@@ -22,9 +22,10 @@
 package com.microsoft.applicationinsights.agent.internal;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class LazyConfigurationAccessorTest {
