@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
+// TODO (trask) is this really needed? if so, need to restore devtest configuration
 public class DiagnosticsLoggerProxy implements Logger {
     // Hardcoded to avoid dependency: com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME
     private static final Logger LOGGER = LoggerFactory.getLogger("applicationinsights.extension.diagnostics");

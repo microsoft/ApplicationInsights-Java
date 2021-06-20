@@ -13,23 +13,6 @@ configurations {
     shadowInclude {
         description "For marking dependencies that should be shaded into this project's artifact"
     }
-    // TODO (trask) remove devtest in separate PR to make it easy to revert in case we find use for it later
-    devtest {
-        description "For making a test jar for executing code not usually exposed to client applications (or loggers)"
-    }
-}
-
-sourceSets {
-    devtest {
-        java {
-            srcDir file("src/devtest/java")
-        }
-        resources {
-            srcDir file("src/devtest/resources")
-        }
-        compileClasspath = sourceSets.main.output + configurations.compile + configurations.devtest
-        runtimeClasspath = output + compileClasspath + configurations.runtime
-    }
 }
 
 processResources {
@@ -102,7 +85,6 @@ dependencies {
     implementation ("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions.opentelemetryInstrumentationAlpha}") {
         exclude group: "org.slf4j", module: "slf4j-simple"
     }
-    devtest "org.slf4j:slf4j-api:${versions.slf4j}"
 }
 
 // region Publishing properties
@@ -115,28 +97,6 @@ whenPomConfigured = { p ->
 }
 
 // endregion Publishing properties
-/**
- * For building -devtest JAR which contains classes for calling internal code for graybox testing.
- */
-task devtestJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-    archiveClassifier.set("devtest")
-    dependsOn devtestClasses, assemble
-
-    // shadowJar.archiveFile doesn't work
-    from(zipTree(file("$buildDir/libs/${project.archivesBaseName}-${project.version}.jar"))) {
-        exclude "LICENSE"
-        exclude "NOTICE"
-    }
-    from sourceSets.devtest.output
-    configurations = []
-    manifest = shadowJar.manifest
-
-    relocate "org.slf4j", "io.opentelemetry.javaagent.slf4j"
-}
-
-artifacts {
-    devtest devtestJar
-}
 
 import org.apache.tools.ant.taskdefs.condition.Os
 import java.util.jar.JarFile
