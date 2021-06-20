@@ -62,7 +62,8 @@ dependencies {
         // TODO (kryalama) is this ok to exclude?
         //  "This dependency can be excluded if IntelliJ Credential is not being used for authentication
         //   via `IntelliJCredential` or `DefaultAzureCredential`"
-        // exclude group: 'org.linguafranca.pwdb', module: 'KeePassJava2'
+        //  NOTE this exclusion saves 6.5 mb !!!!
+        exclude group: 'org.linguafranca.pwdb', module: 'KeePassJava2'
     }
     implementation group: 'com.azure', name: 'azure-core', version: versions.azureCore
 
