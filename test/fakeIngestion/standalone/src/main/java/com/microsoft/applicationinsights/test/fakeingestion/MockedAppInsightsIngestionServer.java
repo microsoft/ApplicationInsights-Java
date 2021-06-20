@@ -1,7 +1,5 @@
 package com.microsoft.applicationinsights.test.fakeingestion;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Domain;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
@@ -12,9 +10,11 @@ import org.eclipse.jetty.servlet.ServletHolder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 
 public class MockedAppInsightsIngestionServer {
     public static final int DEFAULT_PORT = 6060;
@@ -64,7 +64,7 @@ public class MockedAppInsightsIngestionServer {
     }
 
     public int getCountForType(String type) {
-        Preconditions.checkNotNull(type, "type");
+        Objects.requireNonNull(type, "type");
         return getItemsEnvelopeDataType(type).size();
     }
 
@@ -94,7 +94,7 @@ public class MockedAppInsightsIngestionServer {
     }
 
     private <T extends Domain> List<T> getTelemetryDataByType(String type, boolean inRequestOnly) {
-        Preconditions.checkNotNull(type, "type");
+        Objects.requireNonNull(type, "type");
         List<Envelope> items = getItemsEnvelopeDataType(type);
         List<T> dataItems = new ArrayList<>();
         for (Envelope e : items) {
@@ -136,7 +136,8 @@ public class MockedAppInsightsIngestionServer {
     // this is used to filter out some sporadic messages that are captured via java.util.logging instrumentation
     public List<Envelope> waitForMessageItemsInRequest(final int numItems) throws Exception {
         List<Envelope> items = waitForItems(new Predicate<Envelope>() {
-            @Override public boolean apply(Envelope input) {
+            @Override
+            public boolean test(Envelope input) {
                 if (!input.getData().getBaseType().equals("MessageData")
                         || !input.getTags().containsKey("ai.operation.id")) {
                     return false;
@@ -154,7 +155,8 @@ public class MockedAppInsightsIngestionServer {
     // if operationId is null, then matches all items, otherwise only matches items with that operationId
     public List<Envelope> waitForItems(final String type, final int numItems, final String operationId) throws Exception {
         List<Envelope> items = waitForItems(new Predicate<Envelope>() {
-            @Override public boolean apply(Envelope input) {
+            @Override
+            public boolean test(Envelope input) {
                 return input.getData().getBaseType().equals(type)
                         && (operationId == null || operationId.equals(input.getTags().get("ai.operation.id")));
             }

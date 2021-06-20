@@ -3,8 +3,8 @@ package com.microsoft.applicationinsights.smoketest;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
-import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
@@ -398,7 +398,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> edList = mockedIngestion.waitForItems(new Predicate<Envelope>() {
             @Override
-            public boolean apply(Envelope input) {
+            public boolean test(Envelope input) {
                 if (!"ExceptionData".equals(input.getData().getBaseType())) {
                     return false;
                 }

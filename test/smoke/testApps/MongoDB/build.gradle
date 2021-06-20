@@ -2,7 +2,6 @@ apply plugin: "war"
 
 dependencies {
     implementation "org.mongodb:mongodb-driver:3.11.0"
-    implementation "com.google.guava:guava:27.1-android"
 
     compileOnly "javax.servlet:javax.servlet-api:3.0.1"
 }

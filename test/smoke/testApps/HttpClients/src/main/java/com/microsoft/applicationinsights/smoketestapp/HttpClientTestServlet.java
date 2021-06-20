@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.common.io.ByteStreams;
 import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
@@ -145,7 +144,11 @@ public class HttpClientTestServlet extends HttpServlet {
         // calling getContentType() first, since this triggered a bug previously in the instrumentation previously
         connection.getContentType();
         InputStream content = connection.getInputStream();
-        ByteStreams.exhaust(content);
+        // drain the content
+        byte[] buffer = new byte[1024];
+        int nRead;
+        while ((nRead = content.read(buffer)) != -1) {
+        }
         content.close();
         return connection.getResponseCode();
     }

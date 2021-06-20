@@ -11,8 +11,6 @@ dependencies {
     // this dependency is needed to make wildfly happy
     implementation "com.fasterxml.jackson.core:jackson-databind:2.9.4"
 
-    implementation "com.google.guava:guava:27.1-android"
-
     compileOnly "javax.servlet:javax.servlet-api:3.0.1"
 }
 

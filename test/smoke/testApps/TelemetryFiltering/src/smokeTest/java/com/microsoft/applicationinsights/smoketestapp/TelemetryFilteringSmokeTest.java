@@ -2,7 +2,6 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import java.util.List;
 
-import com.google.common.base.Stopwatch;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
@@ -12,6 +11,7 @@ import com.microsoft.applicationinsights.smoketest.TargetUri;
 import com.microsoft.applicationinsights.smoketest.UseAgent;
 import org.junit.*;
 
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -23,8 +23,9 @@ public class TelemetryFilteringSmokeTest extends AiSmokeTest {
     @TargetUri(value = "/health-check", callCount = 100)
     public void testSampling() throws Exception {
         // super super low chance that number of sampled requests is less than 25
-        Stopwatch stopwatch = Stopwatch.createStarted();
-        while (mockedIngestion.getCountForType("RequestData") < 25 && stopwatch.elapsed(SECONDS) < 10) {
+        long start = System.nanoTime();
+        while (mockedIngestion.getCountForType("RequestData") < 25
+                && NANOSECONDS.toSeconds(System.nanoTime() - start) < 10) {
         }
         // wait ten more seconds to before checking that we didn't receive too many
         Thread.sleep(SECONDS.toMillis(10));
@@ -47,7 +48,7 @@ public class TelemetryFilteringSmokeTest extends AiSmokeTest {
 
         Envelope rdEnvelope = rdList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
     }
@@ -65,8 +66,8 @@ public class TelemetryFilteringSmokeTest extends AiSmokeTest {
 
         Envelope rddEnvelope = rddList.get(0);
 
-        RequestData rd = (RequestData) ((Data) rdEnvelope.getData()).getBaseData();
-        RemoteDependencyData rdd = (RemoteDependencyData) ((Data) rddEnvelope.getData()).getBaseData();
+        RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+        RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
         assertTrue(rd.getSuccess());
         assertEquals("SQL", rdd.getType());

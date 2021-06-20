@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 
-import com.google.common.base.Joiner;
 import example.GreeterGrpc;
 import example.GreeterGrpc.GreeterBlockingStub;
 import example.GreeterGrpc.GreeterStub;
@@ -74,6 +73,6 @@ public class HelloController {
 
         channel.shutdown();
 
-        return "Sent and received: " + Joiner.on(", ").join(responses);
+        return "Sent and received: " + String.join(", ", responses);
     }
 }

@@ -2,13 +2,8 @@ apply plugin: "war"
 
 dependencies {
     implementation aiWebAutoJar
-    implementation "com.google.guava:guava:20.0"
 
     compileOnly "javax.servlet:javax.servlet-api:3.0.1"
-
-    smokeTestImplementation "com.google.guava:guava:23.0"
-
-    testImplementation "com.google.guava:guava:23.0" // VSCODE intellisense bug workaround
 
     implementation "log4j:log4j:1.2.17"
 }

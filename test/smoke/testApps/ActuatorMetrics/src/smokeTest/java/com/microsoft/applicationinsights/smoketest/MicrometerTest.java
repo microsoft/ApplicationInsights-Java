@@ -2,8 +2,8 @@ package com.microsoft.applicationinsights.smoketest;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
-import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
@@ -23,7 +23,7 @@ public class MicrometerTest extends AiSmokeTest {
 
         List<Envelope> metricItems = mockedIngestion.waitForItems(new Predicate<Envelope>() {
             @Override
-            public boolean apply(Envelope input) {
+            public boolean test(Envelope input) {
                 if (!input.getData().getBaseType().equals("MetricData")) {
                     return false;
                 }
