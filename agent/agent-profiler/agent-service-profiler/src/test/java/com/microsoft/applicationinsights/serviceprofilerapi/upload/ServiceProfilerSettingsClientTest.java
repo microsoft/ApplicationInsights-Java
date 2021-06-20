@@ -27,9 +27,9 @@ import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerSettingsClient;
-import io.reactivex.Maybe;
 import org.junit.*;
 import org.mockito.Mockito;
+import reactor.core.publisher.Mono;
 
 public class ServiceProfilerSettingsClientTest {
 
@@ -40,10 +40,10 @@ public class ServiceProfilerSettingsClientTest {
         Mockito.when(serviceProfilerClient.getSettings(Mockito.any())).thenReturn("");
 
         ServiceProfilerSettingsClient settingsClient = new ServiceProfilerSettingsClient(serviceProfilerClient);
-        Maybe<ProfilerConfiguration> result = settingsClient.pullSettings();
+        Mono<ProfilerConfiguration> result = settingsClient.pullSettings();
 
         try {
-            result.blockingGet();
+            result.block();
         } catch (Exception e) {
             //expected
             return;

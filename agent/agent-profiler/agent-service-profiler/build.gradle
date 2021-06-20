@@ -14,5 +14,4 @@ dependencies {
     implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
     implementation group: 'com.squareup.moshi', name: 'moshi-adapters', version: versions.moshi
     implementation group: 'com.azure', name: 'azure-storage-blob', version: versions.azureStorageBlob
-    implementation group: 'com.microsoft.rest.v2', name: 'client-runtime', version: versions.azureClientRuntime
 }

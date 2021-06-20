@@ -31,7 +31,7 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfil
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
-import io.reactivex.Maybe;
+import reactor.core.publisher.Mono;
 
 /**
  * Client that pulls setting from the service profiler endpoint and emits them if changed
@@ -50,23 +50,23 @@ public class ServiceProfilerSettingsClient {
      *
      * @return
      */
-    public Maybe<ProfilerConfiguration> pullSettings() {
+    public Mono<ProfilerConfiguration> pullSettings() {
         try {
             String config = serviceProfilerClient.getSettings(lastModified);
             ProfilerConfiguration serviceProfilerConfiguration = toServiceProfilerConfiguration(config);
             if (serviceProfilerConfiguration != null && !serviceProfilerConfiguration.getLastModified().equals(lastModified)) {
                 lastModified = serviceProfilerConfiguration.getLastModified();
-                return Maybe.just(serviceProfilerConfiguration);
+                return Mono.just(serviceProfilerConfiguration);
             }
-            return Maybe.empty();
+            return Mono.empty();
         } catch (HttpResponseException e) {
             if (e.getResponse().getStatusCode() == 304) {
-                return Maybe.empty();
+                return Mono.empty();
             } else {
-                return Maybe.error(e);
+                return Mono.error(e);
             }
         } catch (Exception e) {
-            return Maybe.error(e);
+            return Mono.error(e);
         }
     }
 
