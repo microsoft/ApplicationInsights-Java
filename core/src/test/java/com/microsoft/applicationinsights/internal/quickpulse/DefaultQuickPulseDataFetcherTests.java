@@ -8,7 +8,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -60,21 +59,16 @@ public class DefaultQuickPulseDataFetcherTests {
     }
 
     @Test
-    public void endpointChangesWithRedirectHeaderAndGetNewPingInterval() throws IOException {
-        Map<String, String> headers = new HashMap();
+    public void endpointChangesWithRedirectHeaderAndGetNewPingInterval() {
+        Map<String, String> headers = new HashMap<>();
         headers.put("x-ms-qps-service-polling-interval-hint", "1000");
         headers.put("x-ms-qps-service-endpoint-redirect", "https://new.endpoint.com");
         headers.put("x-ms-qps-subscribed", "true");
         HttpHeaders httpHeaders = new HttpHeaders(headers);
-        final HttpPipeline httpPipeline = new HttpPipelineBuilder()
-                .httpClient(new HttpClient() {
-                    @Override
-                    public Mono<HttpResponse> send(HttpRequest request) {
-                        return Mono.just(new MockHttpResponse(request, 200, httpHeaders));
-                    }
-                })
+        HttpPipeline httpPipeline = new HttpPipelineBuilder()
+                .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))
                 .build();
-        final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, new TelemetryClient(), "machine1",
+        QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, new TelemetryClient(), "machine1",
                 "instance1", "role1", "qpid123");
 
         QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);

@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.internal.util;
+package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.azure.core.util.serializer.JacksonAdapter;
-import com.azure.core.util.serializer.SerializerAdapter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -15,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+// TODO (trask) find a way to share this with its copy under core tests
 public class MockHttpResponse extends HttpResponse {
 
     private final int statusCode;
@@ -22,6 +21,10 @@ public class MockHttpResponse extends HttpResponse {
     private final HttpHeaders headers;
 
     private final byte[] bodyBytes;
+
+    public MockHttpResponse(HttpRequest request, int statusCode) {
+        this(request, statusCode, new HttpHeaders());
+    }
 
     public MockHttpResponse(HttpRequest request, int statusCode, HttpHeaders headers) {
         this(request, statusCode, headers, new byte[0]);

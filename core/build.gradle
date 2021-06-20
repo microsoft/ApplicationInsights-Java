@@ -47,7 +47,6 @@ dependencies {
     implementation group: 'commons-io', name: 'commons-io', version: versions.commonsIo
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
     implementation group: 'org.apache.commons', name: 'commons-text', version: versions.commonsText
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
     implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
     implementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
@@ -61,7 +60,7 @@ dependencies {
         //   via `IntelliJCredential` or `DefaultAzureCredential`"
         // exclude group: 'org.linguafranca.pwdb', module: 'KeePassJava2'
     }
-    implementation group: 'com.azure', name: 'azure-core', version: '1.17.0'
+    implementation group: 'com.azure', name: 'azure-core', version: versions.azureCore
 
     implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: versions.opentelemetry
     implementation group: 'org.jctools', name: 'jctools-core', version: '3.3.0'

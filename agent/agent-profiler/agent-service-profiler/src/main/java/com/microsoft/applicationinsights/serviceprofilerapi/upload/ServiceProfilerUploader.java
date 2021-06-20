@@ -39,7 +39,6 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.Time
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.OsPlatformProvider;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -214,7 +213,7 @@ public class ServiceProfilerUploader {
     protected UploadFinishArgs reportUploadComplete(UUID profileId, Response<BlockBlobItem> response) throws UploadFailedException {
         int statusCode = response.getStatusCode();
         // Success 2xx
-        if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
+        if (statusCode >= 200 && statusCode < 300) {
             ArtifactAcceptedResponse uploadResponse;
             try {
                 uploadResponse = serviceProfilerClient.reportUploadFinish(profileId, response.getValue().getETag());

@@ -49,7 +49,6 @@ dependencies {
 
     implementation group: 'commons-codec', name: 'commons-codec', version: versions.commonsCodec
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
 
     implementation group: 'org.checkerframework', name: 'checker-qual', version: versions.checker
     implementation 'com.google.code.findbugs:annotations:3.0.1'
@@ -68,7 +67,7 @@ dependencies {
     implementation project(':agent:exporter')
 
     implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.4'
-    implementation group: 'com.azure', name: 'azure-core', version: '1.17.0'
+    implementation group: 'com.azure', name: 'azure-core', version: versions.azureCore
 
     implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-tracing-incubator', version: versions.opentelemetryAlpha
     implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-autoconfigure', version: versions.opentelemetryAlpha

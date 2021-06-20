@@ -61,12 +61,7 @@ public class DefaultQuickPulsePingSenderTests {
         headers.put("x-ms-qps-subscribed", "true");
         HttpHeaders httpHeaders = new HttpHeaders(headers);
         final HttpPipeline httpPipeline = new HttpPipelineBuilder()
-                .httpClient(new HttpClient() {
-                    @Override
-                    public Mono<HttpResponse> send(HttpRequest request) {
-                        return Mono.just(new MockHttpResponse(request, 200, httpHeaders));
-                    }
-                })
+                .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))
                 .build();
         final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, new TelemetryClient(), "machine1",
                 "instance1", "role1", "qpid123");

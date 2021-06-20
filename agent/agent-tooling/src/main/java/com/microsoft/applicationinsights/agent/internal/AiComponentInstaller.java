@@ -39,7 +39,6 @@ import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
-import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.config.*;
 import com.microsoft.applicationinsights.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.internal.profiler.ProfilerServiceInitializer;

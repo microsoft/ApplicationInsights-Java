@@ -25,14 +25,13 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.azure.core.exception.HttpResponseException;
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 import io.reactivex.Maybe;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
 
 /**
  * Client that pulls setting from the service profiler endpoint and emits them if changed
@@ -61,7 +60,7 @@ public class ServiceProfilerSettingsClient {
             }
             return Maybe.empty();
         } catch (HttpResponseException e) {
-            if (e.getStatusCode() == HttpStatus.SC_NOT_MODIFIED) {
+            if (e.getResponse().getStatusCode() == 304) {
                 return Maybe.empty();
             } else {
                 return Maybe.error(e);

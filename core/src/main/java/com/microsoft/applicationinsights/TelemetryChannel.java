@@ -13,7 +13,6 @@ import com.microsoft.applicationinsights.internal.authentication.AadAuthenticati
 import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
 import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -125,7 +124,7 @@ class TelemetryChannel {
                 .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
                 .subscribe(response -> {
                     // TODO parse response, looking for throttling, partial successes, etc
-                    if(response.getStatusCode() == HttpStatus.SC_UNAUTHORIZED || response.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
+                    if(response.getStatusCode() == 401 || response.getStatusCode() == 403) {
                         logger.warn("Failed to send telemetry with status code:{} ,please check your credentials", response.getStatusCode());
                     }
                 }, error -> {
