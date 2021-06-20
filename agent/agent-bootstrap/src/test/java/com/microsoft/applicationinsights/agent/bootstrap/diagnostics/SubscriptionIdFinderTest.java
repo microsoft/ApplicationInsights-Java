@@ -1,22 +1,29 @@
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics;
 
-import org.junit.*;
-import org.junit.contrib.java.lang.system.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(SystemStubsExtension.class)
 public class SubscriptionIdFinderTest {
-    @Rule
+
+    @SystemStub
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
     private SubscriptionIdFinder subIdFinder;
 
-    @Before
+    @BeforeEach
     public void setup() {
         subIdFinder = new SubscriptionIdFinder();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         subIdFinder = null;
     }

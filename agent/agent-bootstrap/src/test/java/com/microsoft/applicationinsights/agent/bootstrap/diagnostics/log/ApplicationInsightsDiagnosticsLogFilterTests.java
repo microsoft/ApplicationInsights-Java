@@ -5,9 +5,11 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.spi.FilterReply;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsTestHelper;
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class ApplicationInsightsDiagnosticsLogFilterTests {
@@ -15,7 +17,7 @@ public class ApplicationInsightsDiagnosticsLogFilterTests {
 
     private ILoggingEvent mockEvent;
 
-    @Before
+    @BeforeEach
     public void setup() {
         DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
         filter = new ApplicationInsightsDiagnosticsLogFilter();
@@ -24,7 +26,7 @@ public class ApplicationInsightsDiagnosticsLogFilterTests {
         when(mockEvent.getLoggerName()).thenReturn("test");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         mockEvent = null;
         filter = null;

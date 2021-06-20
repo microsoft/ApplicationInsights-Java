@@ -11,31 +11,38 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsTestHelper;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi.Builder;
-import org.hamcrest.Matchers;
-import org.junit.*;
-import org.junit.contrib.java.lang.system.*;
-import org.junit.rules.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
+import uk.org.webcompere.systemstubs.properties.SystemProperties;
 
 import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile.initLogDir;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+@ExtendWith(SystemStubsExtension.class)
 public class StatusFileTests {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    File tempFolder;
 
-    @Rule
+    @SystemStub
     public EnvironmentVariables envVars = new EnvironmentVariables();
 
-    @Rule
-    public ClearSystemProperties clearProp = new ClearSystemProperties("site.logdir");
+    @SystemStub
+    public SystemProperties systemProperties = new SystemProperties();
 
     private final String testIkey = "fake-ikey-123";
     private final String fakeVersion = "0.0.1-test";
 
-    @Before
+    @BeforeEach
     public void setup() {
         // TODO these tests currently only pass on windows
         assumeTrue(DiagnosticsHelper.isOsWindows());
@@ -43,7 +50,7 @@ public class StatusFileTests {
         envVars.set(AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE, fakeVersion);
     }
 
-    @After
+    @AfterEach
     public void resetStaticVariables() {
         DiagnosticsTestHelper.reset();
     }
@@ -93,24 +100,22 @@ public class StatusFileTests {
         int size = 5;
         if (key != null) {
             size = 6;
-            assertThat(inputMap, Matchers.<String, Object>hasEntry(key, value));
+            assertThat(inputMap).containsEntry(key, value);
         }
-        assertThat(inputMap.entrySet(), hasSize(size));
-        assertThat(inputMap, hasKey("MachineName"));
-        assertThat(inputMap, Matchers.<String, Object>hasEntry("Ikey", testIkey));
-        assertThat(inputMap, hasKey("PID"));
-        assertThat(inputMap, Matchers.<String, Object>hasEntry("AppType", "java"));
-        assertThat(inputMap, Matchers.<String, Object>hasEntry("ExtensionVersion", fakeVersion));
+        assertThat(inputMap).hasSize(size);
+        assertThat(inputMap).containsKey("MachineName");
+        assertThat(inputMap).containsEntry("Ikey", testIkey);
+        assertThat(inputMap).containsKey("PID");
+        assertThat(inputMap).containsEntry("AppType", "java");
+        assertThat(inputMap).containsEntry("ExtensionVersion", fakeVersion);
     }
 
     @Test
     public void connectionStringWorksToo() {
         String ikey = "a-different-ikey-456789";
-        envVars.clear("APPINSIGHTS_INSTRUMENTATIONKEY");
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=" + ikey);
         final Map<String, Object> jsonMap = StatusFile.getJsonMap();
-        System.out.println("Map contents: " + Arrays.toString(jsonMap.entrySet().toArray()));
-        assertThat(jsonMap, Matchers.<String, Object>hasEntry("Ikey", ikey));
+        assertThat(jsonMap).containsEntry("Ikey", ikey);
     }
 
     @Test
@@ -120,20 +125,19 @@ public class StatusFileTests {
     }
 
     private void runWriteFileTest(boolean enabled) throws Exception {
-        final File tempFolder = this.tempFolder.newFolder();
-        assertTrue("Verify temp folder is directory", tempFolder.isDirectory());
-        assertThat("Verify temp folder is empty", tempFolder.list(), emptyArray());
+        assertTrue(tempFolder.isDirectory());
+        assertThat(tempFolder.list()).isEmpty();
 
         StatusFile.directory = tempFolder.getAbsolutePath();
         StatusFile.write();
         pauseForFileWrite();
 
         if (enabled) {
-            assertThat(tempFolder.list(), arrayWithSize(1));
+            assertThat(tempFolder.list()).hasSize(1);
             final Map map = parseJsonFile(tempFolder);
             assertMapHasExpectedInformation(map);
         } else {
-            assertThat(tempFolder.list(), emptyArray());
+            assertThat(tempFolder.list()).isEmpty();
         }
     }
 
@@ -153,16 +157,15 @@ public class StatusFileTests {
     public void doesNotWriteIfNotAppService() throws Exception {
         DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(false); // just to be sure
 
-        final File tempFolder = this.tempFolder.newFolder();
         StatusFile.directory = tempFolder.getAbsolutePath();
         assertTrue(tempFolder.isDirectory());
-        assertThat("Before write()", tempFolder.list(), emptyArray());
+        assertThat(tempFolder.list()).isEmpty();
         StatusFile.write();
         pauseForFileWrite();
-        assertThat("After write()", tempFolder.list(), emptyArray());
+        assertThat(tempFolder.list()).isEmpty();
         StatusFile.putValueAndWrite("shouldNot", "write");
         pauseForFileWrite();
-        assertThat("After write()", tempFolder.list(), emptyArray());
+        assertThat(tempFolder.list()).isEmpty();
     }
 
     @Test
@@ -171,21 +174,19 @@ public class StatusFileTests {
         try {
             DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
 
-
-            final File tempFolder = this.tempFolder.newFolder();
             StatusFile.directory = tempFolder.getAbsolutePath();
             assertTrue(tempFolder.isDirectory());
-            assertThat(tempFolder.list(), emptyArray());
+            assertThat(tempFolder.list()).isEmpty();
             StatusFile.write();
             pauseForFileWrite();
-            assertThat(tempFolder.list(), arrayWithSize(1));
+            assertThat(tempFolder.list()).hasSize(1);
             Map map = parseJsonFile(tempFolder);
             assertMapHasExpectedInformation(map);
 
             final String value = "value123";
             StatusFile.putValueAndWrite(key, value);
             pauseForFileWrite();
-            assertThat(tempFolder.list(), arrayWithSize(1));
+            assertThat(tempFolder.list()).hasSize(1);
             map = parseJsonFile(tempFolder);
             assertMapHasExpectedInformation(map, key, value);
 
@@ -199,9 +200,9 @@ public class StatusFileTests {
     public void fileNameHasMachineNameAndPid() {
         final Map<String, Object> jsonMap = StatusFile.getJsonMap();
         final String s = StatusFile.constructFileName(jsonMap);
-        assertThat(s, startsWith(StatusFile.FILENAME_PREFIX));
-        assertThat(s, endsWith(StatusFile.FILE_EXTENSION));
-        assertThat(s, containsString(jsonMap.get("MachineName").toString()));
-        assertThat(s, containsString(jsonMap.get("PID").toString()));
+        assertThat(s).startsWith(StatusFile.FILENAME_PREFIX);
+        assertThat(s).endsWith(StatusFile.FILE_EXTENSION);
+        assertThat(s).contains(jsonMap.get("MachineName").toString());
+        assertThat(s).contains(jsonMap.get("PID").toString());
     }
 }

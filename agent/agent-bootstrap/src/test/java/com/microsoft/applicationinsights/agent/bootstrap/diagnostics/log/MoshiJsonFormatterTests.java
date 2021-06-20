@@ -1,22 +1,24 @@
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.*;
-
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MoshiJsonFormatterTests {
 
     private MoshiJsonFormatter formatter;
 
-    @Before
+    @BeforeEach
     public void setup() {
         formatter = new MoshiJsonFormatter();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         formatter = null;
     }
@@ -41,5 +43,4 @@ public class MoshiJsonFormatterTests {
                 "  \"s1\": \"v1\"\n" +
                 "}", formatter.toJsonString(m));
     }
-
 }
