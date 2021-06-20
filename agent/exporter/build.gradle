@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.johnrengelman.shadow'
+    id "com.github.johnrengelman.shadow"
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
@@ -10,17 +10,17 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk', version: versions.opentelemetry
+    implementation "io.opentelemetry:opentelemetry-sdk:${versions.opentelemetry}"
 
     // this is needed in order to access AiAppId for appId exchange data
-    compileOnly group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
+    compileOnly "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
 
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+    implementation "org.slf4j:slf4j-api:${versions.slf4j}"
 
-    implementation project(path: ':core')
+    implementation project(path: ":core")
 
-    implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.4'
-    implementation group: 'com.azure', name: 'azure-core', version: versions.azureCore
+    implementation "com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4"
+    implementation "com.azure:azure-core:${versions.azureCore}"
 
-    testImplementation group: 'junit', name: 'junit', version: versions.junit
+    testImplementation "junit:junit:${versions.junit}"
 }

@@ -1,11 +1,11 @@
-apply plugin: 'base'
+apply plugin: "base"
 
 ext {
     dependencyContainers = []
 }
 
 subprojects {
-    apply plugin: 'java'
+    apply plugin: "java"
 
     repositories {
         mavenCentral()
@@ -17,9 +17,9 @@ subprojects {
             java {
                 // compileClasspath += main.output + test.output
                 // runtimeClasspath += main.output + test.output
-                srcDir file('src/smokeTest/java')
+                srcDir file("src/smokeTest/java")
             }
-            resources.srcDir file('src/smokeTest/resources')
+            resources.srcDir file("src/smokeTest/resources")
         }
     }
 
@@ -31,24 +31,24 @@ subprojects {
     dependencies {
         compileOnly aiAgentJar // this is just to force building the agent first
 
-        smokeTestImplementation project(':test:smoke:framework:testCore')
-        smokeTestImplementation project(':test:smoke:framework:utils')
-        smokeTestImplementation project(':test:fakeIngestion:standalone')
-        smokeTestImplementation 'org.hamcrest:hamcrest-core:1.3'
-        smokeTestImplementation 'org.hamcrest:hamcrest-library:1.3'
-        smokeTestImplementation group: 'junit', name: 'junit', version: versions.junit
+        smokeTestImplementation project(":test:smoke:framework:testCore")
+        smokeTestImplementation project(":test:smoke:framework:utils")
+        smokeTestImplementation project(":test:fakeIngestion:standalone")
+        smokeTestImplementation "org.hamcrest:hamcrest-core:1.3"
+        smokeTestImplementation "org.hamcrest:hamcrest-library:1.3"
+        smokeTestImplementation "junit:junit:${versions.junit}"
     }
 
     // This task addresses the issue of dependency containers not existing when the app runs and the test fails due to timeout.
     task pullDependencyContainers() {
-        group 'Smoke Test'
-        description 'Pulls dependency containers from docker hub'
+        group "Smoke Test"
+        description "Pulls dependency containers from docker hub"
         doLast {
             dependencyContainers.each { dc ->
                 logger.info "Pulling $dc..."
                 exec {
-                    executable 'docker'
-                    args 'pull', "$dc"
+                    executable "docker"
+                    args "pull", "$dc"
                 }
             }
         }
@@ -56,11 +56,11 @@ subprojects {
     }
 
     task smokeTest(type: Test) {
-        group 'Smoke Test'
-        description 'Runs all smoke tests'
+        group "Smoke Test"
+        description "Runs all smoke tests"
 
         // TODO this adds the whole tree rooted at :appServers. Could this depend on :appServers which depends on :appServers:*:build?
-        dependsOn project(':test:smoke:appServers').getTasksByName('buildDockerImage', true)
+        dependsOn project(":test:smoke:appServers").getTasksByName("buildDockerImage", true)
         dependsOn assemble
         dependsOn pullDependencyContainers
         mustRunAfter assemble
@@ -72,7 +72,7 @@ subprojects {
     }
 
     processSmokeTestResources {
-        group 'Smoke Test'
+        group "Smoke Test"
         description = "Copies test app WARs and shared resources into smoke test resources folder"
         outputs.upToDateWhen { false }
         dependsOn assemble
@@ -103,8 +103,8 @@ subprojects {
         reports.html.destination = file("${reporting.baseDir}/${name}")
 
         testLogging {
-            events 'FAILED', 'PASSED', 'SKIPPED', 'STANDARD_OUT', 'STANDARD_ERROR', 'STARTED'
-            exceptionFormat 'FULL'
+            events "FAILED", "PASSED", "SKIPPED", "STANDARD_OUT", "STANDARD_ERROR", "STARTED"
+            exceptionFormat "FULL"
             showExceptions true
             showCauses true
             showStackTraces true

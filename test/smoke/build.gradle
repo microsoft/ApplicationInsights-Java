@@ -1,9 +1,8 @@
-
-apply plugin: 'base'
+apply plugin: "base"
 
 allprojects {
     ext {
-        sharedOutputRoot = project(':test:smoke').projectDir.absolutePath+'/shared-tmp'
+        sharedOutputRoot = project(":test:smoke").projectDir.absolutePath+"/shared-tmp"
         sharedResourcesDir = "$sharedOutputRoot/resources"
     }
 }
@@ -12,27 +11,27 @@ subprojects {
     ext {
         /*
             By default, the Applciation Insights jars are built and used by the smokeTests.
-            To use different jars for smokeTests, reassign these variables to point the path to the jar using this 'files' function.
+            To use different jars for smokeTests, reassign these variables to point the path to the jar using this "files" function.
             For example,
-                aiCoreJar = files('c:\\core_jar_from_previous_build\\applicationinsights-core-vSomething.jar')
+                aiCoreJar = files("c:\\core_jar_from_previous_build\\applicationinsights-core-vSomething.jar")
         */
-        aiAgentJar = project(':agent:agent')
-        aiCoreJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: versions.aiLegacySdk)
-        aiWebJar =  dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web', version: versions.aiLegacySdk)
-        aiWebAutoJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-web-auto', version: versions.aiLegacySdk)
-        springBootStarterJar = dependencies.create(group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter', version: versions.aiLegacySdk)
+        aiAgentJar = project(":agent:agent")
+        aiCoreJar = dependencies.create(group: "com.microsoft.azure", name: "applicationinsights-core", version: versions.aiLegacySdk)
+        aiWebJar =  dependencies.create(group: "com.microsoft.azure", name: "applicationinsights-web", version: versions.aiLegacySdk)
+        aiWebAutoJar = dependencies.create(group: "com.microsoft.azure", name: "applicationinsights-web-auto", version: versions.aiLegacySdk)
+        springBootStarterJar = dependencies.create(group: "com.microsoft.azure", name: "applicationinsights-spring-boot-starter", version: versions.aiLegacySdk)
     }
 }
 
 configurations {
-    smokeTest.exclude group: 'com.microsoft.azure', name: 'applicationinsights-core'
-    smokeTest.exclude group: 'com.microsoft.azure', name: 'applicationinsights-web'
-    smokeTest.exclude group: 'com.microsoft.azure', name: 'applicationinsights-web-auto'
-    smokeTest.exclude group: 'com.microsoft.azure', name: 'applicationinsights-spring-boot-starter'
+    smokeTest.exclude group: "com.microsoft.azure", name: "applicationinsights-core"
+    smokeTest.exclude group: "com.microsoft.azure", name: "applicationinsights-web"
+    smokeTest.exclude group: "com.microsoft.azure", name: "applicationinsights-web-auto"
+    smokeTest.exclude group: "com.microsoft.azure", name: "applicationinsights-spring-boot-starter"
 }
 
 clean {
     delete file(sharedOutputRoot)
 }
 
-defaultTasks 'build'
+defaultTasks "build"

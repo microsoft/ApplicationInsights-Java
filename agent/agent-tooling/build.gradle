@@ -20,7 +20,7 @@
  */
 
 plugins {
-    id 'com.github.johnrengelman.shadow'
+    id "com.github.johnrengelman.shadow"
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
@@ -36,50 +36,50 @@ dependencies {
 
     // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader
     // only complaint so far about moshi is that it doesn't give line numbers when there are json formatting errors
-    implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
+    implementation "com.squareup.moshi:moshi:${versions.moshi}"
 
-    implementation group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-tooling', version: versions.opentelemetryInstrumentationAlpha
-    implementation group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-extension-api', version: versions.opentelemetryInstrumentationAlpha
-    implementation group: 'net.bytebuddy', name: 'byte-buddy', version: versions.bytebuddy
+    implementation "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions.opentelemetryInstrumentationAlpha}"
+    implementation "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions.opentelemetryInstrumentationAlpha}"
+    implementation "net.bytebuddy:byte-buddy:${versions.bytebuddy}"
 
-    implementation group: 'commons-codec', name: 'commons-codec', version: versions.commonsCodec
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
+    implementation "commons-codec:commons-codec:${versions.commonsCodec}"
+    implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
 
-    implementation group: 'org.checkerframework', name: 'checker-qual', version: versions.checker
-    implementation 'com.google.code.findbugs:annotations:3.0.1'
+    implementation "org.checkerframework:checker-qual:${versions.checker}"
+    implementation "com.google.code.findbugs:annotations:3.0.1"
 
-    implementation(project(':core')) {
+    implementation(project(":core")) {
         // excluding commons-logging and replacing it with jcl-over-slf4j (below)
         // in order to pick up logging from apache http client
-        exclude group: 'commons-logging', module: 'commons-logging'
+        exclude "commons-logging", module: "commons-logging"
     }
-    implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: versions.slf4j
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: versions.logback
-    implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: versions.logbackJson
+    implementation "org.slf4j:jcl-over-slf4j:${versions.slf4j}"
+    implementation "ch.qos.logback:logback-classic:${versions.logback}"
+    implementation "ch.qos.logback.contrib:logback-json-classic:${versions.logbackJson}"
 
     implementation project(":agent:agent-profiler:agent-profiler-api")
 
-    implementation project(':agent:exporter')
+    implementation project(":agent:exporter")
 
-    implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.4'
-    implementation group: 'com.azure', name: 'azure-core', version: versions.azureCore
+    implementation "com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4"
+    implementation "com.azure:azure-core:${versions.azureCore}"
 
-    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-tracing-incubator', version: versions.opentelemetryAlpha
-    implementation group: 'io.opentelemetry', name: 'opentelemetry-sdk-extension-autoconfigure', version: versions.opentelemetryAlpha
+    implementation "io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator:${versions.opentelemetryAlpha}"
+    implementation "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions.opentelemetryAlpha}"
 
-    implementation group: 'org.apache.commons', name: 'commons-text', version: versions.commonsText
+    implementation "org.apache.commons:commons-text:${versions.commonsText}"
 
-    compileOnly project(':agent:agent-bootstrap')
-    compileOnly group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
+    compileOnly project(":agent:agent-bootstrap")
+    compileOnly "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
 
-    testImplementation project(':agent:agent-bootstrap')
-    testImplementation group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
+    testImplementation project(":agent:agent-bootstrap")
+    testImplementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
 
-    testImplementation group: 'com.google.guava', name: 'guava', version: versions.guava
+    testImplementation "com.google.guava:guava:${versions.guava}"
 
-    testImplementation group: 'junit', name: 'junit', version: versions.junit
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
-    testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: versions.systemRules
+    testImplementation "junit:junit:${versions.junit}"
+    testImplementation "org.hamcrest:hamcrest-core:${versions.hamcrest}"
+    testImplementation "org.hamcrest:hamcrest-library:${versions.hamcrest}"
+    testImplementation "org.mockito:mockito-core:${versions.mockito}"
+    testImplementation "com.github.stefanbirkner:system-rules:${versions.systemRules}"
 }

@@ -33,7 +33,7 @@ sourceSets {
 
 import com.microsoft.applicationinsights.build.tasks.PropsFileGen
 
-archivesBaseName = 'applicationinsights-core'
+archivesBaseName = "applicationinsights-core"
 
 repositories {
     // maven local is needed for locally built otel fork
@@ -49,50 +49,50 @@ dependencies {
     implementation project(":agent:agent-profiler:agent-alerting-api")
     implementation project(":agent:agent-profiler:agent-alerting")
     implementation project(":agent:agent-gc-monitor:gc-monitor-api")
-    implementation group: 'commons-io', name: 'commons-io', version: versions.commonsIo
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
-    implementation group: 'org.apache.commons', name: 'commons-text', version: versions.commonsText
-    implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
-    implementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
-    implementation group: 'com.github.oshi', name:'oshi-core', version: versions.oshi
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+    implementation "commons-io:commons-io:${versions.commonsIo}"
+    implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
+    implementation "org.apache.commons:commons-text:${versions.commonsText}"
+    implementation "com.squareup.moshi:moshi:${versions.moshi}"
+    implementation "com.google.code.gson:gson:${versions.gson}"
+    implementation "com.github.oshi", name:"oshi-core:${versions.oshi}"
+    implementation "org.slf4j:slf4j-api:${versions.slf4j}"
 
-    implementation group: 'com.azure', name: 'azure-monitor-opentelemetry-exporter', version: '1.0.0-beta.4'
-    implementation(group: 'com.azure', name: 'azure-identity', version: '1.2.4') {
+    implementation "com.azure:azure-monitor-opentelemetry-exporter", version: "1.0.0-beta.4"
+    implementation("com.azure:azure-identity", version: "1.2.4") {
         // TODO (kryalama) is this ok to exclude?
         //  "This dependency can be excluded if IntelliJ Credential is not being used for authentication
         //   via `IntelliJCredential` or `DefaultAzureCredential`"
         //  NOTE this exclusion saves 6.5 mb !!!!
-        exclude group: 'org.linguafranca.pwdb', module: 'KeePassJava2'
+        exclude group: "org.linguafranca.pwdb", module: "KeePassJava2"
     }
-    implementation group: 'com.azure', name: 'azure-core', version: versions.azureCore
+    implementation "com.azure:azure-core:${versions.azureCore}"
 
-    implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: versions.opentelemetry
-    implementation group: 'org.jctools', name: 'jctools-core', version: '3.3.0'
+    implementation "io.opentelemetry:opentelemetry-api:${versions.opentelemetry}"
+    implementation "org.jctools:jctools-core:3.3.0"
 
     implementation "org.checkerframework:checker-qual:3.14.0"
 
     // to use the cache from opentelemetry javaagent
-    implementation group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api-caching', version: versions.opentelemetryInstrumentationAlpha
+    implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:${versions.opentelemetryInstrumentationAlpha}"
 
-    testImplementation group: 'junit', name: 'junit', version: versions.junit
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
-    testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: versions.systemRules
-    testImplementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
-    testImplementation group: 'io.github.hakky54', name: 'logcaptor', version: versions.logcaptor
+    testImplementation "junit:junit:${versions.junit}"
+    testImplementation "org.hamcrest:hamcrest-core:${versions.hamcrest}"
+    testImplementation "org.hamcrest:hamcrest-library:${versions.hamcrest}"
+    testImplementation "org.mockito:mockito-core:${versions.mockito}"
+    testImplementation "com.github.stefanbirkner:system-rules:${versions.systemRules}"
+    testImplementation "com.google.code.gson:gson:${versions.gson}"
+    testImplementation "io.github.hakky54:logcaptor:${versions.logcaptor}"
 
     testImplementation project(":agent:agent-profiler:agent-service-profiler")
-    testImplementation group: 'com.microsoft.jfr', name: 'jfr-streaming', version: versions.microsoftJfrStreaming
-    testImplementation group: 'com.azure', name: 'azure-storage-blob', version: versions.azureStorageBlob
+    testImplementation "com.microsoft.jfr:jfr-streaming:${versions.microsoftJfrStreaming}"
+    testImplementation "com.azure:azure-storage-blob:${versions.azureStorageBlob}"
 
-    forTheDLL 'com.microsoft.azure:applicationinsights-core:2.6.2'
+    forTheDLL "com.microsoft.azure:applicationinsights-core:2.6.2"
 }
 
 task copyTheDLL(type: Copy) {
     from zipTree(configurations.forTheDLL.singleFile).matching {
-        include '*.dll'
+        include "*.dll"
     }
     into "$buildDir/resources/main"
 }

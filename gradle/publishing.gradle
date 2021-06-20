@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-apply plugin: 'maven'
+apply plugin: "maven"
 
 ext {
     projectPomName = ""
@@ -93,7 +93,7 @@ install {
 // generates a pom file "beside" the jar file
 task generatePom {
     doLast {
-        def pomFileName = jar.archiveFileName.get().replaceFirst(/\.jar$/, '.pom')
+        def pomFileName = jar.archiveFileName.get().replaceFirst(/\.jar$/, ".pom")
         def pomFileObj = jar.destinationDirectory.file(pomFileName)
         def pomObject = updatePomWithGeneralProjectInformation(pom())
         pomObject.writeTo(pomFileObj)
@@ -146,7 +146,7 @@ def updatePomWithGeneralProjectInformation(pomObject) {
 }
 
 task prepareSourcesArchive(type: Jar) {
-    archiveClassifier = 'sources'
+    archiveClassifier = "sources"
     from sourceSets.main.allJava
     doFirst {
         archiveFileName = "$archivesBaseName-$version-sources.jar"
@@ -154,7 +154,7 @@ task prepareSourcesArchive(type: Jar) {
 }
 
 task prepareJavadocArchive(type: Jar){
-    archiveClassifier = 'javadoc'
+    archiveClassifier = "javadoc"
     from "$docsDir/javadoc"
     doFirst {
         archiveFileName = "$archivesBaseName-$version-javadoc.jar"
@@ -165,7 +165,7 @@ task prepareJavadocArchive(type: Jar){
 task copyLibsToGlobalArtifactsFolder(type: Copy) {
     from "$buildDir/$libsDirName"
     into "$artifactsDirectoryRoot"
-    exclude '**/windows/**'
+    exclude "**/windows/**"
     dependsOn assemble, prepareSourcesArchive, prepareJavadocArchive, generatePom
 }
 

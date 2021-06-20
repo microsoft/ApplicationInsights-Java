@@ -1,16 +1,17 @@
-apply plugin: 'java-library'
+apply plugin: "java-library"
 
+// TODO (trask) is this needed?
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
-    implementation group: 'junit', name: 'junit', version: versions.junit
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
-    implementation project(':test:smoke:framework:utils')
-    implementation project(':test:fakeIngestion:standalone')
-    implementation project(':test:fakeIngestion:servlet')
+    implementation "com.google.guava:guava:${versions.guava}"
+    implementation "junit:junit:${versions.junit}"
+    implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
+    implementation project(":test:smoke:framework:utils")
+    implementation project(":test:fakeIngestion:standalone")
+    implementation project(":test:fakeIngestion:servlet")
 }
 
 tasks.withType(JavaCompile) {

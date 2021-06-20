@@ -25,23 +25,23 @@ task generateVersionProperties(type: PropsFileGen) {
 processResources.dependsOn generateVersionProperties
 
 dependencies {
-    implementation (group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-bootstrap', version: versions.opentelemetryInstrumentationAlpha) {
-        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    implementation ("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions.opentelemetryInstrumentationAlpha}") {
+        exclude group: "org.slf4j", module: "slf4j-simple"
     }
-    implementation group: 'io.opentelemetry.instrumentation', name: 'opentelemetry-instrumentation-api', version: versions.opentelemetryInstrumentationAlpha
-    implementation group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-api', version: versions.opentelemetryInstrumentationAlpha
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: versions.logback
-    implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: versions.logbackJson
+    implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions.opentelemetryInstrumentationAlpha}"
+    implementation "io.opentelemetry.javaagent:opentelemetry-javaagent-api:${versions.opentelemetryInstrumentationAlpha}"
+    implementation "ch.qos.logback:logback-classic:${versions.logback}"
+    implementation "ch.qos.logback.contrib:logback-json-classic:${versions.logbackJson}"
 
     // not using gson because it has dependency on java.sql.*, which is not available in Java 9+ bootstrap class loader
-    // only complaint so far about moshi is that it doesn't give line numbers when there are json formatting errors
-    implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
+    // only complaint so far about moshi is that it doesn"t give line numbers when there are json formatting errors
+    implementation "com.squareup.moshi:moshi:${versions.moshi}"
 
-    implementation project(path: ':etw:java')
+    implementation project(path: ":etw:java")
 
-    testImplementation group: 'junit', name: 'junit', version: versions.junit
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
-    testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: versions.systemRules
+    testImplementation "junit:junit:${versions.junit}"
+    testImplementation "org.hamcrest:hamcrest-core:${versions.hamcrest}"
+    testImplementation "org.hamcrest:hamcrest-library:${versions.hamcrest}"
+    testImplementation "org.mockito:mockito-core:${versions.mockito}"
+    testImplementation "com.github.stefanbirkner:system-rules:${versions.systemRules}"
 }

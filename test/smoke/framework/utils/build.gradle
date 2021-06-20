@@ -1,17 +1,18 @@
-apply plugin: 'java-library'
+apply plugin: "java-library"
 
+// TODO (trask) is this needed?
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
-    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
-    implementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
+    implementation "com.google.code.gson:gson:${versions.gson}"
+    implementation "org.apache.httpcomponents:httpclient:${versions.apacheHttpClient}"
+    implementation "com.google.guava:guava:${versions.guava}"
+    implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
+    implementation "org.hamcrest:hamcrest-library:${versions.hamcrest}"
 
-    testImplementation group: 'junit', name: 'junit', version: versions.junit
+    testImplementation "junit:junit:${versions.junit}"
 }
 
 tasks.withType(JavaCompile) {
