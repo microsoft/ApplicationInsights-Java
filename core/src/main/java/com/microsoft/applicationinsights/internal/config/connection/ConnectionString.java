@@ -31,7 +31,7 @@ public class ConnectionString {
             kvps = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             kvps.putAll(splitToMap(connectionString));
         } catch (IllegalArgumentException e) {
-            throw new InvalidConnectionStringException("Could not parse connection string.");
+            throw new InvalidConnectionStringException("Could not parse connection string.", e);
         }
 
         mapToConnectionConfiguration(kvps, targetConfig);
@@ -40,6 +40,9 @@ public class ConnectionString {
     public static Map<String, String> splitToMap(String str) {
         Map<String, String> map = new HashMap<>();
         for (String part : str.split(";")) {
+            if (part.trim().isEmpty()) {
+                continue;
+            }
             int index = part.indexOf('=');
             if (index == -1) {
                 throw new IllegalArgumentException();

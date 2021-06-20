@@ -146,18 +146,14 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void emptyPairIsIgnored() throws MalformedURLException {
+    public void emptyPairIsIgnored() throws MalformedURLException, InvalidConnectionStringException {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com";
         final String cs = "InstrumentationKey="+ikey+";;EndpointSuffix="+suffix+";";
         final URL expectedIngestionEndpoint = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
         final URL expectedIngestionEndpointURL = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix+"/" + EndpointProvider.INGESTION_URL_PATH);
         final URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
-        try {
-            ConnectionString.parseInto(cs, telemetryClient);
-        } catch (Exception e) {
-            throw new AssertionError("Exception thrown from parse");
-        }
+        ConnectionString.parseInto(cs, telemetryClient);
         assertEquals(ikey, telemetryClient.getInstrumentationKey());
         assertEquals(expectedIngestionEndpoint, telemetryClient.getEndpointProvider().getIngestionEndpoint());
         assertEquals(expectedIngestionEndpointURL, telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
@@ -269,15 +265,6 @@ public class ConnectionStringParsingTests {
         exception.expect(InvalidConnectionStringException.class);
         final String cs = "InstrumentationKey=;IngestionEndpoint=https://ingestion.example.com;EndpointSuffix=ai.example.com";
         ConnectionString.parseInto(cs, telemetryClient);
-    }
-
-    @Test
-    public void multipleKeySeparatorsIsInvalid() throws Exception {
-        exception.expect(InvalidConnectionStringException.class);
-        final String ikey = "fake-ikey";
-        exception.expectMessage(not(containsString(ikey))); // ikey is a secret; should not be in log/exception message
-        final String cs = "InstrumentationKey=="+ikey;
-        parseInto_printExceptionAndRethrow(cs);
     }
 
     @Test
