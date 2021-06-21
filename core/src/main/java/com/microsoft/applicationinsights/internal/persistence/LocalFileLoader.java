@@ -3,29 +3,19 @@ package com.microsoft.applicationinsights.internal.persistence;
 import com.microsoft.applicationinsights.TelemetryChannel;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOLDER;
-import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.TEMPORARY_FILE_EXTENSION;
 
 /**
@@ -34,10 +24,12 @@ import static com.microsoft.applicationinsights.internal.persistence.Persistence
 public class LocalFileLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalFileLoader.class);
-    private static final long INTERVAL = TimeUnit.SECONDS.toSeconds(30); // send persisted telemetries from local disk every 30 seconds.
-    private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
-    private static TelemetryChannel telemetryChannel;
+    private static final long INTERVAL_SECONDS = 30; // send persisted telemetries from local disk every 30 seconds.
+    private static final ScheduledExecutorService scheduledExecutor =
+            Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
     private static final LocalFileLoader INSTANCE = new LocalFileLoader();
+
+    private final TelemetryChannel telemetryChannel;
 
     /**
      * Track a list of active filenames persisted on disk.
@@ -58,8 +50,8 @@ public class LocalFileLoader {
         persistedFilesCache.add(filename);
     }
 
-    // Load List<ByteBuffer> from persisted files on disk in FIFO order.
-    byte[] loadTelemetriesFromDisk() {
+    // Load ByteBuffer from persisted files on disk in FIFO order.
+    ByteBuffer loadTelemetriesFromDisk() {
         String filenameToBeLoaded = persistedFilesCache.poll();
         if (filenameToBeLoaded == null) {
             return null;
@@ -78,25 +70,27 @@ public class LocalFileLoader {
         return persistedFilesCache;
     }
 
-    private byte[] read(File file) {
-        byte[] result = null;
+    private static ByteBuffer read(File file) {
         try {
-            result = Files.readAllBytes(file.toPath());
+            // TODO (trask) optimize this by reading directly into ByteBuffer(s)
+            byte[] result = Files.readAllBytes(file.toPath());
 
-            // TODO (heya) backoff and retry delete when it fails. 
+            // TODO (heya) backoff and retry delete when it fails.
             Files.delete(file.toPath());
+
+            return ByteBuffer.wrap(result);
         } catch (IOException ex) {
             // TODO (heya) track deserialization failure via Statsbeat
             logger.error("Fail to deserialize objects from  {}", file.getName(), ex);
+            return null;
         } catch(SecurityException ex) {
             logger.error("Unable to delete {}. Access is denied.", file.getName(), ex);
+            return null;
         }
-
-        return result;
     }
 
     private LocalFileLoader() {
-        scheduledExecutor.scheduleWithFixedDelay(new PersistedTelemetriesSender(), INTERVAL, INTERVAL, TimeUnit.SECONDS);
+        scheduledExecutor.scheduleWithFixedDelay(new PersistedTelemetriesSender(), INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);
         telemetryChannel = TelemetryChannel.create(new EndpointProvider().getIngestionEndpoint());
     }
 
@@ -104,11 +98,11 @@ public class LocalFileLoader {
         @Override
         public void run() {
             try {
-                byte[] rawBytes = loadTelemetriesFromDisk();
-                if (rawBytes != null) {
-                    telemetryChannel.sendRawBytes(rawBytes);
+                ByteBuffer buffer = loadTelemetriesFromDisk();
+                if (buffer != null) {
+                    telemetryChannel.sendRawBytes(buffer);
                 }
-            } catch (Exception ex) {
+            } catch (RuntimeException ex) {
                 logger.error("Error occurred while sending telemetries from the local storage.", ex);
                 // TODO (heya) track sending persisted telemetries failure via Statsbeat.
             }

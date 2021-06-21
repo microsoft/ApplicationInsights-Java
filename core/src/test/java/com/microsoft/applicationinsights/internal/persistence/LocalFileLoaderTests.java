@@ -12,17 +12,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOLDER;
-import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocalFileLoaderTests {
@@ -33,9 +30,10 @@ public class LocalFileLoaderTests {
 
     @BeforeEach
     public void setup() {
-        /**
+        /*
          * AadAuthentication is used by TelemetryChannel, which is used to initialize {@link LocalFileLoader}
          */
+        // FIXME (trask) this init should not be needed
         AadAuthentication.init(null, null, null, null, null, null);
     }
 
@@ -50,7 +48,7 @@ public class LocalFileLoaderTests {
     public void testLoadFile() throws IOException {
         File sourceFile = new File(getClass().getClassLoader().getResource(BYTE_BUFFERS_TEST_FILE).getPath());
 
-        /**
+        /*
          * move this file to {@link DEFAULT_FOlDER} if it doesn't exist yet.
          */
         if (!PERSISTED_FILE.exists()) {
@@ -59,10 +57,8 @@ public class LocalFileLoaderTests {
         assertThat(PERSISTED_FILE.exists()).isTrue();
 
         LocalFileLoader.get().addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
-        byte[] bytes = LocalFileLoader.get().loadTelemetriesFromDisk();
-        assertThat(bytes).isNotNull();
+        String bytesString = readTelemetriesFromDiskToString();
 
-        String bytesString = new String(bytes);
         String[] stringArray = bytesString.split("\n");
         assertThat(stringArray.length).isEqualTo(10);
 
@@ -128,10 +124,10 @@ public class LocalFileLoaderTests {
     public void testWriteAndReadRandomText() {
         String text = "hello world";
         LocalFileWriter writer = new LocalFileWriter();
-        writer.writeToDisk(text.getBytes());
+        writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
 
-        byte[] rawBytesFromDisk = LocalFileLoader.get().loadTelemetriesFromDisk();
-        assertThat(new String(rawBytesFromDisk)).isEqualTo(text);
+        String bytesString = readTelemetriesFromDiskToString();
+        assertThat(bytesString).isEqualTo(text);
     }
 
     @Test
@@ -141,9 +137,7 @@ public class LocalFileLoaderTests {
         // gzip
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try (GZIPOutputStream out = new GZIPOutputStream(byteArrayOutputStream)) {
-            out.write(text.getBytes());
-        } catch (Exception ex) {
-            throw ex;
+            out.write(text.getBytes(UTF_8));
         } finally {
             byteArrayOutputStream.close();
         }
@@ -151,27 +145,26 @@ public class LocalFileLoaderTests {
         // write gzipped bytes[] to disk
         byte[] result = byteArrayOutputStream.toByteArray();
         LocalFileWriter writer = new LocalFileWriter();
-        writer.writeToDisk(result);
+        writer.writeToDisk(singletonList(ByteBuffer.wrap(result)));
 
         // read gzipped byte[] from disk
-        byte[] persistedBytes = LocalFileLoader.get().loadTelemetriesFromDisk();
+        byte[] bytes = readTelemetriesFromDiskToBytes();
 
         // ungzip
         ByteArrayInputStream inputStream = new ByteArrayInputStream(result);
-        byte[] ungzip = new byte[persistedBytes.length];
-        int read = 0;
+        // TODO (heya) does ungzip need to be larger?
+        byte[] ungzip = new byte[bytes.length];
+        int read;
         try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
             read = gzipInputStream.read(ungzip, 0, ungzip.length);
-        } catch (Exception ex) {
-            throw ex;
         } finally {
             inputStream.close();
         }
 
-        assertThat(new String(Arrays.copyOf(ungzip, read))).isEqualTo(text);
+        assertThat(new String(Arrays.copyOf(ungzip, read), UTF_8)).isEqualTo(text);
     }
 
-    private void verifyTelemetryName(int index, String actualName) {
+    private static void verifyTelemetryName(int index, String actualName) {
         String expectedName = null;
         if (index < 6) {
             expectedName = "Metric";
@@ -188,7 +181,7 @@ public class LocalFileLoaderTests {
         assertThat(actualName).isEqualTo(expectedName);
     }
 
-    private void verifyTelemetryTime(int index, String actualTime) {
+    private static void verifyTelemetryTime(int index, String actualTime) {
         String expectedTime = null;
         if (index < 6) {
             expectedTime = "2021-06-14T17:24:28.983-0700";
@@ -205,7 +198,7 @@ public class LocalFileLoaderTests {
         assertThat(actualTime).isEqualTo(expectedTime);
     }
 
-    private void verifyTagsNodeSize(int index, int actualSize) {
+    private static void verifyTagsNodeSize(int index, int actualSize) {
         int expectedSize = 0;
         if (index < 8) {
             expectedSize = 3;
@@ -218,7 +211,7 @@ public class LocalFileLoaderTests {
         assertThat(actualSize).isEqualTo(expectedSize);
     }
 
-    private void verifyDataBaseType(int index, String actualBaseType) {
+    private static void verifyDataBaseType(int index, String actualBaseType) {
         String expectedBaseType = null;
         if (index < 7) {
             expectedBaseType = "MetricData";
@@ -233,7 +226,7 @@ public class LocalFileLoaderTests {
         assertThat(actualBaseType).isEqualTo(expectedBaseType);
     }
 
-    private void verifyRemoteDependencyBaseData(JsonNode baseData) {
+    private static void verifyRemoteDependencyBaseData(JsonNode baseData) {
         assertThat(baseData.get("name").asText()).isEqualTo("DROP TABLE vet_specialties IF EXISTS");
         assertThat(baseData.get("id").asText()).isEqualTo("d54e451407c13ad2");
         assertThat(baseData.get("duration").asText()).isEqualTo("00:00:00.0130000");
@@ -243,7 +236,7 @@ public class LocalFileLoaderTests {
         assertThat(baseData.get("target").asText()).isEqualTo("b8f14b49-a2ad-4fa9-967e-c00b1d6addc4");
     }
 
-    private void verifyRequestBaseData(JsonNode baseData) {
+    private static void verifyRequestBaseData(JsonNode baseData) {
         assertThat(baseData.get("id").asText()).isEqualTo("c0bfdc8f7963802c");
         assertThat(baseData.get("duration").asText()).isEqualTo("00:00:00.0210000");
         assertThat(baseData.get("responseCode").asText()).isEqualTo("304");
@@ -252,7 +245,7 @@ public class LocalFileLoaderTests {
         assertThat(baseData.get("url").asText()).isEqualTo("http://localhost:8080/webjars/jquery/2.2.4/jquery.min.js");
     }
 
-    private void verifyMetricsName(int index, String actualName) {
+    private static void verifyMetricsName(int index, String actualName) {
         String expectedName;
         switch (index) {
             case 0:
@@ -284,7 +277,7 @@ public class LocalFileLoaderTests {
         assertThat(actualName).isEqualTo(expectedName);
     }
 
-    private void verifyMetricsValue(int index, int actualValue) {
+    private static void verifyMetricsValue(int index, int actualValue) {
         int expectedValue;
         switch (index) {
             case 0:
@@ -316,7 +309,7 @@ public class LocalFileLoaderTests {
         assertThat(actualValue).isEqualTo(expectedValue);
     }
 
-    private void verifyProperties(int index, JsonNode properties) {
+    private static void verifyProperties(int index, JsonNode properties) {
         switch (index) {
             case 0:
                 assertThat(properties.get("state").asText()).isEqualTo("blocked");
@@ -341,13 +334,16 @@ public class LocalFileLoaderTests {
                 assertThat(properties.get("LoggerName").asText()).isEqualTo("org.springframework.boot.web.embedded.tomcat.TomcatWebServer");
                 assertThat(properties.get("LoggingLevel").asText()).isEqualTo("INFO");
                 assertThat(properties.get("SourceType").asText()).isEqualTo("Logger");
-            case 2:
-            default:
                 return;
+            case 2:
+                // TODO (heya) should we delete this case?
+                return;
+            default:
+                // all good
         }
     }
 
-    private void verifyStatsbeatCustomDimensions(JsonNode properties) {
+    private static void verifyStatsbeatCustomDimensions(JsonNode properties) {
         assertThat(properties.get("runtimeVersion").asText()).isEqualTo("11.0.7");
         assertThat(properties.get("os").asText()).isEqualTo("Windows");
         assertThat(properties.get("language").asText()).isEqualTo("java");
@@ -356,5 +352,16 @@ public class LocalFileLoaderTests {
         assertThat(properties.get("cikey").asText()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
         assertThat(properties.get("version").asText()).isEqualTo("3.1.1");
         assertThat(properties.get("rp").asText()).isEqualTo("unknown");
+    }
+
+    private static String readTelemetriesFromDiskToString() {
+        return new String(readTelemetriesFromDiskToBytes(), UTF_8);
+    }
+
+    private static byte[] readTelemetriesFromDiskToBytes() {
+        ByteBuffer buffer = LocalFileLoader.get().loadTelemetriesFromDisk();
+        byte[] bytes = new byte[buffer.remaining()];
+        buffer.get(bytes);
+        return bytes;
     }
 }

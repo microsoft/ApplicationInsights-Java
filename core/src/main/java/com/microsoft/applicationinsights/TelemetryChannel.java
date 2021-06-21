@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
@@ -65,8 +66,8 @@ public class TelemetryChannel {
         return new TelemetryChannel(pipelineBuilder.build(), endpoint);
     }
 
-    public CompletableResultCode sendRawBytes(byte[] rawBytes) {
-        return internalSend(rawBytes);
+    public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
+        return internalSend(Arrays.asList(buffer));
     }
 
     // used by tests only
@@ -117,23 +118,14 @@ public class TelemetryChannel {
 
     /**
      * Object can be a list of {@link ByteBuffer} or a raw byte array.
-     * Regular telemetries will be sent as List<ByteBuffer>.
+     * Regular telemetries will be sent as {@code List<ByteBuffer>}.
      * Persisted telemetries will be sent as byte[]
      */
-    private CompletableResultCode internalSend(final Object object) {
+    private CompletableResultCode internalSend(List<ByteBuffer> byteBuffers) {
         HttpRequest request = new HttpRequest(HttpMethod.POST, endpoint + "v2.1/track");
 
-        List<ByteBuffer> byteBuffers = null;
-        int contentLength = 0;
-        if (object instanceof List<?>) {
-            byteBuffers = (List<ByteBuffer>)object;
-            request.setBody(Flux.fromIterable(byteBuffers));
-            contentLength = byteBuffers.stream().mapToInt(ByteBuffer::limit).sum();
-        } else if (object instanceof byte[]) {
-            byte[] rawBytes = (byte[]) object;
-            request.setBody(rawBytes);
-            contentLength = rawBytes.length;
-        }
+        request.setBody(Flux.fromIterable(byteBuffers));
+        int contentLength = byteBuffers.stream().mapToInt(ByteBuffer::limit).sum();
 
         request.setHeader("Content-Length", Integer.toString(contentLength));
 
@@ -156,7 +148,7 @@ public class TelemetryChannel {
                     parseResponseCode(response.getStatusCode());
                 }, error -> {
                     LocalFileWriter writer = new LocalFileWriter();
-                    if (!writer.writeToDisk(object)) {
+                    if (!writer.writeToDisk(byteBuffers)) {
                         logger.warn("Fail to write {} to disk.", (finalByteBuffers != null ? "List<ByteBuffers>" : "byte[]"));
                         // TODO (heya) track # of write failure via Statsbeat
                     }
@@ -174,8 +166,9 @@ public class TelemetryChannel {
         return result;
     }
 
-    private void parseResponseCode(int statusCode) {
-        switch(statusCode) {
+    // TODO (heya) this method name doesn't match what it does
+    private static void parseResponseCode(int statusCode) {
+        switch (statusCode) {
             // TODO (trask) need constants for these
             case 401:
             case 403: {
@@ -197,6 +190,8 @@ public class TelemetryChannel {
             case BreezeStatusCode.PARTIAL_SUCCESS:
                 // TODO handle partial success
                 break;
+            default:
+                // ok
         }
     }
 }

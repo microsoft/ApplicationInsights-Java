@@ -3,11 +3,11 @@ package com.microsoft.applicationinsights.internal.persistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.List;
 
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOLDER;
@@ -30,11 +30,7 @@ public final class LocalFileWriter {
         }
     }
 
-    public boolean writeToDisk(Object object) {
-        return internalWrite(object);
-    }
-
-    private boolean internalWrite(Object object) {
+    public boolean writeToDisk(List<ByteBuffer> buffers) {
         if (!PersistenceHelper.maxFileSizeExceeded()) {
             return false;
         }
@@ -44,7 +40,7 @@ public final class LocalFileWriter {
             return false;
         }
 
-        if (!write(tempFile, object)) {
+        if (!write(tempFile, buffers)) {
             return false;
         }
 
@@ -60,30 +56,16 @@ public final class LocalFileWriter {
         return true;
     }
 
-    private boolean write(File file, Object object) {
-        List<ByteBuffer> byteBuffers = null;
-        byte[] rawBytes = null;
-        if (object instanceof List<?>) {
-            byteBuffers = (List<ByteBuffer>) object;
-        } else if (object instanceof byte[]) {
-            rawBytes = (byte[]) object;
-        }
-
-        try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
-            if (byteBuffers != null) {
-                for (ByteBuffer byteBuffer : byteBuffers) {
-                    byteBuffer.position(0);
-                    out.write(byteBuffer.array());
-                }
-            } else if (rawBytes != null) {
-                out.write(rawBytes);
+    private static boolean write(File file, List<ByteBuffer> buffers) {
+        try (FileChannel channel = new FileOutputStream(file).getChannel()) {
+            for (ByteBuffer byteBuffer : buffers) {
+                channel.write(byteBuffer);
             }
+            return true;
         } catch (IOException ex) {
             // TODO (heya) track IO write failure via Statsbeat
             logger.error("Fail to write to file.", ex);
             return false;
         }
-
-        return true;
     }
 }
