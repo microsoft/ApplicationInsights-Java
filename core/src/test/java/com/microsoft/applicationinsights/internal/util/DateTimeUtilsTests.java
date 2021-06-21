@@ -10,10 +10,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Created by yonisha on 5/26/2015.
  */
-public class DateTimeUtilsTests {
+class DateTimeUtilsTests {
 
     @Test
-    public void testParseRoundTripDateString() throws ParseException {
+    void testParseRoundTripDateString() throws ParseException {
         final String dateStr = "2015-05-26T07:00:14+01:00";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
@@ -21,7 +21,7 @@ public class DateTimeUtilsTests {
     }
 
     @Test
-    public void testParseRoundTripDateStringWithoutOffset() throws ParseException {
+    void testParseRoundTripDateStringWithoutOffset() throws ParseException {
         final String dateStr = "2015-05-26T07:00:14.123145152";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
@@ -29,7 +29,7 @@ public class DateTimeUtilsTests {
     }
 
     @Test
-    public void testParseRoundTripDateStringFullUTC() throws ParseException {
+    void testParseRoundTripDateStringFullUTC() throws ParseException {
         final String dateStr = "2015-05-26T07:00:14.123145152Z";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
@@ -37,7 +37,7 @@ public class DateTimeUtilsTests {
     }
 
     @Test
-    public void testParseRoundTripDateStringShortFormat() throws ParseException {
+    void testParseRoundTripDateStringShortFormat() throws ParseException {
         final String dateStr = "2015-05-26T07";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
@@ -45,7 +45,7 @@ public class DateTimeUtilsTests {
     }
 
     @Test
-    public void testFormatAsRoundTripDate() throws ParseException {
+    void testFormatAsRoundTripDate() throws ParseException {
         final String dateStr = "2016-01-21T01";
         Date date = DateTimeUtils.parseRoundTripDateString(dateStr);
         String reversedDateStr = DateTimeUtils.formatAsRoundTripDate(date);

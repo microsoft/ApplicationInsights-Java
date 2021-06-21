@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ExceptionsTest {
+class ExceptionsTest {
 
     @Test
-    public void test() {
+    void test() {
         // given
         String str = toString(new IllegalStateException("test"));
 
@@ -28,7 +28,7 @@ public class ExceptionsTest {
     }
 
     @Test
-    public void testWithNoMessage() {
+    void testWithNoMessage() {
         // given
         String str = toString(new IllegalStateException());
 
@@ -44,7 +44,7 @@ public class ExceptionsTest {
     }
 
     @Test
-    public void testWithCausedBy() {
+    void testWithCausedBy() {
         // given
         RuntimeException causedBy = new RuntimeException("the cause");
         String str = toString(new IllegalStateException("test", causedBy));
@@ -66,7 +66,7 @@ public class ExceptionsTest {
     }
 
     @Test
-    public void shouldIgnoreSuppressed() {
+    void shouldIgnoreSuppressed() {
         // given
         RuntimeException suppressed = new RuntimeException("the suppressed");
         IllegalStateException exception = new IllegalStateException("test");

@@ -26,9 +26,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MainEntryPointTest {
+class MainEntryPointTest {
     @Test
-    public void getFriendlyExceptionTest() {
+    void getFriendlyExceptionTest() {
         FriendlyException friendlyException = MainEntryPoint.getFriendlyException(new FriendlyException());
         FriendlyException nonFriendlyException = MainEntryPoint.getFriendlyException(new IllegalArgumentException());
         FriendlyException nestedFriendlyException = MainEntryPoint.getFriendlyException(new RuntimeException("Run time Exception",new FriendlyException()));

@@ -35,9 +35,9 @@ import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProfilerFrontendClientV2Test {
+class ProfilerFrontendClientV2Test {
     @Test
-    public void settingsPullHitsCorrectUrl() throws ClientClosedException, IOException {
+    void settingsPullHitsCorrectUrl() throws ClientClosedException, IOException {
 
         AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 
@@ -63,7 +63,7 @@ public class ProfilerFrontendClientV2Test {
     }
 
     @Test
-    public void uploadHitsCorrectUrl() throws ClientClosedException, IOException {
+    void uploadHitsCorrectUrl() throws ClientClosedException, IOException {
 
         AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 
@@ -89,7 +89,7 @@ public class ProfilerFrontendClientV2Test {
     }
 
     @Test
-    public void uploadFinishedHitsCorrectUrl() throws ClientClosedException, IOException {
+    void uploadFinishedHitsCorrectUrl() throws ClientClosedException, IOException {
 
         AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 

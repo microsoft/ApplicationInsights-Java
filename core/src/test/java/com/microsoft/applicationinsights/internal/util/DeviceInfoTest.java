@@ -30,10 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Created by amnonsh on 2/10/2015.
  */
-public class DeviceInfoTest {
+class DeviceInfoTest {
 
     @Test
-    public void testSimpleLocale() {
+    void testSimpleLocale() {
         Locale.setDefault(new Locale("en", "us"));
         String tag = DeviceInfo.getLocale();
 
@@ -41,7 +41,7 @@ public class DeviceInfoTest {
     }
 
     @Test
-    public void testSpecialLocale() {
+    void testSpecialLocale() {
         Locale.setDefault(new Locale("iw", "il"));
         String tag = DeviceInfo.getLocale();
 
@@ -49,7 +49,7 @@ public class DeviceInfoTest {
     }
 
     @Test
-    public void testBadLocale() {
+    void testBadLocale() {
         Locale.setDefault(new Locale("BadLocale"));
         String tag = DeviceInfo.getLocale();
 

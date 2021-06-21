@@ -26,22 +26,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @ExtendWith(SystemStubsExtension.class)
-public class StatusFileTests {
+class StatusFileTests {
 
     @TempDir
     File tempFolder;
 
     @SystemStub
-    public EnvironmentVariables envVars = new EnvironmentVariables();
+    EnvironmentVariables envVars = new EnvironmentVariables();
 
     @SystemStub
-    public SystemProperties systemProperties = new SystemProperties();
+    SystemProperties systemProperties = new SystemProperties();
 
     private final String testIkey = "fake-ikey-123";
     private final String fakeVersion = "0.0.1-test";
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         // TODO these tests currently only pass on windows
         assumeTrue(DiagnosticsHelper.isOsWindows());
         envVars.set("APPINSIGHTS_INSTRUMENTATIONKEY", testIkey);
@@ -49,33 +49,33 @@ public class StatusFileTests {
     }
 
     @AfterEach
-    public void resetStaticVariables() {
+    void resetStaticVariables() {
         DiagnosticsTestHelper.reset();
     }
 
     @Test
-    public void defaultDirectoryIsCorrect() {
+    void defaultDirectoryIsCorrect() {
         // TODO this test doesn't pass inside of windows + bash because bash sets HOME env
         assumeTrue(System.getenv(StatusFile.HOME_ENV_VAR) == null);
         assertThat(initLogDir()).isEqualTo("./LogFiles/ApplicationInsights");
     }
 
     @Test
-    public void siteLogDirPropertyUpdatesBaseDir() {
+    void siteLogDirPropertyUpdatesBaseDir() {
         String parentDir = "/temp/test/prop";
         System.setProperty("site.logdir", parentDir);
         assertThat(StatusFile.initLogDir()).isEqualTo("/temp/test/prop/ApplicationInsights");
     }
 
     @Test
-    public void homeEnvVarUpdatesBaseDir() {
+    void homeEnvVarUpdatesBaseDir() {
         String homeDir = "/temp/test";
         envVars.set(StatusFile.HOME_ENV_VAR, homeDir);
         assertThat(StatusFile.initLogDir()).isEqualTo("/temp/test/LogFiles/ApplicationInsights");
     }
 
     @Test
-    public void siteLogDirHasPrecedenceOverHome() {
+    void siteLogDirHasPrecedenceOverHome() {
         String homeDir = "/this/is/wrong";
         envVars.set(StatusFile.HOME_ENV_VAR, homeDir);
         System.setProperty("site.logdir", "/the/correct/dir");
@@ -83,7 +83,7 @@ public class StatusFileTests {
     }
 
     @Test
-    public void mapHasExpectedValues() {
+    void mapHasExpectedValues() {
         Map<String, Object> jsonMap = StatusFile.getJsonMap();
         System.out.println("Map contents: " + Arrays.toString(jsonMap.entrySet().toArray()));
 
@@ -109,7 +109,7 @@ public class StatusFileTests {
     }
 
     @Test
-    public void connectionStringWorksToo() {
+    void connectionStringWorksToo() {
         String ikey = "a-different-ikey-456789";
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=" + ikey);
         Map<String, Object> jsonMap = StatusFile.getJsonMap();
@@ -117,7 +117,7 @@ public class StatusFileTests {
     }
 
     @Test
-    public void writesCorrectFile() throws Exception {
+    void writesCorrectFile() throws Exception {
         DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
         runWriteFileTest(true);
     }
@@ -152,7 +152,7 @@ public class StatusFileTests {
     }
 
     @Test
-    public void doesNotWriteIfNotAppService() throws Exception {
+    void doesNotWriteIfNotAppService() throws Exception {
         DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(false); // just to be sure
 
         StatusFile.directory = tempFolder.getAbsolutePath();
@@ -167,7 +167,7 @@ public class StatusFileTests {
     }
 
     @Test
-    public void putValueAndWriteOverwritesCurrentFile() throws Exception {
+    void putValueAndWriteOverwritesCurrentFile() throws Exception {
         final String key = "write-test";
         try {
             DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
@@ -195,7 +195,7 @@ public class StatusFileTests {
     }
 
     @Test
-    public void fileNameHasMachineNameAndPid() {
+    void fileNameHasMachineNameAndPid() {
         Map<String, Object> jsonMap = StatusFile.getJsonMap();
         String s = StatusFile.constructFileName(jsonMap);
         assertThat(s).startsWith(StatusFile.FILENAME_PREFIX);

@@ -31,10 +31,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AlertTriggerTest {
+class AlertTriggerTest {
 
     @Test
-    public void underThresholdDataDoesNotTrigger() {
+    void underThresholdDataDoesNotTrigger() {
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
         AtomicBoolean called = new AtomicBoolean(false);
         AlertPipelineTrigger trigger = getAlertTrigger(config, called);
@@ -46,7 +46,7 @@ public class AlertTriggerTest {
     }
 
     @Test
-    public void overThresholdDataDoesTrigger() {
+    void overThresholdDataDoesTrigger() {
 
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
         AtomicBoolean called = new AtomicBoolean(false);
@@ -61,7 +61,7 @@ public class AlertTriggerTest {
 
 
     @Test
-    public void doesNotReTriggerDueToCooldown() {
+    void doesNotReTriggerDueToCooldown() {
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
         AtomicBoolean called = new AtomicBoolean(false);
         AlertPipelineTrigger trigger = getAlertTrigger(config, called);
@@ -85,7 +85,7 @@ public class AlertTriggerTest {
 
 
     @Test
-    public void doesNotReTriggerAfterCooldown() throws InterruptedException {
+    void doesNotReTriggerAfterCooldown() throws InterruptedException {
         AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
         AtomicBoolean called = new AtomicBoolean(false);
         AlertPipelineTrigger trigger = getAlertTrigger(config, called);

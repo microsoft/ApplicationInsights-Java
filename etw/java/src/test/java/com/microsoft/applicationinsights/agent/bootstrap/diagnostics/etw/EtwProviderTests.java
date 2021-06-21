@@ -42,12 +42,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-public class EtwProviderTests {
+class EtwProviderTests {
     private static final String FOLDER_NAME = "EtwProviderTests";
     private static final File dllTempFolder = DllFileUtils.buildDllLocalPath(FOLDER_NAME);
 
     @BeforeAll
-    public static void cleanTempFolder() {
+    static void cleanTempFolder() {
         if (dllTempFolder.exists()) {
             System.out.println("Cleaning temp folder: "+dllTempFolder.getAbsolutePath());
             for (File f : dllTempFolder.listFiles()) {
@@ -127,13 +127,13 @@ public class EtwProviderTests {
     }
 
     @BeforeEach
-    public void checkOs() {
+    void checkOs() {
         assumeTrue(SystemUtils.IS_OS_WINDOWS, "Ignoring etw test. Not on windows");
         assumeFalse(Boolean.parseBoolean(System.getProperty("skipWinNative")), "Ignoring etw test. skipWinNative=true");
     }
 
     @Test
-    public void testDllExtracted() throws Exception {
+    void testDllExtracted() throws Exception {
         new EtwProvider(FOLDER_NAME); // Triggers DLL extraction
         String filename = EtwProvider.getDllFilenameForArch();
         File dllPath = new File(dllTempFolder, filename);
@@ -165,13 +165,13 @@ public class EtwProviderTests {
     }
 
     @Test
-    public void testEventsOnLoop_50k() throws Exception {
+    void testEventsOnLoop_50k() throws Exception {
         longTestCheck();
         runLoopTest(50_000);
     }
 
     @Test
-    public void testEventsOnLoop_500k() throws Exception {
+    void testEventsOnLoop_500k() throws Exception {
         longTestCheck();
         runLoopTest(500_000);
     }

@@ -11,37 +11,37 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SystemStubsExtension.class)
-public class SubscriptionIdFinderTest {
+class SubscriptionIdFinderTest {
 
     @SystemStub
-    public EnvironmentVariables envVars = new EnvironmentVariables();
+    EnvironmentVariables envVars = new EnvironmentVariables();
 
     private SubscriptionIdFinder subIdFinder;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         subIdFinder = new SubscriptionIdFinder();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         subIdFinder = null;
     }
 
     @Test
-    public void happyPathWithValidSubscriptionIdInsideWebsiteOwnerNameVar() {
+    void happyPathWithValidSubscriptionIdInsideWebsiteOwnerNameVar() {
         envVars.set(SubscriptionIdFinder.WEBSITE_OWNER_NAME_ENV_VAR, "sub-id-123+NOT_SUB_ID");
         String value = subIdFinder.getValue();
         assertThat(value).isEqualTo("sub-id-123");
     }
 
     @Test
-    public void useUnknownWhenEnvVarIsUnset() {
+    void useUnknownWhenEnvVarIsUnset() {
         assertThat(subIdFinder.getValue()).isEqualTo("unknown");
     }
 
     @Test
-    public void useUnknownIfEnvVarHasUnexpectedFormat() {
+    void useUnknownIfEnvVarHasUnexpectedFormat() {
         envVars.set(SubscriptionIdFinder.WEBSITE_OWNER_NAME_ENV_VAR, "NOT_VALID");
         assertThat(subIdFinder.getValue()).isEqualTo("unknown");
     }

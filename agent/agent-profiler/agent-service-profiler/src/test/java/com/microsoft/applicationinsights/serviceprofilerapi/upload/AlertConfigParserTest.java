@@ -32,10 +32,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AlertConfigParserTest {
+class AlertConfigParserTest {
 
     @Test
-    public void nullsInConfigAreHandled() {
+    void nullsInConfigAreHandled() {
 
         AlertingConfiguration config = AlertConfigParser.parse(
                 null,
@@ -50,7 +50,7 @@ public class AlertConfigParserTest {
     }
 
     @Test
-    public void saneDataIsParsed() {
+    void saneDataIsParsed() {
         AlertingConfiguration config = AlertConfigParser.parse(
                 "--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400",
                 "--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400",

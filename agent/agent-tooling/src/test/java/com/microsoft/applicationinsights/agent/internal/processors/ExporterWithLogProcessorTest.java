@@ -43,12 +43,12 @@ import java.util.Objects;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class ExporterWithLogProcessorTest {
+class ExporterWithLogProcessorTest {
 
     private final Tracer tracer = OpenTelemetrySdk.builder().build().getTracer("test");
 
     @Test
-    public void noBodyObjectTest() {
+    void noBodyObjectTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.LOG;
@@ -59,7 +59,7 @@ public class ExporterWithLogProcessorTest {
     }
 
     @Test
-    public void inValidConfigTestWithNoFromOrToAttributesTest() {
+    void inValidConfigTestWithNoFromOrToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.LOG;
@@ -71,7 +71,7 @@ public class ExporterWithLogProcessorTest {
     }
 
     @Test
-    public void inValidConfigTestWithToAttributesNoRulesTest() {
+    void inValidConfigTestWithToAttributesNoRulesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.LOG;
@@ -84,7 +84,7 @@ public class ExporterWithLogProcessorTest {
     }
 
     @Test
-    public void SimpleRenameLogMessageTest() {
+    void SimpleRenameLogMessageTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.LOG;
@@ -115,7 +115,7 @@ public class ExporterWithLogProcessorTest {
     }
 
     @Test
-    public void SimpleRenameLogWithSeparatorTest() {
+    void SimpleRenameLogWithSeparatorTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.LOG;
@@ -148,7 +148,7 @@ public class ExporterWithLogProcessorTest {
     }
 
     @Test
-    public void SimpleRenameLogWithMissingKeysTest() {
+    void SimpleRenameLogWithMissingKeysTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.LOG;
@@ -180,7 +180,7 @@ public class ExporterWithLogProcessorTest {
     }
 
     @Test
-    public void InvalidRegexInRulesTest() {
+    void InvalidRegexInRulesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.LOG;
@@ -196,7 +196,7 @@ public class ExporterWithLogProcessorTest {
     }
 
     @Test
-    public void SimpleToAttributesTest() {
+    void SimpleToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.LOG;
@@ -232,7 +232,7 @@ public class ExporterWithLogProcessorTest {
     }
 
     @Test
-    public void MultiRuleToAttributesTest() {
+    void MultiRuleToAttributesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.LOG;
@@ -286,7 +286,7 @@ public class ExporterWithLogProcessorTest {
     }
 
     @Test
-    public void SimpleRenameLogTestWithSpanProcessor() {
+    void SimpleRenameLogTestWithSpanProcessor() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.LOG;

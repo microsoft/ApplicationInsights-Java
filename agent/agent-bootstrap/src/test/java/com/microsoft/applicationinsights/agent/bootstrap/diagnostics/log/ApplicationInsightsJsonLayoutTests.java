@@ -21,7 +21,7 @@ import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-public class ApplicationInsightsJsonLayoutTests {
+class ApplicationInsightsJsonLayoutTests {
 
     private static final String LOG_MESSAGE = "test message";
     private static final String LOGGER_NAME = "test.logger";
@@ -32,7 +32,7 @@ public class ApplicationInsightsJsonLayoutTests {
     private ILoggingEvent logEvent;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         ourLayout = new ApplicationInsightsJsonLayout();
         ourLayout.valueFinders.clear();
 
@@ -45,12 +45,12 @@ public class ApplicationInsightsJsonLayoutTests {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         ourLayout = null;
     }
 
     @Test
-    public void topLevelIncludesRequiredFields() {
+    void topLevelIncludesRequiredFields() {
         Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
         assertThat(jsonMap).containsEntry(TIMESTAMP_PROP_NAME, String.valueOf(TIMESTAMP_VALUE)); // there is no timestamp format specified, so it just uses the raw long value.
         assertThat(jsonMap).containsEntry(LOGGER_ATTR_NAME, LOGGER_NAME);
@@ -58,7 +58,7 @@ public class ApplicationInsightsJsonLayoutTests {
     }
 
     @Test
-    public void addsDataFromFinders() {
+    void addsDataFromFinders() {
         final String key = "mock-finder";
         final String value = "mock-value";
 
@@ -75,7 +75,7 @@ public class ApplicationInsightsJsonLayoutTests {
     }
 
     @Test
-    public void nullOrEmptyValueWritesUnknownValue() {
+    void nullOrEmptyValueWritesUnknownValue() {
         final String nKey = "f-null";
         final String eKey = "f-empty";
 
@@ -102,7 +102,7 @@ public class ApplicationInsightsJsonLayoutTests {
     }
 
     @Test
-    public void mdcOperationNameAppearsInProperties() {
+    void mdcOperationNameAppearsInProperties() {
         Map<String, String> map = new HashMap<>();
         map.put(DiagnosticsHelper.MDC_PROP_OPERATION, "test");
         when(logEvent.getMDCPropertyMap()).thenReturn(map);

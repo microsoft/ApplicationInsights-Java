@@ -26,10 +26,10 @@ import org.junit.jupiter.api.Test;
 import static com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.roundToNearest;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SamplingPercentageTest {
+class SamplingPercentageTest {
 
     @Test
-    public void testRoundToNearest() {
+    void testRoundToNearest() {
 
         // perfect
         assertThat(roundToNearest(100)).isEqualTo(100);

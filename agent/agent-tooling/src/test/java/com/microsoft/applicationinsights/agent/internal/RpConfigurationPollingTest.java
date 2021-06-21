@@ -50,26 +50,26 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SystemStubsExtension.class)
-public class RpConfigurationPollingTest {
+class RpConfigurationPollingTest {
 
     @SystemStub
-    public EnvironmentVariables envVars = new EnvironmentVariables();
+    EnvironmentVariables envVars = new EnvironmentVariables();
 
     @BeforeEach
-    public void beforeEach() {
+    void beforeEach() {
         // default sampler at startup is "Sampler.alwaysOff()", and this test relies on real sampler
         DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(100, new Configuration()));
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         // need to reset trace config back to default (with default sampler)
         // otherwise tests run after this can fail
         DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(100, new Configuration()));
     }
 
     @Test
-    public void shouldUpdate() throws URISyntaxException {
+    void shouldUpdate() throws URISyntaxException {
         // given
         RpConfiguration rpConfiguration = new RpConfiguration();
         rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
@@ -96,7 +96,7 @@ public class RpConfigurationPollingTest {
     }
 
     @Test
-    public void shouldUpdateEvenOverEnvVars() throws URISyntaxException {
+    void shouldUpdateEvenOverEnvVars() throws URISyntaxException {
         // given
         RpConfiguration rpConfiguration = new RpConfiguration();
         rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";

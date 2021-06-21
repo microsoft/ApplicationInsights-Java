@@ -9,23 +9,23 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class PeriodicRunnableTaskPoolTests {
+class PeriodicRunnableTaskPoolTests {
 
     private PeriodicTaskPool taskPool = null;
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         taskPool = new PeriodicTaskPool(1, "test-pool");
     }
 
     @AfterEach
-    public void cleanUp() {
+    void cleanUp() {
         taskPool.stop(5, TimeUnit.SECONDS);
         taskPool = null;
     }
 
     @Test
-    public void testNewTaskCanBeSubmittedAndIsRunning() {
+    void testNewTaskCanBeSubmittedAndIsRunning() {
         SignalListener signal = new SignalListener();
         PeriodicTaskPool.PeriodicRunnableTask periodicRunnableTask = PeriodicTaskPool.PeriodicRunnableTask.createTask(new TestRunnable(signal),
                 0, 1, TimeUnit.SECONDS, "Test");
@@ -37,7 +37,7 @@ public class PeriodicRunnableTaskPoolTests {
     }
 
     @Test
-    public void testMultipleTaskCanBeSubmittedAndAreRunning() {
+    void testMultipleTaskCanBeSubmittedAndAreRunning() {
         SignalListener sig1 = new SignalListener();
         SignalListener sig2 = new SignalListener();
         PeriodicTaskPool.PeriodicRunnableTask periodicRunnableTask = PeriodicTaskPool.PeriodicRunnableTask.createTask(new TestRunnable(sig1),
@@ -57,7 +57,7 @@ public class PeriodicRunnableTaskPoolTests {
     }
 
     @Test
-    public void multipleTasksWithSameIdCannotBeSubmitted() {
+    void multipleTasksWithSameIdCannotBeSubmitted() {
         PeriodicTaskPool.PeriodicRunnableTask periodicRunnableTask = PeriodicTaskPool.PeriodicRunnableTask.createTask(new DoNothingRunnable(),
                 0, 1, TimeUnit.SECONDS, "Test");
         PeriodicTaskPool.PeriodicRunnableTask periodicRunnableTask2 = PeriodicTaskPool.PeriodicRunnableTask.createTask(new DoNothingRunnable(),
@@ -69,7 +69,7 @@ public class PeriodicRunnableTaskPoolTests {
     }
 
     @Test
-    public void canCancelSubmittedTask() {
+    void canCancelSubmittedTask() {
         SignalListener signal = new SignalListener();
         PeriodicTaskPool.PeriodicRunnableTask periodicRunnableTask = PeriodicTaskPool.PeriodicRunnableTask.createTask(new TestRunnable(signal),
                 0, 10, TimeUnit.SECONDS, "Test");
@@ -86,42 +86,42 @@ public class PeriodicRunnableTaskPoolTests {
     }
 
     @Test
-    public void cannotScheduleNullRunnable() {
+    void cannotScheduleNullRunnable() {
         assertThatThrownBy(() ->
                 PeriodicTaskPool.PeriodicRunnableTask.createTask(null, 0,1, TimeUnit.SECONDS, "Test"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void cannotHaveNegativeInitialDelay() {
+    void cannotHaveNegativeInitialDelay() {
         assertThatThrownBy(() ->
                 PeriodicTaskPool.PeriodicRunnableTask.createTask(new DoNothingRunnable(), -1,1, TimeUnit.SECONDS, "Test"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void cannotHaveNegativeRepeatDuration() {
+    void cannotHaveNegativeRepeatDuration() {
         assertThatThrownBy(() ->
                 PeriodicTaskPool.PeriodicRunnableTask.createTask(new DoNothingRunnable(), 0, -1, TimeUnit.SECONDS, "Test"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void cannotHaveNullTaskId() {
+    void cannotHaveNullTaskId() {
         assertThatThrownBy(() ->
                 PeriodicTaskPool.PeriodicRunnableTask.createTask(new DoNothingRunnable(), 0,1, TimeUnit.SECONDS, null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void cannotHaveEmptyTaskId() {
+    void cannotHaveEmptyTaskId() {
         assertThatThrownBy(() ->
                 PeriodicTaskPool.PeriodicRunnableTask.createTask(new DoNothingRunnable(), 0,1, TimeUnit.SECONDS, ""))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void cannotHaveNullTimeUnit() {
+    void cannotHaveNullTimeUnit() {
         assertThatThrownBy(() ->
                 PeriodicTaskPool.PeriodicRunnableTask.createTask(new DoNothingRunnable(), 0,1, null, "Test"))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -150,7 +150,7 @@ public class PeriodicRunnableTaskPoolTests {
             }
         }
 
-        public synchronized boolean isDone() {
+        synchronized boolean isDone() {
             return done;
         }
     }
@@ -165,7 +165,7 @@ public class PeriodicRunnableTaskPoolTests {
     private static class TestRunnable implements Runnable {
         private final CompletionListener listener;
 
-        public TestRunnable(CompletionListener listener) {
+        TestRunnable(CompletionListener listener) {
             this.listener = listener;
         }
 

@@ -31,9 +31,9 @@ import static org.mockito.Mockito.mock;
 /**
  * Created by gupele on 12/15/2016.
  */
-public class QuickPulseNetworkHelperTest {
+class QuickPulseNetworkHelperTest {
     @Test
-    public void testIsSuccessWith200() {
+    void testIsSuccessWith200() {
         HttpResponse response = mock(HttpResponse.class);
         Mockito.doReturn(200).when(response).getStatusCode();
 
@@ -42,7 +42,7 @@ public class QuickPulseNetworkHelperTest {
     }
 
     @Test
-    public void testIsSuccessWith500() {
+    void testIsSuccessWith500() {
         HttpResponse response = mock(HttpResponse.class);
         Mockito.doReturn(500).when(response).getStatusCode();
 

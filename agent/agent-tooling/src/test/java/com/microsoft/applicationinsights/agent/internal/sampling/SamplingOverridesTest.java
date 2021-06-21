@@ -14,10 +14,10 @@ import org.junit.jupiter.api.Test;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SamplingOverridesTest {
+class SamplingOverridesTest {
 
     @Test
-    public void shouldSampleByDefault() {
+    void shouldSampleByDefault() {
         // given
         List<SamplingOverride> overrides = new ArrayList<>();
         SamplingOverrides sampler = new SamplingOverrides(overrides);
@@ -28,7 +28,7 @@ public class SamplingOverridesTest {
     }
 
     @Test
-    public void shouldFilterStrictMatch() {
+    void shouldFilterStrictMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newStrictAttribute("one", "1")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
@@ -39,7 +39,7 @@ public class SamplingOverridesTest {
     }
 
     @Test
-    public void shouldNotFilterStrictMatch() {
+    void shouldNotFilterStrictMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newStrictAttribute("one", "1")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
@@ -50,7 +50,7 @@ public class SamplingOverridesTest {
     }
 
     @Test
-    public void shouldNotFilterMissingStrictMatch() {
+    void shouldNotFilterMissingStrictMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newStrictAttribute("one", "1")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
@@ -61,7 +61,7 @@ public class SamplingOverridesTest {
     }
 
     @Test
-    public void shouldFilterRegexpMatch() {
+    void shouldFilterRegexpMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newRegexpAttribute("one", "1.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
@@ -72,7 +72,7 @@ public class SamplingOverridesTest {
     }
 
     @Test
-    public void shouldNotFilterRegexpMatch() {
+    void shouldNotFilterRegexpMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newRegexpAttribute("one", "1.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
@@ -83,7 +83,7 @@ public class SamplingOverridesTest {
     }
 
     @Test
-    public void shouldNotFilterMissingRegexpMatch() {
+    void shouldNotFilterMissingRegexpMatch() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newRegexpAttribute("one", "1.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
@@ -94,7 +94,7 @@ public class SamplingOverridesTest {
     }
 
     @Test
-    public void shouldFilterMultiAttributes() {
+    void shouldFilterMultiAttributes() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newStrictAttribute("one", "1"), newRegexpAttribute("two", "2.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
@@ -105,7 +105,7 @@ public class SamplingOverridesTest {
     }
 
     @Test
-    public void shouldNotFilterMultiAttributes() {
+    void shouldNotFilterMultiAttributes() {
         // given
         List<SamplingOverride> overrides = singletonList(newOverride(0, newStrictAttribute("one", "1"), newRegexpAttribute("two", "2.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
@@ -116,7 +116,7 @@ public class SamplingOverridesTest {
     }
 
     @Test
-    public void shouldFilterMultiConfigsBothMatch() {
+    void shouldFilterMultiConfigsBothMatch() {
         // given
         List<SamplingOverride> overrides = Arrays.asList(newOverride(0, newStrictAttribute("one", "1")), newOverride(0, newRegexpAttribute("two", "2.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
@@ -127,7 +127,7 @@ public class SamplingOverridesTest {
     }
 
     @Test
-    public void shouldFilterMultiConfigsOneMatch() {
+    void shouldFilterMultiConfigsOneMatch() {
         // given
         List<SamplingOverride> overrides = Arrays.asList(newOverride(0, newStrictAttribute("one", "1")), newOverride(0, newRegexpAttribute("two", "2.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);
@@ -138,7 +138,7 @@ public class SamplingOverridesTest {
     }
 
     @Test
-    public void shouldNotFilterMultiConfigsNoMatch() {
+    void shouldNotFilterMultiConfigsNoMatch() {
         // given
         List<SamplingOverride> overrides = Arrays.asList(newOverride(0, newStrictAttribute("one", "1")), newOverride(0, newRegexpAttribute("two", "2.*")));
         SamplingOverrides sampler = new SamplingOverrides(overrides);

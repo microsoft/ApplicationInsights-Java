@@ -27,13 +27,13 @@ import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class LocalFileSystemUtilsTest {
+class LocalFileSystemUtilsTest {
     /*
      * NOTE: it doesn't matter that Windows paths are converted to *nix paths and vice-versa.
      */
 
     @Test
-    public void getTempDir_WindowsForUserWithSystemUserUnknown() {
+    void getTempDir_WindowsForUserWithSystemUserUnknown() {
         final String input = "C:\\Users\\olivida\\AppData\\Local\\Temp";
 
         File actual = LocalFileSystemUtils.getTempDir(input, "unknown");
@@ -43,7 +43,7 @@ public class LocalFileSystemUtilsTest {
     }
 
     @Test
-    public void getTempDir_WindowsForUserWithSystemUserDefined() {
+    void getTempDir_WindowsForUserWithSystemUserDefined() {
         final String input = "C:\\Users\\olivida\\AppData\\Local\\Temp";
 
         File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
@@ -53,7 +53,7 @@ public class LocalFileSystemUtilsTest {
     }
 
     @Test
-    public void getTempDir_WindowsForUser() {
+    void getTempDir_WindowsForUser() {
         final String input = "C:\\Users\\olivida\\AppData\\Local\\Temp";
 
         File actual = LocalFileSystemUtils.getTempDir(input, null);
@@ -63,7 +63,7 @@ public class LocalFileSystemUtilsTest {
     }
 
     @Test
-    public void getTempDir_Linux() {
+    void getTempDir_Linux() {
         final String input = "/tmp";
 
         File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
@@ -73,7 +73,7 @@ public class LocalFileSystemUtilsTest {
     }
 
     @Test
-    public void getTempDir_PerUser() {
+    void getTempDir_PerUser() {
         final String input = "/tmp/olivida";
 
         File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
@@ -83,7 +83,7 @@ public class LocalFileSystemUtilsTest {
     }
 
     @Test
-    public void getTempDir_InsideUserHome() {
+    void getTempDir_InsideUserHome() {
         final String input = "/home/olivida/tmp";
 
         File actual = LocalFileSystemUtils.getTempDir(input, "olivida");

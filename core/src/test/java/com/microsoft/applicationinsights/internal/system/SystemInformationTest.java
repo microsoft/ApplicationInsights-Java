@@ -5,14 +5,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SystemInformationTest {
+class SystemInformationTest {
     @Test
-    public void testOS() {
+    void testOS() {
         assertThat(SystemUtils.IS_OS_WINDOWS ? SystemInformation.INSTANCE.isWindows() : SystemInformation.INSTANCE.isUnix()).isTrue();
     }
 
     @Test
-    public void testProcessId() {
+    void testProcessId() {
         Integer.parseInt(SystemInformation.INSTANCE.getProcessId());
     }
 }

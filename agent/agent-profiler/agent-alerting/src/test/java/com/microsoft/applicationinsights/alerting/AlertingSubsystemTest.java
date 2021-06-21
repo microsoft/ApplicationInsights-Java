@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AlertingSubsystemTest {
+class AlertingSubsystemTest {
 
     private AlertingSubsystem getAlertMonitor(Consumer<AlertBreach> consumer) {
         AlertingSubsystem monitor = AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
@@ -54,7 +54,7 @@ public class AlertingSubsystemTest {
     }
 
     @Test
-    public void alertTriggerIsCalled() {
+    void alertTriggerIsCalled() {
 
         AtomicReference<AlertBreach> called = new AtomicReference<>();
         Consumer<AlertBreach> consumer = called::set;
@@ -72,7 +72,7 @@ public class AlertingSubsystemTest {
     }
 
     @Test
-    public void manualAlertWorks() {
+    void manualAlertWorks() {
         AtomicReference<AlertBreach> called = new AtomicReference<>();
         Consumer<AlertBreach> consumer = called::set;
 
@@ -91,7 +91,7 @@ public class AlertingSubsystemTest {
     }
 
     @Test
-    public void manualAlertDoesNotTriggerAfterExpired() {
+    void manualAlertDoesNotTriggerAfterExpired() {
         AtomicReference<AlertBreach> called = new AtomicReference<>();
         Consumer<AlertBreach> consumer = called::set;
 

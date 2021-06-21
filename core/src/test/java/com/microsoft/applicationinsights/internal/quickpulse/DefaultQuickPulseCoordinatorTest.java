@@ -30,9 +30,9 @@ import static org.mockito.Mockito.mock;
 /**
  * Created by gupele on 12/15/2016.
  */
-public class DefaultQuickPulseCoordinatorTest {
+class DefaultQuickPulseCoordinatorTest {
     @Test
-    public void testOnlyPings() throws InterruptedException {
+    void testOnlyPings() throws InterruptedException {
         QuickPulseDataFetcher mockFetcher = mock(QuickPulseDataFetcher.class);
         QuickPulseDataSender mockSender = mock(QuickPulseDataSender.class);
         QuickPulsePingSender mockPingSender = mock(QuickPulsePingSender.class);
@@ -66,7 +66,7 @@ public class DefaultQuickPulseCoordinatorTest {
     }
 
     @Test
-    public void testOnePingAndThenOnePost() throws InterruptedException {
+    void testOnePingAndThenOnePost() throws InterruptedException {
         QuickPulseDataFetcher mockFetcher = mock(QuickPulseDataFetcher.class);
         QuickPulseDataSender mockSender = mock(QuickPulseDataSender.class);
         Mockito.doReturn(new QuickPulseHeaderInfo(QuickPulseStatus.QP_IS_OFF)).when(mockSender).getQuickPulseHeaderInfo();
@@ -102,7 +102,7 @@ public class DefaultQuickPulseCoordinatorTest {
     }
 
     @Test
-    public void testOnePingAndThenOnePostWithRedirectedLink() throws InterruptedException {
+    void testOnePingAndThenOnePostWithRedirectedLink() throws InterruptedException {
         QuickPulseDataFetcher mockFetcher = Mockito.mock(QuickPulseDataFetcher.class);
         QuickPulseDataSender mockSender = Mockito.mock(QuickPulseDataSender.class);
         QuickPulsePingSender mockPingSender = Mockito.mock(QuickPulsePingSender.class);

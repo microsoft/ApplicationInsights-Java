@@ -25,32 +25,32 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public final class ClassDataVerifierImplTests {
+final class ClassDataVerifierImplTests {
     private final static String PUBLIC_EXISTING_METHOD = "endsWith";
     private final static String PUBLIC_NOT_EXISTING_METHOD = "notexistingmethod";
     private final static String EXISTING_CLASS = "java.lang.String";
     private final static String NOT_EXISTING_CLASS = "java.lang.StringStringString";
 
     @Test
-    public void testMethodExistingPublicMethod() {
+    void testMethodExistingPublicMethod() {
         boolean found = new ClassDataVerifierImpl().verifyMethodExists(String.class, PUBLIC_EXISTING_METHOD, String.class);
         assertThat(found).isTrue();
     }
 
     @Test
-    public void testMethodNotExistingPublicMethod() {
+    void testMethodNotExistingPublicMethod() {
         boolean found = new ClassDataVerifierImpl().verifyMethodExists(String.class, PUBLIC_NOT_EXISTING_METHOD);
         assertThat(found).isFalse();
     }
 
     @Test
-    public void testClassExists() {
+    void testClassExists() {
         boolean found = new ClassDataVerifierImpl().verifyClassExists(EXISTING_CLASS);
         assertThat(found).isTrue();
     }
 
     @Test
-    public void testClassDoesNotExist() {
+    void testClassDoesNotExist() {
         boolean found = new ClassDataVerifierImpl().verifyClassExists(NOT_EXISTING_CLASS);
         assertThat(found).isFalse();
     }

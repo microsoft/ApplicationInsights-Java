@@ -10,16 +10,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-public class MapUtilTest {
+class MapUtilTest {
 
     @Test
-    public void targetCannotBeNullInCopy() {
+    void targetCannotBeNullInCopy() {
         assertThatThrownBy(() -> MapUtil.copy(new HashMap<String, String>(), null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void copyIsNoOpIfSourceIsNullOrEmpty() {
+    void copyIsNoOpIfSourceIsNullOrEmpty() {
         Map<String, String> source = mock(Map.class);
         Map<String, String> target = mock(Map.class);
         when(source.size()).thenReturn(0);
@@ -36,7 +36,7 @@ public class MapUtilTest {
     }
 
     @Test
-    public void testCopyIntoHashMap() {
+    void testCopyIntoHashMap() {
         Map<String, String> source = new HashMap<>();
         Map<String, String> target = new HashMap<>();
 
@@ -48,7 +48,7 @@ public class MapUtilTest {
     }
 
     @Test
-    public void testCopyIntoConcurrentHashMap() {
+    void testCopyIntoConcurrentHashMap() {
         Map<String, String> source = new HashMap<>();
         Map<String, String> target = new ConcurrentHashMap<>();
 

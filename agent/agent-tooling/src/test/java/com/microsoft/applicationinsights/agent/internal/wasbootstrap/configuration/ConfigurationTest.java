@@ -47,10 +47,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(SystemStubsExtension.class)
-public class ConfigurationTest {
+class ConfigurationTest {
 
     @SystemStub
-    public EnvironmentVariables envVars = new EnvironmentVariables();
+    EnvironmentVariables envVars = new EnvironmentVariables();
 
     private static Configuration loadConfiguration() throws IOException {
         return loadConfiguration("applicationinsights.json");
@@ -67,7 +67,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldParse() throws IOException {
+    void shouldParse() throws IOException {
         Configuration configuration = loadConfiguration();
 
         assertThat(configuration.connectionString).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
@@ -95,7 +95,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldParseFromEnvVar() throws IOException {
+    void shouldParseFromEnvVar() throws IOException {
         String jmxMetricsJson = "[{" +
                 "\"objectName\":\"java.lang:type=ClassLoading\"," +
                 "\"attribute\":\"LoadedClassCount\"," +
@@ -124,7 +124,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldThrowFromEnvVarIfEmbeddedConnectionString() {
+    void shouldThrowFromEnvVarIfEmbeddedConnectionString() {
         String contentJson = "{\"connectionString\":\"InstrumentationKey=55555555-5555-5555-5555-555555555555\"," +
                 "\"role\":{\"name\":\"testrole\"}}";
         envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
@@ -134,7 +134,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldParseProcessorConfiguration() throws IOException {
+    void shouldParseProcessorConfiguration() throws IOException {
 
         Configuration configuration = loadConfiguration("ApplicationInsights_SpanProcessor.json");
         PreviewConfiguration preview = configuration.preview;
@@ -222,7 +222,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldParseAuthenticationConfiguration() throws IOException {
+    void shouldParseAuthenticationConfiguration() throws IOException {
 
         Configuration configuration = loadConfiguration("applicationinsights_aadauth.json");
         PreviewConfiguration preview = configuration.preview;
@@ -237,7 +237,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldUseDefaults() throws IOException {
+    void shouldUseDefaults() throws IOException {
         envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
         envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
 
@@ -253,7 +253,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideConnectionString() throws IOException {
+    void shouldOverrideConnectionString() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=11111111-1111-1111-1111-111111111111");
 
         Configuration configuration = loadConfiguration();
@@ -263,7 +263,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideRoleName() throws IOException {
+    void shouldOverrideRoleName() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_ROLE_NAME", "role name from env");
         envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
@@ -274,7 +274,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideRoleNameWithWebsiteEnvVar() throws IOException {
+    void shouldOverrideRoleNameWithWebsiteEnvVar() throws IOException {
         envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
         Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
@@ -284,7 +284,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldNotOverrideRoleNameWithWebsiteEnvVar() throws IOException {
+    void shouldNotOverrideRoleNameWithWebsiteEnvVar() throws IOException {
         envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
         Configuration configuration = loadConfiguration();
@@ -294,7 +294,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideRoleNameWithLowercaseWebsiteEnvVarOnAzFn() throws IOException {
+    void shouldOverrideRoleNameWithLowercaseWebsiteEnvVarOnAzFn() throws IOException {
         envVars.set("FUNCTIONS_WORKER_RUNTIME", "java");
         envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
@@ -305,7 +305,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideRoleInstance() throws IOException {
+    void shouldOverrideRoleInstance() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_ROLE_INSTANCE", "role instance from env");
         envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
 
@@ -316,7 +316,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideRoleInstanceWithWebsiteEnvVar() throws IOException {
+    void shouldOverrideRoleInstanceWithWebsiteEnvVar() throws IOException {
         envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
 
         Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
@@ -326,7 +326,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldNotOverrideRoleInstanceWithWebsiteEnvVar() throws IOException {
+    void shouldNotOverrideRoleInstanceWithWebsiteEnvVar() throws IOException {
         envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
 
         Configuration configuration = loadConfiguration();
@@ -336,7 +336,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideSamplingPercentage() throws IOException {
+    void shouldOverrideSamplingPercentage() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "0.25");
 
         Configuration configuration = loadConfiguration();
@@ -346,7 +346,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideLogCaptureThreshold() throws IOException {
+    void shouldOverrideLogCaptureThreshold() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL", "TRACE");
 
         Configuration configuration = loadConfiguration();
@@ -356,7 +356,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideJmxMetrics() throws IOException {
+    void shouldOverrideJmxMetrics() throws IOException {
         String jmxMetricsJson = "[{'objectName': 'java.lang:type=ClassLoading','attribute': 'LoadedClassCount','display': 'Loaded Class Count from EnvVar'}," +
                 "{'objectName': 'java.lang:type=MemoryPool,name=Code Cache','attribute': 'Usage.used','display': 'Code Cache Used from EnvVar'}]";
         envVars.set("APPLICATIONINSIGHTS_JMX_METRICS", jmxMetricsJson);
@@ -373,7 +373,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideSelfDiagnosticsLevel() throws IOException {
+    void shouldOverrideSelfDiagnosticsLevel() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", "DEBUG");
 
         Configuration configuration = loadConfiguration();
@@ -383,7 +383,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideSelfDiagnosticsFilePath() throws IOException {
+    void shouldOverrideSelfDiagnosticsFilePath() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH", "/tmp/ai.log");
 
         Configuration configuration = loadConfiguration();
@@ -393,7 +393,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverridePreviewOtelApiSupport() throws IOException {
+    void shouldOverridePreviewOtelApiSupport() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_PREVIEW_OTEL_API_SUPPORT", "true");
 
         Configuration configuration = loadConfiguration();
@@ -403,7 +403,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverridePreviewAzureSdkInstrumentation() throws IOException {
+    void shouldOverridePreviewAzureSdkInstrumentation() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_AZURE_SDK_ENABLED", "true");
 
         Configuration configuration = loadConfiguration();
@@ -413,7 +413,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverridePreviewJavaHttpClientInstrumentation() throws IOException {
+    void shouldOverridePreviewJavaHttpClientInstrumentation() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAVA_HTTP_CLIENT_ENABLED", "true");
 
         Configuration configuration = loadConfiguration();
@@ -423,7 +423,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverridePreviewJaxwsInstrumentation() throws IOException {
+    void shouldOverridePreviewJaxwsInstrumentation() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_JAXWS_ENABLED", "true");
 
         Configuration configuration = loadConfiguration();
@@ -433,7 +433,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverridePreviewRabbitmqInstrumentation() throws IOException {
+    void shouldOverridePreviewRabbitmqInstrumentation() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_RABBITMQ_ENABLED", "true");
 
         Configuration configuration = loadConfiguration();
@@ -443,7 +443,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverridePreviewLiveMetricsEnabled() throws IOException {
+    void shouldOverridePreviewLiveMetricsEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED", "false");
 
         Configuration configuration = loadConfiguration();
@@ -453,7 +453,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideInstrumentationCassandraEnabled() throws IOException {
+    void shouldOverrideInstrumentationCassandraEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED", "false");
 
         Configuration configuration = loadConfiguration();
@@ -463,7 +463,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideInstrumentationJdbcEnabled() throws IOException {
+    void shouldOverrideInstrumentationJdbcEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED", "false");
 
         Configuration configuration = loadConfiguration();
@@ -473,7 +473,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideInstrumentationJmsEnabled() throws IOException {
+    void shouldOverrideInstrumentationJmsEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_JMS_ENABLED", "false");
 
         Configuration configuration = loadConfiguration();
@@ -483,7 +483,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideInstrumentationKafkaEnabled() throws IOException {
+    void shouldOverrideInstrumentationKafkaEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_KAFKA_ENABLED", "false");
 
         Configuration configuration = loadConfiguration();
@@ -493,7 +493,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideInstrumentationMicrometerEnabled() throws IOException {
+    void shouldOverrideInstrumentationMicrometerEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED", "false");
 
         Configuration configuration = loadConfiguration();
@@ -503,7 +503,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideInstrumentationMongoEnabled() throws IOException {
+    void shouldOverrideInstrumentationMongoEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_MONGO_ENABLED", "false");
 
         Configuration configuration = loadConfiguration();
@@ -513,7 +513,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideInstrumentationRedisEnabled() throws IOException {
+    void shouldOverrideInstrumentationRedisEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_REDIS_ENABLED", "false");
 
         Configuration configuration = loadConfiguration();
@@ -523,7 +523,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideInstrumentationSpringSchedulingEnabled() throws IOException {
+    void shouldOverrideInstrumentationSpringSchedulingEnabled() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_SPRING_SCHEDULING_ENABLED", "false");
 
         Configuration configuration = loadConfiguration();
@@ -533,7 +533,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldOverrideAadAuthenticationConfig() throws IOException {
+    void shouldOverrideAadAuthenticationConfig() throws IOException {
         envVars.set("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=12345678");
 
         Configuration configuration = loadConfiguration("applicationinsights_aadauthenv.json");
@@ -556,7 +556,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldUseRpConfigRole() {
+    void shouldUseRpConfigRole() {
         Configuration configuration = new Configuration();
         RpConfiguration rpConfiguration = new RpConfiguration();
         rpConfiguration.role.name = "role-name-from-rp";
@@ -568,7 +568,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldNotUseRpConfigRole() {
+    void shouldNotUseRpConfigRole() {
         Configuration configuration = new Configuration();
         configuration.role.name = "role-name";
         configuration.role.instance = "role-instance";
@@ -582,7 +582,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void shouldNotParseFaultyJson() {
+    void shouldNotParseFaultyJson() {
         assertThatThrownBy(() -> loadConfiguration("applicationinsights_faulty.json"))
                 .isInstanceOf(JsonDataException.class);
     }

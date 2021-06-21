@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class VariousCollectorsTest {
+class VariousCollectorsTest {
 
     @Test
-    public void testCms() throws IOException, UnableToMonitorMemoryException, InterruptedException {
+    void testCms() throws IOException, UnableToMonitorMemoryException, InterruptedException {
         try {
             List<GCCollectionEvent> events = new GcProcessRunner("-XX:+UseConcMarkSweepGC", 50)
                     .getGcCollectionEvents();
@@ -35,7 +35,7 @@ public class VariousCollectorsTest {
     }
 
     @Test
-    public void testParallel() throws IOException, UnableToMonitorMemoryException, InterruptedException, GCNotPresentException {
+    void testParallel() throws IOException, UnableToMonitorMemoryException, InterruptedException, GCNotPresentException {
         List<GCCollectionEvent> events = new GcProcessRunner("-XX:+UseParallelGC", 70)
                 .getGcCollectionEvents();
 
@@ -48,7 +48,7 @@ public class VariousCollectorsTest {
     }
 
     @Test
-    public void testG1() throws IOException, UnableToMonitorMemoryException, InterruptedException, GCNotPresentException {
+    void testG1() throws IOException, UnableToMonitorMemoryException, InterruptedException, GCNotPresentException {
         List<GCCollectionEvent> events = new GcProcessRunner("-XX:+UseG1GC", 50)
                 .getGcCollectionEvents();
 
@@ -56,7 +56,7 @@ public class VariousCollectorsTest {
     }
 
     @Test
-    public void testSerial() throws IOException, UnableToMonitorMemoryException, InterruptedException {
+    void testSerial() throws IOException, UnableToMonitorMemoryException, InterruptedException {
         try {
             List<GCCollectionEvent> events = new GcProcessRunner("-XX:+UseSerialGC", 50)
                     .getGcCollectionEvents();
@@ -69,7 +69,7 @@ public class VariousCollectorsTest {
     /*
     TODO: Enable when this can use Java 11
     @Test
-    public void testShenandoah() throws IOException, AttachNotSupportedException, UnableToMonitorMemoryException, InterruptedException {
+    void testShenandoah() throws IOException, AttachNotSupportedException, UnableToMonitorMemoryException, InterruptedException {
         try {
             List<GCCollectionEvent> events = new GcProcessRunner("-XX:+UseShenandoahGC", 50)
                     .getGcCollectionEvents();
@@ -81,7 +81,7 @@ public class VariousCollectorsTest {
     }
 
     @Test
-    public void testZ() throws IOException, AttachNotSupportedException, UnableToMonitorMemoryException, InterruptedException {
+    void testZ() throws IOException, AttachNotSupportedException, UnableToMonitorMemoryException, InterruptedException {
         try {
             List<GCCollectionEvent> events = new GcProcessRunner("-XX:+UseZGC", 200)
                     .getGcCollectionEvents();

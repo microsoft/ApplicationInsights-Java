@@ -9,22 +9,22 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MoshiJsonFormatterTests {
+class MoshiJsonFormatterTests {
 
     private MoshiJsonFormatter formatter;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         formatter = new MoshiJsonFormatter();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         formatter = null;
     }
 
     @Test
-    public void formatterSerializesSimpleMap() {
+    void formatterSerializesSimpleMap() {
         Map<String, Object> m = new HashMap<>();
         m.put("s1", "v1");
         m.put("int1", 123);
@@ -33,7 +33,7 @@ public class MoshiJsonFormatterTests {
     }
 
     @Test
-    public void formatterWithPrettyPrintPrintsPretty() {
+    void formatterWithPrettyPrintPrintsPretty() {
         Map<String, Object> m = new HashMap<>();
         m.put("s1", "v1");
         m.put("int1", 123);

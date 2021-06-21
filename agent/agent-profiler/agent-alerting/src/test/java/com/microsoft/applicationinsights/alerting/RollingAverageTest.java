@@ -33,10 +33,10 @@ import org.junit.jupiter.api.Test;
 import static com.microsoft.applicationinsights.alerting.alert.AlertMetricType.CPU;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RollingAverageTest {
+class RollingAverageTest {
 
     @Test
-    public void alertsConsumer() {
+    void alertsConsumer() {
         AtomicReference<Double> called = new AtomicReference<>();
         Consumer<Double> consumer = called::set;
         RollingAverage rollingAverage = new RollingAverage()
@@ -48,7 +48,7 @@ public class RollingAverageTest {
     }
 
     @Test
-    public void givesCorrectValue() {
+    void givesCorrectValue() {
         AtomicReference<Double> called = new AtomicReference<>();
         Consumer<Double> consumer = called::set;
         RollingAverage rollingAverage = new RollingAverage()
@@ -62,7 +62,7 @@ public class RollingAverageTest {
     }
 
     @Test
-    public void throwsAwayDataOutsidePeriod() {
+    void throwsAwayDataOutsidePeriod() {
         AtomicReference<Double> called = new AtomicReference<>();
         Consumer<Double> consumer = called::set;
 

@@ -22,7 +22,6 @@ package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import com.microsoft.applicationinsights.profileUploader.ServiceProfilerIndex;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
@@ -42,9 +41,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ServiceProfilerUploaderTest {
+class ServiceProfilerUploaderTest {
     @Test
-    public void uploadFileGoodPathReturnsExpectedResponse() throws IOException {
+    void uploadFileGoodPathReturnsExpectedResponse() throws IOException {
 
         ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
 
@@ -84,7 +83,7 @@ public class ServiceProfilerUploaderTest {
     }
 
     @Test
-    public void roleNameIsCorrectlyAddedToMetaData() throws IOException {
+    void roleNameIsCorrectlyAddedToMetaData() throws IOException {
 
         ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
 
@@ -123,7 +122,7 @@ public class ServiceProfilerUploaderTest {
     }
 
     @Test
-    public void uploadWithoutAFileThrows() {
+    void uploadWithoutAFileThrows() {
 
         ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
 
@@ -155,7 +154,7 @@ public class ServiceProfilerUploaderTest {
         return tmpFile;
     }
 
-    public static ServiceProfilerClientV2 stubServiceProfilerClient() {
+    static ServiceProfilerClientV2 stubServiceProfilerClient() {
         return new ServiceProfilerClientV2() {
 
             @Override
@@ -174,5 +173,4 @@ public class ServiceProfilerUploaderTest {
             }
         };
     }
-
 }

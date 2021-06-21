@@ -33,10 +33,10 @@ import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class ServiceProfilerSettingsClientTest {
+class ServiceProfilerSettingsClientTest {
 
     @Test
-    public void badServiceResponseDoesNotProvideReturn() throws ClientClosedException, IOException, URISyntaxException {
+    void badServiceResponseDoesNotProvideReturn() throws ClientClosedException, IOException, URISyntaxException {
         ServiceProfilerClientV2 serviceProfilerClient = Mockito.mock(ServiceProfilerClientV2.class);
 
         Mockito.when(serviceProfilerClient.getSettings(Mockito.any())).thenReturn("");

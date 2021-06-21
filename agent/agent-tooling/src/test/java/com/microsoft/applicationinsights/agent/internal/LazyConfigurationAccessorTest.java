@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-public class LazyConfigurationAccessorTest {
+class LazyConfigurationAccessorTest {
 
     /*
      * Lazily Set Connection String For Linux Consumption Plan:
@@ -49,25 +49,25 @@ public class LazyConfigurationAccessorTest {
 
     @Test
     //"LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is TRUE"
-    public void enableLazySetWithLazySetOptInOffEnableAgentOn() {
+    void enableLazySetWithLazySetOptInOffEnableAgentOn() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
     }
 
     @Test
     //"LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is FALSE"
-    public void disableLazySetWithLazySetOptInOffEnableAgentOff() {
+    void disableLazySetWithLazySetOptInOffEnableAgentOff() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "false")).isFalse();
     }
 
     @Test
     //"LazySetOptIn is FALSE, ConnectionString is valid and EnableAgent is NULL"
-    public void disableLazySetWithLazySetOptInOffEnableAgentNull() {
+    void disableLazySetWithLazySetOptInOffEnableAgentNull() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, null)).isFalse();
     }
 
     @Test
     //"LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is TRUE"
-    public void disableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNull() {
+    void disableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNull() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
 
         // given
@@ -84,7 +84,7 @@ public class LazyConfigurationAccessorTest {
 
     @Test
     //"LazySetOptIn is FALSE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent is TRUE"
-    public void disableLazySetWithLazySetOptInOffConnectionStringNotNullInstrumentationKeyNull() {
+    void disableLazySetWithLazySetOptInOffConnectionStringNotNullInstrumentationKeyNull() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
 
         // given
@@ -107,7 +107,7 @@ public class LazyConfigurationAccessorTest {
 
     @Test
     //"LazySetOptIn is FALSE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE")
-    public void enableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNotNull() {
+    void enableLazySetWithLazySetOptInOffConnectionStringNullInstrumentationKeyNotNull() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
 
         // given
@@ -124,25 +124,25 @@ public class LazyConfigurationAccessorTest {
 
     @Test
     //"LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is TRUE"
-    public void enableLazySetWithLazySetOptInOnEnableAgentOn() {
+    void enableLazySetWithLazySetOptInOnEnableAgentOn() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "true")).isTrue();
     }
 
     @Test
     //"LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is FALSE"
-    public void disableLazySetWithLazySetOptInOnEnableAgentOff() {
+    void disableLazySetWithLazySetOptInOnEnableAgentOff() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "false")).isFalse();
     }
 
     @Test
     //"LazySetOptIn is TRUE, ConnectionString is valid and EnableAgent is NULL"
-    public void enableLazySetWithLazySetOptInOnEnableAgentNull() {
+    void enableLazySetWithLazySetOptInOnEnableAgentNull() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, null)).isTrue();
     }
 
     @Test
     //"LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is NULL, and EnableAgent is TRUE"
-    public void disableLazySetWithLazySetOptInOnConnectionStringNullAndInstrumentationKeyNull() {
+    void disableLazySetWithLazySetOptInOnConnectionStringNullAndInstrumentationKeyNull() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(true, "true")).isTrue();
 
         // given
@@ -159,7 +159,7 @@ public class LazyConfigurationAccessorTest {
 
     @Test
     //"LazySetOptIn is TRUE, ConnectionString is valid, InstrumentationKey is NULL, and EnableAgent is TRUE"
-    public void enableLazySetWithLazySetOptInOnConnectionStringNotNullInstrumentationKeyNull() {
+    void enableLazySetWithLazySetOptInOnConnectionStringNotNullInstrumentationKeyNull() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
 
         // given
@@ -176,7 +176,7 @@ public class LazyConfigurationAccessorTest {
 
     @Test
     //"LazySetOptIn is TRUE, ConnectionString is NULL, InstrumentationKey is valid, and EnableAgent is TRUE"
-    public void enableLazySetWithLazySetOptInOnConnectionStringNullInstrumentationKeyNotNull() {
+    void enableLazySetWithLazySetOptInOnConnectionStringNullInstrumentationKeyNotNull() {
         assertThat(LazyConfigurationAccessor.shouldSetConnectionString(false, "true")).isTrue();
 
         // given

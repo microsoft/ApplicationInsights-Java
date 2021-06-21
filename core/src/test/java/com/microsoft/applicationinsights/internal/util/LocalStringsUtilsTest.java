@@ -25,15 +25,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class LocalStringsUtilsTest {
+class LocalStringsUtilsTest {
 
     @Test
-    public void test() {
+    void test() {
         assertThat(LocalStringsUtils.getDateFormatter()).isNotNull();
     }
 
     @Test
-    public void testGenerateRandomIdWithNoDashes() {
+    void testGenerateRandomIdWithNoDashes() {
         String idWithoutDashes = LocalStringsUtils.generateRandomId(true);
 
         int dashIndex = idWithoutDashes.indexOf("-");

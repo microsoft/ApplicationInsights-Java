@@ -49,12 +49,12 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class ExporterWithAttributeProcessorTest {
+class ExporterWithAttributeProcessorTest {
 
     private final Tracer tracer = OpenTelemetrySdk.builder().build().getTracer("test");
 
     @Test
-    public void noActionTest() {
+    void noActionTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -65,7 +65,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void inValidConfigTestWithNoValueInActionTest() {
+    void inValidConfigTestWithNoValueInActionTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -85,7 +85,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void inValidConfigTestWithInvalidIncludeTest() {
+    void inValidConfigTestWithInvalidIncludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -105,7 +105,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void actionDeleteTest() {
+    void actionDeleteTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -141,7 +141,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void actionInsertTest() {
+    void actionInsertTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -177,7 +177,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void actionInsertAndUpdateTest() {
+    void actionInsertAndUpdateTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -219,7 +219,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void actionInsertAndUpdateSameAttributeTest() {
+    void actionInsertAndUpdateSameAttributeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -260,7 +260,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void actionInsertWithDuplicateTest() {
+    void actionInsertWithDuplicateTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -297,7 +297,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void actionInsertFromAttributeTest() {
+    void actionInsertFromAttributeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -335,7 +335,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void actionSimpleUpdateTest() {
+    void actionSimpleUpdateTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -383,7 +383,7 @@ public class ExporterWithAttributeProcessorTest {
 
 
     @Test
-    public void actionUpdateFromAttributeUpdateTest() {
+    void actionUpdateFromAttributeUpdateTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -418,7 +418,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void complexActionTest() {
+    void complexActionTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -458,7 +458,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void simpleIncludeTest() {
+    void simpleIncludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -518,7 +518,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void simpleIncludeWithSpanNamesTest() {
+    void simpleIncludeWithSpanNamesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -589,7 +589,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void simpleIncludeRegexTest() {
+    void simpleIncludeRegexTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -649,7 +649,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void invalidRegexTest() {
+    void invalidRegexTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -670,7 +670,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void simpleIncludeRegexValueTest() {
+    void simpleIncludeRegexValueTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -743,7 +743,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void simpleIncludeRegexNoValueTest() {
+    void simpleIncludeRegexNoValueTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -815,7 +815,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void simpleIncludeHashTest() {
+    void simpleIncludeHashTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -874,7 +874,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void simpleExcludeTest() {
+    void simpleExcludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -934,7 +934,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void simpleExcludeRegexTest() {
+    void simpleExcludeRegexTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -996,7 +996,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void multiIncludeTest() {
+    void multiIncludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -1063,7 +1063,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void multiExcludeTest() {
+    void multiExcludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -1132,7 +1132,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void selectiveProcessingTest() { //With both include and exclude
+    void selectiveProcessingTest() { //With both include and exclude
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -1198,7 +1198,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void actionInsertWithExtractTest() {
+    void actionInsertWithExtractTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -1243,7 +1243,7 @@ public class ExporterWithAttributeProcessorTest {
     }
 
     @Test
-    public void actionInsertWithExtractDuplicateTest() {
+    void actionInsertWithExtractDuplicateTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;

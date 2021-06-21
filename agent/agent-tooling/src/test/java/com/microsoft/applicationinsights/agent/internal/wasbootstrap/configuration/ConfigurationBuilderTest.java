@@ -32,16 +32,16 @@ import static com.microsoft.applicationinsights.agent.internal.wasbootstrap.conf
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class ConfigurationBuilderTest {
+class ConfigurationBuilderTest {
 
-    public Path getConfigFilePath(String resourceName) {
+    Path getConfigFilePath(String resourceName) {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource(resourceName).getFile());
         return file.toPath();
     }
 
     @Test
-    public void testEmptyToNull() {
+    void testEmptyToNull() {
         assertThat(trimAndEmptyToNull("   ")).isNull();
         assertThat(trimAndEmptyToNull("")).isNull();
         assertThat(trimAndEmptyToNull(null)).isNull();
@@ -51,13 +51,13 @@ public class ConfigurationBuilderTest {
     }
 
     @Test
-    public void testGetConfigFilePath() {
+    void testGetConfigFilePath() {
         Path path = getConfigFilePath("applicationinsights.json");
         assertThat(path.toString().endsWith("applicationinsights.json")).isTrue();
     }
 
     @Test
-    public void testValidJson() throws IOException {
+    void testValidJson() throws IOException {
         Path path = getConfigFilePath("applicationinsights.json");
         Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path, true);
         assertThat(configuration.connectionString).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
@@ -66,7 +66,7 @@ public class ConfigurationBuilderTest {
     }
 
     @Test
-    public void testFaultyJson() throws IOException {
+    void testFaultyJson() throws IOException {
         Path path = getConfigFilePath("applicationinsights_faulty.json");
         Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path, true);
         // Configuration object should still be created.
@@ -75,7 +75,7 @@ public class ConfigurationBuilderTest {
     }
 
     @Test
-    public void testMalformedJson() {
+    void testMalformedJson() {
         Path path = getConfigFilePath("applicationinsights_malformed.json");
 
         assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
@@ -84,7 +84,7 @@ public class ConfigurationBuilderTest {
     }
 
     @Test
-    public void testMalformedFaultyJson() {
+    void testMalformedFaultyJson() {
         Path path = getConfigFilePath("applicationinsights_malformed_faulty.json");
 
         assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
@@ -94,7 +94,7 @@ public class ConfigurationBuilderTest {
     }
 
     @Test
-    public void testGetJsonEncodingExceptionMessage() {
+    void testGetJsonEncodingExceptionMessage() {
         String pathNull = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file",null);
         String pathEmpty = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file","");
         String pathValid = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file","has a malformed JSON at path $.role.");

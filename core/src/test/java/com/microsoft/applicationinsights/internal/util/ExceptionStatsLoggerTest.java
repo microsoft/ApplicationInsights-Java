@@ -6,17 +6,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ExceptionStatsLoggerTest {
+class ExceptionStatsLoggerTest {
     private static ExceptionStats networkExceptionStats;
 
     @BeforeAll
-    public static void setUp() {
+    static void setUp() {
         // one-time initialization code
         networkExceptionStats = new ExceptionStats(ExceptionStatsLoggerTest.class, "intro:", 1);
     }
 
     @Test
-    public void testWarnAndExceptionsAreLogged() throws InterruptedException {
+    void testWarnAndExceptionsAreLogged() throws InterruptedException {
         LogCaptor logCaptor = LogCaptor.forClass(ExceptionStatsLoggerTest.class);
         networkExceptionStats.recordSuccess();
         Exception ex=new IllegalArgumentException();
