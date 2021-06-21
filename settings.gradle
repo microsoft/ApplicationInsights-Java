@@ -48,7 +48,8 @@ if (buildNative) {
     logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
 }
 include ':etw:java'
-include ':etw:etw-testapp'
+// TODO (trask) is this really needed? if so, need to restore devtest configuration
+//include ':etw:etw-testapp'
 
 include ':core'
 
