@@ -47,25 +47,6 @@ public class LocalFileLoaderTests {
     }
 
     @Test
-    public void testSortPersistedFiles() throws InterruptedException {
-        List<File> sourceList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            String filename = System.currentTimeMillis() + "-" + UUID.randomUUID().toString().replaceAll("-", "") + PERMANENT_FILE_EXTENSION;
-            sourceList.add(new File(DEFAULT_FOLDER, filename));
-            Thread.sleep(10);
-        }
-
-        List<File> copiedSourceList = new ArrayList<>();
-        copiedSourceList.addAll(sourceList);
-        Collections.shuffle(copiedSourceList);
-
-        List<File> sortedFiles = LocalFileLoader.get().sortPersistedFiles((Collection<File>) copiedSourceList);
-        for (int i = 0; i < 10; i++) {
-            assertThat(sortedFiles.get(i)).isEqualTo(sourceList.get(i));
-        }
-    }
-
-    @Test
     public void testLoadFile() throws IOException {
         File sourceFile = new File(getClass().getClassLoader().getResource(BYTE_BUFFERS_TEST_FILE).getPath());
 

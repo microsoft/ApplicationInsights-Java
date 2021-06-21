@@ -149,7 +149,7 @@ public class TelemetryChannel {
         //  * retry on first failure (may not need to worry about this if retry policy in pipeline already, see above)
         //  * write to disk on second failure
         CompletableResultCode result = new CompletableResultCode();
-        List<ByteBuffer> finalByteBuffers = byteBuffers;
+        final List<ByteBuffer> finalByteBuffers = byteBuffers;
         pipeline.send(request)
                 .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
                 .subscribe(response -> {

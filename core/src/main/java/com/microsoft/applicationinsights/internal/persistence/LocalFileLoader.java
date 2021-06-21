@@ -73,51 +73,6 @@ public class LocalFileLoader {
         return read(tempFile);
     }
 
-    private String loadOldestFromCache() {
-        if (persistedFilesCache.isEmpty()) { // if the cache is empty because of app crashes, reload everything from disk
-            Collection<File> filesFromDisk = FileUtils.listFiles(DEFAULT_FOLDER, new String[]{PERMANENT_FILE_EXTENSION}, false);
-            if (filesFromDisk.isEmpty()) {
-                return null;
-            }
-
-            List<File> files = sortPersistedFiles(filesFromDisk);
-            if (files == null || files.isEmpty()) {
-                return null;
-            }
-
-            persistedFilesCache.addAll(files.stream().map(File::getName).collect(Collectors.toList()));
-        }
-
-        String fileToBeLoaded = persistedFilesCache.poll();
-
-        return fileToBeLoaded != null ? fileToBeLoaded : null;
-
-    }
-
-    List<File> sortPersistedFiles(Collection<File> files) {
-        List<File> result = new ArrayList<>(files);
-        Collections.sort(result, new Comparator<File>() {
-            @Override
-            public int compare(File o1, File o2) {
-                return getMillisecondsFromFilename(o1).compareTo(getMillisecondsFromFilename(o2));
-            }
-        });
-
-        return result;
-    }
-
-    private Long getMillisecondsFromFilename(File file) {
-        String filename = file.getName();
-        String milliSeconds = filename.substring(0, filename.lastIndexOf('-'));
-        try {
-            return Long.parseLong(milliSeconds);
-        } catch (NumberFormatException ex) {
-            logger.error("Fail to convert milliseconds in string to long", ex);
-        }
-
-        return null;
-    }
-
     // Used by tests only
     Queue<String> getPersistedFilesCache() {
         return persistedFilesCache;
