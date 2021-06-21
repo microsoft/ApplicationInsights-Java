@@ -26,8 +26,8 @@ public class GcProcessRunner {
     private OutputStream processInput;
     private String stdOutData;
     private Process process;
-    private String gcArg;
-    private int heapSizeInMb;
+    private final String gcArg;
+    private final int heapSizeInMb;
 
     public GcProcessRunner(String gcArg, int heapSizeInMb) {
         this.gcArg = gcArg;
@@ -103,7 +103,7 @@ public class GcProcessRunner {
         throw new RuntimeException("Failed to start process");
     }
 
-    private int getRandomPort() throws IOException {
+    private static int getRandomPort() {
         for (int i = 0; i < 100; i++) {
             int port = (int) (10000 * Math.random() + 40000);
             try {

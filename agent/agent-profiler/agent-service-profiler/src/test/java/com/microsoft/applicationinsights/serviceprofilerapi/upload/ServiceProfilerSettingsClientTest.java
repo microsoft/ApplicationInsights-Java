@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerSettingsClient;
 import org.junit.jupiter.api.Test;
@@ -36,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ServiceProfilerSettingsClientTest {
 
     @Test
-    void badServiceResponseDoesNotProvideReturn() throws ClientClosedException, IOException, URISyntaxException {
+    void badServiceResponseDoesNotProvideReturn() throws IOException, URISyntaxException {
         ServiceProfilerClientV2 serviceProfilerClient = Mockito.mock(ServiceProfilerClientV2.class);
 
         Mockito.when(serviceProfilerClient.getSettings(Mockito.any())).thenReturn("");

@@ -89,7 +89,7 @@ class RollingAverageTest {
         assertThat(called.get()).isEqualTo(0.1d);
     }
 
-    private TelemetryDataPoint createDataPoint(double v) {
+    private static TelemetryDataPoint createDataPoint(double v) {
         return new TelemetryDataPoint(CPU, TimeSource.DEFAULT.getNow(), v);
     }
 }

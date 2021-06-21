@@ -58,14 +58,11 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
     private final HttpPipeline httpPipeline;
     private final String userAgent;
 
-    private boolean closed;
-
     public ProfilerFrontendClientV2(URL hostUrl, String instrumentationKey, HttpPipeline httpPipeline, String userAgent) {
         this.hostUrl = hostUrl;
         this.instrumentationKey = instrumentationKey;
         this.httpPipeline = httpPipeline;
         this.userAgent = userAgent;
-        closed = false;
     }
 
     public ProfilerFrontendClientV2(URL hostUrl, String instrumentationKey, HttpPipeline httpPipeline) {
@@ -76,14 +73,16 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
      * Obtain permission to upload a profile to service profiler
      */
     @Override
-    public BlobAccessPass getUploadAccess(UUID profileId) throws IOException, ClientClosedException {
-        assertNotClosed();
-
+    public BlobAccessPass getUploadAccess(UUID profileId) throws IOException {
         URL requestUrl = uploadRequestUri(profileId);
         LOGGER.debug("Etl upload access request: {}", requestUrl);
 
         HttpResponse response = executePostWithRedirect(requestUrl).block();
-        // FIXME (trask) when does block return null?
+        if (response == null) {
+            // FIXME (trask) I think that http response mono should never complete empty
+            //  (it should either complete with a response or complete with a failure)
+            throw new AssertionError("http response mono returned empty");
+        }
         if (response.getStatusCode() >= 300) {
             // FIXME (trask) does azure http client throw HttpResponseException already on >= 300 response above?
             throw new HttpResponseException(response);
@@ -112,35 +111,40 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
      * Report to Service Profiler that the profile upload has been completed
      */
     @Override
-    public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag)
-            throws ClientClosedException, IOException {
-
-        assertNotClosed();
+    public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws IOException {
 
         URL requestUrl = uploadFinishedRequestUrl(profileId, etag);
 
         HttpResponse response = executePostWithRedirect(requestUrl).block();
+        if (response == null) {
+            // FIXME (trask) I think that http response mono should never complete empty
+            //  (it should either complete with a response or complete with a failure)
+            throw new AssertionError("http response mono returned empty");
+        }
 
-        // FIXME (trask) when does block return null?
         int statusCode = response.getStatusCode();
         if (statusCode != 201 && statusCode != 202) {
             LOGGER.error("Trace upload failed: {}", statusCode);
             return null;
         }
 
+        String json = response.getBodyAsString().block();
+        if (json == null) {
+            // FIXME (trask) I think that http response mono should never complete empty
+            //  (it should either complete with a response or complete with a failure)
+            throw new AssertionError("response body mono returned empty");
+        }
         return new Builder()
                 .build()
                 .adapter(ArtifactAcceptedResponse.class)
-                // FIXME (trask) when does block return null?
-                .fromJson(response.getBodyAsString().block());
+                .fromJson(json);
     }
 
     /**
      * Obtain current settings that have been configured within the UI
      */
     @Override
-    public String getSettings(Date oldTimeStamp) throws ClientClosedException, MalformedURLException {
-        assertNotClosed();
+    public String getSettings(Date oldTimeStamp) throws MalformedURLException {
 
         URL requestUrl = getSettingsPath(oldTimeStamp);
         LOGGER.debug("Settings pull request: {}", requestUrl);
@@ -148,25 +152,17 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
         HttpRequest request = new HttpRequest(HttpMethod.GET, requestUrl);
 
         HttpResponse response = httpPipeline.send(request).block();
-        // FIXME (trask) when does block return null?
+        if (response == null) {
+            // FIXME (trask) I think that http response mono should never complete empty
+            //  (it should either complete with a response or complete with a failure)
+            throw new AssertionError("http response mono returned empty");
+        }
         if (response.getStatusCode() >= 300) {
             // FIXME (trask) does azure http client throw HttpResponseException already on >= 300 response above?
             throw new HttpResponseException(response);
         }
 
         return response.getBodyAsString().block();
-    }
-
-    public void close() {
-        if (!closed) {
-            closed = true;
-        }
-    }
-
-    private void assertNotClosed() throws ClientClosedException {
-        if (closed) {
-            throw new ClientClosedException();
-        }
     }
 
     // api/profileragent/v4/settings?ikey=xyz&featureVersion=1.0.0&oldTimestamp=123

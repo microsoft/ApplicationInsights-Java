@@ -28,7 +28,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.azure.core.http.*;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -37,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ProfilerFrontendClientV2Test {
     @Test
-    void settingsPullHitsCorrectUrl() throws ClientClosedException, IOException {
+    void settingsPullHitsCorrectUrl() throws IOException {
 
         AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 
@@ -63,7 +62,7 @@ class ProfilerFrontendClientV2Test {
     }
 
     @Test
-    void uploadHitsCorrectUrl() throws ClientClosedException, IOException {
+    void uploadHitsCorrectUrl() throws IOException {
 
         AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 
@@ -89,7 +88,7 @@ class ProfilerFrontendClientV2Test {
     }
 
     @Test
-    void uploadFinishedHitsCorrectUrl() throws ClientClosedException, IOException {
+    void uploadFinishedHitsCorrectUrl() throws IOException {
 
         AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 

@@ -30,7 +30,6 @@ import com.azure.storage.blob.models.ParallelTransferOptions;
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import com.microsoft.applicationinsights.profileUploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.profileUploader.UploadResult;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
@@ -217,7 +216,7 @@ public class ServiceProfilerUploader {
             ArtifactAcceptedResponse uploadResponse;
             try {
                 uploadResponse = serviceProfilerClient.reportUploadFinish(profileId, response.getValue().getETag());
-            } catch (URISyntaxException | ClientClosedException | IOException e) {
+            } catch (URISyntaxException | IOException e) {
                 throw new UploadFailedException(e);
             }
 

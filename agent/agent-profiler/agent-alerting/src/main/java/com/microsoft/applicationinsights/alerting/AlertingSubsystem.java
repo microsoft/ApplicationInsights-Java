@@ -97,13 +97,13 @@ public class AlertingSubsystem {
         updateConfiguration(alertConfig);
 
         executorService
-                .submit(() -> {
+                .execute(() -> {
                     while (true) {
                         try {
                             process(workQueue.take());
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
-                            throw e;
+                            return;
                         } catch (Exception e) {
                             LOGGER.error("Exception while evaluating alert", e);
                         } catch (Error e) {

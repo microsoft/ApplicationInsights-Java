@@ -109,7 +109,7 @@ class AlertTriggerTest {
         assertThat(called.get()).isTrue();
     }
 
-    private AlertPipelineTrigger getAlertTrigger(AlertConfiguration config, AtomicBoolean called) {
+    private static AlertPipelineTrigger getAlertTrigger(AlertConfiguration config, AtomicBoolean called) {
         Consumer<AlertBreach> consumer = alert -> {
             assertThat(alert.getType()).isEqualTo(AlertMetricType.CPU);
             assertThat(alert.getAlertConfiguration()).isEqualTo(config);

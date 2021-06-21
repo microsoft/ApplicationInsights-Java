@@ -32,11 +32,9 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.Blob
  * Client that can interact with the Service Profiler endpoint
  */
 public interface ServiceProfilerClientV2 {
-    BlobAccessPass getUploadAccess(UUID profileId) throws URISyntaxException, IOException, ClientClosedException;
+    BlobAccessPass getUploadAccess(UUID profileId) throws URISyntaxException, IOException;
 
-    ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag)
-            throws URISyntaxException, ClientClosedException, IOException;
+    ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws URISyntaxException, IOException;
 
-    String getSettings(Date oldTimeStamp)
-            throws IOException, URISyntaxException, ClientClosedException;
+    String getSettings(Date oldTimeStamp) throws IOException, URISyntaxException;
 }

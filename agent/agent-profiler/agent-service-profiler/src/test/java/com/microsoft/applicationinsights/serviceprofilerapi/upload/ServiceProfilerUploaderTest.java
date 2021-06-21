@@ -34,11 +34,13 @@ import reactor.core.publisher.Mono;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ServiceProfilerUploaderTest {
@@ -145,10 +147,10 @@ class ServiceProfilerUploaderTest {
         assertThat(threw.get()).isTrue();
     }
 
-    private File createFakeJfrFile() throws IOException {
+    private static File createFakeJfrFile() throws IOException {
         File tmpFile = File.createTempFile("a-jfr-file", "jfr");
         FileOutputStream fos = new FileOutputStream(tmpFile);
-        fos.write("foobar".getBytes());
+        fos.write("foobar".getBytes(UTF_8));
         fos.close();
         tmpFile.deleteOnExit();
         return tmpFile;
@@ -163,7 +165,7 @@ class ServiceProfilerUploaderTest {
             }
 
             @Override
-            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws UnsupportedCharsetException {
+            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) {
                 return null;
             }
 

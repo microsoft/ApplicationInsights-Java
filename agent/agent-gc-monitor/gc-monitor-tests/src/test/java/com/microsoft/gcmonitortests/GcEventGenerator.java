@@ -1,8 +1,11 @@
 package com.microsoft.gcmonitortests;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generates a series of GC events. Should be run with roughly 50mb of heap (depends on collector)
@@ -20,11 +23,12 @@ public class GcEventGenerator {
         new GcEventGenerator().run();
     }
 
+    @SuppressWarnings("SystemOut")
     private void run() throws InterruptedException {
         System.out.println("Hit return to start");
 
         //Block until consumer sends the ready signal
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in, UTF_8);
         System.out.println(scanner.nextLine());
 
 
@@ -95,9 +99,5 @@ public class GcEventGenerator {
         public byte[] getMemory() {
             return memory;
         }
-    }
-
-    private byte[] createArray(int sizeInBytes) {
-        return new byte[sizeInBytes];
     }
 }

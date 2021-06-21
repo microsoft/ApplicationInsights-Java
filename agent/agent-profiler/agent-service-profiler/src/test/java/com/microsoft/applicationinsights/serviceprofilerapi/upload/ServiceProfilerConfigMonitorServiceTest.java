@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
 import org.junit.jupiter.api.Test;
@@ -42,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ServiceProfilerConfigMonitorServiceTest {
 
     @Test
-    void pullsConfig() throws ClientClosedException, IOException, URISyntaxException {
+    void pullsConfig() throws IOException, URISyntaxException {
 
         AtomicReference<Runnable> job = new AtomicReference<>();
 
@@ -81,7 +80,7 @@ class ServiceProfilerConfigMonitorServiceTest {
         return executorService;
     }
 
-    static ServiceProfilerClientV2 mockServiceProfilerClient() throws IOException, URISyntaxException, ClientClosedException {
+    static ServiceProfilerClientV2 mockServiceProfilerClient() throws IOException, URISyntaxException {
         ServiceProfilerClientV2 serviceProfilerClient = Mockito.mock(ServiceProfilerClientV2.class);
         Mockito.when(serviceProfilerClient.getSettings(Matchers.any(Date.class))).thenReturn("{\"id\":\"8929ed2e-24da-4ad4-8a8b-5a5ebc03abb4\",\"lastModified\":\"2021-01-25T15:46:11" +
                 ".0900613+00:00\",\"enabledLastModified\":\"0001-01-01T00:00:00+00:00\",\"enabled\":true,\"collectionPlan\":\"--single --mode immediate --immediate-profiling-duration 120  " +

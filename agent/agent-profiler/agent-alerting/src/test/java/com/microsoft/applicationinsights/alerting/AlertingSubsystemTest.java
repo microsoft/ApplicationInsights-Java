@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AlertingSubsystemTest {
 
-    private AlertingSubsystem getAlertMonitor(Consumer<AlertBreach> consumer) {
+    private static AlertingSubsystem getAlertMonitor(Consumer<AlertBreach> consumer) {
         AlertingSubsystem monitor = AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
 
         monitor.updateConfiguration(
