@@ -113,13 +113,12 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
                 return waitBetweenPostsInMS;
             case QP_IS_OFF:
                 return qpsServicePollingIntervalHintMillis > 0 ? qpsServicePollingIntervalHintMillis : waitBetweenPingsInMS;
-
-            default:
-                logger.error( "Critical error while ping QP: unknown status, aborting");
-                QuickPulseDataCollector.INSTANCE.disable();
-                stopped = true;
-                return 0;
         }
+
+        logger.error( "Critical error while ping QP: unknown status, aborting");
+        QuickPulseDataCollector.INSTANCE.disable();
+        stopped = true;
+        return 0;
     }
 
     private void handleReceivedHeaders(QuickPulseHeaderInfo currentQuickPulseHeaderInfo) {

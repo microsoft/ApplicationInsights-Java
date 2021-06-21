@@ -150,17 +150,13 @@ class ConnectionStringParsingTests {
     }
 
     @Test
-    void emptyKeyIsIgnored() throws MalformedURLException {
+    void emptyKeyIsIgnored() throws MalformedURLException, InvalidConnectionStringException {
         final String ikey = "fake-ikey";
         final String cs = "InstrumentationKey="+ikey+";=1234";
         URL expectedIngestionEndpoint = new URL(Defaults.INGESTION_ENDPOINT);
         URL expectedIngestionEndpointURL = new URL(Defaults.INGESTION_ENDPOINT+"/"+EndpointProvider.INGESTION_URL_PATH);
         URL expectedLiveEndpoint = new URL(Defaults.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH);
-        try {
-            ConnectionString.parseInto(cs, telemetryClient);
-        } catch (Exception e) {
-            throw new AssertionError("Exception thrown from parse");
-        }
+        ConnectionString.parseInto(cs, telemetryClient);
         assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
         assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint()).isEqualTo(expectedIngestionEndpoint);
         assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl()).isEqualTo(expectedIngestionEndpointURL);

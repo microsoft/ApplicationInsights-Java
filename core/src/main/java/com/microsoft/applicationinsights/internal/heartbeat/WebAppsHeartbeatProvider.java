@@ -52,7 +52,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
@@ -99,7 +99,7 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                 break;
             }
           }
-          catch (Exception e) {
+          catch (RuntimeException e) {
             if (logger.isWarnEnabled()) {
               logger.warn("Failed to obtain heartbeat property", e);
             }

@@ -17,7 +17,7 @@ class DefaultQuickPulseDataFetcherTests {
 
     @Test
     void testGetCurrentSdkVersion() {
-        DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, null, null,
+        DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, new TelemetryClient(), null,
                 null, null,null);
         String sdkVersion = dataFetcher.getCurrentSdkVersion();
         assertThat(sdkVersion).isNotNull();
@@ -38,7 +38,7 @@ class DefaultQuickPulseDataFetcherTests {
 
     @Test
     void endpointIsFormattedCorrectlyWhenConfigIsNull() throws URISyntaxException {
-        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, null,
+        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, new TelemetryClient(),
                 null,null, null,null);
         String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
         String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);

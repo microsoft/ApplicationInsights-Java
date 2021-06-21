@@ -204,7 +204,7 @@ class QuickPulseDataCollectorTests {
         return telemetry;
     }
 
-    private void assertCountersReset(FinalCounters counters) {
+    private static void assertCountersReset(FinalCounters counters) {
         assertThat(counters).isNotNull();
 
         assertThat(counters.rdds).isEqualTo(0);

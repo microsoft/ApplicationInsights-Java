@@ -117,7 +117,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * Gets the JDK version being used by the application
    * @return String representing JDK Version
    */
-  private String getJreVersion() {
+  private static String getJreVersion() {
     return System.getProperty("java.version");
   }
 
@@ -126,7 +126,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * @return returns string prefixed with "java" representing the Application Insights Java
    * SDK version.
    */
-  private String getSdkVersion() {
+  private static String getSdkVersion() {
     return PropertyHelper.getQualifiedSdkVersionString();
   }
 
@@ -134,7 +134,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * Gets the OS version on which application is running.
    * @return String representing OS version
    */
-  private String getOsVersion() {
+  private static String getOsVersion() {
     return System.getProperty("os.name");
   }
 

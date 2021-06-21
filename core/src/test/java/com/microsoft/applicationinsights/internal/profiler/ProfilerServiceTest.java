@@ -194,7 +194,7 @@ class ProfilerServiceTest {
         assertTelemetry.accept(serviceProfilerIndex.get());
     }
 
-    private ProfilerService awaitReferenceSet(AtomicReference<ProfilerService> service) {
+    private static ProfilerService awaitReferenceSet(AtomicReference<ProfilerService> service) {
         //Wait for up to 10 seconds
         for (int i = 0; i < 100 && service.get() == null; i++) {
             try {
@@ -252,7 +252,7 @@ class ProfilerServiceTest {
             }
 
             @Override
-            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws UnsupportedCharsetException {
+            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) {
                 return null;
             }
 

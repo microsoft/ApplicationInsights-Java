@@ -107,9 +107,9 @@ public class ProfilerServiceInitializer {
                 machineName,
                 roleName,
                 telemetryClient,
-                pipelineBuilder.build(),
                 userAgent,
-                gcEventMonitorConfiguration
+                gcEventMonitorConfiguration,
+                pipelineBuilder.build()
         );
     }
 
@@ -119,9 +119,9 @@ public class ProfilerServiceInitializer {
                                                String machineName,
                                                String roleName,
                                                TelemetryClient telemetryClient,
-                                               HttpPipeline httpPipeline,
                                                String userAgent,
-                                               GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
+                                               GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration,
+                                               HttpPipeline httpPipeline) {
         if (!initialized && config.enabled()) {
             initialized = true;
             ProfilerServiceFactory factory = null;

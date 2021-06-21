@@ -6,7 +6,6 @@ import com.azure.core.http.HttpResponse;
 import com.azure.core.http.ProxyOptions;
 import com.azure.core.http.netty.NettyAsyncHttpClientBuilder;
 import com.azure.core.util.Context;
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.ConnectionProvider;
@@ -46,6 +45,7 @@ public class LazyAzureHttpClient implements HttpClient {
                 delegate = init();
             } catch (RuntimeException e) {
                 initException = e;
+                throw e;
             }
             return delegate;
         }
@@ -63,7 +63,7 @@ public class LazyAzureHttpClient implements HttpClient {
                 safeToInitLatch.await(2, TimeUnit.MINUTES);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
+                // continue and initialize
             }
         }
 

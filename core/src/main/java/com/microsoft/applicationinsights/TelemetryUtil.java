@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 // naming convention:
@@ -238,16 +237,10 @@ public class TelemetryUtil {
             }
             return defaultValue;
         }
-        try {
-            return parseSamplingPercentage(samplingPercentageStr).orElse(defaultValue);
-        } catch (ExecutionException e) {
-            // this shouldn't happen
-            logger.debug(e.getMessage(), e);
-            return defaultValue;
-        }
+        return parseSamplingPercentage(samplingPercentageStr).orElse(defaultValue);
     }
 
-    private static OptionalFloat parseSamplingPercentage(String samplingPercentageStr) throws ExecutionException {
+    private static OptionalFloat parseSamplingPercentage(String samplingPercentageStr) {
         return parsedSamplingPercentageCache.computeIfAbsent(samplingPercentageStr, str -> {
             try {
                 return OptionalFloat.of(Float.parseFloat(str));

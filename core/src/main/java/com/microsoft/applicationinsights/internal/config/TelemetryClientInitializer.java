@@ -108,7 +108,7 @@ public enum TelemetryClientInitializer {
      * @param appConfiguration The configuration data.
      * @param telemetryClient The configuration class.
      */
-    private void setTelemetryModules(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
+    private static void setTelemetryModules(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
         TelemetryModulesXmlElement configurationModules = appConfiguration.getModules();
         List<TelemetryModule> modules = telemetryClient.getTelemetryModules();
 
@@ -126,7 +126,7 @@ public enum TelemetryClientInitializer {
         modules.addAll(pcModules);
     }
 
-    private void setConnectionString(ApplicationInsightsXmlConfiguration configXml, TelemetryClient telemetryClient) {
+    private static void setConnectionString(ApplicationInsightsXmlConfiguration configXml, TelemetryClient telemetryClient) {
 
         String connectionString = configXml.getConnectionString();
 
@@ -135,7 +135,7 @@ public enum TelemetryClientInitializer {
         }
     }
 
-    private void setRoleName(ApplicationInsightsXmlConfiguration userConfiguration,
+    private static void setRoleName(ApplicationInsightsXmlConfiguration userConfiguration,
                              TelemetryClient telemetryClient) {
         try {
             String roleName;
@@ -184,7 +184,7 @@ public enum TelemetryClientInitializer {
     }
 
     @SuppressWarnings("unchecked")
-    private List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
+    private static List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceConfigurationData.getCollectionFrequencyInSec());
 
         ArrayList<TelemetryModule> modules = new ArrayList<>();
@@ -222,7 +222,7 @@ public enum TelemetryClientInitializer {
     /**
      * This method is only a workaround until the failure to load PCs in JBoss web servers will be solved.
      */
-    private Set<String> getDefaultPerformanceModulesNames() {
+    private static Set<String> getDefaultPerformanceModulesNames() {
         return defaultPerformaceModuleClassNames;
     }
 
@@ -238,7 +238,7 @@ public enum TelemetryClientInitializer {
      *          Build a {@link JmxMetricPerformanceCounter}
      *          Register the Performance Counter in the {@link PerformanceCounterContainer}
      */
-    private void loadCustomJmxPCs(ArrayList<JmxXmlElement> jmxXmlElements) {
+    private static void loadCustomJmxPCs(ArrayList<JmxXmlElement> jmxXmlElements) {
         try {
             if (jmxXmlElements == null) {
                 return;
@@ -280,11 +280,11 @@ public enum TelemetryClientInitializer {
                     } else {
                         logger.trace("Failed to register JMX performance counter '{}'", entry.getKey());
                     }
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     logger.error("Failed to register JMX performance counter '{}': '{}'", entry.getKey(), e.toString());
                 }
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("Failed to register JMX performance counters: '{}'", e.toString());
         }
     }
@@ -295,7 +295,7 @@ public enum TelemetryClientInitializer {
         for (TelemetryModule module : telemetryModules) {
             try {
                 module.initialize(telemetryClient);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 logger.error(
                         "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Exception");
             }
@@ -306,7 +306,7 @@ public enum TelemetryClientInitializer {
      * Adds heartbeat module with default configuration
      * @param telemetryClient telemetry client instance
      */
-    private void addHeartBeatModule(TelemetryClient telemetryClient) {
+    private static void addHeartBeatModule(TelemetryClient telemetryClient) {
         HeartBeatModule module = new HeartBeatModule(new HashMap<>());
         telemetryClient.getTelemetryModules().add(module);
     }
@@ -316,7 +316,7 @@ public enum TelemetryClientInitializer {
      * @param module List of modules in current TelemetryClient instance
      * @return true if heartbeat module is present
      */
-    private boolean isHeartBeatModuleAdded(List<TelemetryModule> module) {
+    private static boolean isHeartBeatModuleAdded(List<TelemetryModule> module) {
         for (TelemetryModule mod : module) {
             if (mod instanceof HeartBeatModule) {
                 return true;

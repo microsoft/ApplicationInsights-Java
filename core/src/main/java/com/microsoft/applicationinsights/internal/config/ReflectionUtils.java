@@ -73,10 +73,8 @@ public final class ReflectionUtils {
             Class<?> clazz = builtInMap.get(className);
             if (clazz == null) {
                 clazz = Class.forName(className).asSubclass(interfaceClass);
-            } else {
-                clazz = clazz.asSubclass(interfaceClass);
             }
-            return (T)clazz.newInstance();
+            return (T) clazz.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             logger.error("Failed to create {}", className, e);
         }

@@ -59,7 +59,7 @@ class GcEventMonitorTest {
         assertThat(alert.getAlertValue()).isEqualTo(90.0);
     }
 
-    private AlertingSubsystem getAlertingSubsystem(CompletableFuture<AlertBreach> alertFuture) {
+    private static AlertingSubsystem getAlertingSubsystem(CompletableFuture<AlertBreach> alertFuture) {
         AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertFuture::complete, Executors.newSingleThreadExecutor());
 
         AlertingConfiguration config = AlertConfigParser.parse(

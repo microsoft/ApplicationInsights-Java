@@ -37,6 +37,7 @@ final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCount
      *
      * @return A collection of {@link com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter}
      */
+    @Override
     public Collection<PerformanceCounter> getPerformanceCounters() {
         ArrayList<PerformanceCounter> performanceCounters = new ArrayList<>();
         performanceCounters.add(new ProcessCpuPerformanceCounter());

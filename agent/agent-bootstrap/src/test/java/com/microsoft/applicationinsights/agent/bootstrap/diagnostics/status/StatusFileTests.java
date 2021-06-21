@@ -19,7 +19,6 @@ import org.junit.jupiter.api.io.TempDir;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
-import uk.org.webcompere.systemstubs.properties.SystemProperties;
 
 import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile.initLogDir;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,9 +32,6 @@ class StatusFileTests {
 
     @SystemStub
     EnvironmentVariables envVars = new EnvironmentVariables();
-
-    @SystemStub
-    SystemProperties systemProperties = new SystemProperties();
 
     private final String testIkey = "fake-ikey-123";
     private final String fakeVersion = "0.0.1-test";

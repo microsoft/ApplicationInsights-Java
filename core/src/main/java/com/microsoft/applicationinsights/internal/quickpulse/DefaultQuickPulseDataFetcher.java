@@ -39,26 +39,14 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
     private final ArrayBlockingQueue<HttpRequest> sendQueue;
     private final TelemetryClient telemetryClient;
-    private final String ikey;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private final String postPrefix;
     private final String sdkVersion;
 
     public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpRequest> sendQueue, TelemetryClient telemetryClient, String machineName,
                                         String instanceName, String roleName, String quickPulseId) {
-        this(sendQueue, telemetryClient, null, machineName, instanceName, roleName, quickPulseId);
-    }
-
-    @Deprecated
-    public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpRequest> sendQueue, String ikey, String machineName, String instanceName, String quickPulseId) {
-        this(sendQueue, null, ikey, machineName, instanceName, quickPulseId);
-    }
-
-    private DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpRequest> sendQueue, TelemetryClient telemetryClient, String ikey, String machineName,
-                                         String instanceName, String roleName, String quickPulseId) {
         this.sendQueue = sendQueue;
         this.telemetryClient = telemetryClient;
-        this.ikey = ikey;
         sdkVersion = getCurrentSdkVersion();
         StringBuilder sb = new StringBuilder();
 
@@ -69,7 +57,8 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         sb.append("[{");
         formatDocuments(sb);
         sb.append("\"Instance\": \"").append(instanceName).append("\",");
-        sb.append("\"InstrumentationKey\": \"").append(ikey).append("\",");
+        // FIXME (trask) this seemed to be working when it was always null ikey here??
+        sb.append("\"InstrumentationKey\": \"").append(telemetryClient.getInstrumentationKey()).append("\",");
         sb.append("\"InvariantVersion\": ").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
         sb.append("\"MachineName\": \"").append(machineName).append("\",");
         sb.append("\"RoleName\": ").append(roleName).append(",");
@@ -125,11 +114,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     }
 
     private String getInstrumentationKey() {
-        if (telemetryClient != null) {
-            return telemetryClient.getInstrumentationKey();
-        } else {
-            return ikey;
-        }
+        return telemetryClient.getInstrumentationKey();
     }
 
     private String buildPostEntity(QuickPulseDataCollector.FinalCounters counters) {
