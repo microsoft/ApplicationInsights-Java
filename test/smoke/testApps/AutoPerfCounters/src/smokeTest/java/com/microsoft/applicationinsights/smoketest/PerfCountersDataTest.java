@@ -6,7 +6,6 @@ import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 import org.junit.*;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -80,7 +79,7 @@ public class PerfCountersDataTest extends AiSmokeTest {
         Objects.requireNonNull(name, "name");
         return new Predicate<Envelope>() {
             @Override
-            public boolean test(@Nullable Envelope input) {
+            public boolean test(Envelope input) {
                 if(!input.getData().getBaseType().equals("MetricData")) {
                     return false;
                 }

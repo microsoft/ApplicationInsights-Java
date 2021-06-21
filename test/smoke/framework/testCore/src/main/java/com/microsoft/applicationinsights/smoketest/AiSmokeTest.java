@@ -31,7 +31,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -455,7 +454,7 @@ public abstract class AiSmokeTest {
     protected static void startMockedIngestion() throws Exception {
         mockedIngestion.addIngestionFilter(new Predicate<Envelope>() {
             @Override
-            public boolean test(@Nullable Envelope input) {
+            public boolean test(Envelope input) {
                 if (input == null) {
                     return false;
                 }

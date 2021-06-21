@@ -8,8 +8,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
-
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
@@ -37,7 +35,7 @@ public class HeartBeatTest extends AiSmokeTest {
         Objects.requireNonNull(name, "name");
         return new Predicate<Envelope>() {
             @Override
-            public boolean test(@Nullable Envelope input) {
+            public boolean test(Envelope input) {
                 if(input == null){
                     return false;
                 }
