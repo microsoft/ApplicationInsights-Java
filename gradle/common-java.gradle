@@ -78,7 +78,6 @@ dependencies {
 
 tasks.withType(JavaCompile) {
     options.release.set(8)
-    // TODO (trask) fail the build on errorprone warnings
     // options.compilerArgs.add("-Werror")
 }
 

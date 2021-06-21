@@ -264,7 +264,7 @@ class LoggingConfigurator {
         try {
             return Level.valueOf(levelStr.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Unexpected self-diagnostic level: " + levelStr);
+            throw new IllegalStateException("Unexpected self-diagnostic level: " + levelStr, e);
         }
     }
 }

@@ -76,6 +76,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
         scheduledExecutor.submit(newTask);
     }
 
+    @Override
     public String get() {
         String instrumentationKey = TelemetryClient.getActive().getInstrumentationKey();
         if (instrumentationKey == null) {
@@ -115,7 +116,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
             HttpResponse response;
             try {
                 response = LazyAzureHttpClient.getInstance().send(request).block();
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 // TODO handle Friendly SSL exception
                 logger.debug(e.getMessage(), e);
                 backOff("exception sending request to " + url, e);

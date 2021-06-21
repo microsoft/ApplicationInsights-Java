@@ -22,7 +22,7 @@ public final class LimitsEnforcer {
 
     private final String propertyName;
 
-    private final int currentValue;
+    private int currentValue;
 
     public int getMaximum() {
         return maximum;
@@ -41,6 +41,11 @@ public final class LimitsEnforcer {
     }
 
     public int normalizeValue(Integer value) {
+        currentValue = getValue(value);
+        return currentValue;
+    }
+
+    private int getValue(Integer value) {
         switch (type) {
             case DEFAULT_ON_ERROR:
                 if (value == null || value < minimum || value > maximum) {

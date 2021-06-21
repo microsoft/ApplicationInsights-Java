@@ -15,7 +15,6 @@ public class SamplingScoreGeneratorV2 {
     /**
      * This method takes the telemetry and returns the hash of the operation id if it is present already
      * or uses the random number generator to generate the sampling score.
-     * @param operationId
      * @return [0.0, 1.0)
      */
     public static double getSamplingScore(String operationId) {
@@ -32,7 +31,6 @@ public class SamplingScoreGeneratorV2 {
     }
 
     /**
-     * @param operationId
      * @return [0, Integer.MAX_VALUE)
      */
     static int getSamplingHashCode(String operationId) {
@@ -62,4 +60,6 @@ public class SamplingScoreGeneratorV2 {
         }
         return Math.abs(hash);
     }
+
+    private SamplingScoreGeneratorV2() {}
 }

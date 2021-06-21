@@ -12,4 +12,6 @@ public class MoshiBuilderFactory {
                 .add(new ProcessorActionAdaptor())
                 .build();
     }
+
+    private MoshiBuilderFactory() {}
 }

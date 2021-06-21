@@ -75,7 +75,7 @@ public class AttributeProcessor extends AgentProcessor {
         return updatedSpan;
     }
 
-    private SpanData processAction(SpanData span, ProcessorAction actionObj) {
+    private static SpanData processAction(SpanData span, ProcessorAction actionObj) {
         switch (actionObj.action) {
             case INSERT:
                 return processInsertAction(span, actionObj);
@@ -87,12 +87,11 @@ public class AttributeProcessor extends AgentProcessor {
                 return procesHashAction(span, actionObj);
             case EXTRACT:
                 return processExtractAction(span, actionObj);
-            default:
-                return span;
         }
+        return span;
     }
 
-    private SpanData processInsertAction(SpanData span, ProcessorAction actionObj) {
+    private static SpanData processInsertAction(SpanData span, ProcessorAction actionObj) {
         Attributes existingSpanAttributes = span.getAttributes();
         //Update from existing attribute
         if (actionObj.value != null) {
@@ -112,7 +111,7 @@ public class AttributeProcessor extends AgentProcessor {
         return span;
     }
 
-    private SpanData processUpdateAction(SpanData span, ProcessorAction actionObj) {
+    private static SpanData processUpdateAction(SpanData span, ProcessorAction actionObj) {
         // Currently we only support String
         // TODO don't instantiate new AttributeKey every time
         String existingValue = getAttribute(span.getAttributes(), AttributeKey.stringKey(actionObj.key));
@@ -135,7 +134,7 @@ public class AttributeProcessor extends AgentProcessor {
         return span;
     }
 
-    private SpanData processDeleteAction(SpanData span, ProcessorAction actionObj) {
+    private static SpanData processDeleteAction(SpanData span, ProcessorAction actionObj) {
         // Currently we only support String
         // TODO don't instantiate new AttributeKey every time
         String existingValue = getAttribute(span.getAttributes(), AttributeKey.stringKey(actionObj.key));
@@ -151,20 +150,19 @@ public class AttributeProcessor extends AgentProcessor {
         return new MySpanData(span, builder.build());
     }
 
-    private SpanData procesHashAction(SpanData span, ProcessorAction actionObj) {
+    private static SpanData procesHashAction(SpanData span, ProcessorAction actionObj) {
         // Currently we only support String
         // TODO don't instantiate new AttributeKey every time
         String existingValue = getAttribute(span.getAttributes(), AttributeKey.stringKey(actionObj.key));
-        AttributesBuilder builderCopy;
         if (existingValue == null) {
             return span;
         }
-        builderCopy = span.getAttributes().toBuilder();
+        AttributesBuilder builderCopy = span.getAttributes().toBuilder();
         builderCopy.put(actionObj.key, DigestUtils.sha1Hex(existingValue));
         return new MySpanData(span, builderCopy.build());
     }
 
-    private SpanData processExtractAction(SpanData span, ProcessorAction actionObj) {
+    private static SpanData processExtractAction(SpanData span, ProcessorAction actionObj) {
         // Currently we only support String
         // TODO don't instantiate new AttributeKey every time
         String existingValue = getAttribute(span.getAttributes(), AttributeKey.stringKey(actionObj.key));
@@ -183,7 +181,7 @@ public class AttributeProcessor extends AgentProcessor {
     }
 
     @SuppressWarnings("unchecked")
-    private void putIntoBuilder(AttributesBuilder builder, AttributeKey<?> key, Object value) {
+    private static void putIntoBuilder(AttributesBuilder builder, AttributeKey<?> key, Object value) {
         switch (key.getType()) {
             case STRING:
                 builder.put((AttributeKey<String>) key, (String) value);
@@ -202,9 +200,6 @@ public class AttributeProcessor extends AgentProcessor {
             case BOOLEAN_ARRAY:
             case DOUBLE_ARRAY:
                 builder.put((AttributeKey<List<?>>) key, (List<?>) value);
-                break;
-            default:
-                // TODO log at least a debug level message
                 break;
         }
     }

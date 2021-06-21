@@ -33,16 +33,18 @@ public class ProcessorActionAdaptor {
             processorAction.action = processorActionJson.action;
             processorAction.fromAttribute = processorActionJson.fromAttribute;
             processorAction.value = processorActionJson.value;
-            if (processorActionJson.pattern == null) return processorAction; // If pattern not present, no further processing required
+            if (processorActionJson.pattern == null) {
+                return processorAction; // If pattern not present, no further processing required
+            }
             String pattern = processorActionJson.pattern;
             Pattern regexPattern = Pattern.compile(pattern);
             List<String> groupNames = getGroupNames(pattern);
             processorAction.extractAttribute = new ExtractAttribute(regexPattern, groupNames);
             return processorAction;
-        } catch (PatternSyntaxException exception) {
+        } catch (PatternSyntaxException e) {
             throw new FriendlyException("Telemetry processor configuration does not have valid regex:" + processorActionJson.pattern,
                     "Please provide a valid regex in the telemetry processors configuration. " +
-                            "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                            "Learn more about telemetry processors here: https://go.microsoft.com/fwlink/?linkid=2151557", e);
         }
     }
 

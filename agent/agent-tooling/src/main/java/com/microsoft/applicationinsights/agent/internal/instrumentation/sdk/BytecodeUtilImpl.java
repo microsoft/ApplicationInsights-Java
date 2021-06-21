@@ -337,7 +337,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         track(telemetry);
     }
 
-    private SeverityLevel getSeverityLevel(int value) {
+    private static SeverityLevel getSeverityLevel(int value) {
         // these mappings from the 2.x SDK
         switch (value) {
             case 0:

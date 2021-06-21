@@ -84,7 +84,7 @@ class GCCollectionSample implements GCCollectionEvent {
         return aggregateMemoryPools(pools, memoryUsageBeforeGc);
     }
 
-    private MemoryUsage aggregateMemoryPools(List<MemoryPool> pools, Map<MemoryPool, MemoryUsage> pool) {
+    private static MemoryUsage aggregateMemoryPools(List<MemoryPool> pools, Map<MemoryPool, MemoryUsage> pool) {
         return pools
                 .stream()
                 .map(pool::get)

@@ -94,6 +94,7 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
             return super.visitMethod(access, name, descriptor, signature, exceptions);
         }
 
+        @Override
         public void visitEnd() {
             if (!foundGetSourceMethod) {
                 writeGetSourceMethod();

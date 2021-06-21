@@ -119,7 +119,7 @@ public class AiComponentInstaller implements AgentListener {
 
         Configuration config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
-            if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
+            if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
                 throw new FriendlyException("No connection string or instrumentation key provided",
                         "Please provide connection string or instrumentation key.");
             }
@@ -214,8 +214,10 @@ public class AiComponentInstaller implements AgentListener {
         );
     }
 
-    private static void validateProcessorConfiguration(Configuration config) throws FriendlyException {
-        if (config.preview == null || config.preview.processors == null) return;
+    private static void validateProcessorConfiguration(Configuration config) {
+        if (config.preview == null || config.preview.processors == null) {
+            return;
+        }
         for (ProcessorConfig processorConfig : config.preview.processors) {
             processorConfig.validate();
         }

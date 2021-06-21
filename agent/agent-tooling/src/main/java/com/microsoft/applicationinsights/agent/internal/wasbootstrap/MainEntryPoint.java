@@ -63,6 +63,7 @@ public class MainEntryPoint {
     }
 
     // TODO turn this into an interceptor
+    @SuppressWarnings("SystemOut")
     public static void start(Instrumentation instrumentation, File javaagentFile) {
         boolean success = false;
         Logger startupLogger = null;
@@ -105,11 +106,11 @@ public class MainEntryPoint {
         } finally {
             try {
                 StatusFile.putValueAndWrite("AgentInitializedSuccessfully", success, startupLogger != null);
-            } catch (Exception e) {
+            } catch (Throwable t) {
                 if (startupLogger != null) {
-                    startupLogger.error("Error writing status.json", e);
+                    startupLogger.error("Error writing status.json", t);
                 } else {
-                    e.printStackTrace();
+                    t.printStackTrace();
                 }
             }
             MDC.clear();
@@ -128,6 +129,7 @@ public class MainEntryPoint {
         return getFriendlyException(cause);
     }
 
+    @SuppressWarnings("SystemOut")
     private static void logErrorMessage(Logger startupLogger, String message, boolean isFriendlyException, Throwable t, File javaagentFile) {
 
         if (startupLogger != null) {
@@ -167,6 +169,7 @@ public class MainEntryPoint {
                     out.write(message);
                     out.close();
                 } catch (Throwable ignored2) {
+                    // ignored
                 }
             }
         }

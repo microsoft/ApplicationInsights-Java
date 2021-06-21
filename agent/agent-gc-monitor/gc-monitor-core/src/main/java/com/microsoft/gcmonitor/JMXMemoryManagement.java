@@ -86,7 +86,7 @@ public class JMXMemoryManagement implements MemoryManagement {
                                     collector
                             );
                         } catch (Exception e) {
-                            throw new RuntimeException(e);
+                            throw new IllegalStateException(e);
                         }
                     });
         } catch (RuntimeException e) {

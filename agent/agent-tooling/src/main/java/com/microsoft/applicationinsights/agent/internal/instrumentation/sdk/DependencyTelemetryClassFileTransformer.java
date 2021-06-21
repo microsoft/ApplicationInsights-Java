@@ -99,6 +99,7 @@ public class DependencyTelemetryClassFileTransformer implements ClassFileTransfo
             return super.visitMethod(access, name, descriptor, signature, exceptions);
         }
 
+        @Override
         public void visitEnd() {
             if (!foundGetResultCodeMethod) {
                 writeGetResultCodeMethod();
