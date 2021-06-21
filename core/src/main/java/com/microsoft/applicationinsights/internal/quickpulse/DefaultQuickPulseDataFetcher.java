@@ -53,7 +53,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     }
 
     @Deprecated
-    public DefaultQuickPulseDataFetcher(final ArrayBlockingQueue<HttpRequest> sendQueue, final String ikey, final String machineName, final String instanceName, final String quickPulseId) {
+    public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpRequest> sendQueue, String ikey, String machineName, String instanceName, String quickPulseId) {
         this(sendQueue, null, ikey, machineName, instanceName, quickPulseId);
     }
 
@@ -63,7 +63,7 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         this.telemetryClient = telemetryClient;
         this.ikey = ikey;
         sdkVersion = getCurrentSdkVersion();
-        final StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
         if (!LocalStringsUtils.isNullOrEmpty(roleName)) {
             roleName = "\"" + roleName + "\"";
@@ -96,9 +96,9 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         try {
             QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
 
-            final Date currentDate = new Date();
-            final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-            final HttpRequest request = networkHelper.buildRequest(currentDate, this.getEndpointUrl(endpointPrefix));
+            Date currentDate = new Date();
+            String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
+            HttpRequest request = networkHelper.buildRequest(currentDate, this.getEndpointUrl(endpointPrefix));
             request.setBody(buildPostEntity(counters));
 
             if (!sendQueue.offer(request)) {

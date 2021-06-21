@@ -17,7 +17,7 @@ public class SimpleTestRequestSlowWithResponseTime extends HttpServlet {
         ServletFuncs.geRrenderHtml(request, response);
 
         int sleepTime = 25;
-        final String customSleepTime = request.getParameter("sleeptime");
+        String customSleepTime = request.getParameter("sleeptime");
         if (customSleepTime != null) {
             try {
                 sleepTime = Integer.parseInt(customSleepTime);

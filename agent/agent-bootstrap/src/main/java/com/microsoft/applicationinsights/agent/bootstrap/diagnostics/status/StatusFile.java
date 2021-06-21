@@ -90,7 +90,7 @@ public class StatusFile {
     static {
         WRITER_THREAD.allowCoreThreadTimeOut(true);
         CONSTANT_VALUES.put("AppType", "java");
-        final ApplicationMetadataFactory mf = DiagnosticsHelper.getMetadataFactory();
+        ApplicationMetadataFactory mf = DiagnosticsHelper.getMetadataFactory();
         VALUE_FINDERS.add(mf.getMachineName());
         VALUE_FINDERS.add(mf.getPid());
         VALUE_FINDERS.add(mf.getSdkVersion());
@@ -165,7 +165,7 @@ public class StatusFile {
                 // the executor should prevent more than one thread from executing this block.
                 // this is just a safeguard
                 synchronized (lock) {
-                    final File file = new File(directory, fileName);
+                    File file = new File(directory, fileName);
                     boolean dirsWereCreated = file.getParentFile().mkdirs();
 
                     Logger logger = loggingInitialized ? LoggerFactory.getLogger(StatusFile.class) : null;
@@ -232,7 +232,7 @@ public class StatusFile {
     static Map<String, Object> getJsonMap() {
         Map<String, Object> map = new LinkedHashMap<>(CONSTANT_VALUES);
         for (DiagnosticsValueFinder finder : VALUE_FINDERS) {
-            final String value = finder.getValue();
+            String value = finder.getValue();
             if (value != null && !value.isEmpty()) {
                 map.put(capitalize(finder.getName()), value);
             }
@@ -271,7 +271,7 @@ public class StatusFile {
             if (pid != null) {
                 uniqueId = pid.toString();
             } else {
-                final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+                RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
                 if (runtimeMXBean != null) {
                     uniqueId = String.valueOf(Math.abs(runtimeMXBean.getStartTime()));
                 } else {

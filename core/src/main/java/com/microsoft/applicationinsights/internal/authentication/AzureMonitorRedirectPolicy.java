@@ -51,10 +51,10 @@ public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
      *  Function to process through the HTTP Response received in the pipeline
      *  and retry sending the request with new redirect url.
      */
-    private Mono<HttpResponse> attemptRetry(final HttpPipelineCallContext context,
-                                            final HttpPipelineNextPolicy next,
-                                            final HttpRequest originalHttpRequest,
-                                            final int retryCount) {
+    private Mono<HttpResponse> attemptRetry(HttpPipelineCallContext context,
+                                            HttpPipelineNextPolicy next,
+                                            HttpRequest originalHttpRequest,
+                                            int retryCount) {
         // make sure the context is not modified during retry, except for the URL
         context.setHttpRequest(originalHttpRequest.copy());
         if (this.redirectedEndpointUrl != null) {

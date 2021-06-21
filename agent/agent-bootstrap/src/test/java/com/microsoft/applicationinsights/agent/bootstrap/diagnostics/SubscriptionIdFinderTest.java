@@ -31,7 +31,7 @@ public class SubscriptionIdFinderTest {
     @Test
     public void happyPathWithValidSubscriptionIdInsideWebsiteOwnerNameVar() {
         envVars.set(SubscriptionIdFinder.WEBSITE_OWNER_NAME_ENV_VAR, "sub-id-123+NOT_SUB_ID");
-        final String value = subIdFinder.getValue();
+        String value = subIdFinder.getValue();
         assertThat(value).isEqualTo("sub-id-123");
     }
 

@@ -124,17 +124,17 @@ public class MockedAppInsightsIngestionServer {
         return waitForItems(condition, 1, timeout, timeUnit).get(0);
     }
 
-    public List<Envelope> waitForItems(final String type, final int numItems) throws Exception {
+    public List<Envelope> waitForItems(String type, int numItems) throws Exception {
         return waitForItems(type, numItems, null);
     }
 
     // this is important for Message and Exception types which can also be captured outside of requests
-    public List<Envelope> waitForItemsInOperation(final String type, final int numItems, String operationId) throws Exception {
+    public List<Envelope> waitForItemsInOperation(String type, int numItems, String operationId) throws Exception {
         return waitForItems(type, numItems, operationId);
     }
 
     // this is used to filter out some sporadic messages that are captured via java.util.logging instrumentation
-    public List<Envelope> waitForMessageItemsInRequest(final int numItems) throws Exception {
+    public List<Envelope> waitForMessageItemsInRequest(int numItems) throws Exception {
         List<Envelope> items = waitForItems(new Predicate<Envelope>() {
             @Override
             public boolean test(Envelope input) {
@@ -153,7 +153,7 @@ public class MockedAppInsightsIngestionServer {
     }
 
     // if operationId is null, then matches all items, otherwise only matches items with that operationId
-    public List<Envelope> waitForItems(final String type, final int numItems, final String operationId) throws Exception {
+    public List<Envelope> waitForItems(String type, int numItems, String operationId) throws Exception {
         List<Envelope> items = waitForItems(new Predicate<Envelope>() {
             @Override
             public boolean test(Envelope input) {
@@ -189,7 +189,7 @@ public class MockedAppInsightsIngestionServer {
     }
 
     public static void main(String args[]) throws Exception {
-        final MockedAppInsightsIngestionServer i = new MockedAppInsightsIngestionServer();
+        MockedAppInsightsIngestionServer i = new MockedAppInsightsIngestionServer();
         System.out.println("Starting mocked ingestion on port "+DEFAULT_PORT);
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override

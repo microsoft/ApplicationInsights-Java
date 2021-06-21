@@ -84,7 +84,7 @@ public class StatusFileTests {
 
     @Test
     public void mapHasExpectedValues() {
-        final Map<String, Object> jsonMap = StatusFile.getJsonMap();
+        Map<String, Object> jsonMap = StatusFile.getJsonMap();
         System.out.println("Map contents: " + Arrays.toString(jsonMap.entrySet().toArray()));
 
         assertMapHasExpectedInformation(jsonMap);
@@ -112,7 +112,7 @@ public class StatusFileTests {
     public void connectionStringWorksToo() {
         String ikey = "a-different-ikey-456789";
         envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=" + ikey);
-        final Map<String, Object> jsonMap = StatusFile.getJsonMap();
+        Map<String, Object> jsonMap = StatusFile.getJsonMap();
         assertThat(jsonMap).containsEntry("Ikey", ikey);
     }
 
@@ -132,7 +132,7 @@ public class StatusFileTests {
 
         if (enabled) {
             assertThat(tempFolder.list()).hasSize(1);
-            final Map map = parseJsonFile(tempFolder);
+            Map map = parseJsonFile(tempFolder);
             assertMapHasExpectedInformation(map);
         } else {
             assertThat(tempFolder.list()).isEmpty();
@@ -144,9 +144,9 @@ public class StatusFileTests {
     }
 
     Map parseJsonFile(File tempFolder) throws java.io.IOException {
-        final JsonAdapter<Map> adapter = new Builder().build().adapter(Map.class);
-        final String fileName = StatusFile.constructFileName(StatusFile.getJsonMap());
-        final String contents = new String(Files.readAllBytes(new File(tempFolder, fileName).toPath()));
+        JsonAdapter<Map> adapter = new Builder().build().adapter(Map.class);
+        String fileName = StatusFile.constructFileName(StatusFile.getJsonMap());
+        String contents = new String(Files.readAllBytes(new File(tempFolder, fileName).toPath()));
         System.out.println("file contents (" + fileName + "): " + contents);
         return adapter.fromJson(contents);
     }
@@ -196,8 +196,8 @@ public class StatusFileTests {
 
     @Test
     public void fileNameHasMachineNameAndPid() {
-        final Map<String, Object> jsonMap = StatusFile.getJsonMap();
-        final String s = StatusFile.constructFileName(jsonMap);
+        Map<String, Object> jsonMap = StatusFile.getJsonMap();
+        String s = StatusFile.constructFileName(jsonMap);
         assertThat(s).startsWith(StatusFile.FILENAME_PREFIX);
         assertThat(s).endsWith(StatusFile.FILE_EXTENSION);
         assertThat(s).contains(jsonMap.get("MachineName").toString());

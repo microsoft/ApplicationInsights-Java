@@ -153,7 +153,7 @@ public enum QuickPulseDataCollector {
     }
 
     public synchronized FinalCounters getAndRestart() {
-        final Counters currentCounters = counters.getAndSet(new Counters());
+        Counters currentCounters = counters.getAndSet(new Counters());
         if (currentCounters != null) {
             return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
         }
@@ -163,7 +163,7 @@ public enum QuickPulseDataCollector {
 
     /*@VisibleForTesting*/
     synchronized FinalCounters peek() {
-        final Counters currentCounters = this.counters.get(); // this should be the only differece
+        Counters currentCounters = this.counters.get(); // this should be the only differece
         if (currentCounters != null) {
             return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
         }

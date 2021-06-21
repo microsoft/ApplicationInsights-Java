@@ -97,14 +97,14 @@ public class AttributeProcessor extends AgentProcessor {
         //Update from existing attribute
         if (actionObj.value != null) {
             //update to new value
-            final AttributesBuilder builder = Attributes.builder();
+            AttributesBuilder builder = Attributes.builder();
             builder.put(actionObj.key, actionObj.value);
             builder.putAll(existingSpanAttributes);
             return new MySpanData(span, builder.build());
         }
         String fromAttributeValue = getAttribute(existingSpanAttributes, AttributeKey.stringKey(actionObj.fromAttribute));
         if (fromAttributeValue != null) {
-            final AttributesBuilder builder = Attributes.builder();
+            AttributesBuilder builder = Attributes.builder();
             builder.put(actionObj.key, fromAttributeValue);
             builder.putAll(existingSpanAttributes);
             return new MySpanData(span, builder.build());

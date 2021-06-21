@@ -34,7 +34,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
 
         // TODO get event data envelope and verify value
-        final List<EventData> data = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
+        List<EventData> data = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
         assertThat(
                 data,
                 hasItem(

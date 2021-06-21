@@ -36,7 +36,7 @@ public class BytecodeUtil {
 
     private static BytecodeUtilDelegate delegate;
 
-    public static void setDelegate(final BytecodeUtilDelegate delegate) {
+    public static void setDelegate(BytecodeUtilDelegate delegate) {
         if (BytecodeUtil.delegate == null) {
             BytecodeUtil.delegate = delegate;
             MicrometerUtil.setDelegate(new MicrometerUtilDelegate() {

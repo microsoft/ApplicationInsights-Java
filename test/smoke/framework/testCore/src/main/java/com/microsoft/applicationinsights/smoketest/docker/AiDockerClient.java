@@ -90,7 +90,7 @@ public class AiDockerClient {
             }
         }
         cmd.add(image);
-        final Process p = buildProcess(cmd).start();
+        Process p = buildProcess(cmd).start();
         final int timeout = 30;
         final TimeUnit unit = TimeUnit.SECONDS;
         waitAndCheckCodeForProcess(p, timeout, unit, "starting container "+image);

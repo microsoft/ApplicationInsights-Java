@@ -80,7 +80,7 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
 
     private long sendData() {
         dataFetcher.prepareQuickPulseDataForSend(qpsServiceRedirectedEndpoint);
-        final QuickPulseHeaderInfo currentQuickPulseHeaderInfo = dataSender.getQuickPulseHeaderInfo();
+        QuickPulseHeaderInfo currentQuickPulseHeaderInfo = dataSender.getQuickPulseHeaderInfo();
 
         this.handleReceivedHeaders(currentQuickPulseHeaderInfo);
 

@@ -154,7 +154,7 @@ public class HttpClientTestServlet extends HttpServlet {
     }
 
     public static class PermitAllCookiesSpec extends CookieSpecBase {
-        public void validate(String host, int port, String path, boolean secure, final Cookie cookie) {
+        public void validate(String host, int port, String path, boolean secure, Cookie cookie) {
         }
     }
 }

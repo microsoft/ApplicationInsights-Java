@@ -97,7 +97,7 @@ public class JMXMemoryManagement implements MemoryManagement {
         return this;
     }
 
-    private Set<JmxGarbageCollectorStats> initCollectors(final MBeanServerConnection connection, GCEventConsumer consumer) throws UnableToMonitorMemoryException {
+    private Set<JmxGarbageCollectorStats> initCollectors(MBeanServerConnection connection, GCEventConsumer consumer) throws UnableToMonitorMemoryException {
         return getEntityFromMbeanServer(COLLECTOR_MXBEANS, connection,
                 name -> getJmxGarbageCollector(connection, consumer, name)
         );
@@ -111,7 +111,7 @@ public class JMXMemoryManagement implements MemoryManagement {
                 consumer);
     }
 
-    private static Set<MemoryPool> initPools(final MBeanServerConnection connection, Set<GarbageCollector> garbageCollectors) throws UnableToMonitorMemoryException {
+    private static Set<MemoryPool> initPools(MBeanServerConnection connection, Set<GarbageCollector> garbageCollectors) throws UnableToMonitorMemoryException {
         return getEntityFromMbeanServer(POOL_MXBEANS, connection, name -> MemoryPools.getMemoryPool(connection, name, garbageCollectors));
     }
 

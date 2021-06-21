@@ -81,18 +81,18 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     @Override
     public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
-        final Date currentDate = new Date();
-        final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-        final HttpRequest request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
+        Date currentDate = new Date();
+        String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
+        HttpRequest request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
         request.setBody(buildPingEntity(currentDate.getTime()));
 
-        final long sendTime = System.nanoTime();
+        long sendTime = System.nanoTime();
         HttpResponse response = null;
         try {
 
             response = httpPipeline.send(request).block();
             if (response != null && networkHelper.isSuccess(response)) {
-                final QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
+                QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                 switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
                     case QP_IS_OFF:
                     case QP_IS_ON:
@@ -137,7 +137,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     }
 
     private QuickPulseHeaderInfo onPingError(long sendTime) {
-        final double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
+        double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
         if (timeFromLastValidTransmission >= 60.0) {
             return new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);
         }

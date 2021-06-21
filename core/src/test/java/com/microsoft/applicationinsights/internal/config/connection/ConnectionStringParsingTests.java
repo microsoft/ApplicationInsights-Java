@@ -59,9 +59,9 @@ public class ConnectionStringParsingTests {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com";
         final String cs = "InstrumentationKey="+ikey+";EndpointSuffix="+suffix;
-        final URL expectedIngestionEndpoint = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
-        final URL expectedIngestionEndpointURL = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.INGESTION_URL_PATH);
-        final URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
+        URL expectedIngestionEndpoint = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
+        URL expectedIngestionEndpointURL = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.INGESTION_URL_PATH);
+        URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
 
         ConnectionString.parseInto(cs, telemetryClient);
         assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
@@ -75,9 +75,9 @@ public class ConnectionStringParsingTests {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com/my-proxy-app/doProxy";
         final String cs = "InstrumentationKey="+ikey+";EndpointSuffix="+suffix;
-        final URL expectedIngestionEndpoint = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
-        final URL expectedIngestionEndpointURL = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.INGESTION_URL_PATH);
-        final URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
+        URL expectedIngestionEndpoint = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
+        URL expectedIngestionEndpointURL = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.INGESTION_URL_PATH);
+        URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
 
         ConnectionString.parseInto(cs, telemetryClient);
         assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
@@ -91,9 +91,9 @@ public class ConnectionStringParsingTests {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com:9999";
         final String cs = "InstrumentationKey="+ikey+";EndpointSuffix="+suffix;
-        final URL expectedIngestionEndpoint = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
-        final URL expectedIngestionEndpointURL = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.INGESTION_URL_PATH);
-        final URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
+        URL expectedIngestionEndpoint = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
+        URL expectedIngestionEndpointURL = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.INGESTION_URL_PATH);
+        URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
 
         ConnectionString.parseInto(cs, telemetryClient);
         assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
@@ -105,11 +105,11 @@ public class ConnectionStringParsingTests {
     @Test
     public void ikeyWithExplicitEndpoints() throws Exception {
         final String ikey = "fake-ikey";
-        final URL expectedIngestionEndpoint = new URL("https://ingestion.example.com");
-        final URL expectedIngestionEndpointURL = new URL("https://ingestion.example.com/" + EndpointProvider.INGESTION_URL_PATH);
+        URL expectedIngestionEndpoint = new URL("https://ingestion.example.com");
+        URL expectedIngestionEndpointURL = new URL("https://ingestion.example.com/" + EndpointProvider.INGESTION_URL_PATH);
         final String liveHost = "https://live.example.com";
-        final URL expectedLiveEndpoint = new URL(liveHost + "/" + EndpointProvider.LIVE_URL_PATH);
-        final String cs = "InstrumentationKey="+ikey+";IngestionEndpoint="+expectedIngestionEndpoint+";LiveEndpoint="+liveHost;
+        URL expectedLiveEndpoint = new URL(liveHost + "/" + EndpointProvider.LIVE_URL_PATH);
+        String cs = "InstrumentationKey="+ikey+";IngestionEndpoint="+expectedIngestionEndpoint+";LiveEndpoint="+liveHost;
 
         ConnectionString.parseInto(cs, telemetryClient);
         assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
@@ -122,10 +122,10 @@ public class ConnectionStringParsingTests {
     public void explicitEndpointOverridesSuffix() throws Exception {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com";
-        final URL expectedIngestionEndpoint = new URL("https://ingestion.example.com");
-        final URL expectedIngestionEndpointURL = new URL("https://ingestion.example.com/" + EndpointProvider.INGESTION_URL_PATH);
-        final URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix+"/"+EndpointProvider.LIVE_URL_PATH);
-        final String cs = "InstrumentationKey="+ikey+";IngestionEndpoint="+expectedIngestionEndpoint+";EndpointSuffix="+suffix;
+        URL expectedIngestionEndpoint = new URL("https://ingestion.example.com");
+        URL expectedIngestionEndpointURL = new URL("https://ingestion.example.com/" + EndpointProvider.INGESTION_URL_PATH);
+        URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix+"/"+EndpointProvider.LIVE_URL_PATH);
+        String cs = "InstrumentationKey="+ikey+";IngestionEndpoint="+expectedIngestionEndpoint+";EndpointSuffix="+suffix;
 
         ConnectionString.parseInto(cs, telemetryClient);
         assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
@@ -139,9 +139,9 @@ public class ConnectionStringParsingTests {
         final String ikey = "fake-ikey";
         final String suffix = "ai.example.com";
         final String cs = "InstrumentationKey="+ikey+";;EndpointSuffix="+suffix+";";
-        final URL expectedIngestionEndpoint = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
-        final URL expectedIngestionEndpointURL = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix+"/" + EndpointProvider.INGESTION_URL_PATH);
-        final URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
+        URL expectedIngestionEndpoint = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix);
+        URL expectedIngestionEndpointURL = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix+"/" + EndpointProvider.INGESTION_URL_PATH);
+        URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
         ConnectionString.parseInto(cs, telemetryClient);
         assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
         assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint()).isEqualTo(expectedIngestionEndpoint);
@@ -153,9 +153,9 @@ public class ConnectionStringParsingTests {
     public void emptyKeyIsIgnored() throws MalformedURLException {
         final String ikey = "fake-ikey";
         final String cs = "InstrumentationKey="+ikey+";=1234";
-        final URL expectedIngestionEndpoint = new URL(Defaults.INGESTION_ENDPOINT);
-        final URL expectedIngestionEndpointURL = new URL(Defaults.INGESTION_ENDPOINT+"/"+EndpointProvider.INGESTION_URL_PATH);
-        final URL expectedLiveEndpoint = new URL(Defaults.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH);
+        URL expectedIngestionEndpoint = new URL(Defaults.INGESTION_ENDPOINT);
+        URL expectedIngestionEndpointURL = new URL(Defaults.INGESTION_ENDPOINT+"/"+EndpointProvider.INGESTION_URL_PATH);
+        URL expectedLiveEndpoint = new URL(Defaults.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH);
         try {
             ConnectionString.parseInto(cs, telemetryClient);
         } catch (Exception e) {

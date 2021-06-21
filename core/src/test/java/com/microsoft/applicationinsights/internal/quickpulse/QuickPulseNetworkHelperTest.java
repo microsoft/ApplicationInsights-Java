@@ -34,19 +34,19 @@ import static org.mockito.Mockito.mock;
 public class QuickPulseNetworkHelperTest {
     @Test
     public void testIsSuccessWith200() {
-        final HttpResponse response = mock(HttpResponse.class);
+        HttpResponse response = mock(HttpResponse.class);
         Mockito.doReturn(200).when(response).getStatusCode();
 
-        final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+        boolean result = new QuickPulseNetworkHelper().isSuccess(response);
         assertThat(result).isTrue();
     }
 
     @Test
     public void testIsSuccessWith500() {
-        final HttpResponse response = mock(HttpResponse.class);
+        HttpResponse response = mock(HttpResponse.class);
         Mockito.doReturn(500).when(response).getStatusCode();
 
-        final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+        boolean result = new QuickPulseNetworkHelper().isSuccess(response);
         assertThat(result).isFalse();
     }
 }

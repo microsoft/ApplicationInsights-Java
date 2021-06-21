@@ -70,7 +70,7 @@ public class PeriodicRunnableTaskPoolTests {
 
     @Test
     public void canCancelSubmittedTask() {
-        final SignalListener signal = new SignalListener();
+        SignalListener signal = new SignalListener();
         PeriodicTaskPool.PeriodicRunnableTask periodicRunnableTask = PeriodicTaskPool.PeriodicRunnableTask.createTask(new TestRunnable(signal),
                 0, 10, TimeUnit.SECONDS, "Test");
         ScheduledFuture<?> future = taskPool.executePeriodicRunnableTask(periodicRunnableTask);

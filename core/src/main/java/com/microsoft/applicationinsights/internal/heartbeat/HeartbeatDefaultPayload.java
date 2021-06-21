@@ -28,8 +28,8 @@ public class HeartbeatDefaultPayload {
    * @param provider The HeartBeat provider
    * @return Callable to perform execution
    */
-  public static Callable<Boolean> populateDefaultPayload(final List<String> disabledFields, final List<String>
-      disabledProviders, final HeartBeatProviderInterface provider) {
+  public static Callable<Boolean> populateDefaultPayload(List<String> disabledFields, List<String>
+      disabledProviders, HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
       @Override
       public Boolean call() throws Exception {

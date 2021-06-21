@@ -54,7 +54,7 @@ public class SSLOptionsUtil {
      * @throws NoSupportedProtocolsException If the defaults are to be used and none of the defaults are supported by this JVM
      */
     public static String[] getAllowedProtocols() {
-        final String rawProp = System.getProperty(APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY);
+        String rawProp = System.getProperty(APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY);
         if (rawProp == null) {
             return defaultSupportedProtocols();
         }

@@ -229,7 +229,7 @@ public abstract class AiSmokeTest {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                final ContainerInfo containerInfo = currentContainerInfo.get();
+                ContainerInfo containerInfo = currentContainerInfo.get();
                 if (containerInfo == null) {
                     return;
                 }
@@ -287,10 +287,10 @@ public abstract class AiSmokeTest {
     };
 
     @BeforeWithParams
-    public static void configureEnvironment(final String appServer, final String os, final String jreVersion) throws Exception {
+    public static void configureEnvironment(String appServer, String os, String jreVersion) throws Exception {
         System.out.println("Preparing environment...");
         try {
-            final ContainerInfo containerInfo = currentContainerInfo.get();
+            ContainerInfo containerInfo = currentContainerInfo.get();
             if (containerInfo != null) {
                 // test cleanup didn't take...try to clean up
                 if (docker.isContainerRunning(containerInfo.getContainerId())) {
@@ -314,7 +314,7 @@ public abstract class AiSmokeTest {
             waitForApplicationToStart();
             System.out.println("Environment preparation complete.");
         } catch (Exception e) {
-            final String additionalMessage;
+            String additionalMessage;
             if (e instanceof TimeoutException) {
                 additionalMessage = e.getLocalizedMessage();
             } else {
@@ -351,10 +351,10 @@ public abstract class AiSmokeTest {
     }
 
     protected static void waitForApplicationToStart() throws Exception {
-        final ContainerInfo containerInfo = currentContainerInfo.get();
+        ContainerInfo containerInfo = currentContainerInfo.get();
         try {
             System.out.printf("Test app health check: Waiting for %s to start...%n", warFileName);
-            final String contextRootUrl = getBaseUrl() + "/";
+            String contextRootUrl = getBaseUrl() + "/";
             waitForUrlWithRetries(contextRootUrl, APPLICATION_READY_TIMEOUT_SECONDS, TimeUnit.SECONDS,
                     String.format("%s on %s", getAppContext(), containerInfo.getImageName()),
                     HEALTH_CHECK_RETRIES);
@@ -368,13 +368,13 @@ public abstract class AiSmokeTest {
         }
     }
 
-    private static void waitForHealthCheckTelemetryIfNeeded(final String contextRootUrl) throws InterruptedException, ExecutionException {
+    private static void waitForHealthCheckTelemetryIfNeeded(String contextRootUrl) throws InterruptedException, ExecutionException {
         if (!requestCaptureEnabled) {
             return;
         }
 
         Stopwatch receivedTelemetryTimer = Stopwatch.createStarted();
-        final int requestTelemetryFromHealthCheckTimeout;
+        int requestTelemetryFromHealthCheckTimeout;
         if (currentImageName.startsWith("javase_")) {
             requestTelemetryFromHealthCheckTimeout = APPLICATION_READY_TIMEOUT_SECONDS;
         } else {
@@ -416,7 +416,7 @@ public abstract class AiSmokeTest {
             System.out.println("calling " + url + " " + targetUriCallCount + " times");
         }
         for (int i = 0; i < targetUriCallCount; i++) {
-            final String content;
+            String content;
             switch (httpMethod) {
                 case "GET":
                     content = HttpHelper.get(url);
@@ -439,14 +439,14 @@ public abstract class AiSmokeTest {
         assertTrue("mocked ingestion has no data", mockedIngestion.hasData());
     }
 
-    protected static void checkParams(final String appServer, final String os, final String jreVersion) {
+    protected static void checkParams(String appServer, String os, String jreVersion) {
         String fmt = "Missing required framework parameter: %s - this indicates an error in the parameter generator";
         assertNotNull(String.format(fmt, "appServer"), appServer);
         assertNotNull(String.format(fmt, "os"), os);
         assertNotNull(String.format(fmt, "jreVersion"), jreVersion);
     }
 
-    protected static void setupProperties(final String appServer, final String os, final String jreVersion) throws Exception {
+    protected static void setupProperties(String appServer, String os, String jreVersion) throws Exception {
         testProps.load(new FileReader(new File(Resources.getResource(TEST_CONFIG_FILENAME).toURI())));
         currentImageName = String.format("%s_%s_%s", appServer, os, jreVersion);
         appServerPort = currentPortNumber++;
@@ -463,11 +463,11 @@ public abstract class AiSmokeTest {
                 if (deviceId == null) {
                     return true;
                 }
-                final ContainerInfo containerInfo = currentContainerInfo.get();
+                ContainerInfo containerInfo = currentContainerInfo.get();
                 if (containerInfo == null) { // ignore telemetry in after container is cleaned up.
                     return false;
                 }
-                final boolean belongsToCurrentContainer = containerInfo.getContainerId().startsWith(deviceId);
+                boolean belongsToCurrentContainer = containerInfo.getContainerId().startsWith(deviceId);
                 if (!belongsToCurrentContainer) {
                     System.out.println("Telemetry from previous container");
                 }
@@ -530,7 +530,7 @@ public abstract class AiSmokeTest {
             System.out.printf("Starting container: %s%n", imageName);
             String containerName = "dependency" + Math.abs(new Random().nextLong());
             String[] envVars = substitue(dc.environmentVariables(), hostnameEnvVars, containerName);
-            final String containerId = docker.startDependencyContainer(imageName, envVars, dc.portMapping(),
+            String containerId = docker.startDependencyContainer(imageName, envVars, dc.portMapping(),
                     networkId, containerName);
             if (containerId == null || containerId.isEmpty()) {
                 throw new AssertionError("'containerId' was null/empty attempting to start container: "+imageName);
@@ -577,7 +577,7 @@ public abstract class AiSmokeTest {
         }
         System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 
-        final ContainerInfo containerInfo = new ContainerInfo(containerId, currentImageName);
+        ContainerInfo containerInfo = new ContainerInfo(containerId, currentImageName);
         currentContainerInfo.set(containerInfo);
         if (currentImageName.startsWith("javase_")) {
             // can proceed straight to deploying the app
@@ -686,7 +686,7 @@ public abstract class AiSmokeTest {
             }
         }
 
-        final ContainerInfo containerInfo = currentContainerInfo.get();
+        ContainerInfo containerInfo = currentContainerInfo.get();
         if (containerInfo != null) {
             System.err.println("Could not find app container in stack. Stopping...");
             stopContainer(containerInfo);

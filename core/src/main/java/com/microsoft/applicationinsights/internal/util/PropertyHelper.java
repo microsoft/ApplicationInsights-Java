@@ -110,7 +110,7 @@ public final class PropertyHelper {
         private static final String SDK_VERSION_NUMBER;
         private SdkPropertyValues(){}
         static {
-            final Properties properties = getSdkVersionProperties();
+            Properties properties = getSdkVersionProperties();
             if (properties == null) {
                 SDK_VERSION_NUMBER = UNKNOWN_VERSION_VALUE;
             } else {

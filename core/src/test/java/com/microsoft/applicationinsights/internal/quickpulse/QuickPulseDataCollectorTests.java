@@ -41,7 +41,7 @@ class QuickPulseDataCollectorTests {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
-        final FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
+        FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
         assertCountersReset(counters);
     }
 
@@ -161,8 +161,8 @@ class QuickPulseDataCollectorTests {
     void encodeDecodeIsIdentity() {
         final long count = 456L;
         final long duration = 112233L;
-        final long encoded = Counters.encodeCountAndDuration(count, duration);
-        final CountAndDuration inputs = Counters.decodeCountAndDuration(encoded);
+        long encoded = Counters.encodeCountAndDuration(count, duration);
+        CountAndDuration inputs = Counters.decodeCountAndDuration(encoded);
         assertThat(inputs.count).isEqualTo(count);
         assertThat(inputs.duration).isEqualTo(duration);
     }

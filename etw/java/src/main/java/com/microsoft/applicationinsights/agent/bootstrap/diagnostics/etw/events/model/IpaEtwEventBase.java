@@ -82,7 +82,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
         // operation
         // logger
         // exception (in error class)
-        final String fmt = processMessageFormat();
+        String fmt = processMessageFormat();
         if (messageArgs == null || messageArgs.length == 0) {
             return fmt == null ? "" : fmt;
         } else {

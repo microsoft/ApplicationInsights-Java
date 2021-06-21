@@ -51,7 +51,7 @@ public class ApplicationInsightsJsonLayoutTests {
 
     @Test
     public void topLevelIncludesRequiredFields() {
-        final Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
+        Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
         assertThat(jsonMap).containsEntry(TIMESTAMP_PROP_NAME, String.valueOf(TIMESTAMP_VALUE)); // there is no timestamp format specified, so it just uses the raw long value.
         assertThat(jsonMap).containsEntry(LOGGER_ATTR_NAME, LOGGER_NAME);
         assertThat(jsonMap).containsEntry(FORMATTED_MESSAGE_ATTR_NAME, LOG_MESSAGE);
@@ -62,12 +62,12 @@ public class ApplicationInsightsJsonLayoutTests {
         final String key = "mock-finder";
         final String value = "mock-value";
 
-        final DiagnosticsValueFinder mockFinder = mock(DiagnosticsValueFinder.class);
+        DiagnosticsValueFinder mockFinder = mock(DiagnosticsValueFinder.class);
         when(mockFinder.getName()).thenReturn(key);
         when(mockFinder.getValue()).thenReturn(value);
         ourLayout.valueFinders.add(mockFinder);
 
-        final Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
+        Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
 
         verify(mockFinder, atLeastOnce()).getName();
         verify(mockFinder, atLeastOnce()).getValue();
@@ -79,17 +79,17 @@ public class ApplicationInsightsJsonLayoutTests {
         final String nKey = "f-null";
         final String eKey = "f-empty";
 
-        final DiagnosticsValueFinder nullValueFinder = mock(DiagnosticsValueFinder.class);
+        DiagnosticsValueFinder nullValueFinder = mock(DiagnosticsValueFinder.class);
         when(nullValueFinder.getName()).thenReturn(nKey);
         when(nullValueFinder.getValue()).thenReturn(null);
         ourLayout.valueFinders.add(nullValueFinder);
 
-        final DiagnosticsValueFinder emptyValueFinder = mock(DiagnosticsValueFinder.class);
+        DiagnosticsValueFinder emptyValueFinder = mock(DiagnosticsValueFinder.class);
         when(emptyValueFinder.getName()).thenReturn(eKey);
         when(emptyValueFinder.getValue()).thenReturn("");
         ourLayout.valueFinders.add(emptyValueFinder);
 
-        final Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
+        Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
 
         Map<String, Object> propMap = (Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME);
 
@@ -106,7 +106,7 @@ public class ApplicationInsightsJsonLayoutTests {
         Map<String, String> map = new HashMap<>();
         map.put(DiagnosticsHelper.MDC_PROP_OPERATION, "test");
         when(logEvent.getMDCPropertyMap()).thenReturn(map);
-        final Map<String, Object> jsonMap = (Map<String, Object>) ourLayout.toJsonMap(logEvent).get("properties");
+        Map<String, Object> jsonMap = (Map<String, Object>) ourLayout.toJsonMap(logEvent).get("properties");
         assertThat(jsonMap).containsEntry("operation", "test");
     }
 }

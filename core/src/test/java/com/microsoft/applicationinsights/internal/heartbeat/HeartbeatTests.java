@@ -138,7 +138,7 @@ class HeartbeatTests {
   @Test
   void defaultHeartbeatPropertyProviderSendsNoFieldWhenDisabled() throws Exception {
     HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
-    final ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
+    ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
     Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
         .then((Answer<Boolean>) invocation -> {
                   props.put(invocation.getArgument(0, String.class), invocation.getArgument(1, String.class));
@@ -212,7 +212,7 @@ class HeartbeatTests {
   @Test
   void sentHeartbeatContainsExpectedDefaultFields() throws Exception {
     HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
-    final ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
+    ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
     Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
         .then((Answer<Boolean>) invocation -> {
           props.put(invocation.getArgument(0, String.class), invocation.getArgument(1, String.class));

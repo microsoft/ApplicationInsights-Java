@@ -58,7 +58,7 @@ final class QuickPulseNetworkHelper {
     }
 
     public HttpRequest buildRequest(Date currentDate, String address) {
-        final long ticks = currentDate.getTime() * 10000 + TICKS_AT_EPOCH;
+        long ticks = currentDate.getTime() * 10000 + TICKS_AT_EPOCH;
 
         HttpRequest request = new HttpRequest(HttpMethod.POST, address);
         request.setHeader(HEADER_TRANSMISSION_TIME, String.valueOf(ticks));
@@ -66,7 +66,7 @@ final class QuickPulseNetworkHelper {
     }
 
     public boolean isSuccess(HttpResponse response) {
-        final int responseCode = response.getStatusCode();
+        int responseCode = response.getStatusCode();
         return responseCode == 200;
     }
 
@@ -75,18 +75,18 @@ final class QuickPulseNetworkHelper {
         QuickPulseStatus status = QuickPulseStatus.ERROR;
         long servicePollingIntervalHint = -1;
         String serviceEndpointRedirect = null;
-        final QuickPulseHeaderInfo quickPulseHeaderInfo;
+        QuickPulseHeaderInfo quickPulseHeaderInfo;
 
         for (HttpHeader header: headers) {
             if (QPS_STATUS_HEADER.equalsIgnoreCase(header.getName())) {
-                final String qpStatus = header.getValue();
+                String qpStatus = header.getValue();
                 if ("true".equalsIgnoreCase(qpStatus)) {
                     status =  QuickPulseStatus.QP_IS_ON;
                 } else {
                     status = QuickPulseStatus.QP_IS_OFF;
                 }
             } else if (QPS_SERVICE_POLLING_INTERVAL_HINT.equalsIgnoreCase(header.getName())) {
-                final String servicePollingIntervalHintHeaderValue = header.getValue();
+                String servicePollingIntervalHintHeaderValue = header.getValue();
                 if (!LocalStringsUtils.isNullOrEmpty(servicePollingIntervalHintHeaderValue)) {
                     servicePollingIntervalHint = Long.parseLong(servicePollingIntervalHintHeaderValue);
                 }

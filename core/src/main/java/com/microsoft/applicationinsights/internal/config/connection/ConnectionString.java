@@ -26,7 +26,7 @@ public class ConnectionString {
             throw new InvalidConnectionStringException("ConnectionString values with more than " + CONNECTION_STRING_MAX_LENGTH + " characters are not allowed.");
         }
         // parse key value pairs
-        final Map<String, String> kvps;
+        Map<String, String> kvps;
         try {
             kvps = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             kvps.putAll(splitToMap(connectionString));

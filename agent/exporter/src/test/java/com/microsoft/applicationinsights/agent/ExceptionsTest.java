@@ -84,8 +84,8 @@ public class ExceptionsTest {
         assertThat(details.getMessage()).isEqualTo("test");
     }
 
-    private static String toString(final Throwable t) {
-        final StringWriter out = new StringWriter();
+    private static String toString(Throwable t) {
+        StringWriter out = new StringWriter();
         t.printStackTrace(new PrintWriter(out));
         return out.toString();
     }

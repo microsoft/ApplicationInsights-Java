@@ -125,14 +125,14 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
         waitForItems(x -> true, 1, timeout, timeUnit);
     }
 
-    public List<Envelope> waitForItems(final Predicate<Envelope> condition, final int numItems, long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
-        final Future<List<Envelope>> future = itemExecutor.submit(new Callable<List<Envelope>>() {
+    public List<Envelope> waitForItems(Predicate<Envelope> condition, int numItems, long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
+        Future<List<Envelope>> future = itemExecutor.submit(new Callable<List<Envelope>>() {
             @Override
             public List<Envelope> call() throws Exception {
                 List<Envelope> targetCollection = new ArrayList<>(numItems);
                 while(targetCollection.size() < numItems) {
                     targetCollection.clear();
-                    final Collection<Envelope> currentValues;
+                    Collection<Envelope> currentValues;
                     synchronized (multimapLock) {
                         currentValues = new ArrayList<>(type2envelope.values());
                     }
@@ -158,7 +158,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
                 StringWriter w = new StringWriter();
                 try {
                     String contentEncoding = req.getHeader("content-encoding");
-                    final Readable reader;
+                    Readable reader;
                     if ("gzip".equals(contentEncoding)) {
                         reader = new InputStreamReader(new GZIPInputStream(req.getInputStream()));
                     }

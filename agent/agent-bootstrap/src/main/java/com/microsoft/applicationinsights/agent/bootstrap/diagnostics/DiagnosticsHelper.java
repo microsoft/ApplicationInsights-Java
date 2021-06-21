@@ -26,7 +26,7 @@ public class DiagnosticsHelper {
     public static final String MDC_PROP_OPERATION = "microsoft.ai.operationName";
 
     static {
-        final String osName = System.getProperty("os.name");
+        String osName = System.getProperty("os.name");
         isWindows = osName != null && osName.startsWith("Windows");
     }
 

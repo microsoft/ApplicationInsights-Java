@@ -17,11 +17,11 @@ class DefaultQuickPulsePingSenderTests {
 
     @Test
     void endpointIsFormattedCorrectlyWhenUsingConnectionString() throws URISyntaxException {
-        final TelemetryClient telemetryClient = new TelemetryClient();
+        TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setConnectionString("InstrumentationKey=testing-123");
         DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, telemetryClient, null,null, null,null);
-        final String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
-        final String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
+        String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
+        String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
         URI uri = new URI(endpointUrl);
         assertThat(uri).isNotNull();
         assertThat(endpointUrl).endsWith("/ping?ikey=testing-123");
@@ -30,11 +30,11 @@ class DefaultQuickPulsePingSenderTests {
 
     @Test
     void endpointIsFormattedCorrectlyWhenUsingInstrumentationKey() throws URISyntaxException {
-        final TelemetryClient telemetryClient = new TelemetryClient();
+        TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey("A-test-instrumentation-key");
         DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, telemetryClient, null, null,null,null);
-        final String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
-        final String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
+        String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
+        String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
         URI uri = new URI(endpointUrl);
         assertThat(uri).isNotNull();
         assertThat(endpointUrl).endsWith("/ping?ikey=A-test-instrumentation-key"); // from resources/ApplicationInsights.xml
@@ -48,10 +48,10 @@ class DefaultQuickPulsePingSenderTests {
         headers.put("x-ms-qps-service-endpoint-redirect", "https://new.endpoint.com");
         headers.put("x-ms-qps-subscribed", "true");
         HttpHeaders httpHeaders = new HttpHeaders(headers);
-        final HttpPipeline httpPipeline = new HttpPipelineBuilder()
+        HttpPipeline httpPipeline = new HttpPipelineBuilder()
                 .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))
                 .build();
-        final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, new TelemetryClient(), "machine1",
+        QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, new TelemetryClient(), "machine1",
                 "instance1", "role1", "qpid123");
         QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
         assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());

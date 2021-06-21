@@ -136,7 +136,7 @@ public class EtwProviderTests {
     public void testDllExtracted() throws Exception {
         new EtwProvider(FOLDER_NAME); // Triggers DLL extraction
         String filename = EtwProvider.getDllFilenameForArch();
-        final File dllPath = new File(dllTempFolder, filename);
+        File dllPath = new File(dllTempFolder, filename);
         System.out.println("Checking for DLL: "+dllPath.getAbsolutePath());
         assertThat(dllPath).exists();
 

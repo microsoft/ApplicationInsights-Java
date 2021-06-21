@@ -13,7 +13,7 @@ public class MoshiJsonFormatter implements JsonFormatter {
 
     @Override
     public String toJsonString(Map m) {
-        final Moshi moshi = new Builder().build();
+        Moshi moshi = new Builder().build();
         if (prettyPrint) {
             return moshi.adapter(Map.class).indent("  ").toJson(m);
         } else {
