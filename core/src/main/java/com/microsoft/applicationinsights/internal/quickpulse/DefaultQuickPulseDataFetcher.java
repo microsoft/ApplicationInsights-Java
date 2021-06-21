@@ -53,19 +53,19 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         // FIXME (trask) what about azure functions consumption plan where role name not available yet?
         String roleName = telemetryClient.getRoleName();
 
-        if (!LocalStringsUtils.isNullOrEmpty(roleName)) {
-            roleName = "\"" + roleName + "\"";
-        }
-
         sb.append("[{");
-        formatDocuments(sb);
-        sb.append("\"Instance\": \"").append(instanceName).append("\",");
+        sb.append("\"Documents\":[],");
+        sb.append("\"Instance\":\"").append(instanceName).append("\",");
         // FIXME (trask) this seemed to be working when it was always null ikey here??
-        sb.append("\"InstrumentationKey\": \"").append(telemetryClient.getInstrumentationKey()).append("\",");
-        sb.append("\"InvariantVersion\": ").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
-        sb.append("\"MachineName\": \"").append(machineName).append("\",");
-        sb.append("\"RoleName\": ").append(roleName).append(",");
-        sb.append("\"StreamId\": \"").append(quickPulseId).append("\",");
+        sb.append("\"InstrumentationKey\":\"").append(telemetryClient.getInstrumentationKey()).append("\",");
+        sb.append("\"InvariantVersion\":").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
+        sb.append("\"MachineName\":\"").append(machineName).append("\",");
+        if (LocalStringsUtils.isNullOrEmpty(roleName)) {
+            sb.append("\"RoleName\":null,");
+        } else {
+            sb.append("\"RoleName\":\"").append(roleName).append("\",");
+        }
+        sb.append("\"StreamId\":\"").append(quickPulseId).append("\",");
         postPrefix = sb.toString();
         if (logger.isTraceEnabled()) {
             logger.trace("{} using endpoint {}", DefaultQuickPulseDataFetcher.class.getSimpleName(), getQuickPulseEndpoint());
@@ -123,18 +123,14 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private String buildPostEntity(QuickPulseDataCollector.FinalCounters counters) {
         StringBuilder sb = new StringBuilder(postPrefix);
         formatMetrics(counters, sb);
-        sb.append("\"Timestamp\": \"\\/Date(");
+        sb.append("\"Timestamp\":\"\\/Date(");
         long ms = System.currentTimeMillis();
         sb.append(ms);
         sb.append(")\\/\",");
-        sb.append("\"Version\": \"");
+        sb.append("\"Version\":\"");
         sb.append(sdkVersion);
         sb.append("\"}]");
         return sb.toString();
-    }
-
-    private static void formatDocuments(StringBuilder sb) {
-        sb.append("\"Documents\": [] ,");
     }
 
     private static void formatSingleMetric(StringBuilder sb, String metricName, double metricValue, int metricWeight, boolean includeComma) {
