@@ -1,10 +1,8 @@
-group = 'io.opentelemetry.javaagent'
-
 apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
     implementation project(":agent:agent-profiler:agent-alerting-api")
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttpClient
-    implementation group: 'com.squareup.moshi', name: 'moshi', version: versions.moshi
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+    implementation "com.azure:azure-core:${versions.azureCore}"
+    implementation "com.squareup.moshi:moshi:${versions.moshi}"
+    implementation "org.slf4j:slf4j-api:${versions.slf4j}"
 }

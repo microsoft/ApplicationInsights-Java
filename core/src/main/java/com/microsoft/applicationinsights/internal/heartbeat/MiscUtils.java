@@ -6,17 +6,12 @@ import java.util.Set;
 
 /**
  * This class contains some misc. functions used in heartbeat module.
- *
- * @author Dhaval Doshi
  */
 public class MiscUtils {
     private MiscUtils(){}
 
   /**
    * Returns a set which contains result of List - Set
-   * @param target
-   * @param toRemove
-   * @return
    */
    public static Set<String> except(Collection<String> target, Collection<String> toRemove) {
       if (toRemove == null) {

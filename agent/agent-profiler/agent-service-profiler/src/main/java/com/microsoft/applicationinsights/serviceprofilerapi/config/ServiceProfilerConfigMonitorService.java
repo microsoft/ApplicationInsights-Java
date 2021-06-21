@@ -98,7 +98,7 @@ public class ServiceProfilerConfigMonitorService {
                             LOGGER.error("Error pulling service profiler settings", e);
                         })
                         .subscribe(handleSettings::updateConfiguration);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.error("Error pulling service profiler settings", e);
             } catch (Error e) {
                 LOGGER.error("Error pulling service profiler settings", e);

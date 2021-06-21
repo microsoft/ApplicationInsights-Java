@@ -34,8 +34,8 @@ public class EtwProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EtwProvider.class);
 
-    public EtwProvider(final String sdkVersion) {
-        final String osname = System.getProperty("os.name");
+    public EtwProvider(String sdkVersion) {
+        String osname = System.getProperty("os.name");
         if (osname != null && osname.startsWith("Windows")) {
             File dllPath = null;
             try {
@@ -60,11 +60,11 @@ public class EtwProvider {
         }
 	}
 
-    private static File loadLibrary(final String sdkVersion) throws IOException {
-        final String fileName = getDllFilenameForArch();
+    private static File loadLibrary(String sdkVersion) throws IOException {
+        String fileName = getDllFilenameForArch();
 
-        final File targetDir = DllFileUtils.buildDllLocalPath(sdkVersion);
-        final File dllPath = new File(targetDir, fileName);
+        File targetDir = DllFileUtils.buildDllLocalPath(sdkVersion);
+        File dllPath = new File(targetDir, fileName);
 
         if (!dllPath.exists()) {
             DllFileUtils.extractToLocalFolder(dllPath, fileName);
@@ -76,8 +76,8 @@ public class EtwProvider {
     }
 
     static String getDllFilenameForArch() {
-        final String osarch = System.getProperty("os.arch");
-        final boolean is32bit = osarch == null ? false : osarch.equalsIgnoreCase("x86");
+        String osarch = System.getProperty("os.arch");
+        boolean is32bit = osarch == null ? false : osarch.equalsIgnoreCase("x86");
         return is32bit ? LIB_FILENAME_32_BIT : LIB_FILENAME_64_BIT;
     }
 

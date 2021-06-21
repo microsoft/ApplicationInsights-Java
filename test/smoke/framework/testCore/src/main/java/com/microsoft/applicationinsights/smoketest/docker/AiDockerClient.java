@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.net.InetAddress;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
@@ -12,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import com.microsoft.applicationinsights.smoketest.exceptions.SmokeTestException;
 import com.microsoft.applicationinsights.smoketest.exceptions.TimeoutException;
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import org.apache.commons.lang3.StringUtils;
@@ -26,8 +24,8 @@ public class AiDockerClient {
     private final String shellExecutor;
 
     public AiDockerClient(String user, String shellExecutor) {
-        Preconditions.checkNotNull(user, "user");
-        Preconditions.checkNotNull(shellExecutor, "shellExecutor");
+        Objects.requireNonNull(user, "user");
+        Objects.requireNonNull(shellExecutor, "shellExecutor");
 
         this.shellExecutor = shellExecutor;
     }
@@ -59,8 +57,8 @@ public class AiDockerClient {
 
     public String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars,
                                  boolean dependencyContainer) throws IOException, InterruptedException {
-        Preconditions.checkNotNull(image, "image");
-        Preconditions.checkNotNull(portMapping, "portMapping");
+        Objects.requireNonNull(image, "image");
+        Objects.requireNonNull(portMapping, "portMapping");
 
         buildProcess(Arrays.asList("docker", "pull", image)).start().waitFor(30, TimeUnit.SECONDS);
 
@@ -92,7 +90,7 @@ public class AiDockerClient {
             }
         }
         cmd.add(image);
-        final Process p = buildProcess(cmd).start();
+        Process p = buildProcess(cmd).start();
         final int timeout = 30;
         final TimeUnit unit = TimeUnit.SECONDS;
         waitAndCheckCodeForProcess(p, timeout, unit, "starting container "+image);
@@ -101,7 +99,7 @@ public class AiDockerClient {
     }
 
     private static void flushStdout(Process p) {
-        Preconditions.checkNotNull(p);
+        Objects.requireNonNull(p);
 
         try (Scanner r = new Scanner(p.getInputStream())) {
             while (r.hasNext()) {
@@ -111,8 +109,8 @@ public class AiDockerClient {
     }
 
     public void copyAndDeployToContainer(String id, File appArchive) throws IOException, InterruptedException {
-        Preconditions.checkNotNull(id, "id");
-        Preconditions.checkNotNull(appArchive, "appArchive");
+        Objects.requireNonNull(id, "id");
+        Objects.requireNonNull(appArchive, "appArchive");
 
         Process p = buildProcess("docker", "cp", appArchive.getAbsolutePath(), String.format("%s:%s", id, "/root/docker-stage")).start();
         waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("copy %s to container %s", appArchive.getPath(), id));
@@ -121,8 +119,8 @@ public class AiDockerClient {
     }
 
     public void execOnContainer(String id, String cmd, String... args) throws IOException, InterruptedException {
-        Preconditions.checkNotNull(id, "id");
-        Preconditions.checkNotNull(cmd, "cmd");
+        Objects.requireNonNull(id, "id");
+        Objects.requireNonNull(cmd, "cmd");
 
         List<String> cmdList = new ArrayList<>();
         cmdList.addAll(Arrays.asList("docker", "container", "exec", id, cmd));
@@ -161,7 +159,7 @@ public class AiDockerClient {
     }
 
     public void printContainerLogs(String containerId) throws IOException {
-        Preconditions.checkNotNull(containerId, "containerId");
+        Objects.requireNonNull(containerId, "containerId");
 
         Process p = buildProcess("docker", "container", "logs", containerId).start();
         flushStdout(p);

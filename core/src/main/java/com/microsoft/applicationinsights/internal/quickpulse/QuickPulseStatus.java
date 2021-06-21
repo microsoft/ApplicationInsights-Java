@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-/**
- * Created by gupele on 12/14/2016.
- */
 enum QuickPulseStatus {
     ERROR,
     QP_IS_OFF,

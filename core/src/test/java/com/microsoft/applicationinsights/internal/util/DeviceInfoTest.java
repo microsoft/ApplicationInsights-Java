@@ -21,44 +21,39 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.Locale;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Created by amnonsh on 2/10/2015.
- */
-public class DeviceInfoTest {
+class DeviceInfoTest {
 
     @Test
-    public void testSimpleLocale() {
-        Locale.setDefault(new Locale("en", "us"));
+    void testSimpleLocale() {
+        Locale.setDefault(new Locale.Builder().setLanguage("en").setRegion("us").build());
         String tag = DeviceInfo.getLocale();
 
-        assertEquals("en-US", tag);
+        assertThat(tag).isEqualTo("en-US");
     }
 
     @Test
-    public void testSpecialLocale() {
-        Locale.setDefault(new Locale("iw", "il"));
+    void testSpecialLocale() {
+        Locale.setDefault(new Locale.Builder().setLanguage("iw").setRegion("il").build());
         String tag = DeviceInfo.getLocale();
 
-        assertEquals("he-IL", tag);
+        assertThat(tag).isEqualTo("he-IL");
     }
 
     @Test
-    public void testBadLocale() {
-        Locale.setDefault(new Locale("BadLocale"));
+    void testBadLocale() {
+        Locale.setDefault(Locale.forLanguageTag("BadLocale"));
         String tag = DeviceInfo.getLocale();
 
-        assertEquals(isJava6() ? "badlocale" : "und", tag);
+        assertThat(tag).isEqualTo(isJava6() ? "badlocale" : "und");
     }
 
-    private boolean isJava6()
-    {
+    private static boolean isJava6() {
         try {
             Locale.class.getMethod("toLanguageTag");
         } catch (NoSuchMethodException e) {

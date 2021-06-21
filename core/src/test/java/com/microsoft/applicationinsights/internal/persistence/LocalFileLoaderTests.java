@@ -2,12 +2,11 @@ package com.microsoft.applicationinsights.internal.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,7 +23,7 @@ import java.util.zip.GZIPOutputStream;
 
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOLDER;
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocalFileLoaderTests {
 
@@ -32,7 +31,7 @@ public class LocalFileLoaderTests {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final File PERSISTED_FILE = new File(DEFAULT_FOLDER, BYTE_BUFFERS_TEST_FILE);
 
-    @Before
+    @BeforeEach
     public void setup() {
         /**
          * AadAuthentication is used by TelemetryChannel, which is used to initialize {@link LocalFileLoader}
@@ -40,10 +39,10 @@ public class LocalFileLoaderTests {
         AadAuthentication.init(null, null, null, null, null, null);
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         if(PERSISTED_FILE.exists()) {
-            assertTrue(PERSISTED_FILE.delete());
+            assertThat(PERSISTED_FILE.delete()).isTrue();
         }
     }
 
@@ -62,13 +61,13 @@ public class LocalFileLoaderTests {
 
         List<File> sortedFiles = LocalFileLoader.get().sortPersistedFiles((Collection<File>) copiedSourceList);
         for (int i = 0; i < 10; i++) {
-            assertEquals(sourceList.get(i), sortedFiles.get(i));
+            assertThat(sortedFiles.get(i)).isEqualTo(sourceList.get(i));
         }
     }
 
     @Test
     public void testLoadFile() throws IOException {
-        File sourceFile = new File(Resources.getResource(BYTE_BUFFERS_TEST_FILE).getPath());
+        File sourceFile = new File(getClass().getClassLoader().getResource(BYTE_BUFFERS_TEST_FILE).getPath());
 
         /**
          * move this file to {@link DEFAULT_FOlDER} if it doesn't exist yet.
@@ -76,40 +75,40 @@ public class LocalFileLoaderTests {
         if (!PERSISTED_FILE.exists()) {
             FileUtils.moveFile(sourceFile, PERSISTED_FILE);
         }
-        assertTrue(PERSISTED_FILE.exists());
+        assertThat(PERSISTED_FILE.exists()).isTrue();
 
         LocalFileLoader.get().addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
         byte[] bytes = LocalFileLoader.get().loadTelemetriesFromDisk();
-        assertNotNull(bytes);
+        assertThat(bytes).isNotNull();
 
         String bytesString = new String(bytes);
         String[] stringArray = bytesString.split("\n");
-        assertEquals(10, stringArray.length);
+        assertThat(stringArray.length).isEqualTo(10);
 
         for (int i = 0; i < stringArray.length; i++) {
             JsonNode jsonNode = MAPPER.readTree(stringArray[i]);
 
             // verify common properties
-            assertTrue(jsonNode.size() == 7);
-            assertEquals(1, jsonNode.get("ver").asInt());
+            assertThat(jsonNode).hasSize(7);
+            assertThat(jsonNode.get("ver").asInt()).isEqualTo(1);
             verifyTelemetryName(i, jsonNode.get("name").asText());
             verifyTelemetryTime(i, jsonNode.get("time").asText());
-            assertEquals(100, jsonNode.get("sampleRate").asInt());
-            assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", jsonNode.get("iKey").asText());
+            assertThat(jsonNode.get("sampleRate").asInt()).isEqualTo(100);
+            assertThat(jsonNode.get("iKey").asText()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
 
             // verify tags
             JsonNode tagsNode = jsonNode.get("tags");
             verifyTagsNodeSize(i, tagsNode.size());
 
-            assertEquals("java:3.1.1", tagsNode.get("ai.internal.sdkVersion").asText());
-            assertEquals("test-role-name", tagsNode.get("ai.internal.nodeName").asText());
-            assertEquals("test-role-instance", tagsNode.get("ai.cloud.roleInstance").asText());
+            assertThat(tagsNode.get("ai.internal.sdkVersion").asText()).isEqualTo("java:3.1.1");
+            assertThat(tagsNode.get("ai.internal.nodeName").asText()).isEqualTo("test-role-name");
+            assertThat(tagsNode.get("ai.cloud.roleInstance").asText()).isEqualTo("test-role-instance");
             if (i == 8) { // RemoteDependency
-                assertEquals("891b332db33c65cc6497c014f02db26d", tagsNode.get("ai.operation.id").asText());
+                assertThat(tagsNode.get("ai.operation.id").asText()).isEqualTo("891b332db33c65cc6497c014f02db26d");
             } else if (i == 9) {
-                assertEquals("0cb22c0f071802f7f314569b007c9a1e", tagsNode.get("ai.operation.id").asText());
-                assertEquals("GET /webjars/**", tagsNode.get("ai.operation.name").asText());
-                assertEquals("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36", tagsNode.get("ai.user.userAgent").asText());
+                assertThat(tagsNode.get("ai.operation.id").asText()).isEqualTo("0cb22c0f071802f7f314569b007c9a1e");
+                assertThat(tagsNode.get("ai.operation.name").asText()).isEqualTo("GET /webjars/**");
+                assertThat(tagsNode.get("ai.user.userAgent").asText()).isEqualTo("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36");
             }
 
             // verify data
@@ -117,18 +116,18 @@ public class LocalFileLoaderTests {
             verifyDataBaseType(i, data.get("baseType").asText());
 
             JsonNode baseData = data.get("baseData");
-            assertEquals(2, baseData.get("ver").asInt());
+            assertThat(baseData.get("ver").asInt()).isEqualTo(2);
             JsonNode metrics = baseData.get("metrics");
 
             if (i < 7) { // metrics is only applicable to Metric Telemetry type
                 verifyMetricsName(i, metrics.get(0).get("name").asText());
-                assertEquals(0, metrics.get(0).get("kind").asInt());
+                assertThat(metrics.get(0).get("kind").asInt()).isEqualTo(0);
                 verifyMetricsValue(i, metrics.get(0).get("value").asInt());
             }
 
             if (i == 7) { // Message
-                assertEquals("Tomcat initialized with port(s): 8080 (http)", baseData.get("message").asText());
-                assertEquals("Information", baseData.get("severityLevel").asText());
+                assertThat(baseData.get("message").asText()).isEqualTo("Tomcat initialized with port(s): 8080 (http)");
+                assertThat(baseData.get("severityLevel").asText()).isEqualTo("Information");
             }
 
             if (i == 8) { // RemoteDependency's baseData
@@ -151,7 +150,7 @@ public class LocalFileLoaderTests {
         writer.writeToDisk(text.getBytes());
 
         byte[] rawBytesFromDisk = LocalFileLoader.get().loadTelemetriesFromDisk();
-        assertEquals(text, new String(rawBytesFromDisk));
+        assertThat(new String(rawBytesFromDisk)).isEqualTo(text);
     }
 
     @Test
@@ -188,7 +187,7 @@ public class LocalFileLoaderTests {
             inputStream.close();
         }
 
-        assertEquals(text, new String(Arrays.copyOf(ungzip, read)));
+        assertThat(new String(Arrays.copyOf(ungzip, read))).isEqualTo(text);
     }
 
     private void verifyTelemetryName(int index, String actualName) {
@@ -205,7 +204,7 @@ public class LocalFileLoaderTests {
             expectedName = "Request";
         }
 
-        assertEquals(expectedName, actualName);
+        assertThat(actualName).isEqualTo(expectedName);
     }
 
     private void verifyTelemetryTime(int index, String actualTime) {
@@ -222,7 +221,7 @@ public class LocalFileLoaderTests {
             expectedTime = "2021-06-16T12:15:50.433-0700";
         }
 
-        assertEquals(expectedTime, actualTime);
+        assertThat(actualTime).isEqualTo(expectedTime);
     }
 
     private void verifyTagsNodeSize(int index, int actualSize) {
@@ -235,7 +234,7 @@ public class LocalFileLoaderTests {
             expectedSize = 6;
         }
 
-        assertEquals(expectedSize, actualSize);
+        assertThat(actualSize).isEqualTo(expectedSize);
     }
 
     private void verifyDataBaseType(int index, String actualBaseType) {
@@ -250,26 +249,26 @@ public class LocalFileLoaderTests {
             expectedBaseType = "RequestData";
         }
 
-        assertEquals(expectedBaseType, actualBaseType);
+        assertThat(actualBaseType).isEqualTo(expectedBaseType);
     }
 
     private void verifyRemoteDependencyBaseData(JsonNode baseData) {
-        assertEquals("DROP TABLE vet_specialties IF EXISTS", baseData.get("name").asText());
-        assertEquals("d54e451407c13ad2", baseData.get("id").asText());
-        assertEquals("00:00:00.0130000", baseData.get("duration").asText());
-        assertEquals("true", baseData.get("success").asText());
-        assertEquals("DROP TABLE vet_specialties IF EXISTS", baseData.get("data").asText());
-        assertEquals("SQL", baseData.get("type").asText());
-        assertEquals("b8f14b49-a2ad-4fa9-967e-c00b1d6addc4", baseData.get("target").asText());
+        assertThat(baseData.get("name").asText()).isEqualTo("DROP TABLE vet_specialties IF EXISTS");
+        assertThat(baseData.get("id").asText()).isEqualTo("d54e451407c13ad2");
+        assertThat(baseData.get("duration").asText()).isEqualTo("00:00:00.0130000");
+        assertThat(baseData.get("success").asText()).isEqualTo("true");
+        assertThat(baseData.get("data").asText()).isEqualTo("DROP TABLE vet_specialties IF EXISTS");
+        assertThat(baseData.get("type").asText()).isEqualTo("SQL");
+        assertThat(baseData.get("target").asText()).isEqualTo("b8f14b49-a2ad-4fa9-967e-c00b1d6addc4");
     }
 
     private void verifyRequestBaseData(JsonNode baseData) {
-        assertEquals("c0bfdc8f7963802c", baseData.get("id").asText());
-        assertEquals("00:00:00.0210000", baseData.get("duration").asText());
-        assertEquals("304", baseData.get("responseCode").asText());
-        assertEquals("true", baseData.get("success").asText());
-        assertEquals("GET /webjars/**", baseData.get("name").asText());
-        assertEquals("http://localhost:8080/webjars/jquery/2.2.4/jquery.min.js", baseData.get("url").asText());
+        assertThat(baseData.get("id").asText()).isEqualTo("c0bfdc8f7963802c");
+        assertThat(baseData.get("duration").asText()).isEqualTo("00:00:00.0210000");
+        assertThat(baseData.get("responseCode").asText()).isEqualTo("304");
+        assertThat(baseData.get("success").asText()).isEqualTo("true");
+        assertThat(baseData.get("name").asText()).isEqualTo("GET /webjars/**");
+        assertThat(baseData.get("url").asText()).isEqualTo("http://localhost:8080/webjars/jquery/2.2.4/jquery.min.js");
     }
 
     private void verifyMetricsName(int index, String actualName) {
@@ -301,7 +300,7 @@ public class LocalFileLoaderTests {
                 break;
         }
 
-        assertEquals(expectedName, actualName);
+        assertThat(actualName).isEqualTo(expectedName);
     }
 
     private void verifyMetricsValue(int index, int actualValue) {
@@ -333,34 +332,34 @@ public class LocalFileLoaderTests {
                 break;
         }
 
-        assertEquals(expectedValue, actualValue);
+        assertThat(actualValue).isEqualTo(expectedValue);
     }
 
     private void verifyProperties(int index, JsonNode properties) {
         switch (index) {
             case 0:
-                assertEquals("blocked", properties.get("state").asText());
+                assertThat(properties.get("state").asText()).isEqualTo("blocked");
                 return;
             case 1:
-                assertEquals("HikariPool-1", properties.get("pool").asText());
+                assertThat(properties.get("pool").asText()).isEqualTo("HikariPool-1");
                 return;
             case 3:
-                assertEquals("nonheap", properties.get("area").asText());
-                assertEquals("Compressed Class Space", properties.get("id").asText());
+                assertThat(properties.get("area").asText()).isEqualTo("nonheap");
+                assertThat(properties.get("id").asText()).isEqualTo("Compressed Class Space");
                 return;
             case 4:
-                assertEquals("runnable", properties.get("state").asText());
+                assertThat(properties.get("state").asText()).isEqualTo("runnable");
                 return;
             case 5:
-                assertEquals("dataSource", properties.get("name").asText());
+                assertThat(properties.get("name").asText()).isEqualTo("dataSource");
                 return;
             case 6: // Statsbeat
                 verifyStatsbeatCustomDimensions(properties);
                 return;
             case 7: // Message
-                assertEquals("org.springframework.boot.web.embedded.tomcat.TomcatWebServer", properties.get("LoggerName").asText());
-                assertEquals("INFO", properties.get("LoggingLevel").asText());
-                assertEquals("Logger", properties.get("SourceType").asText());
+                assertThat(properties.get("LoggerName").asText()).isEqualTo("org.springframework.boot.web.embedded.tomcat.TomcatWebServer");
+                assertThat(properties.get("LoggingLevel").asText()).isEqualTo("INFO");
+                assertThat(properties.get("SourceType").asText()).isEqualTo("Logger");
             case 2:
             default:
                 return;
@@ -368,13 +367,13 @@ public class LocalFileLoaderTests {
     }
 
     private void verifyStatsbeatCustomDimensions(JsonNode properties) {
-        assertEquals("11.0.7", properties.get("runtimeVersion").asText());
-        assertEquals("Windows", properties.get("os").asText());
-        assertEquals("java", properties.get("language").asText());
-        assertEquals("codeless", properties.get("attach").asText());
-        assertEquals("0", properties.get("instrumentation").asText());
-        assertEquals("00000000-0000-0000-0000-0FEEDDADBEEF", properties.get("cikey").asText());
-        assertEquals("3.1.1", properties.get("version").asText());
-        assertEquals("unknown", properties.get("rp").asText());
+        assertThat(properties.get("runtimeVersion").asText()).isEqualTo("11.0.7");
+        assertThat(properties.get("os").asText()).isEqualTo("Windows");
+        assertThat(properties.get("language").asText()).isEqualTo("java");
+        assertThat(properties.get("attach").asText()).isEqualTo("codeless");
+        assertThat(properties.get("instrumentation").asText()).isEqualTo("0");
+        assertThat(properties.get("cikey").asText()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
+        assertThat(properties.get("version").asText()).isEqualTo("3.1.1");
+        assertThat(properties.get("rp").asText()).isEqualTo("unknown");
     }
 }

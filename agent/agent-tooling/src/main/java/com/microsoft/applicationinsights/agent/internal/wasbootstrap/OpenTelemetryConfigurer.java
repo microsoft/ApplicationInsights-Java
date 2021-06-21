@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
 
@@ -53,7 +54,9 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
             // and the default for DelegatingSampler is to not sample anything)
         }
 
-        List<ProcessorConfig> processors = new ArrayList<>(config.preview.processors);
+        List<ProcessorConfig> processors = config.preview.processors.stream()
+                .filter(processor -> processor.type != Configuration.ProcessorType.METRIC_FILTER)
+                .collect(Collectors.toCollection(ArrayList::new));
         // Reversing the order of processors before passing it to SpanProcessor
         Collections.reverse(processors);
 
@@ -62,20 +65,18 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
         // NOTE if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         if (!processors.isEmpty()) {
             for (ProcessorConfig processorConfig : processors) {
-                if (processorConfig.type != null) { // Added this condition to resolve spotbugs NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD issue
-                    switch (processorConfig.type) {
-                        case attribute:
-                            currExporter = new ExporterWithAttributeProcessor(processorConfig, currExporter);
-                            break;
-                        case span:
-                            currExporter = new ExporterWithSpanProcessor(processorConfig, currExporter);
-                            break;
-                        case log:
-                            currExporter = new ExporterWithLogProcessor(processorConfig, currExporter);
-                            break;
-                        default:
-                            throw new IllegalStateException("Not an expected ProcessorType: " + processorConfig.type);
-                    }
+                switch (processorConfig.type) {
+                    case ATTRIBUTE:
+                        currExporter = new ExporterWithAttributeProcessor(processorConfig, currExporter);
+                        break;
+                    case SPAN:
+                        currExporter = new ExporterWithSpanProcessor(processorConfig, currExporter);
+                        break;
+                    case LOG:
+                        currExporter = new ExporterWithLogProcessor(processorConfig, currExporter);
+                        break;
+                    default:
+                        throw new IllegalStateException("Not an expected ProcessorType: " + processorConfig.type);
                 }
             }
         }

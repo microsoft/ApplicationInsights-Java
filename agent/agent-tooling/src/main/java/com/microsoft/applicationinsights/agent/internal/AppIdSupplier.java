@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import java.net.URI;
+import java.net.URL;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -38,21 +38,12 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+// note: app id is used by distributed trace headers and (soon) jfr profiling
 public class AppIdSupplier implements AiAppId.Supplier {
 
     private static final Logger logger = LoggerFactory.getLogger(AppIdSupplier.class);
 
     public static final AppIdSupplier INSTANCE = new AppIdSupplier();
-
-    // note: app id is used by distributed trace headers and (soon) jfr profiling
-    public static void registerAndStartAppIdRetrieval() {
-        AiAppId.setSupplier(INSTANCE);
-        startAppIdRetrieval();
-    }
-
-    public static void startAppIdRetrieval() {
-        INSTANCE.internalStartAppIdRetrieval();
-    }
 
     private final ScheduledExecutorService scheduledExecutor =
             Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(AppIdSupplier.class));
@@ -65,10 +56,15 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
     private volatile String appId;
 
-    private void internalStartAppIdRetrieval() {
+    public void registerAndStartAppIdRetrieval() {
+        AiAppId.setSupplier(this);
+        startAppIdRetrieval();
+    }
+
+    public void startAppIdRetrieval() {
         TelemetryClient telemetryClient = TelemetryClient.getActive();
         String instrumentationKey = telemetryClient.getInstrumentationKey();
-        GetAppIdTask newTask = new GetAppIdTask(telemetryClient.getEndpointProvider().getAppIdEndpointURL(instrumentationKey));
+        GetAppIdTask newTask = new GetAppIdTask(telemetryClient.getEndpointProvider().getAppIdEndpointUrl(instrumentationKey));
         synchronized (taskLock) {
             appId = null;
             if (task != null) {
@@ -80,6 +76,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
         scheduledExecutor.submit(newTask);
     }
 
+    @Override
     public String get() {
         String instrumentationKey = TelemetryClient.getActive().getInstrumentationKey();
         if (instrumentationKey == null) {
@@ -98,15 +95,15 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
     private class GetAppIdTask implements Runnable {
 
-        private final URI uri;
+        private final URL url;
 
         // 1, 2, 4, 8, 16, 32, 60 (max)
         private volatile long backoffSeconds = 1;
 
         private volatile boolean cancelled;
 
-        private GetAppIdTask(URI uri) {
-            this.uri = uri;
+        private GetAppIdTask(URL url) {
+            this.url = url;
         }
 
         @Override
@@ -115,33 +112,34 @@ public class AppIdSupplier implements AiAppId.Supplier {
                 return;
             }
 
-            HttpRequest request = new HttpRequest(HttpMethod.GET, uri.toString());
+            HttpRequest request = new HttpRequest(HttpMethod.GET, url);
             HttpResponse response;
             try {
                 response = LazyAzureHttpClient.getInstance().send(request).block();
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 // TODO handle Friendly SSL exception
                 logger.debug(e.getMessage(), e);
-                backOff("exception sending request to " + uri, e);
+                backOff("exception sending request to " + url, e);
                 return;
             }
 
-            // this check is needed to make spotbugs happy
             if (response == null) {
-                throw new IllegalStateException("response should never be null");
+                // FIXME (trask) I think that http response mono should never complete empty
+                //  (it should either complete with a response or complete with a failure)
+                throw new AssertionError("http response mono returned empty");
             }
 
             String body = response.getBodyAsString().block();
             int statusCode = response.getStatusCode();
             if (statusCode != 200) {
-                backOff("received " + statusCode + " from " + uri
+                backOff("received " + statusCode + " from " + url
                         + "\nfull response:\n" + body, null);
                 return;
             }
             
             // check for case when breeze returns invalid value
             if (body == null || body.isEmpty()) {
-                backOff("received empty body from " + uri, null);
+                backOff("received empty body from " + url, null);
                 return;
             }
 

@@ -1,8 +1,8 @@
 package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -24,8 +24,6 @@ import java.util.concurrent.TimeUnit;
  *  Concrete implementation of Heartbeat functionality. This class implements
  *  {@link com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface}
  * </p>
- *
- * @author Dhaval Doshi
  */
 public class HeartBeatProvider implements HeartBeatProviderInterface {
 
@@ -34,7 +32,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
   /**
    * The name of the heartbeat metric.
    */
-  private final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
+  private static final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
 
   /**
    * The list of disabled properties
@@ -102,7 +100,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
       propertyUpdateService.submit(HeartbeatDefaultPayload.populateDefaultPayload(getExcludedHeartBeatProperties(),
           getExcludedHeartBeatPropertyProviders(), this));
 
-      heartBeatSenderService.scheduleAtFixedRate(heartBeatPulse(), interval, interval, TimeUnit.SECONDS);
+      heartBeatSenderService.scheduleAtFixedRate(this::send, interval, interval, TimeUnit.SECONDS);
     }
   }
 
@@ -177,12 +175,15 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
    * Send the heartbeat item synchronously to application insights backend.
    */
   private void send() {
-
-    TelemetryItem telemetry = gatherData();
-    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
-    telemetryClient.trackAsync(telemetry);
-    logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
-
+    try {
+      TelemetryItem telemetry = gatherData();
+      telemetry.getTags().put(ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
+      telemetryClient.trackAsync(telemetry);
+      logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
+    }
+    catch (RuntimeException e) {
+      logger.warn("Error occured while sending heartbeat");
+    }
   }
 
   /**
@@ -201,7 +202,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
     TelemetryItem telemetry = new TelemetryItem();
     MetricsData data = new MetricsData();
     MetricDataPoint point = new MetricDataPoint();
-    TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
+    telemetryClient.initMetricTelemetry(telemetry, data, point);
 
     point.setName(HEARTBEAT_SYNTHETIC_METRIC_NAME);
     point.setValue(numHealthy);
@@ -209,23 +210,8 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
 
     data.setProperties(properties);
 
-    telemetry.setTime(TelemetryUtil.getFormattedNow());
+    telemetry.setTime(FormattedTime.fromNow());
 
     return telemetry;
-  }
-
-  /**
-   * Runnable which is responsible for calling the send method to transmit telemetry
-   * @return Runnable which has logic to send heartbeat.
-   */
-  private Runnable heartBeatPulse() {
-    return () -> {
-      try {
-       send();
-      }
-      catch (Exception e) {
-        logger.warn("Error occured while sending heartbeat");
-      }
-    };
   }
 }

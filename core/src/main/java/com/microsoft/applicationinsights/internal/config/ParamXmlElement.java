@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-/**
- * Created by yonisha on 3/16/2015.
- */
 public class ParamXmlElement {
 
     private String name;

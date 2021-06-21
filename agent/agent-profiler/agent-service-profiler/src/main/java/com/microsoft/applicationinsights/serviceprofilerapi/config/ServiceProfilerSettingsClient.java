@@ -25,14 +25,13 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.azure.core.exception.HttpResponseException;
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
-import io.reactivex.Maybe;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
+import reactor.core.publisher.Mono;
 
 /**
  * Client that pulls setting from the service profiler endpoint and emits them if changed
@@ -43,35 +42,34 @@ public class ServiceProfilerSettingsClient {
 
     public ServiceProfilerSettingsClient(ServiceProfilerClientV2 serviceProfilerClient) {
         this.serviceProfilerClient = serviceProfilerClient;
-        lastModified = new Date(1970, Calendar.JANUARY, 1);
+        lastModified = new Date(70, Calendar.JANUARY, 1);
     }
 
     /**
      * Pulls the latest settings. If they have not been modified empty is returned.
-     *
-     * @return
      */
-    public Maybe<ProfilerConfiguration> pullSettings() {
+    public Mono<ProfilerConfiguration> pullSettings() {
         try {
             String config = serviceProfilerClient.getSettings(lastModified);
             ProfilerConfiguration serviceProfilerConfiguration = toServiceProfilerConfiguration(config);
-            if (serviceProfilerConfiguration != null && !serviceProfilerConfiguration.getLastModified().equals(lastModified)) {
+            if (serviceProfilerConfiguration != null
+                    && serviceProfilerConfiguration.getLastModified().getTime() != lastModified.getTime()) {
                 lastModified = serviceProfilerConfiguration.getLastModified();
-                return Maybe.just(serviceProfilerConfiguration);
+                return Mono.just(serviceProfilerConfiguration);
             }
-            return Maybe.empty();
+            return Mono.empty();
         } catch (HttpResponseException e) {
-            if (e.getStatusCode() == HttpStatus.SC_NOT_MODIFIED) {
-                return Maybe.empty();
+            if (e.getResponse().getStatusCode() == 304) {
+                return Mono.empty();
             } else {
-                return Maybe.error(e);
+                return Mono.error(e);
             }
         } catch (Exception e) {
-            return Maybe.error(e);
+            return Mono.error(e);
         }
     }
 
-    private ProfilerConfiguration toServiceProfilerConfiguration(String config) throws IOException {
+    private static ProfilerConfiguration toServiceProfilerConfiguration(String config) throws IOException {
         Moshi moshi = new Moshi.Builder()
                 .add(Date.class, new Rfc3339DateJsonAdapter())
                 .build();

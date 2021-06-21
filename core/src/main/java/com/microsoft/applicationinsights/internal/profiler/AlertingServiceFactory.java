@@ -77,4 +77,6 @@ public class AlertingServiceFactory {
             }
         });
     }
+
+    private AlertingServiceFactory() {}
 }

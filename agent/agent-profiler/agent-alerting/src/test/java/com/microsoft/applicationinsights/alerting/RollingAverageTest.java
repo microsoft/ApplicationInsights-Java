@@ -28,14 +28,15 @@ import java.util.function.Consumer;
 import com.microsoft.applicationinsights.alerting.analysis.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.RollingAverage;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
 import static com.microsoft.applicationinsights.alerting.alert.AlertMetricType.CPU;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class RollingAverageTest {
+class RollingAverageTest {
 
     @Test
-    public void alertsConsumer() {
+    void alertsConsumer() {
         AtomicReference<Double> called = new AtomicReference<>();
         Consumer<Double> consumer = called::set;
         RollingAverage rollingAverage = new RollingAverage()
@@ -43,11 +44,11 @@ public class RollingAverageTest {
 
         rollingAverage.track(createDataPoint(0.1));
 
-        Assert.assertNotNull(called.get());
+        assertThat(called.get()).isNotNull();
     }
 
     @Test
-    public void givesCorrectValue() {
+    void givesCorrectValue() {
         AtomicReference<Double> called = new AtomicReference<>();
         Consumer<Double> consumer = called::set;
         RollingAverage rollingAverage = new RollingAverage()
@@ -57,11 +58,11 @@ public class RollingAverageTest {
         rollingAverage.track(createDataPoint(0.5));
         rollingAverage.track(createDataPoint(1.0));
 
-        Assert.assertEquals(0.5d, called.get(), 0.01);
+        assertThat(called.get()).isEqualTo(0.5d);
     }
 
     @Test
-    public void throwsAwayDataOutsidePeriod() {
+    void throwsAwayDataOutsidePeriod() {
         AtomicReference<Double> called = new AtomicReference<>();
         Consumer<Double> consumer = called::set;
 
@@ -83,12 +84,12 @@ public class RollingAverageTest {
         rollingAverage.track(createDataPoint(0.1));
         rollingAverage.track(createDataPoint(0.1));
 
-        Assert.assertEquals(0.1d, rollingAverage.track(createDataPoint(0.1)), 0.01);
+        assertThat(rollingAverage.track(createDataPoint(0.1))).isEqualTo(0.1d);
 
-        Assert.assertEquals(0.1d, called.get(), 0.01);
+        assertThat(called.get()).isEqualTo(0.1d);
     }
 
-    private TelemetryDataPoint createDataPoint(double v) {
+    private static TelemetryDataPoint createDataPoint(double v) {
         return new TelemetryDataPoint(CPU, TimeSource.DEFAULT.getNow(), v);
     }
 }

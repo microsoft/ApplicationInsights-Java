@@ -21,32 +21,33 @@
 
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration;
 
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
 import static com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.roundToNearest;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
 
-public class SamplingPercentageTest {
+class SamplingPercentageTest {
 
     @Test
-    public void testRoundToNearest() {
+    void testRoundToNearest() {
 
         // perfect
-        assertEquals(100, roundToNearest(100), 0);
-        assertEquals(50, roundToNearest(50), 0);
-        assertEquals(10, roundToNearest(10), 0);
-        assertEquals(2, roundToNearest(2), 0);
-        assertEquals(0.1, roundToNearest(0.1f), 0.001);
-        assertEquals(0.001, roundToNearest(0.001f), 0.00001);
-        assertEquals(0, roundToNearest(0), 0);
+        assertThat(roundToNearest(100)).isEqualTo(100);
+        assertThat(roundToNearest(50)).isEqualTo(50);
+        assertThat(roundToNearest(10)).isEqualTo(10);
+        assertThat(roundToNearest(2)).isEqualTo(2);
+        assertThat(roundToNearest(0.1f)).isEqualTo(0.1f);
+        assertThat(roundToNearest(0.001f)).isEqualTo(0.001f);
+        assertThat(roundToNearest(0)).isEqualTo(0);
 
         // imperfect
-        assertEquals(100, roundToNearest(90), 0);
-        assertEquals(50, roundToNearest(51), 0);
-        assertEquals(50, roundToNearest(49), 0);
-        assertEquals(33.333, roundToNearest(34), 0.01);
-        assertEquals(33.333, roundToNearest(33), 0.01);
-        assertEquals(25, roundToNearest(26), 0);
-        assertEquals(25, roundToNearest(24), 0);
+        assertThat(roundToNearest(90)).isEqualTo(100);
+        assertThat(roundToNearest(51)).isEqualTo(50);
+        assertThat(roundToNearest(49)).isEqualTo(50);
+        assertThat(roundToNearest(34)).isCloseTo(33.333f, offset(0.001f));
+        assertThat(roundToNearest(33)).isCloseTo(33.333f, offset(0.001f));
+        assertThat(roundToNearest(26)).isEqualTo(25);
+        assertThat(roundToNearest(24)).isEqualTo(25);
     }
 }

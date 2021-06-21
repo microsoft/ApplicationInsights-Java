@@ -26,9 +26,12 @@ public class UnshadedSdkPackageName {
     // IMPORTANT FOR THIS NOT TO BE FINAL (or private)
     // OTHERWISE COMPILER COULD THEORETICALLY INLINE IT BELOW AND APPLY .substring(1)
     // and then it WOULD be shaded
+    @SuppressWarnings("ConstantField")
     static String ALMOST_PREFIX = "!com/microsoft/applicationinsights";
 
     public static String get() {
         return ALMOST_PREFIX.substring(1);
     }
+
+    private UnshadedSdkPackageName() {}
 }

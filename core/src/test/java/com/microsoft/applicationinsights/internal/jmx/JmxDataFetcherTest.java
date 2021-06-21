@@ -1,6 +1,6 @@
 package com.microsoft.applicationinsights.internal.jmx;
 
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
 import javax.management.*;
 import java.lang.management.ManagementFactory;
@@ -9,9 +9,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class JmxDataFetcherTest {
+class JmxDataFetcherTest {
 
     @SuppressWarnings("unused")
     public interface StubMXBean {
@@ -47,8 +48,8 @@ public class JmxDataFetcherTest {
         }
     }
 
-    @Test(expected = Exception.class)
-    public void testBadAttributeName() throws Exception {
+    @Test
+    void testBadAttributeName() throws Exception {
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         ObjectName mxbeanName = new ObjectName("JSDKTests:type=TestStub3");
         TestStub testStub = new TestStub(1, 2.0, 3L);
@@ -57,22 +58,26 @@ public class JmxDataFetcherTest {
         attributes.add(new JmxAttributeData("Int", "WrongNameIntSample"));
         attributes.add(new JmxAttributeData("Double", "WrongNameDoubleSample"));
         attributes.add(new JmxAttributeData("Long", "WrongNameLongSample"));
-        JmxDataFetcher.fetch("JSDKTests:type=TestStub3", attributes);
+
+        assertThatThrownBy(() -> JmxDataFetcher.fetch("JSDKTests:type=TestStub3", attributes))
+                .isInstanceOf(Exception.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testBadName() throws Exception {
+    @Test
+    void testBadName() throws Exception {
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         ObjectName mxbeanName = new ObjectName("JSDKTests:type=TestStub1");
         TestStub testStub = new TestStub(1, 2.0, 3L);
         server.registerMBean(testStub, mxbeanName);
         List<JmxAttributeData> attributes = new ArrayList<>();
         attributes.add(new JmxAttributeData("Int", "IntSample"));
-        JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes);
+
+        assertThatThrownBy(() -> JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void testWithChange() throws Exception {
+    void testWithChange() throws Exception {
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         ObjectName mxbeanName = new ObjectName("JSDKTests:type=TestStub");
         TestStub testStub = new TestStub(1, 2.0, 3L);
@@ -99,8 +104,8 @@ public class JmxDataFetcherTest {
             double expectedLong) throws Exception {
         Map<String, Collection<Object>> result = JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes);
 
-        assertNotNull(result);
-        assertEquals(3, result.size());
+        assertThat(result).isNotNull();
+        assertThat(result.size()).isEqualTo(3);
 
         verify(result, "Int", expectedInt);
         verify(result, "Double", expectedDouble);
@@ -109,17 +114,13 @@ public class JmxDataFetcherTest {
 
     private static void verify(Map<String, Collection<Object>> result, String key, double expectedValue) {
         Collection<Object> objects = result.get(key);
-        assertNotNull(objects);
-        assertEquals(1, objects.size());
+        assertThat(objects).isNotNull();
+        assertThat(objects.size()).isEqualTo(1);
         double value = 0.0;
         for (Object obj : objects) {
-            try {
-                value += Double.parseDouble(String.valueOf(obj));
-            } catch (Exception e) {
-                Assert.fail("Exception thrown: "+e);
-            }
+            value += Double.parseDouble(String.valueOf(obj));
         }
 
-        assertEquals(value, expectedValue, 0.0);
+        assertThat(value).isEqualTo(expectedValue);
     }
 }

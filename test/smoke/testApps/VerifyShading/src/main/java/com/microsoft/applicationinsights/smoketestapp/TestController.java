@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
-import com.google.common.base.Joiner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -95,6 +94,6 @@ public class TestController {
                 return new File(jvmArg.substring("-javaagent:".length()));
             }
         }
-        throw new AssertionError("Agent jar not found on command line: " + Joiner.on(' ').join(jvmArgs));
+        throw new AssertionError("Agent jar not found on command line: " + String.join(" ", jvmArgs));
     }
 }

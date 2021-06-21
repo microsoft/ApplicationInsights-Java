@@ -24,9 +24,6 @@ package com.microsoft.applicationinsights.internal.config;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Created by gupele on 8/8/2016.
- */
 public class PerformanceCounterJvmSectionXmlElement {
 
     private ArrayList<JvmXmlElement> jvmXmlElements;

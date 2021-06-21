@@ -25,7 +25,7 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.OsPl
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OsPlatformProvider {
+public final class OsPlatformProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(OsPlatformProvider.class.getName());
 
     public static String getOSPlatformDescription() {
@@ -60,4 +60,6 @@ public class OsPlatformProvider {
             return "";
         }
     }
+
+    private OsPlatformProvider() {}
 }

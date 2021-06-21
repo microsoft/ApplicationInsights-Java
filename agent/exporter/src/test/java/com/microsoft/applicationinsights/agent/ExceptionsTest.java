@@ -5,14 +5,14 @@ import java.io.StringWriter;
 import java.util.List;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class ExceptionsTest {
+class ExceptionsTest {
 
     @Test
-    public void test() {
+    void test() {
         // given
         String str = toString(new IllegalStateException("test"));
 
@@ -20,15 +20,15 @@ public class ExceptionsTest {
         List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
-        assertEquals(1, list.size());
+        assertThat(list.size()).isEqualTo(1);
 
         TelemetryExceptionDetails details = list.get(0);
-        assertEquals(IllegalStateException.class.getName(), details.getTypeName());
-        assertEquals("test", details.getMessage());
+        assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+        assertThat(details.getMessage()).isEqualTo("test");
     }
 
     @Test
-    public void testWithNoMessage() {
+    void testWithNoMessage() {
         // given
         String str = toString(new IllegalStateException());
 
@@ -36,15 +36,15 @@ public class ExceptionsTest {
         List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
-        assertEquals(1, list.size());
+        assertThat(list.size()).isEqualTo(1);
 
         TelemetryExceptionDetails details = list.get(0);
-        assertEquals(IllegalStateException.class.getName(), details.getTypeName());
-        assertNull(details.getMessage());
+        assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+        assertThat(details.getMessage()).isNull();
     }
 
     @Test
-    public void testWithCausedBy() {
+    void testWithCausedBy() {
         // given
         RuntimeException causedBy = new RuntimeException("the cause");
         String str = toString(new IllegalStateException("test", causedBy));
@@ -53,20 +53,20 @@ public class ExceptionsTest {
         List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
-        assertEquals(2, list.size());
+        assertThat(list.size()).isEqualTo(2);
 
         TelemetryExceptionDetails details = list.get(0);
-        assertEquals(IllegalStateException.class.getName(), details.getTypeName());
-        assertEquals("test", details.getMessage());
+        assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+        assertThat(details.getMessage()).isEqualTo("test");
 
         TelemetryExceptionDetails causedByDetails = list.get(1);
-        assertEquals(RuntimeException.class.getName(), causedByDetails.getTypeName());
-        assertEquals("the cause", causedByDetails.getMessage());
+        assertThat(causedByDetails.getTypeName()).isEqualTo(RuntimeException.class.getName());
+        assertThat(causedByDetails.getMessage()).isEqualTo("the cause");
 
     }
 
     @Test
-    public void shouldIgnoreSuppressed() {
+    void shouldIgnoreSuppressed() {
         // given
         RuntimeException suppressed = new RuntimeException("the suppressed");
         IllegalStateException exception = new IllegalStateException("test");
@@ -77,15 +77,15 @@ public class ExceptionsTest {
         List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
-        assertEquals(1, list.size());
+        assertThat(list.size()).isEqualTo(1);
 
         TelemetryExceptionDetails details = list.get(0);
-        assertEquals(IllegalStateException.class.getName(), details.getTypeName());
-        assertEquals("test", details.getMessage());
+        assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+        assertThat(details.getMessage()).isEqualTo("test");
     }
 
-    private static String toString(final Throwable t) {
-        final StringWriter out = new StringWriter();
+    private static String toString(Throwable t) {
+        StringWriter out = new StringWriter();
         t.printStackTrace(new PrintWriter(out));
         return out.toString();
     }

@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -73,24 +72,14 @@ public class StatusFile {
     // guarded by lock
     private static BufferedSink buffer;
 
-    private static final ThreadFactory THREAD_FACTORY = new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r);
-            thread.setName("StatusFileWriter");
-            thread.setDaemon(true);
-            return thread;
-        }
-    };
-
     private static final ThreadPoolExecutor WRITER_THREAD =
             new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
-                    THREAD_FACTORY);
+                    StatusFile::newThread);
 
     static {
         WRITER_THREAD.allowCoreThreadTimeOut(true);
         CONSTANT_VALUES.put("AppType", "java");
-        final ApplicationMetadataFactory mf = DiagnosticsHelper.getMetadataFactory();
+        ApplicationMetadataFactory mf = DiagnosticsHelper.getMetadataFactory();
         VALUE_FINDERS.add(mf.getMachineName());
         VALUE_FINDERS.add(mf.getPid());
         VALUE_FINDERS.add(mf.getSdkVersion());
@@ -101,6 +90,13 @@ public class StatusFile {
         logDir = initLogDir();
         directory = logDir + STATUS_FILE_DIRECTORY;
     }
+
+    private static Thread newThread(Runnable r) {
+        Thread thread = new Thread(r);
+        thread.setName("StatusFileWriter");
+        thread.setDaemon(true);
+        return thread;
+    };
 
     // visible for testing
     static String initLogDir() {
@@ -151,6 +147,7 @@ public class StatusFile {
         write(false);
     }
 
+    @SuppressWarnings("SystemOut")
     private static void write(boolean loggingInitialized) {
         if (!shouldWrite()) {
             return;
@@ -165,7 +162,7 @@ public class StatusFile {
                 // the executor should prevent more than one thread from executing this block.
                 // this is just a safeguard
                 synchronized (lock) {
-                    final File file = new File(directory, fileName);
+                    File file = new File(directory, fileName);
                     boolean dirsWereCreated = file.getParentFile().mkdirs();
 
                     Logger logger = loggingInitialized ? LoggerFactory.getLogger(StatusFile.class) : null;
@@ -232,7 +229,7 @@ public class StatusFile {
     static Map<String, Object> getJsonMap() {
         Map<String, Object> map = new LinkedHashMap<>(CONSTANT_VALUES);
         for (DiagnosticsValueFinder finder : VALUE_FINDERS) {
-            final String value = finder.getValue();
+            String value = finder.getValue();
             if (value != null && !value.isEmpty()) {
                 map.put(capitalize(finder.getName()), value);
             }
@@ -271,7 +268,7 @@ public class StatusFile {
             if (pid != null) {
                 uniqueId = pid.toString();
             } else {
-                final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+                RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
                 if (runtimeMXBean != null) {
                     uniqueId = String.valueOf(Math.abs(runtimeMXBean.getStartTime()));
                 } else {

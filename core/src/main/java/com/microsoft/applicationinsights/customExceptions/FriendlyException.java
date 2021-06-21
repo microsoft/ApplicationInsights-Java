@@ -10,16 +10,16 @@ public class FriendlyException extends RuntimeException {
         super(populateFriendlyMessage(message, action));
     }
 
-    public FriendlyException(String banner, String message, String action, String note, Throwable cause) {
-        super(populateFriendlyMessage(banner, message, action, note), cause);
+    public FriendlyException(String banner, String action, String message, String note, Throwable cause) {
+        super(populateFriendlyMessage(message, action, banner, note), cause);
     }
 
-    public FriendlyException(String banner, String message, String action, String note) {
-        super(populateFriendlyMessage(banner, message, action, note));
+    public FriendlyException(String banner, String action, String message, String note) {
+        super(populateFriendlyMessage(message, action, banner, note));
     }
 
     public FriendlyException(String banner, String action, Throwable cause) {
-        super(populateFriendlyMessage(banner, "", action, ""), cause);
+        super(populateFriendlyMessage("", action, banner, ""), cause);
     }
 
     // TODO consolidate with method below?
@@ -50,7 +50,8 @@ public class FriendlyException extends RuntimeException {
                 .append(System.lineSeparator())
                 .toString();
     }
-    private static String populateFriendlyMessage(String banner, String description, String action, String note) {
+
+    private static String populateFriendlyMessage(String description, String action, String banner, String note) {
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder.append(System.lineSeparator());
         messageBuilder.append("*************************").append(System.lineSeparator());

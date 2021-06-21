@@ -15,7 +15,6 @@ import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRed
 import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
 import com.microsoft.applicationinsights.internal.persistence.LocalFileWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -177,14 +176,15 @@ public class TelemetryChannel {
 
     private void parseResponseCode(int statusCode) {
         switch(statusCode) {
-            case HttpStatus.SC_UNAUTHORIZED:
-            case HttpStatus.SC_FORBIDDEN: {
+            // TODO (trask) need constants for these
+            case 401:
+            case 403: {
                 logger.warn("Failed to send telemetry with status code:{}, please check your credentials", statusCode);
                 break;
             }
-            case HttpStatus.SC_REQUEST_TIMEOUT:
-            case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-            case HttpStatus.SC_SERVICE_UNAVAILABLE:
+            case 408:
+            case 500:
+            case 503:
             case BreezeStatusCode.CLIENT_SIDE_EXCEPTION:
                 // TODO exponential backoff and retry to a limit
                 // TODO (heya) track failure count via Statsbeat

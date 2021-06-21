@@ -28,7 +28,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.azure.core.http.HttpPipeline;
-import com.google.common.base.Preconditions;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -36,9 +35,6 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.azure.core.http.HttpRequest;
 import com.microsoft.applicationinsights.TelemetryClient;
 
-/**
- * Created by gupele on 12/4/2016.
- */
 public enum QuickPulse {
     INSTANCE;
 
@@ -56,9 +52,8 @@ public enum QuickPulse {
         initialize(TelemetryClient.getActive());
     }
 
-    public void initialize(final TelemetryClient telemetryClient) {
-        Preconditions.checkNotNull(telemetryClient);
-        final CountDownLatch latch = new CountDownLatch(1);
+    public void initialize(TelemetryClient telemetryClient) {
+        CountDownLatch latch = new CountDownLatch(1);
         Executors.newSingleThreadExecutor(ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class)).execute(new Runnable() {
             @Override
             public void run() {
@@ -81,7 +76,7 @@ public enum QuickPulse {
                 latch.countDown();
                 if (!initialized) {
                     initialized = true;
-                    final String quickPulseId = UUID.randomUUID().toString().replace("-", "");
+                    String quickPulseId = UUID.randomUUID().toString().replace("-", "");
                     HttpPipeline httpPipeline = AadAuthentication.getInstance().newHttpPipeLineWithAuthentication();
                     ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
@@ -98,10 +93,10 @@ public enum QuickPulse {
                         instanceName = "Unknown host";
                     }
 
-                    final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, telemetryClient, machineName, instanceName, roleName, quickPulseId);
-                    final QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, telemetryClient, machineName, instanceName, roleName, quickPulseId);
+                    QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, telemetryClient, machineName, instanceName, roleName, quickPulseId);
+                    QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, telemetryClient, machineName, instanceName, roleName, quickPulseId);
 
-                    final QuickPulseCoordinatorInitData coordinatorInitData =
+                    QuickPulseCoordinatorInitData coordinatorInitData =
                             new QuickPulseCoordinatorInitDataBuilder()
                                     .withPingSender(quickPulsePingSender)
                                     .withDataFetcher(quickPulseDataFetcher)

@@ -21,25 +21,23 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Assert;
-import org.junit.Test;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class LocalStringsUtilsTest {
+class LocalStringsUtilsTest {
 
     @Test
-    public void test() {
-        assertNotNull(LocalStringsUtils.getDateFormatter());
+    void test() {
+        assertThat(LocalStringsUtils.getDateFormatter()).isNotNull();
     }
 
     @Test
-    public void testGenerateRandomIdWithNoDashes() {
+    void testGenerateRandomIdWithNoDashes() {
         String idWithoutDashes = LocalStringsUtils.generateRandomId(true);
 
         int dashIndex = idWithoutDashes.indexOf("-");
 
-        Assert.assertEquals(-1, dashIndex);
+        assertThat(dashIndex).isEqualTo(-1);
     }
 }

@@ -5,7 +5,6 @@ import java.util.Random;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Created by Dhaval Doshi Oct 2017
  * This class generates the sample using the random number generator.
  * It also contains the logic to preserve the correlated telemetry items.
  */
@@ -16,7 +15,6 @@ public class SamplingScoreGeneratorV2 {
     /**
      * This method takes the telemetry and returns the hash of the operation id if it is present already
      * or uses the random number generator to generate the sampling score.
-     * @param operationId
      * @return [0.0, 1.0)
      */
     public static double getSamplingScore(String operationId) {
@@ -33,7 +31,6 @@ public class SamplingScoreGeneratorV2 {
     }
 
     /**
-     * @param operationId
      * @return [0, Integer.MAX_VALUE)
      */
     static int getSamplingHashCode(String operationId) {
@@ -63,4 +60,6 @@ public class SamplingScoreGeneratorV2 {
         }
         return Math.abs(hash);
     }
+
+    private SamplingScoreGeneratorV2() {}
 }

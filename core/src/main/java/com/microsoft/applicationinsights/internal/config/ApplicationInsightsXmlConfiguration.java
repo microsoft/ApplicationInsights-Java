@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-/**
- * Created by gupele on 3/13/2015.
- */
 public class ApplicationInsightsXmlConfiguration {
 
     private String connectionString;

@@ -5,8 +5,6 @@ package com.microsoft.applicationinsights.internal.heartbeat;
  *  Defines the Payload class to store and send heartbeat properties and allowing to keep track of updates
  *  to them.
  *  </p>
- *
- *  @author Dhaval Doshi
  */
 public class HeartBeatPropertyPayload {
 

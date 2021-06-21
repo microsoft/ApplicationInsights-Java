@@ -42,7 +42,9 @@ public class NotificationObserver implements NotificationListener {
             if (notification != null) {
                 workQueue.put(new NotificationJob((JmxGarbageCollectorStats) handback, notification));
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (RuntimeException e) {
             LOGGER.error("Failed to process gc notification", e);
         }
     }
@@ -63,7 +65,7 @@ public class NotificationObserver implements NotificationListener {
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                             throw e;
-                        } catch (Exception e) {
+                        } catch (RuntimeException e) {
                             LOGGER.error("Error while reading GC notification data", e);
                         }
                     }

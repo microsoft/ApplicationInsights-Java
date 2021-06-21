@@ -1,22 +1,19 @@
-apply plugin: 'java-library'
-apply plugin: 'application'
+apply plugin: "java-library"
+apply plugin: "application"
 
+// TODO (trask) is this needed?
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // this is an api dependency because of MockedAppInsightsIngestionServer.waitForItems(Predicate)
-    api group: 'com.google.guava', name: 'guava', version: versions.guava
-
-    implementation group: 'junit', name: 'junit', version: versions.junit
-    implementation 'org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325'
-    implementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
-    implementation project(':test:fakeIngestion:servlet')
-    implementation project(':test:smoke:framework:utils')
+    implementation "org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325"
+    implementation "com.google.code.gson:gson:${versions.gson}"
+    implementation project(":test:fakeIngestion:servlet")
+    implementation project(":test:smoke:framework:utils")
 }
 
-mainClassName = 'com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer'
+mainClassName = "com.microsoft.applicationinsights.test.fakeingestion.MockedAppInsightsIngestionServer"
 
 tasks.withType(JavaCompile) {
     options.release.set(8)

@@ -31,12 +31,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.google.common.base.Splitter;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.authentication.AuthenticationType;
+import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonEncodingException;
@@ -121,11 +121,12 @@ public class ConfigurationBuilder {
     private static void overlayAadConfiguration(Configuration config) {
         String aadAuthString = getEnvVar(APPLICATIONINSIGHTS_AUTHENTICATION_STRING);
         if(aadAuthString != null) {
-            Map<String, String> keyValueMap = Splitter.on(";")
-                    .trimResults()
-                    .omitEmptyStrings()
-                    .withKeyValueSeparator("=")
-                    .split(aadAuthString);
+            Map<String, String> keyValueMap;
+            try {
+                keyValueMap = ConnectionString.splitToMap(aadAuthString);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalStateException("Unable to parse APPLICATIONINSIGHTS_AUTHENTICATION_STRING environment variable: " + aadAuthString, e);
+            }
             String authorization = keyValueMap.get("Authorization");
             if(authorization != null && authorization.equals("AAD")) {
                 // Override any configuration from json
@@ -140,7 +141,6 @@ public class ConfigurationBuilder {
                 }
             }
         }
-
     }
 
     private static void loadLogCaptureEnvVar(Configuration config) {
@@ -182,7 +182,7 @@ public class ConfigurationBuilder {
         }
     }
 
-    private static boolean jmxMetricExisted(List<Configuration.JmxMetric> jmxMetrics, String objectName, String attribute) {
+    private static boolean jmxMetricExisted(List<JmxMetric> jmxMetrics, String objectName, String attribute) {
         for (JmxMetric metric : jmxMetrics) {
             if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
                 return true;
@@ -556,4 +556,6 @@ public class ConfigurationBuilder {
 
         return rounded;
     }
+
+    private ConfigurationBuilder() {}
 }

@@ -23,10 +23,6 @@
 */
 package com.microsoft.applicationinsights.internal.schemav2;
 
-import com.google.common.base.Preconditions;
-
-import java.io.IOException;
-
 /**
  * Data contract class DataPoint.
  */

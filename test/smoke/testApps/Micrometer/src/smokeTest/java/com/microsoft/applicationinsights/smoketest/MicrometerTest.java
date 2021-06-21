@@ -1,9 +1,8 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
-import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
@@ -21,18 +20,18 @@ public class MicrometerTest extends AiSmokeTest {
     public void doMostBasicTest() throws Exception {
         mockedIngestion.waitForItems("RequestData", 1);
 
-        List<Envelope> metricItems = mockedIngestion.waitForItems(new Predicate<Envelope>() {
-            @Override
-            public boolean apply(Envelope input) {
-                if (!input.getData().getBaseType().equals("MetricData")) {
-                    return false;
-                }
-                MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
-                List<DataPoint> points = data.getMetrics();
-                DataPoint point = points.get(0);
-                return point.getValue() == 1;
-            }
-        }, 1, 10, TimeUnit.SECONDS);
+        // sleep a bit and make sure that the excluded metric is not reported
+        Thread.sleep(10000);
+
+        List<Envelope> metricItems = mockedIngestion.getItemsEnvelopeDataType("MetricData")
+                .stream()
+                .filter(e -> {
+                    MetricData data = (MetricData) ((Data<?>) e.getData()).getBaseData();
+                    List<DataPoint> points = data.getMetrics();
+                    DataPoint point = points.get(0);
+                    return point.getValue() == 1;
+                })
+                .collect(Collectors.toList());
 
         MetricData data = (MetricData) ((Data<?>) metricItems.get(0).getData()).getBaseData();
         List<DataPoint> points = data.getMetrics();

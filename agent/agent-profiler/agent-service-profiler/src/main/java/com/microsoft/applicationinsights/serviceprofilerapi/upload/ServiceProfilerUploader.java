@@ -30,7 +30,6 @@ import com.azure.storage.blob.models.ParallelTransferOptions;
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import com.microsoft.applicationinsights.profileUploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.profileUploader.UploadResult;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
@@ -39,7 +38,6 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.Time
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.OsPlatformProvider;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -200,7 +198,7 @@ public class ServiceProfilerUploader {
                 .doFinally((done) -> LOGGER.info("upload done"));
     }
 
-    private void close(File zippedTraceFile) {
+    private static void close(File zippedTraceFile) {
         try {
             deletePathRecursive(zippedTraceFile);
         } catch (Exception e) {
@@ -214,11 +212,11 @@ public class ServiceProfilerUploader {
     protected UploadFinishArgs reportUploadComplete(UUID profileId, Response<BlockBlobItem> response) throws UploadFailedException {
         int statusCode = response.getStatusCode();
         // Success 2xx
-        if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
+        if (statusCode >= 200 && statusCode < 300) {
             ArtifactAcceptedResponse uploadResponse;
             try {
                 uploadResponse = serviceProfilerClient.reportUploadFinish(profileId, response.getValue().getETag());
-            } catch (URISyntaxException | ClientClosedException | IOException e) {
+            } catch (URISyntaxException | IOException e) {
                 throw new UploadFailedException(e);
             }
 
@@ -262,7 +260,7 @@ public class ServiceProfilerUploader {
     /**
      * Zip up profile
      */
-    private File createZippedTraceFile(UploadContext uploadContext) throws IOException {
+    private static File createZippedTraceFile(UploadContext uploadContext) throws IOException {
         File traceFile = uploadContext.getTraceFile();
         LOGGER.debug("Trace file: {}", traceFile.toString());
 
@@ -276,14 +274,16 @@ public class ServiceProfilerUploader {
     }
 
     // Deleting file recursively.
-    private void deletePathRecursive(File fileToDelete) throws IOException {
+    private static void deletePathRecursive(File fileToDelete) throws IOException {
         if (fileToDelete != null && fileToDelete.exists()) {
             deletePathRecursive(fileToDelete.toPath());
         }
     }
 
     // Deleting file recursively.
-    private void deletePathRecursive(Path path) throws IOException {
+    // FIXME (trask)
+    @SuppressWarnings("StreamResourceLeak")
+    private static void deletePathRecursive(Path path) throws IOException {
         if (path != null) {
             Files
                     .walk(path)

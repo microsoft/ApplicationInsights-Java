@@ -35,8 +35,6 @@ import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelem
 
 /**
  * The class supplies the memory usage in Mega Bytes of the Java process the SDK is in.
- *
- * Created by gupele on 3/3/2015.
  */
 final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
 
@@ -61,7 +59,7 @@ final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
         memoryBytes += (double)nonHeapMemoryUsage.getUsed();
 
         logger.trace("Performance Counter: {}: {}", PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
-        TelemetryItem telemetry = createMetricsTelemetry(PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
+        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
         telemetryClient.trackAsync(telemetry);
     }
 }

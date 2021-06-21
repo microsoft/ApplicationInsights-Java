@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import static java.lang.Math.min;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.slf4j.Logger;
@@ -42,8 +42,6 @@ import org.slf4j.LoggerFactory;
  * A metric with value 0 is sent when there are no blocked threads,
  * otherwise the number of detected blocked threads is sent with a
  * dimension that holds information like thread id and minimal stack traces as trace telemetries
- *
- * Created by gupele on 8/7/2016.
  */
 public final class DeadLockDetectorPerformanceCounter implements PerformanceCounter {
 
@@ -110,18 +108,19 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
                 messageData.setMessage(String.format("%s%s", "Suspected deadlocked threads: ", sb));
 
-                messageTelemetry.setTime(TelemetryUtil.getFormattedNow());
+                messageTelemetry.setTime(FormattedTime.fromNow());
                 messageTelemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
 
                 telemetryClient.trackAsync(messageTelemetry);
             }
         }
 
-        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        telemetry.setTime(FormattedTime.fromNow());
 
         telemetryClient.trackAsync(telemetry);
     }
-    private void setThreadInfoAndStack(StringBuilder sb, ThreadInfo ti) {
+
+    private static void setThreadInfoAndStack(StringBuilder sb, ThreadInfo ti) {
         try {
             setThreadInfo(sb, ti);
 
@@ -153,7 +152,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
         sb.append(SEPERATOR);
     }
 
-    private void setThreadInfo(StringBuilder sb, ThreadInfo ti) {
+    private static void setThreadInfo(StringBuilder sb, ThreadInfo ti) {
         sb.append(ti.getThreadName());
         sb.append(" Id=");
         sb.append(ti.getThreadId());

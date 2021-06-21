@@ -21,10 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import java.io.File;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Collections;
 
-import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
@@ -39,36 +39,42 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
-import org.junit.*;
-import org.junit.contrib.java.lang.system.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class RpConfigurationPollingTest {
+@ExtendWith(SystemStubsExtension.class)
+class RpConfigurationPollingTest {
 
-    @Rule
-    public EnvironmentVariables envVars = new EnvironmentVariables();
+    @SystemStub
+    EnvironmentVariables envVars = new EnvironmentVariables();
 
-    @Before
-    public void beforeEach() {
+    @BeforeEach
+    void beforeEach() {
         // default sampler at startup is "Sampler.alwaysOff()", and this test relies on real sampler
         DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(100, new Configuration()));
     }
 
-    @After
-    public void afterEach() {
+    @AfterEach
+    void afterEach() {
         // need to reset trace config back to default (with default sampler)
         // otherwise tests run after this can fail
         DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(100, new Configuration()));
     }
 
     @Test
-    public void shouldUpdate() {
+    void shouldUpdate() throws URISyntaxException {
         // given
         RpConfiguration rpConfiguration = new RpConfiguration();
         rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
         rpConfiguration.sampling.percentage = 90;
-        rpConfiguration.configPath = new File(Resources.getResource("applicationinsights-rp.json").getPath()).toPath();
+        rpConfiguration.configPath = Paths.get(RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
         rpConfiguration.lastModifiedTime = 0;
 
         TelemetryClient telemetryClient = new TelemetryClient();
@@ -76,26 +82,26 @@ public class RpConfigurationPollingTest {
         Global.setSamplingPercentage(100);
 
         // pre-check
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryClient.getConnectionString());
-        assertEquals(100, Global.getSamplingPercentage(), 0);
-        assertEquals(100, getCurrentSamplingPercentage(), 0);
+        assertThat(telemetryClient.getConnectionString()).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(Global.getSamplingPercentage()).isEqualTo(100);
+        assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
         // when
         new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient).run();
 
         // then
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryClient.getConnectionString());
-        assertEquals(10, Global.getSamplingPercentage(), 0);
-        assertEquals(10, getCurrentSamplingPercentage(), 0);
+        assertThat(telemetryClient.getConnectionString()).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(Global.getSamplingPercentage()).isEqualTo(10);
+        assertThat(getCurrentSamplingPercentage()).isEqualTo(10);
     }
 
     @Test
-    public void shouldUpdateEvenOverEnvVars() {
+    void shouldUpdateEvenOverEnvVars() throws URISyntaxException {
         // given
         RpConfiguration rpConfiguration = new RpConfiguration();
         rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
         rpConfiguration.sampling.percentage = 90;
-        rpConfiguration.configPath = new File(Resources.getResource("applicationinsights-rp.json").getPath()).toPath();
+        rpConfiguration.configPath = Paths.get(RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
         rpConfiguration.lastModifiedTime = 0;
 
         TelemetryClient telemetryClient = new TelemetryClient();
@@ -106,20 +112,20 @@ public class RpConfigurationPollingTest {
         envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "90");
 
         // pre-check
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryClient.getConnectionString());
-        assertEquals(100, Global.getSamplingPercentage(), 0);
-        assertEquals(100, getCurrentSamplingPercentage(), 0);
+        assertThat(telemetryClient.getConnectionString()).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(Global.getSamplingPercentage()).isEqualTo(100);
+        assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
         // when
         new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient).run();
 
         // then
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryClient.getConnectionString());
-        assertEquals(10, Global.getSamplingPercentage(), 0);
-        assertEquals(10, getCurrentSamplingPercentage(), 0);
+        assertThat(telemetryClient.getConnectionString()).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(Global.getSamplingPercentage()).isEqualTo(10);
+        assertThat(getCurrentSamplingPercentage()).isEqualTo(10);
     }
 
-    private double getCurrentSamplingPercentage() {
+    private static double getCurrentSamplingPercentage() {
         SpanContext spanContext = SpanContext.create(
                 "12341234123412341234123412341234",
                 "1234123412341234",

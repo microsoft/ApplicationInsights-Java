@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import com.microsoft.applicationinsights.common.Strings;
 import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,7 +39,6 @@ import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCoun
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounterConfigurationAware;
 
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.perfcounter.ProcessPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulse;
 import org.slf4j.Logger;
@@ -91,14 +91,14 @@ public enum TelemetryClientInitializer {
         initializeComponents(telemetryClient);
     }
 
-    private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
+    private static void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
         if (isQuickPulseEnabledInConfiguration(appConfiguration)) {
             logger.trace("Initializing QuickPulse...");
             QuickPulse.INSTANCE.initialize(telemetryClient);
         }
     }
 
-    private boolean isQuickPulseEnabledInConfiguration(ApplicationInsightsXmlConfiguration appConfiguration) {
+    private static boolean isQuickPulseEnabledInConfiguration(ApplicationInsightsXmlConfiguration appConfiguration) {
         QuickPulseXmlElement quickPulseXmlElement = appConfiguration.getQuickPulse();
         return quickPulseXmlElement.isEnabled();
     }
@@ -108,7 +108,7 @@ public enum TelemetryClientInitializer {
      * @param appConfiguration The configuration data.
      * @param telemetryClient The configuration class.
      */
-    private void setTelemetryModules(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
+    private static void setTelemetryModules(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
         TelemetryModulesXmlElement configurationModules = appConfiguration.getModules();
         List<TelemetryModule> modules = telemetryClient.getTelemetryModules();
 
@@ -126,7 +126,7 @@ public enum TelemetryClientInitializer {
         modules.addAll(pcModules);
     }
 
-    private void setConnectionString(ApplicationInsightsXmlConfiguration configXml, TelemetryClient telemetryClient) {
+    private static void setConnectionString(ApplicationInsightsXmlConfiguration configXml, TelemetryClient telemetryClient) {
 
         String connectionString = configXml.getConnectionString();
 
@@ -135,7 +135,7 @@ public enum TelemetryClientInitializer {
         }
     }
 
-    private void setRoleName(ApplicationInsightsXmlConfiguration userConfiguration,
+    private static void setRoleName(ApplicationInsightsXmlConfiguration userConfiguration,
                              TelemetryClient telemetryClient) {
         try {
             String roleName;
@@ -154,12 +154,12 @@ public enum TelemetryClientInitializer {
 
                 telemetryClient.setRoleName(roleName);
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("Failed to set role name: '{}'", e.toString());
         }
     }
 
-    private void setRoleInstance(ApplicationInsightsXmlConfiguration userConfiguration,
+    private static void setRoleInstance(ApplicationInsightsXmlConfiguration userConfiguration,
                              TelemetryClient telemetryClient) {
         try {
             String roleInstance;
@@ -178,13 +178,13 @@ public enum TelemetryClientInitializer {
 
                 telemetryClient.setRoleInstance(roleInstance);
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("Failed to set role instance: '{}'", e.toString());
         }
     }
 
     @SuppressWarnings("unchecked")
-    private List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
+    private static List<TelemetryModule> getPerformanceModules(PerformanceCountersXmlElement performanceConfigurationData) {
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(performanceConfigurationData.getCollectionFrequencyInSec());
 
         ArrayList<TelemetryModule> modules = new ArrayList<>();
@@ -204,7 +204,7 @@ public enum TelemetryClientInitializer {
                     PerformanceCounterConfigurationAware awareModule = (PerformanceCounterConfigurationAware)module;
                     try {
                         awareModule.addConfigurationData(performanceConfigurationData);
-                    } catch (Exception e) {
+                    } catch (RuntimeException e) {
                         logger.error("Failed to add configuration data to performance module: '{}'", e.toString());
                     }
                 }
@@ -222,7 +222,7 @@ public enum TelemetryClientInitializer {
     /**
      * This method is only a workaround until the failure to load PCs in JBoss web servers will be solved.
      */
-    private Set<String> getDefaultPerformanceModulesNames() {
+    private static Set<String> getDefaultPerformanceModulesNames() {
         return defaultPerformaceModuleClassNames;
     }
 
@@ -237,10 +237,8 @@ public enum TelemetryClientInitializer {
      *      For every entry (object name and attributes)
      *          Build a {@link JmxMetricPerformanceCounter}
      *          Register the Performance Counter in the {@link PerformanceCounterContainer}
-     *
-     * @param jmxXmlElements
      */
-    private void loadCustomJmxPCs(ArrayList<JmxXmlElement> jmxXmlElements) {
+    private static void loadCustomJmxPCs(ArrayList<JmxXmlElement> jmxXmlElements) {
         try {
             if (jmxXmlElements == null) {
                 return;
@@ -282,22 +280,22 @@ public enum TelemetryClientInitializer {
                     } else {
                         logger.trace("Failed to register JMX performance counter '{}'", entry.getKey());
                     }
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     logger.error("Failed to register JMX performance counter '{}': '{}'", entry.getKey(), e.toString());
                 }
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("Failed to register JMX performance counters: '{}'", e.toString());
         }
     }
 
-    private void initializeComponents(TelemetryClient telemetryClient) {
+    private static void initializeComponents(TelemetryClient telemetryClient) {
         List<TelemetryModule> telemetryModules = telemetryClient.getTelemetryModules();
 
         for (TelemetryModule module : telemetryModules) {
             try {
                 module.initialize(telemetryClient);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 logger.error(
                         "Failed to initialized telemetry module " + module.getClass().getSimpleName() + ". Exception");
             }
@@ -308,7 +306,7 @@ public enum TelemetryClientInitializer {
      * Adds heartbeat module with default configuration
      * @param telemetryClient telemetry client instance
      */
-    private void addHeartBeatModule(TelemetryClient telemetryClient) {
+    private static void addHeartBeatModule(TelemetryClient telemetryClient) {
         HeartBeatModule module = new HeartBeatModule(new HashMap<>());
         telemetryClient.getTelemetryModules().add(module);
     }
@@ -318,9 +316,11 @@ public enum TelemetryClientInitializer {
      * @param module List of modules in current TelemetryClient instance
      * @return true if heartbeat module is present
      */
-    private boolean isHeartBeatModuleAdded(List<TelemetryModule> module) {
+    private static boolean isHeartBeatModuleAdded(List<TelemetryModule> module) {
         for (TelemetryModule mod : module) {
-            if (mod instanceof HeartBeatModule) return true;
+            if (mod instanceof HeartBeatModule) {
+                return true;
+            }
         }
         return false;
     }

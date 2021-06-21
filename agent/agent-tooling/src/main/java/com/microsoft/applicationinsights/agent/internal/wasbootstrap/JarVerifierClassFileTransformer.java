@@ -14,6 +14,7 @@ import static net.bytebuddy.jar.asm.Opcodes.*;
 public class JarVerifierClassFileTransformer implements ClassFileTransformer {
 
     @Override
+    @SuppressWarnings("SystemOut")
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         if (!className.equals("java/util/jar/JarVerifier")) {
             return null;

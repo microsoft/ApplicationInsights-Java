@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.springframework.boot:spring-boot-gradle-plugin:2.1.7.RELEASE'
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.1.7.RELEASE"
     }
 }
 
@@ -12,19 +12,24 @@ repositories {
     mavenCentral()
 }
 
-apply plugin: 'war'
-apply plugin: 'org.springframework.boot'
+apply plugin: "war"
+apply plugin: "org.springframework.boot"
 
 dependencies {
-    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
-    compileOnly project(path:':agent:agent', configuration:'devtest')
+    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
+    // TODO (trask) is this project really needed? if so, need to restore devtest configuration
+    // compileOnly project(path:":agent:agent", configuration:"devtest")
+    compileOnly project(path:":agent:agent")
 
-    implementation ('org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE') {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    implementation ("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE") {
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
     }
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
+    implementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
+}
 
-    testImplementation group: 'junit', name: 'junit', version: versions.junit
+test {
+    // FIXME (trask) move to common location
+    useJUnitPlatform()
 }
 
 tasks.withType(JavaCompile) {

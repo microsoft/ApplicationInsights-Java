@@ -6,8 +6,6 @@ package com.microsoft.applicationinsights.internal.util;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.azure.core.util.serializer.JacksonAdapter;
-import com.azure.core.util.serializer.SerializerAdapter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -16,7 +14,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class MockHttpResponse extends HttpResponse {
-    private static final SerializerAdapter SERIALIZER = new JacksonAdapter();
 
     private final int statusCode;
 
@@ -24,15 +21,15 @@ public class MockHttpResponse extends HttpResponse {
 
     private final byte[] bodyBytes;
 
+    public MockHttpResponse(HttpRequest request, int statusCode, HttpHeaders headers) {
+        this(request, statusCode, headers, new byte[0]);
+    }
+
     public MockHttpResponse(HttpRequest request, int statusCode, HttpHeaders headers, byte[] bodyBytes) {
         super(request);
         this.statusCode = statusCode;
         this.headers = headers;
         this.bodyBytes = bodyBytes;
-    }
-
-    public MockHttpResponse(HttpRequest request, int statusCode, HttpHeaders headers) {
-        this(request, statusCode, headers, new byte[0]);
     }
 
     @Override

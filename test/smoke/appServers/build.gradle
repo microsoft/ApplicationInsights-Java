@@ -1,17 +1,17 @@
 import org.apache.tools.ant.filters.ReplaceTokens;
 
-apply plugin: 'base'
+apply plugin: "base"
 
 ext {
-    partialDockerfileExt = '.partial.dockerfile'
-    jreMasterList = file('jre.master.txt')
+    partialDockerfileExt = ".partial.dockerfile"
+    jreMasterList = file("jre.master.txt")
     globalResourcesDir = "$projectDir/global-resources"
     agentLibsDir = file("${project(':agent:agent').buildDir}/libs") // is there a better way to get this?
-    agentJarName = project(':agent:agent').jar.archiveFileName.get()
+    agentJarName = project(":agent:agent").jar.archiveFileName.get()
 }
 
 subprojects {
-    apply plugin: 'base'
+    apply plugin: "base"
 
     ext {
         appServerShortName = null // set in subproject build.gradle
@@ -23,14 +23,14 @@ subprojects {
     }
 
     task generateDockerfiles {
-        group 'Smoke Test'
-        description = 'Generates Dockerfiles for building images'
+        group "Smoke Test"
+        description = "Generates Dockerfiles for building images"
 
         if (!jreMasterList.exists()) {
             throw new GradleException("Missing master jre list: jre.master.txt")
         }
-        def jreWhitelist = file('jre.includes.txt')
-        def jreBlacklist = file('jre.excludes.txt')
+        def jreWhitelist = file("jre.includes.txt")
+        def jreBlacklist = file("jre.excludes.txt")
 
         def jresToUse = getConfigSet(jreMasterList, jreWhitelist, jreBlacklist)
 
@@ -66,7 +66,7 @@ subprojects {
                     into dockerfileOutputDir
                     include "*$partialDockerfileExt"
                     filter(ReplaceTokens, tokens: tokenMap)
-                    def sanitizedJreVersion = jreVersion.replace(':','_').replace('/','_')
+                    def sanitizedJreVersion = jreVersion.replace(":","_").replace("/","_")
                     rename(/(.+\.)(partial)(\.dockerfile)/, "\$1$sanitizedJreVersion\$3")
                 }
                 jresFile << "$jreVersion\n"
@@ -75,12 +75,12 @@ subprojects {
     }
 
     task buildDockerImage {
-        group 'Smoke Test'
-        description 'Builds Docker images'
+        group "Smoke Test"
+        description "Builds Docker images"
 
-        dependsOn ':agent:agent:assemble'
+        dependsOn ":agent:agent:assemble"
         dependsOn generateDockerfiles
-        inputs.files(fileTree(dir: dockerfileOutputDir, include: '*.dockerfile'))
+        inputs.files(fileTree(dir: dockerfileOutputDir, include: "*.dockerfile"))
 
         outputs.upToDateWhen { false } // let docker determine if something needs to be built
 
@@ -99,17 +99,17 @@ subprojects {
             }
             copy {
                 from (agentLibsDir) {
-                    exclude '**/*-intermediate.jar' // intermediate shadow jar
+                    exclude "**/*-intermediate.jar" // intermediate shadow jar
                 }
                 into "$stagingDir/aiagent"
             }
 
-            fileTree(dir:stagingDir, include: '*.dockerfile').each { df ->
-                def tag = df.name.minus('.dockerfile').replace('.', '_')
+            fileTree(dir:stagingDir, include: "*.dockerfile").each { df ->
+                def tag = df.name.minus(".dockerfile").replace(".", "_")
                 exec {
                     workingDir df.getParentFile().absolutePath
-                    executable 'docker'
-                    args 'build', '--pull', '-f', df.name, '-t', tag, '.'
+                    executable "docker"
+                    args "build", "--pull", "-f", df.name, "-t", tag, "."
                 }
             }
         }
@@ -121,7 +121,7 @@ subprojects {
 }
 
 task buildDockerImage {
-    dependsOn project.subprojects.collect { it.getTasksByName('buildDockerImage', false) }
+    dependsOn project.subprojects.collect { it.getTasksByName("buildDockerImage", false) }
 
     outputs.upToDateWhen { false }
 
@@ -130,45 +130,45 @@ task buildDockerImage {
             copy {
                 from sp.ext.resourcesOutputDir
                 into sharedResourcesDir
-                include '**/*.*'
+                include "**/*.*"
             }
         }
     }
 }
 
 task resetDockerEnv {
-    group 'Smoke Test'
-    description 'Stops all containers, prunes containers, prunes networks, prunes images'
+    group "Smoke Test"
+    description "Stops all containers, prunes containers, prunes networks, prunes images"
     doLast {
         def os = new ByteArrayOutputStream()
         exec {
-            executable 'docker'
-            args 'ps', '-q'
+            executable "docker"
+            args "ps", "-q"
             standardOutput = os
         }
-        def dockerPs = os.toString().split('\\s+')
+        def dockerPs = os.toString().split("\\s+")
         if (dockerPs.length > 0) {
             exec {
-                executable 'docker'
-                ['stop', *dockerPs].each {
+                executable "docker"
+                ["stop", *dockerPs].each {
                     args it
                 }
             }
         }
         logger.info "Pruning containers..."
         exec {
-            executable 'docker'
-            args 'container', 'prune', '-f'
+            executable "docker"
+            args "container", "prune", "-f"
         }
         logger.info "Pruning networks..."
         exec {
-            executable 'docker'
-            args 'network', 'prune', '-f'
+            executable "docker"
+            args "network", "prune", "-f"
         }
         logger.info "Pruning images..."
         exec {
-            executable 'docker'
-            args 'image', 'prune', '-f'
+            executable "docker"
+            args "image", "prune", "-f"
         }
     }
 }

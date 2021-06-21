@@ -86,18 +86,17 @@ public class JMXMemoryManagement implements MemoryManagement {
                                     collector
                             );
                         } catch (Exception e) {
-                            throw new RuntimeException(e);
+                            throw new IllegalStateException(e);
                         }
-
                     });
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new UnableToMonitorMemoryException(e);
         }
 
         return this;
     }
 
-    private Set<JmxGarbageCollectorStats> initCollectors(final MBeanServerConnection connection, GCEventConsumer consumer) throws UnableToMonitorMemoryException {
+    private Set<JmxGarbageCollectorStats> initCollectors(MBeanServerConnection connection, GCEventConsumer consumer) throws UnableToMonitorMemoryException {
         return getEntityFromMbeanServer(COLLECTOR_MXBEANS, connection,
                 name -> getJmxGarbageCollector(connection, consumer, name)
         );
@@ -111,7 +110,7 @@ public class JMXMemoryManagement implements MemoryManagement {
                 consumer);
     }
 
-    private static Set<MemoryPool> initPools(final MBeanServerConnection connection, Set<GarbageCollector> garbageCollectors) throws UnableToMonitorMemoryException {
+    private static Set<MemoryPool> initPools(MBeanServerConnection connection, Set<GarbageCollector> garbageCollectors) throws UnableToMonitorMemoryException {
         return getEntityFromMbeanServer(POOL_MXBEANS, connection, name -> MemoryPools.getMemoryPool(connection, name, garbageCollectors));
     }
 
@@ -119,14 +118,14 @@ public class JMXMemoryManagement implements MemoryManagement {
         V apply(T t) throws UnableToMonitorMemoryException, AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException, IOException;
     }
 
-    private static <DomainClass> Set<DomainClass> getEntityFromMbeanServer(
+    private static <V> Set<V> getEntityFromMbeanServer(
             String beanName, MBeanServerConnection connection,
-            CollectorFactory<ObjectName, DomainClass> factory) throws UnableToMonitorMemoryException {
+            CollectorFactory<ObjectName, V> factory) throws UnableToMonitorMemoryException {
         try {
             ObjectName pattern = new ObjectName(beanName);
-            Set<DomainClass> domainObjects = new HashSet<>();
+            Set<V> domainObjects = new HashSet<>();
             for (ObjectName name : connection.queryNames(pattern, null)) {
-                DomainClass domainObject = factory.apply(name);
+                V domainObject = factory.apply(name);
                 domainObjects.add(domainObject);
             }
             return domainObjects;
@@ -135,7 +134,6 @@ public class JMXMemoryManagement implements MemoryManagement {
                     "Unable to initialise memory", e);
         }
     }
-
 
     @Override
     public Collection<MemoryPool> getPools() {

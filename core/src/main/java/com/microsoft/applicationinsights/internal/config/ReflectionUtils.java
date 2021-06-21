@@ -28,14 +28,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
+import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Utililty methods for dealing with reflection
- *
- * Created by gupele on 8/7/2016.
  */
 public final class ReflectionUtils {
 
@@ -44,8 +44,8 @@ public final class ReflectionUtils {
     private static final Map<String, Class<?>> builtInMap = new HashMap<>();
 
     static {
-        addClass(com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule.class);
-        addClass(com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule.class);
+        addClass(HeartBeatModule.class);
+        addClass(JvmPerformanceCountersModule.class);
     }
 
     static void addClass(Class<?> clazz) {
@@ -73,10 +73,8 @@ public final class ReflectionUtils {
             Class<?> clazz = builtInMap.get(className);
             if (clazz == null) {
                 clazz = Class.forName(className).asSubclass(interfaceClass);
-            } else {
-                clazz = clazz.asSubclass(interfaceClass);
             }
-            return (T)clazz.newInstance();
+            return (T) clazz.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             logger.error("Failed to create {}", className, e);
         }
@@ -178,4 +176,5 @@ public final class ReflectionUtils {
         }
     }
 
+    private ReflectionUtils() {}
 }

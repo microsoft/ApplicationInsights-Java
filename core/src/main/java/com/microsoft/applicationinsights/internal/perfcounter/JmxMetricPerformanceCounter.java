@@ -31,9 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
 
-/**
- * Created by gupele on 3/15/2015.
- */
 public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCounter {
 
     private static final Logger logger = LoggerFactory.getLogger(JmxMetricPerformanceCounter.class);
@@ -46,7 +43,7 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
     protected void send(TelemetryClient telemetryClient, String displayName, double value) {
         logger.trace("Metric JMX: {}, {}", displayName, value);
 
-        TelemetryItem telemetry = createMetricsTelemetry(displayName, value);
+        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, displayName, value);
         telemetryClient.trackAsync(telemetry);
     }
 }

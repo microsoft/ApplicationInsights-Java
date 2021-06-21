@@ -1,8 +1,5 @@
 package com.microsoft.applicationinsights.test.fakeingestion;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.io.CharStreams;
@@ -10,7 +7,6 @@ import com.google.gson.JsonSyntaxException;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.JsonHelper;
 
-import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -22,6 +18,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -29,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
 
 public class MockedAppInsightsIngestionServlet extends HttpServlet {
@@ -40,7 +38,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     private static final String appid = "DUMMYAPPID";
 
 
-    @GuardedBy("multimapLock")
+    // guarded by multimapLock
     private final ListMultimap<String, Envelope> type2envelope;
     private final List<Predicate<Envelope>> filters;
 
@@ -117,29 +115,29 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
 
     public List<Envelope> getItemsByType(String type) {
-        Preconditions.checkNotNull(type, "type");
+        Objects.requireNonNull(type, "type");
         synchronized (multimapLock) {
             return type2envelope.get(type);
         }
     }
 
     public void awaitAnyItems(long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
-        waitForItems(Predicates.<Envelope>alwaysTrue(), 1, timeout, timeUnit);
+        waitForItems(x -> true, 1, timeout, timeUnit);
     }
 
-    public List<Envelope> waitForItems(final Predicate<Envelope> condition, final int numItems, long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
-        final Future<List<Envelope>> future = itemExecutor.submit(new Callable<List<Envelope>>() {
+    public List<Envelope> waitForItems(Predicate<Envelope> condition, int numItems, long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
+        Future<List<Envelope>> future = itemExecutor.submit(new Callable<List<Envelope>>() {
             @Override
             public List<Envelope> call() throws Exception {
                 List<Envelope> targetCollection = new ArrayList<>(numItems);
                 while(targetCollection.size() < numItems) {
                     targetCollection.clear();
-                    final Collection<Envelope> currentValues;
+                    Collection<Envelope> currentValues;
                     synchronized (multimapLock) {
                         currentValues = new ArrayList<>(type2envelope.values());
                     }
                     for (Envelope val : currentValues) {
-                        if (condition.apply(val)) {
+                        if (condition.test(val)) {
                             targetCollection.add(val);
                         }
                     }
@@ -156,14 +154,11 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
         logit("caught: POST "+req.getPathInfo());
 
         switch (req.getPathInfo()) {
-            // FIXME (trask) this only accept be "/v2/track"
-            case "/v2/track":
-            case "/v2//track":
             case "/v2.1/track":
                 StringWriter w = new StringWriter();
                 try {
                     String contentEncoding = req.getHeader("content-encoding");
-                    final Readable reader;
+                    Readable reader;
                     if ("gzip".equals(contentEncoding)) {
                         reader = new InputStreamReader(new GZIPInputStream(req.getInputStream()));
                     }
@@ -226,7 +221,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
             return true;
         }
         for (Predicate<Envelope> filter : this.filters) {
-            if (!filter.apply(item)) {
+            if (!filter.test(item)) {
                 return false;
             }
         }
@@ -241,16 +236,14 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
             resp.getWriter().append("12341234-1234-1234-1234-123412341234");
             return;
         }
-        switch (req.getPathInfo()) {
-            case "/":
-                resp.getWriter().append(ENDPOINT_HEALTH_CHECK_RESPONSE);
-                return;
-            default:
-                resp.sendError(404, "Unknown URI");
+        if ("/".equals(req.getPathInfo())) {
+            resp.getWriter().append(ENDPOINT_HEALTH_CHECK_RESPONSE);
+        } else {
+            resp.sendError(404, "Unknown URI");
         }
     }
 
-    private class MockedIngestionServletConfig {
+    private static class MockedIngestionServletConfig {
         private boolean retainPayloadsEnabled = true;
         private boolean logPayloadsEnabled = true;
 

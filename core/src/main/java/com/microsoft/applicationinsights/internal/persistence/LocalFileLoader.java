@@ -142,11 +142,7 @@ public class LocalFileLoader {
 
     private LocalFileLoader() {
         scheduledExecutor.scheduleWithFixedDelay(new PersistedTelemetriesSender(), INTERVAL, INTERVAL, TimeUnit.SECONDS);
-        try {
-            telemetryChannel = TelemetryChannel.create(new EndpointProvider().getIngestionEndpoint().toURL());
-        } catch (MalformedURLException ex) {
-            logger.error("Fail to create TelemetryChannel.", ex);
-        }
+        telemetryChannel = TelemetryChannel.create(new EndpointProvider().getIngestionEndpoint());
     }
 
     private class PersistedTelemetriesSender implements Runnable {

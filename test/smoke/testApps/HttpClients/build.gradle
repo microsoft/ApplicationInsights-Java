@@ -1,29 +1,27 @@
-apply plugin: 'war'
+apply plugin: "war"
 
 dependencies {
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
-    implementation group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.4'
-    implementation group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
-    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.12.1'
-    implementation group: 'com.squareup.okhttp', name: 'okhttp', version: '2.7.5'
-    implementation group: 'org.springframework', name: 'spring-webflux', version: '5.2.3.RELEASE' // for testing netty client
-    implementation group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.9.4.RELEASE' // needed for above
+    implementation "org.apache.httpcomponents:httpclient:4.5.13"
+    implementation "org.apache.httpcomponents:httpasyncclient:4.1.4"
+    implementation "commons-httpclient:commons-httpclient:3.1"
+    implementation "com.squareup.okhttp3:okhttp:3.12.1"
+    implementation "com.squareup.okhttp:okhttp:2.7.5"
+    implementation "org.springframework:spring-webflux:5.2.3.RELEASE" // for testing netty client
+    implementation "io.projectreactor.netty:reactor-netty:0.9.4.RELEASE" // needed for above
     // this dependency is needed to make wildfly happy
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.4'
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.9.4"
 
-    implementation group: 'com.google.guava', name: 'guava', version: '27.1-android'
-
-    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
+    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
 }
 
 war {
     // this is done to remove the version from the archive file name
     // to make span name verification simpler
-    archiveFileName = project.name + '.war'
+    archiveFileName = project.name + ".war"
 }
 
 ext.testAppArtifactDir = war.destinationDirectory
-ext.testAppArtifactFilename = project.name + '.war'
+ext.testAppArtifactFilename = project.name + ".war"
 
 tasks.withType(JavaCompile) {
     options.release.set(8)

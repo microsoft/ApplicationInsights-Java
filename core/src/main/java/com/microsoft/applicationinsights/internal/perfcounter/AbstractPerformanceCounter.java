@@ -23,8 +23,6 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 
 /**
  * A base class for classes that report performance counters of Process level.
- *
- * Created by gupele on 3/12/2015.
  */
 abstract class AbstractPerformanceCounter implements PerformanceCounter {
 

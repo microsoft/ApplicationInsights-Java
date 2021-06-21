@@ -21,7 +21,7 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.MetricFilter;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
@@ -35,10 +35,10 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.common.CommonUtils;
+import com.microsoft.applicationinsights.common.Strings;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
-import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.config.*;
 import com.microsoft.applicationinsights.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.internal.profiler.ProfilerServiceInitializer;
@@ -47,23 +47,24 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import io.opentelemetry.instrumentation.api.aisdk.AiLazyConfiguration;
 import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import org.apache.http.HttpHost;
+import io.opentelemetry.javaagent.extension.AgentListener;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-public class AiComponentInstaller implements ComponentInstaller {
+public class AiComponentInstaller implements AgentListener {
 
     private static final Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
@@ -76,7 +77,7 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     @Override
-    public void beforeByteBuddyAgent(Config config) {
+    public void beforeAgent(Config config) {
         start(instrumentation);
         // add sdk instrumentation after ensuring Global.getTelemetryClient() will not return null
         instrumentation.addTransformer(new TelemetryClientClassFileTransformer());
@@ -92,11 +93,15 @@ public class AiComponentInstaller implements ComponentInstaller {
     }
 
     @Override
-    public void afterByteBuddyAgent(Config config) {
+    public void afterAgent(Config config) {
         // only safe now to resolve app id because SSL initialization
         // triggers loading of java.util.logging (starting with Java 8u231)
-        // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
-        AppIdSupplier.registerAndStartAppIdRetrieval();
+        // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized.
+        // Delay registering and starting AppId retrieval to later when the connection string becomes available
+        // for Linux Consumption Plan.
+        if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+            AppIdSupplier.INSTANCE.registerAndStartAppIdRetrieval();
+        }
     }
 
     private static void start(Instrumentation instrumentation) {
@@ -114,7 +119,7 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         Configuration config = MainEntryPoint.getConfiguration();
         if (!hasConnectionStringOrInstrumentationKey(config)) {
-            if (!("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME")))) {
+            if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
                 throw new FriendlyException("No connection string or instrumentation key provided",
                         "Please provide connection string or instrumentation key.");
             }
@@ -131,12 +136,6 @@ public class AiComponentInstaller implements ComponentInstaller {
             // TODO revisit this, not ideal to initialize when authentication is disabled
             AadAuthentication.init(null, null, null, null, null, null);
         }
-        // FIXME do something with config
-
-        // FIXME set doNotWeavePrefixes = "com.microsoft.applicationinsights.agent."
-
-        // FIXME set tryToLoadInBootstrapClassLoader = "com.microsoft.applicationinsights.agent."
-        // (maybe not though, this is only needed for classes in :agent:agent-bootstrap)
 
         String jbossHome = System.getenv("JBOSS_HOME");
         if (!Strings.isNullOrEmpty(jbossHome)) {
@@ -144,19 +143,22 @@ public class AiComponentInstaller implements ComponentInstaller {
             // java.util.logging (starting with Java 8u231)
             // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
             LazyAzureHttpClient.safeToInitLatch = new CountDownLatch(1);
-            LazyHttpClient.safeToInitLatch = new CountDownLatch(1);
             instrumentation.addTransformer(new JulListeningClassFileTransformer(LazyAzureHttpClient.safeToInitLatch));
         }
 
         if (config.proxy.host != null) {
             LazyAzureHttpClient.proxyHost= config.proxy.host;
             LazyAzureHttpClient.proxyPortNumber = config.proxy.port;
-            LazyHttpClient.proxy = new HttpHost(config.proxy.host, config.proxy.port);
         }
 
         AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
 
-        TelemetryClient telemetryClient = TelemetryClient.initActive(config.customDimensions, buildXmlConfiguration(config));
+        List<MetricFilter> metricFilters = config.preview.processors.stream()
+                .filter(processor -> processor.type == Configuration.ProcessorType.METRIC_FILTER)
+                .map(ProcessorConfig::toMetricFilter)
+                .collect(Collectors.toList());
+
+        TelemetryClient telemetryClient = TelemetryClient.initActive(config.customDimensions, metricFilters, buildXmlConfiguration(config));
 
         Global.setSamplingPercentage(config.sampling.percentage);
         Global.setTelemetryClient(telemetryClient);
@@ -174,7 +176,7 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         // this is for Azure Function Linux consumption plan support.
         if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-            AiLazyConfiguration.setAccessor(new LazyConfigurationAccessor());
+            AiLazyConfiguration.setAccessor(new LazyConfigurationAccessor(telemetryClient, appIdSupplier));
         }
 
         // this is currently used by Micrometer instrumentation in addition to 2.x SDK
@@ -196,12 +198,11 @@ public class AiComponentInstaller implements ComponentInstaller {
         String javaVersion = System.getProperty("java.version");
         String osName = System.getProperty("os.name");
         String arch = System.getProperty("os.arch");
-        String userName = "Microsoft-ApplicationInsights-Java-Profiler/" + aiVersion + "  (Java/" + javaVersion + "; " + osName + "; " + arch + ")";
-        return userName;
+        return "Microsoft-ApplicationInsights-Java-Profiler/" + aiVersion + "  (Java/" + javaVersion + "; " + osName + "; " + arch + ")";
     }
 
     private static ServiceProfilerServiceConfig formServiceProfilerConfig(ProfilerConfiguration configuration) {
-        URI serviceProfilerFrontEndPoint = TelemetryClient.getActive().getEndpointProvider().getProfilerEndpoint();
+        URL serviceProfilerFrontEndPoint = TelemetryClient.getActive().getEndpointProvider().getProfilerEndpoint();
         return new ServiceProfilerServiceConfig(
                 configuration.configPollPeriodSeconds,
                 configuration.periodicRecordingDurationSeconds,
@@ -213,8 +214,10 @@ public class AiComponentInstaller implements ComponentInstaller {
         );
     }
 
-    private static void validateProcessorConfiguration(Configuration config) throws FriendlyException {
-        if (config.preview == null || config.preview.processors == null) return;
+    private static void validateProcessorConfiguration(Configuration config) {
+        if (config.preview == null || config.preview.processors == null) {
+            return;
+        }
         for (ProcessorConfig processorConfig : config.preview.processors) {
             processorConfig.validate();
         }
@@ -287,10 +290,6 @@ public class AiComponentInstaller implements ComponentInstaller {
 
         xmlConfiguration.getQuickPulse().setEnabled(config.preview.liveMetrics.enabled);
 
-        if (config.preview.developerMode) {
-            // FIXME (trask)
-            // xmlConfiguration.getChannel().setDeveloperMode(true);
-        }
         return xmlConfiguration;
     }
 

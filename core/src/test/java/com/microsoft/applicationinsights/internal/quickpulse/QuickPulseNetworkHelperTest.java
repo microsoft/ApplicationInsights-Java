@@ -22,31 +22,28 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 import com.azure.core.http.HttpResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-/**
- * Created by gupele on 12/15/2016.
- */
-public class QuickPulseNetworkHelperTest {
+class QuickPulseNetworkHelperTest {
     @Test
-    public void testIsSuccessWith200() {
-        final HttpResponse response = mock(HttpResponse.class);
+    void testIsSuccessWith200() {
+        HttpResponse response = mock(HttpResponse.class);
         Mockito.doReturn(200).when(response).getStatusCode();
 
-        final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
-        assertTrue(result);
+        boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+        assertThat(result).isTrue();
     }
 
     @Test
-    public void testIsSuccessWith500() {
-        final HttpResponse response = mock(HttpResponse.class);
+    void testIsSuccessWith500() {
+        HttpResponse response = mock(HttpResponse.class);
         Mockito.doReturn(500).when(response).getStatusCode();
 
-        final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
-        assertFalse(result);
+        boolean result = new QuickPulseNetworkHelper().isSuccess(response);
+        assertThat(result).isFalse();
     }
 }

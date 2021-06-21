@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 plugins {
-    id 'java-library'
+    id "java-library"
 }
 
 repositories {
@@ -37,7 +37,7 @@ configurations {
     }
 }
 
-def jniSrcDir = 'src/main/jni'
+def jniSrcDir = "src/main/jni"
 sourceSets {
     main {
         java {
@@ -51,23 +51,28 @@ archivesBaseName = "applicationinsights-java-etw-provider"
 logger.info "project ${project.path} prop: ai.etw.native.build=${project.properties['ai.etw.native.build']}"
 
 import org.apache.tools.ant.taskdefs.condition.Os
-def buildNative = !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
+def buildNative = !(System.properties["skipWinNative"] ?: "false").toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS);
 
 dependencies {
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+    implementation "org.slf4j:slf4j-api:${versions.slf4j}"
 
     if (buildNative) {
-        jni32 project(path: ':etw:native', configuration: "${project.properties['ai.etw.native.build']}X86RuntimeElements")
-        jni64 project(path: ':etw:native', configuration: "${project.properties['ai.etw.native.build']}X86-64RuntimeElements")
+        jni32 project(path: ":etw:native", configuration: "${project.properties['ai.etw.native.build']}X86RuntimeElements")
+        jni64 project(path: ":etw:native", configuration: "${project.properties['ai.etw.native.build']}X86-64RuntimeElements")
     } else {
         logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
     }
 
-    testImplementation group: 'junit', name: 'junit', version: versions.junit
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: versions.hamcrest
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: versions.hamcrest
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
-    testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang
+    testImplementation platform("org.junit:junit-bom:${versions.junit}")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.assertj:assertj-core:${versions.assertj}"
+    testImplementation "org.mockito:mockito-core:${versions.mockito}"
+    testImplementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
+}
+
+test {
+    // FIXME (trask) move to common location
+    useJUnitPlatform()
 }
 
 // To rebuild naitive code with new headers, first run `gradlew :etw:java:classes -Pai.etw.native.generateHeaders` to generate new header, then update the method implementations.
@@ -76,33 +81,33 @@ if (hasProperty("ai.etw.native.generateHeaders")) {
     def jniOutDir = "$rootDir/etw/native/src/main/headers"
     logger.quiet "New JNI headers will be generated to $jniOutDir"
     compileJava {
-        options.compilerArgs.addAll(['-h', jniOutDir])
+        options.compilerArgs.addAll(["-h", jniOutDir])
     }
 }
 
 if (buildNative) {
-    tasks.register('processNativeResources', Copy) {
-        def useReleaseBuild = project.getProperty('ai.etw.native.build').equalsIgnoreCase('release')
-        dependsOn project(':etw:native').tasks.named("assemble${useReleaseBuild ? 'Release' : 'Debug'}X86").get()
-        dependsOn project(':etw:native').tasks.named("assemble${useReleaseBuild ? 'Release' : 'Debug'}X86-64").get()
+    tasks.register("processNativeResources", Copy) {
+        def useReleaseBuild = project.getProperty("ai.etw.native.build").equalsIgnoreCase("release")
+        dependsOn project(":etw:native").tasks.named("assemble${useReleaseBuild ? 'Release' : 'Debug'}X86").get()
+        dependsOn project(":etw:native").tasks.named("assemble${useReleaseBuild ? 'Release' : 'Debug'}X86-64").get()
 
         from configurations.jni32.files
         from configurations.jni64.files
-        include '*.dll'
+        include "*.dll"
         into "${sourceSets.main.output.resourcesDir}"
     }
-    tasks.named('processResources').configure {
-        dependsOn 'processNativeResources'
+    tasks.named("processResources").configure {
+        dependsOn "processNativeResources"
     }
 }
 
-tasks.named('test').configure {
+tasks.named("test").configure {
     def testprops =
         project.properties.findAll {
-            it.key.startsWith('ai.tests.')
+            it.key.startsWith("ai.tests.")
         } +
         project.properties.findAll {
-            it.key.startsWith('ai.etw.')
+            it.key.startsWith("ai.etw.")
         } + ["skipWinNative":!buildNative]
     systemProperties testprops
  }

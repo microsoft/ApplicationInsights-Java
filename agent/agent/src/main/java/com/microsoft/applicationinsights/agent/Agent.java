@@ -38,7 +38,7 @@ public class Agent {
         if (alreadyLoaded) {
             return;
         }
-        OpenTelemetryAgent.premain(agentArgs, inst, Agent.class);
+        OpenTelemetryAgent.premain(agentArgs, inst);
         alreadyLoaded = true;
     }
 
@@ -47,4 +47,6 @@ public class Agent {
     public static void agentmain(String agentArgs, Instrumentation inst) {
         premain(agentArgs, inst);
     }
+
+    private Agent() {}
 }

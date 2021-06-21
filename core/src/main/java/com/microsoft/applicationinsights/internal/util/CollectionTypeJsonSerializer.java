@@ -26,7 +26,7 @@ public class CollectionTypeJsonSerializer extends SimpleSerializers {
     }
 
 
-    private boolean isJavaLangObjectListType(CollectionType type) {
+    private static boolean isJavaLangObjectListType(CollectionType type) {
         JavaType contentType = type.getContentType();
         if (List.class.isAssignableFrom(type.getRawClass())) {
             // this means it's a list
@@ -36,5 +36,4 @@ public class CollectionTypeJsonSerializer extends SimpleSerializers {
         }
         return false;
     }
-
 }

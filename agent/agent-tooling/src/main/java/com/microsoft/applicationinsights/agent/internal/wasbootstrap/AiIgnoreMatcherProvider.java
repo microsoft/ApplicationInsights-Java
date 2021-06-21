@@ -1,20 +1,13 @@
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
-import io.opentelemetry.javaagent.spi.IgnoreMatcherProvider;
-import net.bytebuddy.description.type.TypeDescription;
+import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesBuilder;
+import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesConfigurer;
 
-public class AiIgnoreMatcherProvider implements IgnoreMatcherProvider {
-
-    @Override
-    public Result type(TypeDescription target) {
-        if (target.getActualName().startsWith("com.microsoft.applicationinsights.agent.")) {
-            return Result.IGNORE;
-        }
-        return Result.DEFAULT;
-    }
+public class AiIgnoreMatcherProvider implements IgnoredTypesConfigurer {
 
     @Override
-    public Result classloader(ClassLoader classLoader) {
-        return Result.DEFAULT;
+    public void configure(Config config, IgnoredTypesBuilder builder) {
+        builder.ignoreClass("com.microsoft.applicationinsights.agent.");
     }
 }

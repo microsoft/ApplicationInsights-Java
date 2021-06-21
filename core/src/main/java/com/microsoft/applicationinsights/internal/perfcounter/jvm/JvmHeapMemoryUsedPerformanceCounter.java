@@ -33,8 +33,6 @@ import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelem
 
 /**
  * The class will create a metric telemetry for capturing the Jvm's heap memory usage
- *
- * Created by gupele on 8/8/2016.
  */
 public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
 
@@ -66,15 +64,15 @@ public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
         reportHeap(memory, telemetryClient);
     }
 
-    private void reportHeap(MemoryMXBean memory, TelemetryClient telemetryClient) {
+    private static void reportHeap(MemoryMXBean memory, TelemetryClient telemetryClient) {
         MemoryUsage mhu = memory.getHeapMemoryUsage();
         if (mhu != null) {
             long currentHeapUsed = mhu.getUsed() / Megabyte;
-            TelemetryItem memoryHeapUsage = createMetricsTelemetry(HEAP_MEM_USED, currentHeapUsed);
+            TelemetryItem memoryHeapUsage = createMetricsTelemetry(telemetryClient, HEAP_MEM_USED, currentHeapUsed);
             telemetryClient.trackAsync(memoryHeapUsage);
 
             float percentage = 100.0f * (((float) mhu.getUsed()) / ((float) mhu.getMax()));
-            TelemetryItem memoryHeapUsagePercentage = createMetricsTelemetry(HEAP_MEM_USED_PERCENTAGE, percentage);
+            TelemetryItem memoryHeapUsagePercentage = createMetricsTelemetry(telemetryClient, HEAP_MEM_USED_PERCENTAGE, percentage);
             telemetryClient.trackAsync(memoryHeapUsagePercentage);
         }
     }

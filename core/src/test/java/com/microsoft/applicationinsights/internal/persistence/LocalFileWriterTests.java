@@ -1,13 +1,12 @@
 package com.microsoft.applicationinsights.internal.persistence;
 
-import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.squareup.moshi.JsonDataException;
 import okio.BufferedSource;
 import okio.Okio;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -24,21 +23,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOLDER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocalFileWriterTests {
 
     private byte[] rawBytes;
 
-    @Before
+    @BeforeEach
     public void setup() {
         /**
          * AadAuthentication is used by TelemetryChannel, which is used to initialize {@link LocalFileLoader}
          */
         AadAuthentication.init(null, null, null, null, null, null);
 
-        Path path = new File(Resources.getResource("write-transmission.txt").getPath()).toPath();
+        Path path = new File(getClass().getClassLoader().getResource("write-transmission.txt").getPath()).toPath();
         try {
             InputStream in = Files.newInputStream(path);
             BufferedSource source = Okio.buffer(Okio.source(in));
@@ -46,14 +44,14 @@ public class LocalFileWriterTests {
         } catch (IOException ignore) {}
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         Queue<String> queue = LocalFileLoader.get().getPersistedFilesCache();
         String filename = null;
         while((filename = queue.poll()) != null) {
             File tempFile = new File(DEFAULT_FOLDER, filename);
-            assertTrue(tempFile.exists());
-            assertTrue(tempFile.delete());
+            assertThat(tempFile.exists()).isTrue();
+            assertThat(tempFile.delete()).isTrue();
         }
     }
 
@@ -75,18 +73,18 @@ public class LocalFileWriterTests {
         }
         baos.close();
 
-        assertEquals(10, byteBuffers.size());
+        assertThat(byteBuffers.size()).isEqualTo(10);
 
         LocalFileWriter writer = new LocalFileWriter();
-        assertTrue(writer.writeToDisk(byteBuffers));
-        assertEquals(1, LocalFileLoader.get().getPersistedFilesCache().size());
+        assertThat(writer.writeToDisk(byteBuffers)).isTrue();
+        assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(1);
     }
 
     @Test
     public void testWriteRawByteArray() {
         LocalFileWriter writer = new LocalFileWriter();
-        assertTrue(writer.writeToDisk(rawBytes));
-        assertEquals(1, LocalFileLoader.get().getPersistedFilesCache().size());
+        assertThat(writer.writeToDisk(rawBytes)).isTrue();
+        assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(1);
     }
 
     @Test
@@ -110,6 +108,6 @@ public class LocalFileWriterTests {
 
         executorService.shutdown();
         executorService.awaitTermination(10, TimeUnit.MINUTES);
-        assertEquals(1000, LocalFileLoader.get().getPersistedFilesCache().size());
+        assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(1000);
     }
 }

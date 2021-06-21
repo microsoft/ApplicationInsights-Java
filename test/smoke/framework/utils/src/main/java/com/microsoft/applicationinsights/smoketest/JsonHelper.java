@@ -70,7 +70,7 @@ public class JsonHelper {
                     throw new JsonParseException("Unknown Domain type: "+baseType);
                 }
                 rval.setBaseType(baseType);
-                final Domain deserialize = context.deserialize(baseData, TypeToken.get(domainClass).getType());
+                Domain deserialize = context.deserialize(baseData, TypeToken.get(domainClass).getType());
                 rval.setBaseData(deserialize);
                 return rval;
             } catch (InstantiationException | IllegalAccessException e) {
@@ -86,13 +86,13 @@ public class JsonHelper {
         @Override
         public Duration deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
                 throws JsonParseException {
-            final String value = json.getAsString();
-            final int firstDot = value.indexOf('.');
-            final boolean hasDays = firstDot > -1 && firstDot < value.indexOf(':');
+            String value = json.getAsString();
+            int firstDot = value.indexOf('.');
+            boolean hasDays = firstDot > -1 && firstDot < value.indexOf(':');
 
-            final String[] parts = value.split("[:.]"); // [days.]hours:minutes:seconds[.milliseconds]
+            String[] parts = value.split("[:.]"); // [days.]hours:minutes:seconds[.milliseconds]
 
-            final long[] conversionFactor = new long[]{86400000, 3600000, 60000, 1000, 1};
+            long[] conversionFactor = new long[]{86400000, 3600000, 60000, 1000, 1};
             int conversionIndex = hasDays ? 0 : 1;
             long duration = 0;
             for (int i = 0; i < parts.length; i++) {
@@ -107,9 +107,9 @@ public class JsonHelper {
     private static class DataPointTypeEnumConverter implements JsonDeserializer<DataPointType>, JsonSerializer<DataPointType> {
         @Override
         public DataPointType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            final String id = json.getAsString();
+            String id = json.getAsString();
             switch (id) {
-                // FIXME (trask) this used to be mapped from int (0/1), is it really correct to map to string now?
+                // FIXME (trask) breeze question: this used to be mapped from int (0/1), is it really correct to map to string now?
                 case "Measurement": return DataPointType.Measurement;
                 case "Aggregation": return DataPointType.Aggregation;
                 default: throw new IllegalArgumentException("No DataPointType with id="+id);

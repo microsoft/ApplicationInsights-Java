@@ -13,4 +13,6 @@ public class InstrumentationKey {
     public static void set(String value) {
         InstrumentationKey.value = value;
     }
+
+    private InstrumentationKey() {}
 }

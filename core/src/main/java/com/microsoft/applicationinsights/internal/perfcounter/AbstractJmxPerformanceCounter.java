@@ -33,8 +33,6 @@ import org.slf4j.LoggerFactory;
 /**
  * The class is a base class for JMX performance counters.
  * It knows how to fetch the needed information from JMX and then relies on its derived classes to send the data.
- *
- * Created by gupele on 3/15/2015.
  */
 public abstract class AbstractJmxPerformanceCounter implements PerformanceCounter {
 
@@ -71,7 +69,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                         } else {
                             value += Double.parseDouble(String.valueOf(obj));
                         }
-                    } catch (Exception e) {
+                    } catch (RuntimeException e) {
                         ok = false;
                         break;
                     }
@@ -80,7 +78,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                 if (ok) {
                     try {
                         send(telemetryClient, displayAndValues.getKey(), value);
-                    } catch (Exception e) {
+                    } catch (RuntimeException e) {
                         logger.error("Error while sending JMX data: '{}'", e.toString());
                         logger.trace("Error while sending JMX data", e);
                     }

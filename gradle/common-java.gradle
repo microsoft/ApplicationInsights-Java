@@ -24,11 +24,11 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent;
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
 
-apply plugin: 'java'
-apply plugin: 'jacoco'
-apply plugin: 'checkstyle'
-apply plugin: 'org.owasp.dependencycheck'
-apply plugin: 'com.github.spotbugs'
+apply plugin: "java"
+apply plugin: "jacoco"
+apply plugin: "checkstyle"
+apply plugin: "org.owasp.dependencycheck"
+apply plugin: "net.ltgt.errorprone"
 
 configurations {
     def includeProfiler = project.hasProperty("includeProfiler") ? project.includeProfiler.toBoolean() : false
@@ -39,43 +39,15 @@ configurations {
 }
 
 checkstyle {
-    toolVersion = '8.22'
+    toolVersion = "8.22"
     configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
     configProperties["rootDir"] = rootProject.projectDir
     showViolations = false
 }
 
-spotbugs {
-    ignoreFailures = false
-    effort = 'max'
-    reportLevel = 'medium'
-
-    def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
-    if (spotbugsExcludeFile.exists()) {
-        excludeFilter = spotbugsExcludeFile
-    }
-}
-spotbugsTest.enabled = false
-
-spotbugsTest.enabled = false
-
-spotbugsMain {
-    reports {
-        html.enabled = true
-        xml.enabled = true
-        html {
-            stylesheet = 'fancy-hist.xsl'
-        }
-    }
-}
-
-dependencies {
-    // See https://find-sec-bugs.github.io/bugs.htm for bug pattern definitions
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
-}
-
 tasks.withType(JavaCompile) {
     options.release.set(8)
+    options.compilerArgs.add("-Werror")
 }
 
 tasks.withType(Checkstyle) {
@@ -87,12 +59,12 @@ tasks.withType(Checkstyle) {
 
 dependencyCheck {
     def supFile = "${project.projectDir}/dependency-check-suppressions.xml"
-    if (file(supFile).exists() && !Project.hasProperty('dependencyCheck.suppressions.skip')) {
+    if (file(supFile).exists() && !Project.hasProperty("dependencyCheck.suppressions.skip")) {
         suppressionFiles += supFile
     }
     outputDirectory = "${project.buildDir}/reports/dependency-check"
-    formats = ['HTML', 'JUNIT']
-    skipConfigurations = ['mavenDeployer', 'findbugs', 'checkstyle']
+    formats = ["HTML", "JUNIT"]
+    skipConfigurations = ["mavenDeployer", "findbugs", "checkstyle"]
     cveValidForHours = 1
     failBuildOnCVSS = 0
 }
@@ -108,22 +80,7 @@ jacocoTestReport {
     }
 }
 
-sourceSets {
-    integrationTest {
-        java.srcDir file('src/integTest/java')
-        resources.srcDir file('src/integTest/resources')
-        compileClasspath = sourceSets.main.output + sourceSets.test.output + configurations.testRuntime
-        runtimeClasspath = output + compileClasspath
-    }
-}
-
-task integrationTest(type: Test, dependsOn: jar) {
-    group 'Verification'
-    description 'Runs the integration tests.'
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
-}
-
+// TODO (trask) is this needed?
 repositories {
     mavenCentral()
 }
@@ -144,43 +101,6 @@ task collectTestResults {
 task testAndCollect {
     dependsOn test
     finalizedBy collectTestResults
-}
-
-task vscodeClasspathFile {
-    description 'Generates classpath file for the Visual Studio Code java plugin'
-    ext.destFile = file("$buildDir/classpath.txt")
-    outputs.file destFile
-    doLast {
-        def classpathString = configurations.compile.collect{ it.absolutePath }.join(File.pathSeparator)
-        if (!destFile.parentFile.exists()) {
-            destFile.parentFile.mkdirs()
-        }
-        assert destFile.parentFile.exists()
-        destFile.text = classpathString
-    }
-}
-
-task vscodeJavaconfigFile(dependsOn: vscodeClasspathFile) {
-    description 'Generates javaconfig.json file for the Visual Studio Code java plugin'
-
-    def relativePath = { File f ->
-        f.absolutePath - "${project.rootDir.absolutePath}/"
-    }
-    ext.destFile = file("javaconfig.json")
-    ext.config = [
-        sourcePath: sourceSets.collect{ it.java.srcDirs }.flatten().collect{ relativePath(it) },
-        classPathFile: relativePath(tasks.getByPath('vscodeClasspathFile').outputs.files.singleFile),
-        outputDirectory: relativePath(new File(buildDir, 'vscode-classes'))
-    ]
-    doLast {
-        def jsonContent = groovy.json.JsonOutput.toJson(ext.config)
-        destFile.text = groovy.json.JsonOutput.prettyPrint(jsonContent)
-    }
-}
-
-task vscode(dependsOn: vscodeJavaconfigFile) {
-    description 'Generates config files for the Visual Studio Code java plugin'
-    group 'vscode'
 }
 
 tasks.withType(Test) {

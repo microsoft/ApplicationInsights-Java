@@ -6,33 +6,33 @@ import com.azure.core.http.HttpResponse;
 import com.azure.core.http.ProxyOptions;
 import com.azure.core.http.netty.NettyAsyncHttpClientBuilder;
 import com.azure.core.util.Context;
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.checkerframework.checker.lock.qual.GuardedBy;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.ConnectionProvider;
 
-import javax.annotation.concurrent.GuardedBy;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class LazyAzureHttpClient implements HttpClient {
-    private static final Logger logger = LoggerFactory.getLogger(LazyAzureHttpClient.class);
+
     private static final HttpClient INSTANCE = new LazyAzureHttpClient();
     private static final int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
 
     public static volatile CountDownLatch safeToInitLatch;
     public static volatile String proxyHost;
     public static volatile Integer proxyPortNumber;
+
     public static HttpClient getInstance() {
         return INSTANCE;
     }
+
     private final Object lock = new Object();
     @GuardedBy("lock")
     private RuntimeException initException;
     @GuardedBy("lock")
     private HttpClient delegate;
+
     private HttpClient getDelegate() {
         synchronized (lock) {
             if (delegate != null) {
@@ -45,12 +45,13 @@ public class LazyAzureHttpClient implements HttpClient {
                 delegate = init();
             } catch (RuntimeException e) {
                 initException = e;
+                throw e;
             }
             return delegate;
         }
     }
 
-    private HttpClient init() {
+    private static HttpClient init() {
         if (safeToInitLatch != null) {
             try {
                 // this is used to delay SSL initialization because SSL initialization triggers loading of
@@ -62,7 +63,7 @@ public class LazyAzureHttpClient implements HttpClient {
                 safeToInitLatch.await(2, TimeUnit.MINUTES);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
+                // continue and initialize
             }
         }
 
@@ -81,7 +82,7 @@ public class LazyAzureHttpClient implements HttpClient {
     }
 
     @Override
-    public Mono<HttpResponse> send(HttpRequest request) throws FriendlyException {
+    public Mono<HttpResponse> send(HttpRequest request) {
         return getDelegate().send(request);
     }
 

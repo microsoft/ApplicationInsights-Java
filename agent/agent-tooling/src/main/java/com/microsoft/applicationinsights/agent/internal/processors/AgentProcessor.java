@@ -39,14 +39,14 @@ public abstract class AgentProcessor {
     private final @Nullable IncludeExclude include;
     private final @Nullable IncludeExclude exclude;
 
-    public AgentProcessor(@Nullable IncludeExclude include,
+    protected AgentProcessor(@Nullable IncludeExclude include,
                           @Nullable IncludeExclude exclude) {
         this.include = include;
         this.exclude = exclude;
     }
 
-    protected static AttributeProcessor.IncludeExclude getNormalizedIncludeExclude(ProcessorIncludeExclude includeExclude) {
-        return includeExclude.matchType == MatchType.strict ? AgentProcessor.StrictIncludeExclude.create(includeExclude) : AgentProcessor.RegexpIncludeExclude.create(includeExclude);
+    protected static IncludeExclude getNormalizedIncludeExclude(ProcessorIncludeExclude includeExclude) {
+        return includeExclude.matchType == MatchType.STRICT ? AgentProcessor.StrictIncludeExclude.create(includeExclude) : AgentProcessor.RegexpIncludeExclude.create(includeExclude);
     }
 
     public @Nullable IncludeExclude getInclude() {
@@ -85,12 +85,17 @@ public abstract class AgentProcessor {
         }
 
         // Function to compare span with user provided span names
+        @Override
         public boolean isMatch(SpanData span, boolean isLog) {
             if (isLog) {
                 // If user provided spanNames , then donot include log in the include/exclude criteria
-                if(!spanNames.isEmpty()) return false;
+                if(!spanNames.isEmpty()) {
+                    return false;
+                }
             } else {
-                if (!spanNames.isEmpty() && !spanNames.contains(span.getName())) return false;
+                if (!spanNames.isEmpty() && !spanNames.contains(span.getName())) {
+                    return false;
+                }
             }
             return this.checkAttributes(span);
         }
@@ -164,12 +169,17 @@ public abstract class AgentProcessor {
         }
 
         // Function to compare span/log with user provided span patterns/log patterns
+        @Override
         public boolean isMatch(SpanData span, boolean isLog) {
             if (isLog) {
                 // If user provided spanNames, then do not include log in the include/exclude criteria
-                if (!spanPatterns.isEmpty()) return false;
+                if (!spanPatterns.isEmpty()) {
+                    return false;
+                }
             } else {
-                if (!spanPatterns.isEmpty() && !isPatternFound(span, spanPatterns)) return false;
+                if (!spanPatterns.isEmpty() && !isPatternFound(span, spanPatterns)) {
+                    return false;
+                }
             }
             return checkAttributes(span);
         }

@@ -1,11 +1,11 @@
 plugins {
-    id 'com.github.johnrengelman.shadow'
+    id "com.github.johnrengelman.shadow"
 }
 
 apply from: "$buildScriptsDir/common-java.gradle"
-apply from: "$buildScriptsDir/publishing.gradle"
 
 repositories {
+    // maven local is needed for locally built otel fork
     mavenLocal()
 }
 
@@ -13,30 +13,14 @@ configurations {
     shadowInclude {
         description "For marking dependencies that should be shaded into this project's artifact"
     }
-    devtest {
-        description "For making a test jar for executing code not usually exposed to client applications (or loggers)"
-    }
-}
-
-sourceSets {
-    devtest {
-        java {
-            srcDir file('src/devtest/java')
-        }
-        resources {
-            srcDir file('src/devtest/resources')
-        }
-        compileClasspath = sourceSets.main.output + configurations.compile + configurations.devtest
-        runtimeClasspath = output + compileClasspath + configurations.runtime
-    }
 }
 
 processResources {
 
-    dependsOn ':agent:instrumentation:shadowJar'
+    dependsOn ":agent:instrumentation:shadowJar"
 
-    from(zipTree(tasks.getByPath(':agent:instrumentation:shadowJar').archivePath)) {
-        into 'inst'
+    from(zipTree(tasks.getByPath(":agent:instrumentation:shadowJar").archivePath)) {
+        into "inst"
         rename '(^.*)\\.class$', '$1.classdata'
     }
 }
@@ -57,19 +41,20 @@ jar {
 }
 
 shadowJar {
-    archiveClassifier.set('')
+    archiveClassifier.set("")
     mergeServiceFiles()
 
-    exclude '**/module-info.class'
-    exclude 'META-INF/jandex.idx' // from caffeine
+    exclude "**/module-info.class"
+    exclude "META-INF/jandex.idx" // from caffeine
+    exclude "META-INF/moshi.kotlin_module"
 
     // Prevents conflict with other SLF4J instances. Important for premain.
-    relocate 'org.slf4j', 'io.opentelemetry.javaagent.slf4j'
+    relocate "org.slf4j", "io.opentelemetry.javaagent.slf4j"
     // rewrite dependencies calling Logger.getLogger
-    relocate 'java.util.logging.Logger', 'io.opentelemetry.javaagent.bootstrap.PatchLogger'
+    relocate "java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger"
 
     // prevents conflict with library instrumentation
-    relocate 'io.opentelemetry.instrumentation.api', 'io.opentelemetry.javaagent.shaded.instrumentation.api'
+    relocate "io.opentelemetry.instrumentation.api", "io.opentelemetry.javaagent.shaded.instrumentation.api"
 
     // relocate OpenTelemetry API
     relocate "io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api"
@@ -78,63 +63,29 @@ shadowJar {
     relocate "io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context"
 
     // ApplicationInsights shading
-    exclude 'META-INF/services/javax.servlet.ServletContainerInitializer'
-    exclude 'META-INF/proguard/**'
+    exclude "META-INF/services/javax.servlet.ServletContainerInitializer"
+    exclude "META-INF/proguard/**"
 
-    def shadowPrefix = 'com.microsoft.applicationinsights.agent.shadow'
+    def shadowPrefix = "com.microsoft.applicationinsights.agent.shadow"
 
-    relocate 'ch.qos.logback', "${shadowPrefix}.ch.qos.logback"
-    relocate 'com.squareup.moshi', "${shadowPrefix}.com.squareup.moshi"
-    relocate 'okio', "${shadowPrefix}.okio"
+    relocate "ch.qos.logback", "${shadowPrefix}.ch.qos.logback"
+    relocate "com.squareup.moshi", "${shadowPrefix}.com.squareup.moshi"
+    relocate "okio", "${shadowPrefix}.okio"
 
-    relocate('logback.configurationFile', 'applicationinsights.logback.configurationFile')
-    relocate('logback.xml', 'applicationinsights.logback.xml')
-    relocate('logback.groovy', 'applicationinsights.logback.groovy') // to prevent accidentally picking up from user's class path
-    relocate('logback-test.xml', 'applicationinsights.logback-test.xml') // to prevent accidentally picking up from user's class path
+    relocate("logback.configurationFile", "applicationinsights.logback.configurationFile")
+    relocate("logback.xml", "applicationinsights.logback.xml")
+    relocate("logback.groovy", "applicationinsights.logback.groovy") // to prevent accidentally picking up from user's class path
+    relocate("logback-test.xml", "applicationinsights.logback-test.xml") // to prevent accidentally picking up from user's class path
 
 }
 
-archivesBaseName = 'applicationinsights-agent'
+archivesBaseName = "applicationinsights-agent"
 
 dependencies {
-    implementation project(':agent:agent-bootstrap')
-    implementation (group: 'io.opentelemetry.javaagent', name: 'opentelemetry-javaagent-bootstrap', version: versions.opentelemetryInstrumentationAlpha) {
-        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    implementation project(":agent:agent-bootstrap")
+    implementation ("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions.opentelemetryInstrumentationAlpha}") {
+        exclude group: "org.slf4j", module: "slf4j-simple"
     }
-    devtest group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
-}
-
-// region Publishing properties
-
-projectPomName = project.msftAppInsights + " Codeless Java Agent"
-projectPomDescription = "This is the Codeless Java agent of " + project.msftAppInsightsJavaSdk
-
-whenPomConfigured = { p ->
-    p.dependencies = []
-}
-
-// endregion Publishing properties
-/**
- * For building -devtest JAR which contains classes for calling internal code for graybox testing.
- */
-task devtestJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-    archiveClassifier.set('devtest')
-    dependsOn devtestClasses, assemble
-
-    // shadowJar.archiveFile doesn't work
-    from(zipTree(file("$buildDir/libs/${project.archivesBaseName}-${project.version}.jar"))) {
-        exclude 'LICENSE'
-        exclude 'NOTICE'
-    }
-    from sourceSets.devtest.output
-    configurations = []
-    manifest = shadowJar.manifest
-
-    relocate 'org.slf4j', 'io.opentelemetry.javaagent.slf4j'
-}
-
-artifacts {
-    devtest devtestJar
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
@@ -145,7 +96,7 @@ task verifyAgentJarContents {
     def jarContentsFileExists = jarContentsFile.exists()
     logger.info "${project.name} will ${jarContentsFileExists ? '' : 'not '}run '$name'"
     onlyIf {
-        !(System.properties['skipWinNative'] ?: 'false').toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS) && jarContentsFileExists
+        !(System.properties["skipWinNative"] ?: "false").toBoolean() && Os.isFamily(Os.FAMILY_WINDOWS) && jarContentsFileExists
     }
     Set expectedEntries = []
     // jar_contents.regex should have one pattern per line
