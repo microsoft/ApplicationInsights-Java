@@ -30,11 +30,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
-import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;

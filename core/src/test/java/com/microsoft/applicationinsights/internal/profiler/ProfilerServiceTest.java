@@ -55,7 +55,6 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.Uplo
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.jfr.Recording;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
