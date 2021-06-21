@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-final class LimitsEnforcerTest {
+class LimitsEnforcerTest {
     private final static String MOCK_PROPERTY_NAME = "MockProperty";
 
     @Test

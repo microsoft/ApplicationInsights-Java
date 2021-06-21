@@ -37,7 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Disabled
-final class PerformanceCounterContainerTest {
+class PerformanceCounterContainerTest {
     private static class PerformanceCounterStub implements PerformanceCounter {
         private final String id;
         private final Lock lock = new ReentrantLock();

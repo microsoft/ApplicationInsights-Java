@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-final class ProcessCpuPerformanceCounterTest {
+class ProcessCpuPerformanceCounterTest {
     @Test
     void testGetId() {
         ProcessCpuPerformanceCounter pc = new ProcessCpuPerformanceCounter();

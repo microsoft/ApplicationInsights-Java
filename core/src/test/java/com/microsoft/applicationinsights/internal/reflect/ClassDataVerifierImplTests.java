@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-final class ClassDataVerifierImplTests {
+class ClassDataVerifierImplTests {
     private final static String PUBLIC_EXISTING_METHOD = "endsWith";
     private final static String PUBLIC_NOT_EXISTING_METHOD = "notexistingmethod";
     private final static String EXISTING_CLASS = "java.lang.String";
