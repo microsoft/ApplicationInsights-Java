@@ -58,16 +58,13 @@ class DllFileUtils {
         if (!dllPath.exists() || !dllPath.canRead() || !dllPath.canWrite()) {
             throw new RuntimeException("Failed to create a read/write folder for the native dll.");
         }
-        LOGGER.trace("{} folder exists", dllPath.toString());
+        LOGGER.trace("{} folder exists", dllPath);
 
         return dllPath;
     }
 
     /**
      * Assumes dllOnDisk is non-null and exists.
-     * @param dllOnDisk
-     * @param libraryToLoad
-     * @throws IOException
      */
     public static void extractToLocalFolder(File dllOnDisk, String libraryToLoad) throws IOException {
         ClassLoader classLoader = DllFileUtils.class.getClassLoader();

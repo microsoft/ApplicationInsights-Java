@@ -32,10 +32,10 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     private Object[] messageArgs = new Object[0];
     private String operation;
 
-    public IpaEtwEventBase() {
+    protected IpaEtwEventBase() {
     }
 
-    public IpaEtwEventBase(IpaEtwEventBase event) {
+    protected IpaEtwEventBase(IpaEtwEventBase event) {
         extensionVersion = event.extensionVersion;
         appName = event.appName;
         instrumentationKey = event.instrumentationKey;

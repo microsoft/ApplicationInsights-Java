@@ -151,6 +151,7 @@ public class StatusFile {
         write(false);
     }
 
+    @SuppressWarnings("SystemOut")
     private static void write(boolean loggingInitialized) {
         if (!shouldWrite()) {
             return;

@@ -54,7 +54,7 @@ class GCCollectionSample implements GCCollectionEvent {
         this.gcAction = gcAction;
     }
 
-    private Map<MemoryPool, MemoryUsage> groupMemoryUsageByPoolName(Object map, MemoryManagement memoryManagement) {
+    private static Map<MemoryPool, MemoryUsage> groupMemoryUsageByPoolName(Object map, MemoryManagement memoryManagement) {
         @SuppressWarnings("unchecked")
         Map<List<String>, CompositeData> byName = (Map<List<String>, CompositeData>) map;
         Map<MemoryPool, MemoryUsage> byIdentifier = new HashMap<>();
@@ -68,7 +68,7 @@ class GCCollectionSample implements GCCollectionEvent {
                     byIdentifier.put(name.get(), usage);
                 }
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOGGER.error("Failed to group pool data", e);
         }
         return Collections.unmodifiableMap(byIdentifier);

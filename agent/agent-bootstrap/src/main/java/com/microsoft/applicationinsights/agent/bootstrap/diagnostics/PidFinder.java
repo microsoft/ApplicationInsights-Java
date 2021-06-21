@@ -17,7 +17,7 @@ public class PidFinder extends CachedDiagnosticsValueFinder {
         return getPidUsingRuntimeBean();
     }
 
-    private String getPidUsingRuntimeBean() {
+    private static String getPidUsingRuntimeBean() {
         // will only work with sun based jvm
         RuntimeMXBean rb = ManagementFactory.getRuntimeMXBean();
         if (rb == null) {

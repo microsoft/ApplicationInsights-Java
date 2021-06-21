@@ -44,6 +44,8 @@ public class Exceptions {
         return parser.getDetails();
     }
 
+    private Exceptions() {}
+
     static class Parser {
 
         private TelemetryExceptionDetails current;
@@ -66,7 +68,6 @@ public class Exceptions {
                     current.setTypeName(line);
                 }
             }
-            System.out.println(line);
         }
 
         public List<TelemetryExceptionDetails> getDetails() {

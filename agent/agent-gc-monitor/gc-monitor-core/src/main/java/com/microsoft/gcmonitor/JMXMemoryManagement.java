@@ -88,9 +88,8 @@ public class JMXMemoryManagement implements MemoryManagement {
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
-
                     });
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new UnableToMonitorMemoryException(e);
         }
 
@@ -119,14 +118,14 @@ public class JMXMemoryManagement implements MemoryManagement {
         V apply(T t) throws UnableToMonitorMemoryException, AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException, IOException;
     }
 
-    private static <DomainClass> Set<DomainClass> getEntityFromMbeanServer(
+    private static <V> Set<V> getEntityFromMbeanServer(
             String beanName, MBeanServerConnection connection,
-            CollectorFactory<ObjectName, DomainClass> factory) throws UnableToMonitorMemoryException {
+            CollectorFactory<ObjectName, V> factory) throws UnableToMonitorMemoryException {
         try {
             ObjectName pattern = new ObjectName(beanName);
-            Set<DomainClass> domainObjects = new HashSet<>();
+            Set<V> domainObjects = new HashSet<>();
             for (ObjectName name : connection.queryNames(pattern, null)) {
-                DomainClass domainObject = factory.apply(name);
+                V domainObject = factory.apply(name);
                 domainObjects.add(domainObject);
             }
             return domainObjects;
@@ -135,7 +134,6 @@ public class JMXMemoryManagement implements MemoryManagement {
                     "Unable to initialise memory", e);
         }
     }
-
 
     @Override
     public Collection<MemoryPool> getPools() {
