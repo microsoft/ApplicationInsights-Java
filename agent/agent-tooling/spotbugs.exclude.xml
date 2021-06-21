@@ -93,6 +93,18 @@
         <Method name="logErrorMessage" />
     </Match>
     <Match>
+        <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" />
+        <Class name="com.microsoft.applicationinsights.agent.internal.instrumentation.sdk.BytecodeUtilImpl" />
+        <Or>
+            <And>
+                <Method name="track" />
+            </And>
+            <And>
+                <Method name="flush" />
+            </And>
+        </Or>
+    </Match>
+    <Match>
         <Bug pattern="CRLF_INJECTION_LOGS" />
         <Class name="com.microsoft.applicationinsights.agent.internal.wasbootstrap.MainEntryPoint" />
         <Method name="start" />

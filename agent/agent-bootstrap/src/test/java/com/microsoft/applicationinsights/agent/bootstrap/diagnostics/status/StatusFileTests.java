@@ -1,6 +1,8 @@
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Map;
@@ -21,6 +23,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile.initLogDir;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -33,15 +36,15 @@ class StatusFileTests {
     @SystemStub
     EnvironmentVariables envVars = new EnvironmentVariables();
 
-    private final String testIkey = "fake-ikey-123";
-    private final String fakeVersion = "0.0.1-test";
+    private static final String TEST_IKEY = "fake-ikey-123";
+    private static final String FAKE_VERSION = "0.0.1-test";
 
     @BeforeEach
     void setup() {
         // TODO these tests currently only pass on windows
         assumeTrue(DiagnosticsHelper.isOsWindows());
-        envVars.set("APPINSIGHTS_INSTRUMENTATIONKEY", testIkey);
-        envVars.set(AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE, fakeVersion);
+        envVars.set("APPINSIGHTS_INSTRUMENTATIONKEY", TEST_IKEY);
+        envVars.set(AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE, FAKE_VERSION);
     }
 
     @AfterEach
@@ -81,7 +84,6 @@ class StatusFileTests {
     @Test
     void mapHasExpectedValues() {
         Map<String, Object> jsonMap = StatusFile.getJsonMap();
-        System.out.println("Map contents: " + Arrays.toString(jsonMap.entrySet().toArray()));
 
         assertMapHasExpectedInformation(jsonMap);
     }
@@ -98,10 +100,10 @@ class StatusFileTests {
         }
         assertThat(inputMap).hasSize(size);
         assertThat(inputMap).containsKey("MachineName");
-        assertThat(inputMap).containsEntry("Ikey", testIkey);
+        assertThat(inputMap).containsEntry("Ikey", TEST_IKEY);
         assertThat(inputMap).containsKey("PID");
         assertThat(inputMap).containsEntry("AppType", "java");
-        assertThat(inputMap).containsEntry("ExtensionVersion", fakeVersion);
+        assertThat(inputMap).containsEntry("ExtensionVersion", FAKE_VERSION);
     }
 
     @Test
@@ -135,15 +137,14 @@ class StatusFileTests {
         }
     }
 
-    private void pauseForFileWrite() throws InterruptedException {
+    private static void pauseForFileWrite() throws InterruptedException {
         TimeUnit.SECONDS.sleep(5);
     }
 
-    Map parseJsonFile(File tempFolder) throws java.io.IOException {
+    Map parseJsonFile(File tempFolder) throws IOException {
         JsonAdapter<Map> adapter = new Builder().build().adapter(Map.class);
         String fileName = StatusFile.constructFileName(StatusFile.getJsonMap());
-        String contents = new String(Files.readAllBytes(new File(tempFolder, fileName).toPath()));
-        System.out.println("file contents (" + fileName + "): " + contents);
+        String contents = new String(Files.readAllBytes(new File(tempFolder, fileName).toPath()), UTF_8);
         return adapter.fromJson(contents);
     }
 
