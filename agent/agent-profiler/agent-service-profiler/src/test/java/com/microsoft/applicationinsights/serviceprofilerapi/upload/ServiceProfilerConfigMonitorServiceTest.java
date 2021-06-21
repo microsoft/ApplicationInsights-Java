@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
+import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,10 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 class ServiceProfilerConfigMonitorServiceTest {
 
@@ -61,7 +66,7 @@ class ServiceProfilerConfigMonitorServiceTest {
 
         job.get().run();
 
-        Mockito.verify(serviceProfilerClient, Mockito.times(1)).getSettings(Matchers.any(Date.class));
+        Mockito.verify(serviceProfilerClient, times(1)).getSettings(any(Date.class));
         assertThat(config.get()).isNotNull();
 
         assertThat(config.get().getCollectionPlan()).isEqualTo("--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker");
@@ -72,17 +77,17 @@ class ServiceProfilerConfigMonitorServiceTest {
 
     private static ScheduledExecutorService mockScheduledExecutorService(Consumer<Runnable> job) {
         ScheduledExecutorService executorService = Mockito.mock(ScheduledExecutorService.class);
-
-        Mockito.doAnswer(invocation -> {
-            job.accept(invocation.getArgument(0, Runnable.class));
-            return null;
-        }).when(executorService).scheduleAtFixedRate(Mockito.any(Runnable.class), Mockito.anyInt(), Mockito.anyInt(), Mockito.any(TimeUnit.class));
+        when(executorService.scheduleAtFixedRate(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class)))
+            .thenAnswer(invocation -> {
+                job.accept(invocation.getArgument(0, Runnable.class));
+                return null;
+            });
         return executorService;
     }
 
     static ServiceProfilerClientV2 mockServiceProfilerClient() throws IOException, URISyntaxException {
         ServiceProfilerClientV2 serviceProfilerClient = Mockito.mock(ServiceProfilerClientV2.class);
-        Mockito.when(serviceProfilerClient.getSettings(Matchers.any(Date.class))).thenReturn("{\"id\":\"8929ed2e-24da-4ad4-8a8b-5a5ebc03abb4\",\"lastModified\":\"2021-01-25T15:46:11" +
+        when(serviceProfilerClient.getSettings(any(Date.class))).thenReturn("{\"id\":\"8929ed2e-24da-4ad4-8a8b-5a5ebc03abb4\",\"lastModified\":\"2021-01-25T15:46:11" +
                 ".0900613+00:00\",\"enabledLastModified\":\"0001-01-01T00:00:00+00:00\",\"enabled\":true,\"collectionPlan\":\"--single --mode immediate --immediate-profiling-duration 120  " +
                 "--expiration 5249157885138288517 --settings-moniker a-settings-moniker\",\"cpuTriggerConfiguration\":\"--cpu-trigger-enabled true --cpu-threshold 80 " +
                 "--cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400\",\"memoryTriggerConfiguration\":\"--memory-trigger-enabled true --memory-threshold 20 " +

@@ -66,8 +66,6 @@ import static com.microsoft.applicationinsights.internal.perfcounter.Constants.T
 import static com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-// FIXME (trask) somehow I broke this test
-@Disabled
 class ProfilerServiceTest {
 
     final String timeStamp = "a-timestamp";
