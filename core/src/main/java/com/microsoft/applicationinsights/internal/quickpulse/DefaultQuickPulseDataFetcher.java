@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import com.azure.core.http.HttpRequest;
-import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
@@ -33,9 +32,6 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 12/12/2016.
- */
 final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulseDataFetcher.class);
@@ -43,28 +39,16 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
     private static final String QP_BASE_URI = "https://rt.services.visualstudio.com/QuickPulseService.svc";
     private final ArrayBlockingQueue<HttpRequest> sendQueue;
     private final TelemetryClient telemetryClient;
-    private final String ikey;
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
     private final String postPrefix;
     private final String sdkVersion;
 
     public DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpRequest> sendQueue, TelemetryClient telemetryClient, String machineName,
                                         String instanceName, String roleName, String quickPulseId) {
-        this(sendQueue, telemetryClient, null, machineName, instanceName, roleName, quickPulseId);
-    }
-
-    @Deprecated
-    public DefaultQuickPulseDataFetcher(final ArrayBlockingQueue<HttpRequest> sendQueue, final String ikey, final String machineName, final String instanceName, final String quickPulseId) {
-        this(sendQueue, null, ikey, machineName, instanceName, quickPulseId);
-    }
-
-    private DefaultQuickPulseDataFetcher(ArrayBlockingQueue<HttpRequest> sendQueue, TelemetryClient telemetryClient, String ikey, String machineName,
-                                         String instanceName, String roleName, String quickPulseId) {
         this.sendQueue = sendQueue;
         this.telemetryClient = telemetryClient;
-        this.ikey = ikey;
         sdkVersion = getCurrentSdkVersion();
-        final StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
         if (!LocalStringsUtils.isNullOrEmpty(roleName)) {
             roleName = "\"" + roleName + "\"";
@@ -73,7 +57,8 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         sb.append("[{");
         formatDocuments(sb);
         sb.append("\"Instance\": \"").append(instanceName).append("\",");
-        sb.append("\"InstrumentationKey\": \"").append(ikey).append("\",");
+        // FIXME (trask) this seemed to be working when it was always null ikey here??
+        sb.append("\"InstrumentationKey\": \"").append(telemetryClient.getInstrumentationKey()).append("\",");
         sb.append("\"InvariantVersion\": ").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
         sb.append("\"MachineName\": \"").append(machineName).append("\",");
         sb.append("\"RoleName\": ").append(roleName).append(",");
@@ -97,9 +82,9 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         try {
             QuickPulseDataCollector.FinalCounters counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
 
-            final Date currentDate = new Date();
-            final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-            final HttpRequest request = networkHelper.buildRequest(currentDate, this.getEndpointUrl(endpointPrefix));
+            Date currentDate = new Date();
+            String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
+            HttpRequest request = networkHelper.buildRequest(currentDate, this.getEndpointUrl(endpointPrefix));
             request.setBody(buildPostEntity(counters));
 
             if (!sendQueue.offer(request)) {
@@ -118,22 +103,18 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         }
     }
 
-    @VisibleForTesting
+    // visible for testing
     String getEndpointUrl(String endpointPrefix) {
         return endpointPrefix + "/post?ikey=" + getInstrumentationKey();
     }
 
-    @VisibleForTesting
+    // visible for testing
     String getQuickPulseEndpoint() {
-         return telemetryClient == null ? QP_BASE_URI : telemetryClient.getEndpointProvider().getLiveEndpointURL().toString();
+         return telemetryClient == null ? QP_BASE_URI : telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString();
     }
 
     private String getInstrumentationKey() {
-        if (telemetryClient != null) {
-            return telemetryClient.getInstrumentationKey();
-        } else {
-            return ikey;
-        }
+        return telemetryClient.getInstrumentationKey();
     }
 
     private String buildPostEntity(QuickPulseDataCollector.FinalCounters counters) {
@@ -149,21 +130,21 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         return sb.toString();
     }
 
-    private void formatDocuments(StringBuilder sb) {
+    private static void formatDocuments(StringBuilder sb) {
         sb.append("\"Documents\": [] ,");
     }
 
-    private void formatSingleMetric(StringBuilder sb, String metricName, double metricValue, int metricWeight, Boolean includeComma) {
+    private static void formatSingleMetric(StringBuilder sb, String metricName, double metricValue, int metricWeight, boolean includeComma) {
         String comma = includeComma ? "," : "";
         sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
     }
 
-    private void formatSingleMetric(StringBuilder sb, String metricName, long metricValue, int metricWeight, Boolean includeComma) {
+    private static void formatSingleMetric(StringBuilder sb, String metricName, long metricValue, int metricWeight, boolean includeComma) {
         String comma = includeComma ? "," : "";
         sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
     }
 
-    private void formatMetrics(QuickPulseDataCollector.FinalCounters counters, StringBuilder sb) {
+    private static void formatMetrics(QuickPulseDataCollector.FinalCounters counters, StringBuilder sb) {
         sb.append("\"Metrics\":[");
         formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Requests\\/Sec", counters.requests, 1, true);
         formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Request Duration", counters.requestsDuration, (int)counters.requests, true);

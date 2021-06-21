@@ -75,10 +75,11 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
                                           @Nullable Class<?> classBeingRedefined,
                                           @Nullable ProtectionDomain protectionDomain, byte[] classfileBuffer) {
 
+        // NOTE: this is never called for the internal TelemetryClient because the internal TelemetryClient
+        // is initialized before this class file transformer is registered
         if (!unshadedClassName.equals(className)) {
             return null;
         }
-        // FIXME why isn't this being called for internal TelemetryClient (which is good, but why)?
 
         StatusFile.putValueAndWrite("SDKPresent", true);
         try {
@@ -115,6 +116,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             this.cw = cw;
         }
 
+        @Override
         public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
             if (name.equals("configuration") && descriptor.equals("L" + unshadedPrefix + "/TelemetryConfiguration;")) {
                 foundConfigurationField = true;
@@ -335,7 +337,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             mv.visitEnd();
         }
 
-        private void overwriteFlushMethod(MethodVisitor mv) {
+        private static void overwriteFlushMethod(MethodVisitor mv) {
             mv.visitCode();
             mv.visitMethodInsn(INVOKESTATIC, BYTECODE_UTIL_INTERNAL_NAME, "flush", "()V", false);
             mv.visitInsn(RETURN);

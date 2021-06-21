@@ -1,14 +1,14 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '2.1.7.RELEASE'
+    id "java"
+    id "org.springframework.boot" version "2.1.7.RELEASE"
 }
 
 ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
 
 dependencies {
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.7.RELEASE'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.1.7.RELEASE'
+    implementation "org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE"
+    implementation "org.springframework.boot:spring-boot-starter-actuator:2.1.7.RELEASE"
 }
 
 tasks.withType(JavaCompile) {

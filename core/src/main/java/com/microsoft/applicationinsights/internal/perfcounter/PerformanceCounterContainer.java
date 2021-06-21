@@ -26,9 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
@@ -49,8 +46,6 @@ import org.slf4j.LoggerFactory;
  * The user of this class can add (register), remove (unregister) a performance counter while the container is working.
  * <p>
  * The container will be stopped automatically when the application exists.
- * <p>
- * Created by gupele on 3/3/2015.
  */
 public enum PerformanceCounterContainer {
     INSTANCE;
@@ -82,9 +77,6 @@ public enum PerformanceCounterContainer {
      * @return True on success.
      */
     public boolean register(PerformanceCounter performanceCounter) {
-        Preconditions.checkNotNull(performanceCounter, "performanceCounter should be non null, non empty value");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(performanceCounter.getId()), "performanceCounter's id should be non null, non empty value");
-
         initialize();
 
         logger.trace("Registering PC '{}'", performanceCounter.getId());
@@ -112,8 +104,6 @@ public enum PerformanceCounterContainer {
      * @param id The Performance Counter's id.
      */
     public void unregister(String id) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(id), "id should be non null, non empty value");
-
         logger.trace("Un-registering PC '{}'", id);
         performanceCounters.remove(id);
     }

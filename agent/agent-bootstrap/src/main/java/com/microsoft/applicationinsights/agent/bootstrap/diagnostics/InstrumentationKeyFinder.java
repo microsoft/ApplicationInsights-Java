@@ -11,7 +11,7 @@ public class InstrumentationKeyFinder implements DiagnosticsValueFinder {
 
     @Override
     public String getValue() {
-        final String connStr = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
+        String connStr = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
         if (connStr != null && !connStr.isEmpty()) {
             String[] parts = connStr.split(";");
             String instrumentationKey = null;

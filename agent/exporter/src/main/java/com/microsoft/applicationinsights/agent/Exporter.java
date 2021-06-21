@@ -22,18 +22,16 @@ package com.microsoft.applicationinsights.agent;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.microsoft.applicationinsights.FormattedDuration;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryUtil;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.common.Strings;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -49,8 +47,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.concurrent.TimeUnit.*;
 
 public class Exporter implements SpanExporter {
 
@@ -96,8 +92,6 @@ public class Exporter implements SpanExporter {
 
         STANDARD_ATTRIBUTE_PREFIXES = Collections.unmodifiableSet(standardAttributesPrefix);
     }
-
-    private static final Joiner JOINER = Joiner.on(", ");
 
     private static final AttributeKey<Boolean> AI_LOG_KEY = AttributeKey.booleanKey("applicationinsights.internal.log");
 
@@ -145,16 +139,6 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    @Override
-    public CompletableResultCode flush() {
-        return CompletableResultCode.ofSuccess();
-    }
-
-    @Override
-    public CompletableResultCode shutdown() {
-        return CompletableResultCode.ofSuccess();
-    }
-
     private void export(SpanData span) {
         SpanKind kind = span.getKind();
         String instrumentationName = span.getInstrumentationLibraryInfo().getName();
@@ -186,6 +170,16 @@ public class Exporter implements SpanExporter {
         } else {
             throw new UnsupportedOperationException(kind.name());
         }
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+        return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+        return CompletableResultCode.ofSuccess();
     }
 
     private static List<TelemetryExceptionDetails> minimalParse(String errorStack) {
@@ -225,8 +219,8 @@ public class Exporter implements SpanExporter {
             telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
         }
 
-        telemetry.setTime(getFormattedTime(span.getStartEpochNanos()));
-        data.setDuration(getFormattedDuration(span.getEndEpochNanos() - span.getStartEpochNanos()));
+        telemetry.setTime(FormattedTime.fromEpochNanos(span.getStartEpochNanos()));
+        data.setDuration(FormattedDuration.fromNanos(span.getEndEpochNanos() - span.getStartEpochNanos()));
 
         data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
@@ -242,7 +236,7 @@ public class Exporter implements SpanExporter {
         return TelemetryUtil.getSamplingPercentage(traceState, 100, true);
     }
 
-    private void applySemanticConventions(SpanData span, RemoteDependencyData remoteDependencyData) {
+    private static void applySemanticConventions(SpanData span, RemoteDependencyData remoteDependencyData) {
         Attributes attributes = span.getAttributes();
         String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
         if (httpMethod != null) {
@@ -327,7 +321,7 @@ public class Exporter implements SpanExporter {
 
         setLoggerProperties(data, level, loggerName);
         setExtraAttributes(telemetry, data, attributes);
-        telemetry.setTime(getFormattedTime(span.getStartEpochNanos()));
+        telemetry.setTime(FormattedTime.fromEpochNanos(span.getStartEpochNanos()));
 
         float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         telemetry.setSampleRate(samplingPercentage);
@@ -353,7 +347,7 @@ public class Exporter implements SpanExporter {
         TelemetryUtil.getProperties(data).put("Logger Message", span.getName());
         setLoggerProperties(data, level, loggerName);
         setExtraAttributes(telemetry, data, attributes);
-        telemetry.setTime(getFormattedTime(span.getStartEpochNanos()));
+        telemetry.setTime(FormattedTime.fromEpochNanos(span.getStartEpochNanos()));
 
         float samplingPercentage = getSamplingPercentage(span.getSpanContext().getTraceState());
         telemetry.setSampleRate(samplingPercentage);
@@ -492,7 +486,7 @@ public class Exporter implements SpanExporter {
         telemetry.setTarget(target);
     }
 
-    private void applyMessagingClientSpan(Attributes attributes, RemoteDependencyData telemetry, String messagingSystem, SpanKind spanKind) {
+    private static void applyMessagingClientSpan(Attributes attributes, RemoteDependencyData telemetry, String messagingSystem, SpanKind spanKind) {
         if (spanKind == SpanKind.PRODUCER) {
             telemetry.setType("Queue Message | " + messagingSystem);
         } else {
@@ -510,7 +504,7 @@ public class Exporter implements SpanExporter {
     // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
     //  but no rush as messaging semantic conventions may still change
     //  https://github.com/Azure/azure-sdk-for-java/issues/21684
-    private void applyEventHubsSpan(Attributes attributes, RemoteDependencyData telemetry) {
+    private static void applyEventHubsSpan(Attributes attributes, RemoteDependencyData telemetry) {
         telemetry.setType("Microsoft.EventHub");
         String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
         String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
@@ -520,7 +514,7 @@ public class Exporter implements SpanExporter {
     // TODO (trask) ideally ServiceBus SDK should conform and fit the above path used for other messaging systems
     //  but no rush as messaging semantic conventions may still change
     //  https://github.com/Azure/azure-sdk-for-java/issues/21686
-    private void applyServiceBusSpan(Attributes attributes, RemoteDependencyData telemetry) {
+    private static void applyServiceBusSpan(Attributes attributes, RemoteDependencyData telemetry) {
         telemetry.setType("AZURE SERVICE BUS");
         String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
         String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
@@ -634,9 +628,9 @@ public class Exporter implements SpanExporter {
         }
 
         long startEpochNanos = span.getStartEpochNanos();
-        telemetry.setTime(getFormattedTime(startEpochNanos));
+        telemetry.setTime(FormattedTime.fromEpochNanos(startEpochNanos));
 
-        data.setDuration(getFormattedDuration(span.getEndEpochNanos() - startEpochNanos));
+        data.setDuration(FormattedDuration.fromNanos(span.getEndEpochNanos() - startEpochNanos));
 
         data.setSuccess(span.getStatus().getStatusCode() != StatusCode.ERROR);
 
@@ -648,7 +642,7 @@ public class Exporter implements SpanExporter {
         exportEvents(span, samplingPercentage);
     }
 
-    private String getTelemetryName(SpanData span) {
+    private static String getTelemetryName(SpanData span) {
         String name = span.getName();
         if (!name.startsWith("/")) {
             return name;
@@ -686,7 +680,7 @@ public class Exporter implements SpanExporter {
             String operationId = span.getTraceId();
             telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), operationId);
             telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), span.getSpanId());
-            telemetry.setTime(getFormattedTime(event.getEpochNanos()));
+            telemetry.setTime(FormattedTime.fromEpochNanos(event.getEpochNanos()));
             setExtraAttributes(telemetry, data, event.getAttributes());
 
             if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
@@ -711,62 +705,10 @@ public class Exporter implements SpanExporter {
 
         telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), operationId);
         telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), id);
-        telemetry.setTime(getFormattedTime(span.getEndEpochNanos()));
+        telemetry.setTime(FormattedTime.fromEpochNanos(span.getEndEpochNanos()));
         telemetry.setSampleRate(samplingPercentage);
         data.setExceptions(minimalParse(errorStack));
         telemetryClient.trackAsync(telemetry);
-    }
-
-    private static final long NANOSECONDS_PER_DAY = DAYS.toNanos(1);
-    private static final long NANOSECONDS_PER_HOUR = HOURS.toNanos(1);
-    private static final long NANOSECONDS_PER_MINUTE = MINUTES.toNanos(1);
-    private static final long NANOSECONDS_PER_SECOND = SECONDS.toNanos(1);
-
-    public static String getFormattedDuration(long durationNanos) {
-        long remainingNanos = durationNanos;
-
-        long days = remainingNanos / NANOSECONDS_PER_DAY;
-        remainingNanos = remainingNanos % NANOSECONDS_PER_DAY;
-
-        long hours = remainingNanos / NANOSECONDS_PER_HOUR;
-        remainingNanos = remainingNanos % NANOSECONDS_PER_HOUR;
-
-        long minutes = remainingNanos / NANOSECONDS_PER_MINUTE;
-        remainingNanos = remainingNanos % NANOSECONDS_PER_MINUTE;
-
-        long seconds = remainingNanos / NANOSECONDS_PER_SECOND;
-        remainingNanos = remainingNanos % NANOSECONDS_PER_SECOND;
-
-        // FIXME (trask) is min two digits really required by breeze?
-        StringBuilder sb = new StringBuilder();
-        appendMinTwoDigits(sb, days);
-        sb.append('.');
-        appendMinTwoDigits(sb, hours);
-        sb.append(':');
-        appendMinTwoDigits(sb, minutes);
-        sb.append(':');
-        appendMinTwoDigits(sb, seconds);
-        sb.append('.');
-        appendMinSixDigits(sb, NANOSECONDS.toMicros(remainingNanos));
-
-        return sb.toString();
-    }
-
-    private static void appendMinTwoDigits(StringBuilder sb, long value) {
-        if (value < 10) {
-            sb.append("0");
-        }
-        sb.append(value);
-    }
-
-    private static void appendMinSixDigits(StringBuilder sb, long value) {
-        sb.append(String.format("%06d", value));
-    }
-
-    private static String getFormattedTime(long epochNanos) {
-        return Instant.ofEpochMilli(NANOSECONDS.toMillis(epochNanos))
-            .atOffset(ZoneOffset.UTC)
-            .format(DateTimeFormatter.ISO_DATE_TIME);
     }
 
     private static void addLinks(MonitorDomain data, List<LinkData> links) {
@@ -802,11 +744,17 @@ public class Exporter implements SpanExporter {
             case BOOLEAN_ARRAY:
             case LONG_ARRAY:
             case DOUBLE_ARRAY:
-                return JOINER.join((List<?>) value);
-            default:
-                logger.warn("unexpected attribute type: {}", attributeKey.getType());
-                return null;
+                StringBuilder sb = new StringBuilder();
+                for (Object val : (List<?>) value) {
+                    if (sb.length() > 0) {
+                        sb.append(", ");
+                    }
+                    sb.append(val);
+                }
+                return sb.toString();
         }
+        logger.warn("unexpected attribute type: {}", attributeKey.getType());
+        return null;
     }
 
     private static void setExtraAttributes(TelemetryItem telemetry, MonitorDomain data,

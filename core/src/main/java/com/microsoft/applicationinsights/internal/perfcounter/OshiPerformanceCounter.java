@@ -107,8 +107,8 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         return systemCpuLoadTicks[TickType.USER.getIndex()] + systemCpuLoadTicks[TickType.SYSTEM.getIndex()];
     }
 
-    private void send(TelemetryClient telemetryClient, double value, String metricName) {
-        TelemetryItem telemetry = createMetricsTelemetry(metricName, value);
+    private static void send(TelemetryClient telemetryClient, double value, String metricName) {
+        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, metricName, value);
         telemetryClient.trackAsync(telemetry);
     }
 }

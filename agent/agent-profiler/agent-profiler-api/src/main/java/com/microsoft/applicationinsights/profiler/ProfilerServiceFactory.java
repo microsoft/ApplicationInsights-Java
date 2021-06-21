@@ -4,9 +4,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
+import com.azure.core.http.HttpPipeline;
 import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
 
 public interface ProfilerServiceFactory {
 
@@ -18,7 +18,7 @@ public interface ProfilerServiceFactory {
             ServiceProfilerServiceConfig config,
             String machineName,
             String instrumentationKey,
-            CloseableHttpClient httpClient,
+            HttpPipeline httpPipeline,
             ScheduledExecutorService serviceProfilerExecutorService,
             String userAgent,
             String roleName

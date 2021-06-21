@@ -28,8 +28,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
  *
  * Every concrete class should have a unique id and
  * it should be able to collect data send that data using a {@link com.microsoft.applicationinsights.TelemetryClient}
- *
- * Created by gupele on 3/3/2015.
  */
 public interface PerformanceCounter {
 

@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import com.microsoft.applicationinsights.agent.internal.processors.AgentProcessor.IncludeExclude;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -38,7 +37,7 @@ public class ExporterWithLogProcessor implements SpanExporter {
     private final LogProcessor logProcessor;
 
     // caller should check config.isValid before creating
-    public ExporterWithLogProcessor(ProcessorConfig config, SpanExporter delegate) throws FriendlyException {
+    public ExporterWithLogProcessor(ProcessorConfig config, SpanExporter delegate) {
         config.validate();
         logProcessor = LogProcessor.create(config);
         this.delegate = delegate;

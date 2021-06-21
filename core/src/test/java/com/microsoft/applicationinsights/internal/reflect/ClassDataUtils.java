@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.reflect;
 
-/**
- * Created by gupele on 5/26/2015.
- */
 public enum ClassDataUtils implements ClassDataVerifier {
     INSTANCE;
 

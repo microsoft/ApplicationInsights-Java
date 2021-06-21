@@ -20,7 +20,9 @@
  */
 package com.microsoft.applicationinsights.internal.profiler;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -28,15 +30,24 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.azure.core.http.HttpClient;
+import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.core.http.policy.HttpLogOptions;
+import com.azure.core.http.policy.HttpLoggingPolicy;
+import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.core.http.policy.RetryPolicy;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.TelemetryObservers;
-import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
+import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
+import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
+import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
@@ -44,7 +55,6 @@ import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +80,26 @@ public class ProfilerServiceInitializer {
                                                TelemetryClient telemetryClient,
                                                String userAgent,
                                                GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
+
+        // FIXME (trask) share this common code, also see TelemetryChannel (and other places?)
+        List<HttpPipelinePolicy> policies = new ArrayList<>();
+        HttpClient client = LazyAzureHttpClient.getInstance();
+        HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder()
+                .httpClient(client);
+        // Add Azure monitor redirect policy to be able to handle v2.1/track redirects
+        policies.add(new AzureMonitorRedirectPolicy());
+        // Retry policy for failed requests
+        policies.add(new RetryPolicy());
+        // TODO handle authentication exceptions
+        HttpPipelinePolicy authenticationPolicy = AadAuthentication.getInstance().getAuthenticationPolicy();
+        if (authenticationPolicy != null) {
+            policies.add(authenticationPolicy);
+        }
+        // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
+        // TODO set the logging level based on self diagnostic log level set by user
+        policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
+        pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
+
         initialize(
                 appIdSupplier,
                 processId,
@@ -77,9 +107,9 @@ public class ProfilerServiceInitializer {
                 machineName,
                 roleName,
                 telemetryClient,
-                LazyHttpClient.getInstance(),
                 userAgent,
-                gcEventMonitorConfiguration
+                gcEventMonitorConfiguration,
+                pipelineBuilder.build()
         );
     }
 
@@ -89,16 +119,16 @@ public class ProfilerServiceInitializer {
                                                String machineName,
                                                String roleName,
                                                TelemetryClient telemetryClient,
-                                               CloseableHttpClient httpClient,
                                                String userAgent,
-                                               GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
+                                               GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration,
+                                               HttpPipeline httpPipeline) {
         if (!initialized && config.enabled()) {
             initialized = true;
             ProfilerServiceFactory factory = null;
 
             try {
                 factory = loadProfilerServiceFactory();
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.error("Failed to load profiler factory", e);
             }
 
@@ -125,7 +155,7 @@ public class ProfilerServiceInitializer {
                     config,
                     machineName,
                     telemetryClient.getInstrumentationKey(),
-                    httpClient,
+                    httpPipeline,
                     serviceProfilerExecutorService,
                     userAgent,
                     roleName
@@ -134,6 +164,8 @@ public class ProfilerServiceInitializer {
             serviceProfilerExecutorService.submit(() -> {
                 try {
                     profilerService = future.get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 } catch (Exception e) {
                     LOGGER.error("Unable to obtain JFR connection, this may indicate that your JVM does not have JFR enabled. JFR profiling system will shutdown", e);
                     alertServiceExecutorService.shutdown();
@@ -164,13 +196,13 @@ public class ProfilerServiceInitializer {
         return done -> {
             TelemetryItem telemetry = new TelemetryItem();
             TelemetryEventData data = new TelemetryEventData();
-            TelemetryClient.getActive().initEventTelemetry(telemetry, data);
+            telemetryClient.initEventTelemetry(telemetry, data);
 
             data.setName("ServiceProfilerIndex");
             data.setProperties(done.getServiceProfilerIndex().getProperties());
             data.setMeasurements(done.getServiceProfilerIndex().getMetrics());
 
-            telemetry.setTime(TelemetryUtil.getFormattedNow());
+            telemetry.setTime(FormattedTime.fromNow());
 
             telemetryClient.trackAsync(telemetry);
 
@@ -200,9 +232,11 @@ public class ProfilerServiceInitializer {
     private static void sendMessageTelemetry(TelemetryClient telemetryClient, String message) {
         TelemetryItem telemetry = new TelemetryItem();
         MessageData data = new MessageData();
-        TelemetryClient.getActive().initMessageTelemetry(telemetry, data);
+        telemetryClient.initMessageTelemetry(telemetry, data);
         data.setMessage(message);
-        telemetry.setTime(TelemetryUtil.getFormattedNow());
+        telemetry.setTime(FormattedTime.fromNow());
         telemetryClient.trackAsync(telemetry);
     }
+
+    private ProfilerServiceInitializer() {}
 }

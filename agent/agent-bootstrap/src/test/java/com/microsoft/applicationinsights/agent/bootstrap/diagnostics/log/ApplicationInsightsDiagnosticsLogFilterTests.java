@@ -5,18 +5,21 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.spi.FilterReply;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsTestHelper;
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-public class ApplicationInsightsDiagnosticsLogFilterTests {
+class ApplicationInsightsDiagnosticsLogFilterTests {
+
     private ApplicationInsightsDiagnosticsLogFilter filter;
 
     private ILoggingEvent mockEvent;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
         filter = new ApplicationInsightsDiagnosticsLogFilter();
         mockEvent = mock(ILoggingEvent.class);
@@ -24,27 +27,27 @@ public class ApplicationInsightsDiagnosticsLogFilterTests {
         when(mockEvent.getLoggerName()).thenReturn("test");
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         mockEvent = null;
         filter = null;
         DiagnosticsTestHelper.reset();
     }
 
     @Test
-    public void neutralIfError() {
-        assertEquals(FilterReply.NEUTRAL, filter.decide(mockEvent));
+    void neutralIfError() {
+        assertThat(filter.decide(mockEvent)).isEqualTo(FilterReply.NEUTRAL);
     }
 
     @Test
-    public void denyIfInfo() {
+    void denyIfInfo() {
         when(mockEvent.getLevel()).thenReturn(Level.INFO);
-        assertEquals(FilterReply.DENY, filter.decide(mockEvent));
+        assertThat(filter.decide(mockEvent)).isEqualTo(FilterReply.DENY);
     }
 
     @Test
-    public void neutralIfDiagnosticsLogger() {
+    void neutralIfDiagnosticsLogger() {
         when(mockEvent.getLoggerName()).thenReturn(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
-        assertEquals(FilterReply.NEUTRAL, filter.decide(mockEvent));
+        assertThat(filter.decide(mockEvent)).isEqualTo(FilterReply.NEUTRAL);
     }
 }

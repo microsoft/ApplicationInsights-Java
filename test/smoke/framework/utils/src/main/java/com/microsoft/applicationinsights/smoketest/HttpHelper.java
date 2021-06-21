@@ -1,10 +1,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
-import com.google.common.io.CharStreams;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -29,8 +25,9 @@ public class HttpHelper {
 
     private static String getBody(HttpGet httpGet) throws UnsupportedOperationException, IOException {
         try (CloseableHttpClient client = getHttpClient()) {
-            CloseableHttpResponse resp1 = client.execute(httpGet);
-            return extractResponseBody(resp1);
+            try (CloseableHttpResponse response = client.execute(httpGet)) {
+                return EntityUtils.toString(response.getEntity());
+            }
         }
     }
 
@@ -49,28 +46,12 @@ public class HttpHelper {
     }
 
     public static String post(String url, String body) throws IOException {
-        CloseableHttpClient client = getHttpClient();
-        try {
+        try (CloseableHttpClient client = getHttpClient()) {
             HttpPost post = new HttpPost(url);
             post.setEntity(new StringEntity(body));
-            CloseableHttpResponse resp1 = client.execute(post);
-            return extractResponseBody(resp1);
-        }
-        finally {
-            client.close();
-        }
-    }
-
-    private static String extractResponseBody(CloseableHttpResponse resp) throws IOException {
-        try {
-            HttpEntity entity = resp.getEntity();
-            StringWriter cw = new StringWriter();
-            CharStreams.copy(new InputStreamReader(entity.getContent()), cw);
-            EntityUtils.consume(entity);
-            return cw.toString();
-        }
-        finally {
-            resp.close();
+            try (CloseableHttpResponse response = client.execute(post)) {
+                return EntityUtils.toString(response.getEntity());
+            }
         }
     }
 }

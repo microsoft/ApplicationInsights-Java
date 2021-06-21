@@ -27,9 +27,6 @@ import com.azure.core.http.HttpResponse;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
-/**
- * Created by gupele on 12/12/2016.
- */
 final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
 
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();
@@ -40,7 +37,7 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
 
     private final ArrayBlockingQueue<HttpRequest> sendQueue;
 
-    public DefaultQuickPulseDataSender(final HttpPipeline httpPipeline, final ArrayBlockingQueue<HttpRequest> sendQueue) {
+    public DefaultQuickPulseDataSender(HttpPipeline httpPipeline, ArrayBlockingQueue<HttpRequest> sendQueue) {
         this.httpPipeline = httpPipeline;
         this.sendQueue = sendQueue;
     }
@@ -49,12 +46,18 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
     public void run() {
         try {
             while (!stopped) {
-                HttpRequest post = sendQueue.take();
+                HttpRequest post;
+                try {
+                    post = sendQueue.take();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
                 if (quickPulseHeaderInfo.getQuickPulseStatus() != QuickPulseStatus.QP_IS_ON) {
                     continue;
                 }
 
-                final long sendTime = System.nanoTime();
+                long sendTime = System.nanoTime();
                 HttpResponse response = null;
                 try {
                     response = httpPipeline.send(post).block();
@@ -69,9 +72,6 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
 
                             case ERROR:
                                 onPostError(sendTime);
-                                break;
-
-                            default:
                                 break;
                         }
                     }
@@ -118,7 +118,7 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
             return;
         }
 
-        final double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
+        double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
         if (timeFromLastValidTransmission >= 20.0) {
             quickPulseHeaderInfo = new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);
         }

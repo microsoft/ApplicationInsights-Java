@@ -22,22 +22,20 @@
 package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class MainEntryPointTest {
+class MainEntryPointTest {
     @Test
-    public void getFriendlyExceptionTest() {
+    void getFriendlyExceptionTest() {
         FriendlyException friendlyException = MainEntryPoint.getFriendlyException(new FriendlyException());
         FriendlyException nonFriendlyException = MainEntryPoint.getFriendlyException(new IllegalArgumentException());
         FriendlyException nestedFriendlyException = MainEntryPoint.getFriendlyException(new RuntimeException("Run time Exception",new FriendlyException()));
         FriendlyException nestedNonFriendlyException = MainEntryPoint.getFriendlyException(new RuntimeException("Run time Exception",new IllegalArgumentException()));
-        assertNotNull(friendlyException);
-        assertTrue(friendlyException instanceof FriendlyException);
-        assertNull(nonFriendlyException);
-        assertNotNull(nestedFriendlyException);
-        assertTrue(nestedFriendlyException instanceof  FriendlyException);
-        assertNull(nestedNonFriendlyException);
+        assertThat(friendlyException).isNotNull();
+        assertThat(nonFriendlyException).isNull();
+        assertThat(nestedFriendlyException).isNotNull();
+        assertThat(nestedNonFriendlyException).isNull();
     }
 }

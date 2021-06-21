@@ -6,9 +6,9 @@
 package com.microsoft.applicationinsights;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueue;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import org.jctools.queues.MpscArrayQueue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
 
 // copied from io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 public final class BatchSpanProcessor {
@@ -77,7 +76,6 @@ public final class BatchSpanProcessor {
   // the data.
   private static final class Worker implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final TelemetryChannel spanExporter;
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
@@ -176,9 +174,9 @@ public final class BatchSpanProcessor {
     }
 
     private CompletableResultCode shutdown() {
-      final CompletableResultCode result = new CompletableResultCode();
+      CompletableResultCode result = new CompletableResultCode();
 
-      final CompletableResultCode flushResult = forceFlush();
+      CompletableResultCode flushResult = forceFlush();
       flushResult.whenComplete(
           () -> {
             continueWork = false;
@@ -212,7 +210,7 @@ public final class BatchSpanProcessor {
 
       try {
         // batching, retry, logging, and writing to disk on failure occur downstream
-        final CompletableResultCode result =
+        CompletableResultCode result =
                 spanExporter.send(Collections.unmodifiableList(batch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
       } finally {

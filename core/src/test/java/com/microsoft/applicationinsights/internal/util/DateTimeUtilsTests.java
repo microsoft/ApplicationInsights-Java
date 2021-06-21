@@ -1,58 +1,56 @@
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.util.Date;
 
-/**
- * Created by yonisha on 5/26/2015.
- */
-public class DateTimeUtilsTests {
+import static org.assertj.core.api.Assertions.assertThat;
+
+class DateTimeUtilsTests {
 
     @Test
-    public void testParseRoundTripDateString() throws ParseException {
+    void testParseRoundTripDateString() throws ParseException {
         final String dateStr = "2015-05-26T07:00:14+01:00";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
-        Assert.assertEquals("2015-05-26T07", reversedDateStr);
+        assertThat(reversedDateStr).isEqualTo("2015-05-26T07");
     }
 
     @Test
-    public void testParseRoundTripDateStringWithoutOffset() throws ParseException {
+    void testParseRoundTripDateStringWithoutOffset() throws ParseException {
         final String dateStr = "2015-05-26T07:00:14.123145152";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
-        Assert.assertEquals("2015-05-26T07", reversedDateStr);
+        assertThat(reversedDateStr).isEqualTo("2015-05-26T07");
     }
 
     @Test
-    public void testParseRoundTripDateStringFullUTC() throws ParseException {
+    void testParseRoundTripDateStringFullUTC() throws ParseException {
         final String dateStr = "2015-05-26T07:00:14.123145152Z";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
-        Assert.assertEquals("2015-05-26T07", reversedDateStr);
+        assertThat(reversedDateStr).isEqualTo("2015-05-26T07");
     }
 
     @Test
-    public void testParseRoundTripDateStringShortFormat() throws ParseException {
+    void testParseRoundTripDateStringShortFormat() throws ParseException {
         final String dateStr = "2015-05-26T07";
         String reversedDateStr = parseRoundTripDateString(dateStr);
 
-        Assert.assertEquals(dateStr, reversedDateStr);
+        assertThat(reversedDateStr).isEqualTo(dateStr);
     }
 
     @Test
-    public void testFormatAsRoundTripDate() throws ParseException {
+    void testFormatAsRoundTripDate() throws ParseException {
         final String dateStr = "2016-01-21T01";
         Date date = DateTimeUtils.parseRoundTripDateString(dateStr);
         String reversedDateStr = DateTimeUtils.formatAsRoundTripDate(date);
 
-        Assert.assertEquals(dateStr, reversedDateStr);
+        assertThat(reversedDateStr).isEqualTo(dateStr);
     }
 
-    private String parseRoundTripDateString(String str) throws ParseException {
+    private static String parseRoundTripDateString(String str) throws ParseException {
         Date date = DateTimeUtils.parseRoundTripDateString(str);
 
         return DateTimeUtils.formatAsRoundTripDate(date);

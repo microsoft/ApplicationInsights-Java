@@ -1,8 +1,1 @@
-group = 'io.opentelemetry.javaagent'
-
 apply from: "$buildScriptsDir/common-java.gradle"
-
-dependencies {
-    testImplementation group: 'junit', name: 'junit', version: versions.junit
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
-}

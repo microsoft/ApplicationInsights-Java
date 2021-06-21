@@ -25,9 +25,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Created by yonisha on 2/5/2015.
- */
 public class DateTimeUtils {
 
     private static final String ROUND_TRIP_DATE_FORMAT = "yyyy-MM-dd'T'HH";

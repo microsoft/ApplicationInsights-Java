@@ -22,29 +22,28 @@ package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import com.microsoft.applicationinsights.profileUploader.ServiceProfilerIndex;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobMetadataConstants;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ServiceProfilerUploaderTest {
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
+
+class ServiceProfilerUploaderTest {
     @Test
-    public void uploadFileGoodPathReturnsExpectedResponse() throws IOException {
+    void uploadFileGoodPathReturnsExpectedResponse() throws IOException {
 
         ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
 
@@ -73,22 +72,18 @@ public class ServiceProfilerUploaderTest {
                         0.0)
                 .subscribe(
                         result -> {
-                            Assert.assertEquals("a-stamp-id",
-                                    result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_STAMPID_PROPERTY_NAME));
+                            assertThat(result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_STAMPID_PROPERTY_NAME)).isEqualTo("a-stamp-id");
 
-                            Assert.assertEquals("a-machine-name",
-                                    result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_MACHINENAME_PROPERTY_NAME));
+                            assertThat(result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_MACHINENAME_PROPERTY_NAME)).isEqualTo("a-machine-name");
 
-                            Assert.assertEquals("a-timestamp",
-                                    result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_ETLFILESESSIONID_PROPERTY_NAME));
+                            assertThat(result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_ETLFILESESSIONID_PROPERTY_NAME)).isEqualTo("a-timestamp");
 
-                            Assert.assertEquals(appId.toString(),
-                                    result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_DATACUBE_PROPERTY_NAME));
+                            assertThat(result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_DATACUBE_PROPERTY_NAME)).isEqualTo(appId.toString());
                         });
     }
 
     @Test
-    public void roleNameIsCorrectlyAddedToMetaData() throws IOException {
+    void roleNameIsCorrectlyAddedToMetaData() throws IOException {
 
         ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
 
@@ -107,7 +102,7 @@ public class ServiceProfilerUploaderTest {
         );
 
         // Role name is set correctly
-        Assert.assertEquals("a-role-name", blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
+        assertThat(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME)).isEqualTo("a-role-name");
 
 
         blobOptions = new ServiceProfilerUploader(
@@ -122,12 +117,12 @@ public class ServiceProfilerUploaderTest {
         );
 
         // Null role name tag is not added
-        Assert.assertNull(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
+        assertThat(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME)).isNull();
 
     }
 
     @Test
-    public void uploadWithoutAFileThrows() {
+    void uploadWithoutAFileThrows() {
 
         ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
 
@@ -147,19 +142,19 @@ public class ServiceProfilerUploaderTest {
                 .subscribe(result -> {
                 }, e -> threw.set(true));
 
-        Assert.assertTrue("Did not throw", threw.get());
+        assertThat(threw.get()).isTrue();
     }
 
-    private File createFakeJfrFile() throws IOException {
+    private static File createFakeJfrFile() throws IOException {
         File tmpFile = File.createTempFile("a-jfr-file", "jfr");
         FileOutputStream fos = new FileOutputStream(tmpFile);
-        fos.write("foobar".getBytes());
+        fos.write("foobar".getBytes(UTF_8));
         fos.close();
         tmpFile.deleteOnExit();
         return tmpFile;
     }
 
-    public static ServiceProfilerClientV2 stubServiceProfilerClient() {
+    static ServiceProfilerClientV2 stubServiceProfilerClient() {
         return new ServiceProfilerClientV2() {
 
             @Override
@@ -168,7 +163,7 @@ public class ServiceProfilerUploaderTest {
             }
 
             @Override
-            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws URISyntaxException, UnsupportedCharsetException, ClientClosedException {
+            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) {
                 return null;
             }
 
@@ -178,5 +173,4 @@ public class ServiceProfilerUploaderTest {
             }
         };
     }
-
 }

@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.extensibility;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 
-// Created by yonisha on 2/2/2015.
 /**
  * Interface for telemetry modules.
  */

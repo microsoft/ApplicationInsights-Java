@@ -35,22 +35,19 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.CpuPerformanceCounterCalculator;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 12/5/2016.
- */
 public enum QuickPulseDataCollector {
     INSTANCE;
 
     private TelemetryClient telemetryClient;
 
     static class FinalCounters {
-        public final double exceptions;
+        public final int exceptions;
         public final long requests;
         public final double requestsDuration;
-        public final long unsuccessfulRequests;
+        public final int unsuccessfulRequests;
         public final long rdds;
         public final double rddsDuration;
-        public final long unsuccessfulRdds;
+        public final int unsuccessfulRdds;
         public final long memoryCommitted;
         public final double cpuUsage;
 
@@ -153,7 +150,7 @@ public enum QuickPulseDataCollector {
     }
 
     public synchronized FinalCounters getAndRestart() {
-        final Counters currentCounters = counters.getAndSet(new Counters());
+        Counters currentCounters = counters.getAndSet(new Counters());
         if (currentCounters != null) {
             return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
         }
@@ -163,7 +160,7 @@ public enum QuickPulseDataCollector {
 
     /*@VisibleForTesting*/
     synchronized FinalCounters peek() {
-        final Counters currentCounters = this.counters.get(); // this should be the only differece
+        Counters currentCounters = this.counters.get(); // this should be the only differece
         if (currentCounters != null) {
             return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
         }

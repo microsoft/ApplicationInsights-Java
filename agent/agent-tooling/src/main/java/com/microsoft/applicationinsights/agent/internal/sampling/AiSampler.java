@@ -75,9 +75,8 @@ class AiSampler implements Sampler {
             case USE_DEFAULT_SAMPLING_PERCENTAGE:
                 // this is used for root sampler
                 return getSamplingResult(defaultSamplingPercentage, recordAndSampleAndAddTraceStateIfMissing, traceId, name);
-            default:
-                throw new IllegalStateException("Unexpected BehaviorIfNoMatchingOverrides: " + behaviorIfNoMatchingOverrides);
         }
+        throw new IllegalStateException("Unexpected BehaviorIfNoMatchingOverrides: " + behaviorIfNoMatchingOverrides);
     }
 
     private SamplingResult getSamplingResult(double percentage, SamplingResult sampledSamplingResult, String traceId, String name) {

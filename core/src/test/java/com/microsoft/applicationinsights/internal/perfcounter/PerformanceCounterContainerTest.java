@@ -28,22 +28,24 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@Ignore
-public final class PerformanceCounterContainerTest {
+// FIXME (trask) or delete..
+@Disabled
+@SuppressWarnings({"LockNotBeforeTry", "CatchAndPrintStackTrace", "SystemOut", "WaitNotInLoop", "EmptyCatch"})
+class PerformanceCounterContainerTest {
     private static class PerformanceCounterStub implements PerformanceCounter {
         private final String id;
         private final Lock lock = new ReentrantLock();
         private final Condition condition = lock.newCondition();
         private final long waitAfterFirst;
-        public int counter = 0;
+        int counter = 0;
 
         private PerformanceCounterStub(String id) {
             this(id, 0);
@@ -81,7 +83,7 @@ public final class PerformanceCounterContainerTest {
             }
         }
 
-        public void waitForFirstReportCall(long waitForInMillis) {
+        void waitForFirstReportCall(long waitForInMillis) {
             try {
                 lock.lock();
                 condition.await(waitForInMillis, TimeUnit.MILLISECONDS);
@@ -92,48 +94,50 @@ public final class PerformanceCounterContainerTest {
         }
     }
 
-    @Before
-    public void clear() {
+    @BeforeEach
+    void clear() {
         PerformanceCounterContainer.INSTANCE.clear();
     }
 
     @Test
-    public void testSetStartCollectingIntervalInMillisNegativeNumber() {
+    void testSetStartCollectingIntervalInMillisNegativeNumber() {
         PerformanceCounterContainer.INSTANCE.setStartCollectingDelayInMillis(-100);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getStartCollectingDelayInMillis() > 0);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() == 60);
+        assertThat(PerformanceCounterContainer.INSTANCE.getStartCollectingDelayInMillis() > 0).isTrue();
+        assertThat(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec()).isEqualTo(60);
     }
 
     @Test
-    public void testSetStartCollectingIntervalInMillisZero() {
+    void testSetStartCollectingIntervalInMillisZero() {
         PerformanceCounterContainer.INSTANCE.setStartCollectingDelayInMillis(0);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getStartCollectingDelayInMillis() > 0);
+        assertThat(PerformanceCounterContainer.INSTANCE.getStartCollectingDelayInMillis() > 0).isTrue();
     }
 
     @Test
-    public void testSetCollectingIntervalInMillisMillisNegativeNumber() {
+    void testSetCollectingIntervalInMillisMillisNegativeNumber() {
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(-1);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() > 0);
+        assertThat(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() > 0).isTrue();
     }
 
     @Test
-    public void testSetCollectingIntervalInMillisZero() {
+    void testSetCollectingIntervalInMillisZero() {
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(0);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() > 0);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testRegisterWithNullId() throws NoSuchFieldException, IllegalAccessException {
-        testBadPerformanceCounterId(null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testRegisterWithEmptyId() throws NoSuchFieldException, IllegalAccessException {
-        testBadPerformanceCounterId("");
+        assertThat(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() > 0).isTrue();
     }
 
     @Test
-    public void testOnePerformanceCounterCalls() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
+    void testRegisterWithNullId() {
+        assertThatThrownBy(() -> testBadPerformanceCounterId(null))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void testRegisterWithEmptyId() {
+        assertThatThrownBy(() -> testBadPerformanceCounterId(""))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void testOnePerformanceCounterCalls() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         initialize();
         PerformanceCounterStub mockPerformanceCounter = new PerformanceCounterStub("mock1");
 
@@ -141,11 +145,11 @@ public final class PerformanceCounterContainerTest {
 
         waitForFirstAndStop(mockPerformanceCounter, null);
 
-        assertTrue(String.format("Counter is %d while was expected to be 2", mockPerformanceCounter.counter), mockPerformanceCounter.counter > 2);
+        assertThat(mockPerformanceCounter.counter > 2).isTrue();
     }
 
 //    @Test
-//    public void testTwoPerformanceCountersCalls() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
+//    void testTwoPerformanceCountersCalls() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
 //        initialize();
 //        PerformanceCounterStub mockPerformanceCounter1 = new PerformanceCounterStub("mock1");
 //        PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock2");
@@ -159,19 +163,19 @@ public final class PerformanceCounterContainerTest {
 //    }
 //
     @Test
-    public void testMoreThanOneWithId() throws NoSuchFieldException, IllegalAccessException {
+    void testMoreThanOneWithId() throws NoSuchFieldException, IllegalAccessException {
         initialize();
         PerformanceCounterStub mockPerformanceCounter1 = new PerformanceCounterStub("mock1");
         PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock1");
 
         boolean result = PerformanceCounterContainer.INSTANCE.register(mockPerformanceCounter1);
-        assertTrue(result);
+        assertThat(result).isTrue();
         result = PerformanceCounterContainer.INSTANCE.register(mockPerformanceCounter2);
-        assertFalse(result);
+        assertThat(result).isFalse();
     }
 
     @Test
-    public void testTwoPerformanceCountersWhereTheSecondIsNotRegistered() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
+    void testTwoPerformanceCountersWhereTheSecondIsNotRegistered() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         initialize(500);
         PerformanceCounterStub mockPerformanceCounter1 = new PerformanceCounterStub("mock1");
         PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock1");
@@ -180,12 +184,12 @@ public final class PerformanceCounterContainerTest {
 
         waitForFirstAndStop(mockPerformanceCounter1, null);
 
-        assertTrue(mockPerformanceCounter2.counter == 0);
-        assertTrue(mockPerformanceCounter1.counter > 2);
+        assertThat(mockPerformanceCounter2.counter).isEqualTo(0);
+        assertThat(mockPerformanceCounter1.counter > 2).isTrue();
     }
 
     @Test
-    public void testTwoPerformanceCountersWhereTheSecondIsUnregistered() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
+    void testTwoPerformanceCountersWhereTheSecondIsUnregistered() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         initialize(500);
         PerformanceCounterStub mockPerformanceCounter1 = new PerformanceCounterStub("mock1", 200);
         PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock2");
@@ -194,7 +198,7 @@ public final class PerformanceCounterContainerTest {
 
         waitForFirstAndStop(mockPerformanceCounter1, mockPerformanceCounter2);
 
-        assertTrue(mockPerformanceCounter2.counter < mockPerformanceCounter1.counter);
+        assertThat(mockPerformanceCounter2.counter < mockPerformanceCounter1.counter).isTrue();
     }
 
     private static void registerInContainer(PerformanceCounter... performanceCounters) {
@@ -231,10 +235,10 @@ public final class PerformanceCounterContainerTest {
     private static void initialize(long initialInterval) throws NoSuchFieldException, IllegalAccessException {
         Field field = PerformanceCounterContainer.class.getDeclaredField("startCollectingDelayInMillis");
         field.setAccessible(true);
-        field.set(PerformanceCounterContainer.INSTANCE, new Long(initialInterval));
+        field.set(PerformanceCounterContainer.INSTANCE, initialInterval);
 
         field = PerformanceCounterContainer.class.getDeclaredField("collectingIntervalInMillis");
         field.setAccessible(true);
-        field.set(PerformanceCounterContainer.INSTANCE, new Long(200));
+        field.set(PerformanceCounterContainer.INSTANCE, 200L);
     }
 }

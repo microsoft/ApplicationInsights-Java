@@ -23,11 +23,11 @@ package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.events
 public abstract class IpaEtwEventErrorBase extends IpaEtwEventBase {
     private String stacktrace;
 
-    public IpaEtwEventErrorBase() {
+    protected IpaEtwEventErrorBase() {
         super();
     }
 
-    public IpaEtwEventErrorBase(IpaEtwEventBase evt) {
+    protected IpaEtwEventErrorBase(IpaEtwEventBase evt) {
         super(evt);
         if (evt instanceof IpaEtwEventErrorBase) {
             setStacktrace(((IpaEtwEventErrorBase)evt).stacktrace);

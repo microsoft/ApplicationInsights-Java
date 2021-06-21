@@ -38,9 +38,9 @@ public class ApplicationInsightsAppenderClassFileTransformer implements ClassFil
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationInsightsAppenderClassFileTransformer.class);
 
-    private final String unshadedClassNameLogback = UnshadedSdkPackageName.get() + "/logback/ApplicationInsightsAppender";
-    private final String unshadedClassNameLog4jv2 = UnshadedSdkPackageName.get() + "/log4j/v2/ApplicationInsightsAppender";
-    private final String unshadedClassNameLog4jv1_2 = UnshadedSdkPackageName.get() + "/log4j/v1_2/ApplicationInsightsAppender";
+    private static final String unshadedClassNameLogback = UnshadedSdkPackageName.get() + "/logback/ApplicationInsightsAppender";
+    private static final String unshadedClassNameLog4jv2 = UnshadedSdkPackageName.get() + "/log4j/v2/ApplicationInsightsAppender";
+    private static final String unshadedClassNameLog4jv1_2 = UnshadedSdkPackageName.get() + "/log4j/v1_2/ApplicationInsightsAppender";
 
     @Override
     public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,

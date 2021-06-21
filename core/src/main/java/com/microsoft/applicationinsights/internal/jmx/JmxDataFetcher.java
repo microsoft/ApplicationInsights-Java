@@ -40,8 +40,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A utility class that knows how to fetch JMX data.
- * <p>
- * Created by gupele on 3/15/2015.
  */
 public class JmxDataFetcher {
 

@@ -22,7 +22,7 @@
 package com.microsoft.applicationinsights;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
-import com.google.common.base.Strings;
+import com.microsoft.applicationinsights.common.Strings;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
@@ -34,10 +34,7 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.apache.commons.text.StringSubstitutor;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -51,8 +48,6 @@ import com.microsoft.applicationinsights.internal.perfcounter.Constants;
 import static java.util.Arrays.asList;
 
 public class TelemetryClient {
-
-    private static final Logger logger = LoggerFactory.getLogger(TelemetryClient.class);
 
     // Synchronization for instance initialization
     private static final Object s_lock = new Object();
@@ -160,12 +155,6 @@ public class TelemetryClient {
         return active;
     }
 
-    // FIXME (trask) inject TelemetryClient in tests instead of using global
-    @Deprecated
-    public static void resetForTesting() {
-        active = null;
-    }
-
     public void trackAsync(TelemetryItem telemetry) {
 
         MonitorDomain data = telemetry.getData().getBaseData();
@@ -188,11 +177,6 @@ public class TelemetryClient {
                 return;
             }
             metricsData.setMetrics(filteredPoints);
-        }
-
-        if (telemetry.getSampleRate() == null) {
-            // FIXME (trask) is this required?
-            telemetry.setSampleRate(100f);
         }
 
         if (telemetry.getTime() == null) {
@@ -218,14 +202,7 @@ public class TelemetryClient {
         if (channelBatcher == null) {
             synchronized (channelInitLock) {
                 if (channelBatcher == null) {
-                    TelemetryChannel channel;
-                    try {
-                        channel = new TelemetryChannel(endpointProvider.getIngestionEndpoint().toURL());
-                    } catch (MalformedURLException e) {
-                        // this shouldn't happen
-                        logger.error(e.getMessage(), e);
-                        throw new IllegalStateException(e);
-                    }
+                    TelemetryChannel channel = new TelemetryChannel(endpointProvider.getIngestionEndpoint());
                     channelBatcher = BatchSpanProcessor.builder(channel).build();
                 }
             }
@@ -297,15 +274,6 @@ public class TelemetryClient {
         this.connectionString = connectionString;
     }
 
-    public List<MetricFilter> getMetricFilters() {
-        return metricFilters;
-    }
-
-    public void setMetricFilters(List<MetricFilter> metricFilters) {
-        this.metricFilters.clear();
-        this.metricFilters.addAll(metricFilters);
-    }
-
     public EndpointProvider getEndpointProvider() {
         return endpointProvider;
     }
@@ -365,7 +333,7 @@ public class TelemetryClient {
     //
     // telemetry tags will be non-null after this call
     // data properties may or may not be non-null after this call
-    // FIXME (trask) rename MetricsData to MetricData to match the telemetryName and baseType?
+    // FIXME (trask) azure sdk exporter: rename MetricsData to MetricData to match the telemetryName and baseType?
     public void initMetricTelemetry(TelemetryItem telemetry, MetricsData data, MetricDataPoint point) {
         if (telemetry.getTags() != null) {
             throw new AssertionError("must not set telemetry tags before calling init");

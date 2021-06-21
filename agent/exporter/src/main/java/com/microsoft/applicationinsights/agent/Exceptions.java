@@ -1,29 +1,33 @@
 package com.microsoft.applicationinsights.agent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
 
 import static java.util.Collections.singletonList;
 
 public class Exceptions {
 
-    private static final Splitter lineSplitter = Splitter.on(CharMatcher.anyOf("\r\n")).omitEmptyStrings();
-
     public static List<TelemetryExceptionDetails> minimalParse(String str) {
         TelemetryExceptionDetails details = new TelemetryExceptionDetails();
-        String line = lineSplitter.split(str).iterator().next();
-        int index = line.indexOf(": ");
-        if (index != -1) {
-            details.setTypeName(line.substring(0, index));
-            details.setMessage(line.substring(index + 2));
+        int separator = -1;
+        int length = str.length();
+        int current;
+        for (current = 0; current < length; current++) {
+            char c = str.charAt(current);
+            if (c == ':') {
+                separator = current;
+            } else if (c == '\r' || c == '\n') {
+                break;
+            }
+        }
+        // at the end of the loop, current will be end of the first line
+        if (separator != -1) {
+            details.setTypeName(str.substring(0, separator));
+            details.setMessage(str.substring(separator + 2, current));
         } else {
-            details.setTypeName(line);
+            details.setTypeName(str.substring(0, current));
         }
         details.setStack(str);
         return singletonList(details);
@@ -34,11 +38,13 @@ public class Exceptions {
     // TESTING WITH minimalParse() first
     public static List<TelemetryExceptionDetails> fullParse(String str) {
         Parser parser = new Parser();
-        for (String line : lineSplitter.split(str)) {
+        for (String line : str.split("\r?\n")) {
             parser.process(line);
         }
         return parser.getDetails();
     }
+
+    private Exceptions() {}
 
     static class Parser {
 
@@ -62,7 +68,6 @@ public class Exceptions {
                     current.setTypeName(line);
                 }
             }
-            System.out.println(line);
         }
 
         public List<TelemetryExceptionDetails> getDetails() {

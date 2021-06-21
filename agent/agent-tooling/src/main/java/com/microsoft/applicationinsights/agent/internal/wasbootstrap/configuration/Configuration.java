@@ -65,12 +65,14 @@ public class Configuration {
     public enum MatchType {
         @Json(name = "strict")
         STRICT {
+            @Override
             MetricFilter.MatchType toCore() {
                 return MetricFilter.MatchType.STRICT;
             }
         },
         @Json(name = "regexp")
         REGEXP {
+            @Override
             MetricFilter.MatchType toCore() {
                 return MetricFilter.MatchType.REGEXP;
             }
@@ -115,6 +117,7 @@ public class Configuration {
         INCLUDE,
         EXCLUDE;
 
+        @Override
         public String toString() {
             return name().toLowerCase(Locale.ROOT);
         }
@@ -208,7 +211,6 @@ public class Configuration {
 
     public static class PreviewConfiguration {
 
-        public boolean developerMode;
         public SamplingPreview sampling = new SamplingPreview();
         public List<ProcessorConfig> processors = new ArrayList<>();
         public boolean openTelemetryApiSupport;
@@ -283,7 +285,7 @@ public class Configuration {
         public Float percentage;
         public String id; // optional, used for debugging purposes only
 
-        public void validate() throws FriendlyException {
+        public void validate() {
             if (attributes.isEmpty()) {
                 // TODO add doc and go link, similar to telemetry processors
                 throw new FriendlyException("A sampling override configuration has no attributes.",
@@ -330,13 +332,13 @@ public class Configuration {
             }
         }
 
-        private static void validateRegex(String value) throws FriendlyException {
+        private static void validateRegex(String value) {
             try {
                 Pattern.compile(value);
-            } catch (PatternSyntaxException exception) {
+            } catch (PatternSyntaxException e) {
                 // TODO add doc and go link, similar to telemetry processors
                 throw new FriendlyException("A telemetry filter configuration has an invalid regex: " + value,
-                        "Please provide a valid regex in the telemetry filter configuration.");
+                        "Please provide a valid regex in the telemetry filter configuration.", e);
             }
         }
     }
@@ -350,7 +352,7 @@ public class Configuration {
         public NameConfig body; // specific for processor types "log"
         public String id; // optional, used for debugging purposes only
 
-        public void validate() throws FriendlyException {
+        public void validate() {
             if (type == null) {
                 throw new FriendlyException("A telemetry processor configuration is missing a \"type\".",
                         "Please provide a \"type\" in the telemetry processor configuration. " +
@@ -365,22 +367,21 @@ public class Configuration {
             switch (type) {
                 case ATTRIBUTE:
                     validateAttributeProcessorConfig();
-                    break;
+                    return;
                 case SPAN:
                     validateSpanProcessorConfig();
-                    break;
+                    return;
                 case LOG:
                     validateLogProcessorConfig();
-                    break;
+                    return;
                 case METRIC_FILTER:
                     validateMetricFilterProcessorConfig();
-                    break;
-                default:
-                    throw new AssertionError("Unexpected processor type: " + type);
+                    return;
             }
+            throw new AssertionError("Unexpected processor type: " + type);
         }
 
-        public void validateAttributeProcessorConfig() throws FriendlyException {
+        public void validateAttributeProcessorConfig() {
             if (actions.isEmpty()) {
                 throw new FriendlyException("An attribute processor configuration has no actions.",
                         "Please provide at least one action in the attribute processor configuration. " +
@@ -394,7 +395,7 @@ public class Configuration {
             validateSectionIsNull(body, "body");
         }
 
-        public void validateSpanProcessorConfig() throws FriendlyException {
+        public void validateSpanProcessorConfig() {
             if (name == null) {
                 throw new FriendlyException("a span processor configuration is missing a \"name\" section.",
                         "Please provide a \"name\" section in the span processor configuration. " +
@@ -406,7 +407,7 @@ public class Configuration {
             validateSectionIsNull(body, "body");
         }
 
-        public void validateLogProcessorConfig() throws FriendlyException {
+        public void validateLogProcessorConfig() {
             if (body == null) {
                 throw new FriendlyException("a log processor configuration is missing a \"body\" section.",
                         "Please provide a \"body\" section in the log processor configuration. " +
@@ -418,7 +419,7 @@ public class Configuration {
             validateSectionIsNull(name, "name");
         }
 
-        public void validateMetricFilterProcessorConfig() throws FriendlyException {
+        public void validateMetricFilterProcessorConfig() {
             if (exclude == null) {
                 throw new FriendlyException("a metric-filter processor configuration is missing an \"exclude\" section.",
                         "Please provide a \"exclude\" section in the metric-filter processor configuration. " +
@@ -460,7 +461,7 @@ public class Configuration {
         public ToAttributeConfig toAttributes;
         public String separator;
 
-        public void validate(ProcessorType processorType) throws FriendlyException {
+        public void validate(ProcessorType processorType) {
             if (fromAttributes.isEmpty() && toAttributes == null) {
                 // TODO different links for different processor types?
                 throw new FriendlyException(processorType.anX + " processor configuration has \"name\" action with no \"fromAttributes\" and no \"toAttributes\".",
@@ -476,7 +477,7 @@ public class Configuration {
     public static class ToAttributeConfig {
         public List<String> rules = new ArrayList<>();
 
-        public void validate(ProcessorType processorType) throws FriendlyException {
+        public void validate(ProcessorType processorType) {
             if (rules.isEmpty()) {
                 throw new FriendlyException(processorType.anX + " processor configuration has \"toAttributes\" section with no \"rules\".",
                         "Please provide at least one rule under the \"toAttributes\" section of the " + processorType + " processor configuration. " +
@@ -494,7 +495,7 @@ public class Configuration {
         public List<String> metricNames = new ArrayList<>();
         public List<ProcessorAttribute> attributes = new ArrayList<>();
 
-        public void validate(ProcessorType processorType, IncludeExclude includeExclude) throws FriendlyException {
+        public void validate(ProcessorType processorType, IncludeExclude includeExclude) {
             if (matchType == null) {
                 throw new FriendlyException(processorType.anX + " processor configuration has an " + includeExclude + " section that is missing a \"matchType\".",
                         "Please provide a \"matchType\" under the " + includeExclude + " section of the " + processorType + " processor configuration. " +
@@ -514,22 +515,21 @@ public class Configuration {
             switch (processorType) {
                 case ATTRIBUTE:
                     validAttributeProcessorIncludeExclude(includeExclude);
-                    break;
+                    return;
                 case LOG:
                     validateLogProcessorIncludeExclude(includeExclude);
-                    break;
+                    return;
                 case SPAN:
                     validateSpanProcessorIncludeExclude(includeExclude);
-                    break;
+                    return;
                 case METRIC_FILTER:
                     validateMetricFilterProcessorExclude(includeExclude);
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected processor type: " + processorType);
+                    return;
             }
+            throw new IllegalStateException("Unexpected processor type: " + processorType);
         }
 
-        private void validAttributeProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
+        private void validAttributeProcessorIncludeExclude(IncludeExclude includeExclude) {
             if (attributes.isEmpty() && spanNames.isEmpty()) {
                 throw new FriendlyException("An attribute processor configuration has an " + includeExclude + " section with no \"spanNames\" and no \"attributes\".",
                         "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the attribute processor configuration. " +
@@ -544,7 +544,7 @@ public class Configuration {
             validateSectionIsEmpty(metricNames, ProcessorType.ATTRIBUTE, includeExclude, "metricNames");
         }
 
-        private void validateLogProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
+        private void validateLogProcessorIncludeExclude(IncludeExclude includeExclude) {
             if (attributes.isEmpty()) {
                 throw new FriendlyException("A log processor configuration has an " + includeExclude + " section with no \"attributes\".",
                         "Please provide \"attributes\" under the " + includeExclude + " section of the log processor configuration. " +
@@ -555,7 +555,7 @@ public class Configuration {
             validateSectionIsEmpty(metricNames, ProcessorType.LOG, includeExclude, "metricNames");
         }
 
-        private void validateSpanProcessorIncludeExclude(IncludeExclude includeExclude) throws FriendlyException {
+        private void validateSpanProcessorIncludeExclude(IncludeExclude includeExclude) {
             if (spanNames.isEmpty() && attributes.isEmpty()) {
                 throw new FriendlyException("A span processor configuration has " + includeExclude + " section with no \"spanNames\" and no \"attributes\".",
                         "Please provide at least one of \"spanNames\" or \"attributes\" under the " + includeExclude + " section of the span processor configuration. " +
@@ -570,7 +570,7 @@ public class Configuration {
             validateSectionIsEmpty(metricNames, ProcessorType.SPAN, includeExclude, "metricNames");
         }
 
-        private void validateMetricFilterProcessorExclude(IncludeExclude includeExclude) throws FriendlyException {
+        private void validateMetricFilterProcessorExclude(IncludeExclude includeExclude) {
             if (includeExclude == IncludeExclude.INCLUDE) {
                 throw new FriendlyException("A metric-filter processor configuration has an include section.",
                         "Please do not provide an \"include\" section in the metric-filter processor configuration. " +
@@ -609,14 +609,14 @@ public class Configuration {
         }
     }
 
-    private static void validateRegex(String value, ProcessorType processorType) throws FriendlyException {
+    private static void validateRegex(String value, ProcessorType processorType) {
         try {
             Pattern.compile(value);
-        } catch (PatternSyntaxException exception) {
+        } catch (PatternSyntaxException e) {
             // TODO different links for different processor types throughout?
             throw new FriendlyException(processorType.anX + " processor configuration has an invalid regex:" + value,
                     "Please provide a valid regex in the " + processorType + " processor configuration. " +
-                            "Learn more about " + processorType + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
+                            "Learn more about " + processorType + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557", e);
         }
     }
 
@@ -651,7 +651,7 @@ public class Configuration {
         public String fromAttribute;
         public ExtractAttribute extractAttribute;
 
-        public void validate() throws FriendlyException {
+        public void validate() {
 
             if (isEmpty(key)) {
                 throw new FriendlyException("An attribute processor configuration has an action section that is missing a \"key\".",
@@ -732,8 +732,10 @@ public class Configuration {
         public String clientSecret;
         public String authorityHost;
 
-        public void validate() throws FriendlyException {
-            if(!enabled) return;
+        public void validate() {
+            if(!enabled) {
+                return;
+            }
             if(type == null) {
                 throw new FriendlyException("AAD Authentication configuration is missing authentication \"type\".",
                         "Please provide a valid authentication \"type\" under the \"authentication\" configuration. " +

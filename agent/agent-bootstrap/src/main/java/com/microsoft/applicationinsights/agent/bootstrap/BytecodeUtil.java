@@ -36,7 +36,7 @@ public class BytecodeUtil {
 
     private static BytecodeUtilDelegate delegate;
 
-    public static void setDelegate(final BytecodeUtilDelegate delegate) {
+    public static void setDelegate(BytecodeUtilDelegate delegate) {
         if (BytecodeUtil.delegate == null) {
             BytecodeUtil.delegate = delegate;
             MicrometerUtil.setDelegate(new MicrometerUtilDelegate() {
@@ -150,6 +150,7 @@ public class BytecodeUtil {
         startNanosHolder.set(System.nanoTime());
     }
 
+    @SuppressWarnings("SystemOut")
     public static void onExit() {
         Long startNanos = startNanosHolder.get();
         if (startNanos == null) {
@@ -164,6 +165,8 @@ public class BytecodeUtil {
         }
         startNanosHolder.remove();
     }
+
+    private BytecodeUtil() {}
 
     public interface BytecodeUtilDelegate {
 

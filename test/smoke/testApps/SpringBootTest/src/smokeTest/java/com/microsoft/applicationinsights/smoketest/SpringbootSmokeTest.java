@@ -3,17 +3,14 @@ package com.microsoft.applicationinsights.smoketest;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
-import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.EventData;
 import com.microsoft.applicationinsights.internal.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
-import com.microsoft.applicationinsights.smoketest.AiSmokeTest;
-import com.microsoft.applicationinsights.smoketest.TargetUri;
-import com.microsoft.applicationinsights.smoketest.UseAgent;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -37,7 +34,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         mockedIngestion.waitForItemsInOperation("EventData", 2, operationId);
 
         // TODO get event data envelope and verify value
-        final List<EventData> data = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
+        List<EventData> data = mockedIngestion.getTelemetryDataByTypeInRequest("EventData");
         assertThat(
                 data,
                 hasItem(
@@ -96,7 +93,7 @@ public class SpringbootSmokeTest extends AiSmokeTest {
         List<Envelope> rddList = mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
         List<Envelope> edList = mockedIngestion.waitForItems(new Predicate<Envelope>() {
             @Override
-            public boolean apply(Envelope input) {
+            public boolean test(Envelope input) {
                 if (!"ExceptionData".equals(input.getData().getBaseType())) {
                     return false;
                 }

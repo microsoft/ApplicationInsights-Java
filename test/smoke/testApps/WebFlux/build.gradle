@@ -1,6 +1,6 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '2.1.7.RELEASE'
+    id "java"
+    id "org.springframework.boot" version "2.1.7.RELEASE"
 }
 
 tasks.withType(JavaCompile) {
@@ -11,5 +11,5 @@ ext.testAppArtifactDir = jar.destinationDirectory
 ext.testAppArtifactFilename = jar.archiveFileName.get()
 
 dependencies {
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '2.1.7.RELEASE'
+    implementation "org.springframework.boot:spring-boot-starter-webflux:2.1.7.RELEASE"
 }

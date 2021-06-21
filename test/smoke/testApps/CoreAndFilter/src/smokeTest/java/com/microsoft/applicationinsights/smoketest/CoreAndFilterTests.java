@@ -3,8 +3,8 @@ package com.microsoft.applicationinsights.smoketest;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
-import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
@@ -61,7 +61,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         final String expectedName = "DependencyTest";
         final String expectedData = "commandName";
-        final Duration expectedDuration = new Duration(0, 0, 1, 1, 1);
+        Duration expectedDuration = new Duration(0, 0, 1, 1, 1);
 
         assertEquals(expectedName, rdd.getName());
         assertEquals(expectedData, rdd.getData());
@@ -127,7 +127,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         final String expectedProperties = "value";
         final Double expectedMetrice = 1d;
 
-        final List<ExceptionData> exceptions = mockedIngestion.getTelemetryDataByTypeInRequest("ExceptionData");
+        List<ExceptionData> exceptions = mockedIngestion.getTelemetryDataByTypeInRequest("ExceptionData");
         assertThat(exceptions, hasItem(hasException(withMessage(expectedName))));
         assertThat(exceptions, hasItem(allOf(
                 hasException(withMessage(expectedName)),
@@ -154,7 +154,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
                 expectedItems, totalItems);
 
         // TODO get HttpRequest data envelope and verify value
-        final List<Domain> requests = mockedIngestion.getTelemetryDataByType("RequestData");
+        List<Domain> requests = mockedIngestion.getTelemetryDataByType("RequestData");
         //true
         assertThat(requests, hasItem(allOf(
                 hasName("HttpRequestDataTest"),
@@ -202,7 +202,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         DataPoint dp = metrics.get(0);
 
         final double expectedValue = 111222333.0;
-        final double epsilon = Math.ulp(expectedValue);
+        double epsilon = Math.ulp(expectedValue);
         assertEquals(DataPointType.Measurement, dp.getKind());
         assertEquals(expectedValue, dp.getValue(), epsilon);
         assertEquals("TimeToRespond", dp.getName());
@@ -228,7 +228,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
 
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-        final List<MessageData> messages = mockedIngestion.getMessageDataInRequest();
+        List<MessageData> messages = mockedIngestion.getMessageDataInRequest();
         assertThat(messages, hasItem(
                 TraceDataMatchers.hasMessage("This is first trace message.")
         ));
@@ -398,7 +398,7 @@ public class CoreAndFilterTests extends AiSmokeTest {
         String operationId = rdEnvelope.getTags().get("ai.operation.id");
         List<Envelope> edList = mockedIngestion.waitForItems(new Predicate<Envelope>() {
             @Override
-            public boolean apply(Envelope input) {
+            public boolean test(Envelope input) {
                 if (!"ExceptionData".equals(input.getData().getBaseType())) {
                     return false;
                 }
@@ -444,8 +444,8 @@ public class CoreAndFilterTests extends AiSmokeTest {
         long expected = (new Duration(0, 0, 0, expectedDurationSeconds, 0).getTotalMilliseconds());
         long tolerance = 2 * 1000; // 2 seconds
 
-        final long min = expected - tolerance;
-        final long max = expected + tolerance;
+        long min = expected - tolerance;
+        long max = expected + tolerance;
 
         System.out.printf("Slow response time: expected=%d, actual=%d%n", expected, actual);
         assertThat(actual, both(greaterThanOrEqualTo(min)).and(lessThan(max)));

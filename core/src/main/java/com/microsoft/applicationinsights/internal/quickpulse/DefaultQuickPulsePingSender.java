@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
-import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
@@ -34,9 +33,6 @@ import com.azure.core.http.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 12/12/2016.
- */
 final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulsePingSender.class);
@@ -82,18 +78,18 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     @Override
     public QuickPulseHeaderInfo ping(String redirectedEndpoint) {
-        final Date currentDate = new Date();
-        final String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
-        final HttpRequest request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
+        Date currentDate = new Date();
+        String endpointPrefix = LocalStringsUtils.isNullOrEmpty(redirectedEndpoint) ? getQuickPulseEndpoint() : redirectedEndpoint;
+        HttpRequest request = networkHelper.buildPingRequest(currentDate, getQuickPulsePingUri(endpointPrefix), quickPulseId, machineName, roleName, instanceName);
         request.setBody(buildPingEntity(currentDate.getTime()));
 
-        final long sendTime = System.nanoTime();
+        long sendTime = System.nanoTime();
         HttpResponse response = null;
         try {
 
             response = httpPipeline.send(request).block();
             if (response != null && networkHelper.isSuccess(response)) {
-                final QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
+                QuickPulseHeaderInfo quickPulseHeaderInfo = networkHelper.getQuickPulseHeaderInfo(response);
                 switch (quickPulseHeaderInfo.getQuickPulseStatus()) {
                     case QP_IS_OFF:
                     case QP_IS_ON:
@@ -116,7 +112,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         return onPingError(sendTime);
     }
 
-    @VisibleForTesting
+    // visible for testing
     String getQuickPulsePingUri(String endpointPrefix) {
         return endpointPrefix + "/ping?ikey=" + getInstrumentationKey();
     }
@@ -125,9 +121,9 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         return telemetryClient.getInstrumentationKey();
     }
 
-    @VisibleForTesting
+    // visible for testing
     String getQuickPulseEndpoint() {
-        return telemetryClient.getEndpointProvider().getLiveEndpointURL().toString();
+        return telemetryClient.getEndpointProvider().getLiveEndpointUrl().toString();
     }
 
     private String buildPingEntity(long timeInMillis) {
@@ -138,7 +134,7 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
     }
 
     private QuickPulseHeaderInfo onPingError(long sendTime) {
-        final double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
+        double timeFromLastValidTransmission = (sendTime - lastValidTransmission) / 1000000000.0;
         if (timeFromLastValidTransmission >= 60.0) {
             return new QuickPulseHeaderInfo(QuickPulseStatus.ERROR);
         }

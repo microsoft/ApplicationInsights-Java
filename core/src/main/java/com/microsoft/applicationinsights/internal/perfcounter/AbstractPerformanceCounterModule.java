@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A base class for performance modules.
- *
- * Created by gupele on 3/12/2015.
  */
 public abstract class AbstractPerformanceCounterModule implements TelemetryModule {
 

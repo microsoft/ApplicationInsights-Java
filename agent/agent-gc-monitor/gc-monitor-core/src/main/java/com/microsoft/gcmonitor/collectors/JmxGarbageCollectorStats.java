@@ -52,9 +52,11 @@ public class JmxGarbageCollectorStats implements GarbageCollectorStats {
 
 
     public void visitPools(Collection<MemoryPool> collection) {
-        for (MemoryPool memoryPool : collection)
-            if (memoryPool.isManagedBy(garbageCollector))
+        for (MemoryPool memoryPool : collection) {
+            if (memoryPool.isManagedBy(garbageCollector)) {
                 managedPools.add(memoryPool);
+            }
+        }
     }
 
     @Override

@@ -27,4 +27,6 @@ public class Global {
     public static void setSamplingPercentage(float samplingPercentage) {
         Global.samplingPercentage = samplingPercentage;
     }
+
+    private Global() {}
 }

@@ -56,7 +56,3 @@ There is one test in java which checks that the DLL is extracted properly.
 There are two other tests which send 50k and 500k events to ETW. These are disabled if native verbose logging is enabled as it slows the execution time significantly.
 
 These can be disabled manually with the project property `ai.etw.tests.long.disabled` set to `true`.
-
-# The etw-testapp project
-
-This uses a special build of the agent, `applicationinsights-agent-codeless-<version>-devtest.jar`, which includes an additional class for accessing internal methods. These are used to trigger ETW events manually as well as run a load-type test of ETW events on a loop.

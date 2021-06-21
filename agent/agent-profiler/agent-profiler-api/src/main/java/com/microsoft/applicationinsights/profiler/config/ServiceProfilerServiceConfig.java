@@ -20,17 +20,12 @@
  */
 package com.microsoft.applicationinsights.profiler.config;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URI;
+import java.net.URL;
 
 /**
  * Configuration of the service profiler subsystem
  */
 public class ServiceProfilerServiceConfig {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProfilerServiceConfig.class);
 
     public static final int DEFAULT_CONFIG_POLL_PERIOD_IN_MS = 60000;
     public static final int DEFAULT_PERIODIC_RECORDING_DURATION_IN_S = 120;
@@ -45,22 +40,22 @@ public class ServiceProfilerServiceConfig {
     // default interval of periodic profiles
     private final int periodicRecordingInterval;
 
-    private final URI serviceProfilerFrontEndPoint;
+    private final URL serviceProfilerFrontEndPoint;
 
     // Enable entire service profiler subsystem
     private final boolean enabled;
 
     // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for memory profiling
-    private String memoryTriggeredSettings;
+    private final String memoryTriggeredSettings;
 
     // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for cpu profiling
-    private String cpuTriggeredSettings;
+    private final String cpuTriggeredSettings;
 
     public ServiceProfilerServiceConfig(
             int configPollPeriod,
             int periodicRecordingDuration,
             int periodicRecordingInterval,
-            URI serviceProfilerFrontEndPoint,
+            URL serviceProfilerFrontEndPoint,
             boolean enabled,
             String memoryTriggeredSettings,
             String cpuTriggeredSettings
@@ -86,7 +81,7 @@ public class ServiceProfilerServiceConfig {
         return periodicRecordingInterval != -1 ? periodicRecordingInterval : DEFAULT_PERIODIC_RECORDING_INTERVAL_IN_S;
     }
 
-    public URI getServiceProfilerFrontEndPoint() {
+    public URL getServiceProfilerFrontEndPoint() {
         return serviceProfilerFrontEndPoint;
     }
 

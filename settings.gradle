@@ -48,7 +48,8 @@ if (buildNative) {
     logger.quiet "Skipping build of :etw:native because skipWinNative=true. EtwAppender/EtwProvider will not work because library is missing"
 }
 include ':etw:java'
-include ':etw:etw-testapp'
+// TODO (trask) is this really needed? if so, need to restore devtest configuration
+//include ':etw:etw-testapp'
 
 include ':core'
 
@@ -57,6 +58,7 @@ include ':java-flight-recorder'
 
 include ':agent:agent-gc-monitor:gc-monitor-api'
 include ':agent:agent-gc-monitor:gc-monitor-core'
+include ':agent:agent-gc-monitor:gc-monitor-tests'
 
 include ':agent:exporter'
 include ':agent:agent-profiler:agent-profiler-api'
@@ -124,4 +126,3 @@ include ':test:smoke:testApps:JettyNativeHandler'
 include ':test:smoke:testApps:TelemetryFiltering'
 include ':test:smoke:testApps:TelemetryProcessors'
 include ':test:smoke:testApps:OpenTelemetryApiSupport'
-include ':test:smoke:testApps:gc-monitor-tests'

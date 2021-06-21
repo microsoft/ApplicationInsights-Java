@@ -30,17 +30,21 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
-import org.junit.*;
-import org.mockito.Matchers;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class ServiceProfilerConfigMonitorServiceTest {
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
+
+class ServiceProfilerConfigMonitorServiceTest {
 
     @Test
-    public void pullsConfig() throws ClientClosedException, IOException, URISyntaxException {
+    void pullsConfig() throws IOException, URISyntaxException {
 
         AtomicReference<Runnable> job = new AtomicReference<>();
 
@@ -56,35 +60,32 @@ public class ServiceProfilerConfigMonitorServiceTest {
         AtomicReference<ProfilerConfiguration> config = new AtomicReference<>();
         serviceMonitor.initialize(Collections.singletonList(config::set));
 
-        Assert.assertNotNull(job.get());
+        assertThat(job.get()).isNotNull();
 
         job.get().run();
 
-        Mockito.verify(serviceProfilerClient, Mockito.times(1)).getSettings(Matchers.any(Date.class));
-        Assert.assertNotNull(config.get());
+        Mockito.verify(serviceProfilerClient, times(1)).getSettings(any(Date.class));
+        assertThat(config.get()).isNotNull();
 
-        Assert.assertEquals("--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker", config.get().getCollectionPlan());
-        Assert.assertEquals("--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400", config.get().getCpuTriggerConfiguration());
-        Assert.assertEquals("--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120", config.get().getDefaultConfiguration());
-        Assert.assertEquals("--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400", config.get().getMemoryTriggerConfiguration());
-
+        assertThat(config.get().getCollectionPlan()).isEqualTo("--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker");
+        assertThat(config.get().getCpuTriggerConfiguration()).isEqualTo("--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400");
+        assertThat(config.get().getDefaultConfiguration()).isEqualTo("--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120");
+        assertThat(config.get().getMemoryTriggerConfiguration()).isEqualTo("--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400");
     }
 
-    private ScheduledExecutorService mockScheduledExecutorService(Consumer<Runnable> job) {
+    private static ScheduledExecutorService mockScheduledExecutorService(Consumer<Runnable> job) {
         ScheduledExecutorService executorService = Mockito.mock(ScheduledExecutorService.class);
-
-        Mockito.doAnswer(invocation -> {
-            job.accept(invocation
-                    .getArgumentAt(0, Runnable.class));
-
-            return null;
-        }).when(executorService).scheduleAtFixedRate(Mockito.any(Runnable.class), Mockito.anyInt(), Mockito.anyInt(), Mockito.any(TimeUnit.class));
+        when(executorService.scheduleAtFixedRate(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class)))
+            .thenAnswer(invocation -> {
+                job.accept(invocation.getArgument(0, Runnable.class));
+                return null;
+            });
         return executorService;
     }
 
-    public static ServiceProfilerClientV2 mockServiceProfilerClient() throws IOException, URISyntaxException, ClientClosedException {
+    static ServiceProfilerClientV2 mockServiceProfilerClient() throws IOException, URISyntaxException {
         ServiceProfilerClientV2 serviceProfilerClient = Mockito.mock(ServiceProfilerClientV2.class);
-        Mockito.when(serviceProfilerClient.getSettings(Matchers.any(Date.class))).thenReturn("{\"id\":\"8929ed2e-24da-4ad4-8a8b-5a5ebc03abb4\",\"lastModified\":\"2021-01-25T15:46:11" +
+        when(serviceProfilerClient.getSettings(any(Date.class))).thenReturn("{\"id\":\"8929ed2e-24da-4ad4-8a8b-5a5ebc03abb4\",\"lastModified\":\"2021-01-25T15:46:11" +
                 ".0900613+00:00\",\"enabledLastModified\":\"0001-01-01T00:00:00+00:00\",\"enabled\":true,\"collectionPlan\":\"--single --mode immediate --immediate-profiling-duration 120  " +
                 "--expiration 5249157885138288517 --settings-moniker a-settings-moniker\",\"cpuTriggerConfiguration\":\"--cpu-trigger-enabled true --cpu-threshold 80 " +
                 "--cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400\",\"memoryTriggerConfiguration\":\"--memory-trigger-enabled true --memory-threshold 20 " +

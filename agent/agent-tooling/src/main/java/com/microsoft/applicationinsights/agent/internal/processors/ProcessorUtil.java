@@ -42,7 +42,9 @@ public class ProcessorUtil {
 
     public static String applyRule(List<String> groupNamesList, Pattern pattern,
                              String spanName, AttributesBuilder builder) {
-        if (groupNamesList.isEmpty()) return spanName;
+        if (groupNamesList.isEmpty()) {
+            return spanName;
+        }
         Matcher matcher = pattern.matcher(spanName);
         StringBuilder sb = new StringBuilder();
         int lastEnd = 0;
@@ -76,10 +78,14 @@ public class ProcessorUtil {
     }
 
     public static boolean spanHasAllFromAttributeKeys(SpanData span, List<AttributeKey<?>> fromAttributes) {
-        if (fromAttributes.isEmpty()) return false;
+        if (fromAttributes.isEmpty()) {
+            return false;
+        }
         Attributes existingSpanAttributes = span.getAttributes();
         for (AttributeKey<?> attributeKey : fromAttributes) {
-            if (existingSpanAttributes.get(attributeKey) == null) return false;
+            if (existingSpanAttributes.get(attributeKey) == null) {
+                return false;
+            }
         }
         return true;
     }
@@ -118,6 +124,7 @@ public class ProcessorUtil {
             spanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), spanName, builder);
         }
         return new MySpanData(span, builder.build(), spanName);
-
     }
+
+    private ProcessorUtil() {}
 }

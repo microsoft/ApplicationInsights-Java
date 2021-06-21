@@ -19,8 +19,8 @@ public class ParameterizedRunnerWithFixtures extends BlockJUnit4ClassRunnerWithP
         this.parameters = twp.getParameters().toArray(new Object[twp.getParameters().size()]);
     }
 
-    private Statement wrapWithParamBefores(final Statement s) {
-        final List<FrameworkMethod> methods = getTestClass().getAnnotatedMethods(BeforeWithParams.class);
+    private Statement wrapWithParamBefores(Statement s) {
+        List<FrameworkMethod> methods = getTestClass().getAnnotatedMethods(BeforeWithParams.class);
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
@@ -32,12 +32,12 @@ public class ParameterizedRunnerWithFixtures extends BlockJUnit4ClassRunnerWithP
         };
     }
 
-    private Statement wrapWithParamAfters(final Statement s) {
-        final List<FrameworkMethod> methods = getTestClass().getAnnotatedMethods(AfterWithParams.class);
+    private Statement wrapWithParamAfters(Statement s) {
+        List<FrameworkMethod> methods = getTestClass().getAnnotatedMethods(AfterWithParams.class);
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                final List<Throwable> errs = new ArrayList<>();
+                List<Throwable> errs = new ArrayList<>();
                 try {
                     s.evaluate();
                 } catch (Throwable t) {
@@ -73,7 +73,7 @@ public class ParameterizedRunnerWithFixtures extends BlockJUnit4ClassRunnerWithP
     }
 
     private void validateFixture(Class<? extends Annotation> annotation, List<Throwable> errors) {
-        final List<FrameworkMethod> methods = getTestClass().getAnnotatedMethods(annotation);
+        List<FrameworkMethod> methods = getTestClass().getAnnotatedMethods(annotation);
         for (FrameworkMethod fm : methods) {
             fm.validatePublicVoid(true, errors);
         }

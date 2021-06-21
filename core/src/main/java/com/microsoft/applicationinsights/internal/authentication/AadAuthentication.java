@@ -58,7 +58,9 @@ public class AadAuthentication {
     }
 
     public HttpPipelinePolicy getAuthenticationPolicy() {
-        if (authenticationType == null) return null;
+        if (authenticationType == null) {
+            return null;
+        }
         switch (authenticationType) {
             case UAMI:
                 return getAuthenticationPolicyWithUAMI();
@@ -70,9 +72,8 @@ public class AadAuthentication {
                 return getAuthenticationPolicyWithVsCode();
             case CLIENTSECRET:
                 return getAuthenticationPolicyWithClientSecret();
-            default:
-                throw new IllegalStateException("Invalid Authentication Type used in AAD Authentication: " + authenticationType);
         }
+        throw new IllegalStateException("Invalid Authentication Type used in AAD Authentication: " + authenticationType);
     }
 
     private HttpPipelinePolicy getAuthenticationPolicyWithIntellij() {

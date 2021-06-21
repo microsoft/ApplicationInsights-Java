@@ -24,30 +24,25 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerSettingsClient;
-import io.reactivex.Maybe;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import reactor.core.publisher.Mono;
 
-public class ServiceProfilerSettingsClientTest {
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class ServiceProfilerSettingsClientTest {
 
     @Test
-    public void badServiceResponseDoesNotProvideReturn() throws ClientClosedException, IOException, URISyntaxException {
+    void badServiceResponseDoesNotProvideReturn() throws IOException, URISyntaxException {
         ServiceProfilerClientV2 serviceProfilerClient = Mockito.mock(ServiceProfilerClientV2.class);
 
         Mockito.when(serviceProfilerClient.getSettings(Mockito.any())).thenReturn("");
 
         ServiceProfilerSettingsClient settingsClient = new ServiceProfilerSettingsClient(serviceProfilerClient);
-        Maybe<ProfilerConfiguration> result = settingsClient.pullSettings();
+        Mono<ProfilerConfiguration> result = settingsClient.pullSettings();
 
-        try {
-            result.blockingGet();
-        } catch (Exception e) {
-            //expected
-            return;
-        }
-        Assert.fail("Exception not thrown");
+        assertThatThrownBy(result::block).isInstanceOf(Exception.class);
     }
 }

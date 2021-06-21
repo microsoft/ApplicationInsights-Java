@@ -1,16 +1,16 @@
-apply plugin: 'java'
-apply plugin: 'war'
+apply plugin: "java"
+apply plugin: "war"
 
+// TODO (trask) is this needed?
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
-    compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
-    implementation group: 'com.google.code.gson', name: 'gson', version: versions.gson
-    implementation project(':test:smoke:framework:utils')
-
+    implementation "com.google.guava:guava:30.1.1-jre"
+    compileOnly "javax.servlet:javax.servlet-api:3.0.1"
+    implementation "com.google.code.gson:gson:${versions.gson}"
+    implementation project(":test:smoke:framework:utils")
 }
 
 tasks.withType(JavaCompile) {

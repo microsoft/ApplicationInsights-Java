@@ -22,12 +22,11 @@ package com.microsoft.applicationinsights.internal.profiler;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.UnsupportedCharsetException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,7 +42,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.TelemetryObservers;
-import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
@@ -57,20 +55,17 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.Uplo
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.jfr.Recording;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
 import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProfilerServiceTest {
+class ProfilerServiceTest {
 
     final String timeStamp = "a-timestamp";
     final String machineName = "a-machine-name";
@@ -78,38 +73,31 @@ public class ProfilerServiceTest {
     final String stampId = "a-stamp-id";
     final String jfrExtension = "jfr";
 
-    @BeforeClass
-    public static void setUp() {
-        // FIXME (trask) inject TelemetryClient in tests instead of using global
-        TelemetryClient.resetForTesting();
-        TelemetryClient.initActive(new HashMap<>(), new ArrayList<>(), new ApplicationInsightsXmlConfiguration());
-    }
-
     @Test
-    public void endToEndAlertTriggerCpu() throws Exception {
+    void endToEndAlertTriggerCpu() throws Exception {
         endToEndAlertTriggerCycle(
                 false,
-                createMetricsTelemetry(TOTAL_CPU_PC_METRIC_NAME, 100.0),
+                createMetricsTelemetry(new TelemetryClient(), TOTAL_CPU_PC_METRIC_NAME, 100.0),
                 telemetry -> {
-                    Assert.assertEquals("JFR-CPU", telemetry.getProperties().get("Source"));
-                    Assert.assertEquals(100.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
-                    Assert.assertEquals(0.0, telemetry.getMeasurements().get("AverageMemoryUsage"), 0.01);
+                    assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-CPU");
+                    assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(100.0);
+                    assertThat(telemetry.getMeasurements().get("AverageMemoryUsage")).isEqualTo(0.0);
                 });
     }
 
     @Test
-    public void endToEndAlertTriggerManual() throws Exception {
+    void endToEndAlertTriggerManual() throws Exception {
         endToEndAlertTriggerCycle(
                 true,
-                createMetricsTelemetry(HEAP_MEM_USED_PERCENTAGE, 0.0),
+                createMetricsTelemetry(new TelemetryClient(), HEAP_MEM_USED_PERCENTAGE, 0.0),
                 telemetry -> {
-                    Assert.assertEquals("JFR-MANUAL", telemetry.getProperties().get("Source"));
-                    Assert.assertEquals(0.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
-                    Assert.assertEquals(0.0, telemetry.getMeasurements().get("AverageMemoryUsage"), 0.01);
+                    assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-MANUAL");
+                    assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(0.0);
+                    assertThat(telemetry.getMeasurements().get("AverageMemoryUsage")).isEqualTo(0.0);
                 });
     }
 
-    public void endToEndAlertTriggerCycle(boolean triggerNow, TelemetryItem metricTelemetry, Consumer<TelemetryEventData> assertTelemetry) throws Exception {
+    void endToEndAlertTriggerCycle(boolean triggerNow, TelemetryItem metricTelemetry, Consumer<TelemetryEventData> assertTelemetry) throws Exception {
         AtomicBoolean profileInvoked = new AtomicBoolean(false);
         AtomicReference<TelemetryEventData> serviceProfilerIndex = new AtomicReference<>();
 
@@ -125,7 +113,6 @@ public class ProfilerServiceTest {
 
         Object monitor = new Object();
 
-        // FIXME (trask) revisit this, why is subclassing TelemetryClient needed?
         TelemetryClient client = new TelemetryClient() {
             @Override
             public void trackAsync(TelemetryItem telemetry) {
@@ -163,7 +150,7 @@ public class ProfilerServiceTest {
                         1,
                         2,
                         3,
-                        new URI("http://localhost"),
+                        new URL("http://localhost"),
                         true,
                         null,
                         null
@@ -193,20 +180,20 @@ public class ProfilerServiceTest {
             }
         }
 
-        Assert.assertTrue(profileInvoked.get());
+        assertThat(profileInvoked.get()).isTrue();
 
-        Assert.assertNotNull(serviceProfilerIndex.get());
-        Assert.assertEquals("Profile", serviceProfilerIndex.get().getProperties().get("ArtifactKind"));
-        Assert.assertEquals(timeStamp, serviceProfilerIndex.get().getProperties().get("EtlFileSessionId"));
-        Assert.assertEquals(appId, serviceProfilerIndex.get().getProperties().get("DataCube"));
-        Assert.assertEquals(jfrExtension, serviceProfilerIndex.get().getProperties().get("Extension"));
-        Assert.assertEquals(machineName, serviceProfilerIndex.get().getProperties().get("MachineName"));
-        Assert.assertEquals(processId, serviceProfilerIndex.get().getProperties().get("ProcessId"));
-        Assert.assertEquals(stampId, serviceProfilerIndex.get().getProperties().get("StampId"));
+        assertThat(serviceProfilerIndex.get()).isNotNull();
+        assertThat(serviceProfilerIndex.get().getProperties().get("ArtifactKind")).isEqualTo("Profile");
+        assertThat(serviceProfilerIndex.get().getProperties().get("EtlFileSessionId")).isEqualTo(timeStamp);
+        assertThat(serviceProfilerIndex.get().getProperties().get("DataCube")).isEqualTo(appId);
+        assertThat(serviceProfilerIndex.get().getProperties().get("Extension")).isEqualTo(jfrExtension);
+        assertThat(serviceProfilerIndex.get().getProperties().get("MachineName")).isEqualTo(machineName);
+        assertThat(serviceProfilerIndex.get().getProperties().get("ProcessId")).isEqualTo(processId);
+        assertThat(serviceProfilerIndex.get().getProperties().get("StampId")).isEqualTo(stampId);
         assertTelemetry.accept(serviceProfilerIndex.get());
     }
 
-    private ProfilerService awaitReferenceSet(AtomicReference<ProfilerService> service) {
+    private static ProfilerService awaitReferenceSet(AtomicReference<ProfilerService> service) {
         //Wait for up to 10 seconds
         for (int i = 0; i < 100 && service.get() == null; i++) {
             try {
@@ -218,12 +205,12 @@ public class ProfilerServiceTest {
         return service.get();
     }
 
-    private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws URISyntaxException {
+    private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
         return new JfrProfiler(new ServiceProfilerServiceConfig(
                 1,
                 2,
                 3,
-                new URI("http://localhost"),
+                new URL("http://localhost"),
                 false,
                 null,
                 null)) {
@@ -256,7 +243,7 @@ public class ProfilerServiceTest {
         };
     }
 
-    private ServiceProfilerClientV2 stubClient(boolean triggerNow) {
+    private static ServiceProfilerClientV2 stubClient(boolean triggerNow) {
         return new ServiceProfilerClientV2() {
             @Override
             public BlobAccessPass getUploadAccess(UUID profileId) {
@@ -264,7 +251,7 @@ public class ProfilerServiceTest {
             }
 
             @Override
-            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) throws UnsupportedCharsetException {
+            public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag) {
                 return null;
             }
 

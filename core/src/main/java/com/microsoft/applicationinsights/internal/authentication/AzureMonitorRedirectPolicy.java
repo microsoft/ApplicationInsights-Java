@@ -51,10 +51,10 @@ public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
      *  Function to process through the HTTP Response received in the pipeline
      *  and retry sending the request with new redirect url.
      */
-    private Mono<HttpResponse> attemptRetry(final HttpPipelineCallContext context,
-                                            final HttpPipelineNextPolicy next,
-                                            final HttpRequest originalHttpRequest,
-                                            final int retryCount) {
+    private Mono<HttpResponse> attemptRetry(HttpPipelineCallContext context,
+                                            HttpPipelineNextPolicy next,
+                                            HttpRequest originalHttpRequest,
+                                            int retryCount) {
         // make sure the context is not modified during retry, except for the URL
         context.setHttpRequest(originalHttpRequest.copy());
         if (this.redirectedEndpointUrl != null) {
@@ -81,7 +81,7 @@ public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
      * @return True if statusCode corresponds to HTTP redirect response codes and redirect
      * retries is less than {@code MAX_REDIRECT_RETRIES}.
      */
-    private boolean shouldRetryWithRedirect(int statusCode, int tryCount) {
+    private static boolean shouldRetryWithRedirect(int statusCode, int tryCount) {
         if (tryCount >= MAX_REDIRECT_RETRIES) {
             logger.warn("Max redirect retries limit reached:{}.", MAX_REDIRECT_RETRIES);
             return false;
@@ -91,5 +91,4 @@ public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
                 || statusCode == PERMANENT_REDIRECT_STATUS_CODE
                 || statusCode == TEMP_REDIRECT_STATUS_CODE;
     }
-
 }

@@ -33,8 +33,6 @@ import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelem
 
 /**
  * The class reports GC related data
- *
- * Created by gupele on 8/8/2016.
  */
 public final class GCPerformanceCounter implements PerformanceCounter {
     public final static String NAME = "GC";
@@ -78,8 +76,8 @@ public final class GCPerformanceCounter implements PerformanceCounter {
             currentTotalCount = totalCollectionCount;
             currentTotalTime = totalCollectionTime;
 
-            TelemetryItem mtTotalCount = createMetricsTelemetry(GC_TOTAL_COUNT, countToReport);
-            TelemetryItem mtTotalTime = createMetricsTelemetry(GC_TOTAL_TIME, timeToReport);
+            TelemetryItem mtTotalCount = createMetricsTelemetry(telemetryClient, GC_TOTAL_COUNT, countToReport);
+            TelemetryItem mtTotalTime = createMetricsTelemetry(telemetryClient, GC_TOTAL_TIME, timeToReport);
             telemetryClient.trackAsync(mtTotalCount);
             telemetryClient.trackAsync(mtTotalTime);
         }

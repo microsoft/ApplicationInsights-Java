@@ -24,7 +24,6 @@ import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
@@ -66,9 +65,6 @@ public class AlertingSubsystem {
     private final AlertPipelines alertPipelines;
     private final TimeSource timeSource;
 
-    //TODO shutdown
-    private Future<Void> future;
-
     // Current configuration of the alerting subsystem
     private AlertingConfiguration alertConfig;
 
@@ -100,15 +96,15 @@ public class AlertingSubsystem {
 
         updateConfiguration(alertConfig);
 
-        future = executorService
-                .submit(() -> {
+        executorService
+                .execute(() -> {
                     while (true) {
                         try {
                             process(workQueue.take());
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
-                            throw e;
-                        } catch (Exception e) {
+                            return;
+                        } catch (RuntimeException e) {
                             LOGGER.error("Exception while evaluating alert", e);
                         } catch (Error e) {
                             LOGGER.error("Exception while evaluating alert", e);

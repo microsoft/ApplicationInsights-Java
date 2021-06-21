@@ -26,14 +26,9 @@ import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Created by oriy on 11/2/2016. */
 public class CommonUtils {
 
   private static final Logger logger = LoggerFactory.getLogger(CommonUtils.class);
-
-  public static boolean isNullOrEmpty(String string) {
-    return string == null || string.length() == 0;
-  }
 
   /**
    * Returns the hostname using {@link InetAddress#getHostName()} on {@link InetAddress#getLocalHost()}.
@@ -50,4 +45,6 @@ public class CommonUtils {
       return null;
     }
   }
+
+  private CommonUtils() {}
 }

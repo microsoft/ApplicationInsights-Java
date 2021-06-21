@@ -22,13 +22,13 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
  */
 
 plugins {
-    id 'idea'
+    id "idea"
 
     id "com.github.johnrengelman.shadow" version "6.1.0" apply false
 
     id "org.owasp.dependencycheck" version "6.1.5"
     id "com.diffplug.spotless" version "5.11.1"
-    id "com.github.spotbugs" version "4.7.0" apply false
+    id "net.ltgt.errorprone" version "1.3.0" apply false
 
     id "com.github.ben-manes.versions" version "0.38.0"
 }
@@ -63,13 +63,13 @@ allprojects {
         }
     }
 
-    tasks.register('resolveDependencies') {
+    tasks.register("resolveDependencies") {
         enabled !configurations.isEmpty()
         configurations.findAll { c ->
             c.allDependencies.findAll { d ->
                 d instanceof ProjectDependency
             }.each { d ->
-                dependsOn d.getDependencyProject().tasks.named('resolveDependencies')
+                dependsOn d.getDependencyProject().tasks.named("resolveDependencies")
             }
         }
         doLast {
@@ -83,10 +83,10 @@ allprojects {
     }
 
     tasks.withType(ShadowJar) {
-        exclude 'META-INF/maven/**'
-        exclude 'META-INF/LICENSE*'
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'META-INF/NOTICE*'
+        exclude "META-INF/maven/**"
+        exclude "META-INF/LICENSE*"
+        exclude "META-INF/DEPENDENCIES"
+        exclude "META-INF/NOTICE*"
         from "${rootProject.projectDir}/NOTICE"
         from "${rootProject.projectDir}/LICENSE"
     }
@@ -94,5 +94,58 @@ allprojects {
     tasks.withType(Jar) {
         from "${rootProject.projectDir}/NOTICE"
         from "${rootProject.projectDir}/LICENSE"
+    }
+
+    plugins.withId("net.ltgt.errorprone") {
+        dependencies {
+            errorprone "com.google.errorprone:error_prone_core:2.7.1"
+        }
+
+        tasks.withType(JavaCompile).configureEach {
+            options.errorprone {
+                enabled = rootProject.findProperty("disableErrorProne") != "true"
+                disableWarningsInGeneratedCode = true
+                allDisabledChecksAsWarnings = true
+
+                excludedPaths = ".*/build/generated/.*"
+
+                // TEMPORARILY until time to revisit
+                disable("WildcardImport")
+                disable("BadImport")
+                disable("BooleanParameter")
+                disable("JavaUtilDate")
+                disable("HashCodeToString")
+                disable("ImmutableEnumChecker")
+                disable("JavaTimeDefaultTimeZone")
+
+                // Doesn't work well with Java 8
+                disable("FutureReturnValueIgnored")
+
+                // Require Guava
+                disable("AutoValueImmutableFields")
+                disable("StringSplitter")
+                disable("ImmutableMemberCollection")
+
+                // Don't currently use this (to indicate a local variable that's mutated) but could
+                // consider for future.
+                disable("Var")
+
+                // Don't support Android without desugar
+                disable("AndroidJdkLibsChecker")
+                disable("Java7ApiChecker")
+                disable("StaticOrDefaultInterfaceMethod")
+
+                // Common to avoid an allocation. Revisit if it's worth opt-in suppressing instead of
+                // disabling entirely.
+                disable("MixedMutabilityReturnType")
+
+                // Limits API possibilities
+                disable("NoFunctionalReturnType")
+
+                // We don't use tools that recognize.
+                disable("InlineMeSuggester")
+                disable("DoNotCallSuggester")
+            }
+        }
     }
 }

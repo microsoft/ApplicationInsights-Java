@@ -4,66 +4,58 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDepe
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.FormattedDuration;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.FinalCounters;
-import org.junit.*;
+import org.junit.jupiter.api.*;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 
 import static com.microsoft.applicationinsights.TelemetryUtil.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class QuickPulseDataCollectorTests {
+class QuickPulseDataCollectorTests {
 
     private static final String FAKE_INSTRUMENTATION_KEY = "fake-instrumentation-key";
 
-    @BeforeClass
-    public static void setUp() {
-        // FIXME (trask) inject TelemetryClient in tests instead of using global
-        TelemetryClient.resetForTesting();
-        TelemetryClient.initActive(new HashMap<>(), new ArrayList<>(), new ApplicationInsightsXmlConfiguration());
-    }
-
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         QuickPulseDataCollector.INSTANCE.disable();
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         QuickPulseDataCollector.INSTANCE.disable();
     }
 
     @Test
-    public void initialStateIsDisabled() {
-        assertNull(QuickPulseDataCollector.INSTANCE.peek());
+    void initialStateIsDisabled() {
+        assertThat(QuickPulseDataCollector.INSTANCE.peek()).isNull();
     }
 
     @Test
-    public void emptyCountsAndDurationsAfterEnable() {
+    void emptyCountsAndDurationsAfterEnable() {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
-        final FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
+        FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
         assertCountersReset(counters);
     }
 
     @Test
-    public void nullCountersAfterDisable() {
+    void nullCountersAfterDisable() {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
         QuickPulseDataCollector.INSTANCE.disable();
-        assertNull(QuickPulseDataCollector.INSTANCE.peek());
+        assertThat(QuickPulseDataCollector.INSTANCE.peek()).isNull();
     }
 
     @Test
-    public void requestTelemetryIsCounted_DurationIsSum() {
+    void requestTelemetryIsCounted_DurationIsSum() {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
@@ -74,9 +66,9 @@ public class QuickPulseDataCollectorTests {
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
-        assertEquals(1, counters.requests);
-        assertEquals(0, counters.unsuccessfulRequests);
-        assertEquals((double)duration, counters.requestsDuration, Math.ulp((double)duration));
+        assertThat(counters.requests).isEqualTo(1);
+        assertThat(counters.unsuccessfulRequests).isEqualTo(0);
+        assertThat(counters.requestsDuration).isEqualTo(duration);
 
         // add another success and peek
         final long duration2 = 65421L;
@@ -85,9 +77,9 @@ public class QuickPulseDataCollectorTests {
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.peek();
         double total = duration + duration2;
-        assertEquals(2, counters.requests);
-        assertEquals(0, counters.unsuccessfulRequests);
-        assertEquals(total, counters.requestsDuration, Math.ulp(total));
+        assertThat(counters.requests).isEqualTo(2);
+        assertThat(counters.unsuccessfulRequests).isEqualTo(0);
+        assertThat(counters.requestsDuration).isEqualTo(total);
 
         // add a failure and get/reset
         final long duration3 = 9988L;
@@ -96,15 +88,15 @@ public class QuickPulseDataCollectorTests {
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
         total += duration3;
-        assertEquals(3, counters.requests);
-        assertEquals(1, counters.unsuccessfulRequests);
-        assertEquals(total, counters.requestsDuration, Math.ulp(total));
+        assertThat(counters.requests).isEqualTo(3);
+        assertThat(counters.unsuccessfulRequests).isEqualTo(1);
+        assertThat(counters.requestsDuration).isEqualTo(total);
 
         assertCountersReset(QuickPulseDataCollector.INSTANCE.peek());
     }
 
     @Test
-    public void dependencyTelemetryIsCounted_DurationIsSum() {
+    void dependencyTelemetryIsCounted_DurationIsSum() {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
@@ -115,9 +107,9 @@ public class QuickPulseDataCollectorTests {
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
-        assertEquals(1, counters.rdds);
-        assertEquals(0, counters.unsuccessfulRdds);
-        assertEquals((double)duration, counters.rddsDuration, Math.ulp((double)duration));
+        assertThat(counters.rdds).isEqualTo(1);
+        assertThat(counters.unsuccessfulRdds).isEqualTo(0);
+        assertThat(counters.rddsDuration).isEqualTo(duration);
 
         // add another success and peek.
         final long duration2 = 334455L;
@@ -125,10 +117,10 @@ public class QuickPulseDataCollectorTests {
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.peek();
-        assertEquals(2, counters.rdds);
-        assertEquals(0, counters.unsuccessfulRdds);
+        assertThat(counters.rdds).isEqualTo(2);
+        assertThat(counters.unsuccessfulRdds).isEqualTo(0);
         double total = duration + duration2;
-        assertEquals(total, counters.rddsDuration, Math.ulp(total));
+        assertThat(counters.rddsDuration).isEqualTo(total);
 
         // add a failure and get/reset.
         final long duration3 = 123456L;
@@ -136,16 +128,16 @@ public class QuickPulseDataCollectorTests {
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
-        assertEquals(3, counters.rdds);
-        assertEquals(1, counters.unsuccessfulRdds);
+        assertThat(counters.rdds).isEqualTo(3);
+        assertThat(counters.unsuccessfulRdds).isEqualTo(1);
         total += duration3;
-        assertEquals(total, counters.rddsDuration, Math.ulp(total));
+        assertThat(counters.rddsDuration).isEqualTo(total);
 
         assertCountersReset(QuickPulseDataCollector.INSTANCE.peek());
     }
 
     @Test
-    public void exceptionTelemetryIsCounted() {
+    void exceptionTelemetryIsCounted() {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
@@ -154,49 +146,49 @@ public class QuickPulseDataCollectorTests {
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
-        assertEquals(1, counters.exceptions, Math.ulp(1.0));
+        assertThat(counters.exceptions).isEqualTo(1);
 
         telemetry = createExceptionTelemetry(new Exception());
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
-        assertEquals(2, counters.exceptions, Math.ulp(2.0));
+        assertThat(counters.exceptions).isEqualTo(2);
 
         assertCountersReset(QuickPulseDataCollector.INSTANCE.peek());
     }
 
     @Test
-    public void encodeDecodeIsIdentity() {
+    void encodeDecodeIsIdentity() {
         final long count = 456L;
         final long duration = 112233L;
-        final long encoded = Counters.encodeCountAndDuration(count, duration);
-        final CountAndDuration inputs = Counters.decodeCountAndDuration(encoded);
-        assertEquals(count, inputs.count);
-        assertEquals(duration, inputs.duration);
+        long encoded = Counters.encodeCountAndDuration(count, duration);
+        CountAndDuration inputs = Counters.decodeCountAndDuration(encoded);
+        assertThat(inputs.count).isEqualTo(count);
+        assertThat(inputs.duration).isEqualTo(duration);
     }
 
-    private static TelemetryItem createRequestTelemetry(String name, Date timestamp, long duration, String responseCode, boolean success) {
+    private static TelemetryItem createRequestTelemetry(String name, Date timestamp, long durationMillis, String responseCode, boolean success) {
         TelemetryItem telemetry = new TelemetryItem();
         RequestData data = new RequestData();
-        TelemetryClient.getActive().initRequestTelemetry(telemetry, data);
+        new TelemetryClient().initRequestTelemetry(telemetry, data);
 
         data.setName(name);
-        data.setDuration(getFormattedDuration(duration));
+        data.setDuration(FormattedDuration.fromMillis(durationMillis));
         data.setResponseCode(responseCode);
         data.setSuccess(success);
 
-        telemetry.setTime(getFormattedTime(timestamp.getTime()));
+        telemetry.setTime(FormattedTime.fromDate(timestamp));
         return telemetry;
     }
 
     private static TelemetryItem createRemoteDependencyTelemetry(String name, String command, long durationMillis, boolean success) {
         TelemetryItem telemetry = new TelemetryItem();
         RemoteDependencyData data = new RemoteDependencyData();
-        TelemetryClient.getActive().initRemoteDependencyTelemetry(telemetry, data);
+        new TelemetryClient().initRemoteDependencyTelemetry(telemetry, data);
 
         data.setName(name);
         data.setData(command);
-        data.setDuration(getFormattedDuration(durationMillis));
+        data.setDuration(FormattedDuration.fromMillis(durationMillis));
         data.setSuccess(success);
 
         return telemetry;
@@ -205,25 +197,24 @@ public class QuickPulseDataCollectorTests {
     private static TelemetryItem createExceptionTelemetry(Exception exception) {
         TelemetryItem telemetry = new TelemetryItem();
         TelemetryExceptionData data = new TelemetryExceptionData();
-        TelemetryClient.getActive().initExceptionTelemetry(telemetry, data);
+        new TelemetryClient().initExceptionTelemetry(telemetry, data);
 
         data.setExceptions(getExceptions(exception));
 
         return telemetry;
     }
 
-    private void assertCountersReset(FinalCounters counters) {
-        assertNotNull(counters);
+    private static void assertCountersReset(FinalCounters counters) {
+        assertThat(counters).isNotNull();
 
-        assertEquals(0, counters.rdds);
-        assertEquals(0.0, counters.rddsDuration, Math.ulp(0.0));
-        assertEquals(0, counters.unsuccessfulRdds);
+        assertThat(counters.rdds).isEqualTo(0);
+        assertThat(counters.rddsDuration).isEqualTo(0);
+        assertThat(counters.unsuccessfulRdds).isEqualTo(0);
 
-        assertEquals(0, counters.requests);
-        assertEquals(0.0, counters.requestsDuration, Math.ulp(0.0));
-        assertEquals(0, counters.unsuccessfulRequests);
+        assertThat(counters.requests).isEqualTo(0);
+        assertThat(counters.requestsDuration).isEqualTo(0);
+        assertThat(counters.unsuccessfulRequests).isEqualTo(0);
 
-        // FIXME exceptions is stored as a double but counted as an int; is that correct?
-        assertEquals(0, (int) counters.exceptions);
+        assertThat(counters.exceptions).isEqualTo(0);
     }
 }

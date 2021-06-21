@@ -17,8 +17,6 @@ import org.slf4j.LoggerFactory;
  *   This class is a concrete implementation of {@link HeartBeatPayloadProviderInterface}
  *   It enables setting SDK Metadata to heartbeat payload.
  * </p>
- *
- * @author Dhaval Doshi
  */
 public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProviderInterface {
 
@@ -56,12 +54,12 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
-  public Callable<Boolean> setDefaultPayload(final List<String> disableFields,
-      final HeartBeatProviderInterface provider) {
+  public Callable<Boolean> setDefaultPayload(List<String> disableFields,
+                                             HeartBeatProviderInterface provider) {
     return new Callable<Boolean>() {
 
       final Set<String> enabledProperties = MiscUtils.except(defaultFields, disableFields);
@@ -93,7 +91,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
                 break;
             }
           }
-          catch (Exception e) {
+          catch (RuntimeException e) {
             if (logger.isWarnEnabled()) {
               logger.warn("Failed to obtain heartbeat property", e);
             }
@@ -108,7 +106,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * This method initializes the collection with Default Properties of this provider.
    * @param defaultFields collection to hold default properties.
    */
-  private void initializeDefaultFields(Set<String> defaultFields) {
+  private static void initializeDefaultFields(Set<String> defaultFields) {
     defaultFields.add(JRE_VERSION);
     defaultFields.add(SDK_VERSION);
     defaultFields.add(OS_VERSION);
@@ -119,7 +117,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * Gets the JDK version being used by the application
    * @return String representing JDK Version
    */
-  private String getJreVersion() {
+  private static String getJreVersion() {
     return System.getProperty("java.version");
   }
 
@@ -128,7 +126,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * @return returns string prefixed with "java" representing the Application Insights Java
    * SDK version.
    */
-  private String getSdkVersion() {
+  private static String getSdkVersion() {
     return PropertyHelper.getQualifiedSdkVersionString();
   }
 
@@ -136,7 +134,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * Gets the OS version on which application is running.
    * @return String representing OS version
    */
-  private String getOsVersion() {
+  private static String getOsVersion() {
     return System.getProperty("os.name");
   }
 
@@ -144,7 +142,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * Returns the Unique GUID for the application's current session.
    * @return String representing GUID for each running session
    */
-  private String getProcessSessionId() {
+  private static String getProcessSessionId() {
     if (uniqueProcessId == null) {
       uniqueProcessId = UUID.randomUUID();
     }
