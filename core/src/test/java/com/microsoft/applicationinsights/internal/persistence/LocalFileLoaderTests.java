@@ -9,13 +9,18 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOLDER;
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
@@ -147,6 +152,43 @@ public class LocalFileLoaderTests {
 
         byte[] rawBytesFromDisk = LocalFileLoader.get().loadTelemetriesFromDisk();
         assertEquals(text, new String(rawBytesFromDisk));
+    }
+
+    @Test
+    public void testWriteGzipRawByte() throws IOException {
+        String text = "hello world";
+
+        // gzip
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try (GZIPOutputStream out = new GZIPOutputStream(byteArrayOutputStream)) {
+            out.write(text.getBytes());
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            byteArrayOutputStream.close();
+        }
+
+        // write gzipped bytes[] to disk
+        byte[] result = byteArrayOutputStream.toByteArray();
+        LocalFileWriter writer = new LocalFileWriter();
+        writer.writeToDisk(result);
+
+        // read gzipped byte[] from disk
+        byte[] persistedBytes = LocalFileLoader.get().loadTelemetriesFromDisk();
+
+        // ungzip
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(result);
+        byte[] ungzip = new byte[persistedBytes.length];
+        int read = 0;
+        try (GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream)) {
+            read = gzipInputStream.read(ungzip, 0, ungzip.length);
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            inputStream.close();
+        }
+
+        assertEquals(text, new String(Arrays.copyOf(ungzip, read)));
     }
 
     private void verifyTelemetryName(int index, String actualName) {
