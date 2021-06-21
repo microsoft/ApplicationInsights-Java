@@ -125,7 +125,7 @@ class RpConfigurationPollingTest {
         assertThat(getCurrentSamplingPercentage()).isEqualTo(10);
     }
 
-    private double getCurrentSamplingPercentage() {
+    private static double getCurrentSamplingPercentage() {
         SpanContext spanContext = SpanContext.create(
                 "12341234123412341234123412341234",
                 "1234123412341234",

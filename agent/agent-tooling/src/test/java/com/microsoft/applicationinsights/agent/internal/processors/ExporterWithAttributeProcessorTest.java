@@ -60,7 +60,7 @@ class ExporterWithAttributeProcessorTest {
         config.type = ProcessorType.ATTRIBUTE;
         config.id = "noAction";
 
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> new ExporterWithAttributeProcessor(config, mockExporter))
+        assertThatThrownBy(() -> new ExporterWithAttributeProcessor(config, mockExporter))
                 .isInstanceOf(FriendlyException.class);
     }
 

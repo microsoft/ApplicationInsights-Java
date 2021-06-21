@@ -21,7 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-@SuppressWarnings("SystemOut")
+// TODO (trask) revisit these suppressions
+@SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed", "CatchAndPrintStackTrace", "UnusedException", "EmptyCatch"})
 public class GcProcessRunner {
     private InputStream errorStream;
     private InputStream stdOut;
@@ -169,7 +170,7 @@ public class GcProcessRunner {
     /**
      * Forks a process running the GC event generator
      */
-    private Process startGcProcess(int port, String gcArg, int heapSizeInMb) throws IOException {
+    private Process startGcProcess(int port, String gcArg, int heapSizeInMb) throws IOException, InterruptedException {
         String javaCommand = detectJava();
 
         String classPath = detectClasspath();
@@ -199,11 +200,7 @@ public class GcProcessRunner {
 
         stdOutData = "";
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(1000);
         return process;
     }
 

@@ -587,7 +587,7 @@ class ConfigurationTest {
                 .isInstanceOf(JsonDataException.class);
     }
 
-    private List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {
+    private static List<JmxMetric> parseJmxMetricsJson(String json) throws IOException {
         Moshi moshi = MoshiBuilderFactory.createBasicBuilder();
         Type listOfJmxMetrics = Types.newParameterizedType(List.class, JmxMetric.class);
         JsonReader reader = JsonReader.of(new Buffer().writeUtf8(json));

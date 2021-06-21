@@ -42,6 +42,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+// TODO (trask) is system out useful here?
+@SuppressWarnings("SystemOut")
 class EtwProviderTests {
     private static final String FOLDER_NAME = "EtwProviderTests";
     private static final File dllTempFolder = DllFileUtils.buildDllLocalPath(FOLDER_NAME);
@@ -73,16 +75,14 @@ class EtwProviderTests {
         String speriod = System.getProperty("ai.tests.etw.stats.period");
         long period = 2000; // default 2 seconds.
         if (speriod != null) {
-            try {
-                period = Long.parseLong(speriod);
-            } catch(Exception e) {
-                // ignore
-            }
+            period = Long.parseLong(speriod);
         }
         EVENT_STATS_TIMER_PERIOD_MILLISECONDS = period;
     }
 
-    private IpaVerbose createVerbose(String logger, String operation, String messageFormat, Object...messageArgs) {
+    // TODO (trask) revisit this suppression
+    @SuppressWarnings("UnusedVariable")
+    private static IpaVerbose createVerbose(String logger, String operation, String messageFormat, Object...messageArgs) {
         IpaVerbose rval = new IpaVerbose(PROTOTYPE);
         rval.setLogger(logger);
         rval.setMessageFormat(messageFormat);
@@ -90,7 +90,9 @@ class EtwProviderTests {
         return rval;
     }
 
-    private IpaInfo createInfo(String logger, String operation, String messageFormat, Object...messageArgs) {
+    // TODO (trask) revisit this suppression
+    @SuppressWarnings("UnusedVariable")
+    private static IpaInfo createInfo(String logger, String operation, String messageFormat, Object...messageArgs) {
         IpaInfo rval = new IpaInfo(PROTOTYPE);
         rval.setLogger(logger);
         rval.setMessageFormat(messageFormat);
@@ -98,25 +100,25 @@ class EtwProviderTests {
         return rval;
     }
 
-    private IpaError createError(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
+    private static IpaError createError(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
         IpaError rval = new IpaError(PROTOTYPE);
         populateEventWithException(rval, logger, operation, throwable, messageFormat, messageArgs);
         return rval;
     }
 
-    private IpaWarn createWarn(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
+    private static IpaWarn createWarn(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
         IpaWarn rval = new IpaWarn(PROTOTYPE);
         populateEventWithException(rval, logger, operation, throwable, messageFormat, messageArgs);
         return rval;
     }
 
-    private IpaCritical createCritical(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
+    private static IpaCritical createCritical(String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
         IpaCritical rval = new IpaCritical(PROTOTYPE);
         populateEventWithException(rval, logger, operation, throwable, messageFormat, messageArgs);
         return rval;
     }
 
-    private void populateEventWithException(IpaEtwEventErrorBase event, String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
+    private static void populateEventWithException(IpaEtwEventErrorBase event, String logger, String operation, Throwable throwable, String messageFormat, Object...messageArgs) {
         event.setLogger(logger);
         event.setOperation(operation);
         if (throwable != null) {
@@ -157,7 +159,7 @@ class EtwProviderTests {
         ep.writeEvent(otherWarn);
     }
 
-    private void longTestCheck() {
+    private static void longTestCheck() {
         assumeFalse("true".equalsIgnoreCase(System.getProperty("ai.etw.tests.long.disabled")), "Long tests disabled");
         assumeTrue("release".equalsIgnoreCase(System.getProperty("ai.etw.native.build")) ||
             !"true".equalsIgnoreCase(System.getProperty("ai.etw.native.verbose")),
@@ -209,7 +211,7 @@ class EtwProviderTests {
         }
     }
 
-    private void runLoopTest(int iterations) throws Exception {
+    private static void runLoopTest(int iterations) throws Exception {
         int verboseChance = 20;
         int warnChance = 10;
         int errorChance = 5;

@@ -148,7 +148,7 @@ class SamplingOverridesTest {
         assertThat(sampler.getOverride(attributes)).isNull();
     }
 
-    private SamplingOverride newOverride(float percentage, SamplingOverrideAttribute... attribute) {
+    private static SamplingOverride newOverride(float percentage, SamplingOverrideAttribute... attribute) {
         SamplingOverride override = new SamplingOverride();
         override.attributes = Arrays.asList(attribute);
         override.percentage = percentage;

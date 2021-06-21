@@ -78,7 +78,7 @@ dependencies {
 
 tasks.withType(JavaCompile) {
     options.release.set(8)
-    // options.compilerArgs.add("-Werror")
+    options.compilerArgs.add("-Werror")
 }
 
 tasks.withType(Checkstyle) {
