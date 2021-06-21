@@ -17,15 +17,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOLDER;
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.PERMANENT_FILE_EXTENSION;
-import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.getDefaultSubdirectory;
 import static org.junit.Assert.*;
 
 public class LocalFileLoaderTests {
 
     private static final String BYTE_BUFFERS_TEST_FILE = "read-transmission.txt";
     private static final ObjectMapper MAPPER = new ObjectMapper();
-    private static final File PERSISTED_FILE = new File(PersistenceHelper.getDefaultSubdirectory(), BYTE_BUFFERS_TEST_FILE);
+    private static final File PERSISTED_FILE = new File(DEFAULT_FOLDER, BYTE_BUFFERS_TEST_FILE);
 
     @Before
     public void setup() {
@@ -40,10 +40,6 @@ public class LocalFileLoaderTests {
         if(PERSISTED_FILE.exists()) {
             assertTrue(PERSISTED_FILE.delete());
         }
-
-        File subdirectory = getDefaultSubdirectory();
-        assertTrue(subdirectory.exists());
-        assertTrue(subdirectory.delete());
     }
 
     @Test
@@ -51,7 +47,7 @@ public class LocalFileLoaderTests {
         List<File> sourceList = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             String filename = System.currentTimeMillis() + "-" + UUID.randomUUID().toString().replaceAll("-", "") + PERMANENT_FILE_EXTENSION;
-            sourceList.add(new File(PersistenceHelper.getDefaultSubdirectory(), filename));
+            sourceList.add(new File(DEFAULT_FOLDER, filename));
             Thread.sleep(10);
         }
 
