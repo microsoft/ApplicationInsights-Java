@@ -15,6 +15,7 @@ final class PersistenceHelper {
 
     private static final Logger logger = LoggerFactory.getLogger(PersistenceHelper.class);
 
+    // 50MB per folder for all apps.
     private static final long MAX_FILE_SIZE_IN_BYTES = 52428800; // 50MB
     static final String PERMANENT_FILE_EXTENSION = ".trn";
     static final String TEMPORARY_FILE_EXTENSION = ".tmp";
