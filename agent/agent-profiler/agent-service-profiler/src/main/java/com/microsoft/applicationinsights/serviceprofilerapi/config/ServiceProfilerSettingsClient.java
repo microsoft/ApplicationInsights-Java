@@ -47,8 +47,6 @@ public class ServiceProfilerSettingsClient {
 
     /**
      * Pulls the latest settings. If they have not been modified empty is returned.
-     *
-     * @return
      */
     public Mono<ProfilerConfiguration> pullSettings() {
         try {
@@ -70,7 +68,7 @@ public class ServiceProfilerSettingsClient {
         }
     }
 
-    private ProfilerConfiguration toServiceProfilerConfiguration(String config) throws IOException {
+    private static ProfilerConfiguration toServiceProfilerConfiguration(String config) throws IOException {
         Moshi moshi = new Moshi.Builder()
                 .add(Date.class, new Rfc3339DateJsonAdapter())
                 .build();

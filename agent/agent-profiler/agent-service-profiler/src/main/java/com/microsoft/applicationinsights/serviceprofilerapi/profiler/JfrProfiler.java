@@ -69,7 +69,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     private FlightRecorderConnection flightRecorderConnection;
     private RecordingOptions recordingOptions;
 
-    private AlertConfiguration periodicConfig;
+    private final AlertConfiguration periodicConfig;
 
     private final Object activeRecordingLock = new Object();
     private Recording activeRecording = null;
@@ -90,7 +90,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         cpuRecordingConfiguration = getCpuProfileConfig(configuration);
     }
 
-    private RecordingConfiguration getMemoryProfileConfig(ServiceProfilerServiceConfig configuration) {
+    private static RecordingConfiguration getMemoryProfileConfig(ServiceProfilerServiceConfig configuration) {
         return getRecordingConfiguration(configuration.memoryTriggeredSettings(), REDUCED_MEMORY_PROFILE);
     }
 
@@ -98,7 +98,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         return getRecordingConfiguration(configuration.cpuTriggeredSettings(), REDUCED_CPU_PROFILE);
     }
 
-    private RecordingConfiguration getRecordingConfiguration(String triggeredSettings, String reducedProfile) {
+    private static RecordingConfiguration getRecordingConfiguration(String triggeredSettings, String reducedProfile) {
         if (triggeredSettings != null) {
             try {
                 ProfileTypes profile = ProfileTypes.valueOf(triggeredSettings);
@@ -129,6 +129,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
      * @throws IOException               Trouble communicating with MBean server
      * @throws InstanceNotFoundException The JVM does not support JFR, or experimental option is not enabled.
      */
+    @Override
     public boolean initialize(ProfileHandler profileHandler, ScheduledExecutorService scheduledExecutorService) throws IOException, InstanceNotFoundException {
         this.profileHandler = profileHandler;
         this.scheduledExecutorService = scheduledExecutorService;

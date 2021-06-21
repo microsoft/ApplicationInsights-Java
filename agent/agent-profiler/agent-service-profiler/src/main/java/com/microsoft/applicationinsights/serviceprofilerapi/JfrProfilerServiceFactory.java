@@ -5,7 +5,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
-import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipeline;
 import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;

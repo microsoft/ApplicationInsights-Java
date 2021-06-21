@@ -126,7 +126,7 @@ public class JfrProfilerService implements ProfilerService {
                                 config);
 
                 result.complete(this);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.error("Failed to initialise alert service", e);
             } catch (Error e) {
                 LOGGER.error("Failed to initialise alert service", e);
@@ -166,6 +166,7 @@ public class JfrProfilerService implements ProfilerService {
         };
     }
 
+    @Override
     public Profiler getProfiler() {
         return profiler;
     }

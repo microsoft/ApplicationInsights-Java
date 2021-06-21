@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.serviceprofilerapi.client;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.UUID;
 
@@ -114,7 +113,7 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
      */
     @Override
     public ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag)
-            throws UnsupportedCharsetException, ClientClosedException, IOException {
+            throws ClientClosedException, IOException {
 
         assertNotClosed();
 

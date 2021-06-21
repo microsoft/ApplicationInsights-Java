@@ -37,14 +37,14 @@ import java.util.regex.Pattern;
  *
  * <p>This class is intended for internal Java profiler use.
  */
-public class TimestampContract {
+public final class TimestampContract {
     // Cant use ISO_INSTANT as it does not pad the nanos to 7 figures
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.nX");
 
     public static String timestampToString(OffsetDateTime timestamp) {
         // This will give you an ISO 8601 compliant format and the use of UTC will
         // ensure that there are no issues with time zones etc.
-        ZonedDateTime utc = timestamp.atZoneSameInstant(ZoneId.of("Z"));
+        ZonedDateTime utc = timestamp.atZoneSameInstant(ZoneOffset.UTC);
         return utc.format(FORMATTER);
     }
 
@@ -78,4 +78,6 @@ public class TimestampContract {
         }
         return timestamp;
     }
+
+    private TimestampContract() {}
 }

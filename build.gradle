@@ -28,7 +28,9 @@ plugins {
 
     id "org.owasp.dependencycheck" version "6.1.5"
     id "com.diffplug.spotless" version "5.11.1"
+    // TODO (trask) remove spotbugs once we switch on errorprone to fail the build
     id "com.github.spotbugs" version "4.7.0" apply false
+    id "net.ltgt.errorprone" version "1.3.0" apply false
 
     id "com.github.ben-manes.versions" version "0.38.0"
 }
@@ -94,5 +96,54 @@ allprojects {
     tasks.withType(Jar) {
         from "${rootProject.projectDir}/NOTICE"
         from "${rootProject.projectDir}/LICENSE"
+    }
+
+    plugins.withId("net.ltgt.errorprone") {
+        dependencies {
+            errorprone "com.google.errorprone:error_prone_core:2.7.1"
+        }
+
+        tasks.withType(JavaCompile).configureEach {
+            options.errorprone {
+                enabled = rootProject.findProperty("disableErrorProne") != "true"
+                disableWarningsInGeneratedCode = true
+                allDisabledChecksAsWarnings = true
+
+                excludedPaths = ".*/build/generated/.*"
+
+                // TEMPORARILY disabled until auto-formatting
+                disable("WildcardImport")
+                disable("BadImport")
+                disable("BooleanParameter")
+
+                // Doesn't work well with Java 8
+                disable("FutureReturnValueIgnored")
+
+                // Require Guava
+                disable("AutoValueImmutableFields")
+                disable("StringSplitter")
+                disable("ImmutableMemberCollection")
+
+                // Don't currently use this (to indicate a local variable that's mutated) but could
+                // consider for future.
+                disable("Var")
+
+                // Don't support Android without desugar
+                disable("AndroidJdkLibsChecker")
+                disable("Java7ApiChecker")
+                disable("StaticOrDefaultInterfaceMethod")
+
+                // Common to avoid an allocation. Revisit if it's worth opt-in suppressing instead of
+                // disabling entirely.
+                disable("MixedMutabilityReturnType")
+
+                // Limits API possibilities
+                disable("NoFunctionalReturnType")
+
+                // We don't use tools that recognize.
+                disable("InlineMeSuggester")
+                disable("DoNotCallSuggester")
+            }
+        }
     }
 }

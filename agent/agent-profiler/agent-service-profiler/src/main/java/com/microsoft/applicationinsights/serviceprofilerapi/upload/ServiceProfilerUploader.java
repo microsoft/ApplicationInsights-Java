@@ -199,7 +199,7 @@ public class ServiceProfilerUploader {
                 .doFinally((done) -> LOGGER.info("upload done"));
     }
 
-    private void close(File zippedTraceFile) {
+    private static void close(File zippedTraceFile) {
         try {
             deletePathRecursive(zippedTraceFile);
         } catch (Exception e) {
@@ -261,7 +261,7 @@ public class ServiceProfilerUploader {
     /**
      * Zip up profile
      */
-    private File createZippedTraceFile(UploadContext uploadContext) throws IOException {
+    private static File createZippedTraceFile(UploadContext uploadContext) throws IOException {
         File traceFile = uploadContext.getTraceFile();
         LOGGER.debug("Trace file: {}", traceFile.toString());
 
@@ -275,14 +275,14 @@ public class ServiceProfilerUploader {
     }
 
     // Deleting file recursively.
-    private void deletePathRecursive(File fileToDelete) throws IOException {
+    private static void deletePathRecursive(File fileToDelete) throws IOException {
         if (fileToDelete != null && fileToDelete.exists()) {
             deletePathRecursive(fileToDelete.toPath());
         }
     }
 
     // Deleting file recursively.
-    private void deletePathRecursive(Path path) throws IOException {
+    private static void deletePathRecursive(Path path) throws IOException {
         if (path != null) {
             Files
                     .walk(path)

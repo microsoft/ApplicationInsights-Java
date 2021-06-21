@@ -22,7 +22,6 @@ package com.microsoft.applicationinsights.serviceprofilerapi.client;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.UUID;
 
@@ -36,7 +35,7 @@ public interface ServiceProfilerClientV2 {
     BlobAccessPass getUploadAccess(UUID profileId) throws URISyntaxException, IOException, ClientClosedException;
 
     ArtifactAcceptedResponse reportUploadFinish(UUID profileId, String etag)
-            throws URISyntaxException, UnsupportedCharsetException, ClientClosedException, IOException;
+            throws URISyntaxException, ClientClosedException, IOException;
 
     String getSettings(Date oldTimeStamp)
             throws IOException, URISyntaxException, ClientClosedException;
