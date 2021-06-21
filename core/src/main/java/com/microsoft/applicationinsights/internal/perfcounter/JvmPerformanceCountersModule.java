@@ -69,8 +69,6 @@ import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryU
  *     </PerformanceCounters>
  * }
  * </pre>
- *
- * Created by gupele on 8/7/2016.
  */
 public final class JvmPerformanceCountersModule extends AbstractPerformanceCounterModule implements PerformanceCounterConfigurationAware {
 

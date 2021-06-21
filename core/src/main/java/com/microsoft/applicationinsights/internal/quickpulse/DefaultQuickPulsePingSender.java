@@ -33,9 +33,6 @@ import com.azure.core.http.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 12/12/2016.
- */
 final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulsePingSender.class);

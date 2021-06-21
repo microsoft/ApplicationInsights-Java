@@ -18,8 +18,6 @@ import java.util.Map;
  *   when ApplicationInsights SDK boots up. It is used to transmit diagnostic heartbeats to
  *   Application Insights backend.
  * </p>
- *
- * @author Dhaval Doshi
  */
 public class HeartBeatModule implements TelemetryModule {
 

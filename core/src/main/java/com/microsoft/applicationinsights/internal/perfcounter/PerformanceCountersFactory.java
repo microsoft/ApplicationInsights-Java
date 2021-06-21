@@ -26,8 +26,6 @@ import java.util.Collection;
 /**
  * Defines the interface that concrete factories should follow.
  * The major method is the one that will be able create the needed Performance Counters.
- *
- * Created by gupele on 3/3/2015.
  */
 public interface PerformanceCountersFactory {
     /**

@@ -27,9 +27,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 
-/**
- * Created by gupele on 12/15/2016.
- */
 class DefaultQuickPulseCoordinatorTest {
     @Test
     void testOnlyPings() throws InterruptedException {

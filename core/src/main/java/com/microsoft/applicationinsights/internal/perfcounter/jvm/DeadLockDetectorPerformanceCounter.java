@@ -42,8 +42,6 @@ import org.slf4j.LoggerFactory;
  * A metric with value 0 is sent when there are no blocked threads,
  * otherwise the number of detected blocked threads is sent with a
  * dimension that holds information like thread id and minimal stack traces as trace telemetries
- *
- * Created by gupele on 8/7/2016.
  */
 public final class DeadLockDetectorPerformanceCounter implements PerformanceCounter {
 

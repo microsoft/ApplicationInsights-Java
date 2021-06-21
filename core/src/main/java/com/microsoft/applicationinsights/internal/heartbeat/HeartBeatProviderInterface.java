@@ -15,8 +15,6 @@ import java.util.concurrent.TimeUnit;
  *
  * Default concrete Implementation {@link com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProvider}
  * </p>
- *
- * @author Dhaval Doshi
  */
 public interface HeartBeatProviderInterface {
 

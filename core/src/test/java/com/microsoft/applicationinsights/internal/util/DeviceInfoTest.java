@@ -27,9 +27,6 @@ import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Created by amnonsh on 2/10/2015.
- */
 class DeviceInfoTest {
 
     @Test

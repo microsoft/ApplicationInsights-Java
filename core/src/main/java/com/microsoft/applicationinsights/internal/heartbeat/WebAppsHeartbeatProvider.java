@@ -14,8 +14,6 @@ import org.slf4j.LoggerFactory;
  *   This class is a concrete implementation of {@link HeartBeatPayloadProviderInterface}
  *   It enables setting Web-apps Metadata to heartbeat payload.
  * </p>
- *
- * @author Dhaval Doshi
  */
 public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterface {
 

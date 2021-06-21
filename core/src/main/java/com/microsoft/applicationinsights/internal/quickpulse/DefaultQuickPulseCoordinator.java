@@ -25,9 +25,6 @@ import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 12/14/2016.
- */
 final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulseCoordinator.class);

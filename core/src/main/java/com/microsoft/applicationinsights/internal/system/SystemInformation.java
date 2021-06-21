@@ -29,9 +29,6 @@ import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 3/3/2015.
- */
 public enum SystemInformation {
     INSTANCE;
 

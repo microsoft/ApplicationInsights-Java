@@ -35,9 +35,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.CpuPerformanceCounterCalculator;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 12/5/2016.
- */
 public enum QuickPulseDataCollector {
     INSTANCE;
 

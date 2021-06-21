@@ -31,9 +31,6 @@ import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 
-/**
- * Created by gupele on 12/12/2016.
- */
 final class QuickPulseNetworkHelper {
     private final static long TICKS_AT_EPOCH = 621355968000000000L;
     private static final String HEADER_TRANSMISSION_TIME = "x-ms-qps-transmission-time";

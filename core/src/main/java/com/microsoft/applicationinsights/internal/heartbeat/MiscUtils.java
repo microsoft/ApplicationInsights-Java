@@ -6,8 +6,6 @@ import java.util.Set;
 
 /**
  * This class contains some misc. functions used in heartbeat module.
- *
- * @author Dhaval Doshi
  */
 public class MiscUtils {
     private MiscUtils(){}

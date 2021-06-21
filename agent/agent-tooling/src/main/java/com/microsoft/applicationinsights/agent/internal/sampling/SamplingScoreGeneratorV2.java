@@ -5,7 +5,6 @@ import java.util.Random;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Created by Dhaval Doshi Oct 2017
  * This class generates the sample using the random number generator.
  * It also contains the logic to preserve the correlated telemetry items.
  */

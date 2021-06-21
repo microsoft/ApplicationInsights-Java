@@ -6,8 +6,6 @@ import java.util.concurrent.Callable;
 
 /**
  * Container for storing default payload and it's associated helpers.
- *
- * @author Dhaval Doshi
  */
 public class HeartbeatDefaultPayload {
 

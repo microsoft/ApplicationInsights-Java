@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-/**
- * Created by gupele on 12/15/2016.
- */
 final class QuickPulseCoordinatorInitDataBuilder {
     private final static long DEFAULT_WAIT_BETWEEN_PING_IN_MS = 5000;
     private final static long DEFAULT_WAIT_BETWEEN_POSTS_IN_MS = 1000;

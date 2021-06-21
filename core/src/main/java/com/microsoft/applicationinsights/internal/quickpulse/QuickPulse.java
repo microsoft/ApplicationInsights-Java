@@ -35,9 +35,6 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.azure.core.http.HttpRequest;
 import com.microsoft.applicationinsights.TelemetryClient;
 
-/**
- * Created by gupele on 12/4/2016.
- */
 public enum QuickPulse {
     INSTANCE;
 

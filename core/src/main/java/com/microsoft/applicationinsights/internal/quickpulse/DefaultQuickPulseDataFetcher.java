@@ -32,9 +32,6 @@ import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 12/12/2016.
- */
 final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultQuickPulseDataFetcher.class);

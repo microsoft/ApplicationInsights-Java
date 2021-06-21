@@ -27,9 +27,6 @@ import com.azure.core.http.HttpResponse;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
-/**
- * Created by gupele on 12/12/2016.
- */
 final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
 
     private final QuickPulseNetworkHelper networkHelper = new QuickPulseNetworkHelper();

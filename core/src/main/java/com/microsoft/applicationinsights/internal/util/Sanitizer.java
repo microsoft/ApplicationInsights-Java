@@ -26,8 +26,6 @@ import com.microsoft.applicationinsights.common.Strings;
 import java.net.URI;
 
 /**
- * Created by gupele on 1/7/2015.
- *
  * Most of the methods of this class are now obsolete except URL methods which will
  * be moved soon.
  */

@@ -3,9 +3,6 @@ package com.microsoft.applicationinsights.internal.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 5/10/2015.
- */
 public final class LimitsEnforcer {
 
     private static final Logger logger = LoggerFactory.getLogger(LimitsEnforcer.class);

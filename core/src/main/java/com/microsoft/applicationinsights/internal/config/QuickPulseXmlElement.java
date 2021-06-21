@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-/**
- * Created by gupele on 12/13/2016.
- */
 public class QuickPulseXmlElement {
 
     private boolean enabled = true;

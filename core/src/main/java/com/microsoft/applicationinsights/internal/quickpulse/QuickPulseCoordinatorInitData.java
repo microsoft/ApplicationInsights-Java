@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.quickpulse;
 
-/**
- * Created by gupele on 12/15/2016.
- */
 final class QuickPulseCoordinatorInitData {
     public final QuickPulsePingSender pingSender;
     public final QuickPulseDataFetcher dataFetcher;

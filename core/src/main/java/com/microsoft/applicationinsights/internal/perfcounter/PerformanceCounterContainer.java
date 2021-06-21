@@ -46,8 +46,6 @@ import org.slf4j.LoggerFactory;
  * The user of this class can add (register), remove (unregister) a performance counter while the container is working.
  * <p>
  * The container will be stopped automatically when the application exists.
- * <p>
- * Created by gupele on 3/3/2015.
  */
 public enum PerformanceCounterContainer {
     INSTANCE;

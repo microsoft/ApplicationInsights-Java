@@ -29,8 +29,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The class will create the 'built-in'/default performance counters.
- *
- * Created by gupele on 3/3/2015.
  */
 final class ProcessBuiltInPerformanceCountersFactory implements PerformanceCountersFactory {
 

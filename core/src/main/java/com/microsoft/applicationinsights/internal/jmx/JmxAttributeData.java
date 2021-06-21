@@ -26,8 +26,6 @@ package com.microsoft.applicationinsights.internal.jmx;
  * The display name
  * The name of the attribute
  * The type of the attribute
- *
- * Created by gupele on 3/15/2015.
  */
 public final class JmxAttributeData {
     public final String metricName;

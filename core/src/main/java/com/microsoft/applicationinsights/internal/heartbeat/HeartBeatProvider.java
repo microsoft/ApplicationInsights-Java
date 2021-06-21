@@ -24,8 +24,6 @@ import java.util.concurrent.TimeUnit;
  *  Concrete implementation of Heartbeat functionality. This class implements
  *  {@link com.microsoft.applicationinsights.internal.heartbeat.HeartBeatProviderInterface}
  * </p>
- *
- * @author Dhaval Doshi
  */
 public class HeartBeatProvider implements HeartBeatProviderInterface {
 

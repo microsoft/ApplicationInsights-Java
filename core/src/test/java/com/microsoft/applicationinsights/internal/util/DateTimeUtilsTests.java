@@ -7,9 +7,6 @@ import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Created by yonisha on 5/26/2015.
- */
 class DateTimeUtilsTests {
 
     @Test

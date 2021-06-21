@@ -33,8 +33,6 @@ import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelem
 
 /**
  * The class reports GC related data
- *
- * Created by gupele on 8/8/2016.
  */
 public final class GCPerformanceCounter implements PerformanceCounter {
     public final static String NAME = "GC";

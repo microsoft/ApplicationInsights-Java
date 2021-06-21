@@ -28,9 +28,6 @@ import org.mockito.Mockito;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-/**
- * Created by gupele on 12/15/2016.
- */
 class QuickPulseNetworkHelperTest {
     @Test
     void testIsSuccessWith200() {

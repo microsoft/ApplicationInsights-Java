@@ -34,8 +34,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Utililty methods for dealing with reflection
- *
- * Created by gupele on 8/7/2016.
  */
 public final class ReflectionUtils {
 

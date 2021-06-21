@@ -13,8 +13,6 @@ import java.util.concurrent.Callable;
  *   The default concrete implementations are {@link DefaultHeartBeatPropertyProvider}
  *   and {@link WebAppsHeartbeatProvider}
  * </p>
- *
- * @author Dhaval Doshi
  */
 public interface HeartBeatPayloadProviderInterface {
 

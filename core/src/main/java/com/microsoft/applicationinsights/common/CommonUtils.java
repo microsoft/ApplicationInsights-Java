@@ -26,7 +26,6 @@ import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Created by oriy on 11/2/2016. */
 public class CommonUtils {
 
   private static final Logger logger = LoggerFactory.getLogger(CommonUtils.class);

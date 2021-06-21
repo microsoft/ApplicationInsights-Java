@@ -31,9 +31,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Created by gupele on 12/22/2014.
- */
 public final class ThreadPoolUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ThreadPoolUtils.class);

@@ -33,8 +33,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The class will create dedicated Jvm performance counters, unless disabled by user in the configuration file
- * <p>
- * Created by gupele on 8/8/2016.
  */
 public class JvmPerformanceCountersFactory implements PerformanceCountersFactory {
 

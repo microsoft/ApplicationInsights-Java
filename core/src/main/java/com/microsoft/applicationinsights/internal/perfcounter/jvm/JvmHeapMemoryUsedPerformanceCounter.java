@@ -33,8 +33,6 @@ import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelem
 
 /**
  * The class will create a metric telemetry for capturing the Jvm's heap memory usage
- *
- * Created by gupele on 8/8/2016.
  */
 public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
 

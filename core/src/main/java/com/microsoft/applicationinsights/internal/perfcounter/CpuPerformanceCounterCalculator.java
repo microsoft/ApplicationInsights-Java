@@ -30,10 +30,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 
-
-/**
- * Created by gupele on 12/12/2016.
- */
 public final class CpuPerformanceCounterCalculator {
 
     private static final Logger logger = LoggerFactory.getLogger(CpuPerformanceCounterCalculator.class);
