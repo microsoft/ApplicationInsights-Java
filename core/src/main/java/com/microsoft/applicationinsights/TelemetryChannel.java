@@ -94,19 +94,14 @@ public class TelemetryChannel {
     List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
         ByteBufferOutputStream out = new ByteBufferOutputStream(byteBufferPool);
 
-        try (GZIPOutputStream gzipOut = new GZIPOutputStream(out)) {
-            for (Iterator<TelemetryItem> i = telemetryItems.iterator(); i.hasNext(); ) {
-                mapper.writeValue(gzipOut, i.next());
-                if (i.hasNext()) {
-                    gzipOut.write('\n');
-                }
+        for (Iterator<TelemetryItem> i = telemetryItems.iterator(); i.hasNext();) {
+            mapper.writeValue(out, i.next());
+            if (i.hasNext()) {
+                out.write('\n');
             }
-        } catch (IOException e) {
-            byteBufferPool.offer(out.getByteBuffers());
-            throw e;
         }
 
-        out.close();
+        out.close(); // closing ByteBufferOutputStream is a no-op, but this line makes LGTM happy
 
         List<ByteBuffer> byteBuffers = out.getByteBuffers();
         for (ByteBuffer byteBuffer : byteBuffers) {
