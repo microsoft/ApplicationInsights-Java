@@ -77,6 +77,10 @@
         <Method name="sendJFRFile" />
     </Match>
     <Match>
+        <Bug pattern="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD" />
+        <Class name="com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient" />
+    </Match>
+    <Match>
         <!-- These rules are fine to skip. -->
         <Or>
             <Bug pattern="UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD" />
