@@ -8,6 +8,7 @@ import com.azure.core.http.policy.RetryPolicy;
 import com.azure.core.util.tracing.Tracer;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
@@ -94,11 +95,16 @@ public class TelemetryChannel {
     List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
         ByteBufferOutputStream out = new ByteBufferOutputStream(byteBufferPool);
 
-        for (Iterator<TelemetryItem> i = telemetryItems.iterator(); i.hasNext();) {
-            mapper.writeValue(out, i.next());
-            if (i.hasNext()) {
-                out.write('\n');
+        try (JsonGenerator jg = mapper.createGenerator(new GZIPOutputStream(out))) {
+            for (Iterator<TelemetryItem> i = telemetryItems.iterator(); i.hasNext();) {
+                mapper.writeValue(jg, i.next());
+                if (i.hasNext()) {
+                    jg.writeRaw('\n');
+                }
             }
+        } catch (IOException e) {
+            byteBufferPool.offer(out.getByteBuffers());
+            throw e;
         }
 
         out.close(); // closing ByteBufferOutputStream is a no-op, but this line makes LGTM happy
@@ -138,6 +144,7 @@ public class TelemetryChannel {
         // TODO(trask)
         //  not setting User-Agent header at all would be a better option, but haven't figured out how to do that yet
         request.setHeader("User-Agent", "");
+        request.setHeader("Content-Encoding", "gzip");
 
         // TODO(trask) subscribe with listener
         //  * retry on first failure (may not need to worry about this if retry policy in pipeline already, see above)
