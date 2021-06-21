@@ -14,12 +14,6 @@ subprojects {
 
     sourceSets {
         smokeTest {
-            java {
-                // compileClasspath += main.output + test.output
-                // runtimeClasspath += main.output + test.output
-                srcDir file("src/smokeTest/java")
-            }
-            resources.srcDir file("src/smokeTest/resources")
         }
     }
 
