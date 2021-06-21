@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -59,7 +60,7 @@ public class LocalFileLoader {
 
     // Load List<ByteBuffer> from persisted files on disk in FIFO order.
     byte[] loadTelemetriesFromDisk() {
-        String filenameToBeLoaded = loadOldestFromCache();
+        String filenameToBeLoaded = persistedFilesCache.poll();
         if (filenameToBeLoaded == null) {
             return null;
         }
@@ -94,7 +95,7 @@ public class LocalFileLoader {
     }
 
     List<File> sortPersistedFiles(Collection<File> files) {
-        List<File> result = (List<File>) files;
+        List<File> result = new ArrayList<>(files);
         Collections.sort(result, new Comparator<File>() {
             @Override
             public int compare(File o1, File o2) {
