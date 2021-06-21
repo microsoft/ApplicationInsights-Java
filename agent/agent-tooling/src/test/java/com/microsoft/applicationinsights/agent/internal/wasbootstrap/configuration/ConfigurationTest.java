@@ -76,7 +76,7 @@ class ConfigurationTest {
         assertThat(configuration.customDimensions.size()).isEqualTo(2);
         assertThat(configuration.customDimensions.get("some key")).isEqualTo("abc");
         assertThat(configuration.customDimensions.get("another key")).isEqualTo("def");
-        assertThat(configuration.sampling.percentage).isEqualTo(10.0);
+        assertThat(configuration.sampling.percentage).isEqualTo(10.0f);
         assertThat(configuration.jmxMetrics.size()).isEqualTo(3);
         assertThat(configuration.jmxMetrics.get(0).name).isEqualTo("Thread Count");
         assertThat(configuration.jmxMetrics.get(0).objectName).isEqualTo("java.lang:type=Threading");
@@ -342,7 +342,7 @@ class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertThat(configuration.sampling.percentage).isEqualTo(0.25);
+        assertThat(configuration.sampling.percentage).isEqualTo(0.25f);
     }
 
     @Test
