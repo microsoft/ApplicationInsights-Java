@@ -76,9 +76,7 @@ public class ServiceProfilerConfigMonitorServiceTest {
         ScheduledExecutorService executorService = Mockito.mock(ScheduledExecutorService.class);
 
         Mockito.doAnswer(invocation -> {
-            job.accept(invocation
-                    .getArgumentAt(0, Runnable.class));
-
+            job.accept(invocation.getArgument(0, Runnable.class));
             return null;
         }).when(executorService).scheduleAtFixedRate(Mockito.any(Runnable.class), Mockito.anyInt(), Mockito.anyInt(), Mockito.any(TimeUnit.class));
         return executorService;

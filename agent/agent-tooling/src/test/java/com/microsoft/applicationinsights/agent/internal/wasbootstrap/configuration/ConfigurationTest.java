@@ -23,12 +23,10 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.CharSource;
-import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.PreviewConfiguration;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ProcessorActionType;
@@ -38,6 +36,8 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import com.microsoft.applicationinsights.internal.authentication.AuthenticationType;
 import com.squareup.moshi.*;
 import okio.Buffer;
+import okio.BufferedSource;
+import okio.Okio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
@@ -58,10 +58,13 @@ public class ConfigurationTest {
     }
 
     private static Configuration loadConfiguration(String resourceName) throws IOException {
-        CharSource json = Resources.asCharSource(Resources.getResource(resourceName), Charsets.UTF_8);
         Moshi moshi = MoshiBuilderFactory.createBuilderWithAdaptor();
         JsonAdapter<Configuration> jsonAdapter = moshi.adapter(Configuration.class).failOnUnknown();
-        return jsonAdapter.fromJson(json.read());
+
+        BufferedSource buffer =
+                Okio.buffer(Okio.source(ConfigurationTest.class.getClassLoader().getResourceAsStream(resourceName)));
+
+        return jsonAdapter.fromJson(buffer.readUtf8());
     }
 
     @Test

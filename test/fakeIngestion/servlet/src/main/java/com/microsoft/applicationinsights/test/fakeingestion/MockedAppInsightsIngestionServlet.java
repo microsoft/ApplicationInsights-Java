@@ -7,7 +7,6 @@ import com.google.gson.JsonSyntaxException;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.JsonHelper;
 
-import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -39,7 +38,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     private static final String appid = "DUMMYAPPID";
 
 
-    @GuardedBy("multimapLock")
+    // guarded by multimapLock
     private final ListMultimap<String, Envelope> type2envelope;
     private final List<Predicate<Envelope>> filters;
 

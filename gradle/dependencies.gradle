@@ -38,8 +38,6 @@ ext {
             mockito                          : "3.11.1",
             logcaptor                        : "2.5.0",
 
-            aiLegacySdk                      : "2.6.0",
-
-            guava                            : "30.1.1-jre"
+            aiLegacySdk                      : "2.6.0"
     ]
 }

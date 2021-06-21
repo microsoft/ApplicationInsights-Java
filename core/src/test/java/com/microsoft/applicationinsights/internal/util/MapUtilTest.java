@@ -1,9 +1,6 @@
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.Rule;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,9 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class MapUtilTest {
-
-    @Rule
-    public ExpectedException expected = ExpectedException.none();
 
     @Test
     public void targetCannotBeNullInCopy() {

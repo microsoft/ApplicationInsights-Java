@@ -2,10 +2,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
@@ -53,8 +50,10 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
 import static org.junit.Assert.*;
+
 /**
  * This is the base class for smoke tests.
  */
@@ -384,7 +383,7 @@ public abstract class AiSmokeTest {
         try {
             mockedIngestion.waitForItem(new Predicate<Envelope>() {
                 @Override
-                public boolean apply(Envelope input) {
+                public boolean test(Envelope input) {
                     if (!"RequestData".equals(input.getData().getBaseType())) {
                         return false;
                     }
@@ -456,7 +455,7 @@ public abstract class AiSmokeTest {
     protected static void startMockedIngestion() throws Exception {
         mockedIngestion.addIngestionFilter(new Predicate<Envelope>() {
             @Override
-            public boolean apply(@Nullable Envelope input) {
+            public boolean test(@Nullable Envelope input) {
                 if (input == null) {
                     return false;
                 }
@@ -527,13 +526,15 @@ public abstract class AiSmokeTest {
 
         Map<String, String> hostnameEnvVars = new HashMap<>();
         for (DependencyContainer dc : dependencyImages) {
-            String imageName = Strings.isNullOrEmpty(dc.imageName()) ? dc.value() : dc.imageName();
+            String imageName = dc.imageName().isEmpty() ? dc.value() : dc.imageName();
             System.out.printf("Starting container: %s%n", imageName);
             String containerName = "dependency" + Math.abs(new Random().nextLong());
             String[] envVars = substitue(dc.environmentVariables(), hostnameEnvVars, containerName);
             final String containerId = docker.startDependencyContainer(imageName, envVars, dc.portMapping(),
                     networkId, containerName);
-            assertFalse("'containerId' was null/empty attempting to start container: "+imageName, Strings.isNullOrEmpty(containerId));
+            if (containerId == null || containerId.isEmpty()) {
+                throw new AssertionError("'containerId' was null/empty attempting to start container: "+imageName);
+            }
             System.out.printf("Dependency container started: %s (%s)%n", imageName, containerId);
 
             if (!dc.hostnameEnvironmentVariable().isEmpty()) {
@@ -571,7 +572,9 @@ public abstract class AiSmokeTest {
         System.out.printf("Starting container: %s%n", currentImageName);
         Map<String, String> envVars = generateAppContainerEnvVarMap();
         String containerId = docker.startContainer(currentImageName, appServerPort+":8080", networkId, null, envVars, false);
-        assertFalse("'containerId' was null/empty attempting to start container: "+currentImageName, Strings.isNullOrEmpty(containerId));
+        if (containerId == null || containerId.isEmpty()) {
+            throw new AssertionError("'containerId' was null/empty attempting to start container: "+currentImageName);
+        }
         System.out.printf("Container started: %s (%s)%n", currentImageName, containerId);
 
         final ContainerInfo containerInfo = new ContainerInfo(containerId, currentImageName);
@@ -627,11 +630,11 @@ public abstract class AiSmokeTest {
             }
             DependencyContainer dc = info.getDependencyContainerInfo();
             String varname = dc.hostnameEnvironmentVariable();
-            if (Strings.isNullOrEmpty(varname)) {
+            if (varname.isEmpty()) {
                 varname = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, dc.value());
             }
             String containerName = info.getContainerName();
-            if (Strings.isNullOrEmpty(containerName)) {
+            if (containerName == null || containerName.isEmpty()) {
                 throw new SmokeTestException("Null/empty container name for dependency container");
             }
             map.put(varname, containerName);
@@ -737,7 +740,6 @@ public abstract class AiSmokeTest {
     }
 
     protected static void waitForUrlWithRetries(String url, long timeout, TimeUnit timeoutUnit, String appName, int numberOfRetries) {
-        Preconditions.checkArgument(numberOfRetries >= 0, "numberOfRetries must be non-negative");
         int triedCount = 0;
         boolean success = false;
         Throwable lastThrowable = null;

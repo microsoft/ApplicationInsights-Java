@@ -7,9 +7,6 @@ repositories {
 }
 
 dependencies {
-    // this is an api dependency because of MockedAppInsightsIngestionServer.waitForItems(Predicate)
-    api "com.google.guava:guava:${versions.guava}"
-
     implementation "org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325"
     implementation "com.google.code.gson:gson:${versions.gson}"
     implementation project(":test:fakeIngestion:servlet")

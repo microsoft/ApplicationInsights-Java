@@ -9,7 +9,7 @@ dependencies {
     implementation "com.squareup.moshi:moshi-adapters:${versions.moshi}"
     implementation "com.azure:azure-storage-blob:${versions.azureStorageBlob}"
 
-    testImplementation(platform("org.junit:junit-bom:${versions.junit}"))
+    testImplementation platform("org.junit:junit-bom:${versions.junit}")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:${versions.assertj}"
     testImplementation "org.mockito:mockito-core:${versions.mockito}"

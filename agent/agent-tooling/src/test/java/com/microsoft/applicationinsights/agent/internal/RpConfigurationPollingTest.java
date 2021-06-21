@@ -21,10 +21,10 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import java.io.File;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Collections;
 
-import com.google.common.io.Resources;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
@@ -69,12 +69,12 @@ public class RpConfigurationPollingTest {
     }
 
     @Test
-    public void shouldUpdate() {
+    public void shouldUpdate() throws URISyntaxException {
         // given
         RpConfiguration rpConfiguration = new RpConfiguration();
         rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
         rpConfiguration.sampling.percentage = 90;
-        rpConfiguration.configPath = new File(Resources.getResource("applicationinsights-rp.json").getPath()).toPath();
+        rpConfiguration.configPath = Paths.get(RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
         rpConfiguration.lastModifiedTime = 0;
 
         TelemetryClient telemetryClient = new TelemetryClient();
@@ -96,12 +96,12 @@ public class RpConfigurationPollingTest {
     }
 
     @Test
-    public void shouldUpdateEvenOverEnvVars() {
+    public void shouldUpdateEvenOverEnvVars() throws URISyntaxException {
         // given
         RpConfiguration rpConfiguration = new RpConfiguration();
         rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
         rpConfiguration.sampling.percentage = 90;
-        rpConfiguration.configPath = new File(Resources.getResource("applicationinsights-rp.json").getPath()).toPath();
+        rpConfiguration.configPath = Paths.get(RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
         rpConfiguration.lastModifiedTime = 0;
 
         TelemetryClient telemetryClient = new TelemetryClient();

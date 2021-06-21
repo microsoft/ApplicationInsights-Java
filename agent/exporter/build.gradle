@@ -22,7 +22,7 @@ dependencies {
     implementation "com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.4"
     implementation "com.azure:azure-core:${versions.azureCore}"
 
-    testImplementation(platform("org.junit:junit-bom:${versions.junit}"))
+    testImplementation platform("org.junit:junit-bom:${versions.junit}")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:${versions.assertj}"
 }
