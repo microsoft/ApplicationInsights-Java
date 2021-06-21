@@ -12,46 +12,34 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultQuickPulsePingSenderTests {
 
     @Test
-    void endpointIsFormattedCorrectlyWhenUsingConnectionString() {
+    void endpointIsFormattedCorrectlyWhenUsingConnectionString() throws URISyntaxException {
         final TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setConnectionString("InstrumentationKey=testing-123");
         DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, telemetryClient, null,null, null,null);
         final String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
         final String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
-        try {
-            URI uri = new URI(endpointUrl);
-            assertNotNull(uri);
-            assertThat(endpointUrl).endsWith("/ping?ikey=testing-123");
-            assertEquals("https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=testing-123", endpointUrl);
-
-        } catch (URISyntaxException e) {
-            fail("Not a valid uri: "+endpointUrl);
-        }
+        URI uri = new URI(endpointUrl);
+        assertThat(uri).isNotNull();
+        assertThat(endpointUrl).endsWith("/ping?ikey=testing-123");
+        assertThat(endpointUrl).isEqualTo("https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=testing-123");
     }
 
     @Test
-    void endpointIsFormattedCorrectlyWhenUsingInstrumentationKey() {
+    void endpointIsFormattedCorrectlyWhenUsingInstrumentationKey() throws URISyntaxException {
         final TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey("A-test-instrumentation-key");
         DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, telemetryClient, null, null,null,null);
         final String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
         final String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
-        try {
-            URI uri = new URI(endpointUrl);
-            assertNotNull(uri);
-            assertThat(endpointUrl).endsWith("/ping?ikey=A-test-instrumentation-key"); // from resources/ApplicationInsights.xml
-            assertEquals("https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=A-test-instrumentation-key", endpointUrl);
-
-        } catch (URISyntaxException e) {
-            fail("Not a valid uri: "+endpointUrl);
-        }
+        URI uri = new URI(endpointUrl);
+        assertThat(uri).isNotNull();
+        assertThat(endpointUrl).endsWith("/ping?ikey=A-test-instrumentation-key"); // from resources/ApplicationInsights.xml
+        assertThat(endpointUrl).isEqualTo("https://rt.services.visualstudio.com/QuickPulseService.svc/ping?ikey=A-test-instrumentation-key");
     }
-
 
     @Test
     void endpointChangesWithRedirectHeaderAndGetNewPingInterval() {
@@ -66,8 +54,8 @@ class DefaultQuickPulsePingSenderTests {
         final QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, new TelemetryClient(), "machine1",
                 "instance1", "role1", "qpid123");
         QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
-        assertEquals(quickPulseHeaderInfo.getQuickPulseStatus(), QuickPulseStatus.QP_IS_ON);
-        assertEquals(quickPulseHeaderInfo.getQpsServicePollingInterval(), 1000);
-        assertEquals(quickPulseHeaderInfo.getQpsServiceEndpointRedirect(), "https://new.endpoint.com");
+        assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());
+        assertThat(1000).isEqualTo(quickPulseHeaderInfo.getQpsServicePollingInterval());
+        assertThat("https://new.endpoint.com").isEqualTo(quickPulseHeaderInfo.getQpsServiceEndpointRedirect());
     }
 }

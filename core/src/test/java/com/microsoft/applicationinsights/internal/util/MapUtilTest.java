@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class MapUtilTest {
@@ -44,7 +44,7 @@ public class MapUtilTest {
         source.put("key2", null);
 
         MapUtil.copy(source, target);
-        assertEquals(2, target.size());
+        assertThat(target).hasSize(2);
     }
 
     @Test
@@ -56,6 +56,6 @@ public class MapUtilTest {
         source.put("key2", null);
 
         MapUtil.copy(source, target);
-        assertEquals(1, target.size());
+        assertThat(target).hasSize(1);
     }
 }

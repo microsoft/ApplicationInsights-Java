@@ -24,7 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MainEntryPointTest {
     @Test
@@ -33,9 +33,9 @@ public class MainEntryPointTest {
         FriendlyException nonFriendlyException = MainEntryPoint.getFriendlyException(new IllegalArgumentException());
         FriendlyException nestedFriendlyException = MainEntryPoint.getFriendlyException(new RuntimeException("Run time Exception",new FriendlyException()));
         FriendlyException nestedNonFriendlyException = MainEntryPoint.getFriendlyException(new RuntimeException("Run time Exception",new IllegalArgumentException()));
-        assertNotNull(friendlyException);
-        assertNull(nonFriendlyException);
-        assertNotNull(nestedFriendlyException);
-        assertNull(nestedNonFriendlyException);
+        assertThat(friendlyException).isNotNull();
+        assertThat(nonFriendlyException).isNull();
+        assertThat(nestedFriendlyException).isNotNull();
+        assertThat(nestedNonFriendlyException).isNull();
     }
 }

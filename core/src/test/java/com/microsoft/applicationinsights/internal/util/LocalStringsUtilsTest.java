@@ -23,13 +23,13 @@ package com.microsoft.applicationinsights.internal.util;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocalStringsUtilsTest {
 
     @Test
     public void test() {
-        assertNotNull(LocalStringsUtils.getDateFormatter());
+        assertThat(LocalStringsUtils.getDateFormatter()).isNotNull();
     }
 
     @Test
@@ -38,6 +38,6 @@ public class LocalStringsUtilsTest {
 
         int dashIndex = idWithoutDashes.indexOf("-");
 
-        assertEquals(-1, dashIndex);
+        assertThat(dashIndex).isEqualTo(-1);
     }
 }

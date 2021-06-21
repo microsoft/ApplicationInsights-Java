@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class GcEventMonitorTest {
 
@@ -56,7 +56,7 @@ class GcEventMonitorTest {
 
         AlertBreach alert = alertFuture.get(10, TimeUnit.SECONDS);
 
-        assertEquals(90.0, alert.getAlertValue(), 0.01);
+        assertThat(alert.getAlertValue()).isEqualTo(90.0);
     }
 
     private AlertingSubsystem getAlertingSubsystem(CompletableFuture<AlertBreach> alertFuture) {

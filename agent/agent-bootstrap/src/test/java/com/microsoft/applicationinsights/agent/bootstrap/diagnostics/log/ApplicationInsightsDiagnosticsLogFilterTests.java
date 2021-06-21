@@ -9,7 +9,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 public class ApplicationInsightsDiagnosticsLogFilterTests {
@@ -35,18 +35,18 @@ public class ApplicationInsightsDiagnosticsLogFilterTests {
 
     @Test
     public void neutralIfError() {
-        assertEquals(FilterReply.NEUTRAL, filter.decide(mockEvent));
+        assertThat(filter.decide(mockEvent)).isEqualTo(FilterReply.NEUTRAL);
     }
 
     @Test
     public void denyIfInfo() {
         when(mockEvent.getLevel()).thenReturn(Level.INFO);
-        assertEquals(FilterReply.DENY, filter.decide(mockEvent));
+        assertThat(filter.decide(mockEvent)).isEqualTo(FilterReply.DENY);
     }
 
     @Test
     public void neutralIfDiagnosticsLogger() {
         when(mockEvent.getLoggerName()).thenReturn(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
-        assertEquals(FilterReply.NEUTRAL, filter.decide(mockEvent));
+        assertThat(filter.decide(mockEvent)).isEqualTo(FilterReply.NEUTRAL);
     }
 }

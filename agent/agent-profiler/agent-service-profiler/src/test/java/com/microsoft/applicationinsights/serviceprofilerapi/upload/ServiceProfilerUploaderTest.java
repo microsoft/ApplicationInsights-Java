@@ -35,13 +35,12 @@ import reactor.core.publisher.Mono;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ServiceProfilerUploaderTest {
     @Test
@@ -74,17 +73,13 @@ public class ServiceProfilerUploaderTest {
                         0.0)
                 .subscribe(
                         result -> {
-                            assertEquals("a-stamp-id",
-                                    result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_STAMPID_PROPERTY_NAME));
+                            assertThat(result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_STAMPID_PROPERTY_NAME)).isEqualTo("a-stamp-id");
 
-                            assertEquals("a-machine-name",
-                                    result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_MACHINENAME_PROPERTY_NAME));
+                            assertThat(result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_MACHINENAME_PROPERTY_NAME)).isEqualTo("a-machine-name");
 
-                            assertEquals("a-timestamp",
-                                    result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_ETLFILESESSIONID_PROPERTY_NAME));
+                            assertThat(result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_ETLFILESESSIONID_PROPERTY_NAME)).isEqualTo("a-timestamp");
 
-                            assertEquals(appId.toString(),
-                                    result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_DATACUBE_PROPERTY_NAME));
+                            assertThat(result.getServiceProfilerIndex().getProperties().get(ServiceProfilerIndex.SERVICE_PROFILER_DATACUBE_PROPERTY_NAME)).isEqualTo(appId.toString());
                         });
     }
 
@@ -108,7 +103,7 @@ public class ServiceProfilerUploaderTest {
         );
 
         // Role name is set correctly
-        assertEquals("a-role-name", blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
+        assertThat(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME)).isEqualTo("a-role-name");
 
 
         blobOptions = new ServiceProfilerUploader(
@@ -123,7 +118,7 @@ public class ServiceProfilerUploaderTest {
         );
 
         // Null role name tag is not added
-        assertNull(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME));
+        assertThat(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME)).isNull();
 
     }
 
@@ -148,7 +143,7 @@ public class ServiceProfilerUploaderTest {
                 .subscribe(result -> {
                 }, e -> threw.set(true));
 
-        assertTrue(threw.get());
+        assertThat(threw.get()).isTrue();
     }
 
     private File createFakeJfrFile() throws IOException {

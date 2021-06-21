@@ -28,13 +28,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Disabled
 final class PerformanceCounterContainerTest {
@@ -100,36 +100,38 @@ final class PerformanceCounterContainerTest {
     @Test
     void testSetStartCollectingIntervalInMillisNegativeNumber() {
         PerformanceCounterContainer.INSTANCE.setStartCollectingDelayInMillis(-100);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getStartCollectingDelayInMillis() > 0);
-        assertEquals(60, PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec());
+        assertThat(PerformanceCounterContainer.INSTANCE.getStartCollectingDelayInMillis() > 0).isTrue();
+        assertThat(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec()).isEqualTo(60);
     }
 
     @Test
     void testSetStartCollectingIntervalInMillisZero() {
         PerformanceCounterContainer.INSTANCE.setStartCollectingDelayInMillis(0);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getStartCollectingDelayInMillis() > 0);
+        assertThat(PerformanceCounterContainer.INSTANCE.getStartCollectingDelayInMillis() > 0).isTrue();
     }
 
     @Test
     void testSetCollectingIntervalInMillisMillisNegativeNumber() {
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(-1);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() > 0);
+        assertThat(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() > 0).isTrue();
     }
 
     @Test
     void testSetCollectingIntervalInMillisZero() {
         PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(0);
-        assertTrue(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() > 0);
+        assertThat(PerformanceCounterContainer.INSTANCE.getCollectionFrequencyInSec() > 0).isTrue();
     }
 
     @Test
     void testRegisterWithNullId() {
-        assertThrows(IllegalArgumentException.class, () -> testBadPerformanceCounterId(null));
+        assertThatThrownBy(() -> testBadPerformanceCounterId(null))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void testRegisterWithEmptyId() {
-        assertThrows(IllegalArgumentException.class, () -> testBadPerformanceCounterId(""));
+        assertThatThrownBy(() -> testBadPerformanceCounterId(""))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -141,7 +143,7 @@ final class PerformanceCounterContainerTest {
 
         waitForFirstAndStop(mockPerformanceCounter, null);
 
-        assertTrue(mockPerformanceCounter.counter > 2);
+        assertThat(mockPerformanceCounter.counter > 2).isTrue();
     }
 
 //    @Test
@@ -165,9 +167,9 @@ final class PerformanceCounterContainerTest {
         PerformanceCounterStub mockPerformanceCounter2 = new PerformanceCounterStub("mock1");
 
         boolean result = PerformanceCounterContainer.INSTANCE.register(mockPerformanceCounter1);
-        assertTrue(result);
+        assertThat(result).isTrue();
         result = PerformanceCounterContainer.INSTANCE.register(mockPerformanceCounter2);
-        assertFalse(result);
+        assertThat(result).isFalse();
     }
 
     @Test
@@ -180,8 +182,8 @@ final class PerformanceCounterContainerTest {
 
         waitForFirstAndStop(mockPerformanceCounter1, null);
 
-        assertEquals(0, mockPerformanceCounter2.counter);
-        assertTrue(mockPerformanceCounter1.counter > 2);
+        assertThat(mockPerformanceCounter2.counter).isEqualTo(0);
+        assertThat(mockPerformanceCounter1.counter > 2).isTrue();
     }
 
     @Test
@@ -194,7 +196,7 @@ final class PerformanceCounterContainerTest {
 
         waitForFirstAndStop(mockPerformanceCounter1, mockPerformanceCounter2);
 
-        assertTrue(mockPerformanceCounter2.counter < mockPerformanceCounter1.counter);
+        assertThat(mockPerformanceCounter2.counter < mockPerformanceCounter1.counter).isTrue();
     }
 
     private static void registerInContainer(PerformanceCounter... performanceCounters) {

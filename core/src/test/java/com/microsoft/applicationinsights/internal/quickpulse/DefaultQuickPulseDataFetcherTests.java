@@ -11,7 +11,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultQuickPulseDataFetcherTests {
 
@@ -20,39 +20,31 @@ class DefaultQuickPulseDataFetcherTests {
         DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, null, null,
                 null, null,null);
         String sdkVersion = dataFetcher.getCurrentSdkVersion();
-        assertNotNull(sdkVersion);
-        assertNotEquals("java:unknown", sdkVersion);
+        assertThat(sdkVersion).isNotNull();
+        assertThat(sdkVersion).isNotEqualTo("java:unknown");
     }
 
     @Test
-    void endpointIsFormattedCorrectlyWhenUsingConfig() {
+    void endpointIsFormattedCorrectlyWhenUsingConfig() throws URISyntaxException {
         final TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setConnectionString("InstrumentationKey=testing-123");
         DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, telemetryClient, null, null,null,null);
         final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
         final String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
-        try {
-            URI uri = new URI(endpointUrl);
-            assertNotNull(uri);
-            assertEquals("https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=testing-123", endpointUrl);
-        } catch (URISyntaxException e) {
-            fail("Not a valid uri: "+endpointUrl);
-        }
+        URI uri = new URI(endpointUrl);
+        assertThat(uri).isNotNull();
+        assertThat(endpointUrl).isEqualTo("https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=testing-123");
     }
 
     @Test
-    void endpointIsFormattedCorrectlyWhenConfigIsNull() {
+    void endpointIsFormattedCorrectlyWhenConfigIsNull() throws URISyntaxException {
         DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, null,
                 null,null, null,null);
         final String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
         final String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
-        try {
-            URI uri = new URI(endpointUrl);
-            assertNotNull(uri);
-            assertEquals("https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=null", endpointUrl);
-        } catch (URISyntaxException e) {
-            fail("Not a valid uri: "+endpointUrl);
-        }
+        URI uri = new URI(endpointUrl);
+        assertThat(uri).isNotNull();
+        assertThat(endpointUrl).isEqualTo("https://rt.services.visualstudio.com/QuickPulseService.svc/post?ikey=null");
     }
 
     @Test
@@ -69,8 +61,8 @@ class DefaultQuickPulseDataFetcherTests {
                 "instance1", "role1", "qpid123");
 
         QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
-        assertEquals(quickPulseHeaderInfo.getQuickPulseStatus(), QuickPulseStatus.QP_IS_ON);
-        assertEquals(quickPulseHeaderInfo.getQpsServicePollingInterval(), 1000);
-        assertEquals(quickPulseHeaderInfo.getQpsServiceEndpointRedirect(), "https://new.endpoint.com");
+        assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());
+        assertThat(1000).isEqualTo(quickPulseHeaderInfo.getQpsServicePollingInterval());
+        assertThat("https://new.endpoint.com").isEqualTo(quickPulseHeaderInfo.getQpsServiceEndpointRedirect());
     }
 }

@@ -21,7 +21,6 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.Date;
@@ -34,8 +33,7 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFront
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProfilerFrontendClientV2Test {
     @Test
@@ -59,9 +57,9 @@ public class ProfilerFrontendClientV2Test {
         HttpRequest request = requestHolder.get();
         String url = request.getUrl().toString();
 
-        assertEquals(HttpMethod.GET, request.getHttpMethod());
-        assertTrue(url.contains("a-instrumentation-key"));
-        assertTrue(url.contains("/api/profileragent/v4/settings"));
+        assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(url.contains("a-instrumentation-key")).isTrue();
+        assertThat(url.contains("/api/profileragent/v4/settings")).isTrue();
     }
 
     @Test
@@ -85,9 +83,9 @@ public class ProfilerFrontendClientV2Test {
         HttpRequest request = requestHolder.get();
         String url = request.getUrl().toString();
 
-        assertEquals(HttpMethod.POST, request.getHttpMethod());
-        assertTrue(url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id));
-        assertTrue(url.contains("action=gettoken"));
+        assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.POST);
+        assertThat(url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id)).isTrue();
+        assertThat(url.contains("action=gettoken")).isTrue();
     }
 
     @Test
@@ -111,8 +109,8 @@ public class ProfilerFrontendClientV2Test {
         HttpRequest request = requestHolder.get();
         String url = request.getUrl().toString();
 
-        assertEquals(HttpMethod.POST, request.getHttpMethod());
-        assertTrue(url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id));
-        assertTrue(url.contains("action=commit"));
+        assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.POST);
+        assertThat(url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id)).isTrue();
+        assertThat(url.contains("action=commit")).isTrue();
     }
 }

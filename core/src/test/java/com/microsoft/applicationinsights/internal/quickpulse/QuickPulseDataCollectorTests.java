@@ -15,7 +15,7 @@ import org.junit.jupiter.api.*;
 import java.util.Date;
 
 import static com.microsoft.applicationinsights.TelemetryUtil.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class QuickPulseDataCollectorTests {
 
@@ -33,7 +33,7 @@ class QuickPulseDataCollectorTests {
 
     @Test
     void initialStateIsDisabled() {
-        assertNull(QuickPulseDataCollector.INSTANCE.peek());
+        assertThat(QuickPulseDataCollector.INSTANCE.peek()).isNull();
     }
 
     @Test
@@ -51,7 +51,7 @@ class QuickPulseDataCollectorTests {
         telemetryClient.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.enable(telemetryClient);
         QuickPulseDataCollector.INSTANCE.disable();
-        assertNull(QuickPulseDataCollector.INSTANCE.peek());
+        assertThat(QuickPulseDataCollector.INSTANCE.peek()).isNull();
     }
 
     @Test
@@ -66,9 +66,9 @@ class QuickPulseDataCollectorTests {
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
-        assertEquals(1, counters.requests);
-        assertEquals(0, counters.unsuccessfulRequests);
-        assertEquals((double)duration, counters.requestsDuration, Math.ulp((double)duration));
+        assertThat(counters.requests).isEqualTo(1);
+        assertThat(counters.unsuccessfulRequests).isEqualTo(0);
+        assertThat(counters.requestsDuration).isEqualTo(duration);
 
         // add another success and peek
         final long duration2 = 65421L;
@@ -77,9 +77,9 @@ class QuickPulseDataCollectorTests {
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.peek();
         double total = duration + duration2;
-        assertEquals(2, counters.requests);
-        assertEquals(0, counters.unsuccessfulRequests);
-        assertEquals(total, counters.requestsDuration, Math.ulp(total));
+        assertThat(counters.requests).isEqualTo(2);
+        assertThat(counters.unsuccessfulRequests).isEqualTo(0);
+        assertThat(counters.requestsDuration).isEqualTo(total);
 
         // add a failure and get/reset
         final long duration3 = 9988L;
@@ -88,9 +88,9 @@ class QuickPulseDataCollectorTests {
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
         total += duration3;
-        assertEquals(3, counters.requests);
-        assertEquals(1, counters.unsuccessfulRequests);
-        assertEquals(total, counters.requestsDuration, Math.ulp(total));
+        assertThat(counters.requests).isEqualTo(3);
+        assertThat(counters.unsuccessfulRequests).isEqualTo(1);
+        assertThat(counters.requestsDuration).isEqualTo(total);
 
         assertCountersReset(QuickPulseDataCollector.INSTANCE.peek());
     }
@@ -107,9 +107,9 @@ class QuickPulseDataCollectorTests {
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
-        assertEquals(1, counters.rdds);
-        assertEquals(0, counters.unsuccessfulRdds);
-        assertEquals((double)duration, counters.rddsDuration, Math.ulp((double)duration));
+        assertThat(counters.rdds).isEqualTo(1);
+        assertThat(counters.unsuccessfulRdds).isEqualTo(0);
+        assertThat(counters.rddsDuration).isEqualTo(duration);
 
         // add another success and peek.
         final long duration2 = 334455L;
@@ -117,10 +117,10 @@ class QuickPulseDataCollectorTests {
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.peek();
-        assertEquals(2, counters.rdds);
-        assertEquals(0, counters.unsuccessfulRdds);
+        assertThat(counters.rdds).isEqualTo(2);
+        assertThat(counters.unsuccessfulRdds).isEqualTo(0);
         double total = duration + duration2;
-        assertEquals(total, counters.rddsDuration, Math.ulp(total));
+        assertThat(counters.rddsDuration).isEqualTo(total);
 
         // add a failure and get/reset.
         final long duration3 = 123456L;
@@ -128,10 +128,10 @@ class QuickPulseDataCollectorTests {
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
-        assertEquals(3, counters.rdds);
-        assertEquals(1, counters.unsuccessfulRdds);
+        assertThat(counters.rdds).isEqualTo(3);
+        assertThat(counters.unsuccessfulRdds).isEqualTo(1);
         total += duration3;
-        assertEquals(total, counters.rddsDuration, Math.ulp(total));
+        assertThat(counters.rddsDuration).isEqualTo(total);
 
         assertCountersReset(QuickPulseDataCollector.INSTANCE.peek());
     }
@@ -146,13 +146,13 @@ class QuickPulseDataCollectorTests {
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         FinalCounters counters = QuickPulseDataCollector.INSTANCE.peek();
-        assertEquals(1, counters.exceptions, Math.ulp(1.0));
+        assertThat(counters.exceptions).isEqualTo(1);
 
         telemetry = createExceptionTelemetry(new Exception());
         telemetry.setInstrumentationKey(FAKE_INSTRUMENTATION_KEY);
         QuickPulseDataCollector.INSTANCE.add(telemetry);
         counters = QuickPulseDataCollector.INSTANCE.getAndRestart();
-        assertEquals(2, counters.exceptions, Math.ulp(2.0));
+        assertThat(counters.exceptions).isEqualTo(2);
 
         assertCountersReset(QuickPulseDataCollector.INSTANCE.peek());
     }
@@ -163,8 +163,8 @@ class QuickPulseDataCollectorTests {
         final long duration = 112233L;
         final long encoded = Counters.encodeCountAndDuration(count, duration);
         final CountAndDuration inputs = Counters.decodeCountAndDuration(encoded);
-        assertEquals(count, inputs.count);
-        assertEquals(duration, inputs.duration);
+        assertThat(inputs.count).isEqualTo(count);
+        assertThat(inputs.duration).isEqualTo(duration);
     }
 
     private static TelemetryItem createRequestTelemetry(String name, Date timestamp, long durationMillis, String responseCode, boolean success) {
@@ -205,16 +205,16 @@ class QuickPulseDataCollectorTests {
     }
 
     private void assertCountersReset(FinalCounters counters) {
-        assertNotNull(counters);
+        assertThat(counters).isNotNull();
 
-        assertEquals(0, counters.rdds);
-        assertEquals(0.0, counters.rddsDuration, Math.ulp(0.0));
-        assertEquals(0, counters.unsuccessfulRdds);
+        assertThat(counters.rdds).isEqualTo(0);
+        assertThat(counters.rddsDuration).isEqualTo(0);
+        assertThat(counters.unsuccessfulRdds).isEqualTo(0);
 
-        assertEquals(0, counters.requests);
-        assertEquals(0.0, counters.requestsDuration, Math.ulp(0.0));
-        assertEquals(0, counters.unsuccessfulRequests);
+        assertThat(counters.requests).isEqualTo(0);
+        assertThat(counters.requestsDuration).isEqualTo(0);
+        assertThat(counters.unsuccessfulRequests).isEqualTo(0);
 
-        assertEquals(0, counters.exceptions);
+        assertThat(counters.exceptions).isEqualTo(0);
     }
 }

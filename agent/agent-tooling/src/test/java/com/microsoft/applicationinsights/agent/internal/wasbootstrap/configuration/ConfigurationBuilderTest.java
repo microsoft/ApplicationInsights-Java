@@ -29,8 +29,8 @@ import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import org.junit.jupiter.api.Test;
 
 import static com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.ConfigurationBuilder.trimAndEmptyToNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfigurationBuilderTest {
 
@@ -42,27 +42,27 @@ public class ConfigurationBuilderTest {
 
     @Test
     public void testEmptyToNull() {
-        assertNull(trimAndEmptyToNull("   "));
-        assertNull(trimAndEmptyToNull(""));
-        assertNull(trimAndEmptyToNull(null));
-        assertEquals("a", trimAndEmptyToNull("a"));
-        assertEquals("a", trimAndEmptyToNull("  a  "));
-        assertNull(trimAndEmptyToNull("\t"));
+        assertThat(trimAndEmptyToNull("   ")).isNull();
+        assertThat(trimAndEmptyToNull("")).isNull();
+        assertThat(trimAndEmptyToNull(null)).isNull();
+        assertThat(trimAndEmptyToNull("a")).isEqualTo("a");
+        assertThat(trimAndEmptyToNull("  a  ")).isEqualTo("a");
+        assertThat(trimAndEmptyToNull("\t")).isNull();
     }
 
     @Test
     public void testGetConfigFilePath() {
         Path path = getConfigFilePath("applicationinsights.json");
-        assertTrue(path.toString().endsWith("applicationinsights.json"));
+        assertThat(path.toString().endsWith("applicationinsights.json")).isTrue();
     }
 
     @Test
     public void testValidJson() throws IOException {
         Path path = getConfigFilePath("applicationinsights.json");
         Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path, true);
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals("Something Good", configuration.role.name);
-        assertEquals("xyz123", configuration.role.instance);
+        assertThat(configuration.connectionString).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(configuration.role.name).isEqualTo("Something Good");
+        assertThat(configuration.role.instance).isEqualTo("xyz123");
     }
 
     @Test
@@ -70,8 +70,8 @@ public class ConfigurationBuilderTest {
         Path path = getConfigFilePath("applicationinsights_faulty.json");
         Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path, true);
         // Configuration object should still be created.
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals("Something Good", configuration.role.name);
+        assertThat(configuration.connectionString).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(configuration.role.name).isEqualTo("Something Good");
     }
 
     @Test
@@ -100,10 +100,10 @@ public class ConfigurationBuilderTest {
         String pathValid = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file","has a malformed JSON at path $.role.");
         String pathInvalidAndNull = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file","has a malformed JSON at path $.null.[0]");
         String pathInvalid = ConfigurationBuilder.getJsonEncodingExceptionMessage("file path/to/file","has a malformed JSON at path $.");
-        assertEquals("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n",pathNull);
-        assertEquals("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n",pathEmpty);
-        assertEquals("Application Insights Java agent's configuration file path/to/file has a malformed JSON at path $.role.\n",pathValid);
-        assertEquals("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n",pathInvalid);
-        assertEquals("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n",pathInvalidAndNull);
+        assertThat(pathNull).isEqualTo("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
+        assertThat(pathEmpty).isEqualTo("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
+        assertThat(pathValid).isEqualTo("Application Insights Java agent's configuration file path/to/file has a malformed JSON at path $.role.\n");
+        assertThat(pathInvalid).isEqualTo("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
+        assertThat(pathInvalidAndNull).isEqualTo("Application Insights Java agent's configuration file path/to/file has a malformed JSON\n");
     }
 }

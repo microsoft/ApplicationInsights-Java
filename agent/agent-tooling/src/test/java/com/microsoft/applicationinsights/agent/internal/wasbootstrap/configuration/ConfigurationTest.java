@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -44,8 +43,8 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SystemStubsExtension.class)
 public class ConfigurationTest {
@@ -71,28 +70,28 @@ public class ConfigurationTest {
     public void shouldParse() throws IOException {
         Configuration configuration = loadConfiguration();
 
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals("Something Good", configuration.role.name);
-        assertEquals("xyz123", configuration.role.instance);
-        assertEquals(2, configuration.customDimensions.size());
-        assertEquals("abc", configuration.customDimensions.get("some key"));
-        assertEquals("def", configuration.customDimensions.get("another key"));
-        assertEquals(10.0, configuration.sampling.percentage, 0);
-        assertEquals(3, configuration.jmxMetrics.size());
-        assertEquals("Thread Count", configuration.jmxMetrics.get(0).name);
-        assertEquals("java.lang:type=Threading", configuration.jmxMetrics.get(0).objectName);
-        assertEquals("ThreadCount", configuration.jmxMetrics.get(0).attribute);
-        assertEquals("error", configuration.instrumentation.logging.level);
-        assertEquals(60, configuration.heartbeat.intervalSeconds);
-        assertEquals("myproxy", configuration.proxy.host);
-        assertEquals(8080, configuration.proxy.port);
+        assertThat(configuration.connectionString).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(configuration.role.name).isEqualTo("Something Good");
+        assertThat(configuration.role.instance).isEqualTo("xyz123");
+        assertThat(configuration.customDimensions.size()).isEqualTo(2);
+        assertThat(configuration.customDimensions.get("some key")).isEqualTo("abc");
+        assertThat(configuration.customDimensions.get("another key")).isEqualTo("def");
+        assertThat(configuration.sampling.percentage).isEqualTo(10.0);
+        assertThat(configuration.jmxMetrics.size()).isEqualTo(3);
+        assertThat(configuration.jmxMetrics.get(0).name).isEqualTo("Thread Count");
+        assertThat(configuration.jmxMetrics.get(0).objectName).isEqualTo("java.lang:type=Threading");
+        assertThat(configuration.jmxMetrics.get(0).attribute).isEqualTo("ThreadCount");
+        assertThat(configuration.instrumentation.logging.level).isEqualTo("error");
+        assertThat(configuration.heartbeat.intervalSeconds).isEqualTo(60);
+        assertThat(configuration.proxy.host).isEqualTo("myproxy");
+        assertThat(configuration.proxy.port).isEqualTo(8080);
 
-        assertEquals("debug", configuration.selfDiagnostics.level);
-        assertEquals("file", configuration.selfDiagnostics.destination);
+        assertThat(configuration.selfDiagnostics.level).isEqualTo("debug");
+        assertThat(configuration.selfDiagnostics.destination).isEqualTo("file");
 
-        assertEquals("/var/log/applicationinsights/abc.log", configuration.selfDiagnostics.file.path);
-        assertEquals(10, configuration.selfDiagnostics.file.maxSizeMb);
-        assertEquals(2, configuration.selfDiagnostics.file.maxHistory);
+        assertThat(configuration.selfDiagnostics.file.path).isEqualTo("/var/log/applicationinsights/abc.log");
+        assertThat(configuration.selfDiagnostics.file.maxSizeMb).isEqualTo(10);
+        assertThat(configuration.selfDiagnostics.file.maxHistory).isEqualTo(2);
     }
 
     @Test
@@ -113,15 +112,15 @@ public class ConfigurationTest {
 
         Configuration configuration = ConfigurationBuilder.create(Paths.get("."), null);
 
-        assertEquals("InstrumentationKey=11111111-1111-1111-1111-111111111111", configuration.connectionString);
-        assertEquals("testrole", configuration.role.name);
+        assertThat(configuration.connectionString).isEqualTo("InstrumentationKey=11111111-1111-1111-1111-111111111111");
+        assertThat(configuration.role.name).isEqualTo("testrole");
 
         List<JmxMetric> jmxMetrics = parseJmxMetricsJson(jmxMetricsJson);
-        assertEquals(2, jmxMetrics.size());
-        assertEquals(3, configuration.jmxMetrics.size());
-        assertEquals(jmxMetrics.get(0).name, configuration.jmxMetrics.get(0).name); // class count is overridden by the env var
-        assertEquals(jmxMetrics.get(1).name, configuration.jmxMetrics.get(1).name); // code cache is overridden by the env var
-        assertEquals(configuration.jmxMetrics.get(2).name, "Current Thread Count");
+        assertThat(jmxMetrics.size()).isEqualTo(2);
+        assertThat(configuration.jmxMetrics.size()).isEqualTo(3);
+        assertThat(configuration.jmxMetrics.get(0).name).isEqualTo(jmxMetrics.get(0).name); // class count is overridden by the env var
+        assertThat(configuration.jmxMetrics.get(1).name).isEqualTo(jmxMetrics.get(1).name); // code cache is overridden by the env var
+        assertThat("Current Thread Count").isEqualTo(configuration.jmxMetrics.get(2).name);
     }
 
     @Test
@@ -139,87 +138,87 @@ public class ConfigurationTest {
 
         Configuration configuration = loadConfiguration("ApplicationInsights_SpanProcessor.json");
         PreviewConfiguration preview = configuration.preview;
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals(9, preview.processors.size());
+        assertThat(configuration.connectionString).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(preview.processors.size()).isEqualTo(9);
         // insert config test
         ProcessorConfig insertConfig = preview.processors.get(0);
-        assertEquals("attributes/insert", insertConfig.id);
-        assertEquals(ProcessorType.ATTRIBUTE, insertConfig.type);
-        assertEquals(ProcessorActionType.INSERT, insertConfig.actions.get(0).action);
-        assertEquals("123", insertConfig.actions.get(0).value);
-        assertEquals("attribute1", insertConfig.actions.get(0).key);
-        assertEquals("anotherKey", insertConfig.actions.get(1).fromAttribute);
+        assertThat(insertConfig.id).isEqualTo("attributes/insert");
+        assertThat(insertConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
+        assertThat(insertConfig.actions.get(0).action).isEqualTo(ProcessorActionType.INSERT);
+        assertThat(insertConfig.actions.get(0).value).isEqualTo("123");
+        assertThat(insertConfig.actions.get(0).key).isEqualTo("attribute1");
+        assertThat(insertConfig.actions.get(1).fromAttribute).isEqualTo("anotherKey");
         //update config test
         ProcessorConfig updateConfig = preview.processors.get(1);
-        assertEquals("attributes/update", updateConfig.id);
-        assertEquals(ProcessorType.ATTRIBUTE, updateConfig.type);
-        assertEquals(ProcessorActionType.UPDATE, updateConfig.actions.get(0).action);
-        assertEquals("boo", updateConfig.actions.get(0).key);
-        assertEquals("foo", updateConfig.actions.get(0).fromAttribute);
-        assertEquals("db.secret", updateConfig.actions.get(1).key);
+        assertThat(updateConfig.id).isEqualTo("attributes/update");
+        assertThat(updateConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
+        assertThat(updateConfig.actions.get(0).action).isEqualTo(ProcessorActionType.UPDATE);
+        assertThat(updateConfig.actions.get(0).key).isEqualTo("boo");
+        assertThat(updateConfig.actions.get(0).fromAttribute).isEqualTo("foo");
+        assertThat(updateConfig.actions.get(1).key).isEqualTo("db.secret");
         // selective processing test
         ProcessorConfig selectiveConfig = preview.processors.get(2);
-        assertEquals(ProcessorType.ATTRIBUTE, selectiveConfig.type);
-        assertEquals("attributes/selectiveProcessing", selectiveConfig.id);
-        assertEquals(MatchType.STRICT, selectiveConfig.include.matchType);
-        assertEquals(2, selectiveConfig.include.spanNames.size());
-        assertEquals("svcA", selectiveConfig.include.spanNames.get(0));
-        assertEquals(MatchType.STRICT, selectiveConfig.exclude.matchType);
-        assertEquals(1, selectiveConfig.exclude.attributes.size());
-        assertEquals("redact_trace", selectiveConfig.exclude.attributes.get(0).key);
-        assertEquals("false", selectiveConfig.exclude.attributes.get(0).value);
-        assertEquals(2, selectiveConfig.actions.size());
-        assertEquals("credit_card", selectiveConfig.actions.get(0).key);
-        assertEquals(ProcessorActionType.DELETE, selectiveConfig.actions.get(0).action);
+        assertThat(selectiveConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
+        assertThat(selectiveConfig.id).isEqualTo("attributes/selectiveProcessing");
+        assertThat(selectiveConfig.include.matchType).isEqualTo(MatchType.STRICT);
+        assertThat(selectiveConfig.include.spanNames.size()).isEqualTo(2);
+        assertThat(selectiveConfig.include.spanNames.get(0)).isEqualTo("svcA");
+        assertThat(selectiveConfig.exclude.matchType).isEqualTo(MatchType.STRICT);
+        assertThat(selectiveConfig.exclude.attributes.size()).isEqualTo(1);
+        assertThat(selectiveConfig.exclude.attributes.get(0).key).isEqualTo("redact_trace");
+        assertThat(selectiveConfig.exclude.attributes.get(0).value).isEqualTo("false");
+        assertThat(selectiveConfig.actions.size()).isEqualTo(2);
+        assertThat(selectiveConfig.actions.get(0).key).isEqualTo("credit_card");
+        assertThat(selectiveConfig.actions.get(0).action).isEqualTo(ProcessorActionType.DELETE);
         // log/update name test
         ProcessorConfig logUpdateNameConfig = preview.processors.get(3);
-        assertEquals(ProcessorType.LOG, logUpdateNameConfig.type);
-        assertEquals("log/updateName", logUpdateNameConfig.id);
-        assertEquals(1, logUpdateNameConfig.body.fromAttributes.size());
-        assertEquals("loggerName", logUpdateNameConfig.body.fromAttributes.get(0));
-        assertEquals("::", logUpdateNameConfig.body.separator);
+        assertThat(logUpdateNameConfig.type).isEqualTo(ProcessorType.LOG);
+        assertThat(logUpdateNameConfig.id).isEqualTo("log/updateName");
+        assertThat(logUpdateNameConfig.body.fromAttributes.size()).isEqualTo(1);
+        assertThat(logUpdateNameConfig.body.fromAttributes.get(0)).isEqualTo("loggerName");
+        assertThat(logUpdateNameConfig.body.separator).isEqualTo("::");
         // log/extractAttributes
         ProcessorConfig logExtractAttributesConfig = preview.processors.get(4);
-        assertEquals(ProcessorType.LOG, logExtractAttributesConfig.type);
-        assertEquals("log/extractAttributes", logExtractAttributesConfig.id);
-        assertEquals(1, logExtractAttributesConfig.body.toAttributes.rules.size());
-        assertEquals("^/api/v1/document/(?<documentId>.*)/update$", logExtractAttributesConfig.body.toAttributes.rules.get(0));
+        assertThat(logExtractAttributesConfig.type).isEqualTo(ProcessorType.LOG);
+        assertThat(logExtractAttributesConfig.id).isEqualTo("log/extractAttributes");
+        assertThat(logExtractAttributesConfig.body.toAttributes.rules.size()).isEqualTo(1);
+        assertThat(logExtractAttributesConfig.body.toAttributes.rules.get(0)).isEqualTo("^/api/v1/document/(?<documentId>.*)/update$");
         // span/update name test
         ProcessorConfig spanUpdateNameConfig = preview.processors.get(5);
-        assertEquals(ProcessorType.SPAN, spanUpdateNameConfig.type);
-        assertEquals("span/updateName", spanUpdateNameConfig.id);
-        assertEquals(MatchType.REGEXP, spanUpdateNameConfig.include.matchType);
-        assertEquals(1, spanUpdateNameConfig.include.spanNames.size());
-        assertEquals(".*password.*", spanUpdateNameConfig.include.spanNames.get(0));
-        assertEquals(1, spanUpdateNameConfig.name.fromAttributes.size());
-        assertEquals("loggerName", spanUpdateNameConfig.name.fromAttributes.get(0));
-        assertEquals("::", spanUpdateNameConfig.name.separator);
+        assertThat(spanUpdateNameConfig.type).isEqualTo(ProcessorType.SPAN);
+        assertThat(spanUpdateNameConfig.id).isEqualTo("span/updateName");
+        assertThat(spanUpdateNameConfig.include.matchType).isEqualTo(MatchType.REGEXP);
+        assertThat(spanUpdateNameConfig.include.spanNames.size()).isEqualTo(1);
+        assertThat(spanUpdateNameConfig.include.spanNames.get(0)).isEqualTo(".*password.*");
+        assertThat(spanUpdateNameConfig.name.fromAttributes.size()).isEqualTo(1);
+        assertThat(spanUpdateNameConfig.name.fromAttributes.get(0)).isEqualTo("loggerName");
+        assertThat(spanUpdateNameConfig.name.separator).isEqualTo("::");
         // span/extractAttributes
         ProcessorConfig spanExtractAttributesConfig = preview.processors.get(6);
-        assertEquals(ProcessorType.SPAN, spanExtractAttributesConfig.type);
-        assertEquals("span/extractAttributes", spanExtractAttributesConfig.id);
-        assertEquals(1, spanExtractAttributesConfig.name.toAttributes.rules.size());
-        assertEquals("^/api/v1/document/(?<documentId>.*)/update$", spanExtractAttributesConfig.name.toAttributes.rules.get(0));
+        assertThat(spanExtractAttributesConfig.type).isEqualTo(ProcessorType.SPAN);
+        assertThat(spanExtractAttributesConfig.id).isEqualTo("span/extractAttributes");
+        assertThat(spanExtractAttributesConfig.name.toAttributes.rules.size()).isEqualTo(1);
+        assertThat(spanExtractAttributesConfig.name.toAttributes.rules.get(0)).isEqualTo("^/api/v1/document/(?<documentId>.*)/update$");
         // attribute/extract
         ProcessorConfig attributesExtractConfig = preview.processors.get(7);
-        assertEquals(ProcessorType.ATTRIBUTE, attributesExtractConfig.type);
-        assertEquals("attributes/extract", attributesExtractConfig.id);
-        assertEquals(1, attributesExtractConfig.actions.size());
-        assertEquals(ProcessorActionType.EXTRACT,attributesExtractConfig.actions.get(0).action);
-        assertEquals("http.url",attributesExtractConfig.actions.get(0).key);
-        assertEquals(1,attributesExtractConfig.actions.size());
-        assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute);
-        assertNotNull(attributesExtractConfig.actions.get(0).extractAttribute.pattern);
-        assertEquals(4,attributesExtractConfig.actions.get(0).extractAttribute.groupNames.size());
-        assertEquals("httpProtocol",attributesExtractConfig.actions.get(0).extractAttribute.groupNames.get(0));
+        assertThat(attributesExtractConfig.type).isEqualTo(ProcessorType.ATTRIBUTE);
+        assertThat(attributesExtractConfig.id).isEqualTo("attributes/extract");
+        assertThat(attributesExtractConfig.actions.size()).isEqualTo(1);
+        assertThat(attributesExtractConfig.actions.get(0).action).isEqualTo(ProcessorActionType.EXTRACT);
+        assertThat(attributesExtractConfig.actions.get(0).key).isEqualTo("http.url");
+        assertThat(attributesExtractConfig.actions.size()).isEqualTo(1);
+        assertThat(attributesExtractConfig.actions.get(0).extractAttribute).isNotNull();
+        assertThat(attributesExtractConfig.actions.get(0).extractAttribute.pattern).isNotNull();
+        assertThat(attributesExtractConfig.actions.get(0).extractAttribute.groupNames.size()).isEqualTo(4);
+        assertThat(attributesExtractConfig.actions.get(0).extractAttribute.groupNames.get(0)).isEqualTo("httpProtocol");
         // metric-filter
         ProcessorConfig metricFilterConfig = preview.processors.get(8);
-        assertEquals(ProcessorType.METRIC_FILTER, metricFilterConfig.type);
-        assertEquals("metric-filter/exclude-two-metrics", metricFilterConfig.id);
-        assertEquals(MatchType.STRICT, metricFilterConfig.exclude.matchType);
-        assertEquals(2, metricFilterConfig.exclude.metricNames.size());
-        assertEquals("a_test_metric", metricFilterConfig.exclude.metricNames.get(0));
-        assertEquals("another_test_metric", metricFilterConfig.exclude.metricNames.get(1));
+        assertThat(metricFilterConfig.type).isEqualTo(ProcessorType.METRIC_FILTER);
+        assertThat(metricFilterConfig.id).isEqualTo("metric-filter/exclude-two-metrics");
+        assertThat(metricFilterConfig.exclude.matchType).isEqualTo(MatchType.STRICT);
+        assertThat(metricFilterConfig.exclude.metricNames.size()).isEqualTo(2);
+        assertThat(metricFilterConfig.exclude.metricNames.get(0)).isEqualTo("a_test_metric");
+        assertThat(metricFilterConfig.exclude.metricNames.get(1)).isEqualTo("another_test_metric");
     }
 
     @Test
@@ -227,14 +226,14 @@ public class ConfigurationTest {
 
         Configuration configuration = loadConfiguration("applicationinsights_aadauth.json");
         PreviewConfiguration preview = configuration.preview;
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertTrue(preview.authentication.enabled);
-        assertEquals(AuthenticationType.SAMI, preview.authentication.type);
-        assertEquals("123xyz", preview.authentication.clientId);
-        assertEquals("tenant123", preview.authentication.tenantId);
-        assertEquals("clientsecret123", preview.authentication.clientSecret);
-        assertEquals("path/to/keePass", preview.authentication.keePassDatabasePath);
-        assertEquals("https://test.com/microsoft/", preview.authentication.authorityHost);
+        assertThat(configuration.connectionString).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(preview.authentication.enabled).isTrue();
+        assertThat(preview.authentication.type).isEqualTo(AuthenticationType.SAMI);
+        assertThat(preview.authentication.clientId).isEqualTo("123xyz");
+        assertThat(preview.authentication.tenantId).isEqualTo("tenant123");
+        assertThat(preview.authentication.clientSecret).isEqualTo("clientsecret123");
+        assertThat(preview.authentication.keePassDatabasePath).isEqualTo("path/to/keePass");
+        assertThat(preview.authentication.authorityHost).isEqualTo("https://test.com/microsoft/");
     }
 
     @Test
@@ -244,13 +243,13 @@ public class ConfigurationTest {
 
         Configuration configuration = loadConfiguration();
 
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", configuration.connectionString);
-        assertEquals("Something Good", configuration.role.name);
-        assertEquals("xyz123", configuration.role.instance);
-        assertEquals(3, configuration.jmxMetrics.size());
-        assertEquals("error", configuration.instrumentation.logging.level);
-        assertTrue(configuration.instrumentation.micrometer.enabled);
-        assertEquals(60, configuration.heartbeat.intervalSeconds);
+        assertThat(configuration.connectionString).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(configuration.role.name).isEqualTo("Something Good");
+        assertThat(configuration.role.instance).isEqualTo("xyz123");
+        assertThat(configuration.jmxMetrics.size()).isEqualTo(3);
+        assertThat(configuration.instrumentation.logging.level).isEqualTo("error");
+        assertThat(configuration.instrumentation.micrometer.enabled).isTrue();
+        assertThat(configuration.heartbeat.intervalSeconds).isEqualTo(60);
     }
 
     @Test
@@ -260,7 +259,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("InstrumentationKey=11111111-1111-1111-1111-111111111111", configuration.connectionString);
+        assertThat(configuration.connectionString).isEqualTo("InstrumentationKey=11111111-1111-1111-1111-111111111111");
     }
 
     @Test
@@ -271,7 +270,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("role name from env", configuration.role.name);
+        assertThat(configuration.role.name).isEqualTo("role name from env");
     }
 
     @Test
@@ -281,7 +280,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("Role Name From Website Env", configuration.role.name);
+        assertThat(configuration.role.name).isEqualTo("Role Name From Website Env");
     }
 
     @Test
@@ -291,7 +290,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("Something Good", configuration.role.name);
+        assertThat(configuration.role.name).isEqualTo("Something Good");
     }
 
     @Test
@@ -302,7 +301,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("role name from website env", configuration.role.name);
+        assertThat(configuration.role.name).isEqualTo("role name from website env");
     }
 
     @Test
@@ -313,7 +312,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("role instance from env", configuration.role.instance);
+        assertThat(configuration.role.instance).isEqualTo("role instance from env");
     }
 
     @Test
@@ -323,7 +322,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("role instance from website env", configuration.role.instance);
+        assertThat(configuration.role.instance).isEqualTo("role instance from website env");
     }
 
     @Test
@@ -333,7 +332,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("xyz123", configuration.role.instance);
+        assertThat(configuration.role.instance).isEqualTo("xyz123");
     }
 
     @Test
@@ -343,7 +342,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals(0.25, configuration.sampling.percentage, 0);
+        assertThat(configuration.sampling.percentage).isEqualTo(0.25);
     }
 
     @Test
@@ -353,7 +352,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("TRACE", configuration.instrumentation.logging.level);
+        assertThat(configuration.instrumentation.logging.level).isEqualTo("TRACE");
     }
 
     @Test
@@ -366,11 +365,11 @@ public class ConfigurationTest {
         ConfigurationBuilder.overlayEnvVars(configuration);
 
         List<JmxMetric> jmxMetrics = parseJmxMetricsJson(jmxMetricsJson);
-        assertEquals(2, jmxMetrics.size());
-        assertEquals(3, configuration.jmxMetrics.size());
-        assertEquals(jmxMetrics.get(0).name, configuration.jmxMetrics.get(0).name); // class count is overridden by the env var
-        assertEquals(jmxMetrics.get(1).name, configuration.jmxMetrics.get(1).name); // code cache is overridden by the env var
-        assertEquals(configuration.jmxMetrics.get(2).name, "Current Thread Count");
+        assertThat(jmxMetrics.size()).isEqualTo(2);
+        assertThat(configuration.jmxMetrics.size()).isEqualTo(3);
+        assertThat(configuration.jmxMetrics.get(0).name).isEqualTo(jmxMetrics.get(0).name); // class count is overridden by the env var
+        assertThat(configuration.jmxMetrics.get(1).name).isEqualTo(jmxMetrics.get(1).name); // code cache is overridden by the env var
+        assertThat("Current Thread Count").isEqualTo(configuration.jmxMetrics.get(2).name);
     }
 
     @Test
@@ -380,7 +379,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("DEBUG", configuration.selfDiagnostics.level);
+        assertThat(configuration.selfDiagnostics.level).isEqualTo("DEBUG");
     }
 
     @Test
@@ -390,7 +389,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertEquals("/tmp/ai.log", configuration.selfDiagnostics.file.path);
+        assertThat(configuration.selfDiagnostics.file.path).isEqualTo("/tmp/ai.log");
     }
 
     @Test
@@ -400,7 +399,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertTrue(configuration.preview.openTelemetryApiSupport);
+        assertThat(configuration.preview.openTelemetryApiSupport).isTrue();
     }
 
     @Test
@@ -410,7 +409,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertTrue(configuration.preview.instrumentation.azureSdk.enabled);
+        assertThat(configuration.preview.instrumentation.azureSdk.enabled).isTrue();
     }
 
     @Test
@@ -420,7 +419,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertTrue(configuration.preview.instrumentation.javaHttpClient.enabled);
+        assertThat(configuration.preview.instrumentation.javaHttpClient.enabled).isTrue();
     }
 
     @Test
@@ -430,7 +429,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertTrue(configuration.preview.instrumentation.jaxws.enabled);
+        assertThat(configuration.preview.instrumentation.jaxws.enabled).isTrue();
     }
 
     @Test
@@ -440,7 +439,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertTrue(configuration.preview.instrumentation.rabbitmq.enabled);
+        assertThat(configuration.preview.instrumentation.rabbitmq.enabled).isTrue();
     }
 
     @Test
@@ -450,7 +449,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertFalse(configuration.preview.liveMetrics.enabled);
+        assertThat(configuration.preview.liveMetrics.enabled).isFalse();
     }
 
     @Test
@@ -460,7 +459,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertFalse(configuration.instrumentation.cassandra.enabled);
+        assertThat(configuration.instrumentation.cassandra.enabled).isFalse();
     }
 
     @Test
@@ -470,7 +469,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertFalse(configuration.instrumentation.jdbc.enabled);
+        assertThat(configuration.instrumentation.jdbc.enabled).isFalse();
     }
 
     @Test
@@ -480,7 +479,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertFalse(configuration.instrumentation.jms.enabled);
+        assertThat(configuration.instrumentation.jms.enabled).isFalse();
     }
 
     @Test
@@ -490,7 +489,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertFalse(configuration.instrumentation.kafka.enabled);
+        assertThat(configuration.instrumentation.kafka.enabled).isFalse();
     }
 
     @Test
@@ -500,7 +499,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertFalse(configuration.instrumentation.micrometer.enabled);
+        assertThat(configuration.instrumentation.micrometer.enabled).isFalse();
     }
 
     @Test
@@ -510,7 +509,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertFalse(configuration.instrumentation.mongo.enabled);
+        assertThat(configuration.instrumentation.mongo.enabled).isFalse();
     }
 
     @Test
@@ -520,7 +519,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertFalse(configuration.instrumentation.redis.enabled);
+        assertThat(configuration.instrumentation.redis.enabled).isFalse();
     }
 
     @Test
@@ -530,7 +529,7 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration();
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertFalse(configuration.instrumentation.springScheduling.enabled);
+        assertThat(configuration.instrumentation.springScheduling.enabled).isFalse();
     }
 
     @Test
@@ -540,20 +539,20 @@ public class ConfigurationTest {
         Configuration configuration = loadConfiguration("applicationinsights_aadauthenv.json");
         ConfigurationBuilder.overlayEnvVars(configuration);
 
-        assertTrue(configuration.preview.authentication.enabled);
-        assertEquals(AuthenticationType.UAMI, configuration.preview.authentication.type);
-        assertEquals("12345678", configuration.preview.authentication.clientId);
-        assertNull(configuration.preview.authentication.clientSecret);
+        assertThat(configuration.preview.authentication.enabled).isTrue();
+        assertThat(configuration.preview.authentication.type).isEqualTo(AuthenticationType.UAMI);
+        assertThat(configuration.preview.authentication.clientId).isEqualTo("12345678");
+        assertThat(configuration.preview.authentication.clientSecret).isNull();
 
         envVars.set("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=");
 
         Configuration configuration2 = loadConfiguration("applicationinsights_aadauthenv.json");
         ConfigurationBuilder.overlayEnvVars(configuration2);
 
-        assertTrue(configuration2.preview.authentication.enabled);
-        assertEquals(AuthenticationType.SAMI, configuration2.preview.authentication.type);
-        assertNull(configuration2.preview.authentication.clientId);
-        assertNull(configuration2.preview.authentication.clientSecret);
+        assertThat(configuration2.preview.authentication.enabled).isTrue();
+        assertThat(configuration2.preview.authentication.type).isEqualTo(AuthenticationType.SAMI);
+        assertThat(configuration2.preview.authentication.clientId).isNull();
+        assertThat(configuration2.preview.authentication.clientSecret).isNull();
     }
 
     @Test
@@ -564,8 +563,8 @@ public class ConfigurationTest {
         rpConfiguration.role.instance = "role-instance-from-rp";
         ConfigurationBuilder.overlayRpConfiguration(configuration, rpConfiguration);
 
-        assertEquals("role-name-from-rp", configuration.role.name);
-        assertEquals("role-instance-from-rp", configuration.role.instance);
+        assertThat(configuration.role.name).isEqualTo("role-name-from-rp");
+        assertThat(configuration.role.instance).isEqualTo("role-instance-from-rp");
     }
 
     @Test
@@ -578,8 +577,8 @@ public class ConfigurationTest {
         rpConfiguration.role.instance = "role-instance-from-rp";
         ConfigurationBuilder.overlayRpConfiguration(configuration, rpConfiguration);
 
-        assertEquals("role-name", configuration.role.name);
-        assertEquals("role-instance", configuration.role.instance);
+        assertThat(configuration.role.name).isEqualTo("role-name");
+        assertThat(configuration.role.instance).isEqualTo("role-instance");
     }
 
     @Test

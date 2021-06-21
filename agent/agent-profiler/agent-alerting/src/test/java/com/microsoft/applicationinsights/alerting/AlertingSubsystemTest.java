@@ -33,11 +33,9 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.A
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AlertingSubsystemTest {
 
@@ -69,8 +67,8 @@ public class AlertingSubsystemTest {
 
         service.awaitQueueFlush();
 
-        assertEquals(AlertMetricType.CPU, called.get().getType());
-        assertEquals(90.0, called.get().getAlertValue(), 0.01);
+        assertThat(called.get().getType()).isEqualTo(AlertMetricType.CPU);
+        assertThat(called.get().getAlertValue()).isEqualTo(90.0);
     }
 
     @Test
@@ -89,7 +87,7 @@ public class AlertingSubsystemTest {
                 )
         );
 
-        assertEquals(AlertMetricType.MANUAL, called.get().getType());
+        assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
     }
 
     @Test
@@ -108,6 +106,6 @@ public class AlertingSubsystemTest {
                 )
         );
 
-        assertNull(called.get());
+        assertThat(called.get()).isNull();
     }
 }

@@ -42,9 +42,8 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.api.trace.Span;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ExporterWithSpanProcessorTest {
 
@@ -113,7 +112,7 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("locationget1234", resultSpan.getName());
+        assertThat(resultSpan.getName()).isEqualTo("locationget1234");
     }
 
     @Test
@@ -144,7 +143,7 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("location::get::1234", resultSpan.getName());
+        assertThat(resultSpan.getName()).isEqualTo("location::get::1234");
     }
 
     @Test
@@ -174,7 +173,7 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("svcA", resultSpan.getName());
+        assertThat(resultSpan.getName()).isEqualTo("svcA");
 
     }
 
@@ -237,10 +236,10 @@ public class ExporterWithSpanProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanD = result.get(3);
-        assertEquals("locationget1234", resultSpanA.getName());
-        assertEquals("locationget1234", resultSpanB.getName());
-        assertEquals("svcC", resultSpanC.getName());
-        assertEquals("svcD", resultSpanD.getName());
+        assertThat(resultSpanA.getName()).isEqualTo("locationget1234");
+        assertThat(resultSpanB.getName()).isEqualTo("locationget1234");
+        assertThat(resultSpanC.getName()).isEqualTo("svcC");
+        assertThat(resultSpanD.getName()).isEqualTo("svcD");
 
     }
 
@@ -290,9 +289,9 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotNull(Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))));
-        assertEquals("12345678", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))));
-        assertEquals("/api/v1/document/{documentId}/update", resultSpan.getName());
+        assertThat(Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId")))).isNotNull();
+        assertThat(Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId")))).isEqualTo("12345678");
+        assertThat(resultSpan.getName()).isEqualTo("/api/v1/document/{documentId}/update");
     }
 
     @Test
@@ -337,14 +336,14 @@ public class ExporterWithSpanProcessorTest {
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
-        assertNotNull(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password1"))));
-        assertEquals("123", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password1"))));
-        assertNotNull(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password2"))));
-        assertEquals("555", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password2"))));
-        assertEquals("yyyPassword={password1} aba Pass={password2} xyx Pass=777 zzz", resultSpanA.getName());
-        assertNotNull(Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("password1"))));
-        assertEquals("****", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("password1"))));
-        assertEquals("yyyPassword={password1} aba", resultSpanB.getName());
+        assertThat(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password1")))).isNotNull();
+        assertThat(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password1")))).isEqualTo("123");
+        assertThat(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password2")))).isNotNull();
+        assertThat(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password2")))).isEqualTo("555");
+        assertThat(resultSpanA.getName()).isEqualTo("yyyPassword={password1} aba Pass={password2} xyx Pass=777 zzz");
+        assertThat(Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("password1")))).isNotNull();
+        assertThat(Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("password1")))).isEqualTo("****");
+        assertThat(resultSpanB.getName()).isEqualTo("yyyPassword={password1} aba");
     }
 
     @Test
@@ -410,14 +409,14 @@ public class ExporterWithSpanProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanD = result.get(3);
-        assertEquals("{operationwebsite}", resultSpanA.getName());
-        assertNotNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("operationwebsite")));
-        assertEquals("svcA/test", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("operationwebsite"))));
-        assertEquals("{operationwebsite}", resultSpanB.getName());
-        assertNotNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("operationwebsite")));
-        assertEquals("svcB/test", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("operationwebsite"))));
-        assertEquals("svcC", resultSpanC.getName());
-        assertEquals("donot/change", resultSpanD.getName());
+        assertThat(resultSpanA.getName()).isEqualTo("{operationwebsite}");
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("operationwebsite"))).isNotNull();
+        assertThat(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("operationwebsite")))).isEqualTo("svcA/test");
+        assertThat(resultSpanB.getName()).isEqualTo("{operationwebsite}");
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("operationwebsite"))).isNotNull();
+        assertThat(Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("operationwebsite")))).isEqualTo("svcB/test");
+        assertThat(resultSpanC.getName()).isEqualTo("svcC");
+        assertThat(resultSpanD.getName()).isEqualTo("donot/change");
 
     }
 
@@ -449,7 +448,7 @@ public class ExporterWithSpanProcessorTest {
         // verify that resulting spans are not modified
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("svcA", resultSpan.getName());
+        assertThat(resultSpan.getName()).isEqualTo("svcA");
 
     }
 }

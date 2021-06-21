@@ -12,8 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SamplingOverridesTest {
 
@@ -25,7 +24,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.empty();
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
@@ -36,7 +35,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
 
         // expect
-        assertEquals(0, sampler.getOverride(attributes).getPercentage(), 0);
+        assertThat(sampler.getOverride(attributes).getPercentage()).isEqualTo(0);
     }
 
     @Test
@@ -47,7 +46,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
@@ -58,7 +57,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "1");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
@@ -69,7 +68,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "11");
 
         // expect
-        assertEquals(0, sampler.getOverride(attributes).getPercentage(), 0);
+        assertThat(sampler.getOverride(attributes).getPercentage()).isEqualTo(0);
     }
 
     @Test
@@ -80,7 +79,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "22");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
@@ -91,7 +90,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "11");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
@@ -102,7 +101,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
         // expect
-        assertEquals(0, sampler.getOverride(attributes).getPercentage(), 0);
+        assertThat(sampler.getOverride(attributes).getPercentage()).isEqualTo(0);
     }
 
     @Test
@@ -113,7 +112,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     @Test
@@ -124,7 +123,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
         // expect
-        assertEquals(0, sampler.getOverride(attributes).getPercentage(), 0);
+        assertThat(sampler.getOverride(attributes).getPercentage()).isEqualTo(0);
     }
 
     @Test
@@ -135,7 +134,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
         // expect
-        assertEquals(0, sampler.getOverride(attributes).getPercentage(), 0);
+        assertThat(sampler.getOverride(attributes).getPercentage()).isEqualTo(0);
     }
 
     @Test
@@ -146,7 +145,7 @@ public class SamplingOverridesTest {
         Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "33");
 
         // expect
-        assertNull(sampler.getOverride(attributes));
+        assertThat(sampler.getOverride(attributes)).isNull();
     }
 
     private SamplingOverride newOverride(float percentage, SamplingOverrideAttribute... attribute) {

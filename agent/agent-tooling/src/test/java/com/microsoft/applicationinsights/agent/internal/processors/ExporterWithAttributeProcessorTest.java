@@ -48,7 +48,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ExporterWithAttributeProcessorTest {
 
@@ -173,7 +172,7 @@ public class ExporterWithAttributeProcessorTest {
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
 
-        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey")));
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
         assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isEqualTo("testNewValue");
     }
 
@@ -214,7 +213,7 @@ public class ExporterWithAttributeProcessorTest {
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
 
-        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey")));
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
         assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isEqualTo("testNewValue");
         assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testNewValue2");
     }
@@ -256,7 +255,7 @@ public class ExporterWithAttributeProcessorTest {
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
 
-        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey")));
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
         assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isEqualTo("testNewValue2");
     }
 

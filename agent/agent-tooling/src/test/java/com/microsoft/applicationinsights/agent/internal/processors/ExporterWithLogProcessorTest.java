@@ -40,9 +40,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ExporterWithLogProcessorTest {
 
@@ -112,7 +111,7 @@ public class ExporterWithLogProcessorTest {
         // verify that resulting logs are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("locationget1234", resultSpan.getName());
+        assertThat(resultSpan.getName()).isEqualTo("locationget1234");
     }
 
     @Test
@@ -144,7 +143,7 @@ public class ExporterWithLogProcessorTest {
         // verify that resulting logs are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("location::get::1234", resultSpan.getName());
+        assertThat(resultSpan.getName()).isEqualTo("location::get::1234");
 
     }
 
@@ -176,7 +175,7 @@ public class ExporterWithLogProcessorTest {
         // verify that resulting logs are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("svcA", resultSpan.getName());
+        assertThat(resultSpan.getName()).isEqualTo("svcA");
 
     }
 
@@ -227,9 +226,9 @@ public class ExporterWithLogProcessorTest {
         // verify that resulting logs are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotNull(Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))));
-        assertEquals("12345678", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId"))));
-        assertEquals("/api/v1/document/{documentId}/update", resultSpan.getName());
+        assertThat(Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId")))).isNotNull();
+        assertThat(Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("documentId")))).isEqualTo("12345678");
+        assertThat(resultSpan.getName()).isEqualTo("/api/v1/document/{documentId}/update");
     }
 
     @Test
@@ -276,14 +275,14 @@ public class ExporterWithLogProcessorTest {
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
-        assertNotNull(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password1"))));
-        assertEquals("123", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password1"))));
-        assertNotNull(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password2"))));
-        assertEquals("555", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password2"))));
-        assertEquals("yyyPassword={password1} aba Pass={password2} xyx Pass=777 zzz", resultSpanA.getName());
-        assertNotNull(Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("password1"))));
-        assertEquals("****", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("password1"))));
-        assertEquals("yyyPassword={password1} aba", resultSpanB.getName());
+        assertThat(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password1")))).isNotNull();
+        assertThat(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password1")))).isEqualTo("123");
+        assertThat(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password2")))).isNotNull();
+        assertThat(Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("password2")))).isEqualTo("555");
+        assertThat(resultSpanA.getName()).isEqualTo("yyyPassword={password1} aba Pass={password2} xyx Pass=777 zzz");
+        assertThat(Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("password1")))).isNotNull();
+        assertThat(Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("password1")))).isEqualTo("****");
+        assertThat(resultSpanB.getName()).isEqualTo("yyyPassword={password1} aba");
     }
 
     @Test
@@ -313,7 +312,7 @@ public class ExporterWithLogProcessorTest {
         // verify that resulting logs are not modified
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("svcA", resultSpan.getName());
+        assertThat(resultSpan.getName()).isEqualTo("svcA");
 
     }
 }

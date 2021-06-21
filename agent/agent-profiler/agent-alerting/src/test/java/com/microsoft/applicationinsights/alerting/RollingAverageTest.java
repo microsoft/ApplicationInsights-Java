@@ -31,8 +31,7 @@ import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import org.junit.jupiter.api.Test;
 
 import static com.microsoft.applicationinsights.alerting.alert.AlertMetricType.CPU;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RollingAverageTest {
 
@@ -45,7 +44,7 @@ public class RollingAverageTest {
 
         rollingAverage.track(createDataPoint(0.1));
 
-        assertNotNull(called.get());
+        assertThat(called.get()).isNotNull();
     }
 
     @Test
@@ -59,7 +58,7 @@ public class RollingAverageTest {
         rollingAverage.track(createDataPoint(0.5));
         rollingAverage.track(createDataPoint(1.0));
 
-        assertEquals(0.5d, called.get(), 0.01);
+        assertThat(called.get()).isEqualTo(0.5d);
     }
 
     @Test
@@ -85,9 +84,9 @@ public class RollingAverageTest {
         rollingAverage.track(createDataPoint(0.1));
         rollingAverage.track(createDataPoint(0.1));
 
-        assertEquals(0.1d, rollingAverage.track(createDataPoint(0.1)), 0.01);
+        assertThat(rollingAverage.track(createDataPoint(0.1))).isEqualTo(0.1d);
 
-        assertEquals(0.1d, called.get(), 0.01);
+        assertThat(called.get()).isEqualTo(0.1d);
     }
 
     private TelemetryDataPoint createDataPoint(double v) {

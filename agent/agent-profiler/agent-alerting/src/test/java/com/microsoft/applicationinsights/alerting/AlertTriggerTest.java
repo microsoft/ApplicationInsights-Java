@@ -29,7 +29,7 @@ import com.microsoft.applicationinsights.alerting.analysis.AlertPipelineTrigger;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AlertTriggerTest {
 
@@ -42,7 +42,7 @@ public class AlertTriggerTest {
             trigger.accept(0.4);
         }
 
-        assertFalse(called.get());
+        assertThat(called.get()).isFalse();
     }
 
     @Test
@@ -56,7 +56,7 @@ public class AlertTriggerTest {
             trigger.accept(0.51);
         }
 
-        assertTrue(called.get());
+        assertThat(called.get()).isTrue();
     }
 
 
@@ -69,7 +69,7 @@ public class AlertTriggerTest {
         for (int i = 0; i < 100; i++) {
             trigger.accept(0.51);
         }
-        assertTrue(called.get());
+        assertThat(called.get()).isTrue();
         called.set(false);
 
         for (int i = 0; i < 100; i++) {
@@ -80,7 +80,7 @@ public class AlertTriggerTest {
             trigger.accept(0.51);
         }
 
-        assertFalse(called.get());
+        assertThat(called.get()).isFalse();
     }
 
 
@@ -93,7 +93,7 @@ public class AlertTriggerTest {
         for (int i = 0; i < 100; i++) {
             trigger.accept(0.51);
         }
-        assertTrue(called.get());
+        assertThat(called.get()).isTrue();
         called.set(false);
 
         Thread.sleep(2000);
@@ -106,13 +106,13 @@ public class AlertTriggerTest {
             trigger.accept(0.51);
         }
 
-        assertTrue(called.get());
+        assertThat(called.get()).isTrue();
     }
 
     private AlertPipelineTrigger getAlertTrigger(AlertConfiguration config, AtomicBoolean called) {
         Consumer<AlertBreach> consumer = alert -> {
-            assertEquals(AlertMetricType.CPU, alert.getType());
-            assertEquals(config, alert.getAlertConfiguration());
+            assertThat(alert.getType()).isEqualTo(AlertMetricType.CPU);
+            assertThat(alert.getAlertConfiguration()).isEqualTo(config);
             called.set(true);
         };
 

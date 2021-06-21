@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.internal.reflect;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public final class ClassDataVerifierImplTests {
     private final static String PUBLIC_EXISTING_METHOD = "endsWith";
@@ -34,24 +34,24 @@ public final class ClassDataVerifierImplTests {
     @Test
     public void testMethodExistingPublicMethod() {
         boolean found = new ClassDataVerifierImpl().verifyMethodExists(String.class, PUBLIC_EXISTING_METHOD, String.class);
-        assertTrue(found, "Method not found");
+        assertThat(found).isTrue();
     }
 
     @Test
     public void testMethodNotExistingPublicMethod() {
         boolean found = new ClassDataVerifierImpl().verifyMethodExists(String.class, PUBLIC_NOT_EXISTING_METHOD);
-        assertFalse(found, "Method found");
+        assertThat(found).isFalse();
     }
 
     @Test
     public void testClassExists() {
         boolean found = new ClassDataVerifierImpl().verifyClassExists(EXISTING_CLASS);
-        assertTrue(found, "Class not found");
+        assertThat(found).isTrue();
     }
 
     @Test
     public void testClassDoesNotExist() {
         boolean found = new ClassDataVerifierImpl().verifyClassExists(NOT_EXISTING_CLASS);
-        assertFalse(found, "Class found");
+        assertThat(found).isFalse();
     }
 }

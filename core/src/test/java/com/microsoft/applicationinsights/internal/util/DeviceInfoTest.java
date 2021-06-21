@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by amnonsh on 2/10/2015.
@@ -37,7 +37,7 @@ public class DeviceInfoTest {
         Locale.setDefault(new Locale("en", "us"));
         String tag = DeviceInfo.getLocale();
 
-        assertEquals("en-US", tag);
+        assertThat(tag).isEqualTo("en-US");
     }
 
     @Test
@@ -45,7 +45,7 @@ public class DeviceInfoTest {
         Locale.setDefault(new Locale("iw", "il"));
         String tag = DeviceInfo.getLocale();
 
-        assertEquals("he-IL", tag);
+        assertThat(tag).isEqualTo("he-IL");
     }
 
     @Test
@@ -53,7 +53,7 @@ public class DeviceInfoTest {
         Locale.setDefault(new Locale("BadLocale"));
         String tag = DeviceInfo.getLocale();
 
-        assertEquals(isJava6() ? "badlocale" : "und", tag);
+        assertThat(tag).isEqualTo(isJava6() ? "badlocale" : "und");
     }
 
     private boolean isJava6() {

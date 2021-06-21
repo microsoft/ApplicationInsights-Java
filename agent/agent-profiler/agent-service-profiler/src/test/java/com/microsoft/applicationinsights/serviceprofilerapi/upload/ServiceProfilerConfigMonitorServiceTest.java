@@ -37,8 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ServiceProfilerConfigMonitorServiceTest {
 
@@ -59,17 +58,17 @@ public class ServiceProfilerConfigMonitorServiceTest {
         AtomicReference<ProfilerConfiguration> config = new AtomicReference<>();
         serviceMonitor.initialize(Collections.singletonList(config::set));
 
-        assertNotNull(job.get());
+        assertThat(job.get()).isNotNull();
 
         job.get().run();
 
         Mockito.verify(serviceProfilerClient, Mockito.times(1)).getSettings(Matchers.any(Date.class));
-        assertNotNull(config.get());
+        assertThat(config.get()).isNotNull();
 
-        assertEquals("--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker", config.get().getCollectionPlan());
-        assertEquals("--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400", config.get().getCpuTriggerConfiguration());
-        assertEquals("--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120", config.get().getDefaultConfiguration());
-        assertEquals("--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400", config.get().getMemoryTriggerConfiguration());
+        assertThat(config.get().getCollectionPlan()).isEqualTo("--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker");
+        assertThat(config.get().getCpuTriggerConfiguration()).isEqualTo("--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400");
+        assertThat(config.get().getDefaultConfiguration()).isEqualTo("--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120");
+        assertThat(config.get().getMemoryTriggerConfiguration()).isEqualTo("--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400");
     }
 
     private ScheduledExecutorService mockScheduledExecutorService(Consumer<Runnable> job) {

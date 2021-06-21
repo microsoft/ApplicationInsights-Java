@@ -17,11 +17,12 @@ import java.util.concurrent.ConcurrentMap;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class HeartbeatTests {
 
@@ -43,9 +44,9 @@ class HeartbeatTests {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.initialize(null);
 
-    Assertions.assertTrue(module.getExcludedHeartBeatProperties() == null ||
-    module.getExcludedHeartBeatProperties().size() == 0);
-    Assertions.assertEquals(HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL, module.getHeartBeatInterval());
+    assertThat(module.getExcludedHeartBeatProperties() == null ||
+    module.getExcludedHeartBeatProperties().size() == 0).isTrue();
+    assertThat(module.getHeartBeatInterval()).isEqualTo(HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL);
   }
 
   @Test
@@ -55,7 +56,7 @@ class HeartbeatTests {
     dummyPropertiesMap.put("HeartBeatInterval", String.valueOf(heartBeatInterval));
     HeartBeatModule module = new HeartBeatModule(dummyPropertiesMap);
     module.initialize(null);
-    Assertions.assertEquals(heartBeatInterval, module.getHeartBeatInterval());
+    assertThat(module.getHeartBeatInterval()).isEqualTo(heartBeatInterval);
   }
 
   @Test
@@ -65,8 +66,8 @@ class HeartbeatTests {
     dummyPropertiesMap.put("HeartBeatInterval", String.valueOf(heartBeatInterval));
     HeartBeatModule module = new HeartBeatModule(dummyPropertiesMap);
     module.initialize(null);
-    Assertions.assertNotEquals(heartBeatInterval, module.getHeartBeatInterval());
-    Assertions.assertEquals(HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL, module.getHeartBeatInterval());
+    assertThat(module.getHeartBeatInterval()).isNotEqualTo(heartBeatInterval);
+    assertThat(module.getHeartBeatInterval()).isEqualTo(HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL);
   }
 
   @Test
@@ -77,8 +78,8 @@ class HeartbeatTests {
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
     HeartBeatProviderInterface hbi = (HeartBeatProviderInterface)field.get(module);
-    Assertions.assertTrue(hbi.addHeartBeatProperty("test01",
-        "This is value", true));
+    assertThat(hbi.addHeartBeatProperty("test01",
+        "This is value", true)).isTrue();
   }
 
   @Test
@@ -95,9 +96,9 @@ class HeartbeatTests {
         break;
       }
     }
-    Assertions.assertTrue(hasHeartBeatModule);
-    Assertions.assertNotNull(hbm);
-    Assertions.assertTrue(hbm.isHeartBeatEnabled());
+    assertThat(hasHeartBeatModule).isTrue();
+    assertThat(hbm).isNotNull();
+    assertThat(hbm.isHeartBeatEnabled()).isTrue();
   }
 
   @Test
@@ -108,13 +109,13 @@ class HeartbeatTests {
     TelemetryClient telemetryClient = new TelemetryClient();
     telemetryClient.getTelemetryModules().add(module);
     module.initialize(telemetryClient);
-    Assertions.assertFalse(module.isHeartBeatEnabled());
+    assertThat(module.isHeartBeatEnabled()).isFalse();
 
 
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
     HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
-    Assertions.assertFalse(hbi.isHeartBeatEnabled());
+    assertThat(hbi.isHeartBeatEnabled()).isFalse();
   }
 
   @Test
@@ -126,12 +127,12 @@ class HeartbeatTests {
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
     HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
-    Assertions.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("Base"));
-    Assertions.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps"));
+    assertThat(hbi.getExcludedHeartBeatPropertyProviders().contains("Base")).isTrue();
+    assertThat(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps")).isTrue();
     module.initialize(new TelemetryClient());
 
-    Assertions.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("Base"));
-    Assertions.assertTrue(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps"));
+    assertThat(hbi.getExcludedHeartBeatPropertyProviders().contains("Base")).isTrue();
+    assertThat(hbi.getExcludedHeartBeatPropertyProviders().contains("webapps")).isTrue();
   }
 
   @Test
@@ -151,7 +152,7 @@ class HeartbeatTests {
         disabledProviders, mockProvider);
 
     callable.call();
-    Assertions.assertEquals(0, props.size());
+    assertThat(props.size()).isEqualTo(0);
   }
 
   // FIXME (trask) sporadic failures
@@ -164,8 +165,8 @@ class HeartbeatTests {
 
     // then
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
-    Assertions.assertNotNull(t);
-    Assertions.assertTrue(t.getProperties().size() > 0);
+    assertThat(t).isNotNull();
+    assertThat(t.getProperties().size() > 0).isTrue();
   }
 
   @Test
@@ -175,10 +176,10 @@ class HeartbeatTests {
     provider.initialize(new TelemetryClient());
 
     // then
-    Assertions.assertTrue(provider.addHeartBeatProperty("test", "testVal", true));
+    assertThat(provider.addHeartBeatProperty("test", "testVal", true)).isTrue();
 
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
-    Assertions.assertEquals("testVal", t.getProperties().get("test"));
+    assertThat(t.getProperties().get("test")).isEqualTo("testVal");
   }
 
   @Test
@@ -188,10 +189,10 @@ class HeartbeatTests {
     provider.initialize(new TelemetryClient());
 
     // then
-    Assertions.assertTrue(provider.addHeartBeatProperty("test", "testVal", false));
+    assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
 
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
-    Assertions.assertEquals(1, t.getMetrics().get(0).getValue(), 0.0);
+    assertThat(t.getMetrics().get(0).getValue()).isEqualTo(1);
   }
 
   @Test
@@ -201,11 +202,11 @@ class HeartbeatTests {
     provider.initialize(new TelemetryClient());
 
     // then
-    Assertions.assertTrue(provider.addHeartBeatProperty("test", "testVal", false));
-    Assertions.assertTrue(provider.addHeartBeatProperty("test1", "testVal1", false));
+    assertThat(provider.addHeartBeatProperty("test", "testVal", false)).isTrue();
+    assertThat(provider.addHeartBeatProperty("test1", "testVal1", false)).isTrue();
 
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
-    Assertions.assertEquals(2, t.getMetrics().get(0).getValue(), 0.0);
+    assertThat(t.getMetrics().get(0).getValue()).isEqualTo(2);
   }
 
   @Test
@@ -225,8 +226,8 @@ class HeartbeatTests {
     field.setAccessible(true);
     Set<String> defaultFields = (Set<String>) field.get(defaultProvider);
     for (String fieldName : defaultFields) {
-      Assertions.assertTrue(props.containsKey(fieldName));
-      Assertions.assertTrue(props.get(fieldName).length() > 0);
+      assertThat(props.containsKey(fieldName)).isTrue();
+      assertThat(props.get(fieldName).length() > 0).isTrue();
     }
   }
 
@@ -238,7 +239,7 @@ class HeartbeatTests {
 
     // then
     provider.addHeartBeatProperty("test01", "test val", true);
-    Assertions.assertFalse(provider.addHeartBeatProperty("test01", "test val 2", true));
+    assertThat(provider.addHeartBeatProperty("test01", "test val 2", true)).isFalse();
   }
 
   @Test
@@ -256,7 +257,7 @@ class HeartbeatTests {
 
     base.setDefaultPayload(new ArrayList<>(), provider).call();
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
-    Assertions.assertFalse(t.getProperties().containsKey("testKey"));
+    assertThat(t.getProperties().containsKey("testKey")).isFalse();
   }
 
   @Test
@@ -267,7 +268,7 @@ class HeartbeatTests {
     HeartBeatModule module = new HeartBeatModule(dummyPropertiesMap);
     module.initialize(null);
     Thread.sleep(100);
-    Assertions.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("Base"));
-    Assertions.assertTrue(module.getExcludedHeartBeatPropertiesProvider().contains("webapps"));
+    assertThat(module.getExcludedHeartBeatPropertiesProvider().contains("Base")).isTrue();
+    assertThat(module.getExcludedHeartBeatPropertiesProvider().contains("webapps")).isTrue();
   }
 }

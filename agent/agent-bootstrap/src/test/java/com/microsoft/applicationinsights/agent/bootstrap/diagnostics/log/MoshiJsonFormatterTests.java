@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MoshiJsonFormatterTests {
 
@@ -29,7 +29,7 @@ public class MoshiJsonFormatterTests {
         m.put("s1", "v1");
         m.put("int1", 123);
         m.put("b", true);
-        assertEquals("{\"b\":true,\"int1\":123,\"s1\":\"v1\"}", formatter.toJsonString(m));
+        assertThat(formatter.toJsonString(m)).isEqualTo("{\"b\":true,\"int1\":123,\"s1\":\"v1\"}");
     }
 
     @Test
@@ -38,9 +38,9 @@ public class MoshiJsonFormatterTests {
         m.put("s1", "v1");
         m.put("int1", 123);
         formatter.setPrettyPrint(true);
-        assertEquals("{\n" +
+        assertThat(formatter.toJsonString(m)).isEqualTo("{\n" +
                 "  \"int1\": 123,\n" +
                 "  \"s1\": \"v1\"\n" +
-                "}", formatter.toJsonString(m));
+                "}");
     }
 }

@@ -9,8 +9,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 
 class JmxDataFetcherTest {
 
@@ -104,8 +104,8 @@ class JmxDataFetcherTest {
             double expectedLong) throws Exception {
         Map<String, Collection<Object>> result = JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes);
 
-        assertNotNull(result);
-        assertEquals(3, result.size());
+        assertThat(result).isNotNull();
+        assertThat(result.size()).isEqualTo(3);
 
         verify(result, "Int", expectedInt);
         verify(result, "Double", expectedDouble);
@@ -114,8 +114,8 @@ class JmxDataFetcherTest {
 
     private static void verify(Map<String, Collection<Object>> result, String key, double expectedValue) {
         Collection<Object> objects = result.get(key);
-        assertNotNull(objects);
-        assertEquals(1, objects.size());
+        assertThat(objects).isNotNull();
+        assertThat(objects.size()).isEqualTo(1);
         double value = 0.0;
         for (Object obj : objects) {
             try {
@@ -125,6 +125,6 @@ class JmxDataFetcherTest {
             }
         }
 
-        assertEquals(value, expectedValue, 0.0);
+        assertThat(value).isEqualTo(expectedValue);
     }
 }

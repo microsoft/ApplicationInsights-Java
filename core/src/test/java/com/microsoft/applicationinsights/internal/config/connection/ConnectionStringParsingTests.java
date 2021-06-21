@@ -10,8 +10,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConnectionStringParsingTests {
 
@@ -23,10 +23,13 @@ public class ConnectionStringParsingTests {
         final String cs = "InstrumentationKey="+ikey;
 
         ConnectionString.parseInto(cs, telemetryClient);
-        assertEquals(ikey, telemetryClient.getInstrumentationKey());
-        assertEquals(new URL(Defaults.INGESTION_ENDPOINT), telemetryClient.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(new URL(Defaults.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH), telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
-        assertEquals(new URL(Defaults.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH), telemetryClient.getEndpointProvider().getLiveEndpointUrl());
+        assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint())
+                .isEqualTo(new URL(Defaults.INGESTION_ENDPOINT));
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl())
+                .isEqualTo(new URL(Defaults.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH));
+        assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl())
+                .isEqualTo(new URL(Defaults.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH));
     }
 
     @Test // this test does not use this.config
@@ -35,7 +38,8 @@ public class ConnectionStringParsingTests {
         String ikey = "fake-ikey";
         final String host = "http://123.com";
         ep.setIngestionEndpoint(new URL(host));
-        assertEquals(new URL(host+"/"+EndpointProvider.API_PROFILES_APP_ID_URL_PREFIX +ikey+EndpointProvider.API_PROFILES_APP_ID_URL_SUFFIX), ep.getAppIdEndpointUrl(ikey));
+        assertThat(ep.getAppIdEndpointUrl(ikey))
+                .isEqualTo(new URL(host+"/"+EndpointProvider.API_PROFILES_APP_ID_URL_PREFIX +ikey+EndpointProvider.API_PROFILES_APP_ID_URL_SUFFIX));
     }
 
     @Test
@@ -44,10 +48,10 @@ public class ConnectionStringParsingTests {
         String ikey = "fake-ikey";
         String url = "http://123.com/path/321";
         ep.setIngestionEndpoint(new URL(url));
-        assertEquals(new URL(url+"/"+EndpointProvider.API_PROFILES_APP_ID_URL_PREFIX +ikey+EndpointProvider.API_PROFILES_APP_ID_URL_SUFFIX), ep.getAppIdEndpointUrl(ikey));
+        assertThat(ep.getAppIdEndpointUrl(ikey)).isEqualTo(new URL(url+"/"+EndpointProvider.API_PROFILES_APP_ID_URL_PREFIX +ikey+EndpointProvider.API_PROFILES_APP_ID_URL_SUFFIX));
 
         ep.setIngestionEndpoint(new URL(url+"/"));
-        assertEquals(new URL(url+"/"+EndpointProvider.API_PROFILES_APP_ID_URL_PREFIX +ikey+EndpointProvider.API_PROFILES_APP_ID_URL_SUFFIX), ep.getAppIdEndpointUrl(ikey));
+        assertThat(ep.getAppIdEndpointUrl(ikey)).isEqualTo(new URL(url+"/"+EndpointProvider.API_PROFILES_APP_ID_URL_PREFIX +ikey+EndpointProvider.API_PROFILES_APP_ID_URL_SUFFIX));
     }
 
     @Test
@@ -60,10 +64,10 @@ public class ConnectionStringParsingTests {
         final URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
 
         ConnectionString.parseInto(cs, telemetryClient);
-        assertEquals(ikey, telemetryClient.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, telemetryClient.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(expectedIngestionEndpointURL, telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
-        assertEquals(expectedLiveEndpoint, telemetryClient.getEndpointProvider().getLiveEndpointUrl());
+        assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint()).isEqualTo(expectedIngestionEndpoint);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl()).isEqualTo(expectedIngestionEndpointURL);
+        assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl()).isEqualTo(expectedLiveEndpoint);
     }
 
     @Test
@@ -76,10 +80,10 @@ public class ConnectionStringParsingTests {
         final URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
 
         ConnectionString.parseInto(cs, telemetryClient);
-        assertEquals(ikey, telemetryClient.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, telemetryClient.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(expectedIngestionEndpointURL, telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
-        assertEquals(expectedLiveEndpoint, telemetryClient.getEndpointProvider().getLiveEndpointUrl());
+        assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint()).isEqualTo(expectedIngestionEndpoint);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl()).isEqualTo(expectedIngestionEndpointURL);
+        assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl()).isEqualTo(expectedLiveEndpoint);
     }
 
     @Test
@@ -92,10 +96,10 @@ public class ConnectionStringParsingTests {
         final URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
 
         ConnectionString.parseInto(cs, telemetryClient);
-        assertEquals(ikey, telemetryClient.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, telemetryClient.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(expectedIngestionEndpointURL, telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
-        assertEquals(expectedLiveEndpoint, telemetryClient.getEndpointProvider().getLiveEndpointUrl());
+        assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint()).isEqualTo(expectedIngestionEndpoint);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl()).isEqualTo(expectedIngestionEndpointURL);
+        assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl()).isEqualTo(expectedLiveEndpoint);
     }
 
     @Test
@@ -108,10 +112,10 @@ public class ConnectionStringParsingTests {
         final String cs = "InstrumentationKey="+ikey+";IngestionEndpoint="+expectedIngestionEndpoint+";LiveEndpoint="+liveHost;
 
         ConnectionString.parseInto(cs, telemetryClient);
-        assertEquals(ikey, telemetryClient.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, telemetryClient.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(expectedIngestionEndpointURL, telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
-        assertEquals(expectedLiveEndpoint, telemetryClient.getEndpointProvider().getLiveEndpointUrl());
+        assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint()).isEqualTo(expectedIngestionEndpoint);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl()).isEqualTo(expectedIngestionEndpointURL);
+        assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl()).isEqualTo(expectedLiveEndpoint);
     }
 
     @Test
@@ -124,10 +128,10 @@ public class ConnectionStringParsingTests {
         final String cs = "InstrumentationKey="+ikey+";IngestionEndpoint="+expectedIngestionEndpoint+";EndpointSuffix="+suffix;
 
         ConnectionString.parseInto(cs, telemetryClient);
-        assertEquals(ikey, telemetryClient.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, telemetryClient.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(expectedIngestionEndpointURL, telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
-        assertEquals(expectedLiveEndpoint, telemetryClient.getEndpointProvider().getLiveEndpointUrl());
+        assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint()).isEqualTo(expectedIngestionEndpoint);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl()).isEqualTo(expectedIngestionEndpointURL);
+        assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl()).isEqualTo(expectedLiveEndpoint);
     }
 
     @Test
@@ -139,10 +143,10 @@ public class ConnectionStringParsingTests {
         final URL expectedIngestionEndpointURL = new URL("https://"+EndpointPrefixes.INGESTION_ENDPOINT_PREFIX+"."+suffix+"/" + EndpointProvider.INGESTION_URL_PATH);
         final URL expectedLiveEndpoint = new URL("https://"+EndpointPrefixes.LIVE_ENDPOINT_PREFIX+"."+suffix + "/" + EndpointProvider.LIVE_URL_PATH);
         ConnectionString.parseInto(cs, telemetryClient);
-        assertEquals(ikey, telemetryClient.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, telemetryClient.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(expectedIngestionEndpointURL, telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
-        assertEquals(expectedLiveEndpoint, telemetryClient.getEndpointProvider().getLiveEndpointUrl());
+        assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint()).isEqualTo(expectedIngestionEndpoint);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl()).isEqualTo(expectedIngestionEndpointURL);
+        assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl()).isEqualTo(expectedLiveEndpoint);
     }
 
     @Test
@@ -157,10 +161,10 @@ public class ConnectionStringParsingTests {
         } catch (Exception e) {
             throw new AssertionError("Exception thrown from parse");
         }
-        assertEquals(ikey, telemetryClient.getInstrumentationKey());
-        assertEquals(expectedIngestionEndpoint, telemetryClient.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(expectedIngestionEndpointURL, telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
-        assertEquals(expectedLiveEndpoint, telemetryClient.getEndpointProvider().getLiveEndpointUrl());
+        assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint()).isEqualTo(expectedIngestionEndpoint);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl()).isEqualTo(expectedIngestionEndpointURL);
+        assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl()).isEqualTo(expectedLiveEndpoint);
     }
 
     @Test
@@ -169,10 +173,10 @@ public class ConnectionStringParsingTests {
         final String cs = "InstrumentationKey="+ikey+";EndpointSuffix=";
 
         ConnectionString.parseInto(cs, telemetryClient);
-        assertEquals(ikey, telemetryClient.getInstrumentationKey());
-        assertEquals(new URL(Defaults.INGESTION_ENDPOINT), telemetryClient.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(new URL(Defaults.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH), telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
-        assertEquals(new URL(Defaults.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH), telemetryClient.getEndpointProvider().getLiveEndpointUrl());
+        assertThat(telemetryClient.getInstrumentationKey()).isEqualTo(ikey);
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint()).isEqualTo(new URL(Defaults.INGESTION_ENDPOINT));
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpointUrl()).isEqualTo(new URL(Defaults.INGESTION_ENDPOINT + "/" + EndpointProvider.INGESTION_URL_PATH));
+        assertThat(telemetryClient.getEndpointProvider().getLiveEndpointUrl()).isEqualTo(new URL(Defaults.LIVE_ENDPOINT + "/" + EndpointProvider.LIVE_URL_PATH));
     }
 
     @Test
@@ -188,12 +192,12 @@ public class ConnectionStringParsingTests {
         ConnectionString.parseInto(cs1, telemetryClient);
         ConnectionString.parseInto(cs2, telemetryClient2);
 
-        assertEquals(telemetryClient.getInstrumentationKey(), telemetryClient2.getInstrumentationKey());
-        assertEquals(telemetryClient.getEndpointProvider().getIngestionEndpoint(), telemetryClient2.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(telemetryClient.getEndpointProvider().getIngestionEndpointUrl(), telemetryClient2.getEndpointProvider().getIngestionEndpointUrl());
-        assertEquals(telemetryClient.getEndpointProvider().getLiveEndpointUrl(), telemetryClient2.getEndpointProvider().getLiveEndpointUrl());
-        assertEquals(telemetryClient.getEndpointProvider().getProfilerEndpoint(), telemetryClient2.getEndpointProvider().getProfilerEndpoint());
-        assertEquals(telemetryClient.getEndpointProvider().getSnapshotEndpoint(), telemetryClient2.getEndpointProvider().getSnapshotEndpoint());
+        assertThat(telemetryClient2.getInstrumentationKey()).isEqualTo(telemetryClient.getInstrumentationKey());
+        assertThat(telemetryClient2.getEndpointProvider().getIngestionEndpoint()).isEqualTo(telemetryClient.getEndpointProvider().getIngestionEndpoint());
+        assertThat(telemetryClient2.getEndpointProvider().getIngestionEndpointUrl()).isEqualTo(telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
+        assertThat(telemetryClient2.getEndpointProvider().getLiveEndpointUrl()).isEqualTo(telemetryClient.getEndpointProvider().getLiveEndpointUrl());
+        assertThat(telemetryClient2.getEndpointProvider().getProfilerEndpoint()).isEqualTo(telemetryClient.getEndpointProvider().getProfilerEndpoint());
+        assertThat(telemetryClient2.getEndpointProvider().getSnapshotEndpoint()).isEqualTo(telemetryClient.getEndpointProvider().getSnapshotEndpoint());
     }
 
     @Test
@@ -210,12 +214,12 @@ public class ConnectionStringParsingTests {
         ConnectionString.parseInto(cs1, telemetryClient);
         ConnectionString.parseInto(cs2, telemetryClient2);
 
-        assertEquals(telemetryClient.getInstrumentationKey(), telemetryClient2.getInstrumentationKey());
-        assertEquals(telemetryClient.getEndpointProvider().getIngestionEndpoint(), telemetryClient2.getEndpointProvider().getIngestionEndpoint());
-        assertEquals(telemetryClient.getEndpointProvider().getIngestionEndpointUrl(), telemetryClient2.getEndpointProvider().getIngestionEndpointUrl());
-        assertEquals(telemetryClient.getEndpointProvider().getLiveEndpointUrl(), telemetryClient2.getEndpointProvider().getLiveEndpointUrl());
-        assertEquals(telemetryClient.getEndpointProvider().getProfilerEndpoint(), telemetryClient2.getEndpointProvider().getProfilerEndpoint());
-        assertEquals(telemetryClient.getEndpointProvider().getSnapshotEndpoint(), telemetryClient2.getEndpointProvider().getSnapshotEndpoint());
+        assertThat(telemetryClient2.getInstrumentationKey()).isEqualTo(telemetryClient.getInstrumentationKey());
+        assertThat(telemetryClient2.getEndpointProvider().getIngestionEndpoint()).isEqualTo(telemetryClient.getEndpointProvider().getIngestionEndpoint());
+        assertThat(telemetryClient2.getEndpointProvider().getIngestionEndpointUrl()).isEqualTo(telemetryClient.getEndpointProvider().getIngestionEndpointUrl());
+        assertThat(telemetryClient2.getEndpointProvider().getLiveEndpointUrl()).isEqualTo(telemetryClient.getEndpointProvider().getLiveEndpointUrl());
+        assertThat(telemetryClient2.getEndpointProvider().getProfilerEndpoint()).isEqualTo(telemetryClient.getEndpointProvider().getProfilerEndpoint());
+        assertThat(telemetryClient2.getEndpointProvider().getSnapshotEndpoint()).isEqualTo(telemetryClient.getEndpointProvider().getSnapshotEndpoint());
     }
 
     @Test
@@ -227,7 +231,7 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void endpointWithPathMissingSchemeIsInvalid() throws Exception {
+    public void endpointWithPathMissingSchemeIsInvalid() {
         assertThatThrownBy(() ->
                 ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com/path/prefix", telemetryClient))
                 .isInstanceOf(InvalidConnectionStringException.class)
@@ -235,7 +239,7 @@ public class ConnectionStringParsingTests {
     }
 
     @Test
-    public void endpointWithPortMissingSchemeIsInvalid() throws Exception {
+    public void endpointWithPortMissingSchemeIsInvalid() {
         assertThatThrownBy(() ->
                 ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=my-ai.example.com:9999", telemetryClient))
                 .isInstanceOf(InvalidConnectionStringException.class)
@@ -245,7 +249,7 @@ public class ConnectionStringParsingTests {
     @Test
     public void httpEndpointKeepsScheme() throws Exception {
         ConnectionString.parseInto("InstrumentationKey=fake-ikey;IngestionEndpoint=http://my-ai.example.com", telemetryClient);
-        assertEquals(new URL("http://my-ai.example.com"), telemetryClient.getEndpointProvider().getIngestionEndpoint());
+        assertThat(telemetryClient.getEndpointProvider().getIngestionEndpoint()).isEqualTo(new URL("http://my-ai.example.com"));
     }
 
     @Test
@@ -270,14 +274,14 @@ public class ConnectionStringParsingTests {
     }
 
     @Test // when more Authorization values are available, create a copy of this test. For example, given "Authorization=Xyz", this would fail because the 'Xyz' key/value pair is missing.
-    public void missingInstrumentationKeyIsInvalid() throws Exception {
+    public void missingInstrumentationKeyIsInvalid() {
         assertThatThrownBy(() ->
                 ConnectionString.parseInto("LiveEndpoint=https://live.example.com", telemetryClient))
                 .isInstanceOf(InvalidConnectionStringException.class);
     }
 
     @Test
-    public void invalidUrlIsInvalidConnectionString() throws Exception {
+    public void invalidUrlIsInvalidConnectionString() {
         assertThatThrownBy(() ->
                 ConnectionString.parseInto("InstrumentationKey=fake-ikey;LiveEndpoint=httpx://host", telemetryClient))
                 .isInstanceOf(InvalidConnectionStringException.class)

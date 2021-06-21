@@ -30,8 +30,7 @@ import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AlertConfigParserTest {
 
@@ -44,10 +43,10 @@ public class AlertConfigParserTest {
                 null,
                 null
         );
-        assertFalse(config.getCpuAlert().isEnabled());
-        assertFalse(config.getCollectionPlanConfiguration().isSingle());
-        assertFalse(config.getMemoryAlert().isEnabled());
-        assertFalse(config.getDefaultConfiguration().getSamplingEnabled());
+        assertThat(config.getCpuAlert().isEnabled()).isFalse();
+        assertThat(config.getCollectionPlanConfiguration().isSingle()).isFalse();
+        assertThat(config.getMemoryAlert().isEnabled()).isFalse();
+        assertThat(config.getDefaultConfiguration().getSamplingEnabled()).isFalse();
     }
 
     @Test
@@ -59,11 +58,9 @@ public class AlertConfigParserTest {
                 "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker"
         );
 
-        assertEquals(new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400), config.getCpuAlert());
-        assertEquals(new AlertConfiguration(AlertMetricType.CPU, true, 20, 120, 14400), config.getMemoryAlert());
-        assertEquals(new DefaultConfiguration(true, 5, 120), config.getDefaultConfiguration());
-        assertEquals(new CollectionPlanConfiguration(true, EngineMode.immediate, CollectionPlanConfigurationBuilder.parseBinaryDate(5249157885138288517L), 120, "a-settings-moniker"),
-                config.getCollectionPlanConfiguration());
-
+        assertThat(config.getCpuAlert()).isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400));
+        assertThat(config.getMemoryAlert()).isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 20, 120, 14400));
+        assertThat(config.getDefaultConfiguration()).isEqualTo(new DefaultConfiguration(true, 5, 120));
+        assertThat(config.getCollectionPlanConfiguration()).isEqualTo(new CollectionPlanConfiguration(true, EngineMode.immediate, CollectionPlanConfigurationBuilder.parseBinaryDate(5249157885138288517L), 120, "a-settings-moniker"));
     }
 }

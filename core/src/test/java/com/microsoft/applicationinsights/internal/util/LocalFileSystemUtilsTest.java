@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocalFileSystemUtilsTest {
     /*
@@ -39,7 +39,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, "unknown");
 
         final File expected = new File(input);
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
@@ -49,7 +49,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
         final File expected = new File(input);
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, null);
 
         final File expected = new File(input);
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
@@ -69,7 +69,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
         final File expected = new File(input, "olivida").getAbsoluteFile();
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
@@ -79,7 +79,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
         final File expected = new File(input);
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class LocalFileSystemUtilsTest {
         final File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
         final File expected = new File(input);
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 }
 

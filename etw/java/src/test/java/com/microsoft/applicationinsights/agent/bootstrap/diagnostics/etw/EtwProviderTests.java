@@ -38,7 +38,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -138,7 +138,7 @@ public class EtwProviderTests {
         String filename = EtwProvider.getDllFilenameForArch();
         final File dllPath = new File(dllTempFolder, filename);
         System.out.println("Checking for DLL: "+dllPath.getAbsolutePath());
-        assertTrue(dllPath.exists());
+        assertThat(dllPath).exists();
 
         IpaVerbose everbose = createVerbose("test.verbose.logger", "testDllExtracted", "verbose test message %s", "hello, world!");
         IpaInfo einfo = createInfo("test.info.logger", "testDllExtracted", "test message %s", "hello!");

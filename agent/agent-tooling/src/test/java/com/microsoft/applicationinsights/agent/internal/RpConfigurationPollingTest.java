@@ -47,7 +47,7 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SystemStubsExtension.class)
 public class RpConfigurationPollingTest {
@@ -82,17 +82,17 @@ public class RpConfigurationPollingTest {
         Global.setSamplingPercentage(100);
 
         // pre-check
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryClient.getConnectionString());
-        assertEquals(100, Global.getSamplingPercentage(), 0);
-        assertEquals(100, getCurrentSamplingPercentage(), 0);
+        assertThat(telemetryClient.getConnectionString()).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(Global.getSamplingPercentage()).isEqualTo(100);
+        assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
         // when
         new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient).run();
 
         // then
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryClient.getConnectionString());
-        assertEquals(10, Global.getSamplingPercentage(), 0);
-        assertEquals(10, getCurrentSamplingPercentage(), 0);
+        assertThat(telemetryClient.getConnectionString()).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(Global.getSamplingPercentage()).isEqualTo(10);
+        assertThat(getCurrentSamplingPercentage()).isEqualTo(10);
     }
 
     @Test
@@ -112,17 +112,17 @@ public class RpConfigurationPollingTest {
         envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "90");
 
         // pre-check
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryClient.getConnectionString());
-        assertEquals(100, Global.getSamplingPercentage(), 0);
-        assertEquals(100, getCurrentSamplingPercentage(), 0);
+        assertThat(telemetryClient.getConnectionString()).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(Global.getSamplingPercentage()).isEqualTo(100);
+        assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
         // when
         new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient).run();
 
         // then
-        assertEquals("InstrumentationKey=00000000-0000-0000-0000-000000000000", telemetryClient.getConnectionString());
-        assertEquals(10, Global.getSamplingPercentage(), 0);
-        assertEquals(10, getCurrentSamplingPercentage(), 0);
+        assertThat(telemetryClient.getConnectionString()).isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+        assertThat(Global.getSamplingPercentage()).isEqualTo(10);
+        assertThat(getCurrentSamplingPercentage()).isEqualTo(10);
     }
 
     private double getCurrentSamplingPercentage() {

@@ -4,7 +4,7 @@ import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExceptionStatsLoggerTest {
     private static ExceptionStats networkExceptionStats;
@@ -27,11 +27,11 @@ public class ExceptionStatsLoggerTest {
         //wait for more than 1 second
         Thread.sleep(3000);
 
-        assertEquals(2,logCaptor.getWarnLogs().size());
-        assertTrue(logCaptor.getWarnLogs().get(0).contains("intro: Test Message (future failures will be aggregated and logged once every 0 minutes)"));
-        assertTrue(logCaptor.getWarnLogs().get(1).contains("In the last 0 minutes, the following operation has failed 3 times (out of 4):\n" +
+        assertThat(logCaptor.getWarnLogs()).hasSize(2);
+        assertThat(logCaptor.getWarnLogs().get(0)).contains("intro: Test Message (future failures will be aggregated and logged once every 0 minutes)");
+        assertThat(logCaptor.getWarnLogs().get(1)).contains("In the last 0 minutes, the following operation has failed 3 times (out of 4):\n" +
                 "intro:\n" +
                 " * Test Message2 (2 times)\n" +
-                " * Test Message3 (1 times)"));
+                " * Test Message3 (1 times)");
     }
 }

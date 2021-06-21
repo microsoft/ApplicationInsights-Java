@@ -56,7 +56,6 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.Uplo
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.jfr.Recording;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
@@ -65,6 +64,7 @@ import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelem
 
 import static com.microsoft.applicationinsights.internal.perfcounter.Constants.TOTAL_CPU_PC_METRIC_NAME;
 import static com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter.HEAP_MEM_USED_PERCENTAGE;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ProfilerServiceTest {
 
@@ -80,9 +80,9 @@ class ProfilerServiceTest {
                 false,
                 createMetricsTelemetry(new TelemetryClient(), TOTAL_CPU_PC_METRIC_NAME, 100.0),
                 telemetry -> {
-                    Assertions.assertEquals("JFR-CPU", telemetry.getProperties().get("Source"));
-                    Assertions.assertEquals(100.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
-                    Assertions.assertEquals(0.0, telemetry.getMeasurements().get("AverageMemoryUsage"), 0.01);
+                    assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-CPU");
+                    assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(100.0);
+                    assertThat(telemetry.getMeasurements().get("AverageMemoryUsage")).isEqualTo(0.0);
                 });
     }
 
@@ -92,9 +92,9 @@ class ProfilerServiceTest {
                 true,
                 createMetricsTelemetry(new TelemetryClient(), HEAP_MEM_USED_PERCENTAGE, 0.0),
                 telemetry -> {
-                    Assertions.assertEquals("JFR-MANUAL", telemetry.getProperties().get("Source"));
-                    Assertions.assertEquals(0.0, telemetry.getMeasurements().get("AverageCPUUsage"), 0.01);
-                    Assertions.assertEquals(0.0, telemetry.getMeasurements().get("AverageMemoryUsage"), 0.01);
+                    assertThat(telemetry.getProperties().get("Source")).isEqualTo("JFR-MANUAL");
+                    assertThat(telemetry.getMeasurements().get("AverageCPUUsage")).isEqualTo(0.0);
+                    assertThat(telemetry.getMeasurements().get("AverageMemoryUsage")).isEqualTo(0.0);
                 });
     }
 
@@ -181,16 +181,16 @@ class ProfilerServiceTest {
             }
         }
 
-        Assertions.assertTrue(profileInvoked.get());
+        assertThat(profileInvoked.get()).isTrue();
 
-        Assertions.assertNotNull(serviceProfilerIndex.get());
-        Assertions.assertEquals("Profile", serviceProfilerIndex.get().getProperties().get("ArtifactKind"));
-        Assertions.assertEquals(timeStamp, serviceProfilerIndex.get().getProperties().get("EtlFileSessionId"));
-        Assertions.assertEquals(appId, serviceProfilerIndex.get().getProperties().get("DataCube"));
-        Assertions.assertEquals(jfrExtension, serviceProfilerIndex.get().getProperties().get("Extension"));
-        Assertions.assertEquals(machineName, serviceProfilerIndex.get().getProperties().get("MachineName"));
-        Assertions.assertEquals(processId, serviceProfilerIndex.get().getProperties().get("ProcessId"));
-        Assertions.assertEquals(stampId, serviceProfilerIndex.get().getProperties().get("StampId"));
+        assertThat(serviceProfilerIndex.get()).isNotNull();
+        assertThat(serviceProfilerIndex.get().getProperties().get("ArtifactKind")).isEqualTo("Profile");
+        assertThat(serviceProfilerIndex.get().getProperties().get("EtlFileSessionId")).isEqualTo(timeStamp);
+        assertThat(serviceProfilerIndex.get().getProperties().get("DataCube")).isEqualTo(appId);
+        assertThat(serviceProfilerIndex.get().getProperties().get("Extension")).isEqualTo(jfrExtension);
+        assertThat(serviceProfilerIndex.get().getProperties().get("MachineName")).isEqualTo(machineName);
+        assertThat(serviceProfilerIndex.get().getProperties().get("ProcessId")).isEqualTo(processId);
+        assertThat(serviceProfilerIndex.get().getProperties().get("StampId")).isEqualTo(stampId);
         assertTelemetry.accept(serviceProfilerIndex.get());
     }
 

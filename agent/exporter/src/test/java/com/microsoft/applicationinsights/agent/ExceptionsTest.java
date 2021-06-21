@@ -8,7 +8,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryE
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExceptionsTest {
 
@@ -21,11 +20,11 @@ public class ExceptionsTest {
         List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
-        assertEquals(1, list.size());
+        assertThat(list.size()).isEqualTo(1);
 
         TelemetryExceptionDetails details = list.get(0);
-        assertEquals(IllegalStateException.class.getName(), details.getTypeName());
-        assertEquals("test", details.getMessage());
+        assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+        assertThat(details.getMessage()).isEqualTo("test");
     }
 
     @Test
@@ -37,10 +36,10 @@ public class ExceptionsTest {
         List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
-        assertEquals(1, list.size());
+        assertThat(list.size()).isEqualTo(1);
 
         TelemetryExceptionDetails details = list.get(0);
-        assertEquals(IllegalStateException.class.getName(), details.getTypeName());
+        assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
         assertThat(details.getMessage()).isNull();
     }
 
@@ -54,15 +53,15 @@ public class ExceptionsTest {
         List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
-        assertEquals(2, list.size());
+        assertThat(list.size()).isEqualTo(2);
 
         TelemetryExceptionDetails details = list.get(0);
-        assertEquals(IllegalStateException.class.getName(), details.getTypeName());
-        assertEquals("test", details.getMessage());
+        assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+        assertThat(details.getMessage()).isEqualTo("test");
 
         TelemetryExceptionDetails causedByDetails = list.get(1);
-        assertEquals(RuntimeException.class.getName(), causedByDetails.getTypeName());
-        assertEquals("the cause", causedByDetails.getMessage());
+        assertThat(causedByDetails.getTypeName()).isEqualTo(RuntimeException.class.getName());
+        assertThat(causedByDetails.getMessage()).isEqualTo("the cause");
 
     }
 
@@ -78,11 +77,11 @@ public class ExceptionsTest {
         List<TelemetryExceptionDetails> list = Exceptions.fullParse(str);
 
         // then
-        assertEquals(1, list.size());
+        assertThat(list.size()).isEqualTo(1);
 
         TelemetryExceptionDetails details = list.get(0);
-        assertEquals(IllegalStateException.class.getName(), details.getTypeName());
-        assertEquals("test", details.getMessage());
+        assertThat(details.getTypeName()).isEqualTo(IllegalStateException.class.getName());
+        assertThat(details.getMessage()).isEqualTo("test");
     }
 
     private static String toString(final Throwable t) {

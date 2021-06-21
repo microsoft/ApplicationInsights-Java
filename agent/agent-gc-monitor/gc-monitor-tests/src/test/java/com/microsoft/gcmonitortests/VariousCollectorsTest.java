@@ -12,7 +12,7 @@ import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class VariousCollectorsTest {
 
@@ -29,9 +29,9 @@ public class VariousCollectorsTest {
     }
 
     private void assetGcsArePresent(List<GCCollectionEvent> events) {
-        assertTrue(youngGcIsPresent(events), "YG not found");
-        assertTrue(tenuredGcIsPresent(events), "OG not found");
-        assertTrue(systemGcIsPresent(events), "System GC not found");
+        assertThat(youngGcIsPresent(events)).isTrue();
+        assertThat(tenuredGcIsPresent(events)).isTrue();
+        assertThat(systemGcIsPresent(events)).isTrue();
     }
 
     @Test

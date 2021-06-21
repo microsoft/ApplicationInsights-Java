@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class PeriodicRunnableTaskPoolTests {
 
@@ -34,7 +33,7 @@ public class PeriodicRunnableTaskPoolTests {
         assertThat(future.isCancelled()).isFalse();
         assertThat((Future<?>) taskPool.getTask(periodicRunnableTask)).isNotNull();
         sleep(1, TimeUnit.SECONDS);
-        assertTrue(signal.isDone());
+        assertThat(signal.isDone()).isTrue();
     }
 
     @Test
@@ -53,8 +52,8 @@ public class PeriodicRunnableTaskPoolTests {
         assertThat((Future<?>) taskPool.getTask(periodicRunnableTask2)).isNotNull();
 
         sleep(1, TimeUnit.SECONDS);
-        assertTrue(sig1.isDone());
-        assertTrue(sig2.isDone());
+        assertThat(sig1.isDone()).isTrue();
+        assertThat(sig2.isDone()).isTrue();
     }
 
     @Test
@@ -83,7 +82,7 @@ public class PeriodicRunnableTaskPoolTests {
         assertThat((Future<?>) taskPool.getTask(periodicRunnableTask)).isNull();
 
         sleep(10, TimeUnit.SECONDS);
-        assertFalse(signal.isDone());
+        assertThat(signal.isDone()).isFalse();
     }
 
     @Test

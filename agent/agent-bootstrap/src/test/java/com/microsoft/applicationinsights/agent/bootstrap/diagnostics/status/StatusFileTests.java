@@ -23,8 +23,6 @@ import uk.org.webcompere.systemstubs.properties.SystemProperties;
 
 import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile.initLogDir;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @ExtendWith(SystemStubsExtension.class)
@@ -59,21 +57,21 @@ public class StatusFileTests {
     public void defaultDirectoryIsCorrect() {
         // TODO this test doesn't pass inside of windows + bash because bash sets HOME env
         assumeTrue(System.getenv(StatusFile.HOME_ENV_VAR) == null);
-        assertEquals("./LogFiles/ApplicationInsights", initLogDir());
+        assertThat(initLogDir()).isEqualTo("./LogFiles/ApplicationInsights");
     }
 
     @Test
     public void siteLogDirPropertyUpdatesBaseDir() {
         String parentDir = "/temp/test/prop";
         System.setProperty("site.logdir", parentDir);
-        assertEquals("/temp/test/prop/ApplicationInsights", StatusFile.initLogDir());
+        assertThat(StatusFile.initLogDir()).isEqualTo("/temp/test/prop/ApplicationInsights");
     }
 
     @Test
     public void homeEnvVarUpdatesBaseDir() {
         String homeDir = "/temp/test";
         envVars.set(StatusFile.HOME_ENV_VAR, homeDir);
-        assertEquals("/temp/test/LogFiles/ApplicationInsights", StatusFile.initLogDir());
+        assertThat(StatusFile.initLogDir()).isEqualTo("/temp/test/LogFiles/ApplicationInsights");
     }
 
     @Test
@@ -81,7 +79,7 @@ public class StatusFileTests {
         String homeDir = "/this/is/wrong";
         envVars.set(StatusFile.HOME_ENV_VAR, homeDir);
         System.setProperty("site.logdir", "/the/correct/dir");
-        assertEquals("/the/correct/dir/ApplicationInsights", StatusFile.initLogDir());
+        assertThat(StatusFile.initLogDir()).isEqualTo("/the/correct/dir/ApplicationInsights");
     }
 
     @Test
@@ -125,7 +123,7 @@ public class StatusFileTests {
     }
 
     private void runWriteFileTest(boolean enabled) throws Exception {
-        assertTrue(tempFolder.isDirectory());
+        assertThat(tempFolder.isDirectory()).isTrue();
         assertThat(tempFolder.list()).isEmpty();
 
         StatusFile.directory = tempFolder.getAbsolutePath();
@@ -158,7 +156,7 @@ public class StatusFileTests {
         DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(false); // just to be sure
 
         StatusFile.directory = tempFolder.getAbsolutePath();
-        assertTrue(tempFolder.isDirectory());
+        assertThat(tempFolder.isDirectory()).isTrue();
         assertThat(tempFolder.list()).isEmpty();
         StatusFile.write();
         pauseForFileWrite();
@@ -175,7 +173,7 @@ public class StatusFileTests {
             DiagnosticsTestHelper.setIsAppSvcAttachForLoggingPurposes(true);
 
             StatusFile.directory = tempFolder.getAbsolutePath();
-            assertTrue(tempFolder.isDirectory());
+            assertThat(tempFolder.isDirectory()).isTrue();
             assertThat(tempFolder.list()).isEmpty();
             StatusFile.write();
             pauseForFileWrite();

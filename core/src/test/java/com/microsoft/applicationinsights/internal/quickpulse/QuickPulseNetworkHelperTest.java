@@ -25,7 +25,7 @@ import com.azure.core.http.HttpResponse;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -38,7 +38,7 @@ public class QuickPulseNetworkHelperTest {
         Mockito.doReturn(200).when(response).getStatusCode();
 
         final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
-        assertTrue(result);
+        assertThat(result).isTrue();
     }
 
     @Test
@@ -47,6 +47,6 @@ public class QuickPulseNetworkHelperTest {
         Mockito.doReturn(500).when(response).getStatusCode();
 
         final boolean result = new QuickPulseNetworkHelper().isSuccess(response);
-        assertFalse(result);
+        assertThat(result).isFalse();
     }
 }

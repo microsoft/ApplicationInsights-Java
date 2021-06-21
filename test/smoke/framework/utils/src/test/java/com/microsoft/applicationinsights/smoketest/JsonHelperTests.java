@@ -3,7 +3,7 @@ package com.microsoft.applicationinsights.smoketest;
 import com.microsoft.applicationinsights.telemetry.Duration;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonHelperTests {
 
@@ -13,13 +13,13 @@ public class JsonHelperTests {
         String json = getJsonDurationInHolder(expected);
         System.out.println(json);
         DurationHolder actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
 
         expected = new Duration(0, 0, 0, 0, 1);
         json = getJsonDurationInHolder(expected);
         System.out.println(json);
         actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
     }
 
     @Test
@@ -28,13 +28,13 @@ public class JsonHelperTests {
         String json = getJsonDurationInHolder(expected);
         System.out.println(json);
         DurationHolder actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
 
         expected = new Duration(2L * 86400000L);
         json = getJsonDurationInHolder(expected);
         System.out.println(json);
         actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
     }
 
     @Test
@@ -43,12 +43,12 @@ public class JsonHelperTests {
         String json = getJsonDurationInHolder(expected);
         System.out.println(json);
         DurationHolder actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
 
         json = getJsonDurationInHolder(new Duration(50000L));
         System.out.println(json);
         actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
     }
 
     @Test
@@ -57,12 +57,12 @@ public class JsonHelperTests {
         String json = getJsonDurationInHolder(expected);
         System.out.println(json);
         DurationHolder actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
 
         json = getJsonDurationInHolder(new Duration(3600000L + 50000L));
         System.out.println(json);
         actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
     }
 
     @Test
@@ -71,12 +71,12 @@ public class JsonHelperTests {
         String json = getJsonDurationInHolder(expected);
         System.out.println(json);
         DurationHolder actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
 
         json = getJsonDurationInHolder(new Duration(25 * 60000L + 50000L));
         System.out.println(json);
         actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
     }
 
     @Test
@@ -85,12 +85,12 @@ public class JsonHelperTests {
         String json = getJsonDurationInHolder(expected);
         System.out.println(json);
         DurationHolder actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
 
         json = getJsonDurationInHolder(new Duration(60213L + 5 * 86400000L));
         System.out.println(json);
         actual = JsonHelper.GSON.fromJson(json, DurationHolder.class);
-        assertEquals(expected, actual.getData());
+        assertThat(actual.getData()).isEqualTo(expected);
     }
 
     private String getJsonDurationInHolder(Duration d) {

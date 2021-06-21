@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public final class LimitsEnforcerTest {
     private final static String MOCK_PROPERTY_NAME = "MockProperty";
@@ -47,35 +46,35 @@ public final class LimitsEnforcerTest {
     @Test
     public void testCreateDefaultOnErrorCurrentValueWithinLimits() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
-        assertEquals(200, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(200);
     }
 
     @Test
     public void testCreateDefaultOnErrorNewCurrentValueHigherThanMax() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
         enforcer.normalizeValue(1000);
-        assertEquals(100, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(100);
     }
 
     @Test
     public void testCreateDefaultOnErrorNewCurrentValueLowerThanMin() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
         enforcer.normalizeValue(-1000);
-        assertEquals(100, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(100);
     }
 
     @Test
     public void testCreateDefaultOnErrorNewCurrentValueWithinLimits() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
         enforcer.normalizeValue(700);
-        assertEquals(700, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(700);
     }
 
     @Test
     public void testCreateDefaultOnErrorNewCurrentValueIsNull() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithDefaultOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
         enforcer.normalizeValue(null);
-        assertEquals(100, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(100);
     }
 
     @Test
@@ -95,66 +94,66 @@ public final class LimitsEnforcerTest {
     @Test
     public void testCreateClosestOnErrorCurrentValueLowerThanMin() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, 100, -10);
-        assertEquals(10, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(10);
     }
 
     @Test
     public void testCreateClosestOnErrorCurrentValueHigherThanMax() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 1000);
-        assertEquals(900, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(900);
     }
 
     @Test
     public void testCreateClosestOnErrorCurrentValueIsNull() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, 100, null);
-        assertEquals(100, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(100);
     }
 
     @Test
     public void testCreateClosestOnErrorCurrentValueWithinLimits() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
-        assertEquals(200, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(200);
     }
 
     @Test
     public void testCreateClosestOnErrorNewCurrentValueHigherThanMax() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
         enforcer.normalizeValue(1000);
-        assertEquals(900, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(900);
     }
 
     @Test
     public void testCreateClosestOnErrorNewCurrentValueLowerThanMin() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
         enforcer.normalizeValue(-1000);
-        assertEquals(10, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(10);
     }
 
     @Test
     public void testCreateClosestOnErrorNewCurrentValueWithinLimits() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
         enforcer.normalizeValue(700);
-        assertEquals(700, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(700);
     }
 
     @Test
     public void testCreateClosestOnErrorNewCurrentValueIsNull() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
         enforcer.normalizeValue(null);
-        assertEquals(100, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(100);
     }
 
     @Test
     public void testCreateClosestOnErrorNewStringCurrentValueIsNull() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
         enforcer.normalizeStringValue(null);
-        assertEquals(100, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(100);
     }
 
     @Test
     public void testCreateClosestOnErrorNewStringCurrentValueWithinLimits() {
         LimitsEnforcer enforcer = LimitsEnforcer.createWithClosestLimitOnError(MOCK_PROPERTY_NAME, 10, 900, 100, 200);
         enforcer.normalizeStringValue("700");
-        assertEquals(700, enforcer.getCurrentValue());
+        assertThat(enforcer.getCurrentValue()).isEqualTo(700);
     }
 }
