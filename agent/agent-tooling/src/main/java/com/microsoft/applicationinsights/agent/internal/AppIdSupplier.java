@@ -123,9 +123,10 @@ public class AppIdSupplier implements AiAppId.Supplier {
                 return;
             }
 
-            // this check is needed to make spotbugs happy
             if (response == null) {
-                throw new IllegalStateException("response should never be null");
+                // FIXME (trask) I think that http response mono should never complete empty
+                //  (it should either complete with a response or complete with a failure)
+                throw new AssertionError("http response mono returned empty");
             }
 
             String body = response.getBodyAsString().block();

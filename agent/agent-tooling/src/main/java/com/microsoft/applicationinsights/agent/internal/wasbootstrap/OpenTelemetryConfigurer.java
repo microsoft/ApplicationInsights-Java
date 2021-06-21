@@ -65,20 +65,18 @@ public class OpenTelemetryConfigurer implements SdkTracerProviderConfigurer {
         // NOTE if changing the span processor to something async, flush it in the shutdown hook before flushing TelemetryClient
         if (!processors.isEmpty()) {
             for (ProcessorConfig processorConfig : processors) {
-                if (processorConfig.type != null) { // Added this condition to resolve spotbugs NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD issue
-                    switch (processorConfig.type) {
-                        case ATTRIBUTE:
-                            currExporter = new ExporterWithAttributeProcessor(processorConfig, currExporter);
-                            break;
-                        case SPAN:
-                            currExporter = new ExporterWithSpanProcessor(processorConfig, currExporter);
-                            break;
-                        case LOG:
-                            currExporter = new ExporterWithLogProcessor(processorConfig, currExporter);
-                            break;
-                        default:
-                            throw new IllegalStateException("Not an expected ProcessorType: " + processorConfig.type);
-                    }
+                switch (processorConfig.type) {
+                    case ATTRIBUTE:
+                        currExporter = new ExporterWithAttributeProcessor(processorConfig, currExporter);
+                        break;
+                    case SPAN:
+                        currExporter = new ExporterWithSpanProcessor(processorConfig, currExporter);
+                        break;
+                    case LOG:
+                        currExporter = new ExporterWithLogProcessor(processorConfig, currExporter);
+                        break;
+                    default:
+                        throw new IllegalStateException("Not an expected ProcessorType: " + processorConfig.type);
                 }
             }
         }

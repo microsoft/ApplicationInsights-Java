@@ -28,8 +28,6 @@ apply plugin: "java"
 apply plugin: "jacoco"
 apply plugin: "checkstyle"
 apply plugin: "org.owasp.dependencycheck"
-// TODO (trask) remove spotbugs once we switch on errorprone to fail the build
-apply plugin: "com.github.spotbugs"
 apply plugin: "net.ltgt.errorprone"
 
 configurations {
@@ -45,35 +43,6 @@ checkstyle {
     configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
     configProperties["rootDir"] = rootProject.projectDir
     showViolations = false
-}
-
-spotbugs {
-    ignoreFailures = false
-    effort = "max"
-    reportLevel = "medium"
-
-    def spotbugsExcludeFile = file("$projectDir/spotbugs.exclude.xml")
-    if (spotbugsExcludeFile.exists()) {
-        excludeFilter = spotbugsExcludeFile
-    }
-}
-spotbugsTest.enabled = false
-
-spotbugsTest.enabled = false
-
-spotbugsMain {
-    reports {
-        html.enabled = true
-        xml.enabled = true
-        html {
-            stylesheet = "fancy-hist.xsl"
-        }
-    }
-}
-
-dependencies {
-    // See https://find-sec-bugs.github.io/bugs.htm for bug pattern definitions
-    spotbugsPlugins "com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0"
 }
 
 tasks.withType(JavaCompile) {
