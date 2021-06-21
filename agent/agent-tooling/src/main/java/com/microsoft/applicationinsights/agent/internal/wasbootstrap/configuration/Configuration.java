@@ -367,16 +367,16 @@ public class Configuration {
             switch (type) {
                 case ATTRIBUTE:
                     validateAttributeProcessorConfig();
-                    break;
+                    return;
                 case SPAN:
                     validateSpanProcessorConfig();
-                    break;
+                    return;
                 case LOG:
                     validateLogProcessorConfig();
-                    break;
+                    return;
                 case METRIC_FILTER:
                     validateMetricFilterProcessorConfig();
-                    break;
+                    return;
             }
             throw new AssertionError("Unexpected processor type: " + type);
         }
@@ -515,16 +515,16 @@ public class Configuration {
             switch (processorType) {
                 case ATTRIBUTE:
                     validAttributeProcessorIncludeExclude(includeExclude);
-                    break;
+                    return;
                 case LOG:
                     validateLogProcessorIncludeExclude(includeExclude);
-                    break;
+                    return;
                 case SPAN:
                     validateSpanProcessorIncludeExclude(includeExclude);
-                    break;
+                    return;
                 case METRIC_FILTER:
                     validateMetricFilterProcessorExclude(includeExclude);
-                    break;
+                    return;
             }
             throw new IllegalStateException("Unexpected processor type: " + processorType);
         }
