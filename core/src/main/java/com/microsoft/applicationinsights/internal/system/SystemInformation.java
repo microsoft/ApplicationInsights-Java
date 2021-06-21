@@ -57,7 +57,7 @@ public enum SystemInformation {
     /**
      * JVMs are not required to publish this value/bean and some processes may not have permission to access it.
      */
-    private String initializeProcessId() {
+    private static String initializeProcessId() {
         String rawName = ManagementFactory.getRuntimeMXBean().getName();
         if (!Strings.isNullOrEmpty(rawName)) {
             int i = rawName.indexOf("@");
@@ -67,10 +67,10 @@ public enum SystemInformation {
                     Integer.parseInt(processIdAsString);
                     SystemInfoLogger.logger.debug("Current PID: "+processIdAsString);
                     return processIdAsString;
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (RuntimeException e) {
                     SystemInfoLogger.logger.error("Failed to fetch process id: '{}'", e.toString());
                     SystemInfoLogger.logger.error("Failed to parse PID as number: '{}'", e.toString());
+                    SystemInfoLogger.logger.debug(e.getMessage(), e);
                 }
             }
         }

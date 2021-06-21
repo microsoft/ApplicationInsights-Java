@@ -127,7 +127,7 @@ class PeriodicRunnableTaskPoolTests {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
-    private void sleep(int delay, TimeUnit unit) {
+    private static void sleep(int delay, TimeUnit unit) {
         try {
             unit.sleep(delay);
         } catch (InterruptedException e) {
@@ -171,7 +171,6 @@ class PeriodicRunnableTaskPoolTests {
 
         @Override
         public void run() {
-            System.out.println("Hello....");
             listener.complete();
         }
     }

@@ -66,14 +66,14 @@ public class AlertingConfiguration {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(obj instanceof AlertingConfiguration)) {
             return false;
         }
-        AlertingConfiguration that = (AlertingConfiguration) o;
+        AlertingConfiguration that = (AlertingConfiguration) obj;
         return Objects.equals(cpuAlert, that.cpuAlert) && Objects.equals(memoryAlert, that.memoryAlert) && Objects.equals(defaultConfiguration, that.defaultConfiguration) &&
                 Objects.equals(collectionPlanConfiguration, that.collectionPlanConfiguration);
     }
@@ -118,14 +118,15 @@ public class AlertingConfiguration {
             return cooldown;
         }
 
-        @Override public boolean equals(Object o) {
-            if (this == o) {
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
                 return true;
             }
-            if (o == null || getClass() != o.getClass()) {
+            if (!(obj instanceof AlertConfiguration)) {
                 return false;
             }
-            AlertConfiguration that = (AlertConfiguration) o;
+            AlertConfiguration that = (AlertConfiguration) obj;
             return enabled == that.enabled &&
                     Float.compare(that.threshold, threshold) == 0 &&
                     profileDuration == that.profileDuration &&

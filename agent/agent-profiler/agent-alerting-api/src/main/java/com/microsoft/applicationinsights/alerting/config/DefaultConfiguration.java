@@ -34,14 +34,15 @@ public class DefaultConfiguration {
         this.samplingProfileDuration = samplingProfileDuration;
     }
 
-    @Override public boolean equals(Object o) {
-        if (this == o) {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(obj instanceof DefaultConfiguration)) {
             return false;
         }
-        DefaultConfiguration that = (DefaultConfiguration) o;
+        DefaultConfiguration that = (DefaultConfiguration) obj;
         return samplingEnabled == that.samplingEnabled &&
                 samplingRate == that.samplingRate &&
                 samplingProfileDuration == that.samplingProfileDuration;

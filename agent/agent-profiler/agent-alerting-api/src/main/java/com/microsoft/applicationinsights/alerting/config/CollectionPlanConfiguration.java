@@ -75,14 +75,15 @@ public class CollectionPlanConfiguration {
         return settingsMoniker;
     }
 
-    @Override public boolean equals(Object o) {
-        if (this == o) {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(obj instanceof CollectionPlanConfiguration)) {
             return false;
         }
-        CollectionPlanConfiguration that = (CollectionPlanConfiguration) o;
+        CollectionPlanConfiguration that = (CollectionPlanConfiguration) obj;
         return single == that.single && expiration.equals(that.expiration) && immediateProfilingDuration == that.immediateProfilingDuration && Objects.equals(mode, that.mode) &&
                 Objects.equals(settingsMoniker, that.settingsMoniker);
     }

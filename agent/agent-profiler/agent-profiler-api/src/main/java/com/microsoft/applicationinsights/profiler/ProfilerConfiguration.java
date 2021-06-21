@@ -29,12 +29,15 @@ public class ProfilerConfiguration {
     // TODO (johnoliver) can we remove unused fields here?
     //  if moshi is complaining, there's a setting to tell it to ignore missing fields
     //  (which is probably good anyways in case server adds new fields)
+    @SuppressWarnings("unused")
     @Json(name = "id")
     private final String id;
 
     @Json(name = "lastModified")
     private final Date lastModified;
 
+    // TODO (johnoliver) can we remove unused fields here?
+    @SuppressWarnings("unused")
     @Json(name = "enabledLastModified")
     private final Date enabledLastModified;
 
@@ -53,6 +56,8 @@ public class ProfilerConfiguration {
     @Json(name = "defaultConfiguration")
     private final String defaultConfiguration;
 
+    // TODO (johnoliver) can we remove unused fields here?
+    @SuppressWarnings("unused")
     @Json(name = "geoOverride")
     private final String geoOverride;
 

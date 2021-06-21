@@ -6,8 +6,6 @@ package com.microsoft.applicationinsights.internal.util;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.azure.core.util.serializer.JacksonAdapter;
-import com.azure.core.util.serializer.SerializerAdapter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

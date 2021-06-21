@@ -31,7 +31,7 @@ public class SdkVersionFinder extends CachedDiagnosticsValueFinder {
     }
 
     // TODO (trask) is printStackTrace() really needed here?
-    @SuppressWarnings("CatchAndPrintStackTrace")
+    @SuppressWarnings({"CatchAndPrintStackTrace", "SystemOut"})
     private static String readVersion(Path agentPath) {
         try {
             // reading from file instead of from classpath, in order to avoid triggering jar file signature verification

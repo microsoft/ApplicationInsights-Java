@@ -38,7 +38,7 @@ public class PidFinder extends CachedDiagnosticsValueFinder {
         }
     }
 
-    private String getPidUsingProcessHandle() {
+    private static String getPidUsingProcessHandle() {
         try {
             // if java.specification.version < 9, the next line will fail.
             Class<?> processHandleClass = Class.forName("java.lang.ProcessHandle");

@@ -104,7 +104,7 @@ public class AlertingSubsystem {
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                             return;
-                        } catch (Exception e) {
+                        } catch (RuntimeException e) {
                             LOGGER.error("Exception while evaluating alert", e);
                         } catch (Error e) {
                             LOGGER.error("Exception while evaluating alert", e);

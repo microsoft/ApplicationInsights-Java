@@ -28,7 +28,7 @@ public class HeartBeatModule implements TelemetryModule {
    */
   private final HeartBeatProviderInterface heartBeatProviderInterface;
 
-  private final Object lock = new Object();
+  private static final Object lock = new Object();
 
   /**
    * Flag to seek if module is initialized

@@ -164,6 +164,8 @@ public class ProfilerServiceInitializer {
             serviceProfilerExecutorService.submit(() -> {
                 try {
                     profilerService = future.get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 } catch (Exception e) {
                     LOGGER.error("Unable to obtain JFR connection, this may indicate that your JVM does not have JFR enabled. JFR profiling system will shutdown", e);
                     alertServiceExecutorService.shutdown();

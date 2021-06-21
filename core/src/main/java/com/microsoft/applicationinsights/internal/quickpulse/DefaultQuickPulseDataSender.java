@@ -46,7 +46,13 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
     public void run() {
         try {
             while (!stopped) {
-                HttpRequest post = sendQueue.take();
+                HttpRequest post;
+                try {
+                    post = sendQueue.take();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
                 if (quickPulseHeaderInfo.getQuickPulseStatus() != QuickPulseStatus.QP_IS_ON) {
                     continue;
                 }

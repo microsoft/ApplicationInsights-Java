@@ -159,7 +159,7 @@ public enum TelemetryClientInitializer {
         }
     }
 
-    private void setRoleInstance(ApplicationInsightsXmlConfiguration userConfiguration,
+    private static void setRoleInstance(ApplicationInsightsXmlConfiguration userConfiguration,
                              TelemetryClient telemetryClient) {
         try {
             String roleInstance;
@@ -289,7 +289,7 @@ public enum TelemetryClientInitializer {
         }
     }
 
-    private void initializeComponents(TelemetryClient telemetryClient) {
+    private static void initializeComponents(TelemetryClient telemetryClient) {
         List<TelemetryModule> telemetryModules = telemetryClient.getTelemetryModules();
 
         for (TelemetryModule module : telemetryModules) {

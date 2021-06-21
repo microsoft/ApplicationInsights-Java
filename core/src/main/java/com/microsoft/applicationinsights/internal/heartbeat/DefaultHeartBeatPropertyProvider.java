@@ -142,7 +142,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * Returns the Unique GUID for the application's current session.
    * @return String representing GUID for each running session
    */
-  private String getProcessSessionId() {
+  private static String getProcessSessionId() {
     if (uniqueProcessId == null) {
       uniqueProcessId = UUID.randomUUID();
     }

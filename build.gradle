@@ -118,6 +118,7 @@ allprojects {
                 disable("JavaUtilDate")
                 disable("HashCodeToString")
                 disable("ImmutableEnumChecker")
+                disable("JavaTimeDefaultTimeZone")
 
                 // Doesn't work well with Java 8
                 disable("FutureReturnValueIgnored")

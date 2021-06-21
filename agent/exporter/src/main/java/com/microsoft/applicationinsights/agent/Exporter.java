@@ -139,16 +139,6 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    @Override
-    public CompletableResultCode flush() {
-        return CompletableResultCode.ofSuccess();
-    }
-
-    @Override
-    public CompletableResultCode shutdown() {
-        return CompletableResultCode.ofSuccess();
-    }
-
     private void export(SpanData span) {
         SpanKind kind = span.getKind();
         String instrumentationName = span.getInstrumentationLibraryInfo().getName();
@@ -180,6 +170,16 @@ public class Exporter implements SpanExporter {
         } else {
             throw new UnsupportedOperationException(kind.name());
         }
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+        return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+        return CompletableResultCode.ofSuccess();
     }
 
     private static List<TelemetryExceptionDetails> minimalParse(String errorStack) {
@@ -236,7 +236,7 @@ public class Exporter implements SpanExporter {
         return TelemetryUtil.getSamplingPercentage(traceState, 100, true);
     }
 
-    private void applySemanticConventions(SpanData span, RemoteDependencyData remoteDependencyData) {
+    private static void applySemanticConventions(SpanData span, RemoteDependencyData remoteDependencyData) {
         Attributes attributes = span.getAttributes();
         String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
         if (httpMethod != null) {
@@ -486,7 +486,7 @@ public class Exporter implements SpanExporter {
         telemetry.setTarget(target);
     }
 
-    private void applyMessagingClientSpan(Attributes attributes, RemoteDependencyData telemetry, String messagingSystem, SpanKind spanKind) {
+    private static void applyMessagingClientSpan(Attributes attributes, RemoteDependencyData telemetry, String messagingSystem, SpanKind spanKind) {
         if (spanKind == SpanKind.PRODUCER) {
             telemetry.setType("Queue Message | " + messagingSystem);
         } else {
@@ -504,7 +504,7 @@ public class Exporter implements SpanExporter {
     // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
     //  but no rush as messaging semantic conventions may still change
     //  https://github.com/Azure/azure-sdk-for-java/issues/21684
-    private void applyEventHubsSpan(Attributes attributes, RemoteDependencyData telemetry) {
+    private static void applyEventHubsSpan(Attributes attributes, RemoteDependencyData telemetry) {
         telemetry.setType("Microsoft.EventHub");
         String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
         String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
@@ -514,7 +514,7 @@ public class Exporter implements SpanExporter {
     // TODO (trask) ideally ServiceBus SDK should conform and fit the above path used for other messaging systems
     //  but no rush as messaging semantic conventions may still change
     //  https://github.com/Azure/azure-sdk-for-java/issues/21686
-    private void applyServiceBusSpan(Attributes attributes, RemoteDependencyData telemetry) {
+    private static void applyServiceBusSpan(Attributes attributes, RemoteDependencyData telemetry) {
         telemetry.setType("AZURE SERVICE BUS");
         String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
         String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
@@ -642,7 +642,7 @@ public class Exporter implements SpanExporter {
         exportEvents(span, samplingPercentage);
     }
 
-    private String getTelemetryName(SpanData span) {
+    private static String getTelemetryName(SpanData span) {
         String name = span.getName();
         if (!name.startsWith("/")) {
             return name;
@@ -752,10 +752,9 @@ public class Exporter implements SpanExporter {
                     sb.append(val);
                 }
                 return sb.toString();
-            default:
-                logger.warn("unexpected attribute type: {}", attributeKey.getType());
-                return null;
         }
+        logger.warn("unexpected attribute type: {}", attributeKey.getType());
+        return null;
     }
 
     private static void setExtraAttributes(TelemetryItem telemetry, MonitorDomain data,

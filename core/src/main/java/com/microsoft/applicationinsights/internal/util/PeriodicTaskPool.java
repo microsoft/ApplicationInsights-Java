@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -156,7 +157,6 @@ public class PeriodicTaskPool {
          * @param period after initial delay, period to execute task.
          * @param unit timeUnit for initial delay and period
          * @param taskId identifier for task
-         * @return
          */
         public static PeriodicRunnableTask createTask(Runnable command, long initialDelay, long period,
                                                       TimeUnit unit, String taskId) {
@@ -207,8 +207,12 @@ public class PeriodicTaskPool {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             PeriodicRunnableTask that = (PeriodicRunnableTask) o;
             return taskId.equals(that.taskId);
         }
@@ -234,13 +238,13 @@ public class PeriodicTaskPool {
      * Stop all the tasks and removes them from the collection.
      */
     public void stopAndClear() {
-        for (Map.Entry<PeriodicRunnableTask, ScheduledFuture<?>> entry : periodicTaskMap.entrySet()) {
+        for (Iterator<Map.Entry<PeriodicRunnableTask, ScheduledFuture<?>>> i = periodicTaskMap.entrySet().iterator(); i.hasNext(); ) {
+            Map.Entry<PeriodicRunnableTask, ScheduledFuture<?>> entry = i.next();
             ScheduledFuture<?> futureToRemove = entry.getValue();
             if (!futureToRemove.isDone() && !futureToRemove.isCancelled()) {
                 futureToRemove.cancel(true);
             }
-            periodicTaskMap.remove(entry.getKey());
-
+            i.remove();
         }
     }
 

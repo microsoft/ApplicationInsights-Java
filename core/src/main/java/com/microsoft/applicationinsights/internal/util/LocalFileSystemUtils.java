@@ -97,4 +97,6 @@ public class LocalFileSystemUtils {
 
         return userName;
     }
+
+    private LocalFileSystemUtils() {}
 }

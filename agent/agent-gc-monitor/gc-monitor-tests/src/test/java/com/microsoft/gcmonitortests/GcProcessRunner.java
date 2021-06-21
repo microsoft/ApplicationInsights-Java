@@ -13,13 +13,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+@SuppressWarnings("SystemOut")
 public class GcProcessRunner {
     private InputStream errorStream;
     private InputStream stdOut;
@@ -79,7 +81,7 @@ public class GcProcessRunner {
                 try {
                     if (process.exitValue() != 0) {
                         if (errorStream.available() > 0) {
-                            String error = new String(errorStream.readAllBytes());
+                            String error = new String(errorStream.readAllBytes(), UTF_8);
                             if (error.contains("Unrecognized VM option")) {
                                 throw new GCNotPresentException();
                             }
@@ -95,7 +97,7 @@ public class GcProcessRunner {
             printErrors();
             try {
                 process.destroyForcibly();
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 e.printStackTrace();
             }
         }
@@ -116,7 +118,7 @@ public class GcProcessRunner {
         throw new IllegalStateException("Unable to find free port");
     }
 
-    private MBeanServerConnection getConnector(int port) throws IOException {
+    private static MBeanServerConnection getConnector(int port) throws IOException {
         String url = "service:jmx:rmi://127.0.0.1:" + port + "/jndi/rmi://127.0.0.1:" + port + "/jmxrmi";
         JMXServiceURL target = new JMXServiceURL(url);
         JMXConnector connector = JMXConnectorFactory.connect(target);
@@ -125,13 +127,13 @@ public class GcProcessRunner {
 
     private void sendMessage(String message) throws IOException {
         message += "\n";
-        processInput.write(message.getBytes(StandardCharsets.UTF_8));
+        processInput.write(message.getBytes(UTF_8));
         processInput.flush();
     }
 
     private void printErrors() throws IOException {
         if (errorStream.available() > 0) {
-            String error = new String(errorStream.readNBytes(errorStream.available()));
+            String error = new String(errorStream.readNBytes(errorStream.available()), UTF_8);
             System.err.println(error);
         }
     }
@@ -144,7 +146,7 @@ public class GcProcessRunner {
 
             if (!process.isAlive()) {
                 if (errorStream.available() > 0) {
-                    String error = new String(errorStream.readAllBytes());
+                    String error = new String(errorStream.readAllBytes(), UTF_8);
                     if (error.contains("Unrecognized VM option")) {
                         throw new GCNotPresentException();
                     }
@@ -154,7 +156,7 @@ public class GcProcessRunner {
             }
 
             if (stdOut.available() > 0) {
-                stdOutData += new String(stdOut.readNBytes(stdOut.available()));
+                stdOutData += new String(stdOut.readNBytes(stdOut.available()), UTF_8);
 
                 if (stdOutData.contains(waitFor)) {
                     break;
@@ -205,7 +207,7 @@ public class GcProcessRunner {
         return process;
     }
 
-    private String detectJava() {
+    private static String detectJava() {
         String javaHome = System.getProperty("java.home");
         String javaCommand = "java";
         if (javaHome != null) {
@@ -214,7 +216,7 @@ public class GcProcessRunner {
         return javaCommand;
     }
 
-    private String detectClasspath() {
+    private static String detectClasspath() {
         String classPath = "build/classes/java/test/";
         String modulePath = System.getProperty("jdk.module.path");
         if (modulePath != null) {

@@ -118,11 +118,7 @@ class JmxDataFetcherTest {
         assertThat(objects.size()).isEqualTo(1);
         double value = 0.0;
         for (Object obj : objects) {
-            try {
-                value += Double.parseDouble(String.valueOf(obj));
-            } catch (Exception e) {
-                throw new AssertionError("Exception thrown", e);
-            }
+            value += Double.parseDouble(String.valueOf(obj));
         }
 
         assertThat(value).isEqualTo(expectedValue);

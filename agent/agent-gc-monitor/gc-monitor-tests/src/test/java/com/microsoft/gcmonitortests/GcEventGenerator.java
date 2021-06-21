@@ -1,6 +1,5 @@
 package com.microsoft.gcmonitortests;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -89,7 +88,7 @@ public class GcEventGenerator {
         System.out.println(scanner.nextLine());
     }
 
-    class MemoryConsumer {
+    static class MemoryConsumer {
         private final byte[] memory;
 
         MemoryConsumer(int sizeInBytes) {

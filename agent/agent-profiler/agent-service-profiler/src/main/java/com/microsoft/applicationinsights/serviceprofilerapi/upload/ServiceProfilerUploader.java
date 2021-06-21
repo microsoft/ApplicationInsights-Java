@@ -281,6 +281,8 @@ public class ServiceProfilerUploader {
     }
 
     // Deleting file recursively.
+    // FIXME (trask)
+    @SuppressWarnings("StreamResourceLeak")
     private static void deletePathRecursive(Path path) throws IOException {
         if (path != null) {
             Files

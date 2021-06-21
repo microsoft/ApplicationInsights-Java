@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -73,19 +72,9 @@ public class StatusFile {
     // guarded by lock
     private static BufferedSink buffer;
 
-    private static final ThreadFactory THREAD_FACTORY = new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r);
-            thread.setName("StatusFileWriter");
-            thread.setDaemon(true);
-            return thread;
-        }
-    };
-
     private static final ThreadPoolExecutor WRITER_THREAD =
             new ThreadPoolExecutor(1, 1, 750L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
-                    THREAD_FACTORY);
+                    StatusFile::newThread);
 
     static {
         WRITER_THREAD.allowCoreThreadTimeOut(true);
@@ -101,6 +90,13 @@ public class StatusFile {
         logDir = initLogDir();
         directory = logDir + STATUS_FILE_DIRECTORY;
     }
+
+    private static Thread newThread(Runnable r) {
+        Thread thread = new Thread(r);
+        thread.setName("StatusFileWriter");
+        thread.setDaemon(true);
+        return thread;
+    };
 
     // visible for testing
     static String initLogDir() {

@@ -73,16 +73,14 @@ public final class PropertyHelper {
     /**
      * A method that loads the properties file that contains SDK-Version data.
      * @return The properties or null if not found.
-     * @deprecated Use {@link #getQualifiedSdkVersionString()} to get the cached sdk version value.
      */
     private static Properties getSdkVersionProperties() {
         try {
             return getProperties(SDK_VERSION_FILE_NAME);
         } catch (IOException e) {
             logger.error("Could not find sdk version file '{}'", SDK_VERSION_FILE_NAME, e);
+            return new Properties();
         }
-
-        return null;
     }
 
     /**
@@ -93,11 +91,11 @@ public final class PropertyHelper {
      * @return "java:<i>version-number</i>" or "java:unknown"
      */
     public static String getQualifiedSdkVersionString() {
-        return SdkPropertyValues.SDK_VERSION_STRING;
+        return SdkPropertyValues.sdkVersionString;
     }
 
     public static void setSdkNamePrefix(String sdkNamePrefix) {
-        SdkPropertyValues.SDK_VERSION_STRING =
+        SdkPropertyValues.sdkVersionString =
                 sdkNamePrefix + VERSION_STRING_PREFIX + SdkPropertyValues.SDK_VERSION_NUMBER;
     }
 
@@ -106,18 +104,16 @@ public final class PropertyHelper {
     }
 
     private static class SdkPropertyValues {
-        private static volatile String SDK_VERSION_STRING;
         private static final String SDK_VERSION_NUMBER;
-        private SdkPropertyValues(){}
+        private static volatile String sdkVersionString;
+
         static {
             Properties properties = getSdkVersionProperties();
-            if (properties == null) {
-                SDK_VERSION_NUMBER = UNKNOWN_VERSION_VALUE;
-            } else {
-                SDK_VERSION_NUMBER = properties.getProperty(VERSION_PROPERTY_NAME, UNKNOWN_VERSION_VALUE);
-            }
-            SDK_VERSION_STRING = VERSION_STRING_PREFIX + SDK_VERSION_NUMBER;
+            SDK_VERSION_NUMBER = properties.getProperty(VERSION_PROPERTY_NAME, UNKNOWN_VERSION_VALUE);
+            sdkVersionString = VERSION_STRING_PREFIX + SDK_VERSION_NUMBER;
         }
+
+        private SdkPropertyValues(){}
     }
 
     private PropertyHelper() {

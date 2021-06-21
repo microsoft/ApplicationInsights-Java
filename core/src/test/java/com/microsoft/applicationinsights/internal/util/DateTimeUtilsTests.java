@@ -50,7 +50,7 @@ class DateTimeUtilsTests {
         assertThat(reversedDateStr).isEqualTo(dateStr);
     }
 
-    private String parseRoundTripDateString(String str) throws ParseException {
+    private static String parseRoundTripDateString(String str) throws ParseException {
         Date date = DateTimeUtils.parseRoundTripDateString(str);
 
         return DateTimeUtils.formatAsRoundTripDate(date);

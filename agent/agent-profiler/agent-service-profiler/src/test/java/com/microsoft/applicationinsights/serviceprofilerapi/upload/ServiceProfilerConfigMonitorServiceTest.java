@@ -70,7 +70,7 @@ class ServiceProfilerConfigMonitorServiceTest {
         assertThat(config.get().getMemoryTriggerConfiguration()).isEqualTo("--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400");
     }
 
-    private ScheduledExecutorService mockScheduledExecutorService(Consumer<Runnable> job) {
+    private static ScheduledExecutorService mockScheduledExecutorService(Consumer<Runnable> job) {
         ScheduledExecutorService executorService = Mockito.mock(ScheduledExecutorService.class);
 
         Mockito.doAnswer(invocation -> {

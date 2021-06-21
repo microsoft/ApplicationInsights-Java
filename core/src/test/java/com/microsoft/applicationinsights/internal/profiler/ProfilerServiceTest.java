@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.UnsupportedCharsetException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -244,7 +243,7 @@ class ProfilerServiceTest {
         };
     }
 
-    private ServiceProfilerClientV2 stubClient(boolean triggerNow) {
+    private static ServiceProfilerClientV2 stubClient(boolean triggerNow) {
         return new ServiceProfilerClientV2() {
             @Override
             public BlobAccessPass getUploadAccess(UUID profileId) {

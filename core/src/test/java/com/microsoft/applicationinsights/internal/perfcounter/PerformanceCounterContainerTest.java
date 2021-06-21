@@ -36,7 +36,9 @@ import org.mockito.Mockito;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+// FIXME (trask) or delete..
 @Disabled
+@SuppressWarnings({"LockNotBeforeTry", "CatchAndPrintStackTrace", "SystemOut", "WaitNotInLoop", "EmptyCatch"})
 class PerformanceCounterContainerTest {
     private static class PerformanceCounterStub implements PerformanceCounter {
         private final String id;

@@ -52,7 +52,8 @@ public class ServiceProfilerSettingsClient {
         try {
             String config = serviceProfilerClient.getSettings(lastModified);
             ProfilerConfiguration serviceProfilerConfiguration = toServiceProfilerConfiguration(config);
-            if (serviceProfilerConfiguration != null && !serviceProfilerConfiguration.getLastModified().equals(lastModified)) {
+            if (serviceProfilerConfiguration != null
+                    && serviceProfilerConfiguration.getLastModified().getTime() == lastModified.getTime()) {
                 lastModified = serviceProfilerConfiguration.getLastModified();
                 return Mono.just(serviceProfilerConfiguration);
             }

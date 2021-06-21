@@ -73,7 +73,7 @@ class GcEventMonitorTest {
         return alertingSubsystem;
     }
 
-    private GCCollectionEvent mockGcEvent() {
+    private static GCCollectionEvent mockGcEvent() {
         GCCollectionEvent event = Mockito.mock(GCCollectionEvent.class);
         GarbageCollector collector = Mockito.mock(GarbageCollector.class);
         MemoryPool tenuredPool = Mockito.mock(MemoryPool.class);

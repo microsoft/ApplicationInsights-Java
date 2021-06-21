@@ -56,7 +56,7 @@ class DllFileUtils {
         }
 
         if (!dllPath.exists() || !dllPath.canRead() || !dllPath.canWrite()) {
-            throw new RuntimeException("Failed to create a read/write folder for the native dll.");
+            throw new IllegalStateException("Failed to create a read/write folder for the native dll.");
         }
         LOGGER.trace("{} folder exists", dllPath);
 
@@ -73,7 +73,7 @@ class DllFileUtils {
         }
         try (InputStream in = classLoader.getResourceAsStream(libraryToLoad)) {
             if (in == null) {
-                throw new RuntimeException(String.format("Failed to find '%s' in jar", libraryToLoad));
+                throw new IllegalStateException(String.format("Failed to find '%s' in jar", libraryToLoad));
             }
             byte[] buffer = new byte[8192];
             try (OutputStream out = new FileOutputStream(dllOnDisk, false)) {

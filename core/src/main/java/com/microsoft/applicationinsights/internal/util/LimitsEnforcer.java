@@ -22,7 +22,7 @@ public final class LimitsEnforcer {
 
     private final String propertyName;
 
-    private int currentValue;
+    private final int currentValue;
 
     public int getMaximum() {
         return maximum;
@@ -45,32 +45,26 @@ public final class LimitsEnforcer {
             case DEFAULT_ON_ERROR:
                 if (value == null || value < minimum || value > maximum) {
                     logger.warn("'{}': bad value is replaced by the default: '{}'", propertyName, defaultValue);
-                    currentValue = defaultValue;
+                    return defaultValue;
                 } else {
-                    currentValue = value;
+                    return value;
                 }
-                break;
 
             case CLOSEST_LIMIT_ON_ERROR:
                 if (value == null) {
-                    currentValue = defaultValue;
                     logger.debug("'{}': null value is replaced with '{}'", propertyName, defaultValue);
+                    return defaultValue;
                 } else if (value < minimum) {
-                    currentValue = minimum;
                     logger.warn("'{}': value is under the minimum, therefore is replaced with '{}'", propertyName, minimum);
+                    return minimum;
                 } else if (value > maximum) {
-                    currentValue = maximum;
                     logger.warn("'{}': value is above the maximum, therefore is replaced with '{}'", propertyName, maximum);
+                    return maximum;
                 } else {
-                    currentValue = value;
+                    return value;
                 }
-                break;
-
-            default:
-                throw new IllegalStateException("Unknown type "+type);
         }
-
-        return currentValue;
+        throw new IllegalStateException("Unknown type "+type);
     }
 
     public int normalizeStringValue(String value) {
@@ -100,10 +94,6 @@ public final class LimitsEnforcer {
 
     public static LimitsEnforcer createWithClosestLimitOnError(String propertyName, int minimum, int maximum, int defaultValue, Integer currentValue) {
         return new LimitsEnforcer(Type.CLOSEST_LIMIT_ON_ERROR, minimum, maximum, defaultValue, currentValue, propertyName);
-    }
-
-    public static LimitsEnforcer createWithClosestLimitOnError(int minimum, int maximum, int defaultValue, String propertyName, String currentValue) {
-        return new LimitsEnforcer(Type.CLOSEST_LIMIT_ON_ERROR, minimum, maximum, defaultValue, translate(propertyName, currentValue), propertyName);
     }
 
     private static Integer translate(String propertyName, String valueAsString) {

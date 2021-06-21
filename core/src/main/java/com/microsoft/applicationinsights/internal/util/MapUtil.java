@@ -38,10 +38,10 @@ public class MapUtil
      * Filters out null values if target is a {@link ConcurrentHashMap}.
      * @param source the source map. If null or empty, this is a nop.
      * @param target the target map. Cannot be null.
-     * @param <Value> The type of the values in both maps
+     * @param <V> The type of the values in both maps
      * @throws IllegalArgumentException if either {@code source} or {@code target} are null.
      */
-    public static <Value> void copy(Map<String, Value> source, Map<String, Value> target) {
+    public static <V> void copy(Map<String, V> source, Map<String, V> target) {
         if (target == null) {
             throw new IllegalArgumentException("target must not be null");
         }
@@ -50,7 +50,7 @@ public class MapUtil
             return;
         }
 
-        for (Map.Entry<String,Value> entry : source.entrySet()) {
+        for (Map.Entry<String, V> entry : source.entrySet()) {
             String key = entry.getKey();
             if (Strings.isNullOrEmpty(key)) {
                 continue;
@@ -66,7 +66,7 @@ public class MapUtil
         }
     }
 
-    public static <Key, Value> Value getValueOrNull(Map<Key, Value> map, Key key) {
+    public static <K, V> V getValueOrNull(Map<K, V> map, K key) {
         return map.containsKey(key) ? map.get(key) : null;
     }
 
@@ -99,9 +99,12 @@ public class MapUtil
     }
 
     public static void setDateValueOrRemove(Map<String, String> map, String key, Date value) {
-        if (value == null)
+        if (value == null) {
             map.remove(key);
-        else
+        } else {
             map.put(key, LocalStringsUtils.getDateFormatter().format(value));
+        }
     }
+
+    private MapUtil() {}
 }
