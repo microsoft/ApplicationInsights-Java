@@ -111,10 +111,13 @@ allprojects {
 
                 excludedPaths = ".*/build/generated/.*"
 
-                // TEMPORARILY disabled until auto-formatting
+                // TEMPORARILY until time to revisit
                 disable("WildcardImport")
                 disable("BadImport")
                 disable("BooleanParameter")
+                disable("JavaUtilDate")
+                disable("HashCodeToString")
+                disable("ImmutableEnumChecker")
 
                 // Doesn't work well with Java 8
                 disable("FutureReturnValueIgnored")

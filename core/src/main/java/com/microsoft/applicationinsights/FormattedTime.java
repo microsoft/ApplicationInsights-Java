@@ -28,4 +28,6 @@ public class FormattedTime {
                 .atOffset(ZoneOffset.UTC)
                 .format(DateTimeFormatter.ISO_DATE_TIME);
     }
+
+    private FormattedTime() {}
 }

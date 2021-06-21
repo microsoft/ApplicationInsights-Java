@@ -91,14 +91,14 @@ public enum TelemetryClientInitializer {
         initializeComponents(telemetryClient);
     }
 
-    private void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
+    private static void setQuickPulse(ApplicationInsightsXmlConfiguration appConfiguration, TelemetryClient telemetryClient) {
         if (isQuickPulseEnabledInConfiguration(appConfiguration)) {
             logger.trace("Initializing QuickPulse...");
             QuickPulse.INSTANCE.initialize(telemetryClient);
         }
     }
 
-    private boolean isQuickPulseEnabledInConfiguration(ApplicationInsightsXmlConfiguration appConfiguration) {
+    private static boolean isQuickPulseEnabledInConfiguration(ApplicationInsightsXmlConfiguration appConfiguration) {
         QuickPulseXmlElement quickPulseXmlElement = appConfiguration.getQuickPulse();
         return quickPulseXmlElement.isEnabled();
     }
@@ -154,7 +154,7 @@ public enum TelemetryClientInitializer {
 
                 telemetryClient.setRoleName(roleName);
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("Failed to set role name: '{}'", e.toString());
         }
     }
@@ -178,7 +178,7 @@ public enum TelemetryClientInitializer {
 
                 telemetryClient.setRoleInstance(roleInstance);
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("Failed to set role instance: '{}'", e.toString());
         }
     }
@@ -204,7 +204,7 @@ public enum TelemetryClientInitializer {
                     PerformanceCounterConfigurationAware awareModule = (PerformanceCounterConfigurationAware)module;
                     try {
                         awareModule.addConfigurationData(performanceConfigurationData);
-                    } catch (Exception e) {
+                    } catch (RuntimeException e) {
                         logger.error("Failed to add configuration data to performance module: '{}'", e.toString());
                     }
                 }
@@ -237,8 +237,6 @@ public enum TelemetryClientInitializer {
      *      For every entry (object name and attributes)
      *          Build a {@link JmxMetricPerformanceCounter}
      *          Register the Performance Counter in the {@link PerformanceCounterContainer}
-     *
-     * @param jmxXmlElements
      */
     private void loadCustomJmxPCs(ArrayList<JmxXmlElement> jmxXmlElements) {
         try {
@@ -320,7 +318,9 @@ public enum TelemetryClientInitializer {
      */
     private boolean isHeartBeatModuleAdded(List<TelemetryModule> module) {
         for (TelemetryModule mod : module) {
-            if (mod instanceof HeartBeatModule) return true;
+            if (mod instanceof HeartBeatModule) {
+                return true;
+            }
         }
         return false;
     }

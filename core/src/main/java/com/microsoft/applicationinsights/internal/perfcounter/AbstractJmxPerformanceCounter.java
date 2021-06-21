@@ -69,7 +69,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                         } else {
                             value += Double.parseDouble(String.valueOf(obj));
                         }
-                    } catch (Exception e) {
+                    } catch (RuntimeException e) {
                         ok = false;
                         break;
                     }
@@ -78,7 +78,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
                 if (ok) {
                     try {
                         send(telemetryClient, displayAndValues.getKey(), value);
-                    } catch (Exception e) {
+                    } catch (RuntimeException e) {
                         logger.error("Error while sending JMX data: '{}'", e.toString());
                         logger.trace("Error while sending JMX data", e);
                     }

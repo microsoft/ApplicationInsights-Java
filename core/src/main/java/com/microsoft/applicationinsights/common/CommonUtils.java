@@ -45,4 +45,6 @@ public class CommonUtils {
       return null;
     }
   }
+
+  private CommonUtils() {}
 }

@@ -42,7 +42,7 @@ public class ServiceProfilerSettingsClient {
 
     public ServiceProfilerSettingsClient(ServiceProfilerClientV2 serviceProfilerClient) {
         this.serviceProfilerClient = serviceProfilerClient;
-        lastModified = new Date(1970, Calendar.JANUARY, 1);
+        lastModified = new Date(70, Calendar.JANUARY, 1);
     }
 
     /**

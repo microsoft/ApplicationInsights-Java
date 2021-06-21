@@ -35,6 +35,7 @@ public enum MemoryManagers {
 
 
     private final Class<? extends GarbageCollector>[] managers;
+    // TODO (johnoliver) can these be removed?
     private final Class<? extends GarbageCollector> tenuredCollector;
     private final Class<? extends GarbageCollector> youngCollector;
     private final Class<? extends MemoryPool> oldGen;

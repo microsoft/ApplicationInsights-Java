@@ -112,13 +112,11 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
 
   /**
    * Populates the default Fields with the properties
-   * @param defaultFields
    */
-  private void initializeDefaultFields(Set<String> defaultFields) {
+  private static void initializeDefaultFields(Set<String> defaultFields) {
     defaultFields.add(WEBSITE_SITE_NAME);
     defaultFields.add(WEBSITE_HOSTNAME);
     defaultFields.add(WEBSITE_HOME_STAMPNAME);
-
   }
 
   /**

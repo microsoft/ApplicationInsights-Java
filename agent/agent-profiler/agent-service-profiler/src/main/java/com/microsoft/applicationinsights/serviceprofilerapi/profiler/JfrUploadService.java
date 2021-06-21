@@ -63,14 +63,12 @@ public class JfrUploadService implements ProfileHandler {
                 alertBreach.getCpuMetric(),
                 alertBreach.getMemoryUsage()
         )
-                .subscribe(onUploadComplete(),
+                .subscribe(this::onUploadComplete,
                         e -> LOGGER.error("Failed to upload file", e));
     }
 
-    private Consumer<? super UploadResult> onUploadComplete() {
-        return done -> {
-            uploadCompleteHandler.notify(done);
-            LOGGER.info("Uploading of profile complete");
-        };
+    private void onUploadComplete(UploadResult result) {
+        uploadCompleteHandler.notify(result);
+        LOGGER.info("Uploading of profile complete");
     }
 }

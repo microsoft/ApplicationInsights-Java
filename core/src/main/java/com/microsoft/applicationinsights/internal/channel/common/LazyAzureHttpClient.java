@@ -51,7 +51,7 @@ public class LazyAzureHttpClient implements HttpClient {
         }
     }
 
-    private HttpClient init() {
+    private static HttpClient init() {
         if (safeToInitLatch != null) {
             try {
                 // this is used to delay SSL initialization because SSL initialization triggers loading of
@@ -82,7 +82,7 @@ public class LazyAzureHttpClient implements HttpClient {
     }
 
     @Override
-    public Mono<HttpResponse> send(HttpRequest request) throws FriendlyException {
+    public Mono<HttpResponse> send(HttpRequest request) {
         return getDelegate().send(request);
     }
 

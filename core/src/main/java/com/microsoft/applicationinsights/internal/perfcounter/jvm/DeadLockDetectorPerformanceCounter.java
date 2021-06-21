@@ -119,7 +119,8 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
 
         telemetryClient.trackAsync(telemetry);
     }
-    private void setThreadInfoAndStack(StringBuilder sb, ThreadInfo ti) {
+
+    private static void setThreadInfoAndStack(StringBuilder sb, ThreadInfo ti) {
         try {
             setThreadInfo(sb, ti);
 
@@ -151,7 +152,7 @@ public final class DeadLockDetectorPerformanceCounter implements PerformanceCoun
         sb.append(SEPERATOR);
     }
 
-    private void setThreadInfo(StringBuilder sb, ThreadInfo ti) {
+    private static void setThreadInfo(StringBuilder sb, ThreadInfo ti) {
         sb.append(ti.getThreadName());
         sb.append(" Id=");
         sb.append(ti.getThreadId());

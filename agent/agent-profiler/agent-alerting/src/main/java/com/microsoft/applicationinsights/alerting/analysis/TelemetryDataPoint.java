@@ -66,8 +66,12 @@ public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
     }
 
     @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         TelemetryDataPoint telemetryDataPoint = (TelemetryDataPoint) o;
         return Double.compare(telemetryDataPoint.value, value) == 0 && type == telemetryDataPoint.type && Objects.equals(time, telemetryDataPoint.time);
     }

@@ -76,8 +76,12 @@ public class CollectionPlanConfiguration {
     }
 
     @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         CollectionPlanConfiguration that = (CollectionPlanConfiguration) o;
         return single == that.single && expiration.equals(that.expiration) && immediateProfilingDuration == that.immediateProfilingDuration && Objects.equals(mode, that.mode) &&
                 Objects.equals(settingsMoniker, that.settingsMoniker);

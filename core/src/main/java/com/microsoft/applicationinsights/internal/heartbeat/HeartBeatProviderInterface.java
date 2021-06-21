@@ -26,7 +26,7 @@ public interface HeartBeatProviderInterface {
   /**
    * Minimum interval which can be configured by user to transmit heartbeat pulse.
    */
-  long MINIMUM_HEARTBEAT_INTERVAL = TimeUnit.SECONDS.toSeconds(30);
+  long MINIMUM_HEARTBEAT_INTERVAL = 30;
 
   /**
    * This method initializes the concrete module.

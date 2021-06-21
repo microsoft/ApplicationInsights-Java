@@ -58,7 +58,7 @@ public class HeartBeatModule implements TelemetryModule {
           case "HeartBeatInterval":
             try {
               setHeartBeatInterval(Long.parseLong(entry.getValue()));
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
               if (logger.isTraceEnabled()) {
                 logger.trace("Exception while adding Heartbeat interval", e);
               }
@@ -67,7 +67,7 @@ public class HeartBeatModule implements TelemetryModule {
           case "isHeartBeatEnabled":
             try {
               setHeartBeatEnabled(Boolean.parseBoolean(entry.getValue()));
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
               if (logger.isTraceEnabled()) {
                 logger.trace("Exception while adding enabling/disabling heartbeat", e);
               }
@@ -77,7 +77,7 @@ public class HeartBeatModule implements TelemetryModule {
             try {
               List<String> excludedHeartBeatPropertiesProviderList = parseStringToList(entry.getValue());
               setExcludedHeartBeatPropertiesProvider(excludedHeartBeatPropertiesProviderList);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
               if (logger.isTraceEnabled()) {
                 logger.trace("Exception while adding Excluded Heartbeat providers", e);
               }
@@ -87,7 +87,7 @@ public class HeartBeatModule implements TelemetryModule {
             try {
               List<String> excludedHeartBeatPropertiesList = parseStringToList(entry.getValue());
               setExcludedHeartBeatProperties(excludedHeartBeatPropertiesList);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
               if (logger.isTraceEnabled()) {
                 logger.trace("Exception while adding excluded heartbeat properties", e);
               }
@@ -185,9 +185,10 @@ public class HeartBeatModule implements TelemetryModule {
    * @param value ; seperated value string
    * @return List representing individual values
    */
-  private List<String> parseStringToList(String value) {
-    if (value == null || value.length() == 0) return new ArrayList<>();
+  private static List<String> parseStringToList(String value) {
+    if (value == null || value.length() == 0) {
+      return new ArrayList<>();
+    }
     return Arrays.asList(value.split(";"));
   }
-
 }

@@ -26,6 +26,9 @@ import com.squareup.moshi.Json;
 
 public class ProfilerConfiguration {
 
+    // TODO (johnoliver) can we remove unused fields here?
+    //  if moshi is complaining, there's a setting to tell it to ignore missing fields
+    //  (which is probably good anyways in case server adds new fields)
     @Json(name = "id")
     private final String id;
 
@@ -53,6 +56,7 @@ public class ProfilerConfiguration {
     @Json(name = "geoOverride")
     private final String geoOverride;
 
+    // TODO (johnoliver) is this used?
     public ProfilerConfiguration(
             String id,
             Date lastModified,

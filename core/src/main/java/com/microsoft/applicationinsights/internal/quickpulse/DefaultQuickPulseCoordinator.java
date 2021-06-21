@@ -92,13 +92,12 @@ final class DefaultQuickPulseCoordinator implements QuickPulseCoordinator, Runna
 
             case QP_IS_ON:
                 return waitBetweenPostsInMS;
-
-            default:
-                logger.error( "Critical error while sending QP data: unknown status, aborting");
-                QuickPulseDataCollector.INSTANCE.disable();
-                stopped = true;
-                return 0;
         }
+
+        logger.error( "Critical error while sending QP data: unknown status, aborting");
+        QuickPulseDataCollector.INSTANCE.disable();
+        stopped = true;
+        return 0;
     }
 
     private long ping() {

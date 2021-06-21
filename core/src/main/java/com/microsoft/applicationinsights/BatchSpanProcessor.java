@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
 
 // copied from io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 public final class BatchSpanProcessor {
@@ -77,7 +76,6 @@ public final class BatchSpanProcessor {
   // the data.
   private static final class Worker implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final TelemetryChannel spanExporter;
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;

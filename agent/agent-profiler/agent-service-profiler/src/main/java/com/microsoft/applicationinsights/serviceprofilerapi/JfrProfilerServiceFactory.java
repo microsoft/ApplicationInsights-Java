@@ -21,7 +21,7 @@ import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfil
  */
 public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
     // Singleton instance that holds the one and only service of the ServiceProfiler subsystem
-    private static JfrProfilerService INSTANCE;
+    private static JfrProfilerService instance;
 
     @Override
     public synchronized Future<ProfilerService> initialize(
@@ -36,7 +36,7 @@ public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
             ScheduledExecutorService serviceProfilerExecutorService,
             String userAgent,
             String roleName) {
-        if (INSTANCE == null) {
+        if (instance == null) {
             ServiceProfilerClientV2 serviceProfilerClient = new ProfilerFrontendClientV2(config.getServiceProfilerFrontEndPoint(), instrumentationKey, httpPipeline, userAgent);
 
             ServiceProfilerUploader uploader = new ServiceProfilerUploader(
@@ -46,7 +46,7 @@ public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
                     appIdSupplier,
                     roleName);
 
-            INSTANCE = new JfrProfilerService(
+            instance = new JfrProfilerService(
                     appIdSupplier,
                     config,
                     new JfrProfiler(config),
@@ -56,9 +56,9 @@ public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
                     uploader,
                     serviceProfilerExecutorService);
 
-            return INSTANCE.initialize();
+            return instance.initialize();
         }
-        return CompletableFuture.completedFuture(INSTANCE);
+        return CompletableFuture.completedFuture(instance);
     }
 
 }

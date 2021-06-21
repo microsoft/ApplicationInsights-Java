@@ -145,21 +145,21 @@ final class DefaultQuickPulseDataFetcher implements QuickPulseDataFetcher {
         return sb.toString();
     }
 
-    private void formatDocuments(StringBuilder sb) {
+    private static void formatDocuments(StringBuilder sb) {
         sb.append("\"Documents\": [] ,");
     }
 
-    private void formatSingleMetric(StringBuilder sb, String metricName, double metricValue, int metricWeight, Boolean includeComma) {
+    private static void formatSingleMetric(StringBuilder sb, String metricName, double metricValue, int metricWeight, boolean includeComma) {
         String comma = includeComma ? "," : "";
         sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
     }
 
-    private void formatSingleMetric(StringBuilder sb, String metricName, long metricValue, int metricWeight, Boolean includeComma) {
+    private static void formatSingleMetric(StringBuilder sb, String metricName, long metricValue, int metricWeight, boolean includeComma) {
         String comma = includeComma ? "," : "";
         sb.append(String.format("{\"Name\": \"%s\",\"Value\": %s,\"Weight\": %s}%s", metricName, metricValue, metricWeight, comma));
     }
 
-    private void formatMetrics(QuickPulseDataCollector.FinalCounters counters, StringBuilder sb) {
+    private static void formatMetrics(QuickPulseDataCollector.FinalCounters counters, StringBuilder sb) {
         sb.append("\"Metrics\":[");
         formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Requests\\/Sec", counters.requests, 1, true);
         formatSingleMetric(sb, "\\\\ApplicationInsights\\\\Request Duration", counters.requestsDuration, (int)counters.requests, true);

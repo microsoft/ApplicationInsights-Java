@@ -36,7 +36,8 @@ public final class CpuPerformanceCounterCalculator {
 
     private final int numberOfCpus;
 
-    private long prevUpTime, prevProcessCpuTime;
+    private long prevUpTime;
+    private long prevProcessCpuTime;
 
     private ObjectName osBean;
 

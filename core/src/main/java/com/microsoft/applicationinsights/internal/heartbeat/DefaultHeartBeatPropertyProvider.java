@@ -54,7 +54,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
@@ -91,7 +91,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
                 break;
             }
           }
-          catch (Exception e) {
+          catch (RuntimeException e) {
             if (logger.isWarnEnabled()) {
               logger.warn("Failed to obtain heartbeat property", e);
             }
@@ -106,7 +106,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * This method initializes the collection with Default Properties of this provider.
    * @param defaultFields collection to hold default properties.
    */
-  private void initializeDefaultFields(Set<String> defaultFields) {
+  private static void initializeDefaultFields(Set<String> defaultFields) {
     defaultFields.add(JRE_VERSION);
     defaultFields.add(SDK_VERSION);
     defaultFields.add(OS_VERSION);

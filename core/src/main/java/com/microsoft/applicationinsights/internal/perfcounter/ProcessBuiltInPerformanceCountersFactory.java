@@ -24,9 +24,6 @@ package com.microsoft.applicationinsights.internal.perfcounter;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * The class will create the 'built-in'/default performance counters.
  */

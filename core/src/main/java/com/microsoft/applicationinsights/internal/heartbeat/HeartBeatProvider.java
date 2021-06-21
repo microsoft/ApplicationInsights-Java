@@ -32,7 +32,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
   /**
    * The name of the heartbeat metric.
    */
-  private final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
+  private static final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
 
   /**
    * The list of disabled properties
@@ -100,7 +100,7 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
       propertyUpdateService.submit(HeartbeatDefaultPayload.populateDefaultPayload(getExcludedHeartBeatProperties(),
           getExcludedHeartBeatPropertyProviders(), this));
 
-      heartBeatSenderService.scheduleAtFixedRate(heartBeatPulse(), interval, interval, TimeUnit.SECONDS);
+      heartBeatSenderService.scheduleAtFixedRate(this::send, interval, interval, TimeUnit.SECONDS);
     }
   }
 
@@ -175,12 +175,15 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
    * Send the heartbeat item synchronously to application insights backend.
    */
   private void send() {
-
-    TelemetryItem telemetry = gatherData();
-    telemetry.getTags().put(ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
-    telemetryClient.trackAsync(telemetry);
-    logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
-
+    try {
+      TelemetryItem telemetry = gatherData();
+      telemetry.getTags().put(ContextTagKeys.AI_OPERATION_SYNTHETIC_SOURCE.toString(), HEARTBEAT_SYNTHETIC_METRIC_NAME);
+      telemetryClient.trackAsync(telemetry);
+      logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
+    }
+    catch (RuntimeException e) {
+      logger.warn("Error occured while sending heartbeat");
+    }
   }
 
   /**
@@ -210,20 +213,5 @@ public class HeartBeatProvider implements HeartBeatProviderInterface {
     telemetry.setTime(FormattedTime.fromNow());
 
     return telemetry;
-  }
-
-  /**
-   * Runnable which is responsible for calling the send method to transmit telemetry
-   * @return Runnable which has logic to send heartbeat.
-   */
-  private Runnable heartBeatPulse() {
-    return () -> {
-      try {
-       send();
-      }
-      catch (Exception e) {
-        logger.warn("Error occured while sending heartbeat");
-      }
-    };
   }
 }

@@ -67,9 +67,6 @@ final class DefaultQuickPulseDataSender implements QuickPulseDataSender {
                             case ERROR:
                                 onPostError(sendTime);
                                 break;
-
-                            default:
-                                break;
                         }
                     }
                 } finally {

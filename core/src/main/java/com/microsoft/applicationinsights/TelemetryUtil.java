@@ -192,6 +192,7 @@ public class TelemetryUtil {
     }
 
     // FIXME (trask) why is this unused?
+    @SuppressWarnings("unused")
     private static String getBaseType(MonitorDomain data) {
         if (data instanceof AvailabilityData) {
             return "AvailabilityData"; // TODO (trask) is this right?
@@ -292,4 +293,6 @@ public class TelemetryUtil {
             return !present;
         }
     }
+
+    private TelemetryUtil() {}
 }

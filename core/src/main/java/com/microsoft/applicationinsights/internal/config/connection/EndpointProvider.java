@@ -53,7 +53,7 @@ public class EndpointProvider {
         try {
             return buildUrl(ingestionEndpoint, API_PROFILES_APP_ID_URL_PREFIX +instrumentationKey+ API_PROFILES_APP_ID_URL_SUFFIX);
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Invalid instrumentationKey: "+instrumentationKey);
+            throw new IllegalArgumentException("Invalid instrumentationKey: "+instrumentationKey, e);
         }
     }
 

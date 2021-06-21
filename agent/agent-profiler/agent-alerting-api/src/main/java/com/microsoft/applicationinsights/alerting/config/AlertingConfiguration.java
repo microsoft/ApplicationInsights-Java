@@ -65,15 +65,21 @@ public class AlertingConfiguration {
         return collectionPlanConfiguration;
     }
 
-    @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         AlertingConfiguration that = (AlertingConfiguration) o;
         return Objects.equals(cpuAlert, that.cpuAlert) && Objects.equals(memoryAlert, that.memoryAlert) && Objects.equals(defaultConfiguration, that.defaultConfiguration) &&
                 Objects.equals(collectionPlanConfiguration, that.collectionPlanConfiguration);
     }
 
-    @Override public int hashCode() {
+    @Override
+    public int hashCode() {
         return Objects.hash(cpuAlert, memoryAlert, defaultConfiguration, collectionPlanConfiguration);
     }
 
@@ -113,8 +119,12 @@ public class AlertingConfiguration {
         }
 
         @Override public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             AlertConfiguration that = (AlertConfiguration) o;
             return enabled == that.enabled &&
                     Float.compare(that.threshold, threshold) == 0 &&

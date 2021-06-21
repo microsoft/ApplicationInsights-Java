@@ -72,7 +72,6 @@ final class QuickPulseNetworkHelper {
         QuickPulseStatus status = QuickPulseStatus.ERROR;
         long servicePollingIntervalHint = -1;
         String serviceEndpointRedirect = null;
-        QuickPulseHeaderInfo quickPulseHeaderInfo;
 
         for (HttpHeader header: headers) {
             if (QPS_STATUS_HEADER.equalsIgnoreCase(header.getName())) {
@@ -91,7 +90,6 @@ final class QuickPulseNetworkHelper {
                 serviceEndpointRedirect = header.getValue();
             }
         }
-        quickPulseHeaderInfo = new QuickPulseHeaderInfo(status, serviceEndpointRedirect, servicePollingIntervalHint);
-        return quickPulseHeaderInfo;
+        return new QuickPulseHeaderInfo(status, serviceEndpointRedirect, servicePollingIntervalHint);
     }
 }

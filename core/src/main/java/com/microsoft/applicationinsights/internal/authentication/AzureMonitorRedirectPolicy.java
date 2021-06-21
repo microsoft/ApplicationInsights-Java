@@ -81,7 +81,7 @@ public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
      * @return True if statusCode corresponds to HTTP redirect response codes and redirect
      * retries is less than {@code MAX_REDIRECT_RETRIES}.
      */
-    private boolean shouldRetryWithRedirect(int statusCode, int tryCount) {
+    private static boolean shouldRetryWithRedirect(int statusCode, int tryCount) {
         if (tryCount >= MAX_REDIRECT_RETRIES) {
             logger.warn("Max redirect retries limit reached:{}.", MAX_REDIRECT_RETRIES);
             return false;
@@ -91,5 +91,4 @@ public final class AzureMonitorRedirectPolicy implements HttpPipelinePolicy {
                 || statusCode == PERMANENT_REDIRECT_STATUS_CODE
                 || statusCode == TEMP_REDIRECT_STATUS_CODE;
     }
-
 }

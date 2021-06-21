@@ -128,7 +128,7 @@ public class ProfilerServiceInitializer {
 
             try {
                 factory = loadProfilerServiceFactory();
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOGGER.error("Failed to load profiler factory", e);
             }
 
@@ -235,4 +235,6 @@ public class ProfilerServiceInitializer {
         telemetry.setTime(FormattedTime.fromNow());
         telemetryClient.trackAsync(telemetry);
     }
+
+    private ProfilerServiceInitializer() {}
 }

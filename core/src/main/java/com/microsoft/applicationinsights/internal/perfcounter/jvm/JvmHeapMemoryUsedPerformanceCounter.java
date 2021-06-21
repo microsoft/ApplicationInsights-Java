@@ -64,7 +64,7 @@ public class JvmHeapMemoryUsedPerformanceCounter implements PerformanceCounter {
         reportHeap(memory, telemetryClient);
     }
 
-    private void reportHeap(MemoryMXBean memory, TelemetryClient telemetryClient) {
+    private static void reportHeap(MemoryMXBean memory, TelemetryClient telemetryClient) {
         MemoryUsage mhu = memory.getHeapMemoryUsage();
         if (mhu != null) {
             long currentHeapUsed = mhu.getUsed() / Megabyte;

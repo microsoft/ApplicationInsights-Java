@@ -117,4 +117,6 @@ public class FormattedDuration {
         }
         sb.append(value);
     }
+
+    private FormattedDuration() {}
 }

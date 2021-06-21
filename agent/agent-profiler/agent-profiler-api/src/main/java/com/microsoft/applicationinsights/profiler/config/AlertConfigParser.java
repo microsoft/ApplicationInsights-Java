@@ -159,4 +159,6 @@ public class AlertConfigParser {
                 profilerConfiguration.getCollectionPlan()
         );
     }
+
+    private AlertConfigParser() {}
 }

@@ -47,4 +47,5 @@ public class HeartbeatDefaultPayload {
     };
   }
 
+  private HeartbeatDefaultPayload() {}
 }

@@ -104,10 +104,7 @@ public class JfrProfilerService implements ProfilerService {
 
         initialised = true;
 
-        appIdSupplier.get();
-
         profileHandler = new JfrUploadService(serviceProfilerUploader, appIdSupplier, uploadCompleteObserver);
-
 
         serviceProfilerExecutorService.submit(() -> {
             try {

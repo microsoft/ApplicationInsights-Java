@@ -94,7 +94,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         return getRecordingConfiguration(configuration.memoryTriggeredSettings(), REDUCED_MEMORY_PROFILE);
     }
 
-    private RecordingConfiguration getCpuProfileConfig(ServiceProfilerServiceConfig configuration) {
+    private static RecordingConfiguration getCpuProfileConfig(ServiceProfilerServiceConfig configuration) {
         return getRecordingConfiguration(configuration.cpuTriggeredSettings(), REDUCED_CPU_PROFILE);
     }
 
@@ -172,12 +172,15 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
             }
 
             RecordingConfiguration recordingConfiguration;
-            if (alertType == AlertMetricType.CPU) {
-                recordingConfiguration = cpuRecordingConfiguration;
-            } else if (alertType == AlertMetricType.MEMORY) {
-                recordingConfiguration = memoryRecordingConfiguration;
-            } else {
-                recordingConfiguration = RecordingConfiguration.PROFILE_CONFIGURATION;
+            switch (alertType) {
+                case CPU:
+                    recordingConfiguration = cpuRecordingConfiguration;
+                    break;
+                case MEMORY:
+                    recordingConfiguration = memoryRecordingConfiguration;
+                    break;
+                default:
+                    recordingConfiguration = RecordingConfiguration.PROFILE_CONFIGURATION;
             }
 
             activeRecording = flightRecorderConnection.newRecording(recordingOptions, recordingConfiguration);
