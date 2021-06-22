@@ -79,8 +79,7 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
 
         HttpResponse response = executePostWithRedirect(requestUrl).block();
         if (response == null) {
-            // FIXME (trask) I think that http response mono should never complete empty
-            //  (it should either complete with a response or complete with a failure)
+            // this shouldn't happen, the mono should complete with a response or a failure
             throw new AssertionError("http response mono returned empty");
         }
         if (response.getStatusCode() >= 300) {
@@ -117,8 +116,7 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
 
         HttpResponse response = executePostWithRedirect(requestUrl).block();
         if (response == null) {
-            // FIXME (trask) I think that http response mono should never complete empty
-            //  (it should either complete with a response or complete with a failure)
+            // this shouldn't happen, the mono should complete with a response or a failure
             throw new AssertionError("http response mono returned empty");
         }
 
@@ -130,8 +128,7 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
 
         String json = response.getBodyAsString().block();
         if (json == null) {
-            // FIXME (trask) I think that http response mono should never complete empty
-            //  (it should either complete with a response or complete with a failure)
+            // this shouldn't happen, the mono should complete with a response or a failure
             throw new AssertionError("response body mono returned empty");
         }
         return new Builder()
@@ -153,8 +150,7 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
 
         HttpResponse response = httpPipeline.send(request).block();
         if (response == null) {
-            // FIXME (trask) I think that http response mono should never complete empty
-            //  (it should either complete with a response or complete with a failure)
+            // this shouldn't happen, the mono should complete with a response or a failure
             throw new AssertionError("http response mono returned empty");
         }
         if (response.getStatusCode() >= 300) {

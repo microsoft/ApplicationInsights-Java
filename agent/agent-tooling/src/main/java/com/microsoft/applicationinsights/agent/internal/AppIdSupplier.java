@@ -124,8 +124,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
             }
 
             if (response == null) {
-                // FIXME (trask) I think that http response mono should never complete empty
-                //  (it should either complete with a response or complete with a failure)
+                // this shouldn't happen, the mono should complete with a response or a failure
                 throw new AssertionError("http response mono returned empty");
             }
 

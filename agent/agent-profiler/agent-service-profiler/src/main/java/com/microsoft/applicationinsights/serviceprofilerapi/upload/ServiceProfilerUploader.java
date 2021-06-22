@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -281,19 +282,18 @@ public class ServiceProfilerUploader {
     }
 
     // Deleting file recursively.
-    // FIXME (trask)
-    @SuppressWarnings("StreamResourceLeak")
     private static void deletePathRecursive(Path path) throws IOException {
         if (path != null) {
-            Files
-                    .walk(path)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(file -> {
-                        if (!file.delete()) {
-                            LOGGER.error("Failed to delete " + file.getAbsolutePath());
-                        }
-                    });
+            try (Stream<Path> stream = Files.walk(path)) {
+                stream.sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(file -> {
+                            if (!file.delete()) {
+                                LOGGER.error("Failed to delete " + file.getAbsolutePath());
+                            }
+                        });
+
+            }
         }
     }
 }

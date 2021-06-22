@@ -133,7 +133,6 @@ public class TelemetryClient {
      * initialized with minimum defaults needed to send telemetry to Application Insights.
      * @return The 'Active' instance
      */
-    // FIXME (trask) review usages of the global, and inject where possible
     public static TelemetryClient getActive() {
         if (active == null) {
             throw new IllegalStateException("agent was not initialized");

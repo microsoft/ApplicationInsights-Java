@@ -29,7 +29,6 @@ public class LazyHttpClient implements HttpClient {
     public static volatile String proxyHost;
     public static volatile Integer proxyPortNumber;
 
-    // FIXME (trask) review usages of the global, and inject where possible
     public static HttpClient getInstance() {
         return INSTANCE;
     }
