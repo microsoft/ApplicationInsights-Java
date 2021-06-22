@@ -27,7 +27,7 @@ plugins {
     id "com.github.johnrengelman.shadow" version "6.1.0" apply false
 
     id "org.owasp.dependencycheck" version "6.1.5"
-    id "com.diffplug.spotless" version "5.11.1"
+    id "com.diffplug.spotless" version "5.14.0"
     id "net.ltgt.errorprone" version "1.3.0" apply false
 
     id "com.github.ben-manes.versions" version "0.38.0"
@@ -48,6 +48,18 @@ ext {
         logger.lifecycle "Building on DESKTOP"
     }
 }
+
+// TODO (trask) enable and format everything!
+//spotless {
+//    // this formatting is applied at the root level, as some of these files are not in a submodules
+//    // and would be missed otherwise
+//    format 'misc', {
+//        target '.gitignore', '*.md', 'docs/**/*.md'
+//        indentWithSpaces()
+//        trimTrailingWhitespace()
+//        endWithNewline()
+//    }
+//}
 
 allprojects {
     task generateLockfiles {
