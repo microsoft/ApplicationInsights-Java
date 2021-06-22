@@ -31,14 +31,6 @@ apply plugin: "org.owasp.dependencycheck"
 apply plugin: "net.ltgt.errorprone"
 apply plugin: "com.diffplug.spotless"
 
-configurations {
-    def includeProfiler = project.hasProperty("includeProfiler") ? project.includeProfiler.toBoolean() : false
-    if (!includeProfiler) {
-        compileClasspath.resolutionStrategy.activateDependencyLocking()
-        runtimeClasspath.resolutionStrategy.activateDependencyLocking()
-    }
-}
-
 // TODO (trask) enable and format everything!
 //spotless {
 //    java {
