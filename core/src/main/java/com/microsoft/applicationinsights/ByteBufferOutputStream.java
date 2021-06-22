@@ -8,13 +8,13 @@ import java.util.List;
 
 class ByteBufferOutputStream extends OutputStream {
 
-    private final ByteBufferPool byteBufferPool;
+    private final AppInsightsByteBufferPool byteBufferPool;
 
     private final List<ByteBuffer> byteBuffers = new ArrayList<>();
 
     private ByteBuffer current;
 
-    ByteBufferOutputStream(ByteBufferPool byteBufferPool) {
+    ByteBufferOutputStream(AppInsightsByteBufferPool byteBufferPool) {
         this.byteBufferPool = byteBufferPool;
         current = byteBufferPool.remove();
         byteBuffers.add(current);

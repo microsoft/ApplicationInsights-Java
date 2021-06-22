@@ -202,7 +202,7 @@ public class TelemetryClient {
         if (channelBatcher == null) {
             synchronized (channelInitLock) {
                 if (channelBatcher == null) {
-                    TelemetryChannel channel = new TelemetryChannel(endpointProvider.getIngestionEndpoint());
+                    TelemetryChannel channel = TelemetryChannel.create(endpointProvider.getIngestionEndpoint());
                     channelBatcher = BatchSpanProcessor.builder(channel).build();
                 }
             }

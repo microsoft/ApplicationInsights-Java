@@ -8,10 +8,12 @@ import com.azure.core.http.policy.RetryPolicy;
 import com.azure.core.util.tracing.Tracer;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
 import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
+import com.microsoft.applicationinsights.internal.persistence.LocalFileWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,17 +24,19 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 // TODO performance testing
-class TelemetryChannel {
+public class TelemetryChannel {
 
     private static final Logger logger = LoggerFactory.getLogger(TelemetryChannel.class);
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private static final ByteBufferPool byteBufferPool = new ByteBufferPool();
+    private static final AppInsightsByteBufferPool byteBufferPool = new AppInsightsByteBufferPool();
 
     static {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -41,7 +45,7 @@ class TelemetryChannel {
     private final HttpPipeline pipeline;
     private final URL endpoint;
 
-    TelemetryChannel(URL endpoint) {
+    public static TelemetryChannel create(URL endpoint) {
         List<HttpPipelinePolicy> policies = new ArrayList<>();
         HttpClient client = LazyAzureHttpClient.getInstance();
         HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder()
@@ -59,7 +63,16 @@ class TelemetryChannel {
         // TODO set the logging level based on self diagnostic log level set by user
         policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
         pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
-        this.pipeline = pipelineBuilder.build();
+        return new TelemetryChannel(pipelineBuilder.build(), endpoint);
+    }
+
+    public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
+        return internalSend(Arrays.asList(buffer));
+    }
+
+    // used by tests only
+    TelemetryChannel(HttpPipeline pipeline, URL endpoint) {
+        this.pipeline = pipeline;
         this.endpoint = endpoint;
     }
 
@@ -81,17 +94,19 @@ class TelemetryChannel {
 
     List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
         ByteBufferOutputStream out = new ByteBufferOutputStream(byteBufferPool);
-        try {
-            for (Iterator<TelemetryItem> i = telemetryItems.iterator(); i.hasNext(); ) {
-                mapper.writeValue(out, i.next());
+
+        try (JsonGenerator jg = mapper.createGenerator(new GZIPOutputStream(out))) {
+            for (Iterator<TelemetryItem> i = telemetryItems.iterator(); i.hasNext();) {
+                mapper.writeValue(jg, i.next());
                 if (i.hasNext()) {
-                    out.write('\n');
+                    jg.writeRaw('\n');
                 }
             }
         } catch (IOException e) {
             byteBufferPool.offer(out.getByteBuffers());
             throw e;
         }
+
         out.close(); // closing ByteBufferOutputStream is a no-op, but this line makes LGTM happy
 
         List<ByteBuffer> byteBuffers = out.getByteBuffers();
@@ -101,12 +116,17 @@ class TelemetryChannel {
         return byteBuffers;
     }
 
+    /**
+     * Object can be a list of {@link ByteBuffer} or a raw byte array.
+     * Regular telemetries will be sent as {@code List<ByteBuffer>}.
+     * Persisted telemetries will be sent as byte[]
+     */
     private CompletableResultCode internalSend(List<ByteBuffer> byteBuffers) {
         HttpRequest request = new HttpRequest(HttpMethod.POST, endpoint + "v2.1/track");
 
         request.setBody(Flux.fromIterable(byteBuffers));
-
         int contentLength = byteBuffers.stream().mapToInt(ByteBuffer::limit).sum();
+
         request.setHeader("Content-Length", Integer.toString(contentLength));
 
         // need to suppress the default User-Agent "ReactorNetty/dev", otherwise Breeze ingestion service will put that
@@ -115,25 +135,63 @@ class TelemetryChannel {
         // TODO(trask)
         //  not setting User-Agent header at all would be a better option, but haven't figured out how to do that yet
         request.setHeader("User-Agent", "");
+        request.setHeader("Content-Encoding", "gzip");
 
         // TODO(trask) subscribe with listener
         //  * retry on first failure (may not need to worry about this if retry policy in pipeline already, see above)
         //  * write to disk on second failure
         CompletableResultCode result = new CompletableResultCode();
+        final List<ByteBuffer> finalByteBuffers = byteBuffers;
         pipeline.send(request)
                 .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
                 .subscribe(response -> {
-                    // TODO parse response, looking for throttling, partial successes, etc
-                    if(response.getStatusCode() == 401 || response.getStatusCode() == 403) {
-                        logger.warn("Failed to send telemetry with status code:{} ,please check your credentials", response.getStatusCode());
-                    }
+                    parseResponseCode(response.getStatusCode());
                 }, error -> {
-                    byteBufferPool.offer(byteBuffers);
+                    LocalFileWriter writer = new LocalFileWriter();
+                    if (!writer.writeToDisk(byteBuffers)) {
+                        logger.warn("Fail to write {} to disk.", (finalByteBuffers != null ? "List<ByteBuffers>" : "byte[]"));
+                        // TODO (heya) track # of write failure via Statsbeat
+                    }
+
+                    if (finalByteBuffers != null) {
+                        byteBufferPool.offer(finalByteBuffers);
+                    }
                     result.fail();
                 }, () -> {
-                    byteBufferPool.offer(byteBuffers);
+                    if (finalByteBuffers != null) {
+                        byteBufferPool.offer(finalByteBuffers);
+                    }
                     result.succeed();
                 });
         return result;
+    }
+
+    // TODO (heya) this method name doesn't match what it does
+    private static void parseResponseCode(int statusCode) {
+        switch (statusCode) {
+            // TODO (trask) need constants for these
+            case 401:
+            case 403: {
+                logger.warn("Failed to send telemetry with status code:{}, please check your credentials", statusCode);
+                break;
+            }
+            case 408:
+            case 500:
+            case 503:
+            case BreezeStatusCode.CLIENT_SIDE_EXCEPTION:
+                // TODO exponential backoff and retry to a limit
+                // TODO (heya) track failure count via Statsbeat
+                break;
+            case BreezeStatusCode.THROTTLED_OVER_EXTENDED_TIME:
+            case BreezeStatusCode.THROTTLED:
+                // TODO handle throttling
+                // TODO (heya) track throttling count via Statsbeat
+                break;
+            case BreezeStatusCode.PARTIAL_SUCCESS:
+                // TODO handle partial success
+                break;
+            default:
+                // ok
+        }
     }
 }
