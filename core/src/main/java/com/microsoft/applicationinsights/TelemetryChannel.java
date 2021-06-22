@@ -44,8 +44,9 @@ public class TelemetryChannel {
 
     private final HttpPipeline pipeline;
     private final URL endpoint;
+    private final LocalFileWriter localFileWriter;
 
-    public static TelemetryChannel create(URL endpoint) {
+    public static TelemetryChannel create(URL endpoint, LocalFileWriter localFileWriter) {
         List<HttpPipelinePolicy> policies = new ArrayList<>();
         HttpClient client = LazyHttpClient.getInstance();
         HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder()
@@ -63,7 +64,7 @@ public class TelemetryChannel {
         // TODO set the logging level based on self diagnostic log level set by user
         policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
         pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
-        return new TelemetryChannel(pipelineBuilder.build(), endpoint);
+        return new TelemetryChannel(pipelineBuilder.build(), endpoint, localFileWriter);
     }
 
     public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
@@ -71,9 +72,10 @@ public class TelemetryChannel {
     }
 
     // used by tests only
-    public TelemetryChannel(HttpPipeline pipeline, URL endpoint) {
+    public TelemetryChannel(HttpPipeline pipeline, URL endpoint, LocalFileWriter localFileWriter) {
         this.pipeline = pipeline;
         this.endpoint = endpoint;
+        this.localFileWriter = localFileWriter;
     }
 
     public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
@@ -147,8 +149,7 @@ public class TelemetryChannel {
                 .subscribe(response -> {
                     parseResponseCode(response.getStatusCode());
                 }, error -> {
-                    LocalFileWriter writer = new LocalFileWriter();
-                    if (!writer.writeToDisk(byteBuffers)) {
+                    if (!localFileWriter.writeToDisk(byteBuffers)) {
                         logger.warn("Fail to write {} to disk.", (finalByteBuffers != null ? "List<ByteBuffers>" : "byte[]"));
                         // TODO (heya) track # of write failure via Statsbeat
                     }

@@ -29,7 +29,9 @@ import com.microsoft.applicationinsights.internal.config.TelemetryClientInitiali
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
+import com.microsoft.applicationinsights.internal.persistence.LocalFileCache;
 import com.microsoft.applicationinsights.internal.persistence.LocalFileLoader;
+import com.microsoft.applicationinsights.internal.persistence.LocalFileWriter;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -205,8 +207,10 @@ public class TelemetryClient {
         if (channelBatcher == null) {
             synchronized (channelInitLock) {
                 if (channelBatcher == null) {
-                    TelemetryChannel channel = TelemetryChannel.create(endpointProvider.getIngestionEndpoint());
-                    LocalFileLoader.init(channel);
+                    LocalFileCache localFileCache = new LocalFileCache();
+                    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache);
+                    TelemetryChannel channel = TelemetryChannel.create(endpointProvider.getIngestionEndpoint(), localFileWriter);
+                    LocalFileLoader.start(localFileCache, channel);
                     channelBatcher = BatchSpanProcessor.builder(channel).build();
                 }
             }

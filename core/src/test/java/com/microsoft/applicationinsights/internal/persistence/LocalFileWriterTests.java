@@ -28,6 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocalFileWriterTests {
 
+    private LocalFileCache localFileCache;
+
     private ByteBuffer buffer;
 
     @BeforeEach
@@ -36,6 +38,8 @@ public class LocalFileWriterTests {
          * AadAuthentication is used by TelemetryChannel, which is used to initialize {@link LocalFileLoader}
          */
         AadAuthentication.init(null, null, null, null, null, null);
+
+        localFileCache = new LocalFileCache();
 
         Path path = new File(getClass().getClassLoader().getResource("write-transmission.txt").getPath()).toPath();
         try {
@@ -47,7 +51,7 @@ public class LocalFileWriterTests {
 
     @AfterEach
     public void cleanup() {
-        Queue<String> queue = LocalFileLoader.get().getPersistedFilesCache();
+        Queue<String> queue = localFileCache.getPersistedFilesCache();
         String filename;
         while((filename = queue.poll()) != null) {
             File tempFile = new File(DEFAULT_FOLDER, filename);
@@ -78,16 +82,16 @@ public class LocalFileWriterTests {
 
         assertThat(byteBuffers.size()).isEqualTo(10);
 
-        LocalFileWriter writer = new LocalFileWriter();
+        LocalFileWriter writer = new LocalFileWriter(localFileCache);
         assertThat(writer.writeToDisk(byteBuffers)).isTrue();
-        assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(1);
+        assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
     }
 
     @Test
     public void testWriteRawByteArray() {
-        LocalFileWriter writer = new LocalFileWriter();
+        LocalFileWriter writer = new LocalFileWriter(localFileCache);
         assertThat(writer.writeToDisk(singletonList(buffer))).isTrue();
-        assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(1);
+        assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
     }
 
     @Test
@@ -98,7 +102,7 @@ public class LocalFileWriterTests {
         for (int i = 0; i < 100; i++) {
             executorService.execute(() -> {
                 for (int j = 0; j < 10; j++) {
-                    LocalFileWriter writer = new LocalFileWriter();
+                    LocalFileWriter writer = new LocalFileWriter(localFileCache);
                     writer.writeToDisk(singletonList(ByteBuffer.wrap(telemetry.getBytes(UTF_8))));
                 }
             });
@@ -106,6 +110,6 @@ public class LocalFileWriterTests {
 
         executorService.shutdown();
         executorService.awaitTermination(10, TimeUnit.MINUTES);
-        assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(1000);
+        assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1000);
     }
 }

@@ -12,6 +12,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.microsoft.applicationinsights.TelemetryChannel;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
@@ -36,9 +37,28 @@ import static org.mockito.Mockito.when;
 
 public class IntegrationTests {
 
+    private TelemetryChannel telemetryChannel;
+    private LocalFileCache localFileCache;
+    private LocalFileWriter localFileWriter;
+    private LocalFileLoader localFileLoader;
+
+    @BeforeEach
+    public void setup() throws MalformedURLException {
+        HttpClient mockedClient = mock(HttpClient.class);
+        HttpRequest mockedRequest = mock(HttpRequest.class);
+        HttpResponse mockedResponse = mock(HttpResponse.class);
+        when(mockedResponse.getStatusCode()).thenReturn(500);
+        when(mockedClient.send(mockedRequest)).thenReturn(Mono.just(mockedResponse));
+        HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
+        localFileCache = new LocalFileCache();
+        localFileWriter = new LocalFileWriter(localFileCache);
+        telemetryChannel = new TelemetryChannel(pipelineBuilder.build(), new URL("http://foo.bar"), localFileWriter);
+        localFileLoader = new LocalFileLoader(localFileCache, telemetryChannel);
+    }
+
     @AfterEach
     public void cleanup() {
-        Queue<String> queue = LocalFileLoader.get().getPersistedFilesCache();
+        Queue<String> queue = localFileCache.getPersistedFilesCache();
         String filename;
         while((filename = queue.poll()) != null) {
             File tempFile = new File(DEFAULT_FOLDER, filename);
@@ -49,15 +69,6 @@ public class IntegrationTests {
 
     @Test
     public void integrationTest() throws MalformedURLException, InterruptedException {
-        HttpClient mockedClient = mock(HttpClient.class);
-        HttpRequest mockedRequest = mock(HttpRequest.class);
-        HttpResponse mockedResponse = mock(HttpResponse.class);
-        when(mockedResponse.getStatusCode()).thenReturn(500);
-        when(mockedClient.send(mockedRequest)).thenReturn(Mono.just(mockedResponse));
-        HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
-        TelemetryChannel telemetryChannel = new TelemetryChannel(pipelineBuilder.build(), new URL("http://foo.bar"));
-        LocalFileLoader.init(telemetryChannel);
-
         List<TelemetryItem> telemetryItems = new ArrayList<>();
         telemetryItems.add(createMetricTelemetry("metric" + 1, 1));
 
@@ -74,14 +85,14 @@ public class IntegrationTests {
 
         executorService.shutdown();
         executorService.awaitTermination(10, TimeUnit.MINUTES);
-        assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(100);
+        assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(100);
 
         for (int i = 100; i > 0; i--) {
-            LocalFileLoader.get().loadTelemetriesFromDisk(); // need to convert ByteBuffer back to TelemetryItem and then compare.
-            assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(i - 1);
+            localFileLoader.loadTelemetriesFromDisk(); // need to convert ByteBuffer back to TelemetryItem and then compare.
+            assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(i - 1);
         }
 
-        assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(0);
+        assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(0);
     }
 
     private static TelemetryItem createMetricTelemetry(String name, int value) {
