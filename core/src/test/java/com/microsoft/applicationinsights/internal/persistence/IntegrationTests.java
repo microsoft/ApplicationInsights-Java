@@ -82,16 +82,16 @@ public class IntegrationTests {
         assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(0);
     }
 
-    private TelemetryItem createMetricTelemetry(String name, int value) {
+    private static TelemetryItem createMetricTelemetry(String name, int value) {
         TelemetryItem telemetry = new TelemetryItem();
         telemetry.setVersion(1);
         telemetry.setName("Metric");
         telemetry.setInstrumentationKey("00000000-0000-0000-0000-0FEEDDADBEEF");
-        telemetry.setTags(new HashMap<String, String>() {{
-            put("ai.internal.sdkVersion", "test_version");
-            put("ai.internal.nodeName", "test_role_name");
-            put("ai.cloud.roleInstance", "test_cloud_name");
-        }});
+        Map<String, String> tags = new HashMap<>();
+        tags.put("ai.internal.sdkVersion", "test_version");
+        tags.put("ai.internal.nodeName", "test_role_name");
+        tags.put("ai.cloud.roleInstance", "test_cloud_name");
+        telemetry.setTags(tags);
 
         MetricsData data = new MetricsData();
         List<MetricDataPoint> dataPoints = new ArrayList<>();

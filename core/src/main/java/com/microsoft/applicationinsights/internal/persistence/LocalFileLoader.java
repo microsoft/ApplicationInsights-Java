@@ -1,7 +1,6 @@
 package com.microsoft.applicationinsights.internal.persistence;
 
 import com.microsoft.applicationinsights.TelemetryChannel;
-import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
