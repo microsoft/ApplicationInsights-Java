@@ -67,7 +67,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             TelemetryUtil.getProperties(requestSuccessCountSt.getData().getBaseData())
                     .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.trackAsync(requestSuccessCountSt);
-            LoggerFactory.getLogger(NetworkStatsbeat.class).debug("########################### sending networkstatsbeat: {}", requestSuccessCountSt);
         }
 
         if (local.requestFailureCount.get() != 0) {
@@ -83,8 +82,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             TelemetryUtil.getProperties(requestDurationSt.getData().getBaseData())
                     .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.trackAsync(requestDurationSt);
-            LoggerFactory.getLogger(NetworkStatsbeat.class).debug("########################### sending networkstatsbeat requestDuration: {}", requestDurationSt);
-
         }
 
         if (local.retryCount.get() != 0) {

@@ -144,7 +144,6 @@ public class Exporter implements SpanExporter {
         SpanKind kind = span.getKind();
         String instrumentationName = span.getInstrumentationLibraryInfo().getName();
         StatsbeatModule.get().getNetworkStatsbeat().addInstrumentation(instrumentationName);
-        logger.debug("######## add instrumentation name: {}", instrumentationName);
         Matcher matcher = COMPONENT_PATTERN.matcher(instrumentationName);
         String stdComponent = matcher.matches() ? matcher.group(1) : null;
         if (kind == SpanKind.INTERNAL) {

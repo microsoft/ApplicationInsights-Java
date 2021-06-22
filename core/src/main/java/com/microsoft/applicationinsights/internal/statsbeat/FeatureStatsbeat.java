@@ -56,6 +56,5 @@ class FeatureStatsbeat extends BaseStatsbeat {
         TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
                 .put("feature", String.valueOf(getFeature()));
         telemetryClient.trackAsync(statsbeatTelemetry);
-        LoggerFactory.getLogger(FeatureStatsbeat.class).debug("########################## send featureStatsbeat: {}", statsbeatTelemetry);
     }
 }

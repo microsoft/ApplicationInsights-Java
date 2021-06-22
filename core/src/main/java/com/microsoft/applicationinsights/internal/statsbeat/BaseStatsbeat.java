@@ -88,7 +88,6 @@ abstract class BaseStatsbeat {
                 if (customerIkey == null || customerIkey.isEmpty()) {
                     return;
                 }
-                logger.debug("########### sending statsbeat ############");
                 send();
             }
             catch (RuntimeException e) {

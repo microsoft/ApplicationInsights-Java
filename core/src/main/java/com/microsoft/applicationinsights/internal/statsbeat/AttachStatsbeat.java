@@ -55,8 +55,6 @@ class AttachStatsbeat extends BaseStatsbeat {
         TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
                 .put("rpId", resourceProviderId);
         telemetryClient.trackAsync(statsbeatTelemetry);
-
-        LoggerFactory.getLogger(AttachStatsbeat.class).debug("################### send attachStatsbeat: {}", statsbeatTelemetry);
     }
 
     /**
