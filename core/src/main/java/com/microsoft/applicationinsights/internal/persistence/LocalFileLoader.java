@@ -27,7 +27,7 @@ public class LocalFileLoader {
     private static final long INTERVAL_SECONDS = 30; // send persisted telemetries from local disk every 30 seconds.
     private static final ScheduledExecutorService scheduledExecutor =
             Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));
-    private static final LocalFileLoader INSTANCE = new LocalFileLoader();
+    private static LocalFileLoader instance;
 
     private final TelemetryChannel telemetryChannel;
 
@@ -41,8 +41,24 @@ public class LocalFileLoader {
      */
     private static final Queue<String> persistedFilesCache = new ConcurrentLinkedDeque<>();
 
+    private static final Object lock = new Object();
+
+    public static void init(TelemetryChannel telemetryChannel) {
+        synchronized (lock) {
+            if (instance != null) {
+                throw new IllegalArgumentException("init() already called.");
+            }
+            
+            instance = new LocalFileLoader(telemetryChannel);
+        }
+    }
+
     public static LocalFileLoader get() {
-        return INSTANCE;
+        if (instance == null) {
+            throw new IllegalArgumentException("instance should not be null");
+        }
+
+        return instance;
     }
 
     // Track the newly persisted filename to the concurrent hashmap.
@@ -89,9 +105,9 @@ public class LocalFileLoader {
         }
     }
 
-    private LocalFileLoader() {
+    private LocalFileLoader(TelemetryChannel telemetryChannel) {
         scheduledExecutor.scheduleWithFixedDelay(new PersistedTelemetriesSender(), INTERVAL_SECONDS, INTERVAL_SECONDS, TimeUnit.SECONDS);
-        telemetryChannel = TelemetryChannel.create(new EndpointProvider().getIngestionEndpoint());
+        this.telemetryChannel = telemetryChannel;
     }
 
     private class PersistedTelemetriesSender implements Runnable {

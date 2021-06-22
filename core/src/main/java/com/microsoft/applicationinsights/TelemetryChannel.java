@@ -71,12 +71,12 @@ public class TelemetryChannel {
     }
 
     // used by tests only
-    TelemetryChannel(HttpPipeline pipeline, URL endpoint) {
+    public TelemetryChannel(HttpPipeline pipeline, URL endpoint) {
         this.pipeline = pipeline;
         this.endpoint = endpoint;
     }
 
-    CompletableResultCode send(List<TelemetryItem> telemetryItems) {
+    public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
         List<ByteBuffer> byteBuffers;
         try {
             byteBuffers = encode(telemetryItems);
