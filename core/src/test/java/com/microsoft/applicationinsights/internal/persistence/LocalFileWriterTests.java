@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.persistence;
 
-import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import okio.BufferedSource;
 import okio.Okio;
 import org.junit.jupiter.api.AfterEach;
@@ -34,11 +33,6 @@ public class LocalFileWriterTests {
 
     @BeforeEach
     public void setup() {
-        /**
-         * AadAuthentication is used by TelemetryChannel, which is used to initialize {@link LocalFileLoader}
-         */
-        AadAuthentication.init(null, null, null, null, null, null);
-
         localFileCache = new LocalFileCache();
 
         Path path = new File(getClass().getClassLoader().getResource("write-transmission.txt").getPath()).toPath();

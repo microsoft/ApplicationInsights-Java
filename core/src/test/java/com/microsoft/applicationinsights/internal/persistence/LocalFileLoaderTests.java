@@ -3,10 +3,8 @@ package com.microsoft.applicationinsights.internal.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.TelemetryChannel;
-import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -29,15 +27,6 @@ public class LocalFileLoaderTests {
     private static final String BYTE_BUFFERS_TEST_FILE = "read-transmission.txt";
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final File PERSISTED_FILE = new File(DEFAULT_FOLDER, BYTE_BUFFERS_TEST_FILE);
-
-    @BeforeEach
-    public void setup() {
-        /*
-         * AadAuthentication is used by TelemetryChannel, which is used to initialize {@link LocalFileLoader}
-         */
-        // FIXME (trask) this init should not be needed
-        AadAuthentication.init(null, null, null, null, null, null);
-    }
 
     @AfterEach
     public void cleanup() {

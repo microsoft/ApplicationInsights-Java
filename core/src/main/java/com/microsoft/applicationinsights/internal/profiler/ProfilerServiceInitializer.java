@@ -20,9 +20,7 @@
  */
 package com.microsoft.applicationinsights.internal.profiler;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -30,13 +28,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipeline;
-import com.azure.core.http.HttpPipelineBuilder;
-import com.azure.core.http.policy.HttpLogOptions;
-import com.azure.core.http.policy.HttpLoggingPolicy;
-import com.azure.core.http.policy.HttpPipelinePolicy;
-import com.azure.core.http.policy.RetryPolicy;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
@@ -45,8 +37,6 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.TelemetryObservers;
-import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
-import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
@@ -81,24 +71,7 @@ public class ProfilerServiceInitializer {
                                                String userAgent,
                                                GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
 
-        // FIXME (trask) share this common code, also see TelemetryChannel (and other places?)
-        List<HttpPipelinePolicy> policies = new ArrayList<>();
-        HttpClient client = LazyHttpClient.getInstance();
-        HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder()
-                .httpClient(client);
-        // Add Azure monitor redirect policy to be able to handle v2.1/track redirects
-        policies.add(new AzureMonitorRedirectPolicy());
-        // Retry policy for failed requests
-        policies.add(new RetryPolicy());
-        // TODO handle authentication exceptions
-        HttpPipelinePolicy authenticationPolicy = AadAuthentication.getInstance().getAuthenticationPolicy();
-        if (authenticationPolicy != null) {
-            policies.add(authenticationPolicy);
-        }
-        // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
-        // TODO set the logging level based on self diagnostic log level set by user
-        policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
-        pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
+        HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(false, telemetryClient.getAadAuthentication());
 
         initialize(
                 appIdSupplier,
@@ -109,7 +82,7 @@ public class ProfilerServiceInitializer {
                 telemetryClient,
                 userAgent,
                 gcEventMonitorConfiguration,
-                pipelineBuilder.build()
+                httpPipeline
         );
     }
 

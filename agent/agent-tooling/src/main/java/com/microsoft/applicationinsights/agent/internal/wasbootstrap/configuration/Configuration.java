@@ -741,7 +741,6 @@ public class Configuration {
         public boolean enabled;
         public AuthenticationType type;
         public String clientId;
-        public String keePassDatabasePath;
         public String tenantId;
         public String clientSecret;
         public String authorityHost;
@@ -760,15 +759,6 @@ public class Configuration {
                 if(isEmpty(clientId)) {
                     throw new FriendlyException("AAD Authentication configuration of type User Assigned Managed Identity is missing \"clientId\".",
                             "Please provide a valid \"clientId\" under the \"authentication\" configuration. " +
-                                    "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
-                }
-            }
-
-            // keePassDatabasePath is only required for Windows. No configuration needed for Linux / Mac.
-            if(type == AuthenticationType.INTELLIJ && SystemInformation.INSTANCE.isWindows()) {
-                if(isEmpty(keePassDatabasePath)) {
-                    throw new FriendlyException("AAD Authentication configuration of type Intellij is missing \"keePassDatabasePath\".",
-                            "Please provide a valid authentication \"keePassDatabasePath\" under the \"authentication\" configuration. This is only required for Windows. " +
                                     "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
                 }
             }

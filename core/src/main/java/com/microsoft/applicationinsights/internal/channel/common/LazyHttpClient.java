@@ -1,16 +1,22 @@
 package com.microsoft.applicationinsights.internal.channel.common;
 
-import com.azure.core.http.HttpClient;
-import com.azure.core.http.HttpRequest;
-import com.azure.core.http.HttpResponse;
-import com.azure.core.http.ProxyOptions;
+import com.azure.core.http.*;
 import com.azure.core.http.netty.NettyAsyncHttpClientBuilder;
+import com.azure.core.http.policy.HttpLogOptions;
+import com.azure.core.http.policy.HttpLoggingPolicy;
+import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.core.http.policy.RetryPolicy;
 import com.azure.core.util.Context;
+import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
+import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
 import org.checkerframework.checker.lock.qual.GuardedBy;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.ConnectionProvider;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -80,6 +86,25 @@ public class LazyHttpClient implements HttpClient {
         return new NettyAsyncHttpClientBuilder()
                 .connectionProvider(connectionProvider)
                 .build();
+    }
+
+    public static HttpPipeline newHttpPipeLine(boolean addStampSpecificRedirectPolicy, @Nullable AadAuthentication aadAuthentication) {
+        List<HttpPipelinePolicy> policies = new ArrayList<>();
+        if (addStampSpecificRedirectPolicy) {
+            // Add Azure monitor redirect policy to be able to handle v2.1/track redirects
+            policies.add(new AzureMonitorRedirectPolicy());
+        }
+        // Retry policy for failed requests
+        policies.add(new RetryPolicy());
+        if (aadAuthentication != null) {
+             policies.add(aadAuthentication.getAuthenticationPolicy());
+        }
+        // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
+        // TODO set the logging level based on self diagnostic log level set by user
+        policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
+        HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(INSTANCE);
+        pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
+        return pipelineBuilder.build();
     }
 
     @Override

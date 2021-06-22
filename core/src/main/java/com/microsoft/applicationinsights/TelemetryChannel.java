@@ -1,17 +1,12 @@
 package com.microsoft.applicationinsights;
 
 import com.azure.core.http.*;
-import com.azure.core.http.policy.HttpLogOptions;
-import com.azure.core.http.policy.HttpLoggingPolicy;
-import com.azure.core.http.policy.HttpPipelinePolicy;
-import com.azure.core.http.policy.RetryPolicy;
 import com.azure.core.util.tracing.Tracer;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
-import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.persistence.LocalFileWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -23,7 +18,6 @@ import reactor.util.context.Context;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -46,25 +40,9 @@ public class TelemetryChannel {
     private final URL endpoint;
     private final LocalFileWriter localFileWriter;
 
-    public static TelemetryChannel create(URL endpoint, LocalFileWriter localFileWriter) {
-        List<HttpPipelinePolicy> policies = new ArrayList<>();
-        HttpClient client = LazyHttpClient.getInstance();
-        HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder()
-                .httpClient(client);
-        // Add Azure monitor redirect policy to be able to handle v2.1/track redirects
-        policies.add(new AzureMonitorRedirectPolicy());
-        // Retry policy for failed requests
-        policies.add(new RetryPolicy());
-        // TODO handle authentication exceptions
-        HttpPipelinePolicy authenticationPolicy = AadAuthentication.getInstance().getAuthenticationPolicy();
-        if (authenticationPolicy != null) {
-            policies.add(authenticationPolicy);
-        }
-        // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
-        // TODO set the logging level based on self diagnostic log level set by user
-        policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
-        pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
-        return new TelemetryChannel(pipelineBuilder.build(), endpoint, localFileWriter);
+    public static TelemetryChannel create(URL endpoint, AadAuthentication aadAuthentication, LocalFileWriter localFileWriter) {
+        HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(true, aadAuthentication);
+        return new TelemetryChannel(httpPipeline, endpoint, localFileWriter);
     }
 
     public CompletableResultCode sendRawBytes(ByteBuffer buffer) {
