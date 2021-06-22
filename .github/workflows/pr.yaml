@@ -32,6 +32,11 @@ jobs:
           git submodule update
       - name: Restore cache
         uses: burrunan/gradle-cache-action@v1
+      - name: Cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
       - name: Build otel-fork
         run: |
           cd otel
@@ -80,6 +85,11 @@ jobs:
         uses: burrunan/gradle-cache-action@v1
         with:
           read-only: true
+      - name: Cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
       - name: Build otel-fork
         run: |
           cd otel
