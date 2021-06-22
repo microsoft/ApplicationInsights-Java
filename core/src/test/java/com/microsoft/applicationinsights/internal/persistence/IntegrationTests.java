@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOLDER;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -60,11 +61,12 @@ public class IntegrationTests {
         List<TelemetryItem> telemetryItems = new ArrayList<>();
         telemetryItems.add(createMetricTelemetry("metric" + 1, 1));
 
-        final ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
         for (int i = 0; i < 10; i++) {
             executorService.execute(() -> {
                 for (int j = 0; j < 10; j++) {
-                    final CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+                    CompletableResultCode completableResultCode = telemetryChannel.send(telemetryItems);
+                    completableResultCode.join(10, SECONDS);
                     assertThat(completableResultCode.isSuccess()).isEqualTo(false);
                 }
             });
