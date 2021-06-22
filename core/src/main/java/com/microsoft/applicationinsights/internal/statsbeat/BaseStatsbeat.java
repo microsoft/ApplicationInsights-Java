@@ -31,6 +31,8 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -65,7 +67,9 @@ abstract class BaseStatsbeat {
 
         // overwrite the default name (which is "Metric")
         telemetry.setName(STATSBEAT_TELEMETRY_NAME);
-        CustomDimensions.get().populateProperties(data.getProperties(), telemetryClient.getInstrumentationKey());
+        Map<String, String> properties = new HashMap<>();
+        CustomDimensions.get().populateProperties(properties, telemetryClient.getInstrumentationKey());
+        data.setProperties(properties);
         return telemetry;
     }
 

@@ -38,6 +38,7 @@ class CustomDimensions {
     private final String language;
     private final String sdkVersion;
 
+    // FIXME (trask) review usages of the global, and inject where possible
     static CustomDimensions get() {
         return instance;
     }
