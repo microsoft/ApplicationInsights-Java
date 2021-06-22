@@ -676,7 +676,7 @@ public abstract class AiSmokeTest {
         List<ContainerInfo> failedToStop = new ArrayList<>();
         while (!allContainers.isEmpty()) {
             ContainerInfo c = allContainers.pop();
-            if (currentContainerInfo.get().equals(c)) {
+            if (c.equals(currentContainerInfo.get())) {
                 System.out.println("Cleaning up app container");
                 currentContainerInfo.set(null);
             }
