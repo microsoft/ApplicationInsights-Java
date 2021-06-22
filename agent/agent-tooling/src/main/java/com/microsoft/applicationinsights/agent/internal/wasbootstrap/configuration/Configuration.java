@@ -28,7 +28,6 @@ import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.authentication.AuthenticationType;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.profiler.GcReportingLevel;
-import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.squareup.moshi.Json;
 
 import java.util.ArrayList;
