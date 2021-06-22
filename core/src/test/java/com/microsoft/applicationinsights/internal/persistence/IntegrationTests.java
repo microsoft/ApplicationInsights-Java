@@ -18,7 +18,6 @@ import reactor.core.publisher.Mono;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.microsoft.applicationinsights.internal.persistence.PersistenceHelper.DEFAULT_FOLDER;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -77,7 +75,7 @@ public class IntegrationTests {
         assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(100);
 
         for (int i = 100; i > 0; i--) {
-            ByteBuffer bb = LocalFileLoader.get().loadTelemetriesFromDisk();
+            LocalFileLoader.get().loadTelemetriesFromDisk(); // need to convert ByteBuffer back to TelemetryItem and then compare.
             assertThat(LocalFileLoader.get().getPersistedFilesCache().size()).isEqualTo(i - 1);
         }
 

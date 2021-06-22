@@ -48,7 +48,7 @@ public class LocalFileLoader {
             if (instance != null) {
                 throw new IllegalArgumentException("init() already called.");
             }
-            
+
             instance = new LocalFileLoader(telemetryChannel);
         }
     }
