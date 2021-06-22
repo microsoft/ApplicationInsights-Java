@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +16,7 @@ public class NetworkStatsbeatTest {
 
     @BeforeEach
     public void init() {
-        networkStatsbeat = new NetworkStatsbeat(new TelemetryClient(), Long.MAX_VALUE);
+        networkStatsbeat = new NetworkStatsbeat();
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import okio.BufferedSource;
 import okio.Okio;
 import org.junit.jupiter.api.Test;
@@ -23,7 +22,7 @@ public class AzureMetadataServiceTest {
         String result = source.readUtf8();
         source.close();
 
-        AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), Long.MAX_VALUE);
+        AttachStatsbeat attachStatsbeat = new AttachStatsbeat();
         AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, new CustomDimensions());
         azureMetadataService.parseJsonResponse(result);
 
@@ -42,7 +41,7 @@ public class AzureMetadataServiceTest {
         String result = source.readUtf8();
         source.close();
 
-        AttachStatsbeat attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), Long.MAX_VALUE);
+        AttachStatsbeat attachStatsbeat = new AttachStatsbeat();
         AzureMetadataService azureMetadataService = new AzureMetadataService(attachStatsbeat, new CustomDimensions());
         azureMetadataService.parseJsonResponse(result);
 

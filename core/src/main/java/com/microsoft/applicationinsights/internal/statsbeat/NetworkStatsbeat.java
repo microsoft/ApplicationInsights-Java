@@ -45,13 +45,12 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
     private final Object lock = new Object();
 
-    NetworkStatsbeat(TelemetryClient telemetryClient, long interval) {
-        super(telemetryClient, interval);
+    NetworkStatsbeat() {
         current = new IntervalMetrics();
     }
 
     @Override
-    protected void send() {
+    protected void send(TelemetryClient telemetryClient) {
         IntervalMetrics local;
         synchronized (lock) {
             local = current;
@@ -62,14 +61,14 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         String instrumentation = String.valueOf(Instrumentations.encode(local.instrumentationList));
 
         if (local.requestSuccessCount.get() != 0) {
-            TelemetryItem requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
+            TelemetryItem requestSuccessCountSt = createStatsbeatTelemetry(telemetryClient, REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
             TelemetryUtil.getProperties(requestSuccessCountSt.getData().getBaseData())
                     .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.trackAsync(requestSuccessCountSt);
         }
 
         if (local.requestFailureCount.get() != 0) {
-            TelemetryItem requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
+            TelemetryItem requestFailureCountSt = createStatsbeatTelemetry(telemetryClient, REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
             TelemetryUtil.getProperties(requestFailureCountSt.getData().getBaseData())
                     .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.trackAsync(requestFailureCountSt);
@@ -77,28 +76,28 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
         double durationAvg = local.getRequestDurationAvg();
         if (durationAvg != 0) {
-            TelemetryItem requestDurationSt = createStatsbeatTelemetry(REQUEST_DURATION_METRIC_NAME, durationAvg);
+            TelemetryItem requestDurationSt = createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
             TelemetryUtil.getProperties(requestDurationSt.getData().getBaseData())
                     .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.trackAsync(requestDurationSt);
         }
 
         if (local.retryCount.get() != 0) {
-            TelemetryItem retryCountSt = createStatsbeatTelemetry(RETRY_COUNT_METRIC_NAME, local.retryCount.get());
+            TelemetryItem retryCountSt = createStatsbeatTelemetry(telemetryClient, RETRY_COUNT_METRIC_NAME, local.retryCount.get());
             TelemetryUtil.getProperties(retryCountSt.getData().getBaseData())
                     .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.trackAsync(retryCountSt);
         }
 
         if (local.throttlingCount.get() != 0) {
-            TelemetryItem throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
+            TelemetryItem throttleCountSt = createStatsbeatTelemetry(telemetryClient, THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
             TelemetryUtil.getProperties(throttleCountSt.getData().getBaseData())
                     .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.trackAsync(throttleCountSt);
         }
 
         if (local.exceptionCount.get() != 0) {
-            TelemetryItem exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
+            TelemetryItem exceptionCountSt = createStatsbeatTelemetry(telemetryClient, EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
             TelemetryUtil.getProperties(exceptionCountSt.getData().getBaseData())
                     .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.trackAsync(exceptionCountSt);

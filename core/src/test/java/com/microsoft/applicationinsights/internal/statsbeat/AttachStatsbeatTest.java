@@ -1,6 +1,5 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import okio.BufferedSource;
 import okio.Okio;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +29,7 @@ public class AttachStatsbeatTest {
 
     @BeforeEach
     public void setup() {
-        attachStatsbeat = new AttachStatsbeat(new TelemetryClient(), Long.MAX_VALUE);
+        attachStatsbeat = new AttachStatsbeat();
     }
 
     @Test

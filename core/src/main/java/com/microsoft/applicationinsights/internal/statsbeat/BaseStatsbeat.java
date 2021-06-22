@@ -27,34 +27,17 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsDat
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.applicationinsights.internal.statsbeat.Constants.STATSBEAT_TELEMETRY_NAME;
 
 abstract class BaseStatsbeat {
 
-    private static final Logger logger = LoggerFactory.getLogger(BaseStatsbeat.class);
-    private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
+    protected abstract void send(TelemetryClient telemetryClient);
 
-    protected final TelemetryClient telemetryClient;
-
-    BaseStatsbeat(TelemetryClient telemetryClient, long interval) {
-        this.telemetryClient = telemetryClient;
-        scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(), interval, interval, TimeUnit.SECONDS);
-    }
-
-    protected abstract void send();
-
-    protected TelemetryItem createStatsbeatTelemetry(String name, double value) {
+    protected TelemetryItem createStatsbeatTelemetry(TelemetryClient telemetryClient, String name, double value) {
         TelemetryItem telemetry = new TelemetryItem();
         MetricsData data = new MetricsData();
         MetricDataPoint point = new MetricDataPoint();
@@ -73,26 +56,5 @@ abstract class BaseStatsbeat {
         CustomDimensions.get().populateProperties(properties, telemetryClient.getInstrumentationKey());
         data.setProperties(properties);
         return telemetry;
-    }
-
-    /**
-     * Runnable which is responsible for calling the send method to transmit Statsbeat telemetry
-     */
-    private class StatsbeatSender implements Runnable {
-        @Override
-        public void run() {
-            try {
-                // For Linux Consumption Plan, connection string is lazily set.
-                // There is no need to send statsbeat when cikey is empty.
-                String customerIkey = telemetryClient.getInstrumentationKey();
-                if (customerIkey == null || customerIkey.isEmpty()) {
-                    return;
-                }
-                send();
-            }
-            catch (RuntimeException e) {
-                logger.error("Error occurred while sending statsbeat", e);
-            }
-        }
     }
 }

@@ -34,9 +34,7 @@ class FeatureStatsbeat extends BaseStatsbeat {
 
     private final Set<Feature> featureList = new HashSet<>(64);
 
-    FeatureStatsbeat(TelemetryClient telemetryClient, long interval) {
-        super(telemetryClient, interval);
-
+    FeatureStatsbeat() {
         // track java distribution
         String javaVendor = System.getProperty("java.vendor");
         featureList.add(Feature.fromJavaVendor(javaVendor));
@@ -50,8 +48,8 @@ class FeatureStatsbeat extends BaseStatsbeat {
     }
 
     @Override
-    protected void send() {
-        TelemetryItem statsbeatTelemetry = createStatsbeatTelemetry(FEATURE_METRIC_NAME, 0);
+    protected void send(TelemetryClient telemetryClient) {
+        TelemetryItem statsbeatTelemetry = createStatsbeatTelemetry(telemetryClient, FEATURE_METRIC_NAME, 0);
         TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
                 .put("feature", String.valueOf(getFeature()));
         telemetryClient.trackAsync(statsbeatTelemetry);
