@@ -54,7 +54,7 @@ public class StatsbeatModule {
     }
 
     public void start(TelemetryClient telemetryClient, long interval, long featureInterval) {
-        if (!started.getAndSet(true)) {
+        if (started.getAndSet(true)) {
             throw new IllegalStateException("initialize already called");
         }
         scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(networkStatsbeat, telemetryClient), interval, interval, TimeUnit.SECONDS);
