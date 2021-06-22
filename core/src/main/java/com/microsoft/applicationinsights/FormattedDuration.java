@@ -70,10 +70,12 @@ public class FormattedDuration {
     }
 
     private static void appendDaysHoursMinutesSeconds(StringBuilder sb, long days, long hours, long minutes, long seconds) {
-        // FIXME (trask) breeze question: is min two digits really required by breeze?
-        // FIXME (trask) breeze question: are days/hours/minutes required when they are zero?
-        appendMinTwoDigits(sb, days);
-        sb.append('.');
+        if (days > 0) {
+            sb.append(days);
+            sb.append('.');
+        }
+        // TODO (trask) breeze question: is min two digits really required by breeze?
+        // TODO (trask) breeze question: are hours/minutes required when they are zero?
         appendMinTwoDigits(sb, hours);
         sb.append(':');
         appendMinTwoDigits(sb, minutes);
