@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public final class StatsbeatTestUtils {
 
     private static final Map<Integer, String> INSTRUMENTATION_MAP_DECODING;
@@ -104,7 +106,7 @@ public final class StatsbeatTestUtils {
 
     // convert base64 encoded string to long
     static long convertBase64EncodedStringToLong(String base64EncodedString) {
-        byte[] bytes = Base64.getDecoder().decode(base64EncodedString.getBytes());
+        byte[] bytes = Base64.getDecoder().decode(base64EncodedString.getBytes(UTF_8));
         long result = 0;
         for (int i = 0; i < bytes.length; i++) {
             result += ((long) bytes[i] & 0xffL) << (8 * i); // use Big Endian Byte Order.

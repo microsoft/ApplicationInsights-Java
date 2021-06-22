@@ -105,4 +105,6 @@ class Instrumentations {
 
         return Base64.getEncoder().withoutPadding().encodeToString(bitSet.toByteArray());
     }
+
+    private Instrumentations() {}
 }

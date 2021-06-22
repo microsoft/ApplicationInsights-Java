@@ -21,8 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.TelemetryUtil;
 
 import java.util.Collections;
 import java.util.Set;
@@ -61,40 +62,46 @@ public class NetworkStatsbeat extends BaseStatsbeat {
         String instrumentation = Instrumentations.encode(local.instrumentationList);
 
         if (local.requestSuccessCount.get() != 0) {
-            MetricTelemetry requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
-            requestSuccessCountSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.track(requestSuccessCountSt);
+            TelemetryItem requestSuccessCountSt = createStatsbeatTelemetry(REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
+            TelemetryUtil.getProperties(requestSuccessCountSt.getData().getBaseData())
+                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+            telemetryClient.trackAsync(requestSuccessCountSt);
         }
 
         if (local.requestFailureCount.get() != 0) {
-            MetricTelemetry requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
-            requestFailureCountSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.track(requestFailureCountSt);
+            TelemetryItem requestFailureCountSt = createStatsbeatTelemetry(REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
+            TelemetryUtil.getProperties(requestFailureCountSt.getData().getBaseData())
+                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+            telemetryClient.trackAsync(requestFailureCountSt);
         }
 
         double durationAvg = local.getRequestDurationAvg();
         if (durationAvg != 0) {
-            MetricTelemetry requestDurationSt = createStatsbeatTelemetry(REQUEST_DURATION_METRIC_NAME, durationAvg);
-            requestDurationSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.track(requestDurationSt);
+            TelemetryItem requestDurationSt = createStatsbeatTelemetry(REQUEST_DURATION_METRIC_NAME, durationAvg);
+            TelemetryUtil.getProperties(requestDurationSt.getData().getBaseData())
+                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+            telemetryClient.trackAsync(requestDurationSt);
         }
 
         if (local.retryCount.get() != 0) {
-            MetricTelemetry retryCountSt = createStatsbeatTelemetry(RETRY_COUNT_METRIC_NAME, local.retryCount.get());
-            retryCountSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.track(retryCountSt);
+            TelemetryItem retryCountSt = createStatsbeatTelemetry(RETRY_COUNT_METRIC_NAME, local.retryCount.get());
+            TelemetryUtil.getProperties(retryCountSt.getData().getBaseData())
+                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+            telemetryClient.trackAsync(retryCountSt);
         }
 
         if (local.throttlingCount.get() != 0) {
-            MetricTelemetry throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
-            throttleCountSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.track(throttleCountSt);
+            TelemetryItem throttleCountSt = createStatsbeatTelemetry(THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
+            TelemetryUtil.getProperties(throttleCountSt.getData().getBaseData())
+                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+            telemetryClient.trackAsync(throttleCountSt);
         }
 
         if (local.exceptionCount.get() != 0) {
-            MetricTelemetry exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
-            exceptionCountSt.getProperties().put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.track(exceptionCountSt);
+            TelemetryItem exceptionCountSt = createStatsbeatTelemetry(EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
+            TelemetryUtil.getProperties(exceptionCountSt.getData().getBaseData())
+                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+            telemetryClient.trackAsync(exceptionCountSt);
         }
     }
 

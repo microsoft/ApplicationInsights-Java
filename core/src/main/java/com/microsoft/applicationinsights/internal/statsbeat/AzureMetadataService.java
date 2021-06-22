@@ -1,12 +1,13 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
+import com.azure.core.http.HttpMethod;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
+import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonEncodingException;
 import com.squareup.moshi.Moshi;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,15 +60,22 @@ class AzureMetadataService implements Runnable {
             case "Linux":
                 customDimensions.setOperatingSystem(OperatingSystem.OS_LINUX);
                 break;
+            default:
+                // unknown, ignore
         }
     }
 
     @Override
     public void run() {
-        HttpGet request = new HttpGet(ENDPOINT);
-        request.addHeader("Metadata", "true");
+        HttpRequest request = new HttpRequest(HttpMethod.GET, ENDPOINT);
+        request.setHeader("Metadata", "true");
         try {
-            HttpResponse response = LazyHttpClient.getInstance().execute(request);
+            HttpResponse response = LazyAzureHttpClient.getInstance().send(request).block();
+            if (response == null) {
+                // FIXME (trask) I think that http response mono should never complete empty
+                //  (it should either complete with a response or complete with a failure)
+                throw new AssertionError("http response mono returned empty");
+            }
             parseJsonResponse(response.toString());
         } catch (JsonEncodingException jsonEncodingException) {
             // When it's not VM/VMSS, server does not return json back, and instead it returns text like the following:
@@ -76,7 +84,7 @@ class AzureMetadataService implements Runnable {
             scheduledExecutor.shutdown();
         } catch (Exception ex) {
             // TODO add backoff and retry if it's a sporadic failure
-            logger.debug("Fail to query Azure Metadata Service. {}", ex);
+            logger.debug("Fail to query Azure Metadata Service.", ex);
         }
     }
 }

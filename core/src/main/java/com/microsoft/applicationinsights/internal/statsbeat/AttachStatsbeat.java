@@ -21,8 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.TelemetryUtil;
 
 class AttachStatsbeat extends BaseStatsbeat {
 
@@ -44,9 +45,10 @@ class AttachStatsbeat extends BaseStatsbeat {
 
     @Override
     protected void send() {
-        MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH_METRIC_NAME, 0);
-        statsbeatTelemetry.getProperties().put("rpId", resourceProviderId);
-        telemetryClient.track(statsbeatTelemetry);
+        TelemetryItem statsbeatTelemetry = createStatsbeatTelemetry(ATTACH_METRIC_NAME, 0);
+        TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
+                .put("rpId", resourceProviderId);
+        telemetryClient.trackAsync(statsbeatTelemetry);
     }
 
     /**
@@ -80,8 +82,8 @@ class AttachStatsbeat extends BaseStatsbeat {
                 }
             case RP_AKS: // TODO will update resourceProviderId when cluster_id becomes available from the AKS AzureMetadataService extension.
             case UNKNOWN:
-            default:
                 return UNKNOWN_RP_ID;
         }
+        return UNKNOWN_RP_ID;
     }
 }

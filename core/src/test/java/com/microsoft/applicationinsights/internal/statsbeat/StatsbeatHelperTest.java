@@ -1,12 +1,12 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class StatsbeatHelperTest {
 
@@ -27,16 +27,16 @@ public class StatsbeatHelperTest {
     @Test
     public void testEncodeAndDecodeInstrumentations() {
         String base64EncodedString = Instrumentations.encode(instrumentations);
-        assertEquals(EXPECTED_INSTRUMENTATION, StatsbeatTestUtils.convertBase64EncodedStringToLong(base64EncodedString));
+        assertThat(StatsbeatTestUtils.convertBase64EncodedStringToLong(base64EncodedString)).isEqualTo(EXPECTED_INSTRUMENTATION);
         Set<String> result = StatsbeatTestUtils.decodeInstrumentations(base64EncodedString);
-        assertEquals(instrumentations, result);
+        assertThat(result).isEqualTo(instrumentations);
     }
 
     @Test
     public void tesEncodeAndDecodeFeature() {
         String base64String = Feature.encode(features);
-        assertEquals(EXPECTED_FEATURE, StatsbeatTestUtils.convertBase64EncodedStringToLong(base64String));
+        assertThat(StatsbeatTestUtils.convertBase64EncodedStringToLong(base64String)).isEqualTo(EXPECTED_FEATURE);
         Set<Feature> result = StatsbeatTestUtils.decodeFeature(base64String);
-        assertEquals(features, result);
+        assertThat(result).isEqualTo(features);
     }
 }

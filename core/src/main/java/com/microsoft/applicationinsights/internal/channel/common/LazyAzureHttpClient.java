@@ -14,6 +14,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+// FIXME (trask) rename to LazyHttpClient
 public class LazyAzureHttpClient implements HttpClient {
 
     private static final HttpClient INSTANCE = new LazyAzureHttpClient();
@@ -23,6 +24,7 @@ public class LazyAzureHttpClient implements HttpClient {
     public static volatile String proxyHost;
     public static volatile Integer proxyPortNumber;
 
+    // FIXME (trask) review usages of the global, and inject where possible
     public static HttpClient getInstance() {
         return INSTANCE;
     }

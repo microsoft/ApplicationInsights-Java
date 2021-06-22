@@ -30,6 +30,8 @@ public class StatsbeatModule {
 
     private final NetworkStatsbeat networkStatsbeat;
     private final AttachStatsbeat attachStatsbeat;
+    // keeping this as field for now
+    @SuppressWarnings("unused")
     private final FeatureStatsbeat featureStatsbeat;
 
     public static void initialize(TelemetryClient telemetryClient, long interval, long featureInterval) {

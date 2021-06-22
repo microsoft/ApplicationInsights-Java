@@ -21,10 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointType;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,11 +50,21 @@ abstract class BaseStatsbeat {
 
     protected abstract void send();
 
-    protected MetricTelemetry createStatsbeatTelemetry(String name, double value) {
-        MetricTelemetry telemetry = new MetricTelemetry(name, value);
-        telemetry.setTelemetryName(STATSBEAT_TELEMETRY_NAME);
-        telemetry.getContext().setInstrumentationKey(TelemetryConfiguration.getActive().getStatsbeatInstrumentationKey());
-        CustomDimensions.get().populateProperties(telemetry.getProperties());
+    protected TelemetryItem createStatsbeatTelemetry(String name, double value) {
+        TelemetryItem telemetry = new TelemetryItem();
+        MetricsData data = new MetricsData();
+        MetricDataPoint point = new MetricDataPoint();
+        telemetryClient.initMetricTelemetry(telemetry, data, point);
+
+        point.setName(name);
+        point.setValue(value);
+        point.setDataPointType(DataPointType.MEASUREMENT);
+
+        telemetry.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
+
+        // overwrite the default name (which is "Metric")
+        telemetry.setName(STATSBEAT_TELEMETRY_NAME);
+        CustomDimensions.get().populateProperties(data.getProperties(), telemetryClient.getInstrumentationKey());
         return telemetry;
     }
 
@@ -65,7 +77,7 @@ abstract class BaseStatsbeat {
             try {
                 send();
             }
-            catch (Exception e) {
+            catch (RuntimeException e) {
                 logger.error("Error occurred while sending statsbeat", e);
             }
         }

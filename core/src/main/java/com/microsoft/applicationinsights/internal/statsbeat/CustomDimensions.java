@@ -34,7 +34,6 @@ class CustomDimensions {
     private volatile OperatingSystem operatingSystem;
 
     private final String attachType;
-    private final String customerIkey;
     private final String runtimeVersion;
     private final String language;
     private final String sdkVersion;
@@ -70,7 +69,6 @@ class CustomDimensions {
             operatingSystem = initOperatingSystem();
         }
 
-        customerIkey = TelemetryConfiguration.getActive().getInstrumentationKey();
         sdkVersion = qualifiedSdkVersion.substring(qualifiedSdkVersion.lastIndexOf(':') + 1);
         runtimeVersion = System.getProperty("java.version");
 
@@ -94,7 +92,7 @@ class CustomDimensions {
         this.operatingSystem = operatingSystem;
     }
 
-    void populateProperties(Map<String, String> properties) {
+    void populateProperties(Map<String, String> properties, String customerIkey) {
         properties.put("rp", resourceProvider.getValue());
         properties.put("os", operatingSystem.getValue());
         properties.put("attach", attachType);
