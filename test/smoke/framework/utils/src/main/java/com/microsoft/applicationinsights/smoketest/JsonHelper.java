@@ -24,6 +24,7 @@ import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,11 +60,12 @@ public class JsonHelper {
         }
 
         @Override
-        public Base deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        @SuppressWarnings("SystemOut")
+        public Base deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
             JsonObject jo = json.getAsJsonObject();
             String baseType = jo.get(discriminatorField).getAsString();
             try {
-                Data<Domain> rval = Data.class.newInstance();
+                Data<Domain> rval = Data.class.getDeclaredConstructor().newInstance();
                 JsonObject baseData = jo.get("baseData").getAsJsonObject();
                 Class<? extends Domain> domainClass = classMap.get(baseType);
                 if (domainClass == null) {
@@ -73,7 +75,7 @@ public class JsonHelper {
                 Domain deserialize = context.deserialize(baseData, TypeToken.get(domainClass).getType());
                 rval.setBaseData(deserialize);
                 return rval;
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 System.err.println("Error deserializing data");
                 e.printStackTrace();
                 throw new JsonParseException(e);
@@ -84,8 +86,7 @@ public class JsonHelper {
 
     private static class DurationDeserializer implements JsonDeserializer<Duration> {
         @Override
-        public Duration deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
+        public Duration deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
             String value = json.getAsString();
             int firstDot = value.indexOf('.');
             boolean hasDays = firstDot > -1 && firstDot < value.indexOf(':');
@@ -106,7 +107,7 @@ public class JsonHelper {
 
     private static class DataPointTypeEnumConverter implements JsonDeserializer<DataPointType>, JsonSerializer<DataPointType> {
         @Override
-        public DataPointType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public DataPointType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
             String id = json.getAsString();
             switch (id) {
                 // FIXME (trask) breeze question: this used to be mapped from int (0/1), is it really correct to map to string now?
@@ -120,4 +121,6 @@ public class JsonHelper {
             return new JsonPrimitive(src.getValue());
         }
     }
+
+    private JsonHelper() {}
 }

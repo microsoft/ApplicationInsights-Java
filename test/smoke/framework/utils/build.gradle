@@ -1,9 +1,4 @@
-apply plugin: "java-library"
-
-// TODO (trask) is this needed?
-repositories {
-    mavenCentral()
-}
+apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
     implementation "com.google.code.gson:gson:${versions.gson}"
@@ -14,11 +9,6 @@ dependencies {
     testImplementation platform("org.junit:junit-bom:${versions.junit}")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:${versions.assertj}"
-}
-
-test {
-    // FIXME (trask) move to common location
-    useJUnitPlatform()
 }
 
 tasks.withType(JavaCompile) {

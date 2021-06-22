@@ -90,7 +90,6 @@ jacocoTestReport {
     }
 }
 
-// TODO (trask) is this needed?
 repositories {
     mavenCentral()
 }
@@ -111,6 +110,10 @@ task collectTestResults {
 task testAndCollect {
     dependsOn test
     finalizedBy collectTestResults
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }
 
 tasks.withType(Test) {

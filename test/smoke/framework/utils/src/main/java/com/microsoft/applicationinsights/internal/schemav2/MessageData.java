@@ -32,11 +32,6 @@ import java.util.concurrent.ConcurrentMap;
 public class MessageData extends Domain
 {
     /**
-     * Backing field for property Ver.
-     */
-    private static final int ver = 2;
-
-    /**
      * Backing field for property Message.
      */
     private String message;
@@ -56,7 +51,6 @@ public class MessageData extends Domain
      */
     public MessageData()
     {
-        this.InitializeFields();
     }
 
     /**
@@ -95,12 +89,5 @@ public class MessageData extends Domain
             this.properties = new ConcurrentHashMap<>();
         }
         return this.properties;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

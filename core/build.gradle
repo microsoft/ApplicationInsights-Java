@@ -44,11 +44,6 @@ configurations {
     forTheDLL { transitive = false }
 }
 
-test {
-    // FIXME (trask) move to common location
-    useJUnitPlatform()
-}
-
 dependencies {
     implementation project(":agent:agent-profiler:agent-profiler-api")
     implementation project(":agent:agent-profiler:agent-alerting-api")

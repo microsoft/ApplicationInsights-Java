@@ -32,9 +32,9 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 /**
@@ -59,6 +60,7 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(ParameterizedRunnerWithFixturesFactory.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed"})
 public abstract class AiSmokeTest {
 
     //region: parameterization
@@ -210,7 +212,7 @@ public abstract class AiSmokeTest {
         private void printContainerLogs(String containerId) {
             try {
                 System.out.println("\nFetching container logs for "+containerId);
-                docker.printContainerLogs(containerId);
+                AiDockerClient.printContainerLogs(containerId);
             }
             catch (Exception e) {
                 System.err.println("Error copying logs to stream");
@@ -360,7 +362,7 @@ public abstract class AiSmokeTest {
             System.out.println("Test app health check complete.");
             waitForHealthCheckTelemetryIfNeeded(contextRootUrl);
         } catch (Exception e) {
-            docker.printContainerLogs(containerInfo.getContainerId());
+            AiDockerClient.printContainerLogs(containerInfo.getContainerId());
             throw e;
         } finally {
             mockedIngestion.resetData();
@@ -446,7 +448,7 @@ public abstract class AiSmokeTest {
     }
 
     protected static void setupProperties(String appServer, String os, String jreVersion) throws Exception {
-        testProps.load(new FileReader(new File(Resources.getResource(TEST_CONFIG_FILENAME).toURI())));
+        testProps.load(Files.newBufferedReader(new File(Resources.getResource(TEST_CONFIG_FILENAME).toURI()).toPath(), UTF_8));
         currentImageName = String.format("%s_%s_%s", appServer, os, jreVersion);
         appServerPort = currentPortNumber++;
     }
@@ -527,9 +529,9 @@ public abstract class AiSmokeTest {
         for (DependencyContainer dc : dependencyImages) {
             String imageName = dc.imageName().isEmpty() ? dc.value() : dc.imageName();
             System.out.printf("Starting container: %s%n", imageName);
-            String containerName = "dependency" + Math.abs(new Random().nextLong());
+            String containerName = "dependency" + new Random().nextInt(Integer.MAX_VALUE);
             String[] envVars = substitue(dc.environmentVariables(), hostnameEnvVars, containerName);
-            String containerId = docker.startDependencyContainer(imageName, envVars, dc.portMapping(),
+            String containerId = AiDockerClient.startDependencyContainer(imageName, envVars, dc.portMapping(),
                     networkId, containerName);
             if (containerId == null || containerId.isEmpty()) {
                 throw new AssertionError("'containerId' was null/empty attempting to start container: "+imageName);
@@ -570,7 +572,7 @@ public abstract class AiSmokeTest {
     private static void startTestApplicationContainer() throws Exception {
         System.out.printf("Starting container: %s%n", currentImageName);
         Map<String, String> envVars = generateAppContainerEnvVarMap();
-        String containerId = docker.startContainer(currentImageName, appServerPort+":8080", networkId, null, envVars, false);
+        String containerId = AiDockerClient.startContainer(currentImageName, appServerPort+":8080", networkId, null, envVars, false);
         if (containerId == null || containerId.isEmpty()) {
             throw new AssertionError("'containerId' was null/empty attempting to start container: "+currentImageName);
         }
@@ -590,7 +592,7 @@ public abstract class AiSmokeTest {
                 waitForUrlWithRetries(url, APPSERVER_HEALTH_CHECK_TIMEOUT, TimeUnit.SECONDS, String.format("app server on image '%s'", currentImageName), HEALTH_CHECK_RETRIES);
                 System.out.println("App server is ready.");
             }
-            catch (Exception e) {
+            catch (RuntimeException e) {
                 System.err.println("Error starting app server");
                 if (docker.isContainerRunning(containerInfo.getContainerId())) {
                     System.out.println("Container is not running.");
@@ -600,7 +602,7 @@ public abstract class AiSmokeTest {
                 }
                 System.out.println("Printing container logs: ");
                 System.out.println("# LOGS START =========================");
-                docker.printContainerLogs(containerInfo.getContainerId());
+                AiDockerClient.printContainerLogs(containerInfo.getContainerId());
                 System.out.println("# LOGS END ===========================");
                 throw e;
             }
@@ -674,7 +676,7 @@ public abstract class AiSmokeTest {
         List<ContainerInfo> failedToStop = new ArrayList<>();
         while (!allContainers.isEmpty()) {
             ContainerInfo c = allContainers.pop();
-            if (currentContainerInfo.get() == c) {
+            if (currentContainerInfo.get().equals(c)) {
                 System.out.println("Cleaning up app container");
                 currentContainerInfo.set(null);
             }
@@ -709,10 +711,13 @@ public abstract class AiSmokeTest {
 
     protected static String getProperty(String key) {
         String rval = testProps.getProperty(key);
-        if (rval == null) throw new SmokeTestException(String.format("test property not found '%s'", key));
+        if (rval == null) {
+            throw new SmokeTestException(String.format("test property not found '%s'", key));
+        }
         return rval;
     }
 
+    @SuppressWarnings("TypeParameterUnusedInFormals")
     protected static <T extends Domain> T getBaseData(Envelope envelope) {
         return ((Data<T>)envelope.getData()).getBaseData();
     }
@@ -754,10 +759,11 @@ public abstract class AiSmokeTest {
             }
         } while (!success && triedCount++ < numberOfRetries);
         if (!success) {
-            throw new TimeoutException(appName, timeout*triedCount, timeoutUnit, String.format("Tried %d times to hit %s", triedCount, url), lastThrowable);
+            throw new TimeoutException(appName, timeout*triedCount, timeoutUnit, lastThrowable, String.format("Tried %d times to hit %s", triedCount, url));
         }
     }
 
+    @SuppressWarnings("TypeParameterUnusedInFormals")
     protected <T extends Domain> T getTelemetryDataForType(int index, String type) {
         return mockedIngestion.getBaseDataForType(index, type);
     }

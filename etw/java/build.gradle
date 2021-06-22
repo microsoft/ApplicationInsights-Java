@@ -22,10 +22,6 @@ plugins {
     id "java-library"
 }
 
-repositories {
-    mavenCentral()
-}
-
 apply from: "$buildScriptsDir/common-java.gradle"
 
 configurations {
@@ -68,11 +64,6 @@ dependencies {
     testImplementation "org.assertj:assertj-core:${versions.assertj}"
     testImplementation "org.mockito:mockito-core:${versions.mockito}"
     testImplementation "org.apache.commons:commons-lang3:${versions.commonsLang}"
-}
-
-test {
-    // FIXME (trask) move to common location
-    useJUnitPlatform()
 }
 
 // To rebuild naitive code with new headers, first run `gradlew :etw:java:classes -Pai.etw.native.generateHeaders` to generate new header, then update the method implementations.

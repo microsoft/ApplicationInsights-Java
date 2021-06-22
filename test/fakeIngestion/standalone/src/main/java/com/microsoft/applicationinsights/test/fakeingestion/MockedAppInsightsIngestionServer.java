@@ -36,11 +36,13 @@ public class MockedAppInsightsIngestionServer {
         return DEFAULT_PORT; // TODO this could be configurable
     }
 
+    @SuppressWarnings("SystemOut")
     public void startServer() throws Exception {
         System.out.println("Starting fake ingestion...");
         server.start();
     }
 
+    @SuppressWarnings("SystemOut")
     public void stopServer() throws Exception {
         System.out.println("Stopping fake ingestion...");
         server.stop();
@@ -76,6 +78,19 @@ public class MockedAppInsightsIngestionServer {
         return getTelemetryDataByType(type, false);
     }
 
+    private <T extends Domain> List<T> getTelemetryDataByType(String type, boolean inRequestOnly) {
+        Objects.requireNonNull(type, "type");
+        List<Envelope> items = getItemsEnvelopeDataType(type);
+        List<T> dataItems = new ArrayList<>();
+        for (Envelope e : items) {
+            if (!inRequestOnly || e.getTags().containsKey("ai.operation.id")) {
+                Data<T> dt = (Data<T>) e.getData();
+                dataItems.add(dt.getBaseData());
+            }
+        }
+        return dataItems;
+    }
+
     public <T extends Domain> List<T> getTelemetryDataByTypeInRequest(String type) {
         return getTelemetryDataByType(type, true);
     }
@@ -93,19 +108,7 @@ public class MockedAppInsightsIngestionServer {
         return dataItems;
     }
 
-    private <T extends Domain> List<T> getTelemetryDataByType(String type, boolean inRequestOnly) {
-        Objects.requireNonNull(type, "type");
-        List<Envelope> items = getItemsEnvelopeDataType(type);
-        List<T> dataItems = new ArrayList<>();
-        for (Envelope e : items) {
-            if (!inRequestOnly || e.getTags().containsKey("ai.operation.id")) {
-                Data<T> dt = (Data<T>) e.getData();
-                dataItems.add(dt.getBaseData());
-            }
-        }
-        return dataItems;
-    }
-
+    @SuppressWarnings("TypeParameterUnusedInFormals")
     public <T extends Domain> T getBaseDataForType(int index, String type) {
         Data<T> data = (Data<T>) getItemsEnvelopeDataType(type).get(index).getData();
         return data.getBaseData();
@@ -124,36 +127,12 @@ public class MockedAppInsightsIngestionServer {
         return waitForItems(condition, 1, timeout, timeUnit).get(0);
     }
 
-    public List<Envelope> waitForItems(String type, int numItems) throws Exception {
+    public List<Envelope> waitForItems(String type, int numItems) throws ExecutionException, InterruptedException, TimeoutException {
         return waitForItems(type, numItems, null);
     }
 
-    // this is important for Message and Exception types which can also be captured outside of requests
-    public List<Envelope> waitForItemsInOperation(String type, int numItems, String operationId) throws Exception {
-        return waitForItems(type, numItems, operationId);
-    }
-
-    // this is used to filter out some sporadic messages that are captured via java.util.logging instrumentation
-    public List<Envelope> waitForMessageItemsInRequest(int numItems) throws Exception {
-        List<Envelope> items = waitForItems(new Predicate<Envelope>() {
-            @Override
-            public boolean test(Envelope input) {
-                if (!input.getData().getBaseType().equals("MessageData")
-                        || !input.getTags().containsKey("ai.operation.id")) {
-                    return false;
-                }
-                String message = ((MessageData) ((Data<?>) input.getData()).getBaseData()).getMessage();
-                return !ignoreMessageData(message);
-            }
-        }, numItems, 10, TimeUnit.SECONDS);
-        if (items.size() > numItems) {
-            throw new AssertionError("Expecting " + numItems + " of type MessageData, but received " + items.size());
-        }
-        return items;
-    }
-
     // if operationId is null, then matches all items, otherwise only matches items with that operationId
-    public List<Envelope> waitForItems(String type, int numItems, String operationId) throws Exception {
+    public List<Envelope> waitForItems(String type, int numItems, String operationId) throws InterruptedException, ExecutionException, TimeoutException {
         List<Envelope> items = waitForItems(new Predicate<Envelope>() {
             @Override
             public boolean test(Envelope input) {
@@ -180,15 +159,41 @@ public class MockedAppInsightsIngestionServer {
      * @throws TimeoutException if the timeout is reached
      */
     public List<Envelope> waitForItems(Predicate<Envelope> condition, int numItems, int timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
-        return this.servlet.waitForItems(condition, numItems, timeout, timeUnit);
+        return servlet.waitForItems(condition, numItems, timeout, timeUnit);
     }
+
+    // this is important for Message and Exception types which can also be captured outside of requests
+    public List<Envelope> waitForItemsInOperation(String type, int numItems, String operationId) throws ExecutionException, InterruptedException, TimeoutException {
+        return waitForItems(type, numItems, operationId);
+    }
+
+    // this is used to filter out some sporadic messages that are captured via java.util.logging instrumentation
+    public List<Envelope> waitForMessageItemsInRequest(int numItems) throws ExecutionException, InterruptedException, TimeoutException {
+        List<Envelope> items = waitForItems(new Predicate<Envelope>() {
+            @Override
+            public boolean test(Envelope input) {
+                if (!input.getData().getBaseType().equals("MessageData")
+                        || !input.getTags().containsKey("ai.operation.id")) {
+                    return false;
+                }
+                String message = ((MessageData) ((Data<?>) input.getData()).getBaseData()).getMessage();
+                return !ignoreMessageData(message);
+            }
+        }, numItems, 10, TimeUnit.SECONDS);
+        if (items.size() > numItems) {
+            throw new AssertionError("Expecting " + numItems + " of type MessageData, but received " + items.size());
+        }
+        return items;
+    }
+
 
     private static boolean ignoreMessageData(String message) {
         return message.contains("The profile fetch task will not execute for next")
                 || message.contains("pending resolution of instrumentation key");
     }
 
-    public static void main(String args[]) throws Exception {
+    @SuppressWarnings("SystemOut")
+    public static void main(String[] args) throws Exception {
         MockedAppInsightsIngestionServer i = new MockedAppInsightsIngestionServer();
         System.out.println("Starting mocked ingestion on port "+DEFAULT_PORT);
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -198,6 +203,7 @@ public class MockedAppInsightsIngestionServer {
                     i.stopServer();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    throw new IllegalStateException(e);
                 }
             }
         }));

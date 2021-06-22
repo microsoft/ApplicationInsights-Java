@@ -29,14 +29,13 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class MockedAppInsightsIngestionServlet extends HttpServlet {
     public static final long serialVersionUID = -1;
     public static final String ENDPOINT_HEALTH_CHECK_RESPONSE = "Fake AI Endpoint Online";
     public static final String PING = "PING";
     public static final String PONG = "PONG";
-
-    private static final String appid = "DUMMYAPPID";
-
 
     // guarded by multimapLock
     private final ListMultimap<String, Envelope> type2envelope;
@@ -70,25 +69,22 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
         }
     }
 
-    private Boolean extractBooleanInitParam(String key, ServletConfig config) {
+    private static Boolean extractBooleanInitParam(String key, ServletConfig config) {
         String value = config.getInitParameter(key);
         if (value == null) {
             return null;
         }
 
-        try {
-            return Boolean.valueOf(value);
-        } catch (Exception e) {
-            System.err.printf("could not parse init param as boolean: %s=%s%n", key, value);
-            return null;
-        }
+        return Boolean.valueOf(value);
     }
 
-    private void logit(String message) {
+    @SuppressWarnings("SystemOut")
+    private static void logit(String message) {
         System.out.println("FAKE INGESTION: INFO - "+message);
     }
 
-    private void logerr(String message, Exception e) {
+    @SuppressWarnings("SystemOut")
+    private static void logerr(String message, Exception e) {
         System.err.println("FAKE INGESTION: ERROR - "+message);
         if (e != null){
             e.printStackTrace();
@@ -128,7 +124,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     public List<Envelope> waitForItems(Predicate<Envelope> condition, int numItems, long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
         Future<List<Envelope>> future = itemExecutor.submit(new Callable<List<Envelope>>() {
             @Override
-            public List<Envelope> call() throws Exception {
+            public List<Envelope> call() throws InterruptedException {
                 List<Envelope> targetCollection = new ArrayList<>(numItems);
                 while(targetCollection.size() < numItems) {
                     targetCollection.clear();
@@ -150,6 +146,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
 
     @Override
+    @SuppressWarnings("SystemOut")
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         logit("caught: POST "+req.getPathInfo());
 
@@ -160,7 +157,7 @@ public class MockedAppInsightsIngestionServlet extends HttpServlet {
                     String contentEncoding = req.getHeader("content-encoding");
                     Readable reader;
                     if ("gzip".equals(contentEncoding)) {
-                        reader = new InputStreamReader(new GZIPInputStream(req.getInputStream()));
+                        reader = new InputStreamReader(new GZIPInputStream(req.getInputStream()), UTF_8);
                     }
                     else {
                         reader = req.getReader();

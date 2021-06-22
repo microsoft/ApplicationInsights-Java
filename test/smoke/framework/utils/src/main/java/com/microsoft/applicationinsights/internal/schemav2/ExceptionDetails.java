@@ -29,6 +29,7 @@ import java.util.List;
 /**
  * Data contract class ExceptionDetails.
  */
+@SuppressWarnings("unused")
 public class ExceptionDetails
 {
     /**
@@ -71,7 +72,6 @@ public class ExceptionDetails
      */
     public ExceptionDetails()
     {
-        this.InitializeFields();
     }
 
     /**
@@ -152,12 +152,5 @@ public class ExceptionDetails
      */
     public void setParsedStack(List<StackFrame> value) {
         this.parsedStack = value;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }
