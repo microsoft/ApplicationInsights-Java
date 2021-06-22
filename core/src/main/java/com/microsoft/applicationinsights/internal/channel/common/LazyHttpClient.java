@@ -14,10 +14,9 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-// FIXME (trask) rename to LazyHttpClient
-public class LazyAzureHttpClient implements HttpClient {
+public class LazyHttpClient implements HttpClient {
 
-    private static final HttpClient INSTANCE = new LazyAzureHttpClient();
+    private static final HttpClient INSTANCE = new LazyHttpClient();
     private static final int DEFAULT_MAX_TOTAL_CONNECTIONS = 200;
 
     public static volatile CountDownLatch safeToInitLatch;

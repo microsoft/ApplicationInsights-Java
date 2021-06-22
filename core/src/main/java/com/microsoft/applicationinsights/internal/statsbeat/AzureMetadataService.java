@@ -3,7 +3,7 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonEncodingException;
@@ -70,7 +70,7 @@ class AzureMetadataService implements Runnable {
         HttpRequest request = new HttpRequest(HttpMethod.GET, ENDPOINT);
         request.setHeader("Metadata", "true");
         try {
-            HttpResponse response = LazyAzureHttpClient.getInstance().send(request).block();
+            HttpResponse response = LazyHttpClient.getInstance().send(request).block();
             if (response == null) {
                 // FIXME (trask) I think that http response mono should never complete empty
                 //  (it should either complete with a response or complete with a failure)

@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
-import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.persistence.LocalFileWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.slf4j.Logger;
@@ -47,7 +47,7 @@ public class TelemetryChannel {
 
     public static TelemetryChannel create(URL endpoint) {
         List<HttpPipelinePolicy> policies = new ArrayList<>();
-        HttpClient client = LazyAzureHttpClient.getInstance();
+        HttpClient client = LazyHttpClient.getInstance();
         HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder()
                 .httpClient(client);
         // Add Azure monitor redirect policy to be able to handle v2.1/track redirects

@@ -38,7 +38,7 @@ import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.common.Strings;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
-import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
@@ -149,13 +149,13 @@ public class AiComponentInstaller implements AgentListener {
             // this is used to delay SSL initialization because SSL initialization triggers loading of
             // java.util.logging (starting with Java 8u231)
             // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
-            LazyAzureHttpClient.safeToInitLatch = new CountDownLatch(1);
-            instrumentation.addTransformer(new JulListeningClassFileTransformer(LazyAzureHttpClient.safeToInitLatch));
+            LazyHttpClient.safeToInitLatch = new CountDownLatch(1);
+            instrumentation.addTransformer(new JulListeningClassFileTransformer(LazyHttpClient.safeToInitLatch));
         }
 
         if (config.proxy.host != null) {
-            LazyAzureHttpClient.proxyHost= config.proxy.host;
-            LazyAzureHttpClient.proxyPortNumber = config.proxy.port;
+            LazyHttpClient.proxyHost= config.proxy.host;
+            LazyHttpClient.proxyPortNumber = config.proxy.port;
         }
 
         AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
