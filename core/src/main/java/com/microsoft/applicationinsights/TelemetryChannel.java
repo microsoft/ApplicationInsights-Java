@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.persistence.LocalFileWriter;
+import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,11 +123,14 @@ public class TelemetryChannel {
         //  * write to disk on second failure
         CompletableResultCode result = new CompletableResultCode();
         List<ByteBuffer> finalByteBuffers = byteBuffers;
+        final long startTime = System.currentTimeMillis();
         pipeline.send(request)
                 .contextWrite(Context.of(Tracer.DISABLE_TRACING_KEY, true))
                 .subscribe(response -> {
                     parseResponseCode(response.getStatusCode());
                 }, error -> {
+                    StatsbeatModule.get().getNetworkStatsbeat().incrementRequestFailureCount();
+
                     if (!localFileWriter.writeToDisk(byteBuffers)) {
                         logger.warn("Fail to write {} to disk.", (finalByteBuffers != null ? "List<ByteBuffers>" : "byte[]"));
                         // TODO (heya) track # of write failure via Statsbeat
@@ -137,6 +141,8 @@ public class TelemetryChannel {
                     }
                     result.fail();
                 }, () -> {
+                    StatsbeatModule.get().getNetworkStatsbeat().incrementRequestSuccessCount(System.currentTimeMillis() - startTime);
+
                     if (finalByteBuffers != null) {
                         byteBufferPool.offer(finalByteBuffers);
                     }
@@ -160,11 +166,13 @@ public class TelemetryChannel {
             case BreezeStatusCode.CLIENT_SIDE_EXCEPTION:
                 // TODO exponential backoff and retry to a limit
                 // TODO (heya) track failure count via Statsbeat
+                StatsbeatModule.get().getNetworkStatsbeat().incrementRetryCount();
                 break;
             case BreezeStatusCode.THROTTLED_OVER_EXTENDED_TIME:
             case BreezeStatusCode.THROTTLED:
                 // TODO handle throttling
                 // TODO (heya) track throttling count via Statsbeat
+                StatsbeatModule.get().getNetworkStatsbeat().incrementThrottlingCount();
                 break;
             case BreezeStatusCode.PARTIAL_SUCCESS:
                 // TODO handle partial success

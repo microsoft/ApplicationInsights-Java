@@ -17,8 +17,6 @@ import org.junit.Test;
 @UseAgent("faststatsbeat")
 public class StatsbeatSmokeTest extends AiSmokeTest {
 
-    // FIXME (heya)
-    @Ignore
     @Test
     @TargetUri(value = "/index.jsp")
     public void testStatsbeat() throws Exception {
