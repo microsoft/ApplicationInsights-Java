@@ -33,17 +33,21 @@ enum Feature {
     JAVA_VENDOR_MICROSOFT(2),
     JAVA_VENDOR_ADOPT_OPENJDK(3),
     JAVA_VENDOR_REDHAT(4),
-    JAVA_VENDOR_OTHER(5);
+    JAVA_VENDOR_OTHER(5),
+    AAD_ON(6),
+    AAD_OFF(7);
 
-    private static final Map<String, Feature> javaVendorFeatureMap;
+    private static final Map<String, Feature> features;
 
     static {
-        javaVendorFeatureMap = new HashMap<>();
-        javaVendorFeatureMap.put("Oracle Corporation", Feature.JAVA_VENDOR_ORACLE); // https://www.oracle.com/technetwork/java/javase/downloads/index.html
-        javaVendorFeatureMap.put("Azul Systems, Inc.", Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
-        javaVendorFeatureMap.put("Microsoft", Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
-        javaVendorFeatureMap.put("AdoptOpenJDK", Feature.JAVA_VENDOR_ADOPT_OPENJDK); // https://adoptopenjdk.net/
-        javaVendorFeatureMap.put("Red Hat, Inc.", Feature.JAVA_VENDOR_REDHAT); // https://developers.redhat.com/products/openjdk/download/
+        features = new HashMap<>();
+        features.put("Oracle Corporation", Feature.JAVA_VENDOR_ORACLE); // https://www.oracle.com/technetwork/java/javase/downloads/index.html
+        features.put("Azul Systems, Inc.", Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
+        features.put("Microsoft", Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
+        features.put("AdoptOpenJDK", Feature.JAVA_VENDOR_ADOPT_OPENJDK); // https://adoptopenjdk.net/
+        features.put("Red Hat, Inc.", Feature.JAVA_VENDOR_REDHAT); // https://developers.redhat.com/products/openjdk/download/
+        features.put("AAD_ENABLE", Feature.AAD_ON);
+        features.put("AAD_OFF", Feature.AAD_OFF);
     }
 
     private final int bitmapIndex;
@@ -53,7 +57,7 @@ enum Feature {
     }
 
     static Feature fromJavaVendor(String javaVendor) {
-        Feature feature = javaVendorFeatureMap.get(javaVendor);
+        Feature feature = features.get(javaVendor);
         return feature != null ? feature : Feature.JAVA_VENDOR_OTHER;
     }
 

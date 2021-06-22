@@ -204,7 +204,7 @@ public class AiComponentInstaller implements AgentListener {
         }
 
         // initialize StatsbeatModule
-        StatsbeatModule.get().start(telemetryClient, config.internal.statsbeat.intervalSeconds, config.internal.statsbeat.featureIntervalSeconds);
+        StatsbeatModule.get().start(telemetryClient, config.internal.statsbeat.intervalSeconds, config.internal.statsbeat.featureIntervalSeconds, config.preview.authentication.enabled);
     }
 
     private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {
