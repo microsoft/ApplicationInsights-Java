@@ -11,7 +11,7 @@ import org.apache.http.util.EntityUtils;
 
 public class HttpHelper {
 
-    public static int getResponseCodeEnsuringSampled(String url) throws UnsupportedOperationException, IOException {
+    public static int getResponseCodeEnsuringSampled(String url) throws IOException {
         HttpGet httpGet = new HttpGet(url);
         // traceId=27272727272727272727272727272727 is known to produce a score of 0.66 (out of 100)
         // so will be sampled as long as samplingPercentage > 1%
@@ -19,11 +19,11 @@ public class HttpHelper {
         return getResponseCode(httpGet);
     }
 
-    public static String get(String url) throws UnsupportedOperationException, IOException {
+    public static String get(String url) throws IOException {
         return getBody(new HttpGet(url));
     }
 
-    private static String getBody(HttpGet httpGet) throws UnsupportedOperationException, IOException {
+    private static String getBody(HttpGet httpGet) throws IOException {
         try (CloseableHttpClient client = getHttpClient()) {
             try (CloseableHttpResponse response = client.execute(httpGet)) {
                 return EntityUtils.toString(response.getEntity());
@@ -31,7 +31,7 @@ public class HttpHelper {
         }
     }
 
-    private static int getResponseCode(HttpGet httpGet) throws UnsupportedOperationException, IOException {
+    private static int getResponseCode(HttpGet httpGet) throws IOException {
         try (CloseableHttpClient client = getHttpClient()) {
             CloseableHttpResponse resp1 = client.execute(httpGet);
             EntityUtils.consume(resp1.getEntity());
@@ -54,4 +54,6 @@ public class HttpHelper {
             }
         }
     }
+
+    private HttpHelper() {}
 }

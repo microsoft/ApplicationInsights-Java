@@ -20,6 +20,7 @@ public class EndpointProvider {
     private volatile URL liveEndpointUrl;
     private volatile URL profilerEndpoint;
     private volatile URL snapshotEndpoint;
+    private volatile URL statsbeatEndpointUrl;
 
     public EndpointProvider() {
         try {
@@ -28,6 +29,7 @@ public class EndpointProvider {
             liveEndpointUrl = buildLiveUri(new URL(Defaults.LIVE_ENDPOINT));
             profilerEndpoint = new URL(Defaults.PROFILER_ENDPOINT);
             snapshotEndpoint = new URL(Defaults.SNAPSHOT_ENDPOINT);
+            statsbeatEndpointUrl = ingestionEndpointUrl;
         } catch (MalformedURLException e) {
             throw new IllegalStateException("ConnectionString.Defaults are invalid", e);
         }
@@ -45,11 +47,15 @@ public class EndpointProvider {
         return ingestionEndpointUrl;
     }
 
-    public synchronized URL getAppIdEndpointUrl(String instrumentationKey) {
-        return buildAppIdUri(instrumentationKey);
+    public URL getStatsbeatEndpointUrl() {
+        return statsbeatEndpointUrl;
     }
 
-    private URL buildAppIdUri(String instrumentationKey) {
+    public synchronized URL getAppIdEndpointUrl(String instrumentationKey) {
+        return buildAppIdUrl(instrumentationKey);
+    }
+
+    private URL buildAppIdUrl(String instrumentationKey) {
         try {
             return buildUrl(ingestionEndpoint, API_PROFILES_APP_ID_URL_PREFIX +instrumentationKey+ API_PROFILES_APP_ID_URL_SUFFIX);
         } catch (MalformedURLException e) {
@@ -92,6 +98,14 @@ public class EndpointProvider {
             this.liveEndpointUrl = buildLiveUri(liveEndpoint);
         } catch (MalformedURLException e) {
             throw new IllegalStateException("could not construct live endpoint uri", e);
+        }
+    }
+
+    void setStatsbeatEndpoint(URL statsbeatEndpoint) {
+        try {
+            this.statsbeatEndpointUrl = buildIngestionUrl(statsbeatEndpoint);
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException("could not construct statsbeat ingestion endpoint uri", e);
         }
     }
 

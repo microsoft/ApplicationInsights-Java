@@ -44,11 +44,6 @@ configurations {
     forTheDLL { transitive = false }
 }
 
-test {
-    // FIXME (trask) move to common location
-    useJUnitPlatform()
-}
-
 dependencies {
     implementation project(":agent:agent-profiler:agent-profiler-api")
     implementation project(":agent:agent-profiler:agent-alerting-api")
@@ -83,6 +78,8 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:${versions.assertj}"
     testImplementation "org.mockito:mockito-core:${versions.mockito}"
+    testImplementation "uk.org.webcompere:system-stubs-jupiter:1.1.0"
+
     testImplementation "com.google.code.gson:gson:${versions.gson}"
     testImplementation "io.github.hakky54:logcaptor:${versions.logcaptor}"
 

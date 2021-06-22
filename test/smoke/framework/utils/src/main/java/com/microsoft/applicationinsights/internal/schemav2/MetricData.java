@@ -34,11 +34,6 @@ import java.util.concurrent.ConcurrentMap;
 public class MetricData extends Domain
 {
     /**
-     * Backing field for property Ver.
-     */
-    private static final int ver = 2;
-
-    /**
      * Backing field for property Metrics.
      */
     private List<DataPoint> metrics;
@@ -53,7 +48,6 @@ public class MetricData extends Domain
      */
     public MetricData()
     {
-        this.InitializeFields();
     }
 
     /**
@@ -74,12 +68,5 @@ public class MetricData extends Domain
             this.properties = new ConcurrentHashMap<>();
         }
         return this.properties;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

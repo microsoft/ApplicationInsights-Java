@@ -29,13 +29,9 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Data contract class Envelope.
  */
+@SuppressWarnings("unused")
 public class Envelope
 {
-    /**
-     * Backing field for property Ver.
-     */
-    private static final int ver = 1;
-
     /**
      * Backing field for property Name.
      */
@@ -71,7 +67,6 @@ public class Envelope
      */
     public Envelope()
     {
-        this.InitializeFields();
     }
 
     /**
@@ -139,12 +134,5 @@ public class Envelope
      */
     public void setData(Base value) {
         this.data = value;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

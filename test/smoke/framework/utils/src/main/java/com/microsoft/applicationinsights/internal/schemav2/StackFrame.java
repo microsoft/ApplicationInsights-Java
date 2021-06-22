@@ -26,6 +26,7 @@ package com.microsoft.applicationinsights.internal.schemav2;
 /**
  * Data contract class StackFrame.
  */
+@SuppressWarnings("unused")
 public class StackFrame
 {
     /**
@@ -58,7 +59,6 @@ public class StackFrame
      */
     public StackFrame()
     {
-        this.InitializeFields();
     }
 
     /**
@@ -94,12 +94,5 @@ public class StackFrame
      */
     public void setLine(int value) {
         this.line = value;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

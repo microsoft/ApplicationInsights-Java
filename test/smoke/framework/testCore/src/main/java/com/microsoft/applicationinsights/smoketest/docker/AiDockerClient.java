@@ -16,10 +16,12 @@ import com.google.common.io.CharStreams;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class AiDockerClient {
 
-    public static String DEFAULT_LINUX_USER = "root";
-    public static String DEFAULT_LINUX_SHELL = "bash";
+    public static final String DEFAULT_LINUX_USER = "root";
+    public static final String DEFAULT_LINUX_SHELL = "bash";
 
     private final String shellExecutor;
 
@@ -38,15 +40,15 @@ public class AiDockerClient {
         return new AiDockerClient(DEFAULT_LINUX_USER, DEFAULT_LINUX_SHELL);
     }
 
-    private ProcessBuilder buildProcess(String... cmdLine) {
+    private static ProcessBuilder buildProcess(String... cmdLine) {
         return new ProcessBuilder(cmdLine).redirectErrorStream(true);
     }
 
-    private ProcessBuilder buildProcess(List<String> cmdLine) {
+    private static ProcessBuilder buildProcess(List<String> cmdLine) {
         return new ProcessBuilder(cmdLine).redirectErrorStream(true);
     }
 
-    public String startDependencyContainer(String image, String[] envVars, String portMapping, String network, String containerName) throws IOException, InterruptedException {
+    public static String startDependencyContainer(String image, String[] envVars, String portMapping, String network, String containerName) throws IOException, InterruptedException {
         Map<String, String> envVarMap = new HashMap<>();
         for (String envVar : envVars) {
             int index = envVar.indexOf('=');
@@ -55,7 +57,7 @@ public class AiDockerClient {
         return startContainer(image, portMapping, network, containerName, envVarMap, true);
     }
 
-    public String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars,
+    public static String startContainer(String image, String portMapping, String network, String containerName, Map<String, String> envVars,
                                  boolean dependencyContainer) throws IOException, InterruptedException {
         Objects.requireNonNull(image, "image");
         Objects.requireNonNull(portMapping, "portMapping");
@@ -98,10 +100,11 @@ public class AiDockerClient {
         return getFirstLineOfProcessOutput(p);
     }
 
+    @SuppressWarnings("SystemOut")
     private static void flushStdout(Process p) {
         Objects.requireNonNull(p);
 
-        try (Scanner r = new Scanner(p.getInputStream())) {
+        try (Scanner r = new Scanner(p.getInputStream(), UTF_8.name())) {
             while (r.hasNext()) {
                 System.out.println(r.nextLine());
             }
@@ -128,16 +131,11 @@ public class AiDockerClient {
             cmdList.addAll(Arrays.asList(args));
         }
         Process p = buildProcess(cmdList).start();
-        try {
-            waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("executing command on container: '%s'", id, Joiner.on(' ').join(cmdList)));
-            flushStdout(p);
-        }
-        catch (Exception e) {
-            throw e;
-        }
+        waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("executing command on container %s: '%s'", id, Joiner.on(' ').join(cmdList)));
+        flushStdout(p);
     }
 
-    private void waitAndCheckCodeForProcess(Process p, long timeout, TimeUnit unit, String actionName) throws IOException, InterruptedException {
+    private static void waitAndCheckCodeForProcess(Process p, long timeout, TimeUnit unit, String actionName) throws IOException, InterruptedException {
         waitForProcessToReturn(p, timeout, unit, actionName);
         if (p.exitValue() != 0) {
             flushStdout(p);
@@ -146,7 +144,7 @@ public class AiDockerClient {
         }
     }
 
-    private void waitForProcessToReturn(Process p, long timeout, TimeUnit unit, String actionName) throws IOException, InterruptedException {
+    private static void waitForProcessToReturn(Process p, long timeout, TimeUnit unit, String actionName) throws IOException, InterruptedException {
         if (!p.waitFor(timeout, unit)) {
             String containerId = getFirstLineOfProcessOutput(p);
             printContainerLogs(containerId);
@@ -158,7 +156,7 @@ public class AiDockerClient {
         }
     }
 
-    public void printContainerLogs(String containerId) throws IOException {
+    public static void printContainerLogs(String containerId) throws IOException {
         Objects.requireNonNull(containerId, "containerId");
 
         Process p = buildProcess("docker", "container", "logs", containerId).start();
@@ -170,18 +168,15 @@ public class AiDockerClient {
         waitAndCheckCodeForProcess(p, 30, TimeUnit.SECONDS, String.format("stopping container %s", id));
     }
 
+    @SuppressWarnings("SystemOut")
     public boolean isContainerRunning(String id) throws IOException, InterruptedException {
         Process p = new ProcessBuilder("docker", "inspect", "-f", "{{.State.Running}}", id).start();
         waitAndCheckCodeForProcess(p, 10, TimeUnit.SECONDS, String.format("checking if container is running: %s", id));
 
-        StringWriter sw = new StringWriter();
-        try {
-            CharStreams.copy(new InputStreamReader(p.getInputStream()), sw);
-            System.out.printf("Checking for running container %s: %s%n", id, sw.toString());
+        try (StringWriter sw = new StringWriter()) {
+            CharStreams.copy(new InputStreamReader(p.getInputStream(), UTF_8), sw);
+            System.out.printf("Checking for running container %s: %s%n", id, sw);
             return Boolean.parseBoolean(sw.toString());
-        }
-        finally {
-            sw.close();
         }
     }
 
@@ -192,7 +187,7 @@ public class AiDockerClient {
     }
 
     private static String getFirstLineOfProcessOutput(Process p) throws IOException {
-        List<String> lines = CharStreams.readLines(new InputStreamReader(p.getInputStream()));
+        List<String> lines = CharStreams.readLines(new InputStreamReader(p.getInputStream(), UTF_8));
         return StringUtils.strip(StringUtils.trim(lines.get(0)));
     }
 

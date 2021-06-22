@@ -200,7 +200,7 @@ public final class Duration {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + (int)((days ^ (days >>> 32)));
+        hash = 89 * hash + (int) (days ^ (days >>> 32));
         hash = 89 * hash + hours;
         hash = 89 * hash + minutes;
         hash = 89 * hash + seconds;

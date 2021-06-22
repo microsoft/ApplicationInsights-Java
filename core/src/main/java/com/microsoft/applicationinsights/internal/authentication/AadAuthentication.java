@@ -14,7 +14,7 @@ import com.azure.identity.ManagedIdentityCredential;
 import com.azure.identity.ManagedIdentityCredentialBuilder;
 import com.azure.identity.VisualStudioCodeCredential;
 import com.azure.identity.VisualStudioCodeCredentialBuilder;
-import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -119,7 +119,7 @@ public class AadAuthentication {
         // Retry policy for failed requests
         policies.add(new RetryPolicy());
         HttpPipelinePolicy authenticationPolicy = getAuthenticationPolicy();
-        HttpClient httpClient = LazyAzureHttpClient.getInstance();
+        HttpClient httpClient = LazyHttpClient.getInstance();
         HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(httpClient);
         if(authenticationPolicy != null) {
             policies.add(authenticationPolicy);

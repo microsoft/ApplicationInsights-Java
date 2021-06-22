@@ -19,7 +19,8 @@ class DefaultQuickPulsePingSenderTests {
     void endpointIsFormattedCorrectlyWhenUsingConnectionString() throws URISyntaxException {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setConnectionString("InstrumentationKey=testing-123");
-        DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, telemetryClient, null,null, null,null);
+        DefaultQuickPulsePingSender defaultQuickPulsePingSender =
+                new DefaultQuickPulsePingSender(null, telemetryClient, null,null, null);
         String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
         String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
         URI uri = new URI(endpointUrl);
@@ -32,7 +33,8 @@ class DefaultQuickPulsePingSenderTests {
     void endpointIsFormattedCorrectlyWhenUsingInstrumentationKey() throws URISyntaxException {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setInstrumentationKey("A-test-instrumentation-key");
-        DefaultQuickPulsePingSender defaultQuickPulsePingSender = new DefaultQuickPulsePingSender(null, telemetryClient, null, null,null,null);
+        DefaultQuickPulsePingSender defaultQuickPulsePingSender =
+                new DefaultQuickPulsePingSender(null, telemetryClient, null, null,null);
         String quickPulseEndpoint = defaultQuickPulsePingSender.getQuickPulseEndpoint();
         String endpointUrl = defaultQuickPulsePingSender.getQuickPulsePingUri(quickPulseEndpoint);
         URI uri = new URI(endpointUrl);
@@ -52,7 +54,7 @@ class DefaultQuickPulsePingSenderTests {
                 .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))
                 .build();
         QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, new TelemetryClient(), "machine1",
-                "instance1", "role1", "qpid123");
+                "instance1", "qpid123");
         QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
         assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());
         assertThat(1000).isEqualTo(quickPulseHeaderInfo.getQpsServicePollingInterval());

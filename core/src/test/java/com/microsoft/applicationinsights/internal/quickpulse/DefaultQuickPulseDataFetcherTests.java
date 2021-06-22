@@ -18,7 +18,7 @@ class DefaultQuickPulseDataFetcherTests {
     @Test
     void testGetCurrentSdkVersion() {
         DefaultQuickPulseDataFetcher dataFetcher = new DefaultQuickPulseDataFetcher(null, new TelemetryClient(), null,
-                null, null,null);
+                null, null);
         String sdkVersion = dataFetcher.getCurrentSdkVersion();
         assertThat(sdkVersion).isNotNull();
         assertThat(sdkVersion).isNotEqualTo("java:unknown");
@@ -28,7 +28,7 @@ class DefaultQuickPulseDataFetcherTests {
     void endpointIsFormattedCorrectlyWhenUsingConfig() throws URISyntaxException {
         TelemetryClient telemetryClient = new TelemetryClient();
         telemetryClient.setConnectionString("InstrumentationKey=testing-123");
-        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, telemetryClient, null, null,null,null);
+        DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, telemetryClient, null, null,null);
         String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
         String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
         URI uri = new URI(endpointUrl);
@@ -39,7 +39,7 @@ class DefaultQuickPulseDataFetcherTests {
     @Test
     void endpointIsFormattedCorrectlyWhenConfigIsNull() throws URISyntaxException {
         DefaultQuickPulseDataFetcher defaultQuickPulseDataFetcher = new DefaultQuickPulseDataFetcher(null, new TelemetryClient(),
-                null,null, null,null);
+                null,null, null);
         String quickPulseEndpoint = defaultQuickPulseDataFetcher.getQuickPulseEndpoint();
         String endpointUrl = defaultQuickPulseDataFetcher.getEndpointUrl(quickPulseEndpoint);
         URI uri = new URI(endpointUrl);
@@ -58,7 +58,7 @@ class DefaultQuickPulseDataFetcherTests {
                 .httpClient(request -> Mono.just(new MockHttpResponse(request, 200, httpHeaders)))
                 .build();
         QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, new TelemetryClient(), "machine1",
-                "instance1", "role1", "qpid123");
+                "instance1", "qpid123");
 
         QuickPulseHeaderInfo quickPulseHeaderInfo = quickPulsePingSender.ping(null);
         assertThat(QuickPulseStatus.QP_IS_ON).isEqualTo(quickPulseHeaderInfo.getQuickPulseStatus());

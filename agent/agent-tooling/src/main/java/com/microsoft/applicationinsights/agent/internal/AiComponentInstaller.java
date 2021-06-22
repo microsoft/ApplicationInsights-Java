@@ -38,10 +38,17 @@ import com.microsoft.applicationinsights.common.CommonUtils;
 import com.microsoft.applicationinsights.common.Strings;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
-import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
-import com.microsoft.applicationinsights.internal.config.*;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
+import com.microsoft.applicationinsights.internal.config.AddTypeXmlElement;
+import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
+import com.microsoft.applicationinsights.internal.config.JmxXmlElement;
+import com.microsoft.applicationinsights.internal.config.ParamXmlElement;
+import com.microsoft.applicationinsights.internal.config.TelemetryModulesXmlElement;
+import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
+import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
 import com.microsoft.applicationinsights.internal.profiler.GcEventMonitor;
 import com.microsoft.applicationinsights.internal.profiler.ProfilerServiceInitializer;
+import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
@@ -142,13 +149,13 @@ public class AiComponentInstaller implements AgentListener {
             // this is used to delay SSL initialization because SSL initialization triggers loading of
             // java.util.logging (starting with Java 8u231)
             // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized
-            LazyAzureHttpClient.safeToInitLatch = new CountDownLatch(1);
-            instrumentation.addTransformer(new JulListeningClassFileTransformer(LazyAzureHttpClient.safeToInitLatch));
+            LazyHttpClient.safeToInitLatch = new CountDownLatch(1);
+            instrumentation.addTransformer(new JulListeningClassFileTransformer(LazyHttpClient.safeToInitLatch));
         }
 
         if (config.proxy.host != null) {
-            LazyAzureHttpClient.proxyHost= config.proxy.host;
-            LazyAzureHttpClient.proxyPortNumber = config.proxy.port;
+            LazyHttpClient.proxyHost= config.proxy.host;
+            LazyHttpClient.proxyPortNumber = config.proxy.port;
         }
 
         AppIdSupplier appIdSupplier = AppIdSupplier.INSTANCE;
@@ -159,6 +166,12 @@ public class AiComponentInstaller implements AgentListener {
                 .collect(Collectors.toList());
 
         TelemetryClient telemetryClient = TelemetryClient.initActive(config.customDimensions, metricFilters, buildXmlConfiguration(config));
+
+        try {
+            ConnectionString.updateStatsbeatConnectionString(config.internal.statsbeat.instrumentationKey, config.internal.statsbeat.endpoint, telemetryClient);
+        } catch (InvalidConnectionStringException ex) {
+            startupLogger.warn("Statsbeat endpoint is invalid. {}", ex.getMessage());
+        }
 
         Global.setSamplingPercentage(config.sampling.percentage);
         Global.setTelemetryClient(telemetryClient);
@@ -187,6 +200,9 @@ public class AiComponentInstaller implements AgentListener {
         if (rpConfiguration != null) {
             RpConfigurationPolling.startPolling(rpConfiguration, config, telemetryClient);
         }
+
+        // initialize StatsbeatModule
+        StatsbeatModule.initialize(telemetryClient, config.internal.statsbeat.intervalSeconds, config.internal.statsbeat.featureIntervalSeconds);
     }
 
     private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {

@@ -45,8 +45,3 @@ dependencies {
     testImplementation "org.mockito:mockito-core:${versions.mockito}"
     testImplementation "uk.org.webcompere:system-stubs-jupiter:1.1.0"
 }
-
-test {
-    // FIXME (trask) move to common location
-    useJUnitPlatform()
-}

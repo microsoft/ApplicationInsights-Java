@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("SystemOut")
 public class JsonHelperTests {
 
     @Test
@@ -93,7 +94,7 @@ public class JsonHelperTests {
         assertThat(actual.getData()).isEqualTo(expected);
     }
 
-    private String getJsonDurationInHolder(Duration d) {
+    private static String getJsonDurationInHolder(Duration d) {
         return "{\"data\":\"" + d.toString() + "\"}";
     }
 

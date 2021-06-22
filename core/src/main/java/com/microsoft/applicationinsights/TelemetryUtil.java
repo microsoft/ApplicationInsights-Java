@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // * TelemetryItem telemetry
 public class TelemetryUtil {
 
+    private static final int MAX_PARSED_STACK_LENGTH = 32768; // Breeze will reject parsedStack exceeding 65536 bytes. Each char is 2 bytes long.
+
     public static TelemetryItem createMetricsTelemetry(TelemetryClient telemetryClient, String name, double value) {
         TelemetryItem telemetry = new TelemetryItem();
         MetricsData data = new MetricsData();
@@ -73,12 +75,13 @@ public class TelemetryUtil {
         }
 
         StackTraceElement[] trace = exception.getStackTrace();
+        exceptionDetails.setHasFullStack(true);
 
         if (trace != null && trace.length > 0) {
             List<StackFrame> stack = new ArrayList<>();
 
             // We need to present the stack trace in reverse order.
-
+            int stackLength = 0;
             for (int idx = 0; idx < trace.length; idx++) {
                 StackTraceElement elem = trace[idx];
 
@@ -100,15 +103,30 @@ public class TelemetryUtil {
                     frame.setMethod(elem.getMethodName());
                 }
 
+                stackLength += getStackFrameLength(frame);
+                if (stackLength > MAX_PARSED_STACK_LENGTH) {
+                    exceptionDetails.setHasFullStack(false);
+                    logger.debug("parsedStack is exceeding 65536 bytes capacity. It is truncated from full {} frames to partial {} frames.", trace.length, stack.size());
+                    break;
+                }
+
                 stack.add(frame);
             }
 
             exceptionDetails.setParsedStack(stack);
-
-            exceptionDetails.setHasFullStack(true); // TODO: sanitize and trim exception stack trace.
         }
 
         return exceptionDetails;
+    }
+
+    /***
+     * @return the stack frame length for only the strings in the stack frame.
+     */
+    // this is the same logic used to limit length on the Breeze side
+    private static int getStackFrameLength(StackFrame stackFrame) {
+        return (stackFrame.getMethod() == null ? 0 : stackFrame.getMethod().length())
+                + (stackFrame.getAssembly() == null ? 0 : stackFrame.getAssembly().length())
+                + (stackFrame.getFileName() == null ? 0 : stackFrame.getFileName().length());
     }
 
     // TODO (trask) can we move getProperties up to MonitorDomain, or if not, a common interface?

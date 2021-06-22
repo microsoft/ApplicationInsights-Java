@@ -29,20 +29,30 @@ apply plugin: "jacoco"
 apply plugin: "checkstyle"
 apply plugin: "org.owasp.dependencycheck"
 apply plugin: "net.ltgt.errorprone"
+apply plugin: "com.diffplug.spotless"
 
-configurations {
-    def includeProfiler = project.hasProperty("includeProfiler") ? project.includeProfiler.toBoolean() : false
-    if (!includeProfiler) {
-        compileClasspath.resolutionStrategy.activateDependencyLocking()
-        runtimeClasspath.resolutionStrategy.activateDependencyLocking()
-    }
-}
+// TODO (trask) enable and format everything!
+//spotless {
+//    java {
+//        googleJavaFormat("1.10.0")
+//        licenseHeaderFile(rootProject.file("gradle/enforcement/spotless.license.java"), "(package|import|public|// Includes work from:)")
+//        target("src/**/*.java")
+//    }
+//    format("misc") {
+//        // not using "**/..." to help keep spotless fast
+//        target(".gitignore", "*.md", "src/**/*.md", "*.sh", "src/**/*.properties")
+//        indentWithSpaces()
+//        trimTrailingWhitespace()
+//        endWithNewline()
+//    }
+//}
 
 checkstyle {
-    toolVersion = "8.22"
-    configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
-    configProperties["rootDir"] = rootProject.projectDir
-    showViolations = false
+    configFile = rootProject.file("gradle/enforcement/checkstyle.xml")
+    // this version should match the version of google_checks.xml used as basis for above configuration
+    toolVersion = "8.37"
+    // TODO (trask) enable after applying spotless
+    // maxWarnings = 0
 }
 
 tasks.withType(JavaCompile) {
@@ -80,7 +90,6 @@ jacocoTestReport {
     }
 }
 
-// TODO (trask) is this needed?
 repositories {
     mavenCentral()
 }
@@ -101,6 +110,10 @@ task collectTestResults {
 task testAndCollect {
     dependsOn test
     finalizedBy collectTestResults
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }
 
 tasks.withType(Test) {
