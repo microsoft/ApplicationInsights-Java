@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.azure.core.http.HttpPipeline;
-import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.DeviceInfo;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
@@ -77,7 +77,7 @@ public enum QuickPulse {
                 if (!initialized) {
                     initialized = true;
                     String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-                    HttpPipeline httpPipeline = AadAuthentication.getInstance().newHttpPipeLineWithAuthentication();
+                    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(false, telemetryClient.getAadAuthentication());
                     ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
                     quickPulseDataSender = new DefaultQuickPulseDataSender(httpPipeline, sendQueue);

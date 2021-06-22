@@ -232,7 +232,6 @@ class ConfigurationTest {
         assertThat(preview.authentication.clientId).isEqualTo("123xyz");
         assertThat(preview.authentication.tenantId).isEqualTo("tenant123");
         assertThat(preview.authentication.clientSecret).isEqualTo("clientsecret123");
-        assertThat(preview.authentication.keePassDatabasePath).isEqualTo("path/to/keePass");
         assertThat(preview.authentication.authorityHost).isEqualTo("https://test.com/microsoft/");
     }
 

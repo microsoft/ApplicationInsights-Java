@@ -2,10 +2,9 @@ package com.microsoft.applicationinsights.internal.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
+import com.microsoft.applicationinsights.TelemetryChannel;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -21,21 +20,13 @@ import static com.microsoft.applicationinsights.internal.persistence.Persistence
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class LocalFileLoaderTests {
 
     private static final String BYTE_BUFFERS_TEST_FILE = "read-transmission.txt";
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final File PERSISTED_FILE = new File(DEFAULT_FOLDER, BYTE_BUFFERS_TEST_FILE);
-
-    @BeforeEach
-    public void setup() {
-        /*
-         * AadAuthentication is used by TelemetryChannel, which is used to initialize {@link LocalFileLoader}
-         */
-        // FIXME (trask) this init should not be needed
-        AadAuthentication.init(null, null, null, null, null, null);
-    }
 
     @AfterEach
     public void cleanup() {
@@ -56,8 +47,12 @@ public class LocalFileLoaderTests {
         }
         assertThat(PERSISTED_FILE.exists()).isTrue();
 
-        LocalFileLoader.get().addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
-        String bytesString = readTelemetriesFromDiskToString();
+        LocalFileCache localFileCache = new LocalFileCache();
+        localFileCache.addPersistedFilenameToMap(BYTE_BUFFERS_TEST_FILE);
+
+        // TODO (trask) separate sending to separate class from LocalFileLoader so don't need TelemetryChannel in these tests
+        LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, mock(TelemetryChannel.class));
+        String bytesString = readTelemetriesFromDiskToString(localFileLoader);
 
         String[] stringArray = bytesString.split("\n");
         assertThat(stringArray.length).isEqualTo(10);
@@ -123,10 +118,12 @@ public class LocalFileLoaderTests {
     @Test
     public void testWriteAndReadRandomText() {
         String text = "hello world";
-        LocalFileWriter writer = new LocalFileWriter();
+        LocalFileCache cache = new LocalFileCache();
+        LocalFileWriter writer = new LocalFileWriter(cache);
         writer.writeToDisk(singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
 
-        String bytesString = readTelemetriesFromDiskToString();
+        LocalFileLoader loader = new LocalFileLoader(cache, mock(TelemetryChannel.class));
+        String bytesString = readTelemetriesFromDiskToString(loader);
         assertThat(bytesString).isEqualTo(text);
     }
 
@@ -144,11 +141,13 @@ public class LocalFileLoaderTests {
 
         // write gzipped bytes[] to disk
         byte[] result = byteArrayOutputStream.toByteArray();
-        LocalFileWriter writer = new LocalFileWriter();
+        LocalFileCache cache = new LocalFileCache();
+        LocalFileWriter writer = new LocalFileWriter(cache);
         writer.writeToDisk(singletonList(ByteBuffer.wrap(result)));
 
         // read gzipped byte[] from disk
-        byte[] bytes = readTelemetriesFromDiskToBytes();
+        LocalFileLoader loader = new LocalFileLoader(cache, mock(TelemetryChannel.class));
+        byte[] bytes = readTelemetriesFromDiskToBytes(loader);
 
         // ungzip
         ByteArrayInputStream inputStream = new ByteArrayInputStream(result);
@@ -354,12 +353,12 @@ public class LocalFileLoaderTests {
         assertThat(properties.get("rp").asText()).isEqualTo("unknown");
     }
 
-    private static String readTelemetriesFromDiskToString() {
-        return new String(readTelemetriesFromDiskToBytes(), UTF_8);
+    private static String readTelemetriesFromDiskToString(LocalFileLoader localFileLoader) {
+        return new String(readTelemetriesFromDiskToBytes(localFileLoader), UTF_8);
     }
 
-    private static byte[] readTelemetriesFromDiskToBytes() {
-        ByteBuffer buffer = LocalFileLoader.get().loadTelemetriesFromDisk();
+    private static byte[] readTelemetriesFromDiskToBytes(LocalFileLoader localFileLoader) {
+        ByteBuffer buffer = localFileLoader.loadTelemetriesFromDisk();
         byte[] bytes = new byte[buffer.remaining()];
         buffer.get(bytes);
         return bytes;

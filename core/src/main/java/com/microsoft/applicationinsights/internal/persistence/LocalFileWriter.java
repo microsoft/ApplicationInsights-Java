@@ -20,7 +20,9 @@ public final class LocalFileWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalFileWriter.class);
 
-    public LocalFileWriter() {
+    private final LocalFileCache localFileCache;
+
+    public LocalFileWriter(LocalFileCache localFileCache) {
         if (!DEFAULT_FOLDER.exists()) {
             DEFAULT_FOLDER.mkdir();
         }
@@ -28,6 +30,8 @@ public final class LocalFileWriter {
         if (!DEFAULT_FOLDER.exists() || !DEFAULT_FOLDER.canRead() || !DEFAULT_FOLDER.canWrite()) {
             throw new IllegalArgumentException(DEFAULT_FOLDER + " must exist and have read and write permissions.");
         }
+
+        this.localFileCache = localFileCache;
     }
 
     public boolean writeToDisk(List<ByteBuffer> buffers) {
@@ -49,7 +53,7 @@ public final class LocalFileWriter {
             return false;
         }
 
-        LocalFileLoader.get().addPersistedFilenameToMap(permanentFile.getName());
+        localFileCache.addPersistedFilenameToMap(permanentFile.getName());
 
         logger.info("List<ByteBuffers> has been persisted to file and will be sent when the network becomes available.");
         // TODO (heya) track data persistence success via Statsbeat

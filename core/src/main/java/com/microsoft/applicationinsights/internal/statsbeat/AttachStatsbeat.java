@@ -38,19 +38,18 @@ class AttachStatsbeat extends BaseStatsbeat {
     private volatile String resourceProviderId;
     private volatile MetadataInstanceResponse metadataInstanceResponse;
 
-    AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
-        super(telemetryClient, interval);
+    AttachStatsbeat() {
         resourceProviderId = initResourceProviderId(CustomDimensions.get().getResourceProvider(), null);
     }
 
     @Override
-    protected void send() {
+    protected void send(TelemetryClient telemetryClient) {
         // WEBSITE_HOSTNAME is lazily set in Linux Consumption Plan.
         if (resourceProviderId == null || resourceProviderId.isEmpty()) {
             resourceProviderId = initResourceProviderId(CustomDimensions.get().getResourceProvider(), null);
         }
 
-        TelemetryItem statsbeatTelemetry = createStatsbeatTelemetry(ATTACH_METRIC_NAME, 0);
+        TelemetryItem statsbeatTelemetry = createStatsbeatTelemetry(telemetryClient, ATTACH_METRIC_NAME, 0);
         TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
                 .put("rpId", resourceProviderId);
         telemetryClient.trackAsync(statsbeatTelemetry);

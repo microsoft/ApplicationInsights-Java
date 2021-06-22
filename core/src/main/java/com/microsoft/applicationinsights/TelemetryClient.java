@@ -24,11 +24,15 @@ package com.microsoft.applicationinsights;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
 import com.microsoft.applicationinsights.common.Strings;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.microsoft.applicationinsights.internal.config.connection.EndpointProvider;
 import com.microsoft.applicationinsights.internal.config.connection.InvalidConnectionStringException;
+import com.microsoft.applicationinsights.internal.persistence.LocalFileCache;
+import com.microsoft.applicationinsights.internal.persistence.LocalFileLoader;
+import com.microsoft.applicationinsights.internal.persistence.LocalFileWriter;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -89,6 +93,8 @@ public class TelemetryClient {
 
     private final List<MetricFilter> metricFilters;
 
+    private final @Nullable AadAuthentication aadAuthentication;
+
     private final List<TelemetryModule> telemetryModules = new CopyOnWriteArrayList<>();
 
     private final Object channelInitLock = new Object();
@@ -96,10 +102,11 @@ public class TelemetryClient {
 
     // only used by tests
     public TelemetryClient() {
-        this(new HashMap<>(), new ArrayList<>());
+        this(new HashMap<>(), new ArrayList<>(), null);
     }
 
-    public TelemetryClient(Map<String, String> customDimensions, List<MetricFilter> metricFilters) {
+    public TelemetryClient(Map<String, String> customDimensions, List<MetricFilter> metricFilters,
+                           AadAuthentication aadAuthentication) {
         StringSubstitutor substitutor = new StringSubstitutor(System.getenv());
         Map<String, String> globalProperties = new HashMap<>();
         Map<String, String> globalTags = new HashMap<>();
@@ -117,6 +124,7 @@ public class TelemetryClient {
         this.globalProperties = globalProperties;
         this.globalTags = globalTags;
         this.metricFilters = metricFilters;
+        this.aadAuthentication = aadAuthentication;
     }
 
     /**
@@ -125,7 +133,6 @@ public class TelemetryClient {
      * initialized with minimum defaults needed to send telemetry to Application Insights.
      * @return The 'Active' instance
      */
-    // FIXME (trask) review usages of the global, and inject where possible
     public static TelemetryClient getActive() {
         if (active == null) {
             throw new IllegalStateException("agent was not initialized");
@@ -141,14 +148,15 @@ public class TelemetryClient {
      * scenario in SpringBoot.
      * @return {@link TelemetryClient}
      */
-    public static TelemetryClient initActive(Map<String, String> customDimensions, List<MetricFilter> metricFilters, ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
+    public static TelemetryClient initActive(Map<String, String> customDimensions, List<MetricFilter> metricFilters,
+                                             AadAuthentication aadAuthentication, ApplicationInsightsXmlConfiguration applicationInsightsConfig) {
         if (active != null) {
             throw new IllegalStateException("Already initialized");
         }
         if (active == null) {
             synchronized (s_lock) {
                 if (active == null) {
-                    TelemetryClient active = new TelemetryClient(customDimensions, metricFilters);
+                    TelemetryClient active = new TelemetryClient(customDimensions, metricFilters, aadAuthentication);
                     TelemetryClientInitializer.INSTANCE.initialize(active, applicationInsightsConfig);
                     TelemetryClient.active = active;
                 }
@@ -204,7 +212,10 @@ public class TelemetryClient {
         if (channelBatcher == null) {
             synchronized (channelInitLock) {
                 if (channelBatcher == null) {
-                    TelemetryChannel channel = TelemetryChannel.create(endpointProvider.getIngestionEndpoint());
+                    LocalFileCache localFileCache = new LocalFileCache();
+                    LocalFileWriter localFileWriter = new LocalFileWriter(localFileCache);
+                    TelemetryChannel channel = TelemetryChannel.create(endpointProvider.getIngestionEndpoint(), aadAuthentication, localFileWriter);
+                    LocalFileLoader.start(localFileCache, channel);
                     channelBatcher = BatchSpanProcessor.builder(channel).build();
                 }
             }
@@ -277,6 +288,10 @@ public class TelemetryClient {
 
     public EndpointProvider getEndpointProvider() {
         return endpointProvider;
+    }
+
+    public @Nullable AadAuthentication getAadAuthentication() {
+        return aadAuthentication;
     }
 
     // must be called before setting any telemetry tags or data properties

@@ -135,13 +135,14 @@ public class AiComponentInstaller implements AgentListener {
         validateProcessorConfiguration(config);
         config.preview.authentication.validate();
         //Inject authentication configuration
-        if(config.preview.authentication.enabled) {
-            Configuration.AadAuthentication authentication = config.preview.authentication;
-            AadAuthentication.init(authentication.type, authentication.clientId, authentication.keePassDatabasePath,
-                    authentication.tenantId, authentication.clientSecret, authentication.authorityHost);
+        AadAuthentication aadAuthentication;
+        // FIXME (kryalama) can you remind me why we have both enabled and type?
+        if(config.preview.authentication.enabled && config.preview.authentication.type != null) {
+            aadAuthentication = new AadAuthentication(config.preview.authentication.type,
+                    config.preview.authentication.clientId, config.preview.authentication.tenantId,
+                    config.preview.authentication.clientSecret, config.preview.authentication.authorityHost);
         } else {
-            // TODO revisit this, not ideal to initialize when authentication is disabled
-            AadAuthentication.init(null, null, null, null, null, null);
+            aadAuthentication = null;
         }
 
         String jbossHome = System.getenv("JBOSS_HOME");
@@ -165,7 +166,8 @@ public class AiComponentInstaller implements AgentListener {
                 .map(ProcessorConfig::toMetricFilter)
                 .collect(Collectors.toList());
 
-        TelemetryClient telemetryClient = TelemetryClient.initActive(config.customDimensions, metricFilters, buildXmlConfiguration(config));
+        TelemetryClient telemetryClient = TelemetryClient.initActive(config.customDimensions, metricFilters,
+                aadAuthentication, buildXmlConfiguration(config));
 
         try {
             ConnectionString.updateStatsbeatConnectionString(config.internal.statsbeat.instrumentationKey, config.internal.statsbeat.endpoint, telemetryClient);
@@ -202,7 +204,7 @@ public class AiComponentInstaller implements AgentListener {
         }
 
         // initialize StatsbeatModule
-        StatsbeatModule.initialize(telemetryClient, config.internal.statsbeat.intervalSeconds, config.internal.statsbeat.featureIntervalSeconds);
+        StatsbeatModule.get().start(telemetryClient, config.internal.statsbeat.intervalSeconds, config.internal.statsbeat.featureIntervalSeconds);
     }
 
     private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(Configuration.GcEventConfiguration gcEvents) {

@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentMap;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
 import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
 import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -155,13 +154,14 @@ class HeartbeatTests {
     assertThat(props.size()).isEqualTo(0);
   }
 
-  // FIXME (trask) sporadic failures
-  @Disabled
   @Test
-  void heartBeatPayloadContainsDataByDefault() {
+  void heartBeatPayloadContainsDataByDefault() throws InterruptedException {
     // given
     HeartBeatProvider provider = new HeartBeatProvider();
     provider.initialize(new TelemetryClient());
+
+    // some of the initialization above happens in a separate thread
+    Thread.sleep(100);
 
     // then
     MetricsData t = (MetricsData) provider.gatherData().getData().getBaseData();
