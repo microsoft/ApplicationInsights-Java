@@ -25,6 +25,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.DataPointT
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 
@@ -64,6 +65,7 @@ abstract class BaseStatsbeat {
         point.setDataPointType(DataPointType.MEASUREMENT);
 
         telemetry.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
+        telemetry.setTime(FormattedTime.fromNow());
 
         // overwrite the default name (which is "Metric")
         telemetry.setName(STATSBEAT_TELEMETRY_NAME);
