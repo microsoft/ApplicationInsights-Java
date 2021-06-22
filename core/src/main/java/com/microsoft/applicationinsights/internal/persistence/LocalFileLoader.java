@@ -52,6 +52,8 @@ public class LocalFileLoader {
         }
     }
 
+    // FIXME (trask) review usages of the global, and inject where possible
+    //  see if we can avoid init() above
     public static LocalFileLoader get() {
         if (instance == null) {
             throw new IllegalArgumentException("instance should not be null");
