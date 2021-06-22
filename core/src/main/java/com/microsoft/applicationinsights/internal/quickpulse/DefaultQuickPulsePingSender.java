@@ -131,20 +131,24 @@ final class DefaultQuickPulsePingSender implements QuickPulsePingSender {
         if (pingPrefix == null) {
             roleName = TelemetryConfiguration.getActive().getRoleName();
 
-            if (!LocalStringsUtils.isNullOrEmpty(roleName)) {
-                roleName = "\"" + roleName + "\"";
-            }
+            StringBuilder sb = new StringBuilder();
 
-            pingPrefix = "{" +
-                    "\"Documents\": null," +
-                    "\"Instance\":\"" + instanceName + "\"," +
-                    "\"InstrumentationKey\": null," +
-                    "\"InvariantVersion\": " + QuickPulse.QP_INVARIANT_VERSION + "," +
-                    "\"MachineName\":\"" + machineName + "\"," +
-                    "\"RoleName\":" + roleName + "," +
-                    "\"Metrics\": null," +
-                    "\"StreamId\": \"" + quickPulseId + "\"," +
-                    "\"Timestamp\": \"\\/Date(";
+            sb.append("{");
+            sb.append("\"Documents\":null,");
+            sb.append("\"Instance\":\"").append(instanceName).append("\",");
+            sb.append("\"InstrumentationKey\":null,");
+            sb.append("\"InvariantVersion\":").append(QuickPulse.QP_INVARIANT_VERSION).append(",");
+            sb.append("\"MachineName\":\"").append(machineName).append("\",");
+            if (LocalStringsUtils.isNullOrEmpty(roleName)) {
+                sb.append("\"RoleName\":null,");
+            } else {
+                sb.append("\"RoleName\":\"").append(roleName).append("\",");
+            }
+            sb.append("\"StreamId\":\"").append(quickPulseId).append("\",");
+            sb.append("\"Metrics\":null,");
+            sb.append("\"Timestamp\":\"\\/Date(");
+
+            pingPrefix = sb.toString();
         }
         return pingPrefix;
     }
