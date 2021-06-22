@@ -10,11 +10,14 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.CountAndDuration;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.Counters;
 import com.microsoft.applicationinsights.internal.quickpulse.QuickPulseDataCollector.FinalCounters;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.Date;
 
-import static com.microsoft.applicationinsights.TelemetryUtil.*;
+import static com.microsoft.applicationinsights.TelemetryUtil.getExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class QuickPulseDataCollectorTests {
@@ -165,6 +168,71 @@ class QuickPulseDataCollectorTests {
         CountAndDuration inputs = Counters.decodeCountAndDuration(encoded);
         assertThat(inputs.count).isEqualTo(count);
         assertThat(inputs.duration).isEqualTo(duration);
+    }
+
+    @Test
+    void parseDurations() {
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("00:00:00.123456")).isEqualTo(123);
+        // current behavior rounds down (not sure if that's good or not?)
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("00:00:00.123999")).isEqualTo(123);
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("00:00:01.123456"))
+                .isEqualTo(Duration.ofSeconds(1)
+                        .plusMillis(123)
+                        .toMillis());
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("00:00:12.123456"))
+                .isEqualTo(Duration.ofSeconds(12)
+                        .plusMillis(123)
+                        .toMillis());
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("00:01:23.123456"))
+                .isEqualTo(Duration.ofMinutes(1)
+                        .plusSeconds(23)
+                        .plusMillis(123)
+                        .toMillis());
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("00:12:34.123456"))
+                .isEqualTo(Duration.ofMinutes(12)
+                        .plusSeconds(34)
+                        .plusMillis(123)
+                        .toMillis());
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("01:23:45.123456"))
+                .isEqualTo(Duration.ofHours(1)
+                        .plusMinutes(23)
+                        .plusSeconds(45)
+                        .plusMillis(123)
+                        .toMillis());
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("12:34:56.123456"))
+                .isEqualTo(Duration.ofHours(12)
+                        .plusMinutes(34)
+                        .plusSeconds(56)
+                        .plusMillis(123)
+                        .toMillis());
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("1.22:33:44.123456"))
+                .isEqualTo(Duration.ofDays(1)
+                        .plusHours(22)
+                        .plusMinutes(33)
+                        .plusSeconds(44)
+                        .plusMillis(123)
+                        .toMillis());
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("11.22:33:44.123456"))
+                .isEqualTo(Duration.ofDays(11)
+                        .plusHours(22)
+                        .plusMinutes(33)
+                        .plusSeconds(44)
+                        .plusMillis(123)
+                        .toMillis());
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("111.22:33:44.123456"))
+                .isEqualTo(Duration.ofDays(111)
+                        .plusHours(22)
+                        .plusMinutes(33)
+                        .plusSeconds(44)
+                        .plusMillis(123)
+                        .toMillis());
+        assertThat(QuickPulseDataCollector.parseDurationToMillis("1111.22:33:44.123456"))
+                .isEqualTo(Duration.ofDays(1111)
+                        .plusHours(22)
+                        .plusMinutes(33)
+                        .plusSeconds(44)
+                        .plusMillis(123)
+                        .toMillis());
     }
 
     private static TelemetryItem createRequestTelemetry(String name, Date timestamp, long durationMillis, String responseCode, boolean success) {
