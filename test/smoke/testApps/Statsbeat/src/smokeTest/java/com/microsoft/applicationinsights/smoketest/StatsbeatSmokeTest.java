@@ -11,11 +11,14 @@ import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 @UseAgent("faststatsbeat")
 public class StatsbeatSmokeTest extends AiSmokeTest {
 
+    // FIXME (heya)
+    @Ignore
     @Test
     @TargetUri(value = "/index.jsp")
     public void testStatsbeat() throws Exception {
