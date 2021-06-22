@@ -23,29 +23,30 @@ import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurati
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.Locale;
 
 import static org.slf4j.Logger.ROOT_LOGGER_NAME;
 
-class LoggingConfigurator {
+public class LoggingConfigurator {
 
     private final LoggerContext loggerContext;
 
-    private final Level level;
     private final String destination;
 
     private final Path filePath;
     private final int fileMaxSizeMb;
     private final int fileMaxHistory;
 
+    private final LoggingLevelConfigurator loggingLevelConfigurator;
+
     LoggingConfigurator(Configuration.SelfDiagnostics selfDiagnostics, Path agentPath) {
         loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 
-        level = getLevel(selfDiagnostics.level);
         destination = selfDiagnostics.destination;
         filePath = agentPath.resolveSibling(selfDiagnostics.file.path);
         fileMaxSizeMb = selfDiagnostics.file.maxSizeMb;
         fileMaxHistory = selfDiagnostics.file.maxHistory;
+
+        loggingLevelConfigurator = new LoggingLevelConfigurator(selfDiagnostics.level);
     }
 
     void configure() {
@@ -228,24 +229,11 @@ class LoggingConfigurator {
     }
 
     private void configureLoggingLevels() {
-        // never want to log apache http at trace or debug, it's just way to verbose
-        Level atLeastInfoLevel = getMaxLevel(level, Level.INFO);
-
-        Level otherLibsLevel = level == Level.INFO ? Level.WARN : level;
-
-        // TODO need something more reliable, currently will log too much WARN if "muzzleMatcher" logger name changes
-        // muzzleMatcher logs at WARN level in order to make them visible, but really should only be enabled when debugging
-        Level muzzleMatcherLevel = level.toInt() <= Level.DEBUG.toInt() ? level : getMaxLevel(level, Level.ERROR);
-
-        // never want to log apache http at trace or debug, it's just way to verbose
-        loggerContext.getLogger("org.apache.http").setLevel(atLeastInfoLevel);
-        // never want to log io.grpc.Context at trace or debug, as it logs confusing stack trace that looks like error but isn't
-        loggerContext.getLogger("io.grpc.Context").setLevel(atLeastInfoLevel);
-        // muzzleMatcher logs at WARN level, so by default this is OFF, but enabled when DEBUG logging is enabled
-        loggerContext.getLogger("muzzleMatcher").setLevel(muzzleMatcherLevel);
-        loggerContext.getLogger("com.microsoft.applicationinsights").setLevel(level);
-        loggerContext.getLogger("com.azure.monitor.opentelemetry.exporter").setLevel(level);
-        loggerContext.getLogger(ROOT_LOGGER_NAME).setLevel(otherLibsLevel);
+        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("io.grpc.Context"));
+        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("muzzleMatcher"));
+        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("com.microsoft.applicationinsights"));
+        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger("com.azure.monitor.opentelemetry.exporter"));
+        loggingLevelConfigurator.updateLoggerLevel(loggerContext.getLogger(ROOT_LOGGER_NAME));
     }
 
     private Encoder<ILoggingEvent> createEncoder() {
@@ -254,17 +242,5 @@ class LoggingConfigurator {
         encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss.SSSX} %-5level %logger{36} - %msg%n");
         encoder.start();
         return encoder;
-    }
-
-    private static Level getMaxLevel(Level level1, Level level2) {
-        return level1.toInt() >= level2.toInt() ? level1 : level2;
-    }
-
-    private static Level getLevel(String levelStr) {
-        try {
-            return Level.valueOf(levelStr.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Unexpected self-diagnostic level: " + levelStr, e);
-        }
     }
 }

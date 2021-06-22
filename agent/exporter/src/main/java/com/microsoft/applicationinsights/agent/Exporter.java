@@ -32,6 +32,7 @@ import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.common.Strings;
+import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -142,6 +143,7 @@ public class Exporter implements SpanExporter {
     private void export(SpanData span) {
         SpanKind kind = span.getKind();
         String instrumentationName = span.getInstrumentationLibraryInfo().getName();
+        StatsbeatModule.get().getNetworkStatsbeat().addInstrumentation(instrumentationName);
         Matcher matcher = COMPONENT_PATTERN.matcher(instrumentationName);
         String stdComponent = matcher.matches() ? matcher.group(1) : null;
         if (kind == SpanKind.INTERNAL) {

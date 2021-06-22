@@ -45,7 +45,6 @@ public class PageViewData extends EventData
      */
     public PageViewData()
     {
-        this.InitializeFields();
     }
 
     /**
@@ -74,12 +73,5 @@ public class PageViewData extends EventData
      */
     public void setDuration(Duration value) {
         this.duration = value;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

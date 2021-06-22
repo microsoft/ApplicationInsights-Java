@@ -13,7 +13,6 @@ jobs:
     strategy:
       matrix:
         os: [ windows-latest, ubuntu-latest ]
-        includeProfiler: [ false, true ]
       fail-fast: false
     steps:
       - name: Support longpaths
@@ -33,13 +32,18 @@ jobs:
           git submodule update
       - name: Restore cache
         uses: burrunan/gradle-cache-action@v1
+      - name: Cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
       - name: Build otel-fork
         run: |
           cd otel
           ./gradlew publishToMavenLocal
       - name: Test
         # TODO enable build cache, either --build-cache here, or org.gradle.caching=true in gradle.properties
-        run: ./gradlew check -PincludeProfiler=${{ matrix.includeProfiler }} --stacktrace
+        run: ./gradlew check --stacktrace
 
   setup-smoke-test-matrix:
     runs-on: ubuntu-latest
@@ -81,6 +85,11 @@ jobs:
         uses: burrunan/gradle-cache-action@v1
         with:
           read-only: true
+      - name: Cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
       - name: Build otel-fork
         run: |
           cd otel

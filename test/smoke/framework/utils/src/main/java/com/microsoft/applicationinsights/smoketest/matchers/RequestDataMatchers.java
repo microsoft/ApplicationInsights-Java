@@ -52,4 +52,6 @@ public class RequestDataMatchers {
             }
         };
     }
+
+    private RequestDataMatchers() {}
 }

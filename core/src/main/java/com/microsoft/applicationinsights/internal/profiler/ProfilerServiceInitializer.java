@@ -47,7 +47,7 @@ import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.TelemetryObservers;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
 import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
-import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
@@ -83,7 +83,7 @@ public class ProfilerServiceInitializer {
 
         // FIXME (trask) share this common code, also see TelemetryChannel (and other places?)
         List<HttpPipelinePolicy> policies = new ArrayList<>();
-        HttpClient client = LazyAzureHttpClient.getInstance();
+        HttpClient client = LazyHttpClient.getInstance();
         HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder()
                 .httpClient(client);
         // Add Azure monitor redirect policy to be able to handle v2.1/track redirects

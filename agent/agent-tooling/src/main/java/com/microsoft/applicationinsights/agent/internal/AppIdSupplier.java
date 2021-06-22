@@ -29,7 +29,7 @@ import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.channel.common.LazyAzureHttpClient;
+import com.microsoft.applicationinsights.internal.channel.common.LazyHttpClient;
 import com.microsoft.applicationinsights.internal.util.ExceptionStats;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
@@ -115,7 +115,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
             HttpRequest request = new HttpRequest(HttpMethod.GET, url);
             HttpResponse response;
             try {
-                response = LazyAzureHttpClient.getInstance().send(request).block();
+                response = LazyHttpClient.getInstance().send(request).block();
             } catch (RuntimeException e) {
                 // TODO handle Friendly SSL exception
                 logger.debug(e.getMessage(), e);

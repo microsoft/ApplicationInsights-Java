@@ -1,9 +1,4 @@
-apply plugin: "java-library"
-
-// TODO (trask) is this needed?
-repositories {
-    mavenCentral()
-}
+apply from: "$buildScriptsDir/common-java.gradle"
 
 dependencies {
     implementation "com.google.guava:guava:30.1.1-jre"

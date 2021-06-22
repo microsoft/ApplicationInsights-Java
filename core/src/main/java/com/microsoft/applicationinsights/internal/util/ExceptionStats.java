@@ -67,7 +67,7 @@ public class ExceptionStats {
         if (!firstFailure.getAndSet(true)) {
             // log the first time we see an exception as soon as it occurs, along with full stack trace
             logger.warn(introMessage + " " + warningMessage + " (future failures will be aggregated and logged once every " + intervalSeconds / 60 + " minutes)", exception);
-            scheduledExecutor.scheduleAtFixedRate(new ExceptionStatsLogger(), intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
+            scheduledExecutor.scheduleWithFixedDelay(new ExceptionStatsLogger(), intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
             return;
         }
 

@@ -83,7 +83,6 @@ public enum QuickPulse {
                     quickPulseDataSender = new DefaultQuickPulseDataSender(httpPipeline, sendQueue);
 
                     String instanceName = telemetryClient.getRoleInstance();
-                    String roleName = telemetryClient.getRoleName();
                     String machineName = DeviceInfo.getHostName();
 
                     if (LocalStringsUtils.isNullOrEmpty(instanceName)) {
@@ -93,8 +92,8 @@ public enum QuickPulse {
                         instanceName = "Unknown host";
                     }
 
-                    QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, telemetryClient, machineName, instanceName, roleName, quickPulseId);
-                    QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, telemetryClient, machineName, instanceName, roleName, quickPulseId);
+                    QuickPulsePingSender quickPulsePingSender = new DefaultQuickPulsePingSender(httpPipeline, telemetryClient, machineName, instanceName, quickPulseId);
+                    QuickPulseDataFetcher quickPulseDataFetcher = new DefaultQuickPulseDataFetcher(sendQueue, telemetryClient, machineName, instanceName, quickPulseId);
 
                     QuickPulseCoordinatorInitData coordinatorInitData =
                             new QuickPulseCoordinatorInitDataBuilder()

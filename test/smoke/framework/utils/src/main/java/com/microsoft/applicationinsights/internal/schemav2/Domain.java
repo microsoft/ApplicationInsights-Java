@@ -31,15 +31,5 @@ public class Domain
     /**
      * Initializes a new instance of the Domain class.
      */
-    public Domain()
-    {
-        this.InitializeFields();
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
-    }
+    public Domain() {}
 }

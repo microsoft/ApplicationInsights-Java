@@ -63,5 +63,9 @@ public class ExceptionDataMatchers {
                 }
             };
         }
+
+        private ExceptionDetailsMatchers() {}
     }
+
+    private ExceptionDataMatchers() {}
 }
