@@ -21,7 +21,7 @@ public class FeatureStatsbeatTest {
     @Test
     public void testFeatureList() {
         String javaVendor = System.getProperty("java.vendor");
-        final Set<Feature> features = Collections.singleton(Feature.fromJavaVendor(javaVendor));
+        Set<Feature> features = Collections.singleton(Feature.fromJavaVendor(javaVendor));
         assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
     }
 }

@@ -72,8 +72,8 @@ public class NetworkStatsbeatTest {
 
     @Test
     public void testRaceCondition() throws InterruptedException {
-        final ExecutorService executorService = Executors.newFixedThreadPool(100);
-        final AtomicInteger instrumentationCounter = new AtomicInteger();
+        ExecutorService executorService = Executors.newFixedThreadPool(100);
+        AtomicInteger instrumentationCounter = new AtomicInteger();
         for (int i = 0; i < 100; i++) {
             executorService.execute(new Runnable() {
                 @Override
