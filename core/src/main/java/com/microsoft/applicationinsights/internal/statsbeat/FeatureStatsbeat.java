@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -55,5 +56,6 @@ class FeatureStatsbeat extends BaseStatsbeat {
         TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
                 .put("feature", String.valueOf(getFeature()));
         telemetryClient.trackAsync(statsbeatTelemetry);
+        LoggerFactory.getLogger(FeatureStatsbeat.class).debug("########################## send featureStatsbeat: {}", statsbeatTelemetry);
     }
 }

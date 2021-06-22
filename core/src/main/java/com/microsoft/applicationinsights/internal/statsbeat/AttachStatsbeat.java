@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
+import org.slf4j.LoggerFactory;
 
 class AttachStatsbeat extends BaseStatsbeat {
 
@@ -54,6 +55,8 @@ class AttachStatsbeat extends BaseStatsbeat {
         TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
                 .put("rpId", resourceProviderId);
         telemetryClient.trackAsync(statsbeatTelemetry);
+
+        LoggerFactory.getLogger(AttachStatsbeat.class).debug("################### send attachStatsbeat: {}", statsbeatTelemetry);
     }
 
     /**

@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Set;
@@ -66,6 +67,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             TelemetryUtil.getProperties(requestSuccessCountSt.getData().getBaseData())
                     .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.trackAsync(requestSuccessCountSt);
+            LoggerFactory.getLogger(NetworkStatsbeat.class).debug("########################### sending networkstatsbeat: {}", requestSuccessCountSt);
         }
 
         if (local.requestFailureCount.get() != 0) {
@@ -81,6 +83,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
             TelemetryUtil.getProperties(requestDurationSt.getData().getBaseData())
                     .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
             telemetryClient.trackAsync(requestDurationSt);
+            LoggerFactory.getLogger(NetworkStatsbeat.class).debug("########################### sending networkstatsbeat requestDuration: {}", requestDurationSt);
+
         }
 
         if (local.retryCount.get() != 0) {
