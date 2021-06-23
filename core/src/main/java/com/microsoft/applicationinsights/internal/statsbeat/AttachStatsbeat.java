@@ -35,18 +35,21 @@ class AttachStatsbeat extends BaseStatsbeat {
     private static final String WEBSITE_HOSTNAME = "WEBSITE_HOSTNAME";
     private static final String WEBSITE_HOME_STAMPNAME = "WEBSITE_HOME_STAMPNAME";
 
+    private final CustomDimensions customDimensions;
     private volatile String resourceProviderId;
     private volatile MetadataInstanceResponse metadataInstanceResponse;
 
-    AttachStatsbeat() {
-        resourceProviderId = initResourceProviderId(CustomDimensions.get().getResourceProvider(), null);
+    AttachStatsbeat(CustomDimensions customDimensions) {
+        super(customDimensions);
+        this.customDimensions = customDimensions;
+        resourceProviderId = initResourceProviderId(customDimensions.getResourceProvider(), null);
     }
 
     @Override
     protected void send(TelemetryClient telemetryClient) {
         // WEBSITE_HOSTNAME is lazily set in Linux Consumption Plan.
         if (resourceProviderId == null || resourceProviderId.isEmpty()) {
-            resourceProviderId = initResourceProviderId(CustomDimensions.get().getResourceProvider(), null);
+            resourceProviderId = initResourceProviderId(customDimensions.getResourceProvider(), null);
         }
 
         TelemetryItem statsbeatTelemetry = createStatsbeatTelemetry(telemetryClient, ATTACH_METRIC_NAME, 0);

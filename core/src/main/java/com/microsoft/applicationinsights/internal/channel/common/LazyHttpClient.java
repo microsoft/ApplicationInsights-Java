@@ -8,7 +8,7 @@ import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.http.policy.RetryPolicy;
 import com.azure.core.util.Context;
 import com.microsoft.applicationinsights.internal.authentication.AadAuthentication;
-import com.microsoft.applicationinsights.internal.authentication.AzureMonitorRedirectPolicy;
+import com.microsoft.applicationinsights.internal.authentication.RedirectPolicy;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import reactor.core.publisher.Mono;
@@ -87,12 +87,10 @@ public class LazyHttpClient implements HttpClient {
                 .build();
     }
 
-    public static HttpPipeline newHttpPipeLine(boolean addStampSpecificRedirectPolicy, @Nullable AadAuthentication aadAuthentication) {
+    public static HttpPipeline newHttpPipeLine(@Nullable AadAuthentication aadAuthentication) {
         List<HttpPipelinePolicy> policies = new ArrayList<>();
-        if (addStampSpecificRedirectPolicy) {
-            // Add Azure monitor redirect policy to be able to handle v2.1/track redirects
-            policies.add(new AzureMonitorRedirectPolicy());
-        }
+        // Redirect policy to to handle v2.1/track redirects (and other redirects too, e.g. profiler)
+        policies.add(new RedirectPolicy());
         // Retry policy for failed requests
         policies.add(new RetryPolicy());
         if (aadAuthentication != null) {

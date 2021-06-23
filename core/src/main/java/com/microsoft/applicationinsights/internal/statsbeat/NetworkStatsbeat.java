@@ -45,7 +45,8 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
     private final Object lock = new Object();
 
-    NetworkStatsbeat() {
+    NetworkStatsbeat(CustomDimensions customDimensions) {
+        super(customDimensions);
         current = new IntervalMetrics();
     }
 

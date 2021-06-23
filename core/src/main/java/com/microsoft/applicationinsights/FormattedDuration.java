@@ -70,10 +70,10 @@ public class FormattedDuration {
     }
 
     private static void appendDaysHoursMinutesSeconds(StringBuilder sb, long days, long hours, long minutes, long seconds) {
-        // FIXME (trask) breeze question: is min two digits really required by breeze?
-        // FIXME (trask) breeze question: are days/hours/minutes required when they are zero?
-        appendMinTwoDigits(sb, days);
-        sb.append('.');
+        if (days > 0) {
+            sb.append(days);
+            sb.append('.');
+        }
         appendMinTwoDigits(sb, hours);
         sb.append(':');
         appendMinTwoDigits(sb, minutes);
@@ -84,36 +84,36 @@ public class FormattedDuration {
 
     private static void appendMinTwoDigits(StringBuilder sb, long value) {
         if (value < 10) {
-            sb.append("0");
+            sb.append('0');
         }
         sb.append(value);
     }
 
     private static void appendMinThreeDigits(StringBuilder sb, long value) {
         if (value < 100) {
-            sb.append("0");
+            sb.append('0');
         }
         if (value < 10) {
-            sb.append("0");
+            sb.append('0');
         }
         sb.append(value);
     }
 
     private static void appendMinSixDigits(StringBuilder sb, long value) {
         if (value < 100000) {
-            sb.append("0");
+            sb.append('0');
         }
         if (value < 10000) {
-            sb.append("0");
+            sb.append('0');
         }
         if (value < 1000) {
-            sb.append("0");
+            sb.append('0');
         }
         if (value < 100) {
-            sb.append("0");
+            sb.append('0');
         }
         if (value < 10) {
-            sb.append("0");
+            sb.append('0');
         }
         sb.append(value);
     }

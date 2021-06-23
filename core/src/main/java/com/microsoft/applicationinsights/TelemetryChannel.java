@@ -42,7 +42,7 @@ public class TelemetryChannel {
     private final LocalFileWriter localFileWriter;
 
     public static TelemetryChannel create(URL endpoint, AadAuthentication aadAuthentication, LocalFileWriter localFileWriter) {
-        HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(true, aadAuthentication);
+        HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(aadAuthentication);
         return new TelemetryChannel(httpPipeline, endpoint, localFileWriter);
     }
 

@@ -35,6 +35,12 @@ import static com.microsoft.applicationinsights.internal.statsbeat.Constants.STA
 
 abstract class BaseStatsbeat {
 
+    private final CustomDimensions customDimensions;
+
+    protected BaseStatsbeat(CustomDimensions customDimensions) {
+        this.customDimensions = customDimensions;
+    }
+
     protected abstract void send(TelemetryClient telemetryClient);
 
     protected TelemetryItem createStatsbeatTelemetry(TelemetryClient telemetryClient, String name, double value) {
@@ -53,7 +59,7 @@ abstract class BaseStatsbeat {
         // overwrite the default name (which is "Metric")
         telemetry.setName(STATSBEAT_TELEMETRY_NAME);
         Map<String, String> properties = new HashMap<>();
-        CustomDimensions.get().populateProperties(properties, telemetryClient.getInstrumentationKey());
+        customDimensions.populateProperties(properties, telemetryClient.getInstrumentationKey());
         data.setProperties(properties);
         return telemetry;
     }

@@ -77,7 +77,7 @@ public enum QuickPulse {
                 if (!initialized) {
                     initialized = true;
                     String quickPulseId = UUID.randomUUID().toString().replace("-", "");
-                    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(false, telemetryClient.getAadAuthentication());
+                    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(telemetryClient.getAadAuthentication());
                     ArrayBlockingQueue<HttpRequest> sendQueue = new ArrayBlockingQueue<>(256, true);
 
                     quickPulseDataSender = new DefaultQuickPulseDataSender(httpPipeline, sendQueue);

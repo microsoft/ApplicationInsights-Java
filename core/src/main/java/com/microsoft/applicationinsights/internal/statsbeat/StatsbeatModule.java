@@ -39,6 +39,8 @@ public class StatsbeatModule {
 
     private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(ThreadPoolUtils.createDaemonThreadFactory(BaseStatsbeat.class));
 
+    private final CustomDimensions customDimensions;
+
     private final NetworkStatsbeat networkStatsbeat;
     private final AttachStatsbeat attachStatsbeat;
     // keeping this as field for now
@@ -48,9 +50,10 @@ public class StatsbeatModule {
     private final AtomicBoolean started = new AtomicBoolean();
 
     private StatsbeatModule() {
-        networkStatsbeat = new NetworkStatsbeat();
-        attachStatsbeat = new AttachStatsbeat();
-        featureStatsbeat = new FeatureStatsbeat();
+        customDimensions = new CustomDimensions();
+        networkStatsbeat = new NetworkStatsbeat(customDimensions);
+        attachStatsbeat = new AttachStatsbeat(customDimensions);
+        featureStatsbeat = new FeatureStatsbeat(customDimensions);
     }
 
     public void start(TelemetryClient telemetryClient, long interval, long featureInterval) {
@@ -61,7 +64,6 @@ public class StatsbeatModule {
         scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(attachStatsbeat, telemetryClient), interval, interval, TimeUnit.SECONDS);
         scheduledExecutor.scheduleWithFixedDelay(new StatsbeatSender(featureStatsbeat, telemetryClient), featureInterval, featureInterval, TimeUnit.SECONDS);
 
-        CustomDimensions customDimensions = CustomDimensions.get();
         ResourceProvider rp = customDimensions.getResourceProvider();
         // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
         // FIXME (heya) Need to figure out why AzureMetadataService is not reachable from a function app and it's not necessary to make this call.

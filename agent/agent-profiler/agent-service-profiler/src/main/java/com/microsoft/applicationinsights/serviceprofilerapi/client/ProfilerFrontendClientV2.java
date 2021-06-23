@@ -83,7 +83,6 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
             throw new AssertionError("http response mono returned empty");
         }
         if (response.getStatusCode() >= 300) {
-            // FIXME (trask) does azure http client throw HttpResponseException already on >= 300 response above?
             throw new HttpResponseException(response);
         }
 
@@ -94,8 +93,6 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
         return new BlobAccessPass(null, location, null);
     }
 
-    // FIXME (trask) need to verify that post redirects (301, 302, 307) are handled by azure http client
-    //  because I just removed that handling below
     public Mono<HttpResponse> executePostWithRedirect(URL requestUrl) {
 
         HttpRequest request = new HttpRequest(HttpMethod.POST, requestUrl);
