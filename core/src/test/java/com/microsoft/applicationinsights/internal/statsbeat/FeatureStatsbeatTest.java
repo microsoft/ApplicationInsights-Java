@@ -31,7 +31,7 @@ public class FeatureStatsbeatTest {
         featureStatsbeat.trackAadEnabled(true);
         Set<Feature> features = new HashSet<>();
         features.add(Feature.fromJavaVendor(javaVendor));
-        features.add(Feature.AAD_ON);
+        features.add(Feature.AAD);
         assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
     }
 

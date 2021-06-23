@@ -57,7 +57,7 @@ class FeatureStatsbeat extends BaseStatsbeat {
 
     void trackAadEnabled(boolean aadEnabled) {
         if (aadEnabled) {
-            featureList.add(Feature.AAD_ON);
+            featureList.add(Feature.AAD);
         }
     }
 }

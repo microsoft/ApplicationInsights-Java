@@ -78,7 +78,7 @@ public final class StatsbeatTestUtils {
         FEATURE_MAP_DECODING.put(3, Feature.JAVA_VENDOR_ADOPT_OPENJDK);
         FEATURE_MAP_DECODING.put(4, Feature.JAVA_VENDOR_REDHAT);
         FEATURE_MAP_DECODING.put(5, Feature.JAVA_VENDOR_OTHER);
-        FEATURE_MAP_DECODING.put(6, Feature.AAD_ON);
+        FEATURE_MAP_DECODING.put(6, Feature.AAD);
     }
 
     static Set<String> decodeInstrumentations(long number) {
