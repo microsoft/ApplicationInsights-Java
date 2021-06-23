@@ -83,6 +83,26 @@ allprojects {
         }
     }
 
+    // TODO (trask) can this be removed (from both here and pipeline that uses it?)
+    tasks.register("resolveDependencies") {
+        enabled !configurations.isEmpty()
+        configurations.findAll { c ->
+            c.allDependencies.findAll { d ->
+                d instanceof ProjectDependency
+            }.each { d ->
+                dependsOn d.getDependencyProject().tasks.named("resolveDependencies")
+            }
+        }
+        doLast {
+            configurations.findAll {
+                it.canBeResolved
+            }.each {
+                logger.info "Resolving $it"
+                it.files
+            }
+        }
+    }
+
     tasks.withType(ShadowJar) {
         exclude "META-INF/maven/**"
         exclude "META-INF/LICENSE*"
