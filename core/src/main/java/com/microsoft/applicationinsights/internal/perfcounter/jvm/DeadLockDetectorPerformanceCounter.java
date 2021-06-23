@@ -21,12 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter.jvm;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MonitorInfo;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.util.ArrayList;
-
 import static java.lang.Math.min;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
@@ -34,141 +28,149 @@ import com.microsoft.applicationinsights.FormattedTime;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
 import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class uses the JVM ThreadMXBean to detect threads dead locks
- * A metric with value 0 is sent when there are no blocked threads,
- * otherwise the number of detected blocked threads is sent with a
- * dimension that holds information like thread id and minimal stack traces as trace telemetries
+ * The class uses the JVM ThreadMXBean to detect threads dead locks A metric with value 0 is sent
+ * when there are no blocked threads, otherwise the number of detected blocked threads is sent with
+ * a dimension that holds information like thread id and minimal stack traces as trace telemetries
  */
 public final class DeadLockDetectorPerformanceCounter implements PerformanceCounter {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeadLockDetectorPerformanceCounter.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(DeadLockDetectorPerformanceCounter.class);
 
-    public final static String NAME = "ThreadDeadLockDetector";
+  public static final String NAME = "ThreadDeadLockDetector";
 
-    private final static String INDENT = "    ";
-    private final static String SEPERATOR = " | ";
-    private final static String METRIC_NAME = "Suspected Deadlocked Threads";
-    private final static int MAX_STACK_TRACE = 3;
+  private static final String INDENT = "    ";
+  private static final String SEPERATOR = " | ";
+  private static final String METRIC_NAME = "Suspected Deadlocked Threads";
+  private static final int MAX_STACK_TRACE = 3;
 
-    private final ThreadMXBean threadBean;
+  private final ThreadMXBean threadBean;
 
-    public DeadLockDetectorPerformanceCounter() {
-        threadBean = ManagementFactory.getThreadMXBean();
-    }
+  public DeadLockDetectorPerformanceCounter() {
+    threadBean = ManagementFactory.getThreadMXBean();
+  }
 
-    public boolean isSupported() {
-        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
-        return threadBean.isSynchronizerUsageSupported();
-    }
+  public boolean isSupported() {
+    ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+    return threadBean.isSynchronizerUsageSupported();
+  }
 
-    @Override
-    public String getId() {
-        return "DeadLockDetector";
-    }
+  @Override
+  public String getId() {
+    return "DeadLockDetector";
+  }
 
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        TelemetryItem telemetry = new TelemetryItem();
-        MetricsData data = new MetricsData();
-        MetricDataPoint point = new MetricDataPoint();
-        TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
+  @Override
+  public void report(TelemetryClient telemetryClient) {
+    TelemetryItem telemetry = new TelemetryItem();
+    MetricsData data = new MetricsData();
+    MetricDataPoint point = new MetricDataPoint();
+    TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
 
-        point.setName(METRIC_NAME);
-        point.setValue(0);
-        point.setDataPointType(DataPointType.MEASUREMENT);
+    point.setName(METRIC_NAME);
+    point.setValue(0);
+    point.setDataPointType(DataPointType.MEASUREMENT);
 
-        long[] threadIds = threadBean.findDeadlockedThreads();
-        if (threadIds != null && threadIds.length > 0) {
-            ArrayList<Long> blockedThreads = new ArrayList<>();
+    long[] threadIds = threadBean.findDeadlockedThreads();
+    if (threadIds != null && threadIds.length > 0) {
+      ArrayList<Long> blockedThreads = new ArrayList<>();
 
-            StringBuilder sb = new StringBuilder();
-            for (long threadId : threadIds) {
-                ThreadInfo threadInfo = threadBean.getThreadInfo(threadId);
-                if (threadInfo == null) {
-                    continue;
-                }
-
-                setThreadInfoAndStack(sb, threadInfo);
-                blockedThreads.add(threadId);
-            }
-
-            if (!blockedThreads.isEmpty()) {
-                String uuid = LocalStringsUtils.generateRandomIntegerId();
-
-                data.getMetrics().get(0).setValue(blockedThreads.size());
-                telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
-
-                TelemetryItem messageTelemetry = new TelemetryItem();
-                MessageData messageData = new MessageData();
-                TelemetryClient.getActive().initMessageTelemetry(messageTelemetry, messageData);
-
-                messageData.setMessage(String.format("%s%s", "Suspected deadlocked threads: ", sb));
-
-                messageTelemetry.setTime(FormattedTime.fromNow());
-                messageTelemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
-
-                telemetryClient.trackAsync(messageTelemetry);
-            }
+      StringBuilder sb = new StringBuilder();
+      for (long threadId : threadIds) {
+        ThreadInfo threadInfo = threadBean.getThreadInfo(threadId);
+        if (threadInfo == null) {
+          continue;
         }
 
-        telemetry.setTime(FormattedTime.fromNow());
+        setThreadInfoAndStack(sb, threadInfo);
+        blockedThreads.add(threadId);
+      }
 
-        telemetryClient.trackAsync(telemetry);
+      if (!blockedThreads.isEmpty()) {
+        String uuid = LocalStringsUtils.generateRandomIntegerId();
+
+        data.getMetrics().get(0).setValue(blockedThreads.size());
+        telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
+
+        TelemetryItem messageTelemetry = new TelemetryItem();
+        MessageData messageData = new MessageData();
+        TelemetryClient.getActive().initMessageTelemetry(messageTelemetry, messageData);
+
+        messageData.setMessage(String.format("%s%s", "Suspected deadlocked threads: ", sb));
+
+        messageTelemetry.setTime(FormattedTime.fromNow());
+        messageTelemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), uuid);
+
+        telemetryClient.trackAsync(messageTelemetry);
+      }
     }
 
-    private static void setThreadInfoAndStack(StringBuilder sb, ThreadInfo ti) {
-        try {
-            setThreadInfo(sb, ti);
+    telemetry.setTime(FormattedTime.fromNow());
 
-            // Stack traces up to depth of MAX_STACK_TRACE
-            StackTraceElement[] stacktrace = ti.getStackTrace();
-            MonitorInfo[] monitors = ti.getLockedMonitors();
-            int maxTraceToReport = min(MAX_STACK_TRACE, stacktrace.length);
-            for (int i = 0; i < maxTraceToReport; i++) {
-                StackTraceElement ste = stacktrace[i];
-                sb.append(INDENT + "at ").append(ste);
-                for (MonitorInfo mi : monitors) {
-                    if (mi.getLockedStackDepth() == i) {
-                        sb.append(INDENT + "  - is locked ").append(mi);
-                    }
-                }
-            }
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                logger.error("Error while setting the Thread Info");
-                logger.trace("Error while setting the Thread Info", t);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
-        sb.append(SEPERATOR);
-    }
+    telemetryClient.trackAsync(telemetry);
+  }
 
-    private static void setThreadInfo(StringBuilder sb, ThreadInfo ti) {
-        sb.append(ti.getThreadName());
-        sb.append(" Id=");
-        sb.append(ti.getThreadId());
-        sb.append(" is in ");
-        sb.append(ti.getThreadState());
-        if (ti.getLockName() != null) {
-            sb.append(" on lock=").append(ti.getLockName());
+  private static void setThreadInfoAndStack(StringBuilder sb, ThreadInfo ti) {
+    try {
+      setThreadInfo(sb, ti);
+
+      // Stack traces up to depth of MAX_STACK_TRACE
+      StackTraceElement[] stacktrace = ti.getStackTrace();
+      MonitorInfo[] monitors = ti.getLockedMonitors();
+      int maxTraceToReport = min(MAX_STACK_TRACE, stacktrace.length);
+      for (int i = 0; i < maxTraceToReport; i++) {
+        StackTraceElement ste = stacktrace[i];
+        sb.append(INDENT + "at ").append(ste);
+        for (MonitorInfo mi : monitors) {
+          if (mi.getLockedStackDepth() == i) {
+            sb.append(INDENT + "  - is locked ").append(mi);
+          }
         }
-        if (ti.isSuspended()) {
-            sb.append(" (suspended)");
-        }
-        if (ti.isInNative()) {
-            sb.append(" (running in native)");
-        }
-        if (ti.getLockOwnerName() != null) {
-            sb.append(INDENT + " is owned by ").append(ti.getLockOwnerName()).append(" Id=").append(ti.getLockOwnerId());
-        }
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        logger.error("Error while setting the Thread Info");
+        logger.trace("Error while setting the Thread Info", t);
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
     }
+    sb.append(SEPERATOR);
+  }
+
+  private static void setThreadInfo(StringBuilder sb, ThreadInfo ti) {
+    sb.append(ti.getThreadName());
+    sb.append(" Id=");
+    sb.append(ti.getThreadId());
+    sb.append(" is in ");
+    sb.append(ti.getThreadState());
+    if (ti.getLockName() != null) {
+      sb.append(" on lock=").append(ti.getLockName());
+    }
+    if (ti.isSuspended()) {
+      sb.append(" (suspended)");
+    }
+    if (ti.isInNative()) {
+      sb.append(" (running in native)");
+    }
+    if (ti.getLockOwnerName() != null) {
+      sb.append(INDENT + " is owned by ")
+          .append(ti.getLockOwnerName())
+          .append(" Id=")
+          .append(ti.getLockOwnerId());
+    }
+  }
 }

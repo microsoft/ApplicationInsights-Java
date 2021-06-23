@@ -18,15 +18,13 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.profiler;
 
+import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import java.io.File;
 
-import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-
-/**
- * Handler that can process a generated profile file
- */
+/** Handler that can process a generated profile file */
 public interface ProfileHandler {
-    void receive(AlertBreach alertBreach, long toEpochMilli, File file);
+  void receive(AlertBreach alertBreach, long toEpochMilli, File file);
 }

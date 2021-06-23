@@ -21,89 +21,97 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ThreadPoolUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(ThreadPoolUtils.class);
+  private static final Logger logger = LoggerFactory.getLogger(ThreadPoolUtils.class);
 
-    public static ThreadPoolExecutor newLimitedThreadPool(int minNumberOfThreads, int maxNumberOfThreads, long defaultRemoveIdleThread, int bufferSize) {
-        return new ThreadPoolExecutor(
-                minNumberOfThreads,
-                maxNumberOfThreads,
-                defaultRemoveIdleThread,
-                TimeUnit.SECONDS,
-                new ArrayBlockingQueue<>(bufferSize));
+  public static ThreadPoolExecutor newLimitedThreadPool(
+      int minNumberOfThreads,
+      int maxNumberOfThreads,
+      long defaultRemoveIdleThread,
+      int bufferSize) {
+    return new ThreadPoolExecutor(
+        minNumberOfThreads,
+        maxNumberOfThreads,
+        defaultRemoveIdleThread,
+        TimeUnit.SECONDS,
+        new ArrayBlockingQueue<>(bufferSize));
+  }
+
+  /**
+   * This method is used to shutdown ExecutorService
+   *
+   * @param executorService The instance of ExecutorService to shutdown
+   * @param timeout Max time to wait
+   * @param timeUnit Timeunit for timeout
+   */
+  public static void stop(ExecutorService executorService, long timeout, TimeUnit timeUnit) {
+    if (executorService == null) {
+      return;
     }
 
-    /**
-     * This method is used to shutdown ExecutorService
-     * @param executorService The instance of ExecutorService to shutdown
-     * @param timeout Max time to wait
-     * @param timeUnit Timeunit for timeout
-     */
-    public static void stop(ExecutorService executorService, long timeout, TimeUnit timeUnit) {
-        if (executorService == null) {
-            return;
+    executorService.shutdown();
+    try {
+      if (!executorService.awaitTermination(timeout, timeUnit)) {
+        executorService.shutdownNow();
+
+        if (!executorService.awaitTermination(timeout, timeUnit)) {
+          logger.trace("Pool did not terminate");
         }
-
-        executorService.shutdown();
-        try {
-            if (!executorService.awaitTermination(timeout, timeUnit)) {
-                executorService.shutdownNow();
-
-                if (!executorService.awaitTermination(timeout, timeUnit)) {
-                    logger.trace("Pool did not terminate");
-                }
-            }
-        } catch (InterruptedException ie) {
-            executorService.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
+      }
+    } catch (InterruptedException ie) {
+      executorService.shutdownNow();
+      Thread.currentThread().interrupt();
     }
+  }
 
-    /**
-     * {@code poolName} will be appended with a hyphen and the threadId.
-     * @param clazz The class holding the thread pool
-     * @param instanceId The identifier of the instance of {@code clazz}
-     */
-    public static ThreadFactory createDaemonThreadFactory(Class<?> clazz, int instanceId) {
-        return createNamedDaemonThreadFactory(String.format("%s_%d", clazz.getSimpleName(), instanceId));
-    }
+  /**
+   * {@code poolName} will be appended with a hyphen and the threadId.
+   *
+   * @param clazz The class holding the thread pool
+   * @param instanceId The identifier of the instance of {@code clazz}
+   */
+  public static ThreadFactory createDaemonThreadFactory(Class<?> clazz, int instanceId) {
+    return createNamedDaemonThreadFactory(
+        String.format("%s_%d", clazz.getSimpleName(), instanceId));
+  }
 
-    /**
-     * {@code poolName} will be appended with a hyphen and the unique name.
-     * @param clazz The class holding the thread pool
-     * @param uniqueId The identifier of the instance of {@code clazz}
-     */
-    public static ThreadFactory createDaemonThreadFactory(Class<?> clazz, String uniqueId) {
-        return createNamedDaemonThreadFactory(String.format("%s_%s", clazz.getSimpleName(), uniqueId));
-    }
+  /**
+   * {@code poolName} will be appended with a hyphen and the unique name.
+   *
+   * @param clazz The class holding the thread pool
+   * @param uniqueId The identifier of the instance of {@code clazz}
+   */
+  public static ThreadFactory createDaemonThreadFactory(Class<?> clazz, String uniqueId) {
+    return createNamedDaemonThreadFactory(String.format("%s_%s", clazz.getSimpleName(), uniqueId));
+  }
 
-    public static ThreadFactory createDaemonThreadFactory(Class<?> clazz) {
-        return createNamedDaemonThreadFactory(clazz.getSimpleName());
-    }
+  public static ThreadFactory createDaemonThreadFactory(Class<?> clazz) {
+    return createNamedDaemonThreadFactory(clazz.getSimpleName());
+  }
 
-    public static ThreadFactory createNamedDaemonThreadFactory(String poolName) {
-        return new ThreadFactory(){
-            private final AtomicInteger threadId = new AtomicInteger();
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setName(String.format("%s-%d", poolName, threadId.getAndIncrement()));
-                thread.setDaemon(true);
-                return thread;
-            }
-        };
-    }
+  public static ThreadFactory createNamedDaemonThreadFactory(String poolName) {
+    return new ThreadFactory() {
+      private final AtomicInteger threadId = new AtomicInteger();
 
-    private ThreadPoolUtils() {}
+      @Override
+      public Thread newThread(Runnable r) {
+        Thread thread = new Thread(r);
+        thread.setName(String.format("%s-%d", poolName, threadId.getAndIncrement()));
+        thread.setDaemon(true);
+        return thread;
+      }
+    };
+  }
+
+  private ThreadPoolUtils() {}
 }

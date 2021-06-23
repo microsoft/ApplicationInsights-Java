@@ -18,6 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.alerting.analysis;
 
 import java.time.ZonedDateTime;
@@ -26,63 +27,64 @@ import java.util.List;
 import java.util.OptionalDouble;
 import java.util.function.Consumer;
 
-/**
- * Applies a time window to data and calculates a mean of the data during that window
- */
+/** Applies a time window to data and calculates a mean of the data during that window */
 public class RollingAverage {
 
-    private final long windowLengthInSec;
-    private final TimeSource timeSource;
-    private final List<TelemetryDataPoint> telemetryDataPoints = new ArrayList<>();
-    private Consumer<Double> consumer;
-    private static final int DEFAULT_ROLLING_AVERAGE_WINDOW_IN_SEC = Integer.parseInt(System.getProperty("applicationinsights.preview.profiler.rolling-average-window-in-sec", "120"));
+  private final long windowLengthInSec;
+  private final TimeSource timeSource;
+  private final List<TelemetryDataPoint> telemetryDataPoints = new ArrayList<>();
+  private Consumer<Double> consumer;
+  private static final int DEFAULT_ROLLING_AVERAGE_WINDOW_IN_SEC =
+      Integer.parseInt(
+          System.getProperty(
+              "applicationinsights.preview.profiler.rolling-average-window-in-sec", "120"));
 
-    public RollingAverage() {
-        windowLengthInSec = DEFAULT_ROLLING_AVERAGE_WINDOW_IN_SEC;
-        timeSource = TimeSource.DEFAULT;
+  public RollingAverage() {
+    windowLengthInSec = DEFAULT_ROLLING_AVERAGE_WINDOW_IN_SEC;
+    timeSource = TimeSource.DEFAULT;
+  }
+
+  public RollingAverage(long windowLengthInSec, TimeSource timeSource) {
+    this.windowLengthInSec = windowLengthInSec;
+    this.timeSource = timeSource;
+  }
+
+  public long getWindowLengthInSec() {
+    return windowLengthInSec;
+  }
+
+  public RollingAverage setConsumer(Consumer<Double> consumer) {
+    this.consumer = consumer;
+    return this;
+  }
+
+  public double track(TelemetryDataPoint telemetryDataPoint) {
+    ZonedDateTime now = timeSource.getNow();
+    telemetryDataPoints.add(telemetryDataPoint);
+
+    removeOldValues(now);
+
+    OptionalDouble average = calculateAverage();
+    if (average.isPresent()) {
+      consumer.accept(average.getAsDouble());
+      return average.getAsDouble();
+    } else {
+      return 0.0d;
     }
+  }
 
-    public RollingAverage(long windowLengthInSec, TimeSource timeSource) {
-        this.windowLengthInSec = windowLengthInSec;
-        this.timeSource = timeSource;
+  public OptionalDouble calculateAverage() {
+    return telemetryDataPoints.stream().mapToDouble(TelemetryDataPoint::getValue).average();
+  }
+
+  private void removeOldValues(ZonedDateTime now) {
+    ZonedDateTime cutOff = now.minusSeconds(windowLengthInSec);
+
+    // Ensure that we keep at least 2 values in our buffer so that we are not reacting to a single
+    // value
+    while (telemetryDataPoints.size() > 2
+        && telemetryDataPoints.get(0).getTime().isBefore(cutOff)) {
+      telemetryDataPoints.remove(0);
     }
-
-    public long getWindowLengthInSec() {
-        return windowLengthInSec;
-    }
-
-    public RollingAverage setConsumer(Consumer<Double> consumer) {
-        this.consumer = consumer;
-        return this;
-    }
-
-    public double track(TelemetryDataPoint telemetryDataPoint) {
-        ZonedDateTime now = timeSource.getNow();
-        telemetryDataPoints.add(telemetryDataPoint);
-
-        removeOldValues(now);
-
-        OptionalDouble average = calculateAverage();
-        if (average.isPresent()) {
-            consumer.accept(average.getAsDouble());
-            return average.getAsDouble();
-        } else {
-            return 0.0d;
-        }
-    }
-
-    public OptionalDouble calculateAverage() {
-        return telemetryDataPoints.stream()
-                .mapToDouble(TelemetryDataPoint::getValue)
-                .average();
-    }
-
-    private void removeOldValues(ZonedDateTime now) {
-        ZonedDateTime cutOff = now.minusSeconds(windowLengthInSec);
-
-        //Ensure that we keep at least 2 values in our buffer so that we are not reacting to a single value
-        while (telemetryDataPoints.size() > 2 && telemetryDataPoints.get(0).getTime().isBefore(cutOff)) {
-            telemetryDataPoints.remove(0);
-        }
-    }
+  }
 }

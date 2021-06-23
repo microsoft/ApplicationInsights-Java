@@ -18,11 +18,10 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.profiler;
 
-/**
- * A service that is able to apply profiler configuration parameters
- */
+/** A service that is able to apply profiler configuration parameters */
 public interface ProfilerConfigurationHandler {
-    void updateConfiguration(ProfilerConfiguration newConfig);
+  void updateConfiguration(ProfilerConfiguration newConfig);
 }

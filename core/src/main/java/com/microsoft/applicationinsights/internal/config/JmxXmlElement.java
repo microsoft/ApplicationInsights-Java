@@ -23,33 +23,33 @@ package com.microsoft.applicationinsights.internal.config;
 
 public class JmxXmlElement {
 
-    private String name;
+  private String name;
 
-    private String objectName;
+  private String objectName;
 
-    private String attribute;
+  private String attribute;
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public String getObjectName() {
-        return objectName;
-    }
+  public String getObjectName() {
+    return objectName;
+  }
 
-    public void setObjectName(String objectName) {
-        this.objectName = objectName;
-    }
+  public void setObjectName(String objectName) {
+    this.objectName = objectName;
+  }
 
-    public String getAttribute() {
-        return attribute;
-    }
+  public String getAttribute() {
+    return attribute;
+  }
 
-    public void setAttribute(String attribute) {
-        this.attribute = attribute;
-    }
+  public void setAttribute(String attribute) {
+    this.attribute = attribute;
+  }
 }

@@ -27,73 +27,76 @@ import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import io.opentelemetry.instrumentation.api.caching.Cache;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 // This is mostly a copy from Azure Monitor Open Telemetry Exporter SDK AzureMonitorRedirectPolicy
 public final class RedirectPolicy implements HttpPipelinePolicy {
 
-    private static final int PERMANENT_REDIRECT_STATUS_CODE = 308;
-    private static final int TEMP_REDIRECT_STATUS_CODE = 307;
-    // Based on Stamp specific redirects design doc
-    private static final int MAX_REDIRECT_RETRIES = 10;
-    private static final Logger logger = LoggerFactory.getLogger(RedirectPolicy.class);
+  private static final int PERMANENT_REDIRECT_STATUS_CODE = 308;
+  private static final int TEMP_REDIRECT_STATUS_CODE = 307;
+  // Based on Stamp specific redirects design doc
+  private static final int MAX_REDIRECT_RETRIES = 10;
+  private static final Logger logger = LoggerFactory.getLogger(RedirectPolicy.class);
 
-    private final Cache<URL, String> redirectMappings = Cache.newBuilder().setMaximumSize(100).build();
+  private final Cache<URL, String> redirectMappings =
+      Cache.newBuilder().setMaximumSize(100).build();
 
-    @Override
-    public Mono<HttpResponse> process(HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
-        return attemptRetry(context, next, context.getHttpRequest(), 0);
+  @Override
+  public Mono<HttpResponse> process(HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
+    return attemptRetry(context, next, context.getHttpRequest(), 0);
+  }
+
+  /**
+   * Function to process through the HTTP Response received in the pipeline and retry sending the
+   * request with new redirect url.
+   */
+  private Mono<HttpResponse> attemptRetry(
+      HttpPipelineCallContext context,
+      HttpPipelineNextPolicy next,
+      HttpRequest originalHttpRequest,
+      int retryCount) {
+    // make sure the context is not modified during retry, except for the URL
+    HttpRequest newHttpRequest = originalHttpRequest.copy();
+    String redirectLocation = redirectMappings.get(originalHttpRequest.getUrl());
+    if (redirectLocation != null) {
+      newHttpRequest.setUrl(redirectLocation);
     }
+    context.setHttpRequest(newHttpRequest);
+    return next.clone()
+        .process()
+        .flatMap(
+            httpResponse -> {
+              if (shouldRetryWithRedirect(httpResponse.getStatusCode(), retryCount)) {
+                String responseLocation = httpResponse.getHeaderValue("Location");
+                if (responseLocation != null) {
+                  redirectMappings.put(originalHttpRequest.getUrl(), responseLocation);
+                  return attemptRetry(context, next, originalHttpRequest, retryCount + 1);
+                }
+              }
+              return Mono.just(httpResponse);
+            });
+  }
 
-    /**
-     *  Function to process through the HTTP Response received in the pipeline
-     *  and retry sending the request with new redirect url.
-     */
-    private Mono<HttpResponse> attemptRetry(HttpPipelineCallContext context,
-                                            HttpPipelineNextPolicy next,
-                                            HttpRequest originalHttpRequest,
-                                            int retryCount) {
-        // make sure the context is not modified during retry, except for the URL
-        HttpRequest newHttpRequest = originalHttpRequest.copy();
-        String redirectLocation = redirectMappings.get(originalHttpRequest.getUrl());
-        if (redirectLocation != null) {
-            newHttpRequest.setUrl(redirectLocation);
-        }
-        context.setHttpRequest(newHttpRequest);
-        return next.clone().process()
-                .flatMap(httpResponse -> {
-                    if (shouldRetryWithRedirect(httpResponse.getStatusCode(), retryCount)) {
-                        String responseLocation = httpResponse.getHeaderValue("Location");
-                        if (responseLocation != null) {
-                            redirectMappings.put(originalHttpRequest.getUrl(), responseLocation);
-                            return attemptRetry(context, next, originalHttpRequest, retryCount + 1);
-                        }
-                    }
-                    return Mono.just(httpResponse);
-                });
+  /**
+   * Determines if it's a valid retry scenario based on statusCode and tryCount.
+   *
+   * @param statusCode HTTP response status code
+   * @param tryCount Redirect retries so far
+   * @return True if statusCode corresponds to HTTP redirect response codes and redirect retries is
+   *     less than {@code MAX_REDIRECT_RETRIES}.
+   */
+  private static boolean shouldRetryWithRedirect(int statusCode, int tryCount) {
+    if (tryCount >= MAX_REDIRECT_RETRIES) {
+      logger.warn("Max redirect retries limit reached:{}.", MAX_REDIRECT_RETRIES);
+      return false;
     }
-
-    /**
-     * Determines if it's a valid retry scenario based on statusCode and tryCount.
-     *
-     * @param statusCode HTTP response status code
-     * @param tryCount Redirect retries so far
-     * @return True if statusCode corresponds to HTTP redirect response codes and redirect
-     * retries is less than {@code MAX_REDIRECT_RETRIES}.
-     */
-    private static boolean shouldRetryWithRedirect(int statusCode, int tryCount) {
-        if (tryCount >= MAX_REDIRECT_RETRIES) {
-            logger.warn("Max redirect retries limit reached:{}.", MAX_REDIRECT_RETRIES);
-            return false;
-        }
-        return statusCode == HttpURLConnection.HTTP_MOVED_TEMP
-                || statusCode == HttpURLConnection.HTTP_MOVED_PERM
-                || statusCode == PERMANENT_REDIRECT_STATUS_CODE
-                || statusCode == TEMP_REDIRECT_STATUS_CODE;
-    }
+    return statusCode == HttpURLConnection.HTTP_MOVED_TEMP
+        || statusCode == HttpURLConnection.HTTP_MOVED_PERM
+        || statusCode == PERMANENT_REDIRECT_STATUS_CODE
+        || statusCode == TEMP_REDIRECT_STATUS_CODE;
+  }
 }

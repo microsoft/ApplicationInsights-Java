@@ -18,13 +18,10 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.alerting;
 
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
@@ -33,79 +30,90 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.A
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class AlertingSubsystemTest {
 
-    private static AlertingSubsystem getAlertMonitor(Consumer<AlertBreach> consumer) {
-        AlertingSubsystem monitor = AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
+  private static AlertingSubsystem getAlertMonitor(Consumer<AlertBreach> consumer) {
+    AlertingSubsystem monitor =
+        AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
 
-        monitor.updateConfiguration(
-                new AlertingConfiguration(
-                        new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
-                        new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
-                        new DefaultConfiguration(true, 5, 120),
-                        new CollectionPlanConfiguration(true, EngineMode.immediate, ZonedDateTime.now(), 120, "a-settings-moniker")
-                )
-        );
-        return monitor;
-    }
+    monitor.updateConfiguration(
+        new AlertingConfiguration(
+            new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
+            new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
+            new DefaultConfiguration(true, 5, 120),
+            new CollectionPlanConfiguration(
+                true, EngineMode.immediate, ZonedDateTime.now(), 120, "a-settings-moniker")));
+    return monitor;
+  }
 
-    @Test
-    void alertTriggerIsCalled() {
+  @Test
+  void alertTriggerIsCalled() {
 
-        AtomicReference<AlertBreach> called = new AtomicReference<>();
-        Consumer<AlertBreach> consumer = called::set;
+    AtomicReference<AlertBreach> called = new AtomicReference<>();
+    Consumer<AlertBreach> consumer = called::set;
 
-        AlertingSubsystem service = getAlertMonitor(consumer);
+    AlertingSubsystem service = getAlertMonitor(consumer);
 
-        service.track(AlertMetricType.CPU, 90.0);
-        service.track(AlertMetricType.CPU, 90.0);
-        service.track(AlertMetricType.CPU, 90.0);
+    service.track(AlertMetricType.CPU, 90.0);
+    service.track(AlertMetricType.CPU, 90.0);
+    service.track(AlertMetricType.CPU, 90.0);
 
-        service.awaitQueueFlush();
+    service.awaitQueueFlush();
 
-        assertThat(called.get().getType()).isEqualTo(AlertMetricType.CPU);
-        assertThat(called.get().getAlertValue()).isEqualTo(90.0);
-    }
+    assertThat(called.get().getType()).isEqualTo(AlertMetricType.CPU);
+    assertThat(called.get().getAlertValue()).isEqualTo(90.0);
+  }
 
-    @Test
-    void manualAlertWorks() {
-        AtomicReference<AlertBreach> called = new AtomicReference<>();
-        Consumer<AlertBreach> consumer = called::set;
+  @Test
+  void manualAlertWorks() {
+    AtomicReference<AlertBreach> called = new AtomicReference<>();
+    Consumer<AlertBreach> consumer = called::set;
 
-        AlertingSubsystem service = AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
+    AlertingSubsystem service =
+        AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
 
-        service.updateConfiguration(
-                new AlertingConfiguration(
-                        new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
-                        new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
-                        new DefaultConfiguration(true, 5, 120),
-                        new CollectionPlanConfiguration(true, EngineMode.immediate, ZonedDateTime.now().plus(100, ChronoUnit.SECONDS), 120, "a-settings-moniker")
-                )
-        );
+    service.updateConfiguration(
+        new AlertingConfiguration(
+            new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
+            new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
+            new DefaultConfiguration(true, 5, 120),
+            new CollectionPlanConfiguration(
+                true,
+                EngineMode.immediate,
+                ZonedDateTime.now().plus(100, ChronoUnit.SECONDS),
+                120,
+                "a-settings-moniker")));
 
-        assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
-    }
+    assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
+  }
 
-    @Test
-    void manualAlertDoesNotTriggerAfterExpired() {
-        AtomicReference<AlertBreach> called = new AtomicReference<>();
-        Consumer<AlertBreach> consumer = called::set;
+  @Test
+  void manualAlertDoesNotTriggerAfterExpired() {
+    AtomicReference<AlertBreach> called = new AtomicReference<>();
+    Consumer<AlertBreach> consumer = called::set;
 
-        AlertingSubsystem service = AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
+    AlertingSubsystem service =
+        AlertingSubsystem.create(consumer, Executors.newSingleThreadExecutor());
 
-        service.updateConfiguration(
-                new AlertingConfiguration(
-                        new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
-                        new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
-                        new DefaultConfiguration(true, 5, 120),
-                        new CollectionPlanConfiguration(true, EngineMode.immediate, ZonedDateTime.now().minus(100, ChronoUnit.SECONDS), 120, "a-settings-moniker")
-                )
-        );
+    service.updateConfiguration(
+        new AlertingConfiguration(
+            new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
+            new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
+            new DefaultConfiguration(true, 5, 120),
+            new CollectionPlanConfiguration(
+                true,
+                EngineMode.immediate,
+                ZonedDateTime.now().minus(100, ChronoUnit.SECONDS),
+                120,
+                "a-settings-moniker")));
 
-        assertThat(called.get()).isNull();
-    }
+    assertThat(called.get()).isNull();
+  }
 }

@@ -23,43 +23,46 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.squareup.moshi.Json;
 
-/**
- * Metadata instance response from the Azure Metadata Service.
- */
+/** Metadata instance response from the Azure Metadata Service. */
 class MetadataInstanceResponse {
 
-    @Json(name = "vmId")
-    private final String vmId;
+  @Json(name = "vmId")
+  private final String vmId;
 
-    @Json(name = "subscriptionId")
-    private final String subscriptionId;
+  @Json(name = "subscriptionId")
+  private final String subscriptionId;
 
-    @Json(name = "osType")
-    private final String osType;
+  @Json(name = "osType")
+  private final String osType;
 
-    @Json(name = "resourceGroupName")
-    private final String resourceGroupName;
+  @Json(name = "resourceGroupName")
+  private final String resourceGroupName;
 
-    MetadataInstanceResponse(String vmId, String subscriptionId, String osType, String resourceGroupName, String resourceId) {
-        this.vmId = vmId;
-        this.subscriptionId = subscriptionId;
-        this.osType = osType;
-        this.resourceGroupName = resourceGroupName;
-    }
+  MetadataInstanceResponse(
+      String vmId,
+      String subscriptionId,
+      String osType,
+      String resourceGroupName,
+      String resourceId) {
+    this.vmId = vmId;
+    this.subscriptionId = subscriptionId;
+    this.osType = osType;
+    this.resourceGroupName = resourceGroupName;
+  }
 
-    String getVmId() {
-        return vmId;
-    }
+  String getVmId() {
+    return vmId;
+  }
 
-    String getSubscriptionId() {
-        return subscriptionId;
-    }
+  String getSubscriptionId() {
+    return subscriptionId;
+  }
 
-    String getOsType() {
-        return osType;
-    }
+  String getOsType() {
+    return osType;
+  }
 
-    String getResourceGroupName() {
-        return resourceGroupName;
-    }
+  String getResourceGroupName() {
+    return resourceGroupName;
+  }
 }

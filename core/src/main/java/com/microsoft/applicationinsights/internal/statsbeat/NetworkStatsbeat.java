@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.TelemetryUtil;
-
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,172 +31,186 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class NetworkStatsbeat extends BaseStatsbeat {
 
-    private static final String REQUEST_SUCCESS_COUNT_METRIC_NAME = "Request Success Count";
-    private static final String REQUEST_FAILURE_COUNT_METRIC_NAME = "Requests Failure Count ";
-    private static final String REQUEST_DURATION_METRIC_NAME = "Request Duration";
-    private static final String RETRY_COUNT_METRIC_NAME = "Retry Count";
-    private static final String THROTTLE_COUNT_METRIC_NAME = "Throttle Count";
-    private static final String EXCEPTION_COUNT_METRIC_NAME = "Exception Count";
+  private static final String REQUEST_SUCCESS_COUNT_METRIC_NAME = "Request Success Count";
+  private static final String REQUEST_FAILURE_COUNT_METRIC_NAME = "Requests Failure Count ";
+  private static final String REQUEST_DURATION_METRIC_NAME = "Request Duration";
+  private static final String RETRY_COUNT_METRIC_NAME = "Retry Count";
+  private static final String THROTTLE_COUNT_METRIC_NAME = "Throttle Count";
+  private static final String EXCEPTION_COUNT_METRIC_NAME = "Exception Count";
 
-    private static final String INSTRUMENTATION_CUSTOM_DIMENSION = "instrumentation";
+  private static final String INSTRUMENTATION_CUSTOM_DIMENSION = "instrumentation";
 
-    private volatile IntervalMetrics current;
+  private volatile IntervalMetrics current;
 
-    private final Object lock = new Object();
+  private final Object lock = new Object();
 
-    NetworkStatsbeat(CustomDimensions customDimensions) {
-        super(customDimensions);
-        current = new IntervalMetrics();
+  NetworkStatsbeat(CustomDimensions customDimensions) {
+    super(customDimensions);
+    current = new IntervalMetrics();
+  }
+
+  @Override
+  protected void send(TelemetryClient telemetryClient) {
+    IntervalMetrics local;
+    synchronized (lock) {
+      local = current;
+      current = new IntervalMetrics();
     }
 
-    @Override
-    protected void send(TelemetryClient telemetryClient) {
-        IntervalMetrics local;
-        synchronized (lock) {
-            local = current;
-            current = new IntervalMetrics();
-        }
+    // send instrumentation as an UTF-8 string
+    String instrumentation = String.valueOf(Instrumentations.encode(local.instrumentationList));
 
-        // send instrumentation as an UTF-8 string
-        String instrumentation = String.valueOf(Instrumentations.encode(local.instrumentationList));
-
-        if (local.requestSuccessCount.get() != 0) {
-            TelemetryItem requestSuccessCountSt = createStatsbeatTelemetry(telemetryClient, REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
-            TelemetryUtil.getProperties(requestSuccessCountSt.getData().getBaseData())
-                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.trackAsync(requestSuccessCountSt);
-        }
-
-        if (local.requestFailureCount.get() != 0) {
-            TelemetryItem requestFailureCountSt = createStatsbeatTelemetry(telemetryClient, REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
-            TelemetryUtil.getProperties(requestFailureCountSt.getData().getBaseData())
-                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.trackAsync(requestFailureCountSt);
-        }
-
-        double durationAvg = local.getRequestDurationAvg();
-        if (durationAvg != 0) {
-            TelemetryItem requestDurationSt = createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
-            TelemetryUtil.getProperties(requestDurationSt.getData().getBaseData())
-                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.trackAsync(requestDurationSt);
-        }
-
-        if (local.retryCount.get() != 0) {
-            TelemetryItem retryCountSt = createStatsbeatTelemetry(telemetryClient, RETRY_COUNT_METRIC_NAME, local.retryCount.get());
-            TelemetryUtil.getProperties(retryCountSt.getData().getBaseData())
-                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.trackAsync(retryCountSt);
-        }
-
-        if (local.throttlingCount.get() != 0) {
-            TelemetryItem throttleCountSt = createStatsbeatTelemetry(telemetryClient, THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
-            TelemetryUtil.getProperties(throttleCountSt.getData().getBaseData())
-                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.trackAsync(throttleCountSt);
-        }
-
-        if (local.exceptionCount.get() != 0) {
-            TelemetryItem exceptionCountSt = createStatsbeatTelemetry(telemetryClient, EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
-            TelemetryUtil.getProperties(exceptionCountSt.getData().getBaseData())
-                    .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
-            telemetryClient.trackAsync(exceptionCountSt);
-        }
+    if (local.requestSuccessCount.get() != 0) {
+      TelemetryItem requestSuccessCountSt =
+          createStatsbeatTelemetry(
+              telemetryClient, REQUEST_SUCCESS_COUNT_METRIC_NAME, local.requestSuccessCount.get());
+      TelemetryUtil.getProperties(requestSuccessCountSt.getData().getBaseData())
+          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      telemetryClient.trackAsync(requestSuccessCountSt);
     }
 
-    // this is used by Exporter
-    public void addInstrumentation(String instrumentation) {
-        synchronized (lock) {
-            current.instrumentationList.add(instrumentation);
-        }
+    if (local.requestFailureCount.get() != 0) {
+      TelemetryItem requestFailureCountSt =
+          createStatsbeatTelemetry(
+              telemetryClient, REQUEST_FAILURE_COUNT_METRIC_NAME, local.requestFailureCount.get());
+      TelemetryUtil.getProperties(requestFailureCountSt.getData().getBaseData())
+          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      telemetryClient.trackAsync(requestFailureCountSt);
     }
 
-    public void incrementRequestSuccessCount(long duration) {
-        synchronized (lock) {
-            current.requestSuccessCount.incrementAndGet();
-            current.totalRequestDuration.getAndAdd(duration);
-        }
+    double durationAvg = local.getRequestDurationAvg();
+    if (durationAvg != 0) {
+      TelemetryItem requestDurationSt =
+          createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
+      TelemetryUtil.getProperties(requestDurationSt.getData().getBaseData())
+          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      telemetryClient.trackAsync(requestDurationSt);
     }
 
-    public void incrementRequestFailureCount() {
-        synchronized (lock) {
-            current.requestFailureCount.incrementAndGet();
-        }
+    if (local.retryCount.get() != 0) {
+      TelemetryItem retryCountSt =
+          createStatsbeatTelemetry(
+              telemetryClient, RETRY_COUNT_METRIC_NAME, local.retryCount.get());
+      TelemetryUtil.getProperties(retryCountSt.getData().getBaseData())
+          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      telemetryClient.trackAsync(retryCountSt);
     }
 
-    public void incrementRetryCount() {
-        synchronized (lock) {
-            current.retryCount.incrementAndGet();
-        }
+    if (local.throttlingCount.get() != 0) {
+      TelemetryItem throttleCountSt =
+          createStatsbeatTelemetry(
+              telemetryClient, THROTTLE_COUNT_METRIC_NAME, local.throttlingCount.get());
+      TelemetryUtil.getProperties(throttleCountSt.getData().getBaseData())
+          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      telemetryClient.trackAsync(throttleCountSt);
     }
 
-    public void incrementThrottlingCount() {
-        synchronized (lock) {
-            current.throttlingCount.incrementAndGet();
-        }
+    if (local.exceptionCount.get() != 0) {
+      TelemetryItem exceptionCountSt =
+          createStatsbeatTelemetry(
+              telemetryClient, EXCEPTION_COUNT_METRIC_NAME, local.exceptionCount.get());
+      TelemetryUtil.getProperties(exceptionCountSt.getData().getBaseData())
+          .put(INSTRUMENTATION_CUSTOM_DIMENSION, instrumentation);
+      telemetryClient.trackAsync(exceptionCountSt);
     }
+  }
 
-    void incrementExceptionCount() {
-        synchronized (lock) {
-            current.exceptionCount.incrementAndGet();
-        }
+  // this is used by Exporter
+  public void addInstrumentation(String instrumentation) {
+    synchronized (lock) {
+      current.instrumentationList.add(instrumentation);
     }
+  }
 
-    // only used by tests
-    long getInstrumentation() {
-        return Instrumentations.encode(current.instrumentationList);
+  public void incrementRequestSuccessCount(long duration) {
+    synchronized (lock) {
+      current.requestSuccessCount.incrementAndGet();
+      current.totalRequestDuration.getAndAdd(duration);
     }
+  }
 
-    // only used by tests
-    long getRequestSuccessCount() {
-        return current.requestSuccessCount.get();
+  public void incrementRequestFailureCount() {
+    synchronized (lock) {
+      current.requestFailureCount.incrementAndGet();
     }
+  }
 
-    // only used by tests
-    long getRequestFailureCount() {
-        return current.requestFailureCount.get();
+  public void incrementRetryCount() {
+    synchronized (lock) {
+      current.retryCount.incrementAndGet();
     }
+  }
 
-    // only used by tests
-    double getRequestDurationAvg() { return current.getRequestDurationAvg(); }
-
-    // only used by tests
-    long getRetryCount() {
-        return current.retryCount.get();
+  public void incrementThrottlingCount() {
+    synchronized (lock) {
+      current.throttlingCount.incrementAndGet();
     }
+  }
 
-    // only used by tests
-    long getThrottlingCount() {
-        return current.throttlingCount.get();
+  void incrementExceptionCount() {
+    synchronized (lock) {
+      current.exceptionCount.incrementAndGet();
     }
+  }
 
-    // only used by tests
-    long getExceptionCount() {
-        return current.exceptionCount.get();
+  // only used by tests
+  long getInstrumentation() {
+    return Instrumentations.encode(current.instrumentationList);
+  }
+
+  // only used by tests
+  long getRequestSuccessCount() {
+    return current.requestSuccessCount.get();
+  }
+
+  // only used by tests
+  long getRequestFailureCount() {
+    return current.requestFailureCount.get();
+  }
+
+  // only used by tests
+  double getRequestDurationAvg() {
+    return current.getRequestDurationAvg();
+  }
+
+  // only used by tests
+  long getRetryCount() {
+    return current.retryCount.get();
+  }
+
+  // only used by tests
+  long getThrottlingCount() {
+    return current.throttlingCount.get();
+  }
+
+  // only used by tests
+  long getExceptionCount() {
+    return current.exceptionCount.get();
+  }
+
+  // only used by tests
+  Set<String> getInstrumentationList() {
+    return current.instrumentationList;
+  }
+
+  private static class IntervalMetrics {
+    private final Set<String> instrumentationList =
+        Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final AtomicLong requestSuccessCount = new AtomicLong();
+    private final AtomicLong requestFailureCount = new AtomicLong();
+    // request duration count only counts request success.
+    private final AtomicLong totalRequestDuration = new AtomicLong(); // duration in milliseconds
+    private final AtomicLong retryCount = new AtomicLong();
+    private final AtomicLong throttlingCount = new AtomicLong();
+    private final AtomicLong exceptionCount = new AtomicLong();
+
+    private double getRequestDurationAvg() {
+      double sum = totalRequestDuration.get();
+      if (requestSuccessCount.get() != 0) {
+        return sum / requestSuccessCount.get();
+      }
+
+      return sum;
     }
-
-    // only used by tests
-    Set<String> getInstrumentationList() {
-        return current.instrumentationList;
-    }
-
-    private static class IntervalMetrics {
-        private final Set<String> instrumentationList = Collections.newSetFromMap(new ConcurrentHashMap<>());
-        private final AtomicLong requestSuccessCount = new AtomicLong();
-        private final AtomicLong requestFailureCount = new AtomicLong();
-        // request duration count only counts request success.
-        private final AtomicLong totalRequestDuration = new AtomicLong(); // duration in milliseconds
-        private final AtomicLong retryCount = new AtomicLong();
-        private final AtomicLong throttlingCount = new AtomicLong();
-        private final AtomicLong exceptionCount = new AtomicLong();
-
-        private double getRequestDurationAvg() {
-            double sum = totalRequestDuration.get();
-            if (requestSuccessCount.get() != 0) {
-                return sum / requestSuccessCount.get();
-            }
-
-            return  sum;
-        }
-    }
+  }
 }

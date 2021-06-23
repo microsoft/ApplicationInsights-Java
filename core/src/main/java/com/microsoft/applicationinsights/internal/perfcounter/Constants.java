@@ -22,24 +22,29 @@
 package com.microsoft.applicationinsights.internal.perfcounter;
 
 public final class Constants {
-    public final static String PERFORMANCE_COUNTER_PREFIX = "JSDK_";
+  public static final String PERFORMANCE_COUNTER_PREFIX = "JSDK_";
 
-    public final static String PROCESS_CPU_PC_ID = PERFORMANCE_COUNTER_PREFIX + "ProcessCpuPerformanceCounter";
+  public static final String PROCESS_CPU_PC_ID =
+      PERFORMANCE_COUNTER_PREFIX + "ProcessCpuPerformanceCounter";
 
-    public final static String TOTAL_CPU_PC_METRIC_NAME = "\\Processor(_Total)\\% Processor Time";
-    public final static String PROCESS_CPU_PC_METRIC_NAME = "\\Process(??APP_WIN32_PROC??)\\% Processor Time";
+  public static final String TOTAL_CPU_PC_METRIC_NAME = "\\Processor(_Total)\\% Processor Time";
+  public static final String PROCESS_CPU_PC_METRIC_NAME =
+      "\\Process(??APP_WIN32_PROC??)\\% Processor Time";
 
-    public final static String TOTAL_MEMORY_PC_ID = PERFORMANCE_COUNTER_PREFIX + "TotalMemoryPerformanceCounter";
-    public final static String PROCESS_MEM_PC_ID = PERFORMANCE_COUNTER_PREFIX + "ProcessMemoryPerformanceCounter";
+  public static final String TOTAL_MEMORY_PC_ID =
+      PERFORMANCE_COUNTER_PREFIX + "TotalMemoryPerformanceCounter";
+  public static final String PROCESS_MEM_PC_ID =
+      PERFORMANCE_COUNTER_PREFIX + "ProcessMemoryPerformanceCounter";
 
-    public final static String PROCESS_MEM_PC_METRICS_NAME = "\\Process(??APP_WIN32_PROC??)\\Private Bytes";
+  public static final String PROCESS_MEM_PC_METRICS_NAME =
+      "\\Process(??APP_WIN32_PROC??)\\Private Bytes";
 
-    public final static String TOTAL_MEMORY_PC_METRIC_NAME = "\\Memory\\Available Bytes";
+  public static final String TOTAL_MEMORY_PC_METRIC_NAME = "\\Memory\\Available Bytes";
 
-    public final static String PROCESS_IO_PC_METRIC_NAME = "\\Process(??APP_WIN32_PROC??)\\IO Data Bytes/sec";
+  public static final String PROCESS_IO_PC_METRIC_NAME =
+      "\\Process(??APP_WIN32_PROC??)\\IO Data Bytes/sec";
 
-    public final static String PROCESS_CATEGORY = "Process";
+  public static final String PROCESS_CATEGORY = "Process";
 
-    private Constants() {
-    }
+  private Constants() {}
 }

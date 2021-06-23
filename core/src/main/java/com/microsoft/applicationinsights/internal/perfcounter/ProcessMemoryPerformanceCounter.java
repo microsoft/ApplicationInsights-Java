@@ -21,45 +21,43 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
+import static com.microsoft.applicationinsights.internal.perfcounter.Constants.PROCESS_MEM_PC_METRICS_NAME;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.microsoft.applicationinsights.internal.perfcounter.Constants.PROCESS_MEM_PC_METRICS_NAME;
-import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
-
-/**
- * The class supplies the memory usage in Mega Bytes of the Java process the SDK is in.
- */
+/** The class supplies the memory usage in Mega Bytes of the Java process the SDK is in. */
 final class ProcessMemoryPerformanceCounter extends AbstractPerformanceCounter {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProcessMemoryPerformanceCounter.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(ProcessMemoryPerformanceCounter.class);
 
-    public ProcessMemoryPerformanceCounter() {
-    }
+  public ProcessMemoryPerformanceCounter() {}
 
-    @Override
-    public String getId() {
-        return Constants.PROCESS_MEM_PC_ID;
-    }
+  @Override
+  public String getId() {
+    return Constants.PROCESS_MEM_PC_ID;
+  }
 
-    @Override
-    public void report(TelemetryClient telemetryClient) {
-        MemoryMXBean memoryData = ManagementFactory.getMemoryMXBean();
+  @Override
+  public void report(TelemetryClient telemetryClient) {
+    MemoryMXBean memoryData = ManagementFactory.getMemoryMXBean();
 
-        MemoryUsage heapMemoryUsage = memoryData.getHeapMemoryUsage();
-        MemoryUsage nonHeapMemoryUsage = memoryData.getNonHeapMemoryUsage();
+    MemoryUsage heapMemoryUsage = memoryData.getHeapMemoryUsage();
+    MemoryUsage nonHeapMemoryUsage = memoryData.getNonHeapMemoryUsage();
 
-        double memoryBytes = (double)heapMemoryUsage.getUsed();
-        memoryBytes += (double)nonHeapMemoryUsage.getUsed();
+    double memoryBytes = (double) heapMemoryUsage.getUsed();
+    memoryBytes += (double) nonHeapMemoryUsage.getUsed();
 
-        logger.trace("Performance Counter: {}: {}", PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
-        TelemetryItem telemetry = createMetricsTelemetry(telemetryClient, PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
-        telemetryClient.trackAsync(telemetry);
-    }
+    logger.trace("Performance Counter: {}: {}", PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
+    TelemetryItem telemetry =
+        createMetricsTelemetry(telemetryClient, PROCESS_MEM_PC_METRICS_NAME, memoryBytes);
+    telemetryClient.trackAsync(telemetry);
+  }
 }

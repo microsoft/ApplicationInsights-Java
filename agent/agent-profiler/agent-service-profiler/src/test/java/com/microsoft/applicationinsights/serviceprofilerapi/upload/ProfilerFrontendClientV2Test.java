@@ -18,98 +18,111 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.azure.core.http.*;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import java.io.IOException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
-
-import com.azure.core.http.*;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class ProfilerFrontendClientV2Test {
-    @Test
-    void settingsPullHitsCorrectUrl() throws IOException {
+  @Test
+  void settingsPullHitsCorrectUrl() throws IOException {
 
-        AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
+    AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 
-        HttpPipeline httpPipeline = new HttpPipelineBuilder()
-                .httpClient(request -> {
-                    requestHolder.set(request);
-                    return Mono.just(new MockHttpResponse(request, 200));
+    HttpPipeline httpPipeline =
+        new HttpPipelineBuilder()
+            .httpClient(
+                request -> {
+                  requestHolder.set(request);
+                  return Mono.just(new MockHttpResponse(request, 200));
                 })
-                .build();
+            .build();
 
-        ProfilerFrontendClientV2 profilerFrontendClientV2 =
-                new ProfilerFrontendClientV2(new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
+    ProfilerFrontendClientV2 profilerFrontendClientV2 =
+        new ProfilerFrontendClientV2(
+            new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
 
-        Date now = Date.from(Instant.now());
-        profilerFrontendClientV2.getSettings(now);
+    Date now = Date.from(Instant.now());
+    profilerFrontendClientV2.getSettings(now);
 
-        HttpRequest request = requestHolder.get();
-        String url = request.getUrl().toString();
+    HttpRequest request = requestHolder.get();
+    String url = request.getUrl().toString();
 
-        assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.GET);
-        assertThat(url.contains("a-instrumentation-key")).isTrue();
-        assertThat(url.contains("/api/profileragent/v4/settings")).isTrue();
-    }
+    assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.GET);
+    assertThat(url.contains("a-instrumentation-key")).isTrue();
+    assertThat(url.contains("/api/profileragent/v4/settings")).isTrue();
+  }
 
-    @Test
-    void uploadHitsCorrectUrl() throws IOException {
+  @Test
+  void uploadHitsCorrectUrl() throws IOException {
 
-        AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
+    AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 
-        HttpPipeline httpPipeline = new HttpPipelineBuilder()
-                .httpClient(request -> {
-                    requestHolder.set(request);
-                    return Mono.just(new MockHttpResponse(request, 200));
+    HttpPipeline httpPipeline =
+        new HttpPipelineBuilder()
+            .httpClient(
+                request -> {
+                  requestHolder.set(request);
+                  return Mono.just(new MockHttpResponse(request, 200));
                 })
-                .build();
+            .build();
 
-        ProfilerFrontendClientV2 profilerFrontendClientV2 =
-                new ProfilerFrontendClientV2(new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
+    ProfilerFrontendClientV2 profilerFrontendClientV2 =
+        new ProfilerFrontendClientV2(
+            new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
 
-        UUID id = UUID.randomUUID();
-        profilerFrontendClientV2.getUploadAccess(id);
+    UUID id = UUID.randomUUID();
+    profilerFrontendClientV2.getUploadAccess(id);
 
-        HttpRequest request = requestHolder.get();
-        String url = request.getUrl().toString();
+    HttpRequest request = requestHolder.get();
+    String url = request.getUrl().toString();
 
-        assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.POST);
-        assertThat(url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id)).isTrue();
-        assertThat(url.contains("action=gettoken")).isTrue();
-    }
+    assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.POST);
+    assertThat(
+            url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id))
+        .isTrue();
+    assertThat(url.contains("action=gettoken")).isTrue();
+  }
 
-    @Test
-    void uploadFinishedHitsCorrectUrl() throws IOException {
+  @Test
+  void uploadFinishedHitsCorrectUrl() throws IOException {
 
-        AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
+    AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 
-        HttpPipeline httpPipeline = new HttpPipelineBuilder()
-                .httpClient(request -> {
-                    requestHolder.set(request);
-                    return Mono.just(new MockHttpResponse(request, 200));
+    HttpPipeline httpPipeline =
+        new HttpPipelineBuilder()
+            .httpClient(
+                request -> {
+                  requestHolder.set(request);
+                  return Mono.just(new MockHttpResponse(request, 200));
                 })
-                .build();
+            .build();
 
-        ProfilerFrontendClientV2 profilerFrontendClientV2 =
-                new ProfilerFrontendClientV2(new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
+    ProfilerFrontendClientV2 profilerFrontendClientV2 =
+        new ProfilerFrontendClientV2(
+            new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
 
-        UUID id = UUID.randomUUID();
-        profilerFrontendClientV2.reportUploadFinish(id, "an-etag");
+    UUID id = UUID.randomUUID();
+    profilerFrontendClientV2.reportUploadFinish(id, "an-etag");
 
-        HttpRequest request = requestHolder.get();
-        String url = request.getUrl().toString();
+    HttpRequest request = requestHolder.get();
+    String url = request.getUrl().toString();
 
-        assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.POST);
-        assertThat(url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id)).isTrue();
-        assertThat(url.contains("action=commit")).isTrue();
-    }
+    assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.POST);
+    assertThat(
+            url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id))
+        .isTrue();
+    assertThat(url.contains("action=commit")).isTrue();
+  }
 }

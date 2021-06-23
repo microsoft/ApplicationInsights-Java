@@ -25,13 +25,13 @@ import java.util.ArrayList;
 
 public class TelemetryModulesXmlElement {
 
-    private ArrayList<AddTypeXmlElement> adds;
+  private ArrayList<AddTypeXmlElement> adds;
 
-    public ArrayList<AddTypeXmlElement> getAdds() {
-        return adds;
-    }
+  public ArrayList<AddTypeXmlElement> getAdds() {
+    return adds;
+  }
 
-    public void setAdds(ArrayList<AddTypeXmlElement> adds) {
-        this.adds = adds;
-    }
+  public void setAdds(ArrayList<AddTypeXmlElement> adds) {
+    this.adds = adds;
+  }
 }

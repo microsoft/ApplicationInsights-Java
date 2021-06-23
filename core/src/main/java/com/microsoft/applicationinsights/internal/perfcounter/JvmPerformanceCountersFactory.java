@@ -21,115 +21,114 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.DeadLockDetectorPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.GCPerformanceCounter;
 import com.microsoft.applicationinsights.internal.perfcounter.jvm.JvmHeapMemoryUsedPerformanceCounter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class will create dedicated Jvm performance counters, unless disabled by user in the configuration file
+ * The class will create dedicated Jvm performance counters, unless disabled by user in the
+ * configuration file
  */
 public class JvmPerformanceCountersFactory implements PerformanceCountersFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(JvmPerformanceCountersFactory.class);
+  private static final Logger logger = LoggerFactory.getLogger(JvmPerformanceCountersFactory.class);
 
-    private boolean isEnabled = true;
-    private HashSet<String> disabledJvmPCs = new HashSet<>();
+  private boolean isEnabled = true;
+  private HashSet<String> disabledJvmPCs = new HashSet<>();
 
-    @Override
-    public Collection<PerformanceCounter> getPerformanceCounters() {
-        ArrayList<PerformanceCounter> pcs = new ArrayList<>();
-        if (isEnabled) {
-            addDeadLockDetector(pcs);
-            addJvmMemoryPerformanceCounter(pcs);
-            addGCPerformanceCounter(pcs);
-        } else {
-            logger.trace("JvmPerformanceCountersFactory is disabled");
-        }
-        return pcs;
+  @Override
+  public Collection<PerformanceCounter> getPerformanceCounters() {
+    ArrayList<PerformanceCounter> pcs = new ArrayList<>();
+    if (isEnabled) {
+      addDeadLockDetector(pcs);
+      addJvmMemoryPerformanceCounter(pcs);
+      addGCPerformanceCounter(pcs);
+    } else {
+      logger.trace("JvmPerformanceCountersFactory is disabled");
     }
+    return pcs;
+  }
 
-    private void addDeadLockDetector(ArrayList<PerformanceCounter> pcs) {
-        try {
-            if (disabledJvmPCs.contains(DeadLockDetectorPerformanceCounter.NAME)) {
-                logger.trace("DeadLockDetectorPerformanceCounter is disabled");
-                return;
-            }
+  private void addDeadLockDetector(ArrayList<PerformanceCounter> pcs) {
+    try {
+      if (disabledJvmPCs.contains(DeadLockDetectorPerformanceCounter.NAME)) {
+        logger.trace("DeadLockDetectorPerformanceCounter is disabled");
+        return;
+      }
 
-            DeadLockDetectorPerformanceCounter dlpc = new DeadLockDetectorPerformanceCounter();
-            if (!dlpc.isSupported()) {
-                logger.trace("DeadLockDetectorPerformanceCounter is not supported");
-                return;
-            }
+      DeadLockDetectorPerformanceCounter dlpc = new DeadLockDetectorPerformanceCounter();
+      if (!dlpc.isSupported()) {
+        logger.trace("DeadLockDetectorPerformanceCounter is not supported");
+        return;
+      }
 
-            pcs.add(dlpc);
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                logger.error("Failed to create DeadLockDetector", t);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
+      pcs.add(dlpc);
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        logger.error("Failed to create DeadLockDetector", t);
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
     }
+  }
 
-    private void addJvmMemoryPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
-        try {
-            if (disabledJvmPCs.contains(JvmHeapMemoryUsedPerformanceCounter.NAME)) {
-                logger.trace("JvmHeapMemoryUsedPerformanceCounter is disabled");
-                return;
-            }
+  private void addJvmMemoryPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
+    try {
+      if (disabledJvmPCs.contains(JvmHeapMemoryUsedPerformanceCounter.NAME)) {
+        logger.trace("JvmHeapMemoryUsedPerformanceCounter is disabled");
+        return;
+      }
 
-            JvmHeapMemoryUsedPerformanceCounter mpc = new JvmHeapMemoryUsedPerformanceCounter();
-            pcs.add(mpc);
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                logger.error("Failed to create JvmHeapMemoryUsedPerformanceCounter", t);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
+      JvmHeapMemoryUsedPerformanceCounter mpc = new JvmHeapMemoryUsedPerformanceCounter();
+      pcs.add(mpc);
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        logger.error("Failed to create JvmHeapMemoryUsedPerformanceCounter", t);
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
     }
+  }
 
-    private void addGCPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
-        try {
-            if (disabledJvmPCs.contains(GCPerformanceCounter.NAME)) {
-                return;
-            }
+  private void addGCPerformanceCounter(ArrayList<PerformanceCounter> pcs) {
+    try {
+      if (disabledJvmPCs.contains(GCPerformanceCounter.NAME)) {
+        return;
+      }
 
-            GCPerformanceCounter mpc = new GCPerformanceCounter();
-            pcs.add(mpc);
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            try {
-                logger.error("Failed to create GCPerformanceCounter", t);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t2) {
-                // chomp
-            }
-        }
+      GCPerformanceCounter mpc = new GCPerformanceCounter();
+      pcs.add(mpc);
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      try {
+        logger.error("Failed to create GCPerformanceCounter", t);
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable t2) {
+        // chomp
+      }
     }
+  }
 
-    public void setIsEnabled(boolean isEnabled) {
-        this.isEnabled = isEnabled;
-    }
+  public void setIsEnabled(boolean isEnabled) {
+    this.isEnabled = isEnabled;
+  }
 
-    public void setDisabledJvmPCs(HashSet<String> disabledJvmPCs) {
-        this.disabledJvmPCs = disabledJvmPCs;
-    }
-
+  public void setDisabledJvmPCs(HashSet<String> disabledJvmPCs) {
+    this.disabledJvmPCs = disabledJvmPCs;
+  }
 }

@@ -22,9 +22,9 @@
 package com.microsoft.applicationinsights.internal.quickpulse;
 
 interface QuickPulseDataSender extends Runnable {
-    void startSending();
+  void startSending();
 
-    QuickPulseHeaderInfo getQuickPulseHeaderInfo();
+  QuickPulseHeaderInfo getQuickPulseHeaderInfo();
 
-    void stop();
+  void stop();
 }

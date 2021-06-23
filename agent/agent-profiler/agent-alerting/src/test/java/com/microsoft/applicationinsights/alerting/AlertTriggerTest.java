@@ -18,104 +18,104 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.alerting;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.analysis.AlertPipelineTrigger;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class AlertTriggerTest {
 
-    @Test
-    void underThresholdDataDoesNotTrigger() {
-        AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
-        AtomicBoolean called = new AtomicBoolean(false);
-        AlertPipelineTrigger trigger = getAlertTrigger(config, called);
-        for (int i = 0; i < 100; i++) {
-            trigger.accept(0.4);
-        }
-
-        assertThat(called.get()).isFalse();
+  @Test
+  void underThresholdDataDoesNotTrigger() {
+    AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
+    AtomicBoolean called = new AtomicBoolean(false);
+    AlertPipelineTrigger trigger = getAlertTrigger(config, called);
+    for (int i = 0; i < 100; i++) {
+      trigger.accept(0.4);
     }
 
-    @Test
-    void overThresholdDataDoesTrigger() {
+    assertThat(called.get()).isFalse();
+  }
 
-        AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
-        AtomicBoolean called = new AtomicBoolean(false);
-        AlertPipelineTrigger trigger = getAlertTrigger(config, called);
+  @Test
+  void overThresholdDataDoesTrigger() {
 
-        for (int i = 0; i < 100; i++) {
-            trigger.accept(0.51);
-        }
+    AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
+    AtomicBoolean called = new AtomicBoolean(false);
+    AlertPipelineTrigger trigger = getAlertTrigger(config, called);
 
-        assertThat(called.get()).isTrue();
+    for (int i = 0; i < 100; i++) {
+      trigger.accept(0.51);
     }
 
+    assertThat(called.get()).isTrue();
+  }
 
-    @Test
-    void doesNotReTriggerDueToCooldown() {
-        AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
-        AtomicBoolean called = new AtomicBoolean(false);
-        AlertPipelineTrigger trigger = getAlertTrigger(config, called);
+  @Test
+  void doesNotReTriggerDueToCooldown() {
+    AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
+    AtomicBoolean called = new AtomicBoolean(false);
+    AlertPipelineTrigger trigger = getAlertTrigger(config, called);
 
-        for (int i = 0; i < 100; i++) {
-            trigger.accept(0.51);
-        }
-        assertThat(called.get()).isTrue();
-        called.set(false);
+    for (int i = 0; i < 100; i++) {
+      trigger.accept(0.51);
+    }
+    assertThat(called.get()).isTrue();
+    called.set(false);
 
-        for (int i = 0; i < 100; i++) {
-            trigger.accept(0.1);
-        }
-
-        for (int i = 0; i < 100; i++) {
-            trigger.accept(0.51);
-        }
-
-        assertThat(called.get()).isFalse();
+    for (int i = 0; i < 100; i++) {
+      trigger.accept(0.1);
     }
 
-
-    @Test
-    void doesNotReTriggerAfterCooldown() throws InterruptedException {
-        AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
-        AtomicBoolean called = new AtomicBoolean(false);
-        AlertPipelineTrigger trigger = getAlertTrigger(config, called);
-
-        for (int i = 0; i < 100; i++) {
-            trigger.accept(0.51);
-        }
-        assertThat(called.get()).isTrue();
-        called.set(false);
-
-        Thread.sleep(2000);
-
-        for (int i = 0; i < 100; i++) {
-            trigger.accept(0.1);
-        }
-
-        for (int i = 0; i < 100; i++) {
-            trigger.accept(0.51);
-        }
-
-        assertThat(called.get()).isTrue();
+    for (int i = 0; i < 100; i++) {
+      trigger.accept(0.51);
     }
 
-    private static AlertPipelineTrigger getAlertTrigger(AlertConfiguration config, AtomicBoolean called) {
-        Consumer<AlertBreach> consumer = alert -> {
-            assertThat(alert.getType()).isEqualTo(AlertMetricType.CPU);
-            assertThat(alert.getAlertConfiguration()).isEqualTo(config);
-            called.set(true);
+    assertThat(called.get()).isFalse();
+  }
+
+  @Test
+  void doesNotReTriggerAfterCooldown() throws InterruptedException {
+    AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
+    AtomicBoolean called = new AtomicBoolean(false);
+    AlertPipelineTrigger trigger = getAlertTrigger(config, called);
+
+    for (int i = 0; i < 100; i++) {
+      trigger.accept(0.51);
+    }
+    assertThat(called.get()).isTrue();
+    called.set(false);
+
+    Thread.sleep(2000);
+
+    for (int i = 0; i < 100; i++) {
+      trigger.accept(0.1);
+    }
+
+    for (int i = 0; i < 100; i++) {
+      trigger.accept(0.51);
+    }
+
+    assertThat(called.get()).isTrue();
+  }
+
+  private static AlertPipelineTrigger getAlertTrigger(
+      AlertConfiguration config, AtomicBoolean called) {
+    Consumer<AlertBreach> consumer =
+        alert -> {
+          assertThat(alert.getType()).isEqualTo(AlertMetricType.CPU);
+          assertThat(alert.getAlertConfiguration()).isEqualTo(config);
+          called.set(true);
         };
 
-        return new AlertPipelineTrigger(config, consumer);
-    }
+    return new AlertPipelineTrigger(config, consumer);
+  }
 }

@@ -18,66 +18,65 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.alerting.analysis;
 
+import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
-import com.microsoft.applicationinsights.alerting.alert.AlertMetricType;
-
-/**
- * Individual sample of telemetry data
- */
+/** Individual sample of telemetry data */
 public class TelemetryDataPoint implements Comparable<TelemetryDataPoint> {
-    private final AlertMetricType type;
-    private final ZonedDateTime time;
-    private final double value;
+  private final AlertMetricType type;
+  private final ZonedDateTime time;
+  private final double value;
 
-    public TelemetryDataPoint(AlertMetricType type, ZonedDateTime time, double value) {
-        this.type = type;
-        this.time = time;
-        this.value = value;
-    }
+  public TelemetryDataPoint(AlertMetricType type, ZonedDateTime time, double value) {
+    this.type = type;
+    this.time = time;
+    this.value = value;
+  }
 
-    public double getValue() {
-        return value;
-    }
+  public double getValue() {
+    return value;
+  }
 
-    public ZonedDateTime getTime() {
-        return time;
-    }
+  public ZonedDateTime getTime() {
+    return time;
+  }
 
-    /**
-     * Sort first by timestamp, then value, then type
-     */
-    @Override
-    public int compareTo(TelemetryDataPoint telemetryDataPoint) {
-        if (!time.equals(telemetryDataPoint.time)) {
-            return time.compareTo(telemetryDataPoint.time);
-        } else if (value != telemetryDataPoint.getValue()) {
-            return Double.compare(value, telemetryDataPoint.value);
-        } else {
-            return type.compareTo(telemetryDataPoint.type);
-        }
+  /** Sort first by timestamp, then value, then type */
+  @Override
+  public int compareTo(TelemetryDataPoint telemetryDataPoint) {
+    if (!time.equals(telemetryDataPoint.time)) {
+      return time.compareTo(telemetryDataPoint.time);
+    } else if (value != telemetryDataPoint.getValue()) {
+      return Double.compare(value, telemetryDataPoint.value);
+    } else {
+      return type.compareTo(telemetryDataPoint.type);
     }
+  }
 
-    public AlertMetricType getType() {
-        return type;
-    }
+  public AlertMetricType getType() {
+    return type;
+  }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (!(obj instanceof TelemetryDataPoint)) {
-            return false;
-        }
-        TelemetryDataPoint telemetryDataPoint = (TelemetryDataPoint) obj;
-        return Double.compare(telemetryDataPoint.value, value) == 0 && type == telemetryDataPoint.type && Objects.equals(time, telemetryDataPoint.time);
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
     }
+    if (!(obj instanceof TelemetryDataPoint)) {
+      return false;
+    }
+    TelemetryDataPoint telemetryDataPoint = (TelemetryDataPoint) obj;
+    return Double.compare(telemetryDataPoint.value, value) == 0
+        && type == telemetryDataPoint.type
+        && Objects.equals(time, telemetryDataPoint.time);
+  }
 
-    @Override public int hashCode() {
-        return Objects.hash(type, time, value);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(type, time, value);
+  }
 }

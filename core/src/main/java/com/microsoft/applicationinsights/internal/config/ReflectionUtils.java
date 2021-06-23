@@ -21,160 +21,162 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
+import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
+import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.internal.heartbeat.HeartBeatModule;
-import com.microsoft.applicationinsights.internal.perfcounter.JvmPerformanceCountersModule;
-import com.microsoft.applicationinsights.internal.util.LocalStringsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Utililty methods for dealing with reflection
- */
+/** Utililty methods for dealing with reflection */
 public final class ReflectionUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);
+  private static final Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);
 
-    private static final Map<String, Class<?>> builtInMap = new HashMap<>();
+  private static final Map<String, Class<?>> builtInMap = new HashMap<>();
 
-    static {
-        addClass(HeartBeatModule.class);
-        addClass(JvmPerformanceCountersModule.class);
-    }
+  static {
+    addClass(HeartBeatModule.class);
+    addClass(JvmPerformanceCountersModule.class);
+  }
 
-    static void addClass(Class<?> clazz) {
-        builtInMap.put(clazz.getCanonicalName(), clazz);
-    }
+  static void addClass(Class<?> clazz) {
+    builtInMap.put(clazz.getCanonicalName(), clazz);
+  }
 
-    /**
-     * Creates an instance from its name. We suppress Java compiler warnings for Generic casting
-     *
-     * Note that currently we 'swallow' all exceptions and simply return null if we fail
-     *
-     * @param className The class we create an instance of
-     * @param interfaceClass The class' parent interface we wish to work with
-     * @param <T> The class type to create
-     * @return The instance or null if failed
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T createInstance(String className, Class<T> interfaceClass) {
-        try {
-            if (LocalStringsUtils.isNullOrEmpty(className)) {
-                logger.error("Failed to create empty class name");
-                return null;
-            }
-
-            Class<?> clazz = builtInMap.get(className);
-            if (clazz == null) {
-                clazz = Class.forName(className).asSubclass(interfaceClass);
-            }
-            return (T) clazz.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            logger.error("Failed to create {}", className, e);
-        }
-
+  /**
+   * Creates an instance from its name. We suppress Java compiler warnings for Generic casting
+   *
+   * <p>Note that currently we 'swallow' all exceptions and simply return null if we fail
+   *
+   * @param className The class we create an instance of
+   * @param interfaceClass The class' parent interface we wish to work with
+   * @param <T> The class type to create
+   * @return The instance or null if failed
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> T createInstance(String className, Class<T> interfaceClass) {
+    try {
+      if (LocalStringsUtils.isNullOrEmpty(className)) {
+        logger.error("Failed to create empty class name");
         return null;
+      }
+
+      Class<?> clazz = builtInMap.get(className);
+      if (clazz == null) {
+        clazz = Class.forName(className).asSubclass(interfaceClass);
+      }
+      return (T) clazz.getDeclaredConstructor().newInstance();
+    } catch (Exception e) {
+      logger.error("Failed to create {}", className, e);
     }
 
-    /**
-     * Creates an instance from its name. We suppress Java compiler warnings for Generic casting
-     * The class is created by using a constructor that has one parameter which is sent to the method
-     *
-     * Note that currently we 'swallow' all exceptions and simply return null if we fail
-     *
-     * @param className The class we create an instance of
-     * @param interfaceClass The class' parent interface we wish to work with
-     * @param argumentClass Type of class to use as argument for Ctor
-     * @param argument The argument to pass the Ctor
-     * @param <T> The class type to create
-     * @param <A> The class type as the Ctor argument
-     * @return The instance or null if failed
-     */
-    @SuppressWarnings("unchecked")
-    public static  <T, A> T createInstance(String className, Class<T> interfaceClass, Class<A> argumentClass, A argument) {
-        try {
-            if (LocalStringsUtils.isNullOrEmpty(className)) {
-                logger.error("Failed to create empty class name");
-                return null;
-            }
+    return null;
+  }
 
-            Class<?> clazz = builtInMap.get(className);
-            if (clazz == null) {
-                clazz = Class.forName(className).asSubclass(interfaceClass);
-            } else {
-                clazz = clazz.asSubclass(interfaceClass);
-            }
-            Constructor<?> clazzConstructor = clazz.getConstructor(argumentClass);
-            return (T) clazzConstructor.newInstance(argument);
-        } catch (Exception e) {
-            logger.error("Failed to create {}", className, e);
-        }
-
+  /**
+   * Creates an instance from its name. We suppress Java compiler warnings for Generic casting The
+   * class is created by using a constructor that has one parameter which is sent to the method
+   *
+   * <p>Note that currently we 'swallow' all exceptions and simply return null if we fail
+   *
+   * @param className The class we create an instance of
+   * @param interfaceClass The class' parent interface we wish to work with
+   * @param argumentClass Type of class to use as argument for Ctor
+   * @param argument The argument to pass the Ctor
+   * @param <T> The class type to create
+   * @param <A> The class type as the Ctor argument
+   * @return The instance or null if failed
+   */
+  @SuppressWarnings("unchecked")
+  public static <T, A> T createInstance(
+      String className, Class<T> interfaceClass, Class<A> argumentClass, A argument) {
+    try {
+      if (LocalStringsUtils.isNullOrEmpty(className)) {
+        logger.error("Failed to create empty class name");
         return null;
+      }
+
+      Class<?> clazz = builtInMap.get(className);
+      if (clazz == null) {
+        clazz = Class.forName(className).asSubclass(interfaceClass);
+      } else {
+        clazz = clazz.asSubclass(interfaceClass);
+      }
+      Constructor<?> clazzConstructor = clazz.getConstructor(argumentClass);
+      return (T) clazzConstructor.newInstance(argument);
+    } catch (Exception e) {
+      logger.error("Failed to create {}", className, e);
     }
 
-    static <T> T createConfiguredInstance(String className, Class<T> interfaceClass, TelemetryClient telemetryClient, Map<String, String> componentConfig) {
-        try {
-            if (LocalStringsUtils.isNullOrEmpty(className)) {
-                return null;
-            }
-            Class<?> clazz = builtInMap.get(className);
-            if (clazz == null) {
-                clazz = Class.forName(className).asSubclass(interfaceClass);
-            } else {
-                clazz = clazz.asSubclass(interfaceClass);
-            }
-            Constructor<?> clazzConstructor = clazz.getConstructor(TelemetryClient.class, Map.class);
-            return (T) clazzConstructor.newInstance(telemetryClient, componentConfig);
-        } catch (Exception e) {
-            logger.error("Failed to instantiate {}", className, e);
-        }
+    return null;
+  }
+
+  static <T> T createConfiguredInstance(
+      String className,
+      Class<T> interfaceClass,
+      TelemetryClient telemetryClient,
+      Map<String, String> componentConfig) {
+    try {
+      if (LocalStringsUtils.isNullOrEmpty(className)) {
         return null;
+      }
+      Class<?> clazz = builtInMap.get(className);
+      if (clazz == null) {
+        clazz = Class.forName(className).asSubclass(interfaceClass);
+      } else {
+        clazz = clazz.asSubclass(interfaceClass);
+      }
+      Constructor<?> clazzConstructor = clazz.getConstructor(TelemetryClient.class, Map.class);
+      return (T) clazzConstructor.newInstance(telemetryClient, componentConfig);
+    } catch (Exception e) {
+      logger.error("Failed to instantiate {}", className, e);
+    }
+    return null;
+  }
+
+  /**
+   * Generic method that creates instances based on their names and adds them to a Collection
+   *
+   * <p>Note that the class does its 'best effort' to create an instance and will not fail the
+   * method if an instance (or more) was failed to create. This is naturally, a policy we can easily
+   * replace
+   *
+   * @param clazz The class all instances should have
+   * @param list The container of instances, this is where we store our instances that we create
+   * @param classNames Classes to create.
+   * @param <T> The class type to create
+   */
+  public static <T> void loadComponents(
+      Class<T> clazz, List<T> list, Collection<AddTypeXmlElement> classNames) {
+    if (classNames == null) {
+      return;
     }
 
-    /**
-     * Generic method that creates instances based on their names and adds them to a Collection
-     *
-     * Note that the class does its 'best effort' to create an instance and will not fail the method
-     * if an instance (or more) was failed to create. This is naturally, a policy we can easily replace
-     *
-     * @param clazz The class all instances should have
-     * @param list The container of instances, this is where we store our instances that we create
-     * @param classNames Classes to create.
-     * @param <T> The class type to create
-     */
-    public static <T> void loadComponents(
-            Class<T> clazz,
-            List<T> list,
-            Collection<AddTypeXmlElement> classNames) {
-        if (classNames == null) {
-            return;
-        }
+    for (AddTypeXmlElement className : classNames) {
+      T initializer = null;
 
-        for (AddTypeXmlElement className : classNames) {
-            T initializer = null;
+      // If parameters have been provided, we try to load the component with provided parameters
+      // map. Otherwise,
+      // we fallback to initialize the component with the default ctor.
+      if (className.getParameters().size() != 0) {
+        initializer = createInstance(className.getType(), clazz, Map.class, className.getData());
+      }
 
-            // If parameters have been provided, we try to load the component with provided parameters map. Otherwise,
-            // we fallback to initialize the component with the default ctor.
-            if (className.getParameters().size() != 0) {
-                initializer = createInstance(className.getType(), clazz, Map.class, className.getData());
-            }
+      if (initializer == null) {
+        initializer = createInstance(className.getType(), clazz);
+      }
 
-            if (initializer == null) {
-                initializer = createInstance(className.getType(), clazz);
-            }
-
-            if (initializer != null) {
-                list.add(initializer);
-            }
-        }
+      if (initializer != null) {
+        list.add(initializer);
+      }
     }
+  }
 
-    private ReflectionUtils() {}
+  private ReflectionUtils() {}
 }

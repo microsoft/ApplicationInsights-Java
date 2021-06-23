@@ -18,15 +18,8 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.serviceprofilerapi;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Supplier;
-import javax.management.InstanceNotFoundException;
+package com.microsoft.applicationinsights.serviceprofilerapi;
 
 import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profiler.ProfileHandler;
@@ -38,133 +31,142 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfil
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrUploadService;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Supplier;
+import javax.management.InstanceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * JFR Service Profiler main entry point, wires up:
- * - Configuration polling
- *  - Notifying upstream consumers (such as the alerting subsystem) of configuration updates
- * - JFR Profiling service
- * - JFR Uploader service
+ * JFR Service Profiler main entry point, wires up: - Configuration polling - Notifying upstream
+ * consumers (such as the alerting subsystem) of configuration updates - JFR Profiling service - JFR
+ * Uploader service
  */
 public class JfrProfilerService implements ProfilerService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JfrProfilerService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(JfrProfilerService.class);
 
-    private static final String APP_ID_PREFIX = "cid-v1:";
+  private static final String APP_ID_PREFIX = "cid-v1:";
 
-    private final ServiceProfilerServiceConfig config;
-    private final ServiceProfilerClientV2 serviceProfilerClient;
-    private final ServiceProfilerUploader serviceProfilerUploader;
+  private final ServiceProfilerServiceConfig config;
+  private final ServiceProfilerClientV2 serviceProfilerClient;
+  private final ServiceProfilerUploader serviceProfilerUploader;
 
-    private final Supplier<String> appIdSupplier;
+  private final Supplier<String> appIdSupplier;
 
-    @SuppressWarnings("unused")
-    private final Profiler profiler;
-    private final UploadCompleteHandler uploadCompleteObserver;
-    private final ScheduledExecutorService serviceProfilerExecutorService;
-    private final ProfilerConfigurationHandler profilerConfigurationHandler;
+  @SuppressWarnings("unused")
+  private final Profiler profiler;
 
-    private boolean initialised = false;
+  private final UploadCompleteHandler uploadCompleteObserver;
+  private final ScheduledExecutorService serviceProfilerExecutorService;
+  private final ProfilerConfigurationHandler profilerConfigurationHandler;
 
-    private ProfileHandler profileHandler;
+  private boolean initialised = false;
 
-    public JfrProfilerService(Supplier<String> appIdSupplier,
-                              ServiceProfilerServiceConfig config,
-                              Profiler profiler,
-                              ProfilerConfigurationHandler profilerConfigurationHandler,
-                              UploadCompleteHandler uploadCompleteObserver,
-                              ServiceProfilerClientV2 serviceProfilerClient,
-                              ServiceProfilerUploader serviceProfilerUploader,
-                              ScheduledExecutorService serviceProfilerExecutorService
-    ) {
-        this.appIdSupplier = getAppId(appIdSupplier);
-        this.config = config;
-        this.profiler = profiler;
-        this.serviceProfilerClient = serviceProfilerClient;
-        this.serviceProfilerUploader = serviceProfilerUploader;
-        this.serviceProfilerExecutorService = serviceProfilerExecutorService;
-        this.uploadCompleteObserver = uploadCompleteObserver;
-        this.profilerConfigurationHandler = profilerConfigurationHandler;
+  private ProfileHandler profileHandler;
+
+  public JfrProfilerService(
+      Supplier<String> appIdSupplier,
+      ServiceProfilerServiceConfig config,
+      Profiler profiler,
+      ProfilerConfigurationHandler profilerConfigurationHandler,
+      UploadCompleteHandler uploadCompleteObserver,
+      ServiceProfilerClientV2 serviceProfilerClient,
+      ServiceProfilerUploader serviceProfilerUploader,
+      ScheduledExecutorService serviceProfilerExecutorService) {
+    this.appIdSupplier = getAppId(appIdSupplier);
+    this.config = config;
+    this.profiler = profiler;
+    this.serviceProfilerClient = serviceProfilerClient;
+    this.serviceProfilerUploader = serviceProfilerUploader;
+    this.serviceProfilerExecutorService = serviceProfilerExecutorService;
+    this.uploadCompleteObserver = uploadCompleteObserver;
+    this.profilerConfigurationHandler = profilerConfigurationHandler;
+  }
+
+  public Future<ProfilerService> initialize() {
+    CompletableFuture<ProfilerService> result = new CompletableFuture<>();
+    if (!config.enabled()) {
+      result.completeExceptionally(new IllegalStateException("Profiler disabled"));
+      return result;
+    }
+    if (initialised || !config.enabled()) {
+      result.complete(this);
+      return result;
     }
 
-    public Future<ProfilerService> initialize() {
-        CompletableFuture<ProfilerService> result = new CompletableFuture<>();
-        if (!config.enabled()) {
-            result.completeExceptionally(new IllegalStateException("Profiler disabled"));
-            return result;
-        }
-        if (initialised || !config.enabled()) {
+    LOGGER.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
+
+    initialised = true;
+
+    profileHandler =
+        new JfrUploadService(serviceProfilerUploader, appIdSupplier, uploadCompleteObserver);
+
+    serviceProfilerExecutorService.submit(
+        () -> {
+          try {
+            if (!initialiseProfiler()) {
+              result.completeExceptionally(
+                  new RuntimeException(
+                      "Unable to obtain JFR connection, this may indicate that your JVM does not have JFR enabled. JFR profiling system will shutdown"));
+              return;
+            }
+
+            // Monitor service remains alive permanently due to scheduling an periodic config pull
+            ServiceProfilerConfigMonitorService.createServiceProfilerConfigService(
+                serviceProfilerExecutorService,
+                serviceProfilerClient,
+                Arrays.asList(profilerConfigurationHandler, profiler),
+                config);
+
             result.complete(this);
-            return result;
-        }
-
-        LOGGER.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
-
-        initialised = true;
-
-        profileHandler = new JfrUploadService(serviceProfilerUploader, appIdSupplier, uploadCompleteObserver);
-
-        serviceProfilerExecutorService.submit(() -> {
-            try {
-                if (!initialiseProfiler()) {
-                    result.completeExceptionally(
-                            new RuntimeException("Unable to obtain JFR connection, this may indicate that your JVM does not have JFR enabled. JFR profiling system will shutdown"));
-                    return;
-                }
-
-                // Monitor service remains alive permanently due to scheduling an periodic config pull
-                ServiceProfilerConfigMonitorService
-                        .createServiceProfilerConfigService(
-                                serviceProfilerExecutorService,
-                                serviceProfilerClient,
-                                Arrays.asList(profilerConfigurationHandler, profiler),
-                                config);
-
-                result.complete(this);
-            } catch (RuntimeException e) {
-                LOGGER.error("Failed to initialise alert service", e);
-            } catch (Error e) {
-                LOGGER.error("Failed to initialise alert service", e);
-                throw e;
-            }
+          } catch (RuntimeException e) {
+            LOGGER.error("Failed to initialise alert service", e);
+          } catch (Error e) {
+            LOGGER.error("Failed to initialise alert service", e);
+            throw e;
+          }
         });
-        return result;
+    return result;
+  }
+
+  private boolean initialiseProfiler() {
+    boolean initSucceded = false;
+    try {
+      // Daemon remains alive permanently due to scheduling an update
+      initSucceded = profiler.initialize(profileHandler, serviceProfilerExecutorService);
+    } catch (IOException | InstanceNotFoundException e) {
+      LOGGER.error("Could not initialize JFRDaemon", e);
     }
 
-    private boolean initialiseProfiler() {
-        boolean initSucceded = false;
-        try {
-            // Daemon remains alive permanently due to scheduling an update
-            initSucceded = profiler.initialize(profileHandler, serviceProfilerExecutorService);
-        } catch (IOException | InstanceNotFoundException e) {
-            LOGGER.error("Could not initialize JFRDaemon", e);
-        }
-
-        if (!initSucceded) {
-            LOGGER.error("Unable to obtain JFR connection, this may indicate that your JVM does not have JFR enabled. JFR profiling system will shutdown");
-        }
-        return initSucceded;
+    if (!initSucceded) {
+      LOGGER.error(
+          "Unable to obtain JFR connection, this may indicate that your JVM does not have JFR enabled. JFR profiling system will shutdown");
     }
+    return initSucceded;
+  }
 
-    private static Supplier<String> getAppId(Supplier<String> supplier) {
-        return () -> {
-            String appId = supplier.get();
+  private static Supplier<String> getAppId(Supplier<String> supplier) {
+    return () -> {
+      String appId = supplier.get();
 
-            if (appId == null || appId.isEmpty()) {
-                return null;
-            }
+      if (appId == null || appId.isEmpty()) {
+        return null;
+      }
 
-            if (appId.startsWith(APP_ID_PREFIX)) {
-                appId = appId.substring(APP_ID_PREFIX.length());
-            }
-            return appId;
-        };
-    }
+      if (appId.startsWith(APP_ID_PREFIX)) {
+        appId = appId.substring(APP_ID_PREFIX.length());
+      }
+      return appId;
+    };
+  }
 
-    @Override
-    public Profiler getProfiler() {
-        return profiler;
-    }
+  @Override
+  public Profiler getProfiler() {
+    return profiler;
+  }
 }

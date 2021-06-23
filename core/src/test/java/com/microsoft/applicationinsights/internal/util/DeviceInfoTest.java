@@ -21,44 +21,43 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Locale;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class DeviceInfoTest {
 
-    @Test
-    void testSimpleLocale() {
-        Locale.setDefault(new Locale.Builder().setLanguage("en").setRegion("us").build());
-        String tag = DeviceInfo.getLocale();
+  @Test
+  void testSimpleLocale() {
+    Locale.setDefault(new Locale.Builder().setLanguage("en").setRegion("us").build());
+    String tag = DeviceInfo.getLocale();
 
-        assertThat(tag).isEqualTo("en-US");
+    assertThat(tag).isEqualTo("en-US");
+  }
+
+  @Test
+  void testSpecialLocale() {
+    Locale.setDefault(new Locale.Builder().setLanguage("iw").setRegion("il").build());
+    String tag = DeviceInfo.getLocale();
+
+    assertThat(tag).isEqualTo("he-IL");
+  }
+
+  @Test
+  void testBadLocale() {
+    Locale.setDefault(Locale.forLanguageTag("BadLocale"));
+    String tag = DeviceInfo.getLocale();
+
+    assertThat(tag).isEqualTo(isJava6() ? "badlocale" : "und");
+  }
+
+  private static boolean isJava6() {
+    try {
+      Locale.class.getMethod("toLanguageTag");
+    } catch (NoSuchMethodException e) {
+      return true;
     }
-
-    @Test
-    void testSpecialLocale() {
-        Locale.setDefault(new Locale.Builder().setLanguage("iw").setRegion("il").build());
-        String tag = DeviceInfo.getLocale();
-
-        assertThat(tag).isEqualTo("he-IL");
-    }
-
-    @Test
-    void testBadLocale() {
-        Locale.setDefault(Locale.forLanguageTag("BadLocale"));
-        String tag = DeviceInfo.getLocale();
-
-        assertThat(tag).isEqualTo(isJava6() ? "badlocale" : "und");
-    }
-
-    private static boolean isJava6() {
-        try {
-            Locale.class.getMethod("toLanguageTag");
-        } catch (NoSuchMethodException e) {
-            return true;
-        }
-        return false;
-    }
+    return false;
+  }
 }

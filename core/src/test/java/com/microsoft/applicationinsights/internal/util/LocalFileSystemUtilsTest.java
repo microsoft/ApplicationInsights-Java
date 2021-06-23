@@ -21,75 +21,73 @@
 
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.jupiter.api.Test;
-
-import java.io.File;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import org.junit.jupiter.api.Test;
+
 class LocalFileSystemUtilsTest {
-    /*
-     * NOTE: it doesn't matter that Windows paths are converted to *nix paths and vice-versa.
-     */
+  /*
+   * NOTE: it doesn't matter that Windows paths are converted to *nix paths and vice-versa.
+   */
 
-    @Test
-    void getTempDir_WindowsForUserWithSystemUserUnknown() {
-        final String input = "C:\\Users\\olivida\\AppData\\Local\\Temp";
+  @Test
+  void getTempDir_WindowsForUserWithSystemUserUnknown() {
+    final String input = "C:\\Users\\olivida\\AppData\\Local\\Temp";
 
-        File actual = LocalFileSystemUtils.getTempDir(input, "unknown");
+    File actual = LocalFileSystemUtils.getTempDir(input, "unknown");
 
-        File expected = new File(input);
-        assertThat(actual).isEqualTo(expected);
-    }
+    File expected = new File(input);
+    assertThat(actual).isEqualTo(expected);
+  }
 
-    @Test
-    void getTempDir_WindowsForUserWithSystemUserDefined() {
-        final String input = "C:\\Users\\olivida\\AppData\\Local\\Temp";
+  @Test
+  void getTempDir_WindowsForUserWithSystemUserDefined() {
+    final String input = "C:\\Users\\olivida\\AppData\\Local\\Temp";
 
-        File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
+    File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
-        File expected = new File(input);
-        assertThat(actual).isEqualTo(expected);
-    }
+    File expected = new File(input);
+    assertThat(actual).isEqualTo(expected);
+  }
 
-    @Test
-    void getTempDir_WindowsForUser() {
-        final String input = "C:\\Users\\olivida\\AppData\\Local\\Temp";
+  @Test
+  void getTempDir_WindowsForUser() {
+    final String input = "C:\\Users\\olivida\\AppData\\Local\\Temp";
 
-        File actual = LocalFileSystemUtils.getTempDir(input, null);
+    File actual = LocalFileSystemUtils.getTempDir(input, null);
 
-        File expected = new File(input);
-        assertThat(actual).isEqualTo(expected);
-    }
+    File expected = new File(input);
+    assertThat(actual).isEqualTo(expected);
+  }
 
-    @Test
-    void getTempDir_Linux() {
-        final String input = "/tmp";
+  @Test
+  void getTempDir_Linux() {
+    final String input = "/tmp";
 
-        File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
+    File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
-        File expected = new File(input, "olivida").getAbsoluteFile();
-        assertThat(actual).isEqualTo(expected);
-    }
+    File expected = new File(input, "olivida").getAbsoluteFile();
+    assertThat(actual).isEqualTo(expected);
+  }
 
-    @Test
-    void getTempDir_PerUser() {
-        final String input = "/tmp/olivida";
+  @Test
+  void getTempDir_PerUser() {
+    final String input = "/tmp/olivida";
 
-        File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
+    File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
-        File expected = new File(input);
-        assertThat(actual).isEqualTo(expected);
-    }
+    File expected = new File(input);
+    assertThat(actual).isEqualTo(expected);
+  }
 
-    @Test
-    void getTempDir_InsideUserHome() {
-        final String input = "/home/olivida/tmp";
+  @Test
+  void getTempDir_InsideUserHome() {
+    final String input = "/home/olivida/tmp";
 
-        File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
+    File actual = LocalFileSystemUtils.getTempDir(input, "olivida");
 
-        File expected = new File(input);
-        assertThat(actual).isEqualTo(expected);
-    }
+    File expected = new File(input);
+    assertThat(actual).isEqualTo(expected);
+  }
 }
-

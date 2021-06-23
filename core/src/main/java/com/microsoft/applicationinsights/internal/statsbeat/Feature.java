@@ -27,49 +27,56 @@ import java.util.Map;
 import java.util.Set;
 
 enum Feature {
+  JAVA_VENDOR_ORACLE(0),
+  JAVA_VENDOR_ZULU(1),
+  JAVA_VENDOR_MICROSOFT(2),
+  JAVA_VENDOR_ADOPT_OPENJDK(3),
+  JAVA_VENDOR_REDHAT(4),
+  JAVA_VENDOR_OTHER(5),
+  AAD(6);
 
-    JAVA_VENDOR_ORACLE(0),
-    JAVA_VENDOR_ZULU(1),
-    JAVA_VENDOR_MICROSOFT(2),
-    JAVA_VENDOR_ADOPT_OPENJDK(3),
-    JAVA_VENDOR_REDHAT(4),
-    JAVA_VENDOR_OTHER(5),
-    AAD(6);
+  private static final Map<String, Feature> features;
 
-    private static final Map<String, Feature> features;
+  static {
+    features = new HashMap<>();
+    features.put(
+        "Oracle Corporation",
+        Feature
+            .JAVA_VENDOR_ORACLE); // https://www.oracle.com/technetwork/java/javase/downloads/index.html
+    features.put(
+        "Azul Systems, Inc.",
+        Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
+    features.put(
+        "Microsoft", Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
+    features.put("AdoptOpenJDK", Feature.JAVA_VENDOR_ADOPT_OPENJDK); // https://adoptopenjdk.net/
+    features.put(
+        "Red Hat, Inc.",
+        Feature.JAVA_VENDOR_REDHAT); // https://developers.redhat.com/products/openjdk/download/
+    features.put("AAD_ENABLE", Feature.AAD);
+  }
 
-    static {
-        features = new HashMap<>();
-        features.put("Oracle Corporation", Feature.JAVA_VENDOR_ORACLE); // https://www.oracle.com/technetwork/java/javase/downloads/index.html
-        features.put("Azul Systems, Inc.", Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
-        features.put("Microsoft", Feature.JAVA_VENDOR_MICROSOFT); // https://www.azul.com/downloads/zulu/
-        features.put("AdoptOpenJDK", Feature.JAVA_VENDOR_ADOPT_OPENJDK); // https://adoptopenjdk.net/
-        features.put("Red Hat, Inc.", Feature.JAVA_VENDOR_REDHAT); // https://developers.redhat.com/products/openjdk/download/
-        features.put("AAD_ENABLE", Feature.AAD);
+  private final int bitmapIndex;
+
+  Feature(int bitmapIndex) {
+    this.bitmapIndex = bitmapIndex;
+  }
+
+  static Feature fromJavaVendor(String javaVendor) {
+    Feature feature = features.get(javaVendor);
+    return feature != null ? feature : Feature.JAVA_VENDOR_OTHER;
+  }
+
+  static long encode(Set<Feature> features) {
+    BitSet bitSet = new BitSet(64);
+    for (Feature feature : features) {
+      bitSet.set(feature.bitmapIndex);
     }
 
-    private final int bitmapIndex;
-
-    Feature(int bitmapIndex) {
-        this.bitmapIndex = bitmapIndex;
+    long[] longArray = bitSet.toLongArray();
+    if (longArray.length > 0) {
+      return longArray[0];
     }
 
-    static Feature fromJavaVendor(String javaVendor) {
-        Feature feature = features.get(javaVendor);
-        return feature != null ? feature : Feature.JAVA_VENDOR_OTHER;
-    }
-
-    static long encode(Set<Feature> features) {
-        BitSet bitSet = new BitSet(64);
-        for (Feature feature : features) {
-            bitSet.set(feature.bitmapIndex);
-        }
-
-        long[] longArray = bitSet.toLongArray();
-        if (longArray.length > 0) {
-            return longArray[0];
-        }
-
-        return 0L;
-    }
+    return 0L;
+  }
 }

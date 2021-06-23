@@ -23,86 +23,85 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-
 import java.util.Map;
 
 class CustomDimensions {
 
-    private volatile ResourceProvider resourceProvider;
-    private volatile OperatingSystem operatingSystem;
+  private volatile ResourceProvider resourceProvider;
+  private volatile OperatingSystem operatingSystem;
 
-    private final String attachType;
-    private final String runtimeVersion;
-    private final String language;
-    private final String sdkVersion;
+  private final String attachType;
+  private final String runtimeVersion;
+  private final String language;
+  private final String sdkVersion;
 
-    // visible for testing
-    CustomDimensions() {
-        String qualifiedSdkVersion = PropertyHelper.getQualifiedSdkVersionString();
+  // visible for testing
+  CustomDimensions() {
+    String qualifiedSdkVersion = PropertyHelper.getQualifiedSdkVersionString();
 
-        if (qualifiedSdkVersion.startsWith("awr")) {
-            resourceProvider = ResourceProvider.RP_APPSVC;
-            operatingSystem = OperatingSystem.OS_WINDOWS;
-        } else if (qualifiedSdkVersion.startsWith("alr")) {
-            resourceProvider = ResourceProvider.RP_APPSVC;
-            operatingSystem = OperatingSystem.OS_LINUX;
-        } else if (qualifiedSdkVersion.startsWith("kwr")) {
-            resourceProvider = ResourceProvider.RP_AKS;
-            operatingSystem = OperatingSystem.OS_WINDOWS;
-        } else if (qualifiedSdkVersion.startsWith("klr")) {
-            resourceProvider = ResourceProvider.RP_AKS;
-            operatingSystem = OperatingSystem.OS_LINUX;
-        } else if (qualifiedSdkVersion.startsWith("fwr")) {
-            resourceProvider = ResourceProvider.RP_FUNCTIONS;
-            operatingSystem = OperatingSystem.OS_WINDOWS;
-        } else if (qualifiedSdkVersion.startsWith("flr")) {
-            resourceProvider = ResourceProvider.RP_FUNCTIONS;
-            operatingSystem = OperatingSystem.OS_LINUX;
-        } else {
-            resourceProvider = ResourceProvider.UNKNOWN;
-            operatingSystem = initOperatingSystem();
-        }
-
-        sdkVersion = qualifiedSdkVersion.substring(qualifiedSdkVersion.lastIndexOf(':') + 1);
-        runtimeVersion = System.getProperty("java.version");
-
-        attachType = "codeless";
-        language = "java";
+    if (qualifiedSdkVersion.startsWith("awr")) {
+      resourceProvider = ResourceProvider.RP_APPSVC;
+      operatingSystem = OperatingSystem.OS_WINDOWS;
+    } else if (qualifiedSdkVersion.startsWith("alr")) {
+      resourceProvider = ResourceProvider.RP_APPSVC;
+      operatingSystem = OperatingSystem.OS_LINUX;
+    } else if (qualifiedSdkVersion.startsWith("kwr")) {
+      resourceProvider = ResourceProvider.RP_AKS;
+      operatingSystem = OperatingSystem.OS_WINDOWS;
+    } else if (qualifiedSdkVersion.startsWith("klr")) {
+      resourceProvider = ResourceProvider.RP_AKS;
+      operatingSystem = OperatingSystem.OS_LINUX;
+    } else if (qualifiedSdkVersion.startsWith("fwr")) {
+      resourceProvider = ResourceProvider.RP_FUNCTIONS;
+      operatingSystem = OperatingSystem.OS_WINDOWS;
+    } else if (qualifiedSdkVersion.startsWith("flr")) {
+      resourceProvider = ResourceProvider.RP_FUNCTIONS;
+      operatingSystem = OperatingSystem.OS_LINUX;
+    } else {
+      resourceProvider = ResourceProvider.UNKNOWN;
+      operatingSystem = initOperatingSystem();
     }
 
-    public ResourceProvider getResourceProvider() {
-        return resourceProvider;
-    }
+    sdkVersion = qualifiedSdkVersion.substring(qualifiedSdkVersion.lastIndexOf(':') + 1);
+    runtimeVersion = System.getProperty("java.version");
 
-    public OperatingSystem getOperatingSystem() {
-        return operatingSystem;
-    }
+    attachType = "codeless";
+    language = "java";
+  }
 
-    public void setResourceProvider(ResourceProvider resourceProvider) {
-        this.resourceProvider = resourceProvider;
-    }
+  public ResourceProvider getResourceProvider() {
+    return resourceProvider;
+  }
 
-    public void setOperatingSystem(OperatingSystem operatingSystem) {
-        this.operatingSystem = operatingSystem;
-    }
+  public OperatingSystem getOperatingSystem() {
+    return operatingSystem;
+  }
 
-    void populateProperties(Map<String, String> properties, String customerIkey) {
-        properties.put("rp", resourceProvider.getValue());
-        properties.put("os", operatingSystem.getValue());
-        properties.put("attach", attachType);
-        properties.put("cikey", customerIkey);
-        properties.put("runtimeVersion", runtimeVersion);
-        properties.put("language", language);
-        properties.put("version", sdkVersion);
-    }
+  public void setResourceProvider(ResourceProvider resourceProvider) {
+    this.resourceProvider = resourceProvider;
+  }
 
-    private static OperatingSystem initOperatingSystem() {
-        if (SystemInformation.INSTANCE.isWindows()) {
-            return OperatingSystem.OS_WINDOWS;
-        } else if (SystemInformation.INSTANCE.isUnix()) {
-            return OperatingSystem.OS_LINUX;
-        } else {
-            return OperatingSystem.OS_UNKNOWN;
-        }
+  public void setOperatingSystem(OperatingSystem operatingSystem) {
+    this.operatingSystem = operatingSystem;
+  }
+
+  void populateProperties(Map<String, String> properties, String customerIkey) {
+    properties.put("rp", resourceProvider.getValue());
+    properties.put("os", operatingSystem.getValue());
+    properties.put("attach", attachType);
+    properties.put("cikey", customerIkey);
+    properties.put("runtimeVersion", runtimeVersion);
+    properties.put("language", language);
+    properties.put("version", sdkVersion);
+  }
+
+  private static OperatingSystem initOperatingSystem() {
+    if (SystemInformation.INSTANCE.isWindows()) {
+      return OperatingSystem.OS_WINDOWS;
+    } else if (SystemInformation.INSTANCE.isUnix()) {
+      return OperatingSystem.OS_LINUX;
+    } else {
+      return OperatingSystem.OS_UNKNOWN;
     }
+  }
 }

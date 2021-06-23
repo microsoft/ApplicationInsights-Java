@@ -18,19 +18,18 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.profileUploader;
 
-/**
- * Represents the metadata produced as a result of having uploaded a profile
- */
+/** Represents the metadata produced as a result of having uploaded a profile */
 public class UploadResult {
-    private final ServiceProfilerIndex serviceProfilerIndex;
+  private final ServiceProfilerIndex serviceProfilerIndex;
 
-    public UploadResult(ServiceProfilerIndex serviceProfilerIndex) {
-        this.serviceProfilerIndex = serviceProfilerIndex;
-    }
+  public UploadResult(ServiceProfilerIndex serviceProfilerIndex) {
+    this.serviceProfilerIndex = serviceProfilerIndex;
+  }
 
-    public ServiceProfilerIndex getServiceProfilerIndex() {
-        return serviceProfilerIndex;
-    }
+  public ServiceProfilerIndex getServiceProfilerIndex() {
+    return serviceProfilerIndex;
+  }
 }

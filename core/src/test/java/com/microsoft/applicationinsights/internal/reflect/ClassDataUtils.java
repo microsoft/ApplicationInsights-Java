@@ -22,21 +22,21 @@
 package com.microsoft.applicationinsights.internal.reflect;
 
 public enum ClassDataUtils implements ClassDataVerifier {
-    INSTANCE;
+  INSTANCE;
 
-    private ClassDataVerifier verifier = new ClassDataVerifierImpl();
+  private ClassDataVerifier verifier = new ClassDataVerifierImpl();
 
-    public void initialize() {
-        verifier = new ClassDataVerifierImpl();
-    }
+  public void initialize() {
+    verifier = new ClassDataVerifierImpl();
+  }
 
-    @Override
-    public boolean verifyClassExists(String className) {
-        return verifier.verifyClassExists(className);
-    }
+  @Override
+  public boolean verifyClassExists(String className) {
+    return verifier.verifyClassExists(className);
+  }
 
-    @Override
-    public boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
-        return verifier.verifyMethodExists(clazz, methodName, parameterTypes);
-    }
+  @Override
+  public boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+    return verifier.verifyMethodExists(clazz, methodName, parameterTypes);
+  }
 }

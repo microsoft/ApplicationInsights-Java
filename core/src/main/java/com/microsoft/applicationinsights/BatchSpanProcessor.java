@@ -1,6 +1,22 @@
 /*
- * Copyright The OpenTelemetry Authors
- * SPDX-License-Identifier: Apache-2.0
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 
 package com.microsoft.applicationinsights;
@@ -8,8 +24,6 @@ package com.microsoft.applicationinsights;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
-import org.jctools.queues.MpscArrayQueue;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Queue;
@@ -19,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import org.jctools.queues.MpscArrayQueue;
 
 // copied from io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 public final class BatchSpanProcessor {
@@ -97,7 +112,7 @@ public final class BatchSpanProcessor {
     private final ArrayList<TelemetryItem> batch;
 
     private Worker(
-            TelemetryChannel spanExporter,
+        TelemetryChannel spanExporter,
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
@@ -180,11 +195,11 @@ public final class BatchSpanProcessor {
       flushResult.whenComplete(
           () -> {
             continueWork = false;
-                  if (!flushResult.isSuccess()) {
-                    result.fail();
-                  } else {
-                    result.succeed();
-                  }
+            if (!flushResult.isSuccess()) {
+              result.fail();
+            } else {
+              result.succeed();
+            }
           });
 
       return result;
@@ -210,8 +225,7 @@ public final class BatchSpanProcessor {
 
       try {
         // batching, retry, logging, and writing to disk on failure occur downstream
-        CompletableResultCode result =
-                spanExporter.send(Collections.unmodifiableList(batch));
+        CompletableResultCode result = spanExporter.send(Collections.unmodifiableList(batch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
       } finally {
         batch.clear();

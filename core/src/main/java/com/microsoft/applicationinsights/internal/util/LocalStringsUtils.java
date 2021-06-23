@@ -27,34 +27,35 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class LocalStringsUtils {
-    private LocalStringsUtils(){} // no instances please
+  private LocalStringsUtils() {} // no instances please
 
-    /**
-     * Determine whether a string is null or empty.
-     * @param value The string value
-     * @return True if the string is either null or empty.
-     */
-    public static boolean isNullOrEmpty(String value) {
-        return value == null || value.isEmpty();
+  /**
+   * Determine whether a string is null or empty.
+   *
+   * @param value The string value
+   * @return True if the string is either null or empty.
+   */
+  public static boolean isNullOrEmpty(String value) {
+    return value == null || value.isEmpty();
+  }
+
+  public static String generateRandomId(boolean removeDashes) {
+    String uuid = UUID.randomUUID().toString();
+
+    if (removeDashes) {
+      uuid = uuid.replace("-", "");
     }
 
-    public static String generateRandomId(boolean removeDashes) {
-        String uuid = UUID.randomUUID().toString();
+    return uuid;
+  }
 
-        if (removeDashes) {
-            uuid = uuid.replace("-", "");
-        }
+  public static String generateRandomIntegerId() {
+    // avoid using Math.abs(rand.nextLong()) because Math.abs(Long.MIN_VALUE) is negative
+    long rand = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
+    return String.valueOf(rand);
+  }
 
-        return uuid;
-    }
-
-    public static String generateRandomIntegerId() {
-        // avoid using Math.abs(rand.nextLong()) because Math.abs(Long.MIN_VALUE) is negative
-        long rand = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
-        return String.valueOf(rand);
-    }
-
-    public static DateFormat getDateFormatter() {
-        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
-    }
+  public static DateFormat getDateFormatter() {
+    return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+  }
 }

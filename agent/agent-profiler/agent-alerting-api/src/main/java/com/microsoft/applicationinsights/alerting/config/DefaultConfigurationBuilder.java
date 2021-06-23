@@ -18,29 +18,30 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.alerting.config;
 
 public class DefaultConfigurationBuilder {
-    private boolean samplingEnabled;
-    private double samplingRate;
-    private long samplingProfileDuration;
+  private boolean samplingEnabled;
+  private double samplingRate;
+  private long samplingProfileDuration;
 
-    public DefaultConfigurationBuilder setSamplingEnabled(boolean samplingEnabled) {
-        this.samplingEnabled = samplingEnabled;
-        return this;
-    }
+  public DefaultConfigurationBuilder setSamplingEnabled(boolean samplingEnabled) {
+    this.samplingEnabled = samplingEnabled;
+    return this;
+  }
 
-    public DefaultConfigurationBuilder setSamplingRate(double samplingRate) {
-        this.samplingRate = samplingRate;
-        return this;
-    }
+  public DefaultConfigurationBuilder setSamplingRate(double samplingRate) {
+    this.samplingRate = samplingRate;
+    return this;
+  }
 
-    public DefaultConfigurationBuilder setSamplingProfileDuration(long samplingProfileDuration) {
-        this.samplingProfileDuration = samplingProfileDuration;
-        return this;
-    }
+  public DefaultConfigurationBuilder setSamplingProfileDuration(long samplingProfileDuration) {
+    this.samplingProfileDuration = samplingProfileDuration;
+    return this;
+  }
 
-    public DefaultConfiguration createDefaultConfiguration() {
-        return new DefaultConfiguration(samplingEnabled, samplingRate, samplingProfileDuration);
-    }
+  public DefaultConfiguration createDefaultConfiguration() {
+    return new DefaultConfiguration(samplingEnabled, samplingRate, samplingProfileDuration);
+  }
 }

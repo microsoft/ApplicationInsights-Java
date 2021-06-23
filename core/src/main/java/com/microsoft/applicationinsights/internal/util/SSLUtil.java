@@ -1,57 +1,85 @@
-package com.microsoft.applicationinsights.internal.util;
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
-import java.io.File;
+package com.microsoft.applicationinsights.internal.util;
 
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
 import com.microsoft.applicationinsights.internal.config.connection.ConnectionString.Defaults;
+import java.io.File;
 
 public class SSLUtil {
 
-    public static FriendlyException newSSLFriendlyException(String url)  {
-        return new FriendlyException(getSSLFriendlyExceptionBanner(url),
-                getSSLFriendlyExceptionAction(url), getSSLFriendlyExceptionMessage(),
-                getSSLFriendlyExceptionNote());
-    }
+  public static FriendlyException newSSLFriendlyException(String url) {
+    return new FriendlyException(
+        getSSLFriendlyExceptionBanner(url),
+        getSSLFriendlyExceptionAction(url),
+        getSSLFriendlyExceptionMessage(),
+        getSSLFriendlyExceptionNote());
+  }
 
-    private static String getJavaCacertsPath() {
-        String JAVA_HOME = System.getProperty("java.home");
-        return new File(JAVA_HOME, "lib/security/cacerts").getPath();
-    }
+  private static String getJavaCacertsPath() {
+    String JAVA_HOME = System.getProperty("java.home");
+    return new File(JAVA_HOME, "lib/security/cacerts").getPath();
+  }
 
-    private static String getCustomJavaKeystorePath() {
-        String cacertsPath = System.getProperty("javax.net.ssl.trustStore");
-        if(cacertsPath!=null) {
-            return new File(cacertsPath).getPath();
-        }
-        return null;
+  private static String getCustomJavaKeystorePath() {
+    String cacertsPath = System.getProperty("javax.net.ssl.trustStore");
+    if (cacertsPath != null) {
+      return new File(cacertsPath).getPath();
     }
+    return null;
+  }
 
-    private static String getSSLFriendlyExceptionBanner(String url) {
-        if (url.equals(Defaults.LIVE_ENDPOINT)) {
-            return "ApplicationInsights Java Agent failed to connect to Live metric end point.";
-        }
-        return "ApplicationInsights Java Agent failed to send telemetry data.";
+  private static String getSSLFriendlyExceptionBanner(String url) {
+    if (url.equals(Defaults.LIVE_ENDPOINT)) {
+      return "ApplicationInsights Java Agent failed to connect to Live metric end point.";
     }
+    return "ApplicationInsights Java Agent failed to send telemetry data.";
+  }
 
-    private static String getSSLFriendlyExceptionMessage() {
-        return "Unable to find valid certification path to requested target.";
+  private static String getSSLFriendlyExceptionMessage() {
+    return "Unable to find valid certification path to requested target.";
+  }
+
+  private static String getSSLFriendlyExceptionAction(String url) {
+    String customJavaKeyStorePath = getCustomJavaKeystorePath();
+    if (customJavaKeyStorePath != null) {
+      return "Please import the SSL certificate from "
+          + url
+          + ", into your custom java key store located at:\n"
+          + customJavaKeyStorePath
+          + "\n"
+          + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
     }
+    return "Please import the SSL certificate from "
+        + url
+        + ", into the default java key store located at:\n"
+        + getJavaCacertsPath()
+        + "\n"
+        + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
+  }
 
-    private static String getSSLFriendlyExceptionAction(String url) {
-        String customJavaKeyStorePath = getCustomJavaKeystorePath();
-        if (customJavaKeyStorePath != null) {
-            return "Please import the SSL certificate from " + url + ", into your custom java key store located at:\n"
-                    + customJavaKeyStorePath + "\n"
-                    + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
-        }
-        return "Please import the SSL certificate from " + url + ", into the default java key store located at:\n"
-                + getJavaCacertsPath() + "\n"
-                + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
-    }
+  private static String getSSLFriendlyExceptionNote() {
+    return "This message is only logged the first time it occurs after startup.";
+  }
 
-    private static String getSSLFriendlyExceptionNote() {
-        return "This message is only logged the first time it occurs after startup.";
-    }
-
-    private SSLUtil() {}
+  private SSLUtil() {}
 }

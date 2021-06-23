@@ -22,23 +22,23 @@
 package com.microsoft.applicationinsights.internal.reflect;
 
 final class ClassDataVerifierImpl implements ClassDataVerifier {
-    @Override
-    public boolean verifyClassExists(String className) {
-        try {
-            Class.forName(className);
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
+  @Override
+  public boolean verifyClassExists(String className) {
+    try {
+      Class.forName(className);
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
     }
+  }
 
-    @Override
-    public boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
-        try {
-            clazz.getMethod(methodName, parameterTypes);
-            return true;
-        } catch (NoSuchMethodException e) {
-            return false;
-        }
+  @Override
+  public boolean verifyMethodExists(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+    try {
+      clazz.getMethod(methodName, parameterTypes);
+      return true;
+    } catch (NoSuchMethodException e) {
+      return false;
     }
+  }
 }

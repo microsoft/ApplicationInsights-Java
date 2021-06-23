@@ -26,27 +26,27 @@ import java.util.HashMap;
 
 public class PerformanceCounterJvmSectionXmlElement {
 
-    private ArrayList<JvmXmlElement> jvmXmlElements;
+  private ArrayList<JvmXmlElement> jvmXmlElements;
 
-    private boolean enabled = true;
+  private boolean enabled = true;
 
-    public void setJvmXmlElements(ArrayList<JvmXmlElement> jvmXmlElements) {
-        this.jvmXmlElements = jvmXmlElements;
+  public void setJvmXmlElements(ArrayList<JvmXmlElement> jvmXmlElements) {
+    this.jvmXmlElements = jvmXmlElements;
+  }
+
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  public HashMap<String, JvmXmlElement> getJvmXmlElementsMap() {
+    HashMap<String, JvmXmlElement> jvmPcsMap = new HashMap<>();
+    for (JvmXmlElement jvmPc : jvmXmlElements) {
+      jvmPcsMap.put(jvmPc.getName(), jvmPc);
     }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public HashMap<String, JvmXmlElement> getJvmXmlElementsMap() {
-        HashMap<String, JvmXmlElement> jvmPcsMap = new HashMap<>();
-        for (JvmXmlElement jvmPc : jvmXmlElements) {
-            jvmPcsMap.put(jvmPc.getName(), jvmPc);
-        }
-        return jvmPcsMap;
-    }
+    return jvmPcsMap;
+  }
 }

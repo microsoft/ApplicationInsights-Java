@@ -1,8 +1,33 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.internal.heartbeat;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.microsoft.applicationinsights.TelemetryClient;
-
+import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
+import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,15 +38,9 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-import com.microsoft.applicationinsights.internal.config.ApplicationInsightsXmlConfiguration;
-import com.microsoft.applicationinsights.internal.config.TelemetryClientInitializer;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class HeartbeatTests {
 
@@ -43,9 +62,12 @@ class HeartbeatTests {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.initialize(null);
 
-    assertThat(module.getExcludedHeartBeatProperties() == null ||
-    module.getExcludedHeartBeatProperties().size() == 0).isTrue();
-    assertThat(module.getHeartBeatInterval()).isEqualTo(HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL);
+    assertThat(
+            module.getExcludedHeartBeatProperties() == null
+                || module.getExcludedHeartBeatProperties().size() == 0)
+        .isTrue();
+    assertThat(module.getHeartBeatInterval())
+        .isEqualTo(HeartBeatProviderInterface.DEFAULT_HEARTBEAT_INTERVAL);
   }
 
   @Test
@@ -66,7 +88,8 @@ class HeartbeatTests {
     HeartBeatModule module = new HeartBeatModule(dummyPropertiesMap);
     module.initialize(null);
     assertThat(module.getHeartBeatInterval()).isNotEqualTo(heartBeatInterval);
-    assertThat(module.getHeartBeatInterval()).isEqualTo(HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL);
+    assertThat(module.getHeartBeatInterval())
+        .isEqualTo(HeartBeatProviderInterface.MINIMUM_HEARTBEAT_INTERVAL);
   }
 
   @Test
@@ -76,22 +99,22 @@ class HeartbeatTests {
 
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
-    HeartBeatProviderInterface hbi = (HeartBeatProviderInterface)field.get(module);
-    assertThat(hbi.addHeartBeatProperty("test01",
-        "This is value", true)).isTrue();
+    HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
+    assertThat(hbi.addHeartBeatProperty("test01", "This is value", true)).isTrue();
   }
 
   @Test
   void heartBeatIsEnabledByDefault() {
     TelemetryClient telemetryClient = new TelemetryClient();
-    TelemetryClientInitializer.INSTANCE.initialize(telemetryClient, new ApplicationInsightsXmlConfiguration());
+    TelemetryClientInitializer.INSTANCE.initialize(
+        telemetryClient, new ApplicationInsightsXmlConfiguration());
     List<TelemetryModule> modules = telemetryClient.getTelemetryModules();
     boolean hasHeartBeatModule = false;
     HeartBeatModule hbm = null;
     for (TelemetryModule m : modules) {
       if (m instanceof HeartBeatModule) {
         hasHeartBeatModule = true;
-        hbm = (HeartBeatModule)m;
+        hbm = (HeartBeatModule) m;
         break;
       }
     }
@@ -110,7 +133,6 @@ class HeartbeatTests {
     module.initialize(telemetryClient);
     assertThat(module.isHeartBeatEnabled()).isFalse();
 
-
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
     HeartBeatProviderInterface hbi = (HeartBeatProviderInterface) field.get(module);
@@ -118,10 +140,9 @@ class HeartbeatTests {
   }
 
   @Test
-  void canDisableHeartBeatPropertyProviderPriorToInitialize() throws  Exception {
+  void canDisableHeartBeatPropertyProviderPriorToInitialize() throws Exception {
     HeartBeatModule module = new HeartBeatModule(new HashMap<>());
     module.setExcludedHeartBeatPropertiesProvider(Arrays.asList("Base", "webapps"));
-
 
     Field field = module.getClass().getDeclaredField("heartBeatProviderInterface");
     field.setAccessible(true);
@@ -138,17 +159,24 @@ class HeartbeatTests {
   void defaultHeartbeatPropertyProviderSendsNoFieldWhenDisabled() throws Exception {
     HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
     ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
-    Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
-        .then((Answer<Boolean>) invocation -> {
-                  props.put(invocation.getArgument(0, String.class), invocation.getArgument(1, String.class));
+    Mockito.when(
+            mockProvider.addHeartBeatProperty(
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
+        .then(
+            (Answer<Boolean>)
+                invocation -> {
+                  props.put(
+                      invocation.getArgument(0, String.class),
+                      invocation.getArgument(1, String.class));
                   return true;
                 });
 
     List<String> disabledProviders = new ArrayList<>();
     disabledProviders.add("Default");
     disabledProviders.add("webapps");
-    Callable<Boolean> callable = HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<>(),
-        disabledProviders, mockProvider);
+    Callable<Boolean> callable =
+        HeartbeatDefaultPayload.populateDefaultPayload(
+            new ArrayList<>(), disabledProviders, mockProvider);
 
     callable.call();
     assertThat(props.size()).isEqualTo(0);
@@ -213,15 +241,22 @@ class HeartbeatTests {
   void sentHeartbeatContainsExpectedDefaultFields() throws Exception {
     HeartBeatProviderInterface mockProvider = Mockito.mock(HeartBeatProviderInterface.class);
     ConcurrentMap<String, String> props = new ConcurrentHashMap<>();
-    Mockito.when(mockProvider.addHeartBeatProperty(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
-        .then((Answer<Boolean>) invocation -> {
-          props.put(invocation.getArgument(0, String.class), invocation.getArgument(1, String.class));
-          return true;
-        });
+    Mockito.when(
+            mockProvider.addHeartBeatProperty(
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean()))
+        .then(
+            (Answer<Boolean>)
+                invocation -> {
+                  props.put(
+                      invocation.getArgument(0, String.class),
+                      invocation.getArgument(1, String.class));
+                  return true;
+                });
     DefaultHeartBeatPropertyProvider defaultProvider = new DefaultHeartBeatPropertyProvider();
 
-    HeartbeatDefaultPayload.populateDefaultPayload(new ArrayList<>(), new ArrayList<>(),
-        mockProvider).call();
+    HeartbeatDefaultPayload.populateDefaultPayload(
+            new ArrayList<>(), new ArrayList<>(), mockProvider)
+        .call();
     Field field = defaultProvider.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
     Set<String> defaultFields = (Set<String>) field.get(defaultProvider);

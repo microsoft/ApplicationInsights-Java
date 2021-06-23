@@ -23,14 +23,13 @@ package com.microsoft.applicationinsights.extensibility;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 
-/**
- * Interface for telemetry modules.
- */
+/** Interface for telemetry modules. */
 public interface TelemetryModule {
 
-    /**
-     * Initializes the telemetry module.
-     * @param telemetryClient The telemetry client to used to initialize the module.
-     */
-    void initialize(TelemetryClient telemetryClient);
+  /**
+   * Initializes the telemetry module.
+   *
+   * @param telemetryClient The telemetry client to used to initialize the module.
+   */
+  void initialize(TelemetryClient telemetryClient);
 }

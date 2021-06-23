@@ -21,16 +21,12 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-/**
- * A base class for classes that report performance counters of Process level.
- */
+/** A base class for classes that report performance counters of Process level. */
 abstract class AbstractPerformanceCounter implements PerformanceCounter {
 
-    protected static String getProcessCategoryName() {
-        return Constants.PROCESS_CATEGORY;
-    }
+  protected static String getProcessCategoryName() {
+    return Constants.PROCESS_CATEGORY;
+  }
 
-    protected AbstractPerformanceCounter() {
-    }
+  protected AbstractPerformanceCounter() {}
 }
-

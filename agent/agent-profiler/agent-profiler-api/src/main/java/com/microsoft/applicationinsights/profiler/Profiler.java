@@ -18,18 +18,18 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
 package com.microsoft.applicationinsights.profiler;
 
+import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import javax.management.InstanceNotFoundException;
 
-import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-
-/**
- * A service that is able to perform a profile and pass the results to to profileHandler
- */
+/** A service that is able to perform a profile and pass the results to to profileHandler */
 public interface Profiler extends ProfilerConfigurationHandler, Consumer<AlertBreach> {
-    boolean initialize(ProfileHandler profileHandler, ScheduledExecutorService scheduledExecutorService) throws IOException, InstanceNotFoundException;
+  boolean initialize(
+      ProfileHandler profileHandler, ScheduledExecutorService scheduledExecutorService)
+      throws IOException, InstanceNotFoundException;
 }

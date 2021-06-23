@@ -21,48 +21,52 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-import java.util.Collection;
-
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
+import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * A base class for performance modules.
- */
+/** A base class for performance modules. */
 public abstract class AbstractPerformanceCounterModule implements TelemetryModule {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractPerformanceCounterModule.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(AbstractPerformanceCounterModule.class);
 
-    protected final PerformanceCountersFactory factory;
+  protected final PerformanceCountersFactory factory;
 
-    protected AbstractPerformanceCounterModule(PerformanceCountersFactory factory) {
-        this.factory = factory;
-    }
+  protected AbstractPerformanceCounterModule(PerformanceCountersFactory factory) {
+    this.factory = factory;
+  }
 
-    /**
-     * The main method will use the factory to fetch the performance counters and register them for work.
-     * @param telemetryClient The configuration to used to initialize the module.
-     */
-    @Override
-    public void initialize(TelemetryClient telemetryClient) {
-        Collection<PerformanceCounter> performanceCounters = factory.getPerformanceCounters();
-        for (PerformanceCounter performanceCounter : performanceCounters) {
-            try {
-                PerformanceCounterContainer.INSTANCE.register(performanceCounter);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                try {
-                    logger.error("Failed to register performance counter '{}': '{}'", performanceCounter.getId(), e.toString());
-                    logger.trace("Failed to register performance counter '{}'", performanceCounter.getId(), e);
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t2) {
-                    // chomp
-                }
-            }
+  /**
+   * The main method will use the factory to fetch the performance counters and register them for
+   * work.
+   *
+   * @param telemetryClient The configuration to used to initialize the module.
+   */
+  @Override
+  public void initialize(TelemetryClient telemetryClient) {
+    Collection<PerformanceCounter> performanceCounters = factory.getPerformanceCounters();
+    for (PerformanceCounter performanceCounter : performanceCounters) {
+      try {
+        PerformanceCounterContainer.INSTANCE.register(performanceCounter);
+      } catch (ThreadDeath td) {
+        throw td;
+      } catch (Throwable e) {
+        try {
+          logger.error(
+              "Failed to register performance counter '{}': '{}'",
+              performanceCounter.getId(),
+              e.toString());
+          logger.trace(
+              "Failed to register performance counter '{}'", performanceCounter.getId(), e);
+        } catch (ThreadDeath td) {
+          throw td;
+        } catch (Throwable t2) {
+          // chomp
         }
+      }
     }
+  }
 }

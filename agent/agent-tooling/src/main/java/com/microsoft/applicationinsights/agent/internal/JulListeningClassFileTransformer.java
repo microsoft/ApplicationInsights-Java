@@ -18,40 +18,42 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.agent.internal;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+package com.microsoft.applicationinsights.agent.internal;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.concurrent.CountDownLatch;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 class JulListeningClassFileTransformer implements ClassFileTransformer {
 
-    // using constant here so that it will NOT get shaded
-    // IMPORTANT FOR THIS NOT TO BE FINAL (or private)
-    // OTHERWISE COMPILER COULD THEORETICALLY INLINE IT BELOW AND APPLY .substring(1)
-    // and then it WOULD be shaded
-    @SuppressWarnings("ConstantField")
-    static String UNSHADED_PREFIX = "!java/util/logging/Logger";
+  // using constant here so that it will NOT get shaded
+  // IMPORTANT FOR THIS NOT TO BE FINAL (or private)
+  // OTHERWISE COMPILER COULD THEORETICALLY INLINE IT BELOW AND APPLY .substring(1)
+  // and then it WOULD be shaded
+  @SuppressWarnings("ConstantField")
+  static String UNSHADED_PREFIX = "!java/util/logging/Logger";
 
-    private final String unshadedClassName = UNSHADED_PREFIX.substring(1);
+  private final String unshadedClassName = UNSHADED_PREFIX.substring(1);
 
-    private final CountDownLatch latch;
+  private final CountDownLatch latch;
 
-    JulListeningClassFileTransformer(CountDownLatch latch) {
-        this.latch = latch;
+  JulListeningClassFileTransformer(CountDownLatch latch) {
+    this.latch = latch;
+  }
+
+  @Override
+  public byte /*@Nullable*/[] transform(
+      @Nullable ClassLoader loader,
+      @Nullable String className,
+      @Nullable Class<?> classBeingRedefined,
+      @Nullable ProtectionDomain protectionDomain,
+      byte[] classfileBuffer) {
+
+    if (unshadedClassName.equals(className)) {
+      latch.countDown();
     }
-
-    @Override
-    public byte /*@Nullable*/[] transform(@Nullable ClassLoader loader, @Nullable String className,
-                                          @Nullable Class<?> classBeingRedefined,
-                                          @Nullable ProtectionDomain protectionDomain,
-                                          byte[] classfileBuffer) {
-
-        if (unshadedClassName.equals(className)) {
-            latch.countDown();
-        }
-        return null;
-    }
+    return null;
+  }
 }

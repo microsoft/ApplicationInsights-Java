@@ -1,43 +1,57 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.internal.heartbeat;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.extensibility.TelemetryModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+ *
+ *
  * <h1>HeartBeat Provider Module</h1>
  *
- * <p>
- *   This module is the core module which is is configured by default with default settings
- *   when ApplicationInsights SDK boots up. It is used to transmit diagnostic heartbeats to
- *   Application Insights backend.
- * </p>
+ * <p>This module is the core module which is is configured by default with default settings when
+ * ApplicationInsights SDK boots up. It is used to transmit diagnostic heartbeats to Application
+ * Insights backend.
  */
 public class HeartBeatModule implements TelemetryModule {
 
   private static final Logger logger = LoggerFactory.getLogger(HeartBeatModule.class);
 
-  /**
-   * Interface object holding concrete implementation of heartbeat provider.
-   */
+  /** Interface object holding concrete implementation of heartbeat provider. */
   private final HeartBeatProviderInterface heartBeatProviderInterface;
 
   private static final Object lock = new Object();
 
-  /**
-   * Flag to seek if module is initialized
-   */
+  /** Flag to seek if module is initialized */
   private static volatile boolean isInitialized = false;
 
-  /**
-   * Default constructor to initialize the default heartbeat configuration.
-   */
+  /** Default constructor to initialize the default heartbeat configuration. */
   public HeartBeatModule() {
     heartBeatProviderInterface = new HeartBeatProvider();
   }
@@ -75,7 +89,8 @@ public class HeartBeatModule implements TelemetryModule {
             break;
           case "ExcludedHeartBeatPropertiesProvider":
             try {
-              List<String> excludedHeartBeatPropertiesProviderList = parseStringToList(entry.getValue());
+              List<String> excludedHeartBeatPropertiesProviderList =
+                  parseStringToList(entry.getValue());
               setExcludedHeartBeatPropertiesProvider(excludedHeartBeatPropertiesProviderList);
             } catch (RuntimeException e) {
               if (logger.isTraceEnabled()) {
@@ -99,11 +114,11 @@ public class HeartBeatModule implements TelemetryModule {
         }
       }
     }
-
   }
 
   /**
    * Returns the heartbeat interval in seconds.
+   *
    * @return heartbeat interval in seconds.
    */
   public long getHeartBeatInterval() {
@@ -112,6 +127,7 @@ public class HeartBeatModule implements TelemetryModule {
 
   /**
    * Sets the heartbeat interval in seconds.
+   *
    * @param heartBeatInterval Heartbeat interval to set in seconds.
    */
   public void setHeartBeatInterval(long heartBeatInterval) {
@@ -120,6 +136,7 @@ public class HeartBeatModule implements TelemetryModule {
 
   /**
    * Returns list of excluded heartbeat properties from payload
+   *
    * @return list of excluded heartbeat properties.
    */
   public List<String> getExcludedHeartBeatProperties() {
@@ -128,6 +145,7 @@ public class HeartBeatModule implements TelemetryModule {
 
   /**
    * Sets the list of excluded heartbeat properties
+   *
    * @param excludedHeartBeatProperties List of heartbeat properties to exclude
    */
   public void setExcludedHeartBeatProperties(List<String> excludedHeartBeatProperties) {
@@ -136,6 +154,7 @@ public class HeartBeatModule implements TelemetryModule {
 
   /**
    * Gets list of excluded heartbeat properties provider.
+   *
    * @return list of excluded heartbeat properties provider.
    */
   public List<String> getExcludedHeartBeatPropertiesProvider() {
@@ -144,15 +163,19 @@ public class HeartBeatModule implements TelemetryModule {
 
   /**
    * Sets list of excluded heartbeat properties provider.
-   * @param excludedHeartBeatPropertiesProvider list of excluded heartbeat properties provider to be excluded.
+   *
+   * @param excludedHeartBeatPropertiesProvider list of excluded heartbeat properties provider to be
+   *     excluded.
    */
   public void setExcludedHeartBeatPropertiesProvider(
       List<String> excludedHeartBeatPropertiesProvider) {
-      this.heartBeatProviderInterface.setExcludedHeartBeatPropertyProviders(excludedHeartBeatPropertiesProvider);
+    this.heartBeatProviderInterface.setExcludedHeartBeatPropertyProviders(
+        excludedHeartBeatPropertiesProvider);
   }
 
   /**
    * Gets the current state of heartbeat
+   *
    * @return true if enabled
    */
   public boolean isHeartBeatEnabled() {
@@ -161,6 +184,7 @@ public class HeartBeatModule implements TelemetryModule {
 
   /**
    * Sets the state of heartbeat module
+   *
    * @param heartBeatEnabled boolean true / false
    */
   public void setHeartBeatEnabled(boolean heartBeatEnabled) {
@@ -182,6 +206,7 @@ public class HeartBeatModule implements TelemetryModule {
 
   /**
    * Parses the input parameter value separated by ; into List.
+   *
    * @param value ; seperated value string
    * @return List representing individual values
    */

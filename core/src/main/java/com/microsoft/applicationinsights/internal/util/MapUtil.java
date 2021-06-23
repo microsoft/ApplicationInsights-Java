@@ -22,89 +22,86 @@
 package com.microsoft.applicationinsights.internal.util;
 
 import com.microsoft.applicationinsights.common.Strings;
-
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Methods that would have been great to have on maps.
- */
-public class MapUtil
-{
-    /**
-     * Copies entries from the source map to the target map, overwrites any values in target.
-     * Filters out null values if target is a {@link ConcurrentHashMap}.
-     * @param source the source map. If null or empty, this is a nop.
-     * @param target the target map. Cannot be null.
-     * @param <V> The type of the values in both maps
-     * @throws IllegalArgumentException if either {@code source} or {@code target} are null.
-     */
-    public static <V> void copy(Map<String, V> source, Map<String, V> target) {
-        if (target == null) {
-            throw new IllegalArgumentException("target must not be null");
-        }
-
-        if (source == null || source.isEmpty()) {
-            return;
-        }
-
-        for (Map.Entry<String, V> entry : source.entrySet()) {
-            String key = entry.getKey();
-            if (Strings.isNullOrEmpty(key)) {
-                continue;
-            }
-
-            if (!target.containsKey(key)) {
-                if (target instanceof ConcurrentHashMap && entry.getValue() == null) {
-                    continue;
-                } else {
-                    target.put(key, entry.getValue());
-                }
-            }
-        }
+/** Methods that would have been great to have on maps. */
+public class MapUtil {
+  /**
+   * Copies entries from the source map to the target map, overwrites any values in target. Filters
+   * out null values if target is a {@link ConcurrentHashMap}.
+   *
+   * @param source the source map. If null or empty, this is a nop.
+   * @param target the target map. Cannot be null.
+   * @param <V> The type of the values in both maps
+   * @throws IllegalArgumentException if either {@code source} or {@code target} are null.
+   */
+  public static <V> void copy(Map<String, V> source, Map<String, V> target) {
+    if (target == null) {
+      throw new IllegalArgumentException("target must not be null");
     }
 
-    public static <K, V> V getValueOrNull(Map<K, V> map, K key) {
-        return map.containsKey(key) ? map.get(key) : null;
+    if (source == null || source.isEmpty()) {
+      return;
     }
 
-    public static Boolean getBoolValueOrNull(Map<String, String> map, String key) {
-        return map.containsKey(key) ? Boolean.valueOf(map.get(key)) : null;
-    }
+    for (Map.Entry<String, V> entry : source.entrySet()) {
+      String key = entry.getKey();
+      if (Strings.isNullOrEmpty(key)) {
+        continue;
+      }
 
-    public static Date getDateValueOrNull(Map<String, String> map, String key) {
-        try {
-            return map.containsKey(key) ? LocalStringsUtils.getDateFormatter().parse(map.get(key)) : null;
-        } catch (ParseException pe) {
-            return null;
-        }
-    }
-
-    public static void setStringValueOrRemove(Map<String, String> map, String key, String value) {
-        if (Strings.isNullOrEmpty(value)) {
-            map.remove(key);
+      if (!target.containsKey(key)) {
+        if (target instanceof ConcurrentHashMap && entry.getValue() == null) {
+          continue;
         } else {
-            map.put(key, value);
+          target.put(key, entry.getValue());
         }
+      }
     }
+  }
 
-    public static void setBoolValueOrRemove(Map<String, String> map, String key, Boolean value) {
-        if (value == null) {
-            map.remove(key);
-        } else {
-            map.put(key, value ? "true" : "false");
-        }
+  public static <K, V> V getValueOrNull(Map<K, V> map, K key) {
+    return map.containsKey(key) ? map.get(key) : null;
+  }
+
+  public static Boolean getBoolValueOrNull(Map<String, String> map, String key) {
+    return map.containsKey(key) ? Boolean.valueOf(map.get(key)) : null;
+  }
+
+  public static Date getDateValueOrNull(Map<String, String> map, String key) {
+    try {
+      return map.containsKey(key) ? LocalStringsUtils.getDateFormatter().parse(map.get(key)) : null;
+    } catch (ParseException pe) {
+      return null;
     }
+  }
 
-    public static void setDateValueOrRemove(Map<String, String> map, String key, Date value) {
-        if (value == null) {
-            map.remove(key);
-        } else {
-            map.put(key, LocalStringsUtils.getDateFormatter().format(value));
-        }
+  public static void setStringValueOrRemove(Map<String, String> map, String key, String value) {
+    if (Strings.isNullOrEmpty(value)) {
+      map.remove(key);
+    } else {
+      map.put(key, value);
     }
+  }
 
-    private MapUtil() {}
+  public static void setBoolValueOrRemove(Map<String, String> map, String key, Boolean value) {
+    if (value == null) {
+      map.remove(key);
+    } else {
+      map.put(key, value ? "true" : "false");
+    }
+  }
+
+  public static void setDateValueOrRemove(Map<String, String> map, String key, Date value) {
+    if (value == null) {
+      map.remove(key);
+    } else {
+      map.put(key, LocalStringsUtils.getDateFormatter().format(value));
+    }
+  }
+
+  private MapUtil() {}
 }

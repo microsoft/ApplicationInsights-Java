@@ -1,112 +1,138 @@
+/*
+ * ApplicationInsights-Java
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the ""Software""), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.classic.spi.ThrowableProxy;
-
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsValueFinder;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout.CUSTOM_FIELDS_PROP_NAME;
 import static ch.qos.logback.contrib.json.classic.JsonLayout.FORMATTED_MESSAGE_ATTR_NAME;
 import static ch.qos.logback.contrib.json.classic.JsonLayout.LOGGER_ATTR_NAME;
+import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout.CUSTOM_FIELDS_PROP_NAME;
 import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout.TIMESTAMP_PROP_NAME;
 import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout.UNKNOWN_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.ThrowableProxy;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsValueFinder;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 class ApplicationInsightsJsonLayoutTests {
 
-    private static final String LOG_MESSAGE = "test message";
-    private static final String LOGGER_NAME = "test.logger";
-    private static final long TIMESTAMP_VALUE = System.currentTimeMillis();
+  private static final String LOG_MESSAGE = "test message";
+  private static final String LOGGER_NAME = "test.logger";
+  private static final long TIMESTAMP_VALUE = System.currentTimeMillis();
 
-    private ApplicationInsightsJsonLayout ourLayout;
+  private ApplicationInsightsJsonLayout ourLayout;
 
-    private ILoggingEvent logEvent;
+  private ILoggingEvent logEvent;
 
-    @BeforeEach
-    void setup() {
-        ourLayout = new ApplicationInsightsJsonLayout();
-        ourLayout.valueFinders.clear();
+  @BeforeEach
+  void setup() {
+    ourLayout = new ApplicationInsightsJsonLayout();
+    ourLayout.valueFinders.clear();
 
-        logEvent = mock(ILoggingEvent.class);
-        when(logEvent.getLevel()).thenReturn(Level.ERROR);
-        when(logEvent.getFormattedMessage()).thenReturn(LOG_MESSAGE);
-        when(logEvent.getLoggerName()).thenReturn(LOGGER_NAME);
-        when(logEvent.getThrowableProxy()).thenReturn(new ThrowableProxy(new Exception("testing")));
-        when(logEvent.getTimeStamp()).thenReturn(TIMESTAMP_VALUE);
-    }
+    logEvent = mock(ILoggingEvent.class);
+    when(logEvent.getLevel()).thenReturn(Level.ERROR);
+    when(logEvent.getFormattedMessage()).thenReturn(LOG_MESSAGE);
+    when(logEvent.getLoggerName()).thenReturn(LOGGER_NAME);
+    when(logEvent.getThrowableProxy()).thenReturn(new ThrowableProxy(new Exception("testing")));
+    when(logEvent.getTimeStamp()).thenReturn(TIMESTAMP_VALUE);
+  }
 
-    @AfterEach
-    void tearDown() {
-        ourLayout = null;
-    }
+  @AfterEach
+  void tearDown() {
+    ourLayout = null;
+  }
 
-    @Test
-    void topLevelIncludesRequiredFields() {
-        Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
-        assertThat(jsonMap).containsEntry(TIMESTAMP_PROP_NAME, String.valueOf(TIMESTAMP_VALUE)); // there is no timestamp format specified, so it just uses the raw long value.
-        assertThat(jsonMap).containsEntry(LOGGER_ATTR_NAME, LOGGER_NAME);
-        assertThat(jsonMap).containsEntry(FORMATTED_MESSAGE_ATTR_NAME, LOG_MESSAGE);
-    }
+  @Test
+  void topLevelIncludesRequiredFields() {
+    Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
+    assertThat(jsonMap)
+        .containsEntry(
+            TIMESTAMP_PROP_NAME,
+            String.valueOf(
+                TIMESTAMP_VALUE)); // there is no timestamp format specified, so it just uses the
+    // raw long value.
+    assertThat(jsonMap).containsEntry(LOGGER_ATTR_NAME, LOGGER_NAME);
+    assertThat(jsonMap).containsEntry(FORMATTED_MESSAGE_ATTR_NAME, LOG_MESSAGE);
+  }
 
-    @Test
-    void addsDataFromFinders() {
-        final String key = "mock-finder";
-        final String value = "mock-value";
+  @Test
+  void addsDataFromFinders() {
+    final String key = "mock-finder";
+    final String value = "mock-value";
 
-        DiagnosticsValueFinder mockFinder = mock(DiagnosticsValueFinder.class);
-        when(mockFinder.getName()).thenReturn(key);
-        when(mockFinder.getValue()).thenReturn(value);
-        ourLayout.valueFinders.add(mockFinder);
+    DiagnosticsValueFinder mockFinder = mock(DiagnosticsValueFinder.class);
+    when(mockFinder.getName()).thenReturn(key);
+    when(mockFinder.getValue()).thenReturn(value);
+    ourLayout.valueFinders.add(mockFinder);
 
-        Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
+    Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
 
-        verify(mockFinder, atLeastOnce()).getName();
-        verify(mockFinder, atLeastOnce()).getValue();
-        assertThat((Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME)).containsEntry(key, value);
-    }
+    verify(mockFinder, atLeastOnce()).getName();
+    verify(mockFinder, atLeastOnce()).getValue();
+    assertThat((Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME))
+        .containsEntry(key, value);
+  }
 
-    @Test
-    void nullOrEmptyValueWritesUnknownValue() {
-        final String nKey = "f-null";
-        final String eKey = "f-empty";
+  @Test
+  void nullOrEmptyValueWritesUnknownValue() {
+    final String nKey = "f-null";
+    final String eKey = "f-empty";
 
-        DiagnosticsValueFinder nullValueFinder = mock(DiagnosticsValueFinder.class);
-        when(nullValueFinder.getName()).thenReturn(nKey);
-        when(nullValueFinder.getValue()).thenReturn(null);
-        ourLayout.valueFinders.add(nullValueFinder);
+    DiagnosticsValueFinder nullValueFinder = mock(DiagnosticsValueFinder.class);
+    when(nullValueFinder.getName()).thenReturn(nKey);
+    when(nullValueFinder.getValue()).thenReturn(null);
+    ourLayout.valueFinders.add(nullValueFinder);
 
-        DiagnosticsValueFinder emptyValueFinder = mock(DiagnosticsValueFinder.class);
-        when(emptyValueFinder.getName()).thenReturn(eKey);
-        when(emptyValueFinder.getValue()).thenReturn("");
-        ourLayout.valueFinders.add(emptyValueFinder);
+    DiagnosticsValueFinder emptyValueFinder = mock(DiagnosticsValueFinder.class);
+    when(emptyValueFinder.getName()).thenReturn(eKey);
+    when(emptyValueFinder.getValue()).thenReturn("");
+    ourLayout.valueFinders.add(emptyValueFinder);
 
-        Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
+    Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
 
-        Map<String, Object> propMap = (Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME);
+    Map<String, Object> propMap = (Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME);
 
-        verify(nullValueFinder, atLeastOnce()).getName();
-        verify(nullValueFinder, atLeastOnce()).getValue();
-        verify(emptyValueFinder, atLeastOnce()).getName();
-        verify(emptyValueFinder, atLeastOnce()).getValue();
-        assertThat(propMap).containsEntry(eKey, UNKNOWN_VALUE);
-        assertThat(propMap).containsEntry(nKey, UNKNOWN_VALUE);
-    }
+    verify(nullValueFinder, atLeastOnce()).getName();
+    verify(nullValueFinder, atLeastOnce()).getValue();
+    verify(emptyValueFinder, atLeastOnce()).getName();
+    verify(emptyValueFinder, atLeastOnce()).getValue();
+    assertThat(propMap).containsEntry(eKey, UNKNOWN_VALUE);
+    assertThat(propMap).containsEntry(nKey, UNKNOWN_VALUE);
+  }
 
-    @Test
-    void mdcOperationNameAppearsInProperties() {
-        Map<String, String> map = new HashMap<>();
-        map.put(DiagnosticsHelper.MDC_PROP_OPERATION, "test");
-        when(logEvent.getMDCPropertyMap()).thenReturn(map);
-        Map<String, Object> jsonMap = (Map<String, Object>) ourLayout.toJsonMap(logEvent).get("properties");
-        assertThat(jsonMap).containsEntry("operation", "test");
-    }
+  @Test
+  void mdcOperationNameAppearsInProperties() {
+    Map<String, String> map = new HashMap<>();
+    map.put(DiagnosticsHelper.MDC_PROP_OPERATION, "test");
+    when(logEvent.getMDCPropertyMap()).thenReturn(map);
+    Map<String, Object> jsonMap =
+        (Map<String, Object>) ourLayout.toJsonMap(logEvent).get("properties");
+    assertThat(jsonMap).containsEntry("operation", "test");
+  }
 }

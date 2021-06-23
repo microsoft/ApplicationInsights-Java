@@ -18,56 +18,56 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.serviceprofilerapi.profiler;
 
-import java.io.File;
-import java.util.function.Supplier;
+package com.microsoft.applicationinsights.serviceprofilerapi.profiler;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.profileUploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.profileUploader.UploadResult;
 import com.microsoft.applicationinsights.profiler.ProfileHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
+import java.io.File;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Receives notifications of new profiles and uploads them to Service Profiler
- */
+/** Receives notifications of new profiles and uploads them to Service Profiler */
 public class JfrUploadService implements ProfileHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JfrUploadService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(JfrUploadService.class);
 
-    private final ServiceProfilerUploader jfrUploader;
-    private final Supplier<String> appIdSupplier;
-    private final UploadCompleteHandler uploadCompleteHandler;
+  private final ServiceProfilerUploader jfrUploader;
+  private final Supplier<String> appIdSupplier;
+  private final UploadCompleteHandler uploadCompleteHandler;
 
-    public JfrUploadService(ServiceProfilerUploader jfrUploader, Supplier<String> appIdSupplier, UploadCompleteHandler uploadCompleteHandler) {
-        this.jfrUploader = jfrUploader;
-        this.appIdSupplier = appIdSupplier;
-        this.uploadCompleteHandler = uploadCompleteHandler;
+  public JfrUploadService(
+      ServiceProfilerUploader jfrUploader,
+      Supplier<String> appIdSupplier,
+      UploadCompleteHandler uploadCompleteHandler) {
+    this.jfrUploader = jfrUploader;
+    this.appIdSupplier = appIdSupplier;
+    this.uploadCompleteHandler = uploadCompleteHandler;
+  }
+
+  @Override
+  public void receive(AlertBreach alertBreach, long timestamp, File file) {
+    String appId = appIdSupplier.get();
+    if (appId == null || appId.isEmpty()) {
+      LOGGER.error("Not uploading file due to lack of app id");
+      return;
     }
 
-    @Override
-    public void receive(AlertBreach alertBreach, long timestamp, File file) {
-        String appId = appIdSupplier.get();
-        if (appId == null || appId.isEmpty()) {
-            LOGGER.error("Not uploading file due to lack of app id");
-            return;
-        }
+    jfrUploader
+        .uploadJfrFile(
+            alertBreach.getTriggerName(),
+            timestamp,
+            file,
+            alertBreach.getCpuMetric(),
+            alertBreach.getMemoryUsage())
+        .subscribe(this::onUploadComplete, e -> LOGGER.error("Failed to upload file", e));
+  }
 
-        jfrUploader.uploadJfrFile(
-                alertBreach.getTriggerName(),
-                timestamp,
-                file,
-                alertBreach.getCpuMetric(),
-                alertBreach.getMemoryUsage()
-        )
-                .subscribe(this::onUploadComplete,
-                        e -> LOGGER.error("Failed to upload file", e));
-    }
-
-    private void onUploadComplete(UploadResult result) {
-        uploadCompleteHandler.notify(result);
-        LOGGER.info("Uploading of profile complete");
-    }
+  private void onUploadComplete(UploadResult result) {
+    uploadCompleteHandler.notify(result);
+    LOGGER.info("Uploading of profile complete");
+  }
 }

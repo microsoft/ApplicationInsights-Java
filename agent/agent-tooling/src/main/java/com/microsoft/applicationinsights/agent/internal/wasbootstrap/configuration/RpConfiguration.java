@@ -23,29 +23,29 @@ package com.microsoft.applicationinsights.agent.internal.wasbootstrap.configurat
 
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.Role;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.Sampling;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import java.nio.file.Path;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class RpConfiguration {
 
-    // transient so that Moshi will ignore when binding from json
-    public transient Path configPath;
+  // transient so that Moshi will ignore when binding from json
+  public transient Path configPath;
 
-    // transient so that Moshi will ignore when binding from json
-    public transient long lastModifiedTime;
+  // transient so that Moshi will ignore when binding from json
+  public transient long lastModifiedTime;
 
-    public String connectionString;
+  public String connectionString;
 
-    // intentionally null, so that we can tell if rp is providing or not
-    public Sampling sampling = new Sampling();
+  // intentionally null, so that we can tell if rp is providing or not
+  public Sampling sampling = new Sampling();
 
-    // this is needed in Azure Spring Cloud because it will set the role name to application name
-    // on behalf of customers by default.
-    // Note the role doesn't support hot load due to unnecessary currently.
-    public Role role = new Role();
+  // this is needed in Azure Spring Cloud because it will set the role name to application name
+  // on behalf of customers by default.
+  // Note the role doesn't support hot load due to unnecessary currently.
+  public Role role = new Role();
 
-    // this is needed in Azure Functions because .NET SDK always propagates trace flags "00" (not sampled)
-    // null means do not override the users selection
-    public @Nullable Boolean ignoreRemoteParentNotSampled;
+  // this is needed in Azure Functions because .NET SDK always propagates trace flags "00" (not
+  // sampled)
+  // null means do not override the users selection
+  public @Nullable Boolean ignoreRemoteParentNotSampled;
 }

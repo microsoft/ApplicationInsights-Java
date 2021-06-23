@@ -18,47 +18,44 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.applicationinsights.alerting.analysis;
 
-import java.time.ZonedDateTime;
-import java.util.function.Consumer;
+package com.microsoft.applicationinsights.alerting.analysis;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
+import java.time.ZonedDateTime;
+import java.util.function.Consumer;
 
 /**
- * Observes a stream of data, and calls a downstream alert action if
- * the following conditions are met:
- * - data moves above given threshold
- * - alert is not in a cooldown period
- * - alert is enabled
+ * Observes a stream of data, and calls a downstream alert action if the following conditions are
+ * met: - data moves above given threshold - alert is not in a cooldown period - alert is enabled
  */
 public class AlertPipelineTrigger implements Consumer<Double> {
-    private final AlertConfiguration alertConfig;
-    private final Consumer<AlertBreach> action;
-    private ZonedDateTime lastAlertTime;
+  private final AlertConfiguration alertConfig;
+  private final Consumer<AlertBreach> action;
+  private ZonedDateTime lastAlertTime;
 
-    public AlertPipelineTrigger(AlertConfiguration alertConfiguration, Consumer<AlertBreach> action) {
-        this.alertConfig = alertConfiguration;
-        this.action = action;
-    }
+  public AlertPipelineTrigger(AlertConfiguration alertConfiguration, Consumer<AlertBreach> action) {
+    this.alertConfig = alertConfiguration;
+    this.action = action;
+  }
 
-    @Override
-    public void accept(Double telemetry) {
-        if (alertConfig.isEnabled() && telemetry > alertConfig.getThreshold()) {
-            if (isOffCooldown()) {
-                lastAlertTime = ZonedDateTime.now();
-                action.accept(new AlertBreach(alertConfig.getType(), telemetry, alertConfig));
-            }
-        }
+  @Override
+  public void accept(Double telemetry) {
+    if (alertConfig.isEnabled() && telemetry > alertConfig.getThreshold()) {
+      if (isOffCooldown()) {
+        lastAlertTime = ZonedDateTime.now();
+        action.accept(new AlertBreach(alertConfig.getType(), telemetry, alertConfig));
+      }
     }
+  }
 
-    public boolean isOffCooldown() {
-        ZonedDateTime coolDownCutOff = ZonedDateTime.now().minusSeconds(alertConfig.getCooldown());
-        return lastAlertTime == null || lastAlertTime.isBefore(coolDownCutOff);
-    }
+  public boolean isOffCooldown() {
+    ZonedDateTime coolDownCutOff = ZonedDateTime.now().minusSeconds(alertConfig.getCooldown());
+    return lastAlertTime == null || lastAlertTime.isBefore(coolDownCutOff);
+  }
 
-    public ZonedDateTime getLastAlertTime() {
-        return lastAlertTime;
-    }
+  public ZonedDateTime getLastAlertTime() {
+    return lastAlertTime;
+  }
 }
