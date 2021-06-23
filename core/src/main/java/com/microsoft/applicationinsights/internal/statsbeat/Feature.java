@@ -34,8 +34,7 @@ enum Feature {
     JAVA_VENDOR_ADOPT_OPENJDK(3),
     JAVA_VENDOR_REDHAT(4),
     JAVA_VENDOR_OTHER(5),
-    AAD_ON(6),
-    AAD_OFF(7);
+    AAD_ON(6);
 
     private static final Map<String, Feature> features;
 
@@ -47,7 +46,6 @@ enum Feature {
         features.put("AdoptOpenJDK", Feature.JAVA_VENDOR_ADOPT_OPENJDK); // https://adoptopenjdk.net/
         features.put("Red Hat, Inc.", Feature.JAVA_VENDOR_REDHAT); // https://developers.redhat.com/products/openjdk/download/
         features.put("AAD_ENABLE", Feature.AAD_ON);
-        features.put("AAD_OFF", Feature.AAD_OFF);
     }
 
     private final int bitmapIndex;

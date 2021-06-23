@@ -28,7 +28,7 @@ public class FeatureStatsbeatTest {
 
     @Test
     public void testAadEnable() {
-        featureStatsbeat.setAadEnabled(true);
+        featureStatsbeat.trackAadEnabled(true);
         Set<Feature> features = new HashSet<>();
         features.add(Feature.fromJavaVendor(javaVendor));
         features.add(Feature.AAD_ON);
@@ -37,10 +37,9 @@ public class FeatureStatsbeatTest {
 
     @Test
     public void testAadDisable() {
-        featureStatsbeat.setAadEnabled(false);
+        featureStatsbeat.trackAadEnabled(false);
         Set<Feature> features = new HashSet<>();
         features.add(Feature.fromJavaVendor(javaVendor));
-        features.add(Feature.AAD_OFF);
         assertThat(featureStatsbeat.getFeature()).isEqualTo(Feature.encode(features));
     }
 }
