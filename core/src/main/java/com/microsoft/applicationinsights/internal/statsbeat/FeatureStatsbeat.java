@@ -55,4 +55,10 @@ class FeatureStatsbeat extends BaseStatsbeat {
                 .put("feature", String.valueOf(getFeature()));
         telemetryClient.trackAsync(statsbeatTelemetry);
     }
+
+    void trackAadEnabled(boolean aadEnabled) {
+        if (aadEnabled) {
+            featureList.add(Feature.AAD);
+        }
+    }
 }

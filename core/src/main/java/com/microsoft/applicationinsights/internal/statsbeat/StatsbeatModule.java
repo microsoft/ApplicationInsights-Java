@@ -43,8 +43,6 @@ public class StatsbeatModule {
 
     private final NetworkStatsbeat networkStatsbeat;
     private final AttachStatsbeat attachStatsbeat;
-    // keeping this as field for now
-    @SuppressWarnings("unused")
     private final FeatureStatsbeat featureStatsbeat;
 
     private final AtomicBoolean started = new AtomicBoolean();
@@ -56,7 +54,7 @@ public class StatsbeatModule {
         featureStatsbeat = new FeatureStatsbeat(customDimensions);
     }
 
-    public void start(TelemetryClient telemetryClient, long interval, long featureInterval) {
+    public void start(TelemetryClient telemetryClient, long interval, long featureInterval, boolean aadEnabled) {
         if (started.getAndSet(true)) {
             throw new IllegalStateException("initialize already called");
         }
@@ -71,6 +69,8 @@ public class StatsbeatModule {
             // will only reach here the first time, after instance has been instantiated
             new AzureMetadataService(attachStatsbeat, customDimensions).scheduleWithFixedDelay(interval);
         }
+
+        featureStatsbeat.trackAadEnabled(aadEnabled);
     }
 
     public static StatsbeatModule get() {
