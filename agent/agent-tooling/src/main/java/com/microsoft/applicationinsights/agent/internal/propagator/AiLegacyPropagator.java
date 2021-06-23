@@ -26,30 +26,19 @@ import java.util.Collection;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nullable;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.api.trace.TraceStateBuilder;
+import com.microsoft.applicationinsights.agent.internal.wasbootstrap.LegacyHeaderSpanProcessor.LegacyIds;
+import io.opentelemetry.api.trace.*;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 // this propagator handles the legacy Application Insights distributed tracing header format
 public class AiLegacyPropagator implements TextMapPropagator {
 
-    private static final Logger logger = LoggerFactory.getLogger(AiLegacyPropagator.class.getName());
-
     private static final TextMapPropagator instance = new AiLegacyPropagator();
-
-    private static final int TRACE_ID_HEX_SIZE = TraceId.getLength();
-    private static final int SPAN_ID_HEX_SIZE = SpanId.getLength();
 
     public static TextMapPropagator getInstance() {
         return instance;
@@ -79,49 +68,44 @@ public class AiLegacyPropagator implements TextMapPropagator {
     @Override
     public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
 
-        String aiRequestId = getter.get(carrier, "Request-Id");
-        if (aiRequestId == null || aiRequestId.isEmpty()) {
-            return context;
-        }
-
         // see behavior specified at
         // https://github.com/microsoft/ApplicationInsights-Java/issues/1174
-        String legacyOperationId = aiExtractRootId(aiRequestId);
-        TraceStateBuilder traceState =
-                TraceState.builder().put("ai-legacy-parent-id", aiRequestId);
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        String traceId;
-        try {
-            traceId = legacyOperationId;
-        } catch (IllegalArgumentException e) {
-            logger.debug("Request-Id root part is not compatible with trace-id.");
-            // see behavior specified at
-            // https://github.com/microsoft/ApplicationInsights-Java/issues/1174
-            traceId = TraceId.fromLongs(random.nextLong(), random.nextLong());
-            traceState.put("ai-legacy-operation-id", legacyOperationId);
-        }
-        // TODO (trask) this seems wrong
-        String spanIdHex = SpanId.fromLong(random.nextLong());
-        // there are no flags, so we assume sampled
-        TraceFlags traceFlags = TraceFlags.getSampled();
-        SpanContext spanContext = SpanContext.createFromRemoteParent(
-                traceId, spanIdHex, traceFlags, traceState.build());
 
-        if (!spanContext.isValid()) {
+        if (getter.get(carrier, "traceparent") != null) {
+            // no need to handle legacy format
             return context;
         }
 
-        return context.with(Span.wrap(spanContext));
+        String legacyParentId = getter.get(carrier, "Request-Id");
+        if (legacyParentId == null || legacyParentId.isEmpty()) {
+            return context;
+        }
+
+        String legacyRootId = aiExtractRootId(legacyParentId);
+        String traceId;
+        if (TraceId.isValid(legacyRootId)) {
+            traceId = legacyRootId;
+            legacyRootId = null; // clear it out, because we don't need to create span attribute for it
+        } else {
+            traceId = generateTraceId();
+        }
+
+        // have to generate a random spanId, and we will patch the real legacyParentId back in during export
+        String spanId = generateSpanId();
+        // there are no flags, so we assume sampled
+        SpanContext spanContext = SpanContext.createFromRemoteParent(
+                traceId, spanId, TraceFlags.getSampled(), TraceState.getDefault());
+
+        return context.with(new LegacyIds(spanContext, legacyParentId, legacyRootId))
+                .with(Span.wrap(spanContext));
     }
 
     private static String getRequestId(SpanContext spanContext) {
-        StringBuilder requestId = new StringBuilder(TRACE_ID_HEX_SIZE + SPAN_ID_HEX_SIZE + 3);
-        requestId.append('|');
-        requestId.append(spanContext.getTraceId());
-        requestId.append('.');
-        requestId.append(spanContext.getSpanId());
-        requestId.append('.');
-        return requestId.toString();
+        return '|' +
+                spanContext.getTraceId() +
+                '.' +
+                spanContext.getSpanId() +
+                '.';
     }
 
     private static String aiExtractRootId(String parentId) {
@@ -136,5 +120,29 @@ public class AiLegacyPropagator implements TextMapPropagator {
         int rootStart = parentId.charAt(0) == '|' ? 1 : 0;
 
         return parentId.substring(rootStart, rootEnd);
+    }
+
+    private static final long INVALID_ID = 0;
+
+    // copied from io.opentelemetry.sdk.trace.RandomIdGenerator
+    private static String generateSpanId() {
+        long id;
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        do {
+            id = random.nextLong();
+        } while (id == INVALID_ID);
+        return SpanId.fromLong(id);
+    }
+
+    // copied from io.opentelemetry.sdk.trace.RandomIdGenerator
+    private static String generateTraceId() {
+        long idHi;
+        long idLo;
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        do {
+            idHi = random.nextLong();
+            idLo = random.nextLong();
+        } while (idHi == INVALID_ID && idLo == INVALID_ID);
+        return TraceId.fromLongs(idHi, idLo);
     }
 }

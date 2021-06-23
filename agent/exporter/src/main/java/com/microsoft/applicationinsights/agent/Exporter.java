@@ -36,7 +36,6 @@ import com.microsoft.applicationinsights.internal.statsbeat.StatsbeatModule;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.instrumentation.api.aisdk.AiAppId;
 import io.opentelemetry.api.trace.TraceState;
@@ -98,6 +97,9 @@ public class Exporter implements SpanExporter {
 
     private static final AttributeKey<String> AI_SPAN_SOURCE_APP_ID_KEY = AttributeKey.stringKey(AiAppId.SPAN_SOURCE_APP_ID_ATTRIBUTE_NAME);
     private static final AttributeKey<String> AI_SPAN_TARGET_APP_ID_KEY = AttributeKey.stringKey(AiAppId.SPAN_TARGET_APP_ID_ATTRIBUTE_NAME);
+
+    public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY = AttributeKey.stringKey("ai-internal-legacy-parent-id");
+    public static final AttributeKey<String> AI_LEGACY_ROOT_ID_KEY = AttributeKey.stringKey("ai-internal-legacy-root-id");
 
     // this is only used by the 2.x web interop bridge
     // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
@@ -216,9 +218,8 @@ public class Exporter implements SpanExporter {
 
         data.setId(span.getSpanId());
         telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
-        String parentSpanId = span.getParentSpanId();
-        if (SpanId.isValid(parentSpanId)) {
-            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
+        if (span.getParentSpanContext().isValid()) {
+            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), span.getParentSpanContext().getSpanId());
         }
 
         telemetry.setTime(FormattedTime.fromEpochNanos(span.getStartEpochNanos()));
@@ -316,9 +317,9 @@ public class Exporter implements SpanExporter {
         data.setSeverityLevel(toSeverityLevel(level));
         data.setMessage(span.getName());
 
+        telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
         if (span.getParentSpanContext().isValid()) {
-            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
-            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), span.getParentSpanId());
+            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), span.getParentSpanContext().getSpanId());
         }
 
         setLoggerProperties(data, level, loggerName);
@@ -339,9 +340,9 @@ public class Exporter implements SpanExporter {
         TelemetryExceptionData data = new TelemetryExceptionData();
         telemetryClient.initExceptionTelemetry(telemetry, data);
 
+        telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
         if (span.getParentSpanContext().isValid()) {
-            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
-            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), span.getParentSpanId());
+            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), span.getParentSpanContext().getSpanId());
         }
 
         data.setExceptions(Exceptions.minimalParse(errorStack));
@@ -602,8 +603,22 @@ public class Exporter implements SpanExporter {
         String name = getTelemetryName(span);
         data.setName(name);
         telemetry.getTags().put(ContextTagKeys.AI_OPERATION_NAME.toString(), name);
+
         data.setId(span.getSpanId());
         telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
+
+        // see behavior specified at https://github.com/microsoft/ApplicationInsights-Java/issues/1174
+        String aiLegacyParentId = span.getAttributes().get(AI_LEGACY_PARENT_ID_KEY);
+        if (aiLegacyParentId != null) {
+            // this was the real (legacy) parent id, but it didn't fit span id format
+            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), aiLegacyParentId);
+        } else if (span.getParentSpanContext().isValid()) {
+            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), span.getParentSpanContext().getSpanId());
+        }
+        String aiLegacyRootId = span.getAttributes().get(AI_LEGACY_ROOT_ID_KEY);
+        if (aiLegacyRootId != null) {
+            telemetry.getTags().put("ai_legacyRootID", aiLegacyRootId);
+        }
 
         String locationIp = attributes.get(SemanticAttributes.HTTP_CLIENT_IP);
         if (locationIp == null) {
@@ -612,21 +627,6 @@ public class Exporter implements SpanExporter {
         }
         if (locationIp != null) {
             telemetry.getTags().put(ContextTagKeys.AI_LOCATION_IP.toString(), locationIp);
-        }
-
-        String aiLegacyParentId = span.getSpanContext().getTraceState().get("ai-legacy-parent-id");
-        if (aiLegacyParentId != null) {
-            // see behavior specified at https://github.com/microsoft/ApplicationInsights-Java/issues/1174
-            telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), aiLegacyParentId);
-            String aiLegacyOperationId = span.getSpanContext().getTraceState().get("ai-legacy-operation-id");
-            if (aiLegacyOperationId != null) {
-                telemetry.getTags().putIfAbsent("ai_legacyRootID", aiLegacyOperationId);
-            }
-        } else {
-            String parentSpanId = span.getParentSpanId();
-            if (SpanId.isValid(parentSpanId)) {
-                telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), parentSpanId);
-            }
         }
 
         long startEpochNanos = span.getStartEpochNanos();
