@@ -23,9 +23,6 @@ package com.microsoft.applicationinsights.internal.config;
 
 import java.util.ArrayList;
 
-/**
- * Created by gupele on 3/15/2015.
- */
 public class PerformanceCountersXmlElement {
 
     private long collectionFrequencyInSec = 60;

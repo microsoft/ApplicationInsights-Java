@@ -2,13 +2,12 @@ package com.microsoft.applicationinsights.internal.statsbeat;
 
 import com.microsoft.applicationinsights.internal.system.SystemInformation;
 import com.microsoft.applicationinsights.internal.util.PropertyHelper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CustomDimensionsTest {
 
@@ -16,7 +15,7 @@ public class CustomDimensionsTest {
     public void testResourceProvider() {
         CustomDimensions customDimensions = new CustomDimensions();
 
-        assertEquals(ResourceProvider.UNKNOWN, customDimensions.getResourceProvider());
+        assertThat(customDimensions.getResourceProvider()).isEqualTo(ResourceProvider.UNKNOWN);
     }
 
     @Test
@@ -29,7 +28,7 @@ public class CustomDimensionsTest {
         } else if (SystemInformation.INSTANCE.isUnix()) {
             os = OperatingSystem.OS_LINUX;
         }
-        assertEquals(os, customDimensions.getOperatingSystem());
+        assertThat(customDimensions.getOperatingSystem()).isEqualTo(os);
     }
 
     @Test
@@ -37,9 +36,9 @@ public class CustomDimensionsTest {
         CustomDimensions customDimensions = new CustomDimensions();
 
         Map<String, String> properties = new HashMap<>();
-        customDimensions.populateProperties(properties);
+        customDimensions.populateProperties(properties, null);
 
-        assertNull(properties.get("cikey"));
+        assertThat(properties.get("cikey")).isNull();
     }
 
     @Test
@@ -47,11 +46,11 @@ public class CustomDimensionsTest {
         CustomDimensions customDimensions = new CustomDimensions();
 
         Map<String, String> properties = new HashMap<>();
-        customDimensions.populateProperties(properties);
+        customDimensions.populateProperties(properties, null);
 
         String sdkVersion = PropertyHelper.getQualifiedSdkVersionString();
         String version = sdkVersion.substring(sdkVersion.lastIndexOf(':') + 1);
-        assertEquals(version, properties.get("version"));
+        assertThat(properties.get("version")).isEqualTo(version);
     }
 
     @Test
@@ -59,8 +58,8 @@ public class CustomDimensionsTest {
         CustomDimensions customDimensions = new CustomDimensions();
 
         Map<String, String> properties = new HashMap<>();
-        customDimensions.populateProperties(properties);
+        customDimensions.populateProperties(properties, null);
 
-        assertEquals(System.getProperty("java.version"), properties.get("runtimeVersion"));
+        assertThat(properties.get("runtimeVersion")).isEqualTo(System.getProperty("java.version"));
     }
 }

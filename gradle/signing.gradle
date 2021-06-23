@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-apply plugin: 'signing'
+apply plugin: "signing"
 
 task gpgSign(type: Sign) {
     assert (dirToSign && !dirToSign.isEmpty() && new File(dirToSign).exists())

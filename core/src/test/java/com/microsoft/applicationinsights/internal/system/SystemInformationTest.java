@@ -1,18 +1,18 @@
 package com.microsoft.applicationinsights.internal.system;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public final class SystemInformationTest {
+class SystemInformationTest {
     @Test
-    public void testOS() {
-        assertTrue(SystemUtils.IS_OS_WINDOWS ? SystemInformation.INSTANCE.isWindows() : SystemInformation.INSTANCE.isUnix());
+    void testOS() {
+        assertThat(SystemUtils.IS_OS_WINDOWS ? SystemInformation.INSTANCE.isWindows() : SystemInformation.INSTANCE.isUnix()).isTrue();
     }
 
     @Test
-    public void testProcessId() {
+    void testProcessId() {
         Integer.parseInt(SystemInformation.INSTANCE.getProcessId());
     }
 }

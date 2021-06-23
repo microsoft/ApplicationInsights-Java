@@ -56,9 +56,8 @@ public class MetricFilter {
                         }
                     }
                     return true;
-                default:
-                    throw new AssertionError("Unexpected match type: " + matchType);
             }
+            throw new AssertionError("Unexpected match type: " + matchType);
         }
     }
 

@@ -28,12 +28,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.customExceptions.FriendlyException;
+import com.microsoft.applicationinsights.internal.authentication.AuthenticationType;
+import com.microsoft.applicationinsights.internal.config.connection.ConnectionString;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonEncodingException;
@@ -81,6 +84,8 @@ public class ConfigurationBuilder {
 
     private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS = "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
 
+    private static final String APPLICATIONINSIGHTS_AUTHENTICATION_STRING = "APPLICATIONINSIGHTS_AUTHENTICATION_STRING";
+
     // cannot use logger before loading configuration, so need to store warning messages locally until logger is initialized
     private static final List<ConfigurationWarnMessage> configurationWarnMessages = new CopyOnWriteArrayList<>();
 
@@ -111,6 +116,31 @@ public class ConfigurationBuilder {
     private static void overlayProfilerConfiguration(Configuration config) {
         config.preview.profiler.enabled = Boolean
                 .parseBoolean(overlayWithEnvVar(APPLICATIONINSIGHTS_PROFILER_ENABLED, Boolean.toString(config.preview.profiler.enabled)));
+    }
+
+    private static void overlayAadConfiguration(Configuration config) {
+        String aadAuthString = getEnvVar(APPLICATIONINSIGHTS_AUTHENTICATION_STRING);
+        if(aadAuthString != null) {
+            Map<String, String> keyValueMap;
+            try {
+                keyValueMap = ConnectionString.splitToMap(aadAuthString);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalStateException("Unable to parse APPLICATIONINSIGHTS_AUTHENTICATION_STRING environment variable: " + aadAuthString, e);
+            }
+            String authorization = keyValueMap.get("Authorization");
+            if(authorization != null && authorization.equals("AAD")) {
+                // Override any configuration from json
+                config.preview.authentication = new Configuration.AadAuthentication();
+                config.preview.authentication.enabled = true;
+                config.preview.authentication.type = AuthenticationType.SAMI;
+                String clientId = keyValueMap.get("ClientId");
+                if(clientId != null && !clientId.isEmpty()) {
+                    // Override type to User Assigned Managed Identity
+                    config.preview.authentication.type = AuthenticationType.UAMI;
+                    config.preview.authentication.clientId = clientId;
+                }
+            }
+        }
     }
 
     private static void loadLogCaptureEnvVar(Configuration config) {
@@ -152,7 +182,7 @@ public class ConfigurationBuilder {
         }
     }
 
-    private static boolean jmxMetricExisted(List<Configuration.JmxMetric> jmxMetrics, String objectName, String attribute) {
+    private static boolean jmxMetricExisted(List<JmxMetric> jmxMetrics, String objectName, String attribute) {
         for (JmxMetric metric : jmxMetrics) {
             if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
                 return true;
@@ -270,7 +300,7 @@ public class ConfigurationBuilder {
 
         addDefaultJmxMetricsIfNotPresent(config);
         overlayProfilerConfiguration(config);
-
+        overlayAadConfiguration(config);
         loadInstrumentationEnabledEnvVars(config);
     }
 
@@ -329,10 +359,10 @@ public class ConfigurationBuilder {
         return value != null ? value : defaultValue;
     }
 
-    static double overlayWithEnvVar(String name, double defaultValue) {
+    static float overlayWithEnvVar(String name, float defaultValue) {
         String value = getEnvVar(name);
         // intentionally allowing NumberFormatException to bubble up as invalid configuration and prevent agent from starting
-        return value != null ? Double.parseDouble(value) : defaultValue;
+        return value != null ? Float.parseFloat(value) : defaultValue;
     }
 
     static boolean overlayWithEnvVar(String name, boolean defaultValue) {
@@ -500,17 +530,17 @@ public class ConfigurationBuilder {
     }
 
     // this is for external callers, where logging is ok
-    public static double roundToNearest(double samplingPercentage) {
+    public static float roundToNearest(float samplingPercentage) {
         return roundToNearest(samplingPercentage, false);
     }
 
     // visible for testing
-    private static double roundToNearest(double samplingPercentage, boolean doNotLogWarnMessages) {
+    private static float roundToNearest(float samplingPercentage, boolean doNotLogWarnMessages) {
         if (samplingPercentage == 0) {
             return 0;
         }
         double itemCount = 100 / samplingPercentage;
-        double rounded = 100.0 / Math.round(itemCount);
+        float rounded = 100.0f / Math.round(itemCount);
 
         if (Math.abs(samplingPercentage - rounded) >= 1) {
             // TODO include link to docs in this warning message
@@ -526,4 +556,6 @@ public class ConfigurationBuilder {
 
         return rounded;
     }
+
+    private ConfigurationBuilder() {}
 }

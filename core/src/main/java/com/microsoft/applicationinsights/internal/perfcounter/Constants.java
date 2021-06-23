@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.perfcounter;
 
-/**
- * Created by gupele on 3/8/2015.
- */
 public final class Constants {
     public final static String PERFORMANCE_COUNTER_PREFIX = "JSDK_";
 

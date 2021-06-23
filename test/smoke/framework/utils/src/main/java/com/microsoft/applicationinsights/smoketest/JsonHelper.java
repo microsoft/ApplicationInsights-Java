@@ -24,6 +24,7 @@ import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.internal.schemav2.RequestData;
 import com.microsoft.applicationinsights.telemetry.Duration;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,21 +60,22 @@ public class JsonHelper {
         }
 
         @Override
-        public Base deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        @SuppressWarnings("SystemOut")
+        public Base deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
             JsonObject jo = json.getAsJsonObject();
             String baseType = jo.get(discriminatorField).getAsString();
             try {
-                Data<Domain> rval = Data.class.newInstance();
+                Data<Domain> rval = Data.class.getDeclaredConstructor().newInstance();
                 JsonObject baseData = jo.get("baseData").getAsJsonObject();
                 Class<? extends Domain> domainClass = classMap.get(baseType);
                 if (domainClass == null) {
                     throw new JsonParseException("Unknown Domain type: "+baseType);
                 }
                 rval.setBaseType(baseType);
-                final Domain deserialize = context.deserialize(baseData, TypeToken.get(domainClass).getType());
+                Domain deserialize = context.deserialize(baseData, TypeToken.get(domainClass).getType());
                 rval.setBaseData(deserialize);
                 return rval;
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 System.err.println("Error deserializing data");
                 e.printStackTrace();
                 throw new JsonParseException(e);
@@ -84,15 +86,14 @@ public class JsonHelper {
 
     private static class DurationDeserializer implements JsonDeserializer<Duration> {
         @Override
-        public Duration deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
-            final String value = json.getAsString();
-            final int firstDot = value.indexOf('.');
-            final boolean hasDays = firstDot > -1 && firstDot < value.indexOf(':');
+        public Duration deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
+            String value = json.getAsString();
+            int firstDot = value.indexOf('.');
+            boolean hasDays = firstDot > -1 && firstDot < value.indexOf(':');
 
-            final String[] parts = value.split("[:.]"); // [days.]hours:minutes:seconds[.milliseconds]
+            String[] parts = value.split("[:.]"); // [days.]hours:minutes:seconds[.milliseconds]
 
-            final long[] conversionFactor = new long[]{86400000, 3600000, 60000, 1000, 1};
+            long[] conversionFactor = new long[]{86400000, 3600000, 60000, 1000, 1};
             int conversionIndex = hasDays ? 0 : 1;
             long duration = 0;
             for (int i = 0; i < parts.length; i++) {
@@ -106,11 +107,12 @@ public class JsonHelper {
 
     private static class DataPointTypeEnumConverter implements JsonDeserializer<DataPointType>, JsonSerializer<DataPointType> {
         @Override
-        public DataPointType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            final int id = json.getAsInt();
+        public DataPointType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
+            String id = json.getAsString();
             switch (id) {
-                case 0: return DataPointType.Measurement;
-                case 1: return DataPointType.Aggregation;
+                // FIXME (trask) breeze question: this used to be mapped from int (0/1), is it really correct to map to string now?
+                case "Measurement": return DataPointType.Measurement;
+                case "Aggregation": return DataPointType.Aggregation;
                 default: throw new IllegalArgumentException("No DataPointType with id="+id);
             }
         }
@@ -119,4 +121,6 @@ public class JsonHelper {
             return new JsonPrimitive(src.getValue());
         }
     }
+
+    private JsonHelper() {}
 }

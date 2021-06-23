@@ -22,34 +22,23 @@ package com.microsoft.applicationinsights.agent.internal.instrumentation.sdk;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.google.common.base.Strings;
-import com.microsoft.applicationinsights.agent.Exporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.microsoft.applicationinsights.FormattedDuration;
+import com.microsoft.applicationinsights.FormattedTime;
+import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.applicationinsights.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
 import com.microsoft.applicationinsights.agent.internal.Global;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingScoreGeneratorV2;
-import com.microsoft.applicationinsights.extensibility.context.OperationContext;
-import com.microsoft.applicationinsights.telemetry.Duration;
-import com.microsoft.applicationinsights.telemetry.EventTelemetry;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
-import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
-import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.telemetry.SeverityLevel;
-import com.microsoft.applicationinsights.telemetry.SupportSampling;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
-import com.microsoft.applicationinsights.telemetry.TraceTelemetry;
+import com.microsoft.applicationinsights.common.Strings;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 // supporting all properties of event, metric, remove dependency and page view telemetry
 public class BytecodeUtilImpl implements BytecodeUtilDelegate {
@@ -65,12 +54,32 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
-        EventTelemetry telemetry = new EventTelemetry(name);
-        telemetry.setTimestamp(timestamp);
-        telemetry.getProperties().putAll(properties);
-        telemetry.getContext().getTags().putAll(tags);
-        telemetry.getMetrics().putAll(metrics);
-        telemetry.getContext().setInstrumentationKey(instrumentationKey);
+        TelemetryItem telemetry = new TelemetryItem();
+        TelemetryEventData data = new TelemetryEventData();
+        TelemetryClient.getActive().initEventTelemetry(telemetry, data);
+
+        data.setName(name);
+        data.setMeasurements(metrics);
+
+        // FIXME (trask) azure sdk exporter: add properties to MonitorDomain, then this code can be shared
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        if (timestamp != null) {
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
+        } else {
+            telemetry.setTime(FormattedTime.fromNow());
+        }
+        selectivelySetTags(telemetry, tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -83,17 +92,41 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
-        MetricTelemetry telemetry = new MetricTelemetry();
-        telemetry.setTimestamp(timestamp);
-        telemetry.setName(name);
-        telemetry.setValue(value);
-        telemetry.setCount(count);
-        telemetry.setMin(min);
-        telemetry.setMax(max);
-        telemetry.setStandardDeviation(stdDev);
-        telemetry.getProperties().putAll(properties);
-        telemetry.getContext().getTags().putAll(tags);
-        telemetry.getContext().setInstrumentationKey(instrumentationKey);
+        TelemetryItem telemetry = new TelemetryItem();
+        MetricsData data = new MetricsData();
+        MetricDataPoint point = new MetricDataPoint();
+        TelemetryClient.getActive().initMetricTelemetry(telemetry, data, point);
+
+        point.setName(name);
+        point.setValue(value);
+        point.setCount(count);
+        point.setMin(min);
+        point.setMax(max);
+        point.setStdDev(stdDev);
+        if (count != null || min != null || max != null || stdDev != null) {
+            point.setDataPointType(DataPointType.AGGREGATION);
+        } else {
+            point.setDataPointType(DataPointType.MEASUREMENT);
+        }
+
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        if (timestamp != null) {
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
+        } else {
+            telemetry.setTime(FormattedTime.fromNow());
+        }
+        selectivelySetTags(telemetry, tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -107,22 +140,40 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
-        RemoteDependencyTelemetry telemetry = new RemoteDependencyTelemetry();
-        telemetry.setTimestamp(timestamp);
-        telemetry.setName(name);
-        telemetry.setId(id);
-        telemetry.setResultCode(resultCode);
+        TelemetryItem telemetry = new TelemetryItem();
+        RemoteDependencyData data = new RemoteDependencyData();
+        TelemetryClient.getActive().initRemoteDependencyTelemetry(telemetry, data);
+
+        data.setName(name);
+        data.setId(id);
+        data.setResultCode(resultCode);
         if (totalMillis != null) {
-            telemetry.setDuration(new Duration(totalMillis));
+            data.setDuration(FormattedDuration.fromMillis(totalMillis));
         }
-        telemetry.setSuccess(success);
-        telemetry.setCommandName(commandName);
-        telemetry.setType(type);
-        telemetry.setTarget(target);
-        telemetry.getProperties().putAll(properties);
-        telemetry.getContext().getTags().putAll(tags);
-        telemetry.getMetrics().putAll(metrics);
-        telemetry.getContext().setInstrumentationKey(instrumentationKey);
+        data.setSuccess(success);
+        data.setData(commandName);
+        data.setType(type);
+        data.setTarget(target);
+        data.setMeasurements(metrics);
+
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        if (timestamp != null) {
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
+        } else {
+            telemetry.setTime(FormattedTime.fromNow());
+        }
+        selectivelySetTags(telemetry, tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -134,15 +185,35 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
-        PageViewTelemetry telemetry = new PageViewTelemetry();
-        telemetry.setTimestamp(timestamp);
-        telemetry.setName(name);
-        telemetry.setUrl(uri);
-        telemetry.setDuration(totalMillis);
-        telemetry.getProperties().putAll(properties);
-        telemetry.getContext().getTags().putAll(tags);
-        telemetry.getMetrics().putAll(metrics);
-        telemetry.getContext().setInstrumentationKey(instrumentationKey);
+        TelemetryItem telemetry = new TelemetryItem();
+        PageViewData data = new PageViewData();
+        TelemetryClient.getActive().initPageViewTelemetry(telemetry, data);
+
+        data.setName(name);
+        if (uri != null) {
+            data.setUrl(uri.toString());
+        }
+        data.setDuration(FormattedDuration.fromMillis(totalMillis));
+        data.setMeasurements(metrics);
+
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        if (timestamp != null) {
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
+        } else {
+            telemetry.setTime(FormattedTime.fromNow());
+        }
+        selectivelySetTags(telemetry, tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -153,16 +224,33 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(message)) {
             return;
         }
+        TelemetryItem telemetry = new TelemetryItem();
+        MessageData data = new MessageData();
+        TelemetryClient.getActive().initMessageTelemetry(telemetry, data);
 
-        TraceTelemetry telemetry = new TraceTelemetry();
-        telemetry.setTimestamp(timestamp);
-        telemetry.setMessage(message);
+        data.setMessage(message);
         if (severityLevel != -1) {
-            telemetry.setSeverityLevel(getSeverityLevel(severityLevel));
+            data.setSeverityLevel(getSeverityLevel(severityLevel));
         }
-        telemetry.getProperties().putAll(properties);
-        telemetry.getContext().getTags().putAll(tags);
-        telemetry.getContext().setInstrumentationKey(instrumentationKey);
+
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        if (timestamp != null) {
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
+        } else {
+            telemetry.setTime(FormattedTime.fromNow());
+        }
+        selectivelySetTags(telemetry, tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -174,24 +262,41 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (Strings.isNullOrEmpty(name)) {
             return;
         }
+        TelemetryItem telemetry = new TelemetryItem();
+        RequestData data = new RequestData();
+        TelemetryClient.getActive().initRequestTelemetry(telemetry, data);
 
-        RequestTelemetry telemetry = new RequestTelemetry();
-        telemetry.setId(id);
-        telemetry.setName(name);
+        data.setId(id);
+        data.setName(name);
         if (url != null) {
-            telemetry.setUrl(url);
+            data.setUrl(url.toString());
         }
-        telemetry.setTimestamp(timestamp);
         if (duration != null) {
-            telemetry.setDuration(new Duration(duration));
+            data.setDuration(FormattedDuration.fromMillis(duration));
         }
-        telemetry.setResponseCode(responseCode);
-        telemetry.setSuccess(success);
-        telemetry.setSource(source);
-        telemetry.getProperties().putAll(properties);
-        telemetry.getContext().getTags().putAll(tags);
-        telemetry.getMetrics().putAll(metrics);
-        telemetry.getContext().setInstrumentationKey(instrumentationKey);
+        data.setResponseCode(responseCode);
+        data.setSuccess(success);
+        data.setSource(source);
+        data.setMeasurements(metrics);
+
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        if (timestamp != null) {
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
+        } else {
+            telemetry.setTime(FormattedTime.fromNow());
+        }
+        selectivelySetTags(telemetry, tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
@@ -202,32 +307,58 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         if (exception == null) {
             return;
         }
+        TelemetryItem telemetry = new TelemetryItem();
+        TelemetryExceptionData data = new TelemetryExceptionData();
+        TelemetryClient.getActive().initExceptionTelemetry(telemetry, data);
 
-        ExceptionTelemetry telemetry = new ExceptionTelemetry();
-        telemetry.setTimestamp(timestamp);
-        telemetry.setException(exception);
-        telemetry.setSeverityLevel(SeverityLevel.Error);
-        telemetry.getProperties().putAll(properties);
-        telemetry.getContext().getTags().putAll(tags);
-        telemetry.getMetrics().putAll(metrics);
-        telemetry.getContext().setInstrumentationKey(instrumentationKey);
+        data.setExceptions(TelemetryUtil.getExceptions(exception));
+        data.setSeverityLevel(SeverityLevel.ERROR);
+        data.setMeasurements(metrics);
+
+        if (!properties.isEmpty()) {
+            Map<String, String> existingProperties = data.getProperties();
+            if (existingProperties == null) {
+                data.setProperties(properties);
+            } else {
+                existingProperties.putAll(properties);
+            }
+        }
+
+        if (timestamp != null) {
+            telemetry.setTime(FormattedTime.fromDate(timestamp));
+        } else {
+            telemetry.setTime(FormattedTime.fromNow());
+        }
+        selectivelySetTags(telemetry, tags);
+        if (instrumentationKey != null) {
+            telemetry.setInstrumentationKey(instrumentationKey);
+        }
 
         track(telemetry);
     }
 
-    private SeverityLevel getSeverityLevel(int value) {
-        for (SeverityLevel sl : SeverityLevel.values()) {
-            if (value == sl.getValue()) {
-                return sl;
-            }
+    private static SeverityLevel getSeverityLevel(int value) {
+        // these mappings from the 2.x SDK
+        switch (value) {
+            case 0:
+                return SeverityLevel.VERBOSE;
+            case 1:
+                return SeverityLevel.INFORMATION;
+            case 2:
+                return SeverityLevel.WARNING;
+            case 3:
+                return SeverityLevel.ERROR;
+            case 4:
+                return SeverityLevel.CRITICAL;
+            default:
+                return null;
         }
-        return null;
     }
 
     @Override
     public void flush() {
         // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
-        checkNotNull(Global.getTelemetryClient()).flush();
+        Global.getTelemetryClient().flushChannelBatcher();
     }
 
     @Override
@@ -237,23 +368,22 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
     }
 
-    private static void track(Telemetry telemetry) {
+    private static void track(TelemetryItem telemetry) {
         SpanContext context = Span.current().getSpanContext();
-        double samplingPercentage;
+        float samplingPercentage;
         if (context.isValid()) {
             if (!context.isSampled()) {
                 // sampled out
                 return;
             }
-            OperationContext operation = telemetry.getContext().getOperation();
-            if (operation.getId() == null) {
-                operation.setId(context.getTraceId());
+            if (!telemetry.getTags().containsKey(ContextTagKeys.AI_OPERATION_ID.toString())) {
+                telemetry.getTags().put(ContextTagKeys.AI_OPERATION_ID.toString(), context.getTraceId());
             }
-            if (operation.getParentId() == null) {
-                operation.setParentId(context.getSpanId());
+            if (!telemetry.getTags().containsKey(ContextTagKeys.AI_OPERATION_PARENT_ID.toString())) {
+                telemetry.getTags().put(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), context.getSpanId());
             }
             samplingPercentage =
-                    Exporter.getSamplingPercentage(context.getTraceState(), Global.getSamplingPercentage(), false);
+                    TelemetryUtil.getSamplingPercentage(context.getTraceState(), Global.getSamplingPercentage(), false);
         } else {
             // sampling is done using the configured sampling percentage
             samplingPercentage = Global.getSamplingPercentage();
@@ -264,22 +394,34 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
         }
         // sampled in
 
-        if (telemetry instanceof SupportSampling && samplingPercentage != 100) {
-            ((SupportSampling) telemetry).setSamplingPercentage(samplingPercentage);
+        if (samplingPercentage != 100) {
+            telemetry.setSampleRate(samplingPercentage);
         }
         // this is not null because sdk instrumentation is not added until Global.setTelemetryClient() is called
-        checkNotNull(Global.getTelemetryClient()).track(telemetry);
+        Global.getTelemetryClient().trackAsync(telemetry);
     }
 
-    private static boolean sample(Telemetry telemetry, double samplingPercentage) {
+    private static boolean sample(TelemetryItem telemetry, double samplingPercentage) {
         if (samplingPercentage == 100) {
             return true;
         }
-        if (SamplingScoreGeneratorV2.getSamplingScore(telemetry.getContext().getOperation().getId()) >=
-                samplingPercentage) {
+        if (SamplingScoreGeneratorV2.getSamplingScore(getOperationId(telemetry)) >= samplingPercentage) {
             logger.debug("Item {} sampled out", telemetry.getClass().getSimpleName());
             return false;
         }
         return true;
+    }
+
+    private static String getOperationId(TelemetryItem telemetry) {
+        return telemetry.getTags().get(ContextTagKeys.AI_OPERATION_ID.toString());
+    }
+
+    private static void selectivelySetTags(TelemetryItem telemetry, Map<String, String> sourceTags) {
+        Map<String, String> destTags = telemetry.getTags();
+        for (Map.Entry<String, String> entry : sourceTags.entrySet()) {
+            if (!entry.getKey().equals(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString())) {
+                destTags.put(entry.getKey(), entry.getValue());
+            }
+        }
     }
 }

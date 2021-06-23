@@ -35,8 +35,14 @@ public enum MemoryManagers {
 
 
     private final Class<? extends GarbageCollector>[] managers;
+    // TODO (johnoliver) can these be removed?
+    @SuppressWarnings("unused")
     private final Class<? extends GarbageCollector> tenuredCollector;
+    // TODO (johnoliver) can these be removed?
+    @SuppressWarnings("unused")
     private final Class<? extends GarbageCollector> youngCollector;
+    // TODO (johnoliver) can these be removed?
+    @SuppressWarnings("unused")
     private final Class<? extends MemoryPool> oldGen;
 
     public static MemoryManagers of(MemoryManagement manager) {

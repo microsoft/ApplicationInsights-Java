@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-/**
- * Created by gupele on 3/13/2015.
- */
 public class ApplicationInsightsXmlConfiguration {
 
     private String connectionString;
@@ -31,8 +28,6 @@ public class ApplicationInsightsXmlConfiguration {
     private String roleName;
 
     private String roleInstance;
-
-    private final ChannelXmlElement channel = new ChannelXmlElement();
 
     private TelemetryModulesXmlElement modules;
 
@@ -62,10 +57,6 @@ public class ApplicationInsightsXmlConfiguration {
 
     public void setRoleInstance(String roleInstance) {
         this.roleInstance = roleInstance;
-    }
-
-    public ChannelXmlElement getChannel() {
-        return channel;
     }
 
     public QuickPulseXmlElement getQuickPulse() {

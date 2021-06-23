@@ -2,9 +2,8 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
 import com.microsoft.applicationinsights.internal.schemav2.Data;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.RemoteDependencyData;
@@ -96,6 +95,8 @@ public class JdbcTest extends AiSmokeTest {
         assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /Jdbc/*");
     }
 
+    // FIXME (trask)
+    @Ignore
     @Test
     @TargetUri("/hsqldbLargeStatement")
     public void hsqldbLargeStatement() throws Exception {
@@ -112,7 +113,11 @@ public class JdbcTest extends AiSmokeTest {
         RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
         RemoteDependencyData rdd = (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-        String largeStr = " /*" + Strings.repeat("a", 2000) + "*/";
+        StringBuilder a2000 = new StringBuilder();
+        for (int i = 0; i < 2000; i++) {
+            a2000.append("a");
+        }
+        String largeStr = " /*" + a2000 + "*/";
         String query = "select * from abc" + largeStr;
         String truncatedQuery = query.substring(0, Math.min(query.length(), 1024));
 
@@ -202,7 +207,7 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = mockedIngestion.waitForItem(new Predicate<Envelope>() {
             @Override
-            public boolean apply(Envelope input) {
+            public boolean test(Envelope input) {
                 if (!input.getData().getBaseType().equals("RemoteDependencyData")) {
                     return false;
                 }
@@ -239,7 +244,7 @@ public class JdbcTest extends AiSmokeTest {
 
         Envelope rddEnvelope = mockedIngestion.waitForItem(new Predicate<Envelope>() {
             @Override
-            public boolean apply(Envelope input) {
+            public boolean test(Envelope input) {
                 if (!input.getData().getBaseType().equals("RemoteDependencyData")) {
                     return false;
                 }

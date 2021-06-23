@@ -34,11 +34,6 @@ import java.util.concurrent.ConcurrentMap;
 public class RequestData extends Domain
 {
     /**
-     * Backing field for property Ver.
-     */
-    private static final int ver = 2;
-
-    /**
      * Backing field for property Id.
      */
     private String id;
@@ -88,7 +83,6 @@ public class RequestData extends Domain
      */
     public RequestData()
     {
-        this.InitializeFields();
     }
 
     /**
@@ -207,12 +201,5 @@ public class RequestData extends Domain
             this.measurements = new ConcurrentHashMap<>();
         }
         return this.measurements;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

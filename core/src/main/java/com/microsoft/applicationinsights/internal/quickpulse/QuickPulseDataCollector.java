@@ -28,31 +28,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.microsoft.applicationinsights.TelemetryConfiguration;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.*;
+import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.CpuPerformanceCounterCalculator;
-import com.microsoft.applicationinsights.telemetry.ExceptionTelemetry;
-import com.microsoft.applicationinsights.telemetry.RemoteDependencyTelemetry;
-import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by gupele on 12/5/2016.
- */
 public enum QuickPulseDataCollector {
     INSTANCE;
 
-    private String ikey;
-    private TelemetryConfiguration config;
+    private TelemetryClient telemetryClient;
 
     static class FinalCounters {
-        public final double exceptions;
+        public final int exceptions;
         public final long requests;
         public final double requestsDuration;
-        public final long unsuccessfulRequests;
+        public final int unsuccessfulRequests;
         public final long rdds;
         public final double rddsDuration;
-        public final long unsuccessfulRdds;
+        public final int unsuccessfulRdds;
         public final long memoryCommitted;
         public final double cpuUsage;
 
@@ -149,21 +142,13 @@ public enum QuickPulseDataCollector {
         counters.set(null);
     }
 
-    @Deprecated
-    public synchronized void enable(final String ikey) {
-        this.ikey = ikey;
-        this.config = null;
-        counters.set(new Counters());
-    }
-
-    public synchronized void enable(TelemetryConfiguration config) {
-        this.config = config;
-        this.ikey = null;
+    public synchronized void enable(TelemetryClient telemetryClient) {
+        this.telemetryClient = telemetryClient;
         counters.set(new Counters());
     }
 
     public synchronized FinalCounters getAndRestart() {
-        final Counters currentCounters = counters.getAndSet(new Counters());
+        Counters currentCounters = counters.getAndSet(new Counters());
         if (currentCounters != null) {
             return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
         }
@@ -173,44 +158,42 @@ public enum QuickPulseDataCollector {
 
     /*@VisibleForTesting*/
     synchronized FinalCounters peek() {
-        final Counters currentCounters = this.counters.get(); // this should be the only differece
+        Counters currentCounters = this.counters.get(); // this should be the only differece
         if (currentCounters != null) {
             return new FinalCounters(currentCounters, memory, cpuPerformanceCounterCalculator);
         }
         return null;
     }
 
-    public void add(Telemetry telemetry) {
-        if (!telemetry.getContext().getInstrumentationKey().equals(getInstrumentationKey())) {
+    public void add(TelemetryItem telemetryItem) {
+        if (!telemetryItem.getInstrumentationKey().equals(getInstrumentationKey())) {
             return;
         }
 
-        if (telemetry instanceof RequestTelemetry) {
-            RequestTelemetry requestTelemetry = (RequestTelemetry)telemetry;
+        MonitorDomain data = telemetryItem.getData().getBaseData();
+        if (data instanceof RequestData) {
+            RequestData requestTelemetry = (RequestData)data;
             addRequest(requestTelemetry);
-        } else if (telemetry instanceof RemoteDependencyTelemetry) {
-            addDependency((RemoteDependencyTelemetry) telemetry);
-        } else if (telemetry instanceof ExceptionTelemetry) {
+        } else if (data instanceof RemoteDependencyData) {
+            addDependency((RemoteDependencyData) data);
+        } else if (data instanceof TelemetryExceptionData) {
             addException();
         }
     }
 
     private synchronized String getInstrumentationKey() {
-        if (config != null) {
-            return config.getInstrumentationKey();
-        } else {
-            return ikey;
-        }
+        return telemetryClient.getInstrumentationKey();
     }
 
-    private void addDependency(RemoteDependencyTelemetry telemetry) {
+    private void addDependency(RemoteDependencyData telemetry) {
         Counters counters = this.counters.get();
         if (counters == null) {
             return;
         }
         counters.rddsAndDuations.addAndGet(
-                Counters.encodeCountAndDuration(1, telemetry.getDuration().getTotalMilliseconds()));
-        if (!telemetry.getSuccess()) {
+                Counters.encodeCountAndDuration(1, parseDurationToMillis(telemetry.getDuration())));
+        Boolean success = telemetry.isSuccess();
+        if (success != null && !success) { // success should not be null
             counters.unsuccessfulRdds.incrementAndGet();
         }
     }
@@ -224,15 +207,80 @@ public enum QuickPulseDataCollector {
         counters.exceptions.incrementAndGet();
     }
 
-    private void addRequest(RequestTelemetry requestTelemetry) {
+    private void addRequest(RequestData requestTelemetry) {
         Counters counters = this.counters.get();
         if (counters == null) {
             return;
         }
 
-        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, requestTelemetry.getDuration().getTotalMilliseconds()));
+        counters.requestsAndDurations.addAndGet(Counters.encodeCountAndDuration(1, parseDurationToMillis(requestTelemetry.getDuration())));
         if (!requestTelemetry.isSuccess()) {
             counters.unsuccessfulRequests.incrementAndGet();
         }
+    }
+
+    // TODO (trask) optimization: move live metrics request capture to OpenTelemetry layer so don't have to parse String duration
+    // visible for testing
+    static long parseDurationToMillis(String duration) {
+        // format is DD.HH:MM:SS.MMMMMM
+        return startingAtDaysOrHours(duration);
+    }
+
+    private static long startingAtDaysOrHours(String duration) {
+        int i = 0;
+        char c = duration.charAt(i++);
+        long daysOrHours = charToInt(c);
+
+        c = duration.charAt(i++);
+        while (c != ':' && c != '.') {
+            daysOrHours = 10 * daysOrHours + charToInt(c);
+            c = duration.charAt(i++);
+        }
+        if (c == ':') {
+            // was really hours
+            return startingAtMinutes(duration, i, daysOrHours);
+        } else {
+            return startingAtHours(duration, i, daysOrHours);
+        }
+    }
+
+    private static long startingAtHours(String duration, int i, long runningTotalInDays) {
+        char c1 = duration.charAt(i++);
+        char c2 = duration.charAt(i++);
+        int hours = 10 * charToInt(c1) + charToInt(c2);
+        return startingAtMinutes(duration, i + 1, 24 * runningTotalInDays + hours);
+    }
+
+    private static long startingAtMinutes(String duration, int i, long runningTotalInHours) {
+        char c1 = duration.charAt(i++);
+        char c2 = duration.charAt(i++);
+        int minutes = 10 * charToInt(c1) + charToInt(c2);
+        // next char must be ':'
+        return startingAtSeconds(duration, i + 1, 60 * runningTotalInHours + minutes);
+    }
+
+    private static long startingAtSeconds(String duration, int i, long runningTotalInMinutes) {
+        char c1 = duration.charAt(i++);
+        char c2 = duration.charAt(i++);
+        int seconds = 10 * charToInt(c1) + charToInt(c2);
+        return startingAtMicros(duration, i + 1, 60 * runningTotalInMinutes + seconds);
+    }
+
+    private static long startingAtMicros(String duration, int i, long runningTotalInSeconds) {
+        int millis = 0;
+        // only care about milliseconds
+        for (int j = i; j < i + 3; j++) {
+            char c = duration.charAt(j);
+            millis = 10 * millis + charToInt(c);
+        }
+        return 1000 * runningTotalInSeconds + millis;
+    }
+
+    private static int charToInt(char c) {
+        int x = c - '0';
+        if (x < 0 || x > 9) {
+            throw new AssertionError("Unexpected char '" + c + "'");
+        }
+        return x;
     }
 }

@@ -34,11 +34,6 @@ import java.util.concurrent.ConcurrentMap;
 public class ExceptionData extends Domain
 {
     /**
-     * Backing field for property Ver.
-     */
-    private static final int ver = 2;
-
-    /**
      * Backing field for property Exceptions.
      */
     private List<ExceptionDetails> exceptions;
@@ -63,7 +58,6 @@ public class ExceptionData extends Domain
      */
     public ExceptionData()
     {
-        this.InitializeFields();
     }
 
     /**
@@ -115,12 +109,5 @@ public class ExceptionData extends Domain
             this.measurements = new ConcurrentHashMap<>();
         }
         return this.measurements;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

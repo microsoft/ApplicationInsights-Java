@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.microsoft.applicationinsights.agent.internal.wasbootstrap.configuration.Configuration.ExtractAttribute;
@@ -45,36 +44,28 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.api.trace.Span;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class ExporterWithAttributeProcessorTest {
+class ExporterWithAttributeProcessorTest {
 
     private final Tracer tracer = OpenTelemetrySdk.builder().build().getTracer("test");
 
-    @Test(expected = FriendlyException.class)
-    public void noActionTest() {
+    @Test
+    void noActionTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
         config.id = "noAction";
-        SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = tracer.spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .startSpan();
-
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+        assertThatThrownBy(() -> new ExporterWithAttributeProcessor(config, mockExporter))
+                .isInstanceOf(FriendlyException.class);
     }
 
-    @Test(expected = FriendlyException.class)
-    public void inValidConfigTestWithNoValueInActionTest() {
+    @Test
+    void inValidConfigTestWithNoValueInActionTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -88,22 +79,13 @@ public class ExporterWithAttributeProcessorTest {
         List<ProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = tracer.spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .startSpan();
-
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+        assertThatThrownBy(() -> new ExporterWithAttributeProcessor(config, mockExporter))
+                .isInstanceOf(FriendlyException.class);
     }
 
-    @Test(expected = FriendlyException.class)
-    public void inValidConfigTestWithInvalidIncludeTest() {
+    @Test
+    void inValidConfigTestWithInvalidIncludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -117,22 +99,13 @@ public class ExporterWithAttributeProcessorTest {
         List<ProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span span = tracer.spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .startSpan();
-
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
-
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+        assertThatThrownBy(() -> new ExporterWithAttributeProcessor(config, mockExporter))
+                .isInstanceOf(FriendlyException.class);
     }
 
     @Test
-    public void actionDeleteTest() {
+    void actionDeleteTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -161,14 +134,14 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey")));
-        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("one")));
-        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("TESTKEY")));
 
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))).isNull();
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("one"))).isNotNull();
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("TESTKEY"))).isNotNull();
     }
 
     @Test
-    public void actionInsertTest() {
+    void actionInsertTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -198,13 +171,13 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey")));
-        assertEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))));
 
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isEqualTo("testNewValue");
     }
 
     @Test
-    public void actionInsertAndUpdateTest() {
+    void actionInsertAndUpdateTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -239,14 +212,14 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey")));
-        assertEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))));
-        assertEquals("testNewValue2", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
 
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isEqualTo("testNewValue");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testNewValue2");
     }
 
     @Test
-    public void actionInsertAndUpdateSameAttributeTest() {
+    void actionInsertAndUpdateSameAttributeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -281,13 +254,13 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertNotNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey")));
-        assertEquals("testNewValue2", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))));
 
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isEqualTo("testNewValue2");
     }
 
     @Test
-    public void actionInsertWithDuplicateTest() {
+    void actionInsertWithDuplicateTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -317,14 +290,14 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("testValue", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertNotEquals("testNewValue", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("1", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("one"))));
 
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))).isNotEqualTo("testNewValue");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("one"))).isEqualTo("1");
     }
 
     @Test
-    public void actionInsertFromAttributeTest() {
+    void actionInsertFromAttributeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -355,14 +328,14 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("testValue", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("testValue2", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey3"))));
-        assertEquals("1", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("one"))));
 
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey3"))).isEqualTo("testValue2");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("one"))).isEqualTo("1");
     }
 
     @Test
-    public void actionSimpleUpdateTest() {
+    void actionSimpleUpdateTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -403,13 +376,14 @@ public class ExporterWithAttributeProcessorTest {
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
         SpanData resultLog = result.get(1);
-        assertEquals("redacted", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("redacted", Objects.requireNonNull(resultLog.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
     }
 
 
     @Test
-    public void actionUpdateFromAttributeUpdateTest() {
+    void actionUpdateFromAttributeUpdateTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -439,11 +413,12 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("testValue2", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue2");
     }
 
     @Test
-    public void complexActionTest() {
+    void complexActionTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -477,12 +452,13 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("redacted", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey2")));
+
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey2"))).isNull();
     }
 
     @Test
-    public void simpleIncludeTest() {
+    void simpleIncludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -535,13 +511,14 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
     }
 
     @Test
-    public void simpleIncludeWithSpanNamesTest() {
+    void simpleIncludeWithSpanNamesTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -603,16 +580,16 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultLogA = result.get(2);
-        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        // Make sure log is not updated, since we have spanNames in include criteria
-        assertEquals("testValue", Objects.requireNonNull(resultLogA.getAttributes().get(AttributeKey.stringKey("testKey"))));
 
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
+        // Make sure log is not updated, since we have spanNames in include criteria
+        assertThat(resultLogA.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
     }
 
     @Test
-    public void simpleIncludeRegexTest() {
+    void simpleIncludeRegexTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -665,13 +642,14 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
     }
 
-    @Test(expected = FriendlyException.class)
-    public void invalidRegexTest() {
+    @Test
+    void invalidRegexTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -686,42 +664,13 @@ public class ExporterWithAttributeProcessorTest {
         List<ProcessorAction> actions = new ArrayList<>();
         actions.add(action);
         config.actions = actions;
-        SpanExporter exampleExporter = new ExporterWithAttributeProcessor(config, mockExporter);
 
-        Span spanA = tracer.spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB = tracer.spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanC = tracer.spanBuilder("serviceC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD = tracer.spanBuilder("serviceD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
-
-        exampleExporter.export(spans);
+        assertThatThrownBy(() -> new ExporterWithAttributeProcessor(config, mockExporter))
+                .isInstanceOf(FriendlyException.class);
     }
 
     @Test
-    public void simpleIncludeRegexValueTest() {
+    void simpleIncludeRegexValueTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -786,14 +735,15 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanE = result.get(4);
-        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("testV1", Objects.requireNonNull(resultSpanE.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
+        assertThat(resultSpanE.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testV1");
     }
 
     @Test
-    public void simpleIncludeRegexNoValueTest() {
+    void simpleIncludeRegexNoValueTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -857,14 +807,15 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanE = result.get(4);
-        assertEquals("redacted", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("redacted", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("redacted", Objects.requireNonNull(resultSpanE.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
+        assertThat(resultSpanE.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
     }
 
     @Test
-    public void simpleIncludeHashTest() {
+    void simpleIncludeHashTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -916,14 +867,14 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanD = result.get(3);
-        assertNotEquals("HashValue:" + Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))), "testValue", Objects
-                .requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("testValue2", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey2"))));
-        assertEquals("testValue", Objects.requireNonNull(resultSpanD.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))).isNotEqualTo("testValue");
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey2"))).isEqualTo("testValue2");
+        assertThat(resultSpanD.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
     }
 
     @Test
-    public void simpleExcludeTest() {
+    void simpleExcludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -976,13 +927,14 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("redacted", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
+        assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
     }
 
     @Test
-    public void simpleExcludeRegexTest() {
+    void simpleExcludeRegexTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -1036,14 +988,15 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanD = result.get(3);
-        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("redacted", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("redacted", Objects.requireNonNull(resultSpanD.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
+        assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
+        assertThat(resultSpanD.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("redacted");
     }
 
     @Test
-    public void multiIncludeTest() {
+    void multiIncludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -1103,13 +1056,14 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey")));
-        assertEquals("testValue", Objects.requireNonNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertEquals("testValue", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))).isNull();
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
+        assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
     }
 
     @Test
-    public void multiExcludeTest() {
+    void multiExcludeTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -1170,15 +1124,15 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
         SpanData resultSpanD = result.get(3);
-        assertEquals("testValue", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))));
-        assertNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey")));
-        assertNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey")));
-        assertNull(resultSpanD.getAttributes().get(AttributeKey.stringKey("testKey")));
 
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey"))).isEqualTo("testValue");
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey"))).isNull();
+        assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey"))).isNull();
+        assertThat(resultSpanD.getAttributes().get(AttributeKey.stringKey("testKey"))).isNull();
     }
 
     @Test
-    public void selectiveProcessingTest() { //With both include and exclude
+    void selectiveProcessingTest() { //With both include and exclude
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
@@ -1237,20 +1191,21 @@ public class ExporterWithAttributeProcessorTest {
         SpanData resultSpanA = result.get(0);
         SpanData resultSpanB = result.get(1);
         SpanData resultSpanC = result.get(2);
-        assertEquals("testValue2", Objects.requireNonNull(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey2"))));
-        assertNull(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey2")));
-        assertEquals("testValue2", Objects.requireNonNull(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey2"))));
+
+        assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("testKey2"))).isEqualTo("testValue2");
+        assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("testKey2"))).isNull();
+        assertThat(resultSpanC.getAttributes().get(AttributeKey.stringKey("testKey2"))).isEqualTo("testValue2");
     }
 
     @Test
-    public void actionInsertWithExtractTest() {
+    void actionInsertWithExtractTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
         config.id = "actionExtract";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
-        String regex="^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)";
+        String regex="^(?<httpProtocol>.*)://(?<httpDomain>.*)/(?<httpPath>.*)([?&])(?<httpQueryParams>.*)";
         Pattern pattern = Pattern.compile(regex);
         List<String> groupNames= ProcessorActionAdaptor.getGroupNames(regex);
         action.extractAttribute= new ExtractAttribute(pattern,groupNames);
@@ -1276,24 +1231,25 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("http", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpProtocol"))));
-        assertEquals("example.com", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpDomain"))));
-        assertEquals("path", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpPath"))));
-        assertEquals("queryParam1=value1,queryParam2=value2",
-                Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpQueryParams"))));
-        assertEquals("http://example.com/path?queryParam1=value1,queryParam2=value2",
-                Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
+
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpProtocol"))).isEqualTo("http");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpDomain"))).isEqualTo("example.com");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpPath"))).isEqualTo("path");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpQueryParams")))
+                .isEqualTo("queryParam1=value1,queryParam2=value2");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey")))
+                .isEqualTo("http://example.com/path?queryParam1=value1,queryParam2=value2");
     }
 
     @Test
-    public void actionInsertWithExtractDuplicateTest() {
+    void actionInsertWithExtractDuplicateTest() {
         MockExporter mockExporter = new MockExporter();
         ProcessorConfig config = new ProcessorConfig();
         config.type = ProcessorType.ATTRIBUTE;
         config.id = "actionExtract";
         ProcessorAction action = new ProcessorAction();
         action.key = "testKey";
-        String regex="^(?<httpProtocol>.*):\\/\\/(?<httpDomain>.*)\\/(?<httpPath>.*)(\\?|\\&)(?<httpQueryParams>.*)";
+        String regex="^(?<httpProtocol>.*)://(?<httpDomain>.*)/(?<httpPath>.*)([?&])(?<httpQueryParams>.*)";
         Pattern pattern = Pattern.compile(regex);
         List<String> groupNames= ProcessorActionAdaptor.getGroupNames(regex);
         action.extractAttribute= new ExtractAttribute(pattern,groupNames);
@@ -1319,14 +1275,14 @@ public class ExporterWithAttributeProcessorTest {
         // verify that resulting spans are filtered in the way we want
         List<SpanData> result = mockExporter.getSpans();
         SpanData resultSpan = result.get(0);
-        assertEquals("http", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpProtocol"))));
-        assertEquals("example.com", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpDomain"))));
-        assertEquals("path", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpPath"))));
-        assertNotEquals("oldPath", Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpPath"))));
-        assertEquals("queryParam1=value1,queryParam2=value2",
-                Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("httpQueryParams"))));
-        assertEquals("http://example.com/path?queryParam1=value1,queryParam2=value2",
-                Objects.requireNonNull(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey"))));
-    }
 
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpProtocol"))).isEqualTo("http");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpDomain"))).isEqualTo("example.com");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpPath"))).isEqualTo("path");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpPath"))).isNotEqualTo("oldPath");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("httpQueryParams")))
+                .isEqualTo("queryParam1=value1,queryParam2=value2");
+        assertThat(resultSpan.getAttributes().get(AttributeKey.stringKey("testKey")))
+                .isEqualTo("http://example.com/path?queryParam1=value1,queryParam2=value2");
+    }
 }

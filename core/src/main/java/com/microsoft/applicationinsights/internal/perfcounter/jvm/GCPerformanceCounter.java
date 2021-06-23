@@ -25,14 +25,14 @@ import java.util.List;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.internal.perfcounter.PerformanceCounter;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+
+import static com.microsoft.applicationinsights.TelemetryUtil.createMetricsTelemetry;
 
 /**
  * The class reports GC related data
- *
- * Created by gupele on 8/8/2016.
  */
 public final class GCPerformanceCounter implements PerformanceCounter {
     public final static String NAME = "GC";
@@ -76,10 +76,10 @@ public final class GCPerformanceCounter implements PerformanceCounter {
             currentTotalCount = totalCollectionCount;
             currentTotalTime = totalCollectionTime;
 
-            MetricTelemetry mtTotalCount = new MetricTelemetry(GC_TOTAL_COUNT, countToReport);
-            MetricTelemetry mtTotalTime = new MetricTelemetry(GC_TOTAL_TIME, timeToReport);
-            telemetryClient.track(mtTotalCount);
-            telemetryClient.track(mtTotalTime);
+            TelemetryItem mtTotalCount = createMetricsTelemetry(telemetryClient, GC_TOTAL_COUNT, countToReport);
+            TelemetryItem mtTotalTime = createMetricsTelemetry(telemetryClient, GC_TOTAL_TIME, timeToReport);
+            telemetryClient.trackAsync(mtTotalCount);
+            telemetryClient.trackAsync(mtTotalTime);
         }
     }
 }

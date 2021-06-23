@@ -21,97 +21,95 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ClientClosedException;
+import com.azure.core.http.*;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.junit.*;
-import org.mockito.ArgumentMatcher;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
 
-public class ProfilerFrontendClientV2Test {
+import static org.assertj.core.api.Assertions.assertThat;
+
+class ProfilerFrontendClientV2Test {
     @Test
-    public void settingsPullHitsCorrectUrl() throws ClientClosedException, IOException, URISyntaxException {
+    void settingsPullHitsCorrectUrl() throws IOException {
 
-        CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
+        AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 
-        ProfilerFrontendClientV2 profilerFrontendClientV2 = new ProfilerFrontendClientV2(new URI("http://a-host"), "a-instrumentation-key", httpClient);
+        HttpPipeline httpPipeline = new HttpPipelineBuilder()
+                .httpClient(request -> {
+                    requestHolder.set(request);
+                    return Mono.just(new MockHttpResponse(request, 200));
+                })
+                .build();
+
+        ProfilerFrontendClientV2 profilerFrontendClientV2 =
+                new ProfilerFrontendClientV2(new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
+
         Date now = Date.from(Instant.now());
         profilerFrontendClientV2.getSettings(now);
 
-        ArgumentMatcher<HttpGet> matcher = new ArgumentMatcher<HttpGet>() {
-            @Override public boolean matches(Object argument) {
-                HttpGet get = ((HttpGet) argument);
-                String uri = get.getURI().toString();
-                return uri.contains("a-instrumentation-key") &&
-                        uri.contains("/api/profileragent/v4/settings");
-            }
-        };
+        HttpRequest request = requestHolder.get();
+        String url = request.getUrl().toString();
 
-        Mockito.verify(httpClient, Mockito.times(1))
-                .execute(
-                        Mockito.argThat(matcher),
-                        Mockito.any(ResponseHandler.class)
-                );
+        assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(url.contains("a-instrumentation-key")).isTrue();
+        assertThat(url.contains("/api/profileragent/v4/settings")).isTrue();
     }
 
     @Test
-    public void uploadHitsCorrectUrl() throws ClientClosedException, IOException, URISyntaxException {
+    void uploadHitsCorrectUrl() throws IOException {
+
+        AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
+
+        HttpPipeline httpPipeline = new HttpPipelineBuilder()
+                .httpClient(request -> {
+                    requestHolder.set(request);
+                    return Mono.just(new MockHttpResponse(request, 200));
+                })
+                .build();
+
+        ProfilerFrontendClientV2 profilerFrontendClientV2 =
+                new ProfilerFrontendClientV2(new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
 
         UUID id = UUID.randomUUID();
-
-        ArgumentMatcher<HttpPost> matcher = new ArgumentMatcher<HttpPost>() {
-            @Override public boolean matches(Object argument) {
-                HttpPost get = ((HttpPost) argument);
-                String uri = get.getURI().toString();
-                return uri.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id.toString()) &&
-                        uri.contains("action=gettoken");
-            }
-        };
-
-
-        CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
-
-        ProfilerFrontendClientV2 profilerFrontendClientV2 = new ProfilerFrontendClientV2(new URI("http://a-host"), "a-instrumentation-key", httpClient);
         profilerFrontendClientV2.getUploadAccess(id);
 
-        Mockito.verify(httpClient, Mockito.times(1))
-                .execute(
-                        Mockito.argThat(matcher),
-                        Mockito.any(ResponseHandler.class)
-                );
+        HttpRequest request = requestHolder.get();
+        String url = request.getUrl().toString();
+
+        assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.POST);
+        assertThat(url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id)).isTrue();
+        assertThat(url.contains("action=gettoken")).isTrue();
     }
 
     @Test
-    public void uploadFinishedHitsCorrectUrl() throws ClientClosedException, IOException, URISyntaxException {
+    void uploadFinishedHitsCorrectUrl() throws IOException {
 
-        CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
+        AtomicReference<HttpRequest> requestHolder = new AtomicReference<>();
 
-        ProfilerFrontendClientV2 profilerFrontendClientV2 = new ProfilerFrontendClientV2(new URI("http://a-host"), "a-instrumentation-key", httpClient);
+        HttpPipeline httpPipeline = new HttpPipelineBuilder()
+                .httpClient(request -> {
+                    requestHolder.set(request);
+                    return Mono.just(new MockHttpResponse(request, 200));
+                })
+                .build();
+
+        ProfilerFrontendClientV2 profilerFrontendClientV2 =
+                new ProfilerFrontendClientV2(new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
+
         UUID id = UUID.randomUUID();
         profilerFrontendClientV2.reportUploadFinish(id, "an-etag");
 
-        ArgumentMatcher<HttpPost> matcher = new ArgumentMatcher<HttpPost>() {
-            @Override public boolean matches(Object argument) {
-                HttpPost get = ((HttpPost) argument);
-                String uri = get.getURI().toString();
-                return uri.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id.toString()) &&
-                        uri.contains("action=commit");
-            }
-        };
+        HttpRequest request = requestHolder.get();
+        String url = request.getUrl().toString();
 
-        Mockito.verify(httpClient, Mockito.times(1))
-                .execute(
-                        Mockito.argThat(matcher),
-                        Mockito.any(ResponseHandler.class)
-                );
+        assertThat(request.getHttpMethod()).isEqualTo(HttpMethod.POST);
+        assertThat(url.contains("/api/apps/a-instrumentation-key/artifactkinds/profile/artifacts/" + id)).isTrue();
+        assertThat(url.contains("action=commit")).isTrue();
     }
 }

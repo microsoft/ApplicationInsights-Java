@@ -45,7 +45,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
 
 
     public ApplicationInsightsJsonLayout() {
-        final ApplicationMetadataFactory mf = DiagnosticsHelper.getMetadataFactory();
+        ApplicationMetadataFactory mf = DiagnosticsHelper.getMetadataFactory();
         valueFinders.add(mf.getSiteName());
         valueFinders.add(mf.getInstrumentationKey());
         valueFinders.add(mf.getExtensionVersion());

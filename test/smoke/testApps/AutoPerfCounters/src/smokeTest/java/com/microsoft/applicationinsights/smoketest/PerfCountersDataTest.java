@@ -1,16 +1,15 @@
 package com.microsoft.applicationinsights.smoketest;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.microsoft.applicationinsights.internal.schemav2.DataPoint;
 import com.microsoft.applicationinsights.internal.schemav2.DataPointType;
 import com.microsoft.applicationinsights.internal.schemav2.Envelope;
 import com.microsoft.applicationinsights.internal.schemav2.MetricData;
 import org.junit.*;
 
-import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import static org.junit.Assert.*;
 
@@ -77,10 +76,10 @@ public class PerfCountersDataTest extends AiSmokeTest {
     }
 
     private static Predicate<Envelope> getPerfMetricPredicate(String name) {
-        Preconditions.checkNotNull(name, "name");
+        Objects.requireNonNull(name, "name");
         return new Predicate<Envelope>() {
             @Override
-            public boolean apply(@Nullable Envelope input) {
+            public boolean test(Envelope input) {
                 if(!input.getData().getBaseType().equals("MetricData")) {
                     return false;
                 }

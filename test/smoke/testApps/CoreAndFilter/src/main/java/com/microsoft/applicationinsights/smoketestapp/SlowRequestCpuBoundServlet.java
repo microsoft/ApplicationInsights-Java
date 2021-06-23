@@ -17,11 +17,11 @@ public class SlowRequestCpuBoundServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        final long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
         ServletFuncs.geRrenderHtml(request, response);
         int responseTime = 25;
-        final String customResponseTime = request.getParameter("responseTime");
+        String customResponseTime = request.getParameter("responseTime");
         if (customResponseTime != null) {
             try {
                 responseTime = Integer.parseInt(customResponseTime);
@@ -31,11 +31,11 @@ public class SlowRequestCpuBoundServlet extends HttpServlet {
             }
         }
 
-        final long responseTimeMillis = responseTime * 1000L;
+        long responseTimeMillis = responseTime * 1000L;
         BigDecimal sum = BigDecimal.ONE;
         int iterations = 0;
         for (; durationSince(startTime) < responseTimeMillis; iterations++) {
-                final BigDecimal operand = BigDecimal.valueOf(rand.nextDouble()).multiply(MAX_VALUE);
+                BigDecimal operand = BigDecimal.valueOf(rand.nextDouble()).multiply(MAX_VALUE);
                 sum = sum.add(operand);
         }
         // this is just to use the value so JIT doesn't remove any computation

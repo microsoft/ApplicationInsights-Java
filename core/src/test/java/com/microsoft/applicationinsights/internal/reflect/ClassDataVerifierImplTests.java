@@ -21,37 +21,37 @@
 
 package com.microsoft.applicationinsights.internal.reflect;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public final class ClassDataVerifierImplTests {
+class ClassDataVerifierImplTests {
     private final static String PUBLIC_EXISTING_METHOD = "endsWith";
     private final static String PUBLIC_NOT_EXISTING_METHOD = "notexistingmethod";
     private final static String EXISTING_CLASS = "java.lang.String";
     private final static String NOT_EXISTING_CLASS = "java.lang.StringStringString";
 
     @Test
-    public void testMethodExistingPublicMethod() {
+    void testMethodExistingPublicMethod() {
         boolean found = new ClassDataVerifierImpl().verifyMethodExists(String.class, PUBLIC_EXISTING_METHOD, String.class);
-        assertTrue("Method not found", found);
+        assertThat(found).isTrue();
     }
 
     @Test
-    public void testMethodNotExistingPublicMethod() {
+    void testMethodNotExistingPublicMethod() {
         boolean found = new ClassDataVerifierImpl().verifyMethodExists(String.class, PUBLIC_NOT_EXISTING_METHOD);
-        assertFalse("Method found", found);
+        assertThat(found).isFalse();
     }
 
     @Test
-    public void testClassExists() {
+    void testClassExists() {
         boolean found = new ClassDataVerifierImpl().verifyClassExists(EXISTING_CLASS);
-        assertTrue("Class not found", found);
+        assertThat(found).isTrue();
     }
 
     @Test
-    public void testClassDoesNotExist() {
+    void testClassDoesNotExist() {
         boolean found = new ClassDataVerifierImpl().verifyClassExists(NOT_EXISTING_CLASS);
-        assertFalse("Class found", found);
+        assertThat(found).isFalse();
     }
 }

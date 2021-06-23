@@ -56,18 +56,15 @@ class DllFileUtils {
         }
 
         if (!dllPath.exists() || !dllPath.canRead() || !dllPath.canWrite()) {
-            throw new RuntimeException("Failed to create a read/write folder for the native dll.");
+            throw new IllegalStateException("Failed to create a read/write folder for the native dll.");
         }
-        LOGGER.trace("{} folder exists", dllPath.toString());
+        LOGGER.trace("{} folder exists", dllPath);
 
         return dllPath;
     }
 
     /**
      * Assumes dllOnDisk is non-null and exists.
-     * @param dllOnDisk
-     * @param libraryToLoad
-     * @throws IOException
      */
     public static void extractToLocalFolder(File dllOnDisk, String libraryToLoad) throws IOException {
         ClassLoader classLoader = DllFileUtils.class.getClassLoader();
@@ -76,9 +73,9 @@ class DllFileUtils {
         }
         try (InputStream in = classLoader.getResourceAsStream(libraryToLoad)) {
             if (in == null) {
-                throw new RuntimeException(String.format("Failed to find '%s' in jar", libraryToLoad));
+                throw new IllegalStateException(String.format("Failed to find '%s' in jar", libraryToLoad));
             }
-            final byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[8192];
             try (OutputStream out = new FileOutputStream(dllOnDisk, false)) {
                 if (dllOnDisk.exists()) {
                     if (dllOnDisk.isDirectory()) {
@@ -104,10 +101,10 @@ class DllFileUtils {
      * From :core/com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils
      */
     private static File getTempDir() {
-        final String tempDirectory = System.getProperty("java.io.tmpdir");
-        final String currentUserName = determineCurrentUserName();
+        String tempDirectory = System.getProperty("java.io.tmpdir");
+        String currentUserName = determineCurrentUserName();
 
-        final File result = getTempDir(tempDirectory, currentUserName);
+        File result = getTempDir(tempDirectory, currentUserName);
         if (!result.isDirectory()) {
             // Noinspection ResultOfMethodCallIgnored
             result.mkdirs();
@@ -118,13 +115,13 @@ class DllFileUtils {
     /**
      * From :core/com.microsoft.applicationinsights.internal.util.LocalFileSystemUtils
      */
-    private static File getTempDir(final String initialValue, final String userName) {
+    private static File getTempDir(String initialValue, String userName) {
         String tempDirectory = initialValue;
 
         // does it look shared?
         // TODO: this only catches the Linux case; I think a few system users on Windows might share c:\Windows\Temp
         if ("/tmp".contentEquals(tempDirectory)) {
-            final File candidate = new File(tempDirectory, userName);
+            File candidate = new File(tempDirectory, userName);
             tempDirectory = candidate.getAbsolutePath();
         }
 
@@ -141,7 +138,7 @@ class DllFileUtils {
 
         if (userName != null && !userName.isEmpty()) {
             // Try some environment variables
-            for (final String candidate : CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES) {
+            for (String candidate : CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES) {
                 userName = System.getenv(candidate);
                 if (userName != null && userName.isEmpty()) {
                     break;

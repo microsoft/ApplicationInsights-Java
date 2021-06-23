@@ -33,7 +33,6 @@ import com.microsoft.jfr.JfrStreamingException;
 import com.microsoft.jfr.Recording;
 import com.microsoft.jfr.RecordingConfiguration;
 import com.microsoft.jfr.RecordingOptions;
-import com.microsoft.jfr.dcmd.FlightRecorderDiagnosticCommandConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +69,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     private FlightRecorderConnection flightRecorderConnection;
     private RecordingOptions recordingOptions;
 
-    private AlertConfiguration periodicConfig;
+    private final AlertConfiguration periodicConfig;
 
     private final Object activeRecordingLock = new Object();
     private Recording activeRecording = null;
@@ -91,15 +90,15 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         cpuRecordingConfiguration = getCpuProfileConfig(configuration);
     }
 
-    private RecordingConfiguration getMemoryProfileConfig(ServiceProfilerServiceConfig configuration) {
+    private static RecordingConfiguration getMemoryProfileConfig(ServiceProfilerServiceConfig configuration) {
         return getRecordingConfiguration(configuration.memoryTriggeredSettings(), REDUCED_MEMORY_PROFILE);
     }
 
-    private RecordingConfiguration getCpuProfileConfig(ServiceProfilerServiceConfig configuration) {
+    private static RecordingConfiguration getCpuProfileConfig(ServiceProfilerServiceConfig configuration) {
         return getRecordingConfiguration(configuration.cpuTriggeredSettings(), REDUCED_CPU_PROFILE);
     }
 
-    private RecordingConfiguration getRecordingConfiguration(String triggeredSettings, String reducedProfile) {
+    private static RecordingConfiguration getRecordingConfiguration(String triggeredSettings, String reducedProfile) {
         if (triggeredSettings != null) {
             try {
                 ProfileTypes profile = ProfileTypes.valueOf(triggeredSettings);
@@ -130,6 +129,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
      * @throws IOException               Trouble communicating with MBean server
      * @throws InstanceNotFoundException The JVM does not support JFR, or experimental option is not enabled.
      */
+    @Override
     public boolean initialize(ProfileHandler profileHandler, ScheduledExecutorService scheduledExecutorService) throws IOException, InstanceNotFoundException {
         this.profileHandler = profileHandler;
         this.scheduledExecutorService = scheduledExecutorService;
@@ -140,12 +140,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         try {
             // connect to mbeans
             MBeanServerConnection mBeanServer = ManagementFactory.getPlatformMBeanServer();
-            try {
-                flightRecorderConnection = FlightRecorderConnection.connect(mBeanServer);
-            } catch (JfrStreamingException | InstanceNotFoundException jfrStreamingException) {
-                // Possibly an older JVM, try using Diagnostic command
-                flightRecorderConnection = FlightRecorderDiagnosticCommandConnection.connect(mBeanServer);
-            }
+            flightRecorderConnection = FlightRecorderConnection.connect(mBeanServer);
         } catch (Exception e) {
             LOGGER.error("Failed to connect to mbean", e);
             return false;
@@ -177,12 +172,15 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
             }
 
             RecordingConfiguration recordingConfiguration;
-            if (alertType == AlertMetricType.CPU) {
-                recordingConfiguration = cpuRecordingConfiguration;
-            } else if (alertType == AlertMetricType.MEMORY) {
-                recordingConfiguration = memoryRecordingConfiguration;
-            } else {
-                recordingConfiguration = RecordingConfiguration.PROFILE_CONFIGURATION;
+            switch (alertType) {
+                case CPU:
+                    recordingConfiguration = cpuRecordingConfiguration;
+                    break;
+                case MEMORY:
+                    recordingConfiguration = memoryRecordingConfiguration;
+                    break;
+                default:
+                    recordingConfiguration = RecordingConfiguration.PROFILE_CONFIGURATION;
             }
 
             activeRecording = flightRecorderConnection.newRecording(recordingOptions, recordingConfiguration);

@@ -21,9 +21,9 @@
 
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.google.common.base.Strings;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
+import com.microsoft.applicationinsights.TelemetryUtil;
 
 class AttachStatsbeat extends BaseStatsbeat {
 
@@ -35,24 +35,27 @@ class AttachStatsbeat extends BaseStatsbeat {
     private static final String WEBSITE_HOSTNAME = "WEBSITE_HOSTNAME";
     private static final String WEBSITE_HOME_STAMPNAME = "WEBSITE_HOME_STAMPNAME";
 
+    private final CustomDimensions customDimensions;
     private volatile String resourceProviderId;
     private volatile MetadataInstanceResponse metadataInstanceResponse;
 
-    AttachStatsbeat(TelemetryClient telemetryClient, long interval) {
-        super(telemetryClient, interval);
-        resourceProviderId = initResourceProviderId(CustomDimensions.get().getResourceProvider(), null);
+    AttachStatsbeat(CustomDimensions customDimensions) {
+        super(customDimensions);
+        this.customDimensions = customDimensions;
+        resourceProviderId = initResourceProviderId(customDimensions.getResourceProvider(), null);
     }
 
     @Override
-    protected void send() {
+    protected void send(TelemetryClient telemetryClient) {
         // WEBSITE_HOSTNAME is lazily set in Linux Consumption Plan.
-        if (Strings.isNullOrEmpty(resourceProviderId)) {
-            resourceProviderId = initResourceProviderId(CustomDimensions.get().getResourceProvider(), null);
+        if (resourceProviderId == null || resourceProviderId.isEmpty()) {
+            resourceProviderId = initResourceProviderId(customDimensions.getResourceProvider(), null);
         }
 
-        MetricTelemetry statsbeatTelemetry = createStatsbeatTelemetry(ATTACH_METRIC_NAME, 0);
-        statsbeatTelemetry.getProperties().put("rpId", resourceProviderId);
-        telemetryClient.track(statsbeatTelemetry);
+        TelemetryItem statsbeatTelemetry = createStatsbeatTelemetry(telemetryClient, ATTACH_METRIC_NAME, 0);
+        TelemetryUtil.getProperties(statsbeatTelemetry.getData().getBaseData())
+                .put("rpId", resourceProviderId);
+        telemetryClient.trackAsync(statsbeatTelemetry);
     }
 
     /**
@@ -88,8 +91,8 @@ class AttachStatsbeat extends BaseStatsbeat {
                 }
             case RP_AKS: // TODO will update resourceProviderId when cluster_id becomes available from the AKS AzureMetadataService extension.
             case UNKNOWN:
-            default:
                 return UNKNOWN_RP_ID;
         }
+        return UNKNOWN_RP_ID;
     }
 }

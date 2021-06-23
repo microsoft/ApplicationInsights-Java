@@ -1,50 +1,55 @@
 package com.microsoft.applicationinsights.agent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
-import com.microsoft.applicationinsights.internal.schemav2.ExceptionDetails;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionDetails;
+
+import static java.util.Collections.singletonList;
 
 public class Exceptions {
 
-    private static final Logger logger = LoggerFactory.getLogger(Exceptions.class);
-
-    private static final Splitter lineSplitter = Splitter.on(CharMatcher.anyOf("\r\n")).omitEmptyStrings();
-
-    public static List<ExceptionDetails> minimalParse(String str) {
-        ExceptionDetails details = new ExceptionDetails();
-        String line = lineSplitter.split(str).iterator().next();
-        int index = line.indexOf(": ");
-        if (index != -1) {
-            details.setTypeName(line.substring(0, index));
-            details.setMessage(line.substring(index + 2));
+    public static List<TelemetryExceptionDetails> minimalParse(String str) {
+        TelemetryExceptionDetails details = new TelemetryExceptionDetails();
+        int separator = -1;
+        int length = str.length();
+        int current;
+        for (current = 0; current < length; current++) {
+            char c = str.charAt(current);
+            if (c == ':') {
+                separator = current;
+            } else if (c == '\r' || c == '\n') {
+                break;
+            }
+        }
+        // at the end of the loop, current will be end of the first line
+        if (separator != -1) {
+            details.setTypeName(str.substring(0, separator));
+            details.setMessage(str.substring(separator + 2, current));
         } else {
-            details.setTypeName(line);
+            details.setTypeName(str.substring(0, current));
         }
         details.setStack(str);
-        return Arrays.asList(details);
+        return singletonList(details);
     }
 
     // THIS IS UNFINISHED WORK
     // NOT SURE IF IT'S NEEDED
     // TESTING WITH minimalParse() first
-    public static List<ExceptionDetails> fullParse(String str) {
+    public static List<TelemetryExceptionDetails> fullParse(String str) {
         Parser parser = new Parser();
-        for (String line : lineSplitter.split(str)) {
+        for (String line : str.split("\r?\n")) {
             parser.process(line);
         }
         return parser.getDetails();
     }
 
+    private Exceptions() {}
+
     static class Parser {
 
-        private ExceptionDetails current;
-        private final List<ExceptionDetails> list = new ArrayList<>();
+        private TelemetryExceptionDetails current;
+        private final List<TelemetryExceptionDetails> list = new ArrayList<>();
 
         void process(String line) {
             if (line.charAt(0) != '\t') {
@@ -54,7 +59,7 @@ public class Exceptions {
                 if (line.startsWith("Caused by: ")) {
                     line = line.substring("Caused by: ".length());
                 }
-                current = new ExceptionDetails();
+                current = new TelemetryExceptionDetails();
                 int index = line.indexOf(": ");
                 if (index != -1) {
                     current.setTypeName(line.substring(0, index));
@@ -63,20 +68,13 @@ public class Exceptions {
                     current.setTypeName(line);
                 }
             }
-            System.out.println(line);
         }
 
-        public List<ExceptionDetails> getDetails() {
+        public List<TelemetryExceptionDetails> getDetails() {
             if (current != null) {
                 list.add(current);
             }
             return list;
-        }
-    }
-
-    static class ParseException extends Exception {
-        ParseException(String message) {
-            super(message);
         }
     }
 }

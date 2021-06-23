@@ -29,4 +29,6 @@ public class Samplers {
                 .setLocalParentSampled(parentSampledSampler)
                 .build();
     }
+
+    private Samplers() {}
 }

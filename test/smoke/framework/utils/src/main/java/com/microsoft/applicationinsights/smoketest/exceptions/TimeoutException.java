@@ -4,13 +4,13 @@ import java.util.concurrent.TimeUnit;
 
 public class TimeoutException extends SmokeTestException {
     public TimeoutException(String componentName, long timeout, TimeUnit unit) {
-        this(componentName, timeout, unit, "", null);
+        this(componentName, timeout, unit, null, "");
     }
     public TimeoutException(String componentName, long timeout, TimeUnit unit, Throwable cause) {
-        this(componentName, timeout, unit, "", cause);
+        this(componentName, timeout, unit, cause, "");
     }
 
-    public TimeoutException(String componentName, long timeout, TimeUnit unit, String message, Throwable cause) {
+    public TimeoutException(String componentName, long timeout, TimeUnit unit, Throwable cause, String message) {
         super(String.format("Timeout reached (%d %s) waiting for %s. %s", timeout, unit.toString().toLowerCase(), componentName, message), cause);
     }
 }

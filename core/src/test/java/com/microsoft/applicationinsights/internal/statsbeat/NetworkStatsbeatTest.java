@@ -1,23 +1,22 @@
 package com.microsoft.applicationinsights.internal.statsbeat;
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class NetworkStatsbeatTest {
 
     private NetworkStatsbeat networkStatsbeat;
 
-    @Before
+    @BeforeEach
     public void init() {
-        networkStatsbeat = new NetworkStatsbeat(new TelemetryClient(), Long.MAX_VALUE);
+        networkStatsbeat = new NetworkStatsbeat(new CustomDimensions());
     }
 
     @Test
@@ -25,55 +24,55 @@ public class NetworkStatsbeatTest {
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.jdbc");
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.tomcat-7.0");
         networkStatsbeat.addInstrumentation("io.opentelemetry.javaagent.http-url-connection");
-        assertEquals((long)(Math.pow(2, 13) + Math.pow(2, 21) + Math.pow(2, 57)), networkStatsbeat.getInstrumentation()); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
+        assertThat(networkStatsbeat.getInstrumentation()).isEqualTo((long)(Math.pow(2, 13) + Math.pow(2, 21) + Math.pow(2, 57))); // Exponents are keys from StatsbeatHelper.INSTRUMENTATION_MAP.)
     }
 
     @Test
     public void testIncrementRequestSuccessCount() {
-        assertEquals(0, networkStatsbeat.getRequestSuccessCount());
-        assertEquals(0, networkStatsbeat.getRequestDurationAvg(), 0);
+        assertThat(networkStatsbeat.getRequestSuccessCount()).isEqualTo(0);
+        assertThat(networkStatsbeat.getRequestDurationAvg()).isEqualTo(0);
         networkStatsbeat.incrementRequestSuccessCount(1000);
         networkStatsbeat.incrementRequestSuccessCount(3000);
-        assertEquals(2, networkStatsbeat.getRequestSuccessCount());
-        assertEquals(2000.0, networkStatsbeat.getRequestDurationAvg(), 0);
+        assertThat(networkStatsbeat.getRequestSuccessCount()).isEqualTo(2);
+        assertThat(networkStatsbeat.getRequestDurationAvg()).isEqualTo(2000.0);
     }
 
     @Test
     public void testIncrementRequestFailureCount() {
-        assertEquals(0, networkStatsbeat.getRequestFailureCount());
+        assertThat(networkStatsbeat.getRequestFailureCount()).isEqualTo(0);
         networkStatsbeat.incrementRequestFailureCount();
         networkStatsbeat.incrementRequestFailureCount();
-        assertEquals(2, networkStatsbeat.getRequestFailureCount());
+        assertThat(networkStatsbeat.getRequestFailureCount()).isEqualTo(2);
     }
 
     @Test
     public void testIncrementRetryCount() {
-        assertEquals(0, networkStatsbeat.getRetryCount());
+        assertThat(networkStatsbeat.getRetryCount()).isEqualTo(0);
         networkStatsbeat.incrementRetryCount();
         networkStatsbeat.incrementRetryCount();
-        assertEquals(2, networkStatsbeat.getRetryCount());
+        assertThat(networkStatsbeat.getRetryCount()).isEqualTo(2);
     }
 
     @Test
     public void testIncrementThrottlingCount() {
-        assertEquals(0, networkStatsbeat.getThrottlingCount());
+        assertThat(networkStatsbeat.getThrottlingCount()).isEqualTo(0);
         networkStatsbeat.incrementThrottlingCount();
         networkStatsbeat.incrementThrottlingCount();
-        assertEquals(2, networkStatsbeat.getThrottlingCount());
+        assertThat(networkStatsbeat.getThrottlingCount()).isEqualTo(2);
     }
 
     @Test
     public void testIncrementExceptionCount() {
-        assertEquals(0, networkStatsbeat.getExceptionCount());
+        assertThat(networkStatsbeat.getExceptionCount()).isEqualTo(0);
         networkStatsbeat.incrementExceptionCount();
         networkStatsbeat.incrementExceptionCount();
-        assertEquals(2, networkStatsbeat.getExceptionCount());
+        assertThat(networkStatsbeat.getExceptionCount()).isEqualTo(2);
     }
 
     @Test
     public void testRaceCondition() throws InterruptedException {
-        final ExecutorService executorService = Executors.newFixedThreadPool(100);
-        final AtomicInteger instrumentationCounter = new AtomicInteger();
+        ExecutorService executorService = Executors.newFixedThreadPool(100);
+        AtomicInteger instrumentationCounter = new AtomicInteger();
         for (int i = 0; i < 100; i++) {
             executorService.execute(new Runnable() {
                 @Override
@@ -92,12 +91,12 @@ public class NetworkStatsbeatTest {
 
         executorService.shutdown();
         executorService.awaitTermination(10, TimeUnit.MINUTES);
-        assertEquals(100000, networkStatsbeat.getRequestSuccessCount());
-        assertEquals(100000, networkStatsbeat.getRequestFailureCount());
-        assertEquals(100000, networkStatsbeat.getRetryCount());
-        assertEquals(100000, networkStatsbeat.getThrottlingCount());
-        assertEquals(100000, networkStatsbeat.getExceptionCount());
-        assertEquals(7.5, networkStatsbeat.getRequestDurationAvg(), 0);
-        assertEquals(100000, networkStatsbeat.getInstrumentationList().size());
+        assertThat(networkStatsbeat.getRequestSuccessCount()).isEqualTo(100000);
+        assertThat(networkStatsbeat.getRequestFailureCount()).isEqualTo(100000);
+        assertThat(networkStatsbeat.getRetryCount()).isEqualTo(100000);
+        assertThat(networkStatsbeat.getThrottlingCount()).isEqualTo(100000);
+        assertThat(networkStatsbeat.getExceptionCount()).isEqualTo(100000);
+        assertThat(networkStatsbeat.getRequestDurationAvg()).isEqualTo(7.5);
+        assertThat(networkStatsbeat.getInstrumentationList().size()).isEqualTo(100000);
     }
 }

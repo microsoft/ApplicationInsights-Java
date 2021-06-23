@@ -8,13 +8,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.common.base.Stopwatch;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 @WebServlet("/*")
 public class MongoTestServlet extends HttpServlet {
@@ -79,14 +80,14 @@ public class MongoTestServlet extends HttpServlet {
 
     private static MongoClient getMongoClient(Callable<MongoClient> callable) throws Exception {
         Exception exception;
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        long start = System.nanoTime();
         do {
             try {
                 return callable.call();
             } catch (Exception e) {
                 exception = e;
             }
-        } while (stopwatch.elapsed(TimeUnit.SECONDS) < 30);
+        } while (NANOSECONDS.toSeconds(System.nanoTime() - start) < 30);
         throw exception;
     }
 

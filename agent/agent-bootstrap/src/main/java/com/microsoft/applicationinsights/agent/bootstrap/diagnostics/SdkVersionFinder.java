@@ -30,6 +30,8 @@ public class SdkVersionFinder extends CachedDiagnosticsValueFinder {
         return value;
     }
 
+    // this is called early during startup before logging has been initialized
+    @SuppressWarnings({"CatchAndPrintStackTrace", "SystemOut"})
     private static String readVersion(Path agentPath) {
         try {
             // reading from file instead of from classpath, in order to avoid triggering jar file signature verification
@@ -42,6 +44,7 @@ public class SdkVersionFinder extends CachedDiagnosticsValueFinder {
                 }
             }
         } catch (IOException e) {
+            // this is called early during startup before logging has been initialized
             e.printStackTrace();
         }
         return "unknown";

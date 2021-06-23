@@ -1,28 +1,25 @@
 package com.microsoft.applicationinsights.internal.util;
 
-import org.junit.*;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-public class MapUtilTest {
-
-    @Rule
-    public ExpectedException expected = ExpectedException.none();
+class MapUtilTest {
 
     @Test
-    public void targetCannotBeNullInCopy() {
-        expected.expect(IllegalArgumentException.class);
-        MapUtil.copy(new HashMap<String, String>(), null);
+    void targetCannotBeNullInCopy() {
+        assertThatThrownBy(() -> MapUtil.copy(new HashMap<String, String>(), null))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void copyIsNoOpIfSourceIsNullOrEmpty() {
+    void copyIsNoOpIfSourceIsNullOrEmpty() {
         Map<String, String> source = mock(Map.class);
         Map<String, String> target = mock(Map.class);
         when(source.size()).thenReturn(0);
@@ -39,7 +36,7 @@ public class MapUtilTest {
     }
 
     @Test
-    public void testCopyIntoHashMap() {
+    void testCopyIntoHashMap() {
         Map<String, String> source = new HashMap<>();
         Map<String, String> target = new HashMap<>();
 
@@ -47,11 +44,11 @@ public class MapUtilTest {
         source.put("key2", null);
 
         MapUtil.copy(source, target);
-        assertEquals(2, target.size());
+        assertThat(target).hasSize(2);
     }
 
     @Test
-    public void testCopyIntoConcurrentHashMap() {
+    void testCopyIntoConcurrentHashMap() {
         Map<String, String> source = new HashMap<>();
         Map<String, String> target = new ConcurrentHashMap<>();
 
@@ -59,6 +56,6 @@ public class MapUtilTest {
         source.put("key2", null);
 
         MapUtil.copy(source, target);
-        assertEquals(1, target.size());
+        assertThat(target).hasSize(1);
     }
 }

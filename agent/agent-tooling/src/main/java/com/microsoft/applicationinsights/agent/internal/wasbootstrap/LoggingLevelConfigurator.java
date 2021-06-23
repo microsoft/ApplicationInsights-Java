@@ -13,7 +13,7 @@ public class LoggingLevelConfigurator {
         try {
             this.level = Level.valueOf(levelStr.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Unexpected self-diagnostic level: " + levelStr);
+            throw new IllegalStateException("Unexpected self-diagnostic level: " + levelStr, e);
         }
     }
 
@@ -30,6 +30,8 @@ public class LoggingLevelConfigurator {
             // muzzleMatcher logs at WARN level, so by default this is OFF, but enabled when DEBUG logging is enabled
             loggerLevel = getMuzzleMatcherLevel(level);
         } else if (name.startsWith("com.microsoft.applicationinsights")) {
+            loggerLevel = level;
+        } else if (name.startsWith("com.azure.monitor.opentelemetry.exporter")) {
             loggerLevel = level;
         } else {
             loggerLevel = getOtherLibLevel(level);

@@ -21,9 +21,6 @@
 
 package com.microsoft.applicationinsights.internal.config;
 
-/**
- * Created by gupele on 3/15/2015.
- */
 public class JmxXmlElement {
 
     private String name;

@@ -26,39 +26,29 @@ package com.microsoft.applicationinsights.internal.schemav2;
 /**
  * Data contract class Data.
  */
-public class Data<TDomain extends Domain> extends Base
+public class Data<T extends Domain> extends Base
 {
     /**
      * Backing field for property BaseData.
      */
-    private TDomain baseData;
+    private T baseData;
 
     /**
      * Initializes a new instance of the Data{TDomain} class.
      */
-    public Data()
-    {
-        this.InitializeFields();
-    }
+    public Data() {}
 
     /**
      * Gets the BaseData property.
      */
-    public TDomain getBaseData() {
+    public T getBaseData() {
         return this.baseData;
     }
 
     /**
      * Sets the BaseData property.
      */
-    public void setBaseData(TDomain value) {
+    public void setBaseData(T value) {
         this.baseData = value;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

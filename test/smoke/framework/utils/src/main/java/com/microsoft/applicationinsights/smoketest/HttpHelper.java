@@ -1,10 +1,6 @@
 package com.microsoft.applicationinsights.smoketest;
 
-import com.google.common.io.CharStreams;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -15,7 +11,7 @@ import org.apache.http.util.EntityUtils;
 
 public class HttpHelper {
 
-    public static int getResponseCodeEnsuringSampled(String url) throws UnsupportedOperationException, IOException {
+    public static int getResponseCodeEnsuringSampled(String url) throws IOException {
         HttpGet httpGet = new HttpGet(url);
         // traceId=27272727272727272727272727272727 is known to produce a score of 0.66 (out of 100)
         // so will be sampled as long as samplingPercentage > 1%
@@ -23,18 +19,19 @@ public class HttpHelper {
         return getResponseCode(httpGet);
     }
 
-    public static String get(String url) throws UnsupportedOperationException, IOException {
+    public static String get(String url) throws IOException {
         return getBody(new HttpGet(url));
     }
 
-    private static String getBody(HttpGet httpGet) throws UnsupportedOperationException, IOException {
+    private static String getBody(HttpGet httpGet) throws IOException {
         try (CloseableHttpClient client = getHttpClient()) {
-            CloseableHttpResponse resp1 = client.execute(httpGet);
-            return extractResponseBody(resp1);
+            try (CloseableHttpResponse response = client.execute(httpGet)) {
+                return EntityUtils.toString(response.getEntity());
+            }
         }
     }
 
-    private static int getResponseCode(HttpGet httpGet) throws UnsupportedOperationException, IOException {
+    private static int getResponseCode(HttpGet httpGet) throws IOException {
         try (CloseableHttpClient client = getHttpClient()) {
             CloseableHttpResponse resp1 = client.execute(httpGet);
             EntityUtils.consume(resp1.getEntity());
@@ -49,28 +46,14 @@ public class HttpHelper {
     }
 
     public static String post(String url, String body) throws IOException {
-        CloseableHttpClient client = getHttpClient();
-        try {
+        try (CloseableHttpClient client = getHttpClient()) {
             HttpPost post = new HttpPost(url);
             post.setEntity(new StringEntity(body));
-            CloseableHttpResponse resp1 = client.execute(post);
-            return extractResponseBody(resp1);
-        }
-        finally {
-            client.close();
+            try (CloseableHttpResponse response = client.execute(post)) {
+                return EntityUtils.toString(response.getEntity());
+            }
         }
     }
 
-    private static String extractResponseBody(CloseableHttpResponse resp) throws IOException {
-        try {
-            HttpEntity entity = resp.getEntity();
-            StringWriter cw = new StringWriter();
-            CharStreams.copy(new InputStreamReader(entity.getContent()), cw);
-            EntityUtils.consume(entity);
-            return cw.toString();
-        }
-        finally {
-            resp.close();
-        }
-    }
+    private HttpHelper() {}
 }

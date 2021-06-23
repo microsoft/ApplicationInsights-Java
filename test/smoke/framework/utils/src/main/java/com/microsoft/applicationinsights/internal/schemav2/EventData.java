@@ -32,11 +32,6 @@ import java.util.concurrent.ConcurrentMap;
 public class EventData extends Domain
 {
     /**
-     * Backing field for property Ver.
-     */
-    private static final int ver = 2;
-
-    /**
      * Backing field for property Name.
      */
     private String name;
@@ -56,7 +51,6 @@ public class EventData extends Domain
      */
     public EventData()
     {
-        this.InitializeFields();
     }
 
     /**
@@ -91,12 +85,5 @@ public class EventData extends Domain
             this.measurements = new ConcurrentHashMap<>();
         }
         return this.measurements;
-    }
-
-    /**
-     * Optionally initializes fields for the current context.
-     */
-    protected void InitializeFields() {
-
     }
 }

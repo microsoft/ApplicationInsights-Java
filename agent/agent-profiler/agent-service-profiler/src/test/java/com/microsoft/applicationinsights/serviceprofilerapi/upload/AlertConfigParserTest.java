@@ -28,12 +28,14 @@ import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigura
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 
-public class AlertConfigParserTest {
+import static org.assertj.core.api.Assertions.assertThat;
+
+class AlertConfigParserTest {
 
     @Test
-    public void nullsInConfigAreHandled() {
+    void nullsInConfigAreHandled() {
 
         AlertingConfiguration config = AlertConfigParser.parse(
                 null,
@@ -41,15 +43,14 @@ public class AlertConfigParserTest {
                 null,
                 null
         );
-        Assert.assertFalse(config.getCpuAlert().isEnabled());
-        Assert.assertFalse(config.getCollectionPlanConfiguration().isSingle());
-        Assert.assertFalse(config.getMemoryAlert().isEnabled());
-        Assert.assertFalse(config.getDefaultConfiguration().getSamplingEnabled());
+        assertThat(config.getCpuAlert().isEnabled()).isFalse();
+        assertThat(config.getCollectionPlanConfiguration().isSingle()).isFalse();
+        assertThat(config.getMemoryAlert().isEnabled()).isFalse();
+        assertThat(config.getDefaultConfiguration().getSamplingEnabled()).isFalse();
     }
 
-
     @Test
-    public void saneDataIsParsed() {
+    void saneDataIsParsed() {
         AlertingConfiguration config = AlertConfigParser.parse(
                 "--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400",
                 "--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400",
@@ -57,11 +58,9 @@ public class AlertConfigParserTest {
                 "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker"
         );
 
-        Assert.assertEquals(new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400), config.getCpuAlert());
-        Assert.assertEquals(new AlertConfiguration(AlertMetricType.CPU, true, 20, 120, 14400), config.getMemoryAlert());
-        Assert.assertEquals(new DefaultConfiguration(true, 5, 120), config.getDefaultConfiguration());
-        Assert.assertEquals(new CollectionPlanConfiguration(true, EngineMode.immediate, CollectionPlanConfigurationBuilder.parseBinaryDate(5249157885138288517L), 120, "a-settings-moniker"),
-                config.getCollectionPlanConfiguration());
-
+        assertThat(config.getCpuAlert()).isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400));
+        assertThat(config.getMemoryAlert()).isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 20, 120, 14400));
+        assertThat(config.getDefaultConfiguration()).isEqualTo(new DefaultConfiguration(true, 5, 120));
+        assertThat(config.getCollectionPlanConfiguration()).isEqualTo(new CollectionPlanConfiguration(true, EngineMode.immediate, CollectionPlanConfigurationBuilder.parseBinaryDate(5249157885138288517L), 120, "a-settings-moniker"));
     }
 }

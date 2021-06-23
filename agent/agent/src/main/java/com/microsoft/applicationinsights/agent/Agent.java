@@ -47,4 +47,6 @@ public class Agent {
     public static void agentmain(String agentArgs, Instrumentation inst) {
         premain(agentArgs, inst);
     }
+
+    private Agent() {}
 }

@@ -76,4 +76,6 @@ public class RpConfigurationBuilder {
             return jsonAdapter.fromJson(buffer);
         }
     }
+
+    private RpConfigurationBuilder() {}
 }
