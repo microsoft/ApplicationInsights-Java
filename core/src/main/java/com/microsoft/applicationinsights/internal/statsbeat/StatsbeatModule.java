@@ -68,7 +68,7 @@ public class StatsbeatModule {
             new AzureMetadataService(attachStatsbeat, customDimensions).scheduleWithFixedDelay(interval);
         }
 
-        featureStatsbeat.setAadEnable(aadEnabled);
+        featureStatsbeat.setAadEnabled(aadEnabled);
     }
 
     public static StatsbeatModule get() {

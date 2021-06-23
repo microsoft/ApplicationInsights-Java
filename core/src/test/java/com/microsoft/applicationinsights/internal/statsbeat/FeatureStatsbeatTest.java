@@ -28,7 +28,7 @@ public class FeatureStatsbeatTest {
 
     @Test
     public void testAadEnable() {
-        featureStatsbeat.setAadEnable(true);
+        featureStatsbeat.setAadEnabled(true);
         Set<Feature> features = new HashSet<>();
         features.add(Feature.fromJavaVendor(javaVendor));
         features.add(Feature.AAD_ON);
@@ -37,7 +37,7 @@ public class FeatureStatsbeatTest {
 
     @Test
     public void testAadDisable() {
-        featureStatsbeat.setAadEnable(false);
+        featureStatsbeat.setAadEnabled(false);
         Set<Feature> features = new HashSet<>();
         features.add(Feature.fromJavaVendor(javaVendor));
         features.add(Feature.AAD_OFF);

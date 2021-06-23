@@ -34,7 +34,7 @@ class FeatureStatsbeat extends BaseStatsbeat {
 
     private final Set<Feature> featureList = new HashSet<>(64);
 
-    private boolean aadEnable;
+    private boolean aadEnabled;
 
     FeatureStatsbeat() {
         // track java distribution
@@ -57,8 +57,8 @@ class FeatureStatsbeat extends BaseStatsbeat {
         telemetryClient.trackAsync(statsbeatTelemetry);
     }
 
-    void setAadEnable(boolean aadEnable) {
-        this.aadEnable = aadEnable;
-        featureList.add(this.aadEnable ? Feature.AAD_ON : Feature.AAD_OFF);
+    void setAadEnabled(boolean aadEnabled) {
+        this.aadEnabled = aadEnabled;
+        featureList.add(this.aadEnabled ? Feature.AAD_ON : Feature.AAD_OFF);
     }
 }
