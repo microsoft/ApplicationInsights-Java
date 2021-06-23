@@ -42,7 +42,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-// TODO (trask) is system out useful here?
 @SuppressWarnings("SystemOut")
 class EtwProviderTests {
     private static final String FOLDER_NAME = "EtwProviderTests";
@@ -80,21 +79,19 @@ class EtwProviderTests {
         EVENT_STATS_TIMER_PERIOD_MILLISECONDS = period;
     }
 
-    // TODO (trask) revisit this suppression
-    @SuppressWarnings("UnusedVariable")
     private static IpaVerbose createVerbose(String logger, String operation, String messageFormat, Object...messageArgs) {
         IpaVerbose rval = new IpaVerbose(PROTOTYPE);
         rval.setLogger(logger);
+        rval.setOperation(operation);
         rval.setMessageFormat(messageFormat);
         rval.setMessageArgs(messageArgs);
         return rval;
     }
 
-    // TODO (trask) revisit this suppression
-    @SuppressWarnings("UnusedVariable")
     private static IpaInfo createInfo(String logger, String operation, String messageFormat, Object...messageArgs) {
         IpaInfo rval = new IpaInfo(PROTOTYPE);
         rval.setLogger(logger);
+        rval.setOperation(operation);
         rval.setMessageFormat(messageFormat);
         rval.setMessageArgs(messageArgs);
         return rval;

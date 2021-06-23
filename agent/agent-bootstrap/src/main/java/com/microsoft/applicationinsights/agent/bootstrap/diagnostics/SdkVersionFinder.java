@@ -30,7 +30,7 @@ public class SdkVersionFinder extends CachedDiagnosticsValueFinder {
         return value;
     }
 
-    // TODO (trask) is printStackTrace() really needed here?
+    // this is called early during startup before logging has been initialized
     @SuppressWarnings({"CatchAndPrintStackTrace", "SystemOut"})
     private static String readVersion(Path agentPath) {
         try {
@@ -44,6 +44,7 @@ public class SdkVersionFinder extends CachedDiagnosticsValueFinder {
                 }
             }
         } catch (IOException e) {
+            // this is called early during startup before logging has been initialized
             e.printStackTrace();
         }
         return "unknown";

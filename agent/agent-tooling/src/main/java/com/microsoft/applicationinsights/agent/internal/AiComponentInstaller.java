@@ -136,8 +136,8 @@ public class AiComponentInstaller implements AgentListener {
         config.preview.authentication.validate();
         //Inject authentication configuration
         AadAuthentication aadAuthentication;
-        // FIXME (kryalama) can you remind me why we have both enabled and type?
-        if(config.preview.authentication.enabled && config.preview.authentication.type != null) {
+        if(config.preview.authentication.enabled) {
+            // if enabled, then type must be non-null (validated above)
             aadAuthentication = new AadAuthentication(config.preview.authentication.type,
                     config.preview.authentication.clientId, config.preview.authentication.tenantId,
                     config.preview.authentication.clientSecret, config.preview.authentication.authorityHost);

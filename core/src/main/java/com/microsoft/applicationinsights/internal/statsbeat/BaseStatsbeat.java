@@ -31,9 +31,9 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.microsoft.applicationinsights.internal.statsbeat.Constants.STATSBEAT_TELEMETRY_NAME;
-
 abstract class BaseStatsbeat {
+
+    private static final String STATSBEAT_TELEMETRY_NAME = "Statsbeat";
 
     private final CustomDimensions customDimensions;
 
@@ -48,6 +48,8 @@ abstract class BaseStatsbeat {
         MetricsData data = new MetricsData();
         MetricDataPoint point = new MetricDataPoint();
         telemetryClient.initMetricTelemetry(telemetry, data, point);
+        // overwrite the default name (which is "Metric")
+        telemetry.setName(STATSBEAT_TELEMETRY_NAME);
 
         point.setName(name);
         point.setValue(value);
@@ -56,8 +58,6 @@ abstract class BaseStatsbeat {
         telemetry.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
         telemetry.setTime(FormattedTime.fromNow());
 
-        // overwrite the default name (which is "Metric")
-        telemetry.setName(STATSBEAT_TELEMETRY_NAME);
         Map<String, String> properties = new HashMap<>();
         customDimensions.populateProperties(properties, telemetryClient.getInstrumentationKey());
         data.setProperties(properties);

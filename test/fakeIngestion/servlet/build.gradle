@@ -1,8 +1,5 @@
 apply from: "$buildScriptsDir/common-java.gradle"
 
-// TODO (trask) is this needed?
-apply plugin: "war"
-
 dependencies {
     implementation "com.google.guava:guava:30.1.1-jre"
     compileOnly "javax.servlet:javax.servlet-api:3.0.1"

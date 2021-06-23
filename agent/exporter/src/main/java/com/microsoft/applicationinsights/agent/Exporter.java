@@ -151,7 +151,7 @@ public class Exporter implements SpanExporter {
             if (isLog != null && isLog) {
                 exportLogSpan(span);
             } else if ("spring-scheduling".equals(stdComponent) && !span.getParentSpanContext().isValid()) {
-                // TODO (trask) need semantic convention for determining whether to map INTERNAL to request or
+                // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL to request or
                 //  dependency (or need clarification to use SERVER for this)
                 exportRequest(span);
             } else {
@@ -261,7 +261,7 @@ public class Exporter implements SpanExporter {
             applyMessagingClientSpan(attributes, remoteDependencyData, messagingSystem, span.getKind());
             return;
         }
-        // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
+        // TODO (trask) Azure SDK: ideally EventHubs SDK should conform and fit the above path used for other messaging systems
         //  but no rush as messaging semantic conventions may still change
         //  https://github.com/Azure/azure-sdk-for-java/issues/21684
         String name = span.getName();
@@ -269,7 +269,7 @@ public class Exporter implements SpanExporter {
             applyEventHubsSpan(attributes, remoteDependencyData);
             return;
         }
-        // TODO (trask) ideally ServiceBus SDK should conform and fit the above path used for other messaging systems
+        // TODO (trask) Azure SDK: ideally ServiceBus SDK should conform and fit the above path used for other messaging systems
         //  but no rush as messaging semantic conventions may still change
         //  https://github.com/Azure/azure-sdk-for-java/issues/21686
         if (name.equals("ServiceBus.message") || name.equals("ServiceBus.process")) {
@@ -503,7 +503,7 @@ public class Exporter implements SpanExporter {
         }
     }
 
-    // TODO (trask) ideally EventHubs SDK should conform and fit the above path used for other messaging systems
+    // TODO (trask) Azure SDK: ideally EventHubs SDK should conform and fit the above path used for other messaging systems
     //  but no rush as messaging semantic conventions may still change
     //  https://github.com/Azure/azure-sdk-for-java/issues/21684
     private static void applyEventHubsSpan(Attributes attributes, RemoteDependencyData telemetry) {
@@ -513,7 +513,7 @@ public class Exporter implements SpanExporter {
         telemetry.setTarget(peerAddress + "/" + destination);
     }
 
-    // TODO (trask) ideally ServiceBus SDK should conform and fit the above path used for other messaging systems
+    // TODO (trask) Azure SDK: ideally ServiceBus SDK should conform and fit the above path used for other messaging systems
     //  but no rush as messaging semantic conventions may still change
     //  https://github.com/Azure/azure-sdk-for-java/issues/21686
     private static void applyServiceBusSpan(Attributes attributes, RemoteDependencyData telemetry) {
@@ -569,7 +569,7 @@ public class Exporter implements SpanExporter {
         if (source == null) {
             String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
             if (messagingSystem != null) {
-                // TODO (trask) should this pass default port for messaging.system?
+                // TODO (trask) AI mapping: should this pass default port for messaging.system?
                 source = nullAwareConcat(getTargetFromPeerAttributes(attributes, 0),
                         attributes.get(SemanticAttributes.MESSAGING_DESTINATION), "/");
                 if (source == null) {
@@ -590,7 +590,7 @@ public class Exporter implements SpanExporter {
         if (httpStatusCode != null) {
             data.setResponseCode(Long.toString(httpStatusCode));
         } else {
-            // TODO (trask) what should the default value be?
+            // TODO (trask) AI mapping: what should the default value be?
             data.setResponseCode("200");
         }
 
@@ -833,7 +833,7 @@ public class Exporter implements SpanExporter {
             case "ALL":
                 return SeverityLevel.VERBOSE;
             default:
-                // TODO (trask) is this good fallback?
+                // TODO (trask) AI mapping: is this a good fallback?
                 logger.debug("Unexpected level {}, using VERBOSE level as default", level);
                 return SeverityLevel.VERBOSE;
         }

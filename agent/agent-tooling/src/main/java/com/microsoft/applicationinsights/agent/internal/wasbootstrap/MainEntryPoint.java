@@ -76,6 +76,7 @@ public class MainEntryPoint {
                 instrumentation.removeTransformer(transformer);
             }
             Path agentPath = javaagentFile.toPath();
+            // need to initialize version before initializing DiagnosticsHelper
             version = SdkVersionFinder.initVersion(agentPath);
             DiagnosticsHelper.setAgentJarFile(agentPath);
             // configuration is only read this early in order to extract logging configuration

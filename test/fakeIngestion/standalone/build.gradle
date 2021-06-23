@@ -1,6 +1,5 @@
 apply from: "$buildScriptsDir/common-java.gradle"
 
-// TODO (trask) is this needed?
 apply plugin: "application"
 
 dependencies {

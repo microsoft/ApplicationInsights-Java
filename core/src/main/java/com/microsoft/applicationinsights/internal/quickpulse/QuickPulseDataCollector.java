@@ -219,7 +219,7 @@ public enum QuickPulseDataCollector {
         }
     }
 
-    // TODO (trask) move live metrics request capture to OpenTelemetry layer so don't have to parse String duration
+    // TODO (trask) optimization: move live metrics request capture to OpenTelemetry layer so don't have to parse String duration
     // visible for testing
     static long parseDurationToMillis(String duration) {
         // format is DD.HH:MM:SS.MMMMMM
